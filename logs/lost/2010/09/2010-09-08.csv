@@ -1,0 +1,819 @@
+date/time,nick,message
+2010-09-08 00:15:06,JanDing,gn8
+2010-09-08 01:25:49,EinandererUser,cya
+2010-09-08 01:25:51,EinandererUser,Ĝis
+2010-09-08 09:13:57,FreakyPenguin,Moin
+2010-09-08 09:15:36,kwolf,Moin
+2010-09-08 09:17:09,FreakyPenguin,Ich habe jetzt mal ein XMPP/Jabber-Feld ins forum reingebastelt
+2010-09-08 09:18:19,kwolf,Yay :-)
+2010-09-08 09:20:45,kwolf,"Hm, und deinem Profil zufolge auch gleich einen Server auf tyndur.org eingerichtet, oder war der schon länger da? ;-)"
+2010-09-08 09:21:06,FreakyPenguin,Der ist schon länger da. ;-)
+2010-09-08 10:06:42,FreakyPenguin,Hm schade das qemu.log ergibt auch heute noch keinen Sinn. *g*
+2010-09-08 10:09:42,kwolf,*g*
+2010-09-08 10:09:57,FreakyPenguin,Muss ichs wohl morgen nochmal versuchen. ;-)
+2010-09-08 10:13:17,kwolf,"Hehe, guter Ansatz"
+2010-09-08 11:01:12,FreakyPenguin,"Hm doof, wir sollten die Syscall-Parameter in den Registern übergeben, dann könnte man mehr aus der qemu.log lesen. ;-)"
+2010-09-08 11:02:09,kwolf,Immerhin die Syscallnummer kriegst du raus
+2010-09-08 11:02:36,FreakyPenguin,"Jo klar, aber beispielsweise bei RPCs wär der Empfänger praktisch ;-)"
+2010-09-08 11:02:44,kwolf,Mit LIOv2 dürfte man auch nicht mehr nur RPCs sehen ;-)
+2010-09-08 11:03:17,kwolf,"Jo, das schon. Ich müsste mal das Debuggingszeug für kernel2 wieder anpacken."
+2010-09-08 11:11:00,FreakyPenguin,Zumindest aber bevor es knallt sehe ich aber RPCs ;-)
+2010-09-08 11:18:46,kwolf,"Hm, RPCs arbeiten aber schon brav auf dem Userstack, hoffe ich?"
+2010-09-08 11:20:06,FreakyPenguin,Ich glaube schon jo
+2010-09-08 11:20:24,kwolf,"""Ich glaube schon"" ist gut..."
+2010-09-08 11:20:59,kwolf,So richtig überzeugt hört sich das nicht an ;-)
+2010-09-08 11:22:18,FreakyPenguin,"Ich habe vorhin schon über den Code drübergeschaut und nichts böses gesehen, aber die Hand würde ich dafür nicht ins Feuer legen."
+2010-09-08 11:22:57,FreakyPenguin,Aber laut meinen debug-ausgaben ist der callee wohl schon in einem kernel-int
+2010-09-08 11:23:45,kwolf,"Hm, da ist aber eigentlich ein Check, dass er ihn dann in Ruhe lässt, sehe ich grad"
+2010-09-08 11:25:21,FreakyPenguin,Hm stimmt
+2010-09-08 11:26:12,kwolf,Außer bei Self-RPC... Das ist aber nicht der Fall?
+2010-09-08 11:26:24,kwolf,Timer oder IRQ wäre das dann
+2010-09-08 11:30:33,FreakyPenguin,"Nein, das ist ein rpc-syscall"
+2010-09-08 11:33:56,kwolf,"Das heißt, es gibt auch dieses -EAGAIN?"
+2010-09-08 11:34:57,FreakyPenguin,Da beim folgenden iret knallt es dann halt auch schon
+2010-09-08 11:35:18,kwolf,Das ist dann relativ übersichtlich...
+2010-09-08 11:35:19,FreakyPenguin,Hm zwar das dürfte heissen dass der call erfolgreich ist
+2010-09-08 11:35:49,FreakyPenguin,"Naja das Interessante finde ich vorallem, dass cr3 und der Stack nicht zueindander passen ;-)"
+2010-09-08 11:35:49,kwolf,"Hm, ich glaube in diesem Fehlerfall fehlt ein pm_unblock_rpc, aber das hat damit eher nichts zu tun"
+2010-09-08 11:36:54,kwolf,Wechselt er den Task zum Callee? Eigentlich müsste er ja zum Aufrufer zurück und ein -EAGAIN abliefern. Geschedult wird in diesem Fall nicht.
+2010-09-08 11:37:12,kwolf,"Was übrigens Blödsinn ist, weil der nächste Versuch dann auch schiefgeht, aber momenten ist es so..."
+2010-09-08 11:37:30,FreakyPenguin,"Naja da das cr3 wechselt, gehe ich davon aus, dass er zum aufrufer wechseln möchte"
+2010-09-08 11:37:45,kwolf,"cr3 wechselt, aber der Stack bleibt?"
+2010-09-08 11:38:16,FreakyPenguin,Jo sieht so aus
+2010-09-08 11:38:39,kwolf,"Öhm, wie geht das? ;-)"
+2010-09-08 11:38:57,FreakyPenguin,"Ich habs jetzt nochmal durchlaufen und mehr glück gehabt, diesmal ist es weniger über das ganze log verstrichen"
+2010-09-08 11:39:02,FreakyPenguin,Jo das wüsste ich auch gerne. *g*
+2010-09-08 11:39:44,kwolf,Die Taskstruktur ist auch noch die gleiche und hat nur cr3 kaputtgemacht bekommen?
+2010-09-08 11:40:18,FreakyPenguin,Die sehe ich im qemu-log nicht. ;-)
+2010-09-08 11:40:20,kwolf,Und ist das neue cr3 ein vernünftiges?
+2010-09-08 11:40:33,kwolf,Aber im kprintf ;-)
+2010-09-08 11:40:40,kwolf,Oder verschwindet der Bug dann
+2010-09-08 11:40:42,kwolf,?
+2010-09-08 11:41:00,FreakyPenguin,Jo ich bin grad dabei die kprintfs auszubauen
+2010-09-08 11:41:06,kwolf,"Also ""vernünftiges cr"" im Sinn von könnte ein echtes sein und nicht nur Datenmüll"
+2010-09-08 11:41:13,FreakyPenguin,Jo das cr3 ist das von init
+2010-09-08 11:48:24,kwolf,"Hm, wart mal... Der sollte doch jetzt in den Userspace zurückspringen, und nicht an ein yield im Kernel, wie wir das gesehen hatten?"
+2010-09-08 11:49:10,kwolf,Ansonsten haben wir wirklich den Task gewechselt
+2010-09-08 11:50:08,kwolf,"init ist das dann auch, der grad gerpct wird und im Kernel hängt?"
+2010-09-08 11:50:45,FreakyPenguin,Also init müsste in einem yield hängen jo
+2010-09-08 11:50:54,FreakyPenguin,Ob er wirklich gerpct wird weiss ich nicht
+2010-09-08 11:51:05,FreakyPenguin,Aber ich gehe mal davon aus. ;-)
+2010-09-08 11:54:06,FreakyPenguin,"Hm ok, die Debug-Ausgaben bremsen das ganze jetzt minim aus. *>*"
+2010-09-08 11:54:18,kwolf,hehe
+2010-09-08 11:58:09,FreakyPenguin,"Ah das ist ja auch doof wenn ich das ausgeben auf den Bildschirm ausschalte, dann sehe ich ja das rot garnicht mehr"
+2010-09-08 11:59:03,kwolf,"Hm, ist Bildschirm das langsame? Nicht seriell?"
+2010-09-08 11:59:25,kwolf,"Du könntest das Warten auf die serielle Schnittstelle abschalten, das tut in qemu auch so"
+2010-09-08 11:59:36,kwolf,"Aber ich glaube nicht, dass das viel rausreißt"
+2010-09-08 11:59:57,FreakyPenguin,Naja ich sehe halt vor lauter debug-ausgaben sonst gar nichts mehr
+2010-09-08 12:00:27,kwolf,"Hm, ok..."
+2010-09-08 12:00:39,FreakyPenguin,Wie soll ich denn sonst einen lpt bedienen? ;-)
+2010-09-08 12:00:44,kwolf,Blind? ;-)
+2010-09-08 12:00:57,FreakyPenguin,Dazu müsste man tippen können. *g*
+2010-09-08 12:01:03,kwolf,*g*
+2010-09-08 12:01:30,kwolf,Kein Wunder mit deiner komischen Tastaturbelegung ;-)
+2010-09-08 12:01:37,FreakyPenguin,Ich brauche ja schon für ein lpt scan 3 versuche *g*
+2010-09-08 12:01:59,FreakyPenguin,Die habe ich doch für tyndur noch garnicht implementiert. ;-)
+2010-09-08 12:02:30,kwolf,"Du benutzt aber sicher de_ch, das ist komisch genug ;-)"
+2010-09-08 12:02:59,FreakyPenguin,"In tyndur nicht, da müsste ich ja immer erst noch pfel runter drücken beim booten. ;-)"
+2010-09-08 12:03:43,kwolf,Ah *g*
+2010-09-08 12:04:18,FreakyPenguin,Jetzt habe ich aber das log mit dem rot ;-)
+2010-09-08 12:20:20,JanDing,moin
+2010-09-08 12:21:21,kwolf,Moin JanDing
+2010-09-08 12:49:55,kwolf,FreakyPenguin: Und steht irgendwas interessantes drin?
+2010-09-08 12:51:36,FreakyPenguin,Diesmal kein iret bevor es knallt
+2010-09-08 12:52:35,kwolf,Das ist ja fast noch mysteriöser ;-)
+2010-09-08 12:54:42,FreakyPenguin,Hm aber das qemu-log passt irgendwie nicht zu meinen debug-ausgaben. ;-)
+2010-09-08 12:55:23,kwolf,Hast du etwa ein iret mit eingebauter Debugausgabe? ;-)
+2010-09-08 12:56:57,FreakyPenguin,Nein aber Debugausgaben im Interrupt-Handler ;-)
+2010-09-08 12:57:02,FreakyPenguin,Das ist fast so gut ;-)
+2010-09-08 12:57:56,SHyx0rmZ,Moin
+2010-09-08 12:58:00,JanDing,moin
+2010-09-08 12:58:14,kwolf,"Hm, wenn sich das nicht mit der qemu.log deckt, ist das aber schade"
+2010-09-08 13:01:30,FreakyPenguin,"Ah doch, das cr3 passt nur nicht zum current_process"
+2010-09-08 13:01:56,kwolf,Wär ja auch langweilig
+2010-09-08 13:02:42,kwolf,"Ich finde, wir sollten Prozess und Speicherkontext unabhängig voneinander schedulen und immer ein bisschen durchmischen"
+2010-09-08 13:03:09,FreakyPenguin,*g*
+2010-09-08 13:16:48,FreakyPenguin,"Hm intressant nach dem v-syscall, scheint current_process einen anderen Wert zu haben als davor"
+2010-09-08 13:20:39,FreakyPenguin,"Hm beim durchsehen des syscall-codes in src/kernel2/src/arch/i386/syscall.c hab ich mich grad noch gefragt, ob da im asm-Statement nicht noch einiges in der clobber-Liste fehlt"
+2010-09-08 13:22:55,kwolf,"So viele Register hat i386 doch gar nicht, dass da noch viel fehlen könnte? ;-)"
+2010-09-08 13:23:06,FreakyPenguin,*g*
+2010-09-08 13:23:10,FreakyPenguin,Aber memory doch sicher?
+2010-09-08 13:23:52,kwolf,"Hm, das vielleicht schon"
+2010-09-08 13:24:51,FreakyPenguin,Weil der call modifiziert ja im zeifelsfall alle nach calling-convention veränderbaren register und beliebig speicher
+2010-09-08 13:25:06,kwolf,"ebp fehlt noch, oder?"
+2010-09-08 13:25:39,kwolf,Ansonsten dürften alle Register verbastelt sein...
+2010-09-08 13:26:40,kwolf,"Ah, nein, ich glaube handler landet in ebp"
+2010-09-08 13:28:14,Programm_Noob,Moin
+2010-09-08 13:28:25,Programm_Noob,Moin DerHartmut
+2010-09-08 13:28:43,SHyx0rmZ,"Moin Programm_Noob, DerHartmut"
+2010-09-08 13:36:25,Programm_Noob,Moin ____
+2010-09-08 13:36:30,____,moin
+2010-09-08 13:36:52,Programm_Noob,Moin DesL
+2010-09-08 13:39:16,Programm_Noob,Moin Homix
+2010-09-08 13:39:27,DesL,moin Homix 
+2010-09-08 13:40:39,Programm_Noob,Moin mastamind
+2010-09-08 13:41:03,mastamind,"hat jemand von euch schon mal versucht, herauszufinden, wie anwendungen speicher allokieren? also vor allem die größe der allokationen?"
+2010-09-08 13:41:06,mastamind,Programm_Noob: hallo
+2010-09-08 13:41:27,DesL,"hm, wie ist die initrd unter tyndur aufgebaut? einfach nur das VFS auf eine datei angewand?"
+2010-09-08 13:41:30,mastamind,gedit braucht bei mir 211 verschiedene größe beim allokieren.
+2010-09-08 13:41:31,DesL,moin mastamind 
+2010-09-08 13:41:35,mastamind,DesL: hallo
+2010-09-08 13:41:41,mastamind,nur beim start.
+2010-09-08 13:41:55,mastamind,ls 38.
+2010-09-08 13:42:06,FreakyPenguin,DesL: initrd? ;-)
+2010-09-08 13:42:32,DesL,meinst du ihr habt keine?
+2010-09-08 13:42:39,FreakyPenguin,Genau ;-)
+2010-09-08 13:42:45,DesL,Oô
+2010-09-08 13:42:48,DesL,wieso dass?
+2010-09-08 13:43:23,FreakyPenguin,"Grub lädt halt die wichtigsten Module, und den Rest laden wir dann selbst"
+2010-09-08 13:43:46,Programm_Noob,"Ich habe jetzt eine Datei angelegt, diese grub_config.sh genannt."
+2010-09-08 13:44:42,DesL,mastamind: wie hast du das überprüft?
+2010-09-08 13:44:51,DesL,achso
+2010-09-08 13:44:52,Programm_Noob,in der Datei habe ich nur:
+2010-09-08 13:44:52,Programm_Noob,#! /bin/sh
+2010-09-08 13:44:52,Programm_Noob,cat > menu.lst <<EOF
+2010-09-08 13:44:52,Programm_Noob,Test
+2010-09-08 13:44:52,Programm_Noob,EOF
+2010-09-08 13:44:53,Programm_Noob,stehen
+2010-09-08 13:46:03,mastamind,DesL: http://pastebin.com/P5a2KzZY
+2010-09-08 13:46:30,mastamind,das wird mit gcc -o libwrap.so -shared -fpic wrap.c -ldl compilieren.
+2010-09-08 13:46:45,mastamind,LD_PRELOAD=./libwrap.so ls
+2010-09-08 13:46:46,Programm_Noob,wenn ich jetzt im Terminal grub_config.sh eingebe. kommt grub_config.sh: Befehl nicht gefunden
+2010-09-08 13:46:50,Programm_Noob,Was mache ich falsch?
+2010-09-08 13:47:16,DesL,./grub_config.sh ?
+2010-09-08 13:47:25,DesL,mastamind: selbst ausgedacht?
+2010-09-08 13:47:33,FreakyPenguin,Und dann wohl noch chmod a+x grub_config.sh
+2010-09-08 13:47:52,mastamind,DesL: fast. wie man das richtig malloc dann findet musste ich nachsehen.
+2010-09-08 13:48:00,mastamind,DesL: das ld preload war mir schon bekannt.
+2010-09-08 13:48:09,FreakyPenguin,"mastamind: Ich habe sowas irgendwann mal bei tyndur gemacht, was ich damals aber genau wissen wollte weiss ich nicht mehr ;-)"
+2010-09-08 13:49:03,mastamind,"FreakyPenguin: ich bin grad bei der implementierung eines heaps. deshalb will ich wissen, was die programme so tun. ohne zu wissen, ob meine programm im os dann nicht was ganze andere tun. *g*"
+2010-09-08 13:49:46,Programm_Noob,Danke geht
+2010-09-08 13:50:19,Programm_Noob,mastamind: Welches OS entwickelst du eigentlich?
+2010-09-08 13:50:27,mastamind,mein eigens. *g*
+2010-09-08 13:50:31,mastamind,+e
+2010-09-08 13:50:41,DesL,*g* name?
+2010-09-08 13:50:45,mastamind,hats keinen. :-)
+2010-09-08 13:50:55,Programm_Noob,Floppy image?
+2010-09-08 13:51:01,Programm_Noob,Webseite?
+2010-09-08 13:51:07,Programm_Noob,Wikieintrag?
+2010-09-08 13:51:22,DerHartmut,Programm-Code?
+2010-09-08 13:51:28,DerHartmut,Funktion zum Kopieren von Textstellen?
+2010-09-08 13:51:30,mastamind,"nein, jein, nein, ja"
+2010-09-08 13:51:31,mastamind,:-)
+2010-09-08 13:51:34,DerHartmut,Funktion zum Einfügen von Textstellen?
+2010-09-08 13:52:03,mastamind,https://abox.el1t3.org/webgit regt euch nur wieder wegen des https auf. :-)
+2010-09-08 13:52:31,mastamind,ich hab den link sooo oft schon gepostet... so werden hier meine nachrichten gelesen. :-)
+2010-09-08 13:52:52,DerHartmut,mastamind: Dann mach' halt ne Wiki-Seite dafür ;-)
+2010-09-08 13:53:05,mastamind,DerHartmut: dafür ist es noch zu minderwertig.
+2010-09-08 13:54:19,Programm_Noob,"mastamind: wenn du dir die anderen OS'e anguckst, die dort nen Eintrag haben. dann kann deins da mit Sicherheit auch hin."
+2010-09-08 13:54:41,DesL,*hust*
+2010-09-08 13:54:42,mastamind,ich muss ja nicht allen alles nachmachen. .-)
+2010-09-08 13:54:46,DerHartmut,"mastamind: *flüster* schau dir mal andere OS in der Kategorie an, dann weißt du, was in etwas minderwertig ist *flüster*"
+2010-09-08 13:54:56,mastamind,:-)
+2010-09-08 13:55:34,Programm_Noob,DerHartmut: du meinst doch wohl nicht NandOS oder?
+2010-09-08 13:55:42,mastamind,ich brauch jetzt jedenfalls mal statistiken über die verwendung des heaps in normalen programmen unter linux.
+2010-09-08 13:55:56,mastamind,damit kann ich dann benchmarks für mein malloc machen und verschiedene implementierungen testen.
+2010-09-08 13:56:28,DesL,mus mal kurz neustarten
+2010-09-08 13:56:36,mastamind,"aber ich glaub, ich muss das dafür mit einer server anwendung laufen lassen. oder mal mit pidgin... was sollte ich denn da am besten nehmen? die meisten konsolen programme laufen zu kurz."
+2010-09-08 13:57:31,Programm_Noob,"wie kann man den herausfinden, wie oft ein Programm malloc aufruft?"
+2010-09-08 13:57:51,FreakyPenguin,"mastamind: Am besten wohl ähnliche Programme wie du sie laufen lassen möchtest, würde ich sagen. ;-)"
+2010-09-08 13:58:24,mastamind,"FreakyPenguin: dazu müsste ich wohl wissen, was ich haben will. *g*"
+2010-09-08 13:58:52,mastamind,ein aufruf von evolution plus ein paar sachen drin machen verursacht 1445047 mallocs.
+2010-09-08 13:59:04,DerHartmut,Programm_Noob: Wieso projezierst du das denn auf dich? ;-)
+2010-09-08 13:59:07,DerHartmut,Und erstmal HALLO Zusammen :D
+2010-09-08 13:59:16,mastamind,und 1165 verschiedene größen.
+2010-09-08 13:59:25,Programm_Noob,DerHartmut: weil du NandOS nicht magst.
+2010-09-08 13:59:25,DerHartmut,Programm_Noob: Aber wenn du schon so fragst: Ja.
+2010-09-08 13:59:26,DerHartmut,i.A. DesL
+2010-09-08 13:59:35,DerHartmut,"Programm_Noob: Denkst du wirklich, ich mag dein Betriebssystem nicht?="
+2010-09-08 13:59:44,DerHartmut,"Forsch mal weiter, denk mal weiter nach, dann kommst du der Wahrheit auf den Grund"
+2010-09-08 13:59:46,Programm_Noob,Ja
+2010-09-08 13:59:46,DerHartmut,:-P
+2010-09-08 14:00:15,DesL,re
+2010-09-08 14:00:19,DerHartmut,wb
+2010-09-08 14:01:31,mastamind,ich muss es thread safe machen. :-(
+2010-09-08 14:02:22,DerHartmut,"""Auf der Brennsuppe dahergeschwommen komme"""
+2010-09-08 14:02:27,DerHartmut,"Die Bayern sind schon ein Völkchen, Du"
+2010-09-08 14:02:55,Programm_Noob,Wer hat das geschrieben?
+2010-09-08 14:02:57,DesL,was soll das heißen?
+2010-09-08 14:02:58,DerHartmut,Forum
+2010-09-08 14:03:01,DerHartmut,Forum
+2010-09-08 14:05:36,mastamind,so. muss mich korrigieren. es sind nur 706 verschiedene größen.
+2010-09-08 14:09:45,mastamind,und auf 4 byte aufgerundet sind es nur 413. :-)
+2010-09-08 14:10:01,DesL,XD
+2010-09-08 14:10:10,Programm_Noob,und auf 4kb aufgerundet?
+2010-09-08 14:10:39,DesL,"lol, das wäre fail"
+2010-09-08 14:11:51,mastamind,25
+2010-09-08 14:30:25,Programm_Noob,wird bei retun var++
+2010-09-08 14:30:43,Programm_Noob,var erhöht oder nicht?
+2010-09-08 14:31:04,DesL,ja kalr
+2010-09-08 14:31:06,DesL,*klar
+2010-09-08 14:31:24,DesL,muss weh
+2010-09-08 14:31:25,Programm_Noob,welcher wert wird denn zurückgegeben?
+2010-09-08 14:31:26,DesL,*weg
+2010-09-08 14:32:10,DerHartmut,"37,825"
+2010-09-08 14:32:16,DerHartmut,"Aber auch nur, wenn der gcc dementslrechend eingeste,lt"
+2010-09-08 14:33:51,mastamind,Programm_Noob: var++ gibt var zurück und erhöht dann.
+2010-09-08 14:33:57,mastamind,++var erhöht und gibt var dann zurück.
+2010-09-08 14:36:01,Programm_Noob,Danke mastamind
+2010-09-08 14:41:43,DerHartmut,kwolf: Er kann doch deutsch??
+2010-09-08 14:42:04,kwolf,"Erstens meinte ich die Programmiersprache und zweitens, warum wendet er es dann nicht an?"
+2010-09-08 14:42:57,kwolf,"Ich meinte das aber mehr generell, auch im Bezug auf das Forum. Dass man Variablen intialisierieren sollte, ist jetzt wirlkich kein fortgeschrittenes Wissen..."
+2010-09-08 14:43:49,DerHartmut,kwolf: Das war Sarkasmus :-P
+2010-09-08 14:43:49,DerHartmut,Aber Recht hast du
+2010-09-08 14:44:37,kwolf,"DerHartmut: Nein, wirklich? ;-)"
+2010-09-08 14:45:19,DerHartmut,:-P
+2010-09-08 14:46:42,Programm_Noob,Moin Tobiking
+2010-09-08 14:47:03,Tobiking,Huhu
+2010-09-08 14:47:22,Programm_Noob,kwolf: Ich habe eigentlich nur mit Visual C++ gearbeitet.
+2010-09-08 14:47:32,Programm_Noob,deshalb fehlen mir ein paar kentnisse in C
+2010-09-08 14:47:45,mastamind,in c++ ist das genau das gleiche.
+2010-09-08 14:50:00,Programm_Noob,Ich habe das so noch nie gebraucht
+2010-09-08 14:50:34,kwolf,Warum brauchst du es dann jetzt?
+2010-09-08 14:50:40,Programm_Noob,muss weg
+2010-09-08 15:12:39,FreakyPenguin,"Hm binutils installieren mit -d int,pcall und mehreren kprintfs pro interrupt macht irgendwie nur mässig freude. ;-)"
+2010-09-08 15:14:36,FreakyPenguin,Dabei brauche ich doch diese Informationen nur zu den letzten 5 oder so Interrupts bevor es knallt. *g*
+2010-09-08 15:16:39,FreakyPenguin,Hm kann man qemu dazu bringen eine Datei vom host als Puffer irgendwo im Speicher vom Gast einzublenden? ;-)
+2010-09-08 15:20:32,kwolf,"Eine Datei, die sich ständig ändert?"
+2010-09-08 15:21:27,FreakyPenguin,"Nein, aber den Speicher würde ich ständig ändern. ;-)"
+2010-09-08 15:22:33,kwolf,"Hm, einfach den Speicher hinterher rauskopieren reicht nicht?"
+2010-09-08 15:25:15,FreakyPenguin,Hm stimmt das würde eigentlich reichen
+2010-09-08 15:36:48,FreakyPenguin,"Bäh der log_pcall aufruf fürs iret kommt zu spät im qemu, da hats schon lange geknallt ;-)"
+2010-09-08 15:38:25,Homix,"hm .. Xantosoft klingt doch gut, oder? *g*"
+2010-09-08 15:38:48,FreakyPenguin,Suchst du jetzt schon einen Firmennamen? ;-)
+2010-09-08 15:42:22,Homix,"naja zumindest einen Namen, um eine website zu machen mit so kleiner freeware software, die ich progge ;)"
+2010-09-08 15:42:45,FreakyPenguin,Du schreibst Code? ;-)
+2010-09-08 15:42:53,JanDing,"der top-down apporoach. erst werden die lizenzheader gebastelt. zu anfang die grundsatzentscheidung // oder /*, dann //////... oder /*****, dann eine leerzeile oder zwei, und dann der firmenname"
+2010-09-08 15:45:12,Homix,"FreakyPenguin: ja, und vlt schreib ich dann sowas wie ein RMS (Roadmap Management System)"
+2010-09-08 15:45:21,FreakyPenguin,*g*
+2010-09-08 15:46:00,Homix,immerhin hab ich erst die website designt und dann den namen gesucht^^ sonst mach ich das immer andersrum
+2010-09-08 15:46:33,JanDing,<html><h1><?php echo rand(); ?></h1></html>
+2010-09-08 15:46:55,Homix,tz^^ nee
+2010-09-08 15:47:21,Homix,"ich bin sogar begeistert von dem, was ich erstellt hab (aber das bin ich eig von jeder website, und je länger sie dann existiert, desto schlimmer wird sie)"
+2010-09-08 15:48:02,JanDing,http://www.jidder.de/
+2010-09-08 15:48:03,kwolf,"Du hast ja noch ein paar Monate, bevor du die Webseite brauchst, um die Xantorix-Verzögerung irgendwo bekanntgeben zu können, wo sie garantiert keiner sieht ;-)"
+2010-09-08 15:48:04,JanDing,<-- beste website
+2010-09-08 15:48:21,JanDing,und funktioniert sogar
+2010-09-08 15:49:04,DerHartmut,Woooohoooo
+2010-09-08 15:49:07,DerHartmut,Was für ein Design
+2010-09-08 15:49:12,DerHartmut,Gibbet dat als Template irgendwo JanDing?
+2010-09-08 15:49:13,Homix,http://localhost/xantosoft/ ^^
+2010-09-08 15:49:36,JanDing,DerHartmut: ne hab ne exklusiv lizenz
+2010-09-08 15:49:41,DerHartmut,Ach menno >.<
+2010-09-08 15:49:55,DerHartmut,Wie soll ich denn jemals dann so hochoptimierte Websites machen?
+2010-09-08 15:49:57,DerHartmut,Man ey
+2010-09-08 15:50:14,JanDing,das leben is unfair
+2010-09-08 15:50:20,JanDing,es begünstigt immer mich
+2010-09-08 15:51:25,DerHartmut,"Und das nur, weil ich Übergewichtig bin!111elf"
+2010-09-08 15:51:28,DerHartmut,Hm
+2010-09-08 15:51:37,DerHartmut,"Oder weil ich zu dick bin, könnte auch sein"
+2010-09-08 15:58:51,FreakyPenguin,argh
+2010-09-08 15:59:00,FreakyPenguin,kwolf: Ich glaube ich habe das Problem
+2010-09-08 15:59:15,kwolf,"Das war am ""argh"" schon zu erkennen *g*"
+2010-09-08 15:59:21,AGGROStar1991,tag^^
+2010-09-08 15:59:30,kwolf,"Dann erheitere uns doch mal, FreakyPenguin ;-)"
+2010-09-08 15:59:33,kwolf,Moin AGGROStar1991
+2010-09-08 16:01:57,FreakyPenguin,"kwolf: Irgend ein Programm schreibt was auf die Platte, das geht in den Cache. Beim nächsten Timer-IRQ (Task A sei aktiv) wird erst ein neuer Thread geschedulet (B), dann werden die caches gesynct. Dabei kommt es zu einem Yield weil der Server im Userspace ist. Das wiederum ist ja ein kernel-Interrupt, also werden die ganzen Register auf den Kernel-Stack von Task A gepusht (der ja noch immer aktiv ist), danach wird der C-Handler aufgerufen, der (T"
+2010-09-08 16:02:15,kwolf,ETRUNC
+2010-09-08 16:02:49,FreakyPenguin,(Task B)->kernel_stack = isf; macht.
+2010-09-08 16:02:56,FreakyPenguin,Danach hat B den Kernel-Stack von A
+2010-09-08 16:03:39,kwolf,"Hm, das ist verwirrend."
+2010-09-08 16:03:46,kwolf,Nochmal langsam lesen...
+2010-09-08 16:04:11,FreakyPenguin,"Das Problem ist primär dass current_thread gesetzt wird, aber natürlich der alte Stack beibehalten wird"
+2010-09-08 16:05:30,kwolf,"Hm, das ist alles innerhalb eines einziges Interrupthandlers?"
+2010-09-08 16:05:50,FreakyPenguin,Schedulen und Syncen? Jo
+2010-09-08 16:06:10,kwolf,"Hm, vielelicht ist das einfach eine doofe Stelle zum syncen ;-)"
+2010-09-08 16:06:11,FreakyPenguin,Wenn wir nach dem syncen schedulen dürfte das keine Probleme geben
+2010-09-08 16:07:08,kwolf,"Wobei erst Taskwechsel, dann yield ein Muster ist, das uns noch öfter passieren könnte. Da solllte man auf jeden Fall einen Panic einbauen, wenn das passiert."
+2010-09-08 16:07:33,FreakyPenguin,Jo
+2010-09-08 16:08:22,FreakyPenguin,Wie fange ich das denn am besten ab? Prüfen ob der esp auch zu current_thread->kernel_stack passt?
+2010-09-08 16:08:37,FreakyPenguin,Also auf Pages gerundet oder so
+2010-09-08 16:09:51,kwolf,"Hm, wir müssen das am Anfang von im_handler prüfen, wenn wir aus dem Kernel kommen, glaube ich"
+2010-09-08 16:10:17,kwolf,"Ist die Frage, was für Informationen wir dort haben"
+2010-09-08 16:10:42,kwolf,Vermutlich nicht die nötigen ;-)
+2010-09-08 16:10:58,FreakyPenguin,Hm vermutlich reichen die
+2010-09-08 16:11:16,FreakyPenguin,Wir haben ja kernel_stack_bottom und kernel_stack_size in der Thread-Struktur
+2010-09-08 16:11:42,FreakyPenguin,"Wenn jetzt isf nicht dazwischen liegt, dürfte was schief gegangen sein"
+2010-09-08 16:12:00,kwolf,"Hm, könnte klappen, ja"
+2010-09-08 16:14:45,spacer,hi
+2010-09-08 16:17:02,JanDing,moin
+2010-09-08 16:17:15,Papierkorb,Moin
+2010-09-08 16:18:56,AGGROStar1991,moin
+2010-09-08 16:23:48,FreakyPenguin,Bäh. Jetzt kann ich nichtmal mehr init starten. *g*
+2010-09-08 16:27:25,DerHartmut,Moin moin spacer und AGGROStar1991
+2010-09-08 16:29:39,mastamind,http://geizhals.at/a470079.html hat jemand eine meinung zu diesem gehäuse?
+2010-09-08 16:29:42,mastamind,"außer, dass es recht teuer ist?"
+2010-09-08 16:32:16,EinandererUser,es ist recht teuer
+2010-09-08 16:32:35,DickHuuhn,es ist sogar ziemlich teuer
+2010-09-08 16:32:42,kwolf,FreakyPenguin: Das dürfte dafür jetzt relativ leicht zu debuggen sein ;-)=
+2010-09-08 16:32:51,DickHuuhn,immer diese combo breaker
+2010-09-08 16:41:18,FreakyPenguin,"kwolf: Jo, das erbt halt wohl bisher den Stack mit dem der Kernel startet. ;-)"
+2010-09-08 16:41:48,kwolf,"Hm, klingt fast logisch. ;-)"
+2010-09-08 16:49:51,mastamind,das gehäuse hat hot swap rahmen für die festplatten schon drin.
+2010-09-08 16:49:54,mastamind,deshalb kostet es so viel.
+2010-09-08 16:52:04,JanDing,"ich hab sowas auch. man muss die rechte seite vom gehäuse nicht aufmachen zum einbau, aber das wars dann auch schon mit vorteilen^^"
+2010-09-08 16:52:36,mastamind,"ich denk, es ist einfacher mit den kabeln."
+2010-09-08 16:53:06,mastamind,man braucht für sechs festplatten nur zwei stromkabel und die festplatten kabel kann men mit kabelbinder zusammenbauen.
+2010-09-08 16:53:10,Programm_Noob,Moin
+2010-09-08 16:53:33,mastamind,JanDing: sind deine platten sehr laut?
+2010-09-08 16:53:49,Programm_Noob,mastamind: wie bekommt man sech Festplatten an 2 Stromkabel?
+2010-09-08 16:53:51,JanDing,"ja, weil zwei davon schon defekt sind"
+2010-09-08 16:54:16,mastamind,Programm_Noob: mit dem gehäuse eben. http://geizhals.at/a470079.html
+2010-09-08 16:54:36,mastamind,bzw mit den beiden gehäusekäfigen.
+2010-09-08 16:54:51,Programm_Noob,stimm
+2010-09-08 16:54:51,Programm_Noob,+t
+2010-09-08 16:55:12,Programm_Noob,ich dachte du meintest eben die nackten Festplatten.
+2010-09-08 16:55:12,JanDing,ach das ist ja gar nicht sowas wie ich gedacht habe
+2010-09-08 16:55:40,JanDing,"ich dachte mit hotswap ist dieses schraubenlose zeug gemeint, aber das ist ja richtig hotswap"
+2010-09-08 16:55:46,mastamind,jep
+2010-09-08 16:55:53,JanDing,sowas hab ich natürlich nicht. was will ich denn damit^^
+2010-09-08 16:56:11,mastamind,"es soll ein server werden. und nein, diesmal nicht für mich."
+2010-09-08 16:56:24,JanDing,dann musste ja nicht aufs geld achten^^
+2010-09-08 16:56:34,mastamind,das sollte man immer. :-)
+2010-09-08 16:56:54,mastamind,"aber das hotswap ist schon fein, wenn eine platte dann ausfällt."
+2010-09-08 16:57:15,FreakyPenguin,Och man kann auch ohne hotswap-Rahmen hot swappen. ;-)
+2010-09-08 16:57:25,mastamind,:-)
+2010-09-08 16:57:41,mastamind,ich will wenigstens den anschein von professionalität wahren. .-)
+2010-09-08 16:57:56,JanDing,kratz die aufkleber ab und fertig
+2010-09-08 16:58:14,mastamind,"ich denk, ich werd das gehäuse empfehlen."
+2010-09-08 16:58:21,kwolf,"FreakyPenguin: Wenn du so anfängst, kann man auch interne CD-Laufwerke extern betreiben wie bei uns in der Schule früher ;-)"
+2010-09-08 16:58:21,mastamind,"6 mal 1,5 tb."
+2010-09-08 16:58:34,mastamind,8 gb ram.
+2010-09-08 17:03:12,JanDing,"sind 8 gb nicht ein bisschen schmal? ich will mal versuchen, ob ich da eine differentialgleichung aufstellen kann, um das zu beweisen^^"
+2010-09-08 17:09:43,JanDing,hm die lösung ist das sobald die festplatten mehr als 1 gbit/s sekunde liefern du keinen ram mehr brauchst
+2010-09-08 17:09:50,JanDing,spitze ... das hätte ich dir auch so sagen können
+2010-09-08 17:10:10,JanDing,"(unter der annahme, dass der server gbit-netzwerk/-internet hat"
+2010-09-08 17:14:52,Programm_Noob,Ich verstehe da etwas im Tyndur Code nicht.
+2010-09-08 17:14:52,Programm_Noob,// Den Kernelstack mappen und initialisieren
+2010-09-08 17:14:52,Programm_Noob,"// Der Stack wird von oben her beschrieben, daher 4K addieren "
+2010-09-08 17:14:52,Programm_Noob, // (1024 * sizeof(uint32_t))
+2010-09-08 17:14:52,Programm_Noob,"uint32_t * kernel_stack = map_phys_addr(phys_kernel_stack, PAGE_SIZE);"
+2010-09-08 17:14:52,Programm_Noob,kernel_stack += 1024;
+2010-09-08 17:15:09,Programm_Noob,"Da steht 4k addieren, es werden aber nur 1k addiert."
+2010-09-08 17:15:21,FreakyPenguin,(1024 * sizeof(uint32_t))
+2010-09-08 17:15:30,FreakyPenguin,Lern halt C ;-)
+2010-09-08 17:15:42,DickHuuhn,<mastamind> das sollte man immer. :-) << nope
+2010-09-08 17:15:44,Programm_Noob,Das ist wie du siehst auskommentiert
+2010-09-08 17:15:55,DickHuuhn,"Station 7 wollte sich bei uns heute eine Wii ausleihen, wir haben denen direkt eine gekauft lulz"
+2010-09-08 17:16:02,FreakyPenguin,"Programm_Noob: Richtig, das ist auch nur als Hinweis gedacht"
+2010-09-08 17:16:21,JanDing,Programm_Noob: die multiplikation erfolgt in der zeile: kernel_stack += 1024;
+2010-09-08 17:16:39,kwolf,Programm_Noob: Lern C
+2010-09-08 17:16:48,Programm_Noob,gut ich hab nicht mitgedacht.
+2010-09-08 17:17:17,FreakyPenguin,Hm jetzt hab ich es kaputtgefixt. ;-)
+2010-09-08 17:17:35,kwolf,Das heißt?
+2010-09-08 17:17:46,FreakyPenguin,"Er kommt zwar hoch bis zum setup, das akzeptiert dann aber keine Tastatureingaben"
+2010-09-08 17:17:57,FreakyPenguin,Da habe ich doch garnichts rumgebastelt
+2010-09-08 17:20:01,mastamind,DickHuuhn: wieso nicht?
+2010-09-08 17:20:12,kwolf,"Hm, hast du das pm_unblock_rpc eingefügt, das ich vorhin mal erwähnt habe?"
+2010-09-08 17:20:18,DickHuuhn,"mastamind, schau mal zwei zeilen drunter"
+2010-09-08 17:20:42,kwolf,"Wobei ich nicht wüsste, waurm das ausgerechnet setup lahmlegen sollte"
+2010-09-08 17:20:43,DickHuuhn,Aber wir arbeiten auch mit Budget
+2010-09-08 17:20:49,mastamind,wer ist denn station 7?
+2010-09-08 17:20:58,DickHuuhn,Station 7 bei mir auf der Arbeit
+2010-09-08 17:21:07,mastamind,arbeitest du in einem krankenhaus?
+2010-09-08 17:21:12,DickHuuhn,rrrichtich ;)
+2010-09-08 17:21:21,mastamind,:-)
+2010-09-08 17:21:26,mastamind,in einem großen?
+2010-09-08 17:21:33,DickHuuhn,nee
+2010-09-08 17:21:34,mastamind,"das hätte ich auch gerne, aber die wollten mich nicht."
+2010-09-08 17:21:55,DickHuuhn,Ist mehr Psychiatrie als Krankenhaus
+2010-09-08 17:22:06,DickHuuhn,Also genau richtig für mich
+2010-09-08 17:22:27,mastamind,:-))
+2010-09-08 17:22:33,DickHuuhn,"""Niemand ist ohne Grund hier. Und zwar meinen wir die Mitarbeiter"""
+2010-09-08 17:24:57,FreakyPenguin,"kwolf: Ah, ich habe da wohl nur ein EOI zuviel auskommentiert zusammen mit dem kprintf. ;-)"
+2010-09-08 17:25:11,kwolf,"Ah, so geht es natürlich auch"
+2010-09-08 17:25:16,DerHartmut,PSYCHOLOGISCH
+2010-09-08 17:25:19,DerHartmut,ECHAN.
+2010-09-08 17:25:57,FreakyPenguin,kwolf: Hm das spricht dann aber dafür dass er mit kooperativem Multitasking schon recht weit kommt. *g*
+2010-09-08 17:26:20,kwolf,"Jo, kernel1 hat doch kooperativ auch ziemlich gut funktioniert"
+2010-09-08 17:27:03,FreakyPenguin,Der panic scheint zu tun. ;-)
+2010-09-08 17:27:17,FreakyPenguin,Jetzt muss ich ihn nur noch fixen. ;-)
+2010-09-08 17:27:58,DickHuuhn,versteht eigtl noch jemand anders außer FreakyPenguin kernel2? :O
+2010-09-08 17:28:19,FreakyPenguin,Ich verstehe kernel2? ;-)
+2010-09-08 17:29:20,DickHuuhn,Baut doch ein feinkörniges Testbett und lasst den sich evolutionär entwickeln :D
+2010-09-08 17:33:36,kwolf,"Solange er sich nicht didaktisch entwickelt, ist alles in Ordnung"
+2010-09-08 17:35:07,DerHartmut,Hm
+2010-09-08 17:35:13,DerHartmut,"Was ist denn die ""Linux Konsole 0""?"
+2010-09-08 17:35:17,kwolf,tty0?
+2010-09-08 17:35:42,FreakyPenguin,Hm jetzt hat sich da aber was totgesperrt
+2010-09-08 17:35:46,DerHartmut,Und Programm_Noob kennt sich mit der aus udn entschuldigt sich
+2010-09-08 17:35:50,DerHartmut,Ich versteh den nicht
+2010-09-08 17:36:01,DerHartmut,Ah
+2010-09-08 17:36:03,DerHartmut,Ah!
+2010-09-08 17:36:03,FreakyPenguin,Er kennt sich damit 0 aus ;-)
+2010-09-08 17:36:05,DerHartmut,xD
+2010-09-08 17:36:07,Homix,lol
+2010-09-08 17:36:12,DerHartmut,Jetzt raff ich das erst xD
+2010-09-08 17:36:50,kwolf,"Ah, du hängst ein paar Stunden hinteher ;-)"
+2010-09-08 17:36:53,DerHartmut,"Und ich denk mir die ganze Zeit: ""Was hast du verpasst? Gibt es eine Shell, die 0 heißt? Oder ist der eifnach nur Blöd im Kopf?"""
+2010-09-08 17:37:16,kwolf,"Soviel zum Thema ""er kann doch deutsch"" *g*"
+2010-09-08 17:37:40,Programm_Noob,Ich kann ja wohl Deutsch
+2010-09-08 17:37:55,Programm_Noob,DerHartmut aber scheinbar nicht.
+2010-09-08 17:38:13,DerHartmut,Isch kann doits
+2010-09-08 17:38:26,DerHartmut,Asch-Loch
+2010-09-08 17:38:45,DerHartmut,Nicht zu verwechseln mit dem Asch-Eimer
+2010-09-08 17:39:13,Programm_Noob,Moin pgahlen
+2010-09-08 17:39:22,DerHartmut,Linux Konsole 0...
+2010-09-08 17:39:26,DerHartmut,Ich krieg mich nicht mehr einx D
+2010-09-08 17:39:28,pgahlen,tach
+2010-09-08 17:39:52,pgahlen,"kurze Frage, wie löse ich am besten das Problem mit dem scrollen in der Konsole, soll ich n Array machen, in dem ein Array ist, in dem der Bildschriminhalt steht?"
+2010-09-08 17:40:06,FreakyPenguin,"Hm ich geh jetzt einfach mal davon aus, dass ich an dem deadlock nicht schuld bin. ;-)"
+2010-09-08 17:40:25,kwolf,"Das macht nichts, du darfst ihn trotzdem fixen *g*"
+2010-09-08 17:40:34,DerHartmut,"pgahlen: Ein Array, in welchem ein Array ist, in welchem der Bildschirminhalt steht? W"
+2010-09-08 17:40:36,DerHartmut,arum denn ein array im Array?
+2010-09-08 17:40:53,pgahlen,wie soll ich denn sonst den Inhalt specihern
+2010-09-08 17:41:11,DerHartmut,In einem Array?
+2010-09-08 17:41:20,pgahlen,weil ich bei dem Befehl help in der Shell mehr als 25 Zeichen ausgebe
+2010-09-08 17:41:24,pgahlen,-.-
+2010-09-08 17:41:24,DerHartmut,Also in _einem_ Arraay
+2010-09-08 17:41:25,DickHuuhn,kann der doch machen dann hat der zeile und spalte
+2010-09-08 17:41:35,DerHartmut,Wtf?
+2010-09-08 17:41:38,DickHuuhn,braucht der weniger rechen und so
+2010-09-08 17:41:41,DerHartmut,Was haben denn mehr als 25 Zeichen zu tun?
+2010-09-08 17:41:44,DerHartmut,+damit
+2010-09-08 17:41:49,DerHartmut,Ich werd noch janz jeck bei euch eh
+2010-09-08 17:42:00,DickHuuhn,aber für zeilenumbruch muss man dann wieder mehr rechnen
+2010-09-08 17:42:16,pgahlen,Oh -Zeichen +Reihen
+2010-09-08 17:42:40,pgahlen,wie speichert ihr das denn?
+2010-09-08 17:42:42,kwolf,Was sind denn Reihen?
+2010-09-08 17:42:53,kwolf,"Ah, Zeilen meinst du?"
+2010-09-08 17:42:54,pgahlen,und welche Taste benutzt ihr dafür
+2010-09-08 17:42:54,DickHuuhn,"pgahlen, einfach normal zeilen ausgeben und scrollen"
+2010-09-08 17:42:57,DickHuuhn,was weg ist ist weg
+2010-09-08 17:43:02,DickHuuhn,Ansonsten pager bauen :D
+2010-09-08 17:43:13,JanDing,reihen wie ein kartoffelacker
+2010-09-08 17:43:29,DickHuuhn,Also so würd ich das machen
+2010-09-08 17:43:32,JanDing,dann komm ich mit meinem trecker und flippe die attributbits mit meinem drehpflug
+2010-09-08 17:43:38,JanDing,12 schar
+2010-09-08 17:43:39,FreakyPenguin,DickHuuhn: Ich will doch scrollen können ;-)
+2010-09-08 17:43:51,DickHuuhn,Wenn du schon mulitasking hast dann ist das so okay
+2010-09-08 17:44:17,DickHuuhn,"FreakyPenguin, echte hacker lesen das schnell genug wenn das vorbeiscrollt und wissen das dann auswendig"
+2010-09-08 17:44:41,DickHuuhn,:D
+2010-09-08 17:45:10,pgahlen,"Ok, das kannst du nur bei mir nicht schnell genug lesen, weil es sofort da ist xD"
+2010-09-08 17:45:20,DerHartmut,Programm_Noob: Nutzt du im Moment Windows?
+2010-09-08 17:45:32,kwolf,"Ich glaube nicht, dass Hüühner was über echte Hacker wissen"
+2010-09-08 17:46:28,pgahlen,"lol, mir ist gerade aufgefallen, wie das diese Typen mit dem Spiele Cracker machen ... Wo ich so an objdump gedacht habe"
+2010-09-08 17:46:29,DickHuuhn,"kwolf, stimmt, ich wurde im CCC rausgeworfen :<"
+2010-09-08 17:47:36,Papierkorb,warum eigtl.?
+2010-09-08 17:47:53,DickHuuhn,"weil ich scheiße bin oder so, kp"
+2010-09-08 17:47:55,DerHartmut,Du wurdest nicht rausgeworfen
+2010-09-08 17:47:58,DickHuuhn,Ich kann halt nix :(
+2010-09-08 17:48:16,DerHartmut,Du wurdest NICHT rausgeworfen
+2010-09-08 17:48:17,DerHartmut,Alter...
+2010-09-08 17:48:36,DickHuuhn,"DerHartmut, dann hätte ich gestern aber Bescheid gekriegt"
+2010-09-08 17:48:43,pgahlen,"ok, welche Taste sollte ich denn für scrollen nehmen?"
+2010-09-08 17:48:57,Papierkorb,bild hoch/runeter?
+2010-09-08 17:49:00,FreakyPenguin,Shift+Pg up/down
+2010-09-08 17:49:07,pgahlen,"bei Bild up, weiß ich die ASCII nich"
+2010-09-08 17:49:10,DerHartmut,"Hmmm...DickHuuhn...scheiß auf die, wir gründen eine eigene Hackergruppe"
+2010-09-08 17:49:15,pgahlen,steht auch nich in Tabellen
+2010-09-08 17:49:35,JanDing,"kriegste raus, indem du dir das einfach mal ausgeben lässt"
+2010-09-08 17:49:38,Papierkorb,dann teste es halt mit ner funktion
+2010-09-08 17:49:48,JanDing,ansonsten wohl wie 9 und 3 auf dem numpad
+2010-09-08 17:49:51,JanDing,wenn ich raten soll
+2010-09-08 17:50:04,Programm_Noob,(17:45:18) DerHartmut: Programm_Noob: Nutzt du im Moment Windows? <-- nö
+2010-09-08 17:50:28,DerHartmut,Du bist also mit Linux im IRC?
+2010-09-08 17:50:31,DerHartmut,*unter
+2010-09-08 17:50:37,pgahlen,"ok, hab nur gedacht, weil ich nicht einen ASCII Code für 2 Tasten verwenden will"
+2010-09-08 17:50:51,JanDing,"es ist eh kein ascii code, sondern ein scancode"
+2010-09-08 17:50:55,JanDing,ascii war das mit den zeichen
+2010-09-08 17:50:59,JanDing,scan code war das mit den tasten
+2010-09-08 17:51:16,Programm_Noob,(17:50:27) DerHartmut: Du bist also mit Linux im IRC? <-- weshalb willst du das Wissen?
+2010-09-08 17:51:16,pgahlen,"ja ich weiß, ok dann muss ich das wohl direkt in den Kernel reinhauen"
+2010-09-08 17:51:35,JanDing,musst du nicht. aber ich weiß ja gar nicht was du machen willst^^
+2010-09-08 17:51:46,DerHartmut,"Programm_Noob: Ich mache gerade eine Statistik und frage hier alle, aber bei dir funzt der Query nit"
+2010-09-08 17:51:59,JanDing,krieg ich schon mal op?
+2010-09-08 17:52:43,Programm_Noob,JanDing wofür willst du op?
+2010-09-08 17:52:52,DerHartmut,+a
+2010-09-08 17:52:52,DerHartmut,Opa
+2010-09-08 17:53:08,JanDing,um für recht und ordnung zu sorgen natürlich
+2010-09-08 17:53:21,JanDing,opqr wie im römischen reich
+2010-09-08 17:53:21,pgahlen,"lol, funktioniert der Query bei mir?"
+2010-09-08 17:53:38,DickHuuhn,literal lol @ opqr
+2010-09-08 17:53:40,DerHartmut,"Natürlich, ioch will halt nur wissen, ob Programm_Noob mit Windows und als Administrator angemeldet im IRC ist *g*"
+2010-09-08 17:53:47,DerHartmut,So wie es sich für einen noob gehört
+2010-09-08 17:54:10,Programm_Noob,Ja Ich bin mit Windows im IRC und ich habe einen Benutzeraccount
+2010-09-08 17:54:13,Programm_Noob,der heiß nur Admin
+2010-09-08 17:54:18,Programm_Noob,zufrieden?
+2010-09-08 17:54:23,DerHartmut,Moment
+2010-09-08 17:54:31,Papierkorb,wasn nu?
+2010-09-08 17:54:31,DerHartmut,"Tanz im Kreis und singe ""Heil dir im Siegerkranz"""
+2010-09-08 17:54:34,Papierkorb,Windows oder Linux?
+2010-09-08 17:55:13,Programm_Noob,Laptop = Windows = IRC
+2010-09-08 17:55:13,Programm_Noob,PC = Linux = OS-DEV
+2010-09-08 17:55:39,DerHartmut,Server = NandOS = #PF
+2010-09-08 17:55:49,pgahlen,"cool, kannst du sehen als welcher Benutzer ich am PC bin?"
+2010-09-08 17:56:01,pgahlen,wäre n Wunder ...
+2010-09-08 17:56:10,Papierkorb,also bei mir gehts
+2010-09-08 17:56:17,Papierkorb,ist aber auch ohne schwer zu erraten...
+2010-09-08 17:56:44,JanDing,"ich weiß immer ob die person, für die sich jemand ausgibt, auch mit dem nick übereinstimmt"
+2010-09-08 17:56:46,pgahlen,ich hab hier alles auf Standard gelassen ... Und wie heiße ich?
+2010-09-08 17:57:04,Programm_Noob,Phillip Gahlen
+2010-09-08 17:57:10,JanDing,peter g. ahlen
+2010-09-08 17:57:13,JanDing,verwandt mit van halen
+2010-09-08 17:58:49,Papierkorb,"und ich heiße für leute, die es nicht besser wissen müssen so, wie ich m whois heiße :p"
+2010-09-08 17:58:56,pgahlen,"ne, PNoob hat's getroffen, entweder der IRC Client hier ist im Arsch, oder Apple hat ma wieder ne Panne mit PDF, in die ich reingetappt bin"
+2010-09-08 18:00:18,JanDing,ich finde meinen namen besser
+2010-09-08 18:01:27,AGGROStar1991,tag nochmal^^
+2010-09-08 18:01:30,JanDing,tach
+2010-09-08 18:02:02,Programm_Noob,Moin AGGROStar1991
+2010-09-08 18:02:16,JanDing,hm heute fliegen wir 79000 km an einem asteroiden vorbei!
+2010-09-08 18:02:21,JanDing,bzw kurz nach mitternacht
+2010-09-08 18:02:33,DickHuuhn,"JanDing, hab ich auch eben gelesen"
+2010-09-08 18:02:35,pgahlen,"ok, cool"
+2010-09-08 18:02:41,DickHuuhn,lass den mal umlenken oder so
+2010-09-08 18:02:47,pgahlen,noch besser wird's 2028
+2010-09-08 18:02:56,JanDing,jo bestimmt hat der einen eisenkern. ich such schon die magneten im haus zusammen
+2010-09-08 18:03:03,AGGROStar1991,^^
+2010-09-08 18:03:07,JanDing,lasst mal alle mit magneten auf das teil zielen
+2010-09-08 18:03:07,Papierkorb,http://images.zeit.de/wissen/2009-10/asteroid-erde-einschlag/asteroid-erde-einschlag-540x304.jpg ?
+2010-09-08 18:03:14,pgahlen,"ich sehe es schon vor mir, der Asteroid schlägt in Mechico ein ..."
+2010-09-08 18:03:20,AGGROStar1991,wo lassen wir den denn einschlagen? :D
+2010-09-08 18:03:28,Papierkorb,China? Russland?
+2010-09-08 18:03:33,JanDing,beides?
+2010-09-08 18:03:33,Papierkorb,China wär gut.
+2010-09-08 18:03:38,DickHuuhn,im meer
+2010-09-08 18:03:40,DickHuuhn,TSUNAMI
+2010-09-08 18:03:42,AGGROStar1991,wir könnten ja den weltgrössten magneten im iran aufstellen...das würde das problem iran auch gleich mitlösen :D
+2010-09-08 18:03:43,Papierkorb,damit wären wir 80% der angriffe los
+2010-09-08 18:03:58,DickHuuhn,"AGGROStar1991, ist das ein eisenmeteorit?"
+2010-09-08 18:03:58,Programm_Noob,"Da wo pgahlen wohnt. dann brauch er sich nicht mehr zu ärgern, das ich seinen Namen weiß. ;)"
+2010-09-08 18:04:06,pgahlen,"Jaaa, sonn Einschlag ist war seeeeeeeehr unrealistisch aber ok"
+2010-09-08 18:04:10,AGGROStar1991,jop^^
+2010-09-08 18:04:23,DickHuuhn,außerdem passier da eh nicht viel
+2010-09-08 18:04:38,DickHuuhn,verglüht sicher feini
+2010-09-08 18:05:07,pgahlen,der 2028?
+2010-09-08 18:05:19,pgahlen,der soll zu fett zum verbrennen sein
+2010-09-08 18:05:24,DickHuuhn,oh noez
+2010-09-08 18:05:31,DickHuuhn,Und wieviel masse hat der noch wenn der unten ankommt?
+2010-09-08 18:05:45,pgahlen,"ok, dann Net mehr so viel"
+2010-09-08 18:06:03,DickHuuhn,Also anders gefragt:
+2010-09-08 18:06:14,DickHuuhn,"Wenn der mir auf den Kopf fällt, sollte ich besser nen Helm aufhaben?"
+2010-09-08 18:06:14,pgahlen,"aber es geht ja um völlige Verbrennung, so das er keinen Schaden mehr anrichtet"
+2010-09-08 18:06:35,pgahlen,man von welchem reden wir eig
+2010-09-08 18:06:38,AGGROStar1991,DickHuuhn ja helm oder n bunker wär da vllt nich so schlecht xD
+2010-09-08 18:06:42,Papierkorb,Alufolie überall aufhängen!
+2010-09-08 18:06:49,DickHuuhn,"Papierkorb, hab ich doch schon"
+2010-09-08 18:07:04,DickHuuhn,damit google mein haus nicht sieht
+2010-09-08 18:07:05,Papierkorb,also hier nicht
+2010-09-08 18:07:07,pgahlen,"Papierkorb: ok, hab mir grad schonma n paar Rollen gekauft ..."
+2010-09-08 18:08:25,pgahlen,"wo wohnst du denn, in Recklinghausen in NRW sind die schon rumgegurkt, und haben fleißig geknipst und abgespeichert welches WLAN wir haben"
+2010-09-08 18:09:35,DickHuuhn,"pgahlen, weiß nicht"
+2010-09-08 18:09:42,JanDing,"kann man den nicht mit ein paar mobilen hotspots hinterher fahren, und deren daten versauen?"
+2010-09-08 18:09:48,DickHuuhn,Ich hab mich mit Augenbind wegeskortieren lassen
+2010-09-08 18:10:00,DickHuuhn,Falls die mein Hirn scannen um die Position meines Hauses zu erfahren
+2010-09-08 18:10:34,pgahlen,"yeah, ne adhoc Netzwerke"
+2010-09-08 18:10:48,DickHuuhn,freifunk server
+2010-09-08 18:11:02,DickHuuhn,Und dann denken die überall gibts freifunk
+2010-09-08 18:11:11,DickHuuhn,Und stellen ihr Firmenmodell von Internet auf Freifunk um
+2010-09-08 18:11:15,DickHuuhn,Und gehen pleite
+2010-09-08 18:11:20,DickHuuhn,*trollface*
+2010-09-08 18:14:43,pgahlen,":) am besten find ich aber noch, wie man n Laptop zum Absturz bringt, wir haben so Laptopklassen, und einer hat n adhoc eingerichtet, dann haben sich knapp 60 Laptops eingewählt, irgendwann hat das Laptop nicht mehr reagiert ..."
+2010-09-08 18:14:52,DickHuuhn,:D
+2010-09-08 18:15:04,pgahlen,"ich frage mich aber immernoch, wie die an die S/N der Routers drankommen"
+2010-09-08 18:15:54,JanDing,(rand() % 20) + 40;
+2010-09-08 18:15:55,pgahlen,"Cool wäre dann noch gewesen, wenn er n falsch konfigurierten FTP Server draufgehabt hätte, einfach mal ne shutdoen.bat in den Autostart packen"
+2010-09-08 18:16:55,JanDing,ach das ist ja gar nicht die formel für S/N
+2010-09-08 18:17:24,JanDing,exp(-rand());
+2010-09-08 18:18:03,XanClic,Moin
+2010-09-08 18:18:13,pgahlen,was soll man nun für rand() einsetzen?
+2010-09-08 18:18:22,pgahlen,Moin XanClic 
+2010-09-08 18:18:40,Papierkorb,42 oder 1337
+2010-09-08 18:18:43,Papierkorb,beides gut
+2010-09-08 18:18:46,JanDing,na den rand. mit bissspuren
+2010-09-08 18:19:32,pgahlen,"lol, was ist das denn hier für'n kack mit der PDF, Apple hat gar nicht die Sicherheitslücke geschlossen, die haben einfach nur ne Meldung reingebaut, die ausgegeben wird, wenn der Virus gefunden wird ..."
+2010-09-08 18:19:47,pgahlen,naja muss ma wech
+2010-09-08 18:19:52,Papierkorb,das ist doch der community fix afaik...?
+2010-09-08 18:19:55,Papierkorb,oder hat apple den geklaut?
+2010-09-08 18:29:10,spacer,"ich hab immernoch Probleme damit, ein Programm von der Diskette zu laden.."
+2010-09-08 18:29:19,Programm_Noob,Moin XanClic
+2010-09-08 18:29:31,Programm_Noob,spacer: wo genau liegt denn das Problem?
+2010-09-08 18:30:19,Programm_Noob,hast du schonmal ne einfach Textdatei genommen und die angezigt?
+2010-09-08 18:30:31,spacer,hm
+2010-09-08 18:30:38,spacer,ich hab kein Dateisystem
+2010-09-08 18:30:43,spacer,achso
+2010-09-08 18:30:45,spacer,verstehe
+2010-09-08 18:31:49,Programm_Noob,"wenn du kein Dateisystem hast, wie findest du dann dein Programm?"
+2010-09-08 18:31:50,spacer,"aber ich vermute, dass das Problem am von-der-diskette-lesen liegt"
+2010-09-08 18:31:59,spacer,feste adresse
+2010-09-08 18:32:31,Programm_Noob,nim mal ne FAT formatierte Diskette und lese den ersten Sektor.
+2010-09-08 18:32:52,Programm_Noob,danach lässt du dir ein paar Werte davon ausgeben.
+2010-09-08 18:33:04,Programm_Noob,z.B. den Namen
+2010-09-08 18:33:25,Programm_Noob,"wenn das mit dem überreinstimmt, dann kannst du den Floppy Treiber ausschließen"
+2010-09-08 18:33:41,spacer,ich habe 1. keine FAT unterstützung
+2010-09-08 18:34:01,spacer,"2. wird das bei VirtualBox wohl schwierig mit 2 Diskettenlaufwerken, oder?"
+2010-09-08 18:34:07,Programm_Noob,du musst dir ja nur ne BPB struct basteln.
+2010-09-08 18:34:14,spacer,(dasos ist auch auf diskette)
+2010-09-08 18:34:19,Programm_Noob,nimm Grub und lass deinen Kernel davon booten
+2010-09-08 18:34:23,spacer,"ja, in assembler"
+2010-09-08 18:34:33,spacer,real mode
+2010-09-08 18:34:48,Programm_Noob,du kannst auch einfach mit offsets arbeiten
+2010-09-08 18:34:53,SHyx0rmZ,m(
+2010-09-08 18:34:57,JanDing,mach das doch nicht so kompliziert. lass dir irgendwas ausgeben
+2010-09-08 18:35:03,SHyx0rmZ,+1
+2010-09-08 18:35:04,Programm_Noob,warum überhaupt realmode
+2010-09-08 18:35:05,JanDing,"und vergleich das dann mit dem, was er ausgeben sollte"
+2010-09-08 18:35:21,SHyx0rmZ,"Programm_Noob, WEIL 16 BIT = RETRO"
+2010-09-08 18:35:27,DickHuuhn,"SHyx0rmZ, fail"
+2010-09-08 18:35:32,Programm_Noob,Ich hasse 16 Bit
+2010-09-08 18:35:33,DickHuuhn,8Bit = RETRO
+2010-09-08 18:35:34,JanDing,neon farben = retro?
+2010-09-08 18:35:44,Programm_Noob,nur für VBE ist das Geil
+2010-09-08 18:35:45,SHyx0rmZ,"Hey, bei mir ist 32 Bit = Retro xD"
+2010-09-08 18:35:48,DickHuuhn,16Bit = New fangled tech
+2010-09-08 18:36:01,DickHuuhn,32Bit = LOL WUT
+2010-09-08 18:36:09,JanDing,16 bit verbraucht weniger als die hälfte wie 64 bit
+2010-09-08 18:36:12,JanDing,an bits
+2010-09-08 18:36:13,DickHuuhn,64Bit = Cpt Jean Luc Picard of the USS Enterprise
+2010-09-08 18:39:21,JanDing,"oh mann das grub2 wiki ist sowas von ausgestorben, dass da sogar die link spammer ihre urls korrigieren -.-"
+2010-09-08 18:39:52,DickHuuhn,lol?
+2010-09-08 18:43:40,bluecode,yay!
+2010-09-08 18:43:57,FreakyPenguin,Ein bluecode!
+2010-09-08 18:44:29,bluecode,"ja, aber nur mit einer geklauten Grafikkarte"
+2010-09-08 18:45:16,bluecode,ich bin auf der Suche nach demjenigen der meine alte Grafikkarte dazu überredet hat nichtmehr mit meinem Monitor zu sprechen!
+2010-09-08 18:46:21,JanDing,afk
+2010-09-08 18:46:24,SHyx0rmZ,xD
+2010-09-08 18:49:11,DickHuuhn,"bluecode, wo wohnste nochma"
+2010-09-08 18:49:25,Programm_Noob,Moin mgottschlag
+2010-09-08 18:49:25,Programm_Noob,Moin bluecode
+2010-09-08 18:49:27,DickHuuhn,Warschau?
+2010-09-08 18:49:34,DickHuuhn,"Ach ne, du hast ja ne ATI geklaut kein Audi"
+2010-09-08 18:49:39,mgottschlag,moin
+2010-09-08 18:49:47,bluecode,es ist keine ATI...
+2010-09-08 18:50:19,Programm_Noob,ne NVidia?
+2010-09-08 18:50:27,DickHuuhn,mit nvidia krieg ich aber keinen autopun hin
+2010-09-08 18:50:35,DickHuuhn,das ging mit ati schon nicht richtig
+2010-09-08 18:50:50,bluecode,hättest es ja lassen können :-)
+2010-09-08 18:50:54,bluecode,Programm_Noob: jo
+2010-09-08 18:51:05,bluecode,aber die neue wird wohl ne ati
+2010-09-08 18:51:05,DickHuuhn,ich kann doch keinem pun widerstehen :3
+2010-09-08 18:51:43,Programm_Noob,bluecode: bleib bei NVidia.
+2010-09-08 18:51:46,Programm_Noob,Die halten länger
+2010-09-08 18:51:55,bluecode,offensichtlich nicht :-)
+2010-09-08 18:52:13,Programm_Noob,"Ich habe 2 ATI's kaputt bekommen, aber noch keine NVidia."
+2010-09-08 18:53:53,DickHuuhn,"Programm_Noob, du hast wohl zu viel geld :P"
+2010-09-08 18:54:11,DickHuuhn,Hardware behandelt man pfleglich :D
+2010-09-08 18:57:40,Programm_Noob,Die eine ATI ist dank meines aus geldnot gekauftem Mainboards gestorben. die andere habe ich übertacktet und ist geringfügig verschmort.
+2010-09-08 18:58:13,bluecode,was kann denn das Mainboard dafür?
+2010-09-08 18:59:07,Programm_Noob,Moinboard kaputt und hat auf fast alle Pins des PCI Express buses 12 Volt angelegt
+2010-09-08 18:59:25,Programm_Noob,das mochte die Grafikarte und der Arbeitsspeicher nicht.
+2010-09-08 19:00:07,Programm_Noob,"nur der Prozessor , Laufwerke und Netzteil  haben das überlebt."
+2010-09-08 19:01:21,Programm_Noob,Moin cjuner
+2010-09-08 19:02:16,cjuner,moin Programm_Noob 
+2010-09-08 19:04:32,JanDing,ich brauch auch mal ein voltmeter
+2010-09-08 19:11:02,kire,Guten Abend
+2010-09-08 19:11:25,bluecode,abend kire
+2010-09-08 19:11:36,bluecode,irgendwie hab ich da gerade erik gelesen...
+2010-09-08 19:11:56,kire,;)
+2010-09-08 19:12:18,kire,dann sieh noch mal genau hin
+2010-09-08 19:13:53,JanDing,muss an der grafikkarte liegen
+2010-09-08 19:15:40,Programm_Noob,Moin kire
+2010-09-08 19:24:00,kire,"Die Diskussion mit FlashBurn war heute mal wieder nervenaufreibend, ich sollte mir in zukunft besser überlegen in welche Threads ich mich ungefragt einmische."
+2010-09-08 19:25:19,mastamind,"interessant ist, dass sie bei galileo gerade israel ""vergessen"" haben als urananreicherndes land."
+2010-09-08 19:25:59,AGGROStar1991,joa ne^^ freut mich das ich net der einzige bin ders bemerkt hat :D
+2010-09-08 19:26:17,AGGROStar1991,naja ausser halbwissen kann man bei galileo eh nix erwarten
+2010-09-08 19:26:19,Programm_Noob,kire: bist du erik?
+2010-09-08 19:26:28,mastamind,AGGROStar1991: das ist kein halbwissen. das ist absicht.
+2010-09-08 19:26:37,kire,"Programm_Noob: ja, ist das so schwer zu erraten"
+2010-09-08 19:26:54,AGGROStar1991,naja israel vllt aber ich meinte allgemein ;)
+2010-09-08 19:27:04,mastamind,:-)
+2010-09-08 19:27:04,Programm_Noob,Warum nennst du dich nicht einfach erik?
+2010-09-08 19:27:05,kire,mibit läst mich nicht rein wenn es schon einen anderen erik in irgendeinem anderen channel gibt
+2010-09-08 19:27:20,XanClic,雨ぃ雨ぇ
+2010-09-08 19:27:27,XanClic,"meh, etaste *g*"
+2010-09-08 19:28:03,AGGROStar1991,"weil teilweise isses so viel müll der da erzählt wird, das kann schon keine absicht mehr sein xD"
+2010-09-08 19:28:06,kire,XanClic: hä ?
+2010-09-08 19:28:14,XanClic,Backspace ≠ Enter
+2010-09-08 19:28:36,kire,hä ?
+2010-09-08 19:28:52,mastamind,AGGROStar1991: galileo ist nun mal im besten fall eine populärwissenschaftliche sendung. man kann es nicht mit hmm einem spektrum der wissenschaft vergleichen.
+2010-09-08 19:29:07,XanClic,"Na ja, ich hab hier was testen wollen und dann aus Versehen die Eingabe- statt der Rücktaste erwischt"
+2010-09-08 19:29:49,AGGROStar1991,joa klar
+2010-09-08 19:30:03,kire,mastamind: galileo war vor 15 Jahren mal ganz interessant aber seit sie Quoten brauchen ist das Niveau extrem gesunken
+2010-09-08 19:30:23,Papierkorb,das sagt aber eigtl. jeder ^^
+2010-09-08 19:30:24,AGGROStar1991,jop so weit warn wir ja grad erik ;)
+2010-09-08 19:30:28,mastamind,kire: hmm weiß nicht. damals schon hat sich mein chemielehrer darüber aufgeregt.
+2010-09-08 19:30:33,mastamind,und ich hab ihm zugestimmt. :-)
+2010-09-08 19:30:36,Papierkorb,"hab die auch mal bei twitter gefragt, wann die mitm pseuo journalismus aufhören"
+2010-09-08 19:30:43,Papierkorb,warte immer noch auf eine antwort :(
+2010-09-08 19:30:52,AGGROStar1991,xD
+2010-09-08 19:31:12,AGGROStar1991,naja is halt viel geistiger abfall :D
+2010-09-08 19:31:25,mastamind,und ich kann nur wiederholen: der chefmoderator ist diplom-informatiker. :-) das find ich immer noch unglaublich.
+2010-09-08 19:31:43,AGGROStar1991,ja manchmal traurig was sich wissenschaftler nennen darf
+2010-09-08 19:31:55,kire,also die ersten paar Sendungen waren noch einigermaßen interessant (zumindest nicht nur purer Dummfug) aber dann hat das alles doch stark nachgelassen
+2010-09-08 19:32:04,bluecode,Diplom macht noch keinen Wissenschaftler...
+2010-09-08 19:32:22,mastamind,"bluecode: du weißt, dass ich das anders sehe. :-)"
+2010-09-08 19:32:37,kire,Diplom ist auch kein Garant für Verstand
+2010-09-08 19:33:16,mastamind,ich hab leider seine arbeit nicht gefunden.
+2010-09-08 19:33:28,mastamind,"vielleicht weiß jemand, wo man die findet. würde mich schon sehr interessieren."
+2010-09-08 19:34:01,bluecode,die Arbeit von wem?
+2010-09-08 19:35:24,mastamind,Aiman Abdallah
+2010-09-08 19:37:14,bluecode,ach der Typ ist der Dipl-Inf?
+2010-09-08 19:37:19,mastamind,ja
+2010-09-08 19:37:44,bluecode,"hm, denn kenn ich ja noch von damals"
+2010-09-08 19:37:46,mastamind,"es heißt, er hat informatik studiert. er hat auch als absolvent mal an seiner alten uni einen vortrag gehalten oder so."
+2010-09-08 19:37:50,bluecode,als ich auch mal Galileo geschaut habe
+2010-09-08 19:37:52,mastamind,:-)
+2010-09-08 19:37:54,bluecode,in den jungen Jahren
+2010-09-08 19:39:58,mastamind,ich geh mal. bis dann.
+2010-09-08 19:40:28,kire,aber geh nicht zu weit weg
+2010-09-08 19:46:01,DickHuuhn,http://i176.photobucket.com/albums/w189/walcom77/2010_RF12_120sec.jpg zomg its an asteroid
+2010-09-08 19:46:03,bluecode,cu mastamind
+2010-09-08 19:49:15,Paddy,Hi
+2010-09-08 19:49:27,XanClic,"yay, Paddy"
+2010-09-08 19:55:57,JanDing,tach
+2010-09-08 20:11:19,Programm_Noob,Moin Paddy
+2010-09-08 20:17:34,AGGROStar1991,sers
+2010-09-08 20:18:43,Programm_Noob,Fuck 64Bit GDT
+2010-09-08 20:24:44,cjuner,"Diplominformatiker zu sein, heißt nicht, dass man prinzipien oder sowas hat, und man nicht für mehr geld irgendeinen scheiß von sich geben kann."
+2010-09-08 20:26:06,SHyx0rmZ,"Programm_Noob, die ist doch genau gleich?!"
+2010-09-08 20:26:34,Programm_Noob,ja?
+2010-09-08 20:26:43,Programm_Noob,"im Wiki steht, das die anders ist"
+2010-09-08 20:27:25,SHyx0rmZ,Wo?
+2010-09-08 20:27:43,bluecode,cjuner: hm?
+2010-09-08 20:27:51,kire,wofür braucht man im log mode ne GDT? da gibt es doch keine Segmente mehr
+2010-09-08 20:28:06,XanClic,"Doch, FS und GS afaik"
+2010-09-08 20:28:19,bluecode,"aber die sind nicht über deskriptoren verwaltet, XanClic"
+2010-09-08 20:28:29,XanClic,Bäh *g*
+2010-09-08 20:28:38,bluecode,zumindest die Basisadresse davon nicht
+2010-09-08 20:28:55,SHyx0rmZ,"kire, aber die brauch man trotzdem, und was XanClic sagte"
+2010-09-08 20:28:57,bluecode,"kire: für den ganzen Accesskäse, die Basis muss allerdings 0 sein"
+2010-09-08 20:29:08,bluecode,SHyx0rmZ: die 64bit GDT ist doch nicht gleich? Oo
+2010-09-08 20:29:18,kire,aha
+2010-09-08 20:30:00,SHyx0rmZ,"bluecode, ich meint die Deskriptoren, aber ich guck gern nochma nach"
+2010-09-08 20:30:00,Programm_Noob,im OSDEV.org Wiki steht:
+2010-09-08 20:30:00,Programm_Noob,"Now the CPU will be in compatibility mode, and instructions are still  32-bit.  To enter long mode, the D/B bit (bit 22, 2nd dword) of the GDT  code segment must be clear (as it would be for a 16-bit code segment),  and the L bit (bit 21, 2nd dword) of the GDT code segment must be set.   Once that is done, the CPU is in 64-bit long mode. "
+2010-09-08 20:30:04,Programm_Noob,Und das soll gleich sein?
+2010-09-08 20:30:13,bluecode,SHyx0rmZ: da gibts doch mindestens ein Flag für den Longmode iirc
+2010-09-08 20:30:35,XanClic,"An sich klingt das gleich, nur dass ein Flag eine besondere Bedeutung hat…"
+2010-09-08 20:30:43,bluecode,"hm, man muss für longmode paging erstmal aufsetzen..."
+2010-09-08 20:30:54,bluecode,das gehlt irgendwie in der erklärung oben
+2010-09-08 20:31:07,SHyx0rmZ,"Ein Bit gibt es mehr, gut, aber prinzipiell bezeichne ich das als gleich"
+2010-09-08 20:32:48,cjuner,"Ist für C spezifiziert, wenn ich einen uint durch einen anderen, nichtteilbaren uint teile, ob dann auf- oder abgerundet wird?"
+2010-09-08 20:33:10,bluecode,abgerundet
+2010-09-08 20:33:23,SHyx0rmZ,"abgeschnitten, um korrekt zu sein ^^"
+2010-09-08 20:33:29,SHyx0rmZ,oder?
+2010-09-08 20:33:35,bluecode,was ist daran korrekter?
+2010-09-08 20:33:35,cjuner,d.h. 10 / 4 = 2?
+2010-09-08 20:33:46,bluecode,oh richtig
+2010-09-08 20:33:48,cjuner,"bluecode, würde bei signed ints einen unterschied machen"
+2010-09-08 20:33:50,bluecode,das ist korrekter
+2010-09-08 20:34:01,cjuner,aber bei unsigned?
+2010-09-08 20:34:03,bluecode,"soll heißen, SHyx0rmZ hat recht"
+2010-09-08 20:34:46,bluecode,"ich glaub nicht, dass das was mit signed vs. unsigned zu tun hat"
+2010-09-08 20:35:23,bluecode,"hm, 2,8 abgerundet ist schon 2 oder nicht?"
+2010-09-08 20:35:55,bluecode,oder nennt man das dann nichtmehr so?
+2010-09-08 20:36:13,kire,tschüß
+2010-09-08 20:37:19,Programm_Noob,"SHyx0rmZ: Ich wollte mir gerade mal die GDT von Stoiber64 ansehen, ich finde aber die funktion setup_gdt nicht"
+2010-09-08 20:37:31,Programm_Noob,wb spacer
+2010-09-08 20:37:46,SHyx0rmZ,"Programm_Noob, die gibt es auch noch nicht"
+2010-09-08 20:37:55,SHyx0rmZ,Aber an der GDT musst du nichts ändern
+2010-09-08 20:38:03,SHyx0rmZ,16 Bit Codesegment
+2010-09-08 20:38:14,SHyx0rmZ,Und da einfach Bit 21 im 2. DWord setzen
+2010-09-08 20:39:46,Programm_Noob,also nur noch ein Segment für alles?
+2010-09-08 20:39:58,SHyx0rmZ,nein
+2010-09-08 20:40:10,SHyx0rmZ,dann natürlich noch ein 32 Bit Datensegment
+2010-09-08 20:40:14,SHyx0rmZ,das wäre das Minimum
+2010-09-08 21:00:26,spacer,bin dann mal weg
+2010-09-08 21:00:28,spacer,bis dann
+2010-09-08 21:00:35,AGGROStar1991,bd
+2010-09-08 21:14:40,Paddy,"FreakyPenguin: Ich glaube, dein Fix ist nicht ganz korrekt. Timer können auch den Task wechseln."
+2010-09-08 21:19:36,cjuner,"ich will einen x86 kernel kompilieren, der 64-bit division enthält; gcc beschwert sich über ein fehlendes __udivdi3. wie treibe ich ihm das aus?"
+2010-09-08 21:19:52,Paddy,libcgcc mitlinken
+2010-09-08 21:19:52,bluecode,libgcc mitlinken
+2010-09-08 21:19:56,bluecode,hm...
+2010-09-08 21:20:04,Paddy,"Hm, ich hab mich vertippt..."
+2010-09-08 21:20:10,bluecode,und ich war zu langsam
+2010-09-08 21:20:17,Paddy,So gleicht sich das aus
+2010-09-08 21:20:21,cjuner,ah danke
+2010-09-08 21:20:22,Programm_Noob,Die 64 Bit division rausnehmen.
+2010-09-08 21:20:29,cjuner,"Programm_Noob, beste idee ;)"
+2010-09-08 21:20:31,Programm_Noob,wofür braucht man die eigentlich?
+2010-09-08 21:20:43,Paddy,Um große Zahlen zu teilen?
+2010-09-08 21:20:50,bluecode,echt?
+2010-09-08 21:20:53,SHyx0rmZ,win statement
+2010-09-08 21:21:09,cjuner,ich hab die gerade für meine u64 -> hex string ausgabe benutzt
+2010-09-08 21:21:14,bluecode,"ich glaub der Paddy will dich verarschen, Programm_Noob ;-)"
+2010-09-08 21:25:06,FreakyPenguin,Paddy: Na dann fixen wir doch den Fix mal ;-)
+2010-09-08 21:26:17,Paddy,"Eigentlich funktionieren meisten Fixes sogar für master, oder?"
+2010-09-08 21:26:27,FreakyPenguin,Jo
+2010-09-08 21:27:02,Paddy,"Dann wär es vielleicht clever, die schonmal durch die ganz normale Vorgehensweise aus dem Weg zu schaffen"
+2010-09-08 21:27:04,FreakyPenguin,Mindestens einer davon ist auch in master ein Bug
+2010-09-08 21:27:14,Paddy,LIOv2 zu mergen wird schon ohne unabhängige Fixes schwer genug
+2010-09-08 21:27:42,FreakyPenguin,"Hm unten dürfte da auch noch anderes unabhängiges Zeug drin sein, oder?"
+2010-09-08 21:27:50,Paddy,Ein paar Sachen vermutlich schon
+2010-09-08 21:29:33,Paddy,Vor allem die paar Sachen ganz am Anfang
+2010-09-08 21:44:15,FreakyPenguin,Hm aber die die Timer nach dem syncen abzuarbeiten ist irgendwie auch doof
+2010-09-08 21:44:25,FreakyPenguin,Da werden die ja dauernd verschoben ;-)
+2010-09-08 21:45:56,Paddy,Dann eben Timer oder sync
+2010-09-08 21:47:44,Paddy,"Hm, gdb ist doch doof... :-/"
+2010-09-08 21:52:09,FreakyPenguin,Hm? ;-)
+2010-09-08 21:53:42,Paddy,Er übersieht den ersten Userspace-Eintrag für den Stacktrace
+2010-09-08 21:53:53,Paddy,"Und genau der ist nunmal das, wo der PF passiert ist"
+2010-09-08 21:54:00,FreakyPenguin,*g*
+2010-09-08 21:54:28,Paddy,"Ich glaube, mit ein bisschen set $ebp und set $eip habe ich jetzt den richtigen Backtrace bekommen"
+2010-09-08 21:56:15,Paddy,So ganz vollständig sieht das aber auch nicht aus
+2010-09-08 22:00:09,Paddy,"Hm, ich glaube, es ist kein gutes Zeichen, wenn er das Wurzelverzeichnis als Kind vom Unterverzeichnis einhängen will"
+2010-09-08 22:00:16,Programm_Noob,bb
+2010-09-08 22:05:14,Papierkorb,gn8
+2010-09-08 23:36:09,Paddy,"Hm, irgendwie mag fsck meine Änderungen nicht"
+2010-09-08 23:59:37,Paddy,gn8

@@ -1,0 +1,618 @@
+date/time,nick,message
+2007-12-27 00:14:07,janosch,woher weiß die cpu eigentlich bei einem iret welche werte sie vom stack nehmen muss?
+2007-12-27 00:30:05,janosch,irgendwie wechselt mein dispatcher beim iret esp nicht
+2007-12-27 00:31:37,FreakyPenguin,Dann ist er wohl kaputt. ;-)
+2007-12-27 00:32:49,janosch,"also ich lege alles richtig auf den stack, dann mache ich iret und dann bekomme ich einen pagefault, mit einer addresse die zu meinem kernelstack gehören könnte"
+2007-12-27 00:33:19,FreakyPenguin,Hm der PL vom neuen CS stimmt aber?
+2007-12-27 00:33:39,janosch,PL=3
+2007-12-27 00:34:07,FreakyPenguin,Hm...
+2007-12-27 00:39:06,janosch,"und direkt beim auszuführenden code steht ein ""jmp $"". Das habe ich auch nachgeprüft, also die Page ist geladen. Wenn ich vor dem iret ein hlt hinsetze, passiert kein Pagefault."
+2007-12-27 00:39:32,janosch,also muss es ja während dem iret sein
+2007-12-27 00:41:58,janosch,"mmh, jetzt kommen irgendwie gerade sehr abstrakte dinge auf dem stack hevor (war vorhin noch nicht)"
+2007-12-27 00:50:57,stultus,"So, ich bin weg"
+2007-12-27 00:51:09,stultus,"Und die nächsten Tage seht ihr relativ wenig von mir, Schachturnier *g*"
+2007-12-27 00:51:24,stultus,"gn8, spätestens bis zum 30 ;)"
+2007-12-27 00:51:27,schnippi,lol
+2007-12-27 00:51:30,schnippi,viel erfolg
+2007-12-27 00:51:33,stultus,thx ^^
+2007-12-27 00:52:13,FreakyPenguin,Gute Nacht und hf beim Schach. ;-)
+2007-12-27 00:52:33,taljeth,"Jo, viel Erfolg"
+2007-12-27 00:52:45,taljeth,Nimm nicht die Schachalgorithmen von Freaky ;-)
+2007-12-27 00:54:46,FreakyPenguin,Sonst stehen plötzlich 65 Figuren auf dem Feld. *g*
+2007-12-27 00:56:17,schnippi,lol
+2007-12-27 00:56:34,FreakyPenguin,"Naja, overflows können ja mal vorkommen. *g*"
+2007-12-27 00:56:49,schnippi,:)
+2007-12-27 00:58:09,taljeth,"Fliegt eigentlich ein General Protection Fault, wenn ich den Gegner Schach setze? ;-)"
+2007-12-27 00:58:25,schnippi,lol
+2007-12-27 00:58:33,schnippi,keine schachwitze mehr :/
+2007-12-27 00:58:34,FreakyPenguin,Vermutlich schon. *g*
+2007-12-27 01:01:22,janosch,"nachdem iret (wahrscheinlich beim nächsten timerint (pl-change)) bekomme ich das hier ""can_push(): expand-up: esp < N"" liegt am TSS oder?"
+2007-12-27 01:13:19,janosch,nur was soll N sein? doch nicht etwas Null?
+2007-12-27 01:13:27,janosch,*etwas = etwa
+2007-12-27 01:15:28,FreakyPenguin,"janosch: Wie oft muss ich dir eigentlich noch sagen, dass du im Bochs-Source schauen sollts? ;-)"
+2007-12-27 01:16:03,schnippi,lol
+2007-12-27 01:16:04,FreakyPenguin,Kleine Hilfestellung: http://bochs.sourceforge.net/cgi-bin/lxr/source/cpu/stack_pro.cc ;-)
+2007-12-27 01:16:16,schnippi,lxr ist toll
+2007-12-27 01:16:37,janosch,"sag doch gleich, dass man so an den dran kommt. ich war immer zu faul den source runterzuladen etc"
+2007-12-27 01:16:37,FreakyPenguin,"schnippi: Naja, das ist die Beste Dokumentation für die Fehlermeldungen. ;-)"
+2007-12-27 01:17:16,FreakyPenguin,"janosch: Ja, google ist toll. *g*"
+2007-12-27 01:17:20,schnippi,lol
+2007-12-27 01:18:38,janosch,"Freaky, google ist mir zu monopolistisch ;) ich benutze eine andere suchmaschine..."
+2007-12-27 01:19:23,schnippi,da hast du nicht ganz unrecht
+2007-12-27 01:19:53,janosch,also N ist die anzahl an bytes die gepusht werden sollen...
+2007-12-27 01:20:02,FreakyPenguin,"Ich bi halt zu Faul da zu schauen, wie ich dem seamonkey etwas anderes beibringe. *g*"
+2007-12-27 01:20:41,janosch,in meinem TSS ist als esp0 0x353BFC eingetragen. also irgendwo muss der wert verloren gehen
+2007-12-27 01:22:15,janosch,"es geht wirklich auf dem weg verloren, bzw. wird überschrieben. Nur wer ist so böse und schreibt einfach in meine TSSs?"
+2007-12-27 01:22:23,FreakyPenguin,janosch: Kann bochs nicht einigermassen vernünftig Speicherstellen auf Änderung überwachen?
+2007-12-27 01:22:25,schnippi,du? :)
+2007-12-27 01:22:46,janosch,"Freaky, dann müsste mir nur jemand beibringen wie das geht"
+2007-12-27 01:23:53,schnippi,die bochs docs :)
+2007-12-27 01:31:16,janosch,"ich hab bochs jetzt mit ""--enable-debugger --enable-disasm"" kompiliert, aber ich sehe keine commandline"
+2007-12-27 01:31:43,FreakyPenguin,ctrl + c?
+2007-12-27 01:32:10,janosch,"""ERROR: external debugger is currently supported on win32 only"""
+2007-12-27 01:32:46,FreakyPenguin,Du willst aber keinen externen... ;-)
+2007-12-27 01:32:55,janosch,ist mir auch grad aufgefallen
+2007-12-27 01:36:10,janosch,"ich find hier nix, wie man eine speicherstelle überwachen könnte"
+2007-12-27 01:41:11,FreakyPenguin,"Hm moment, ich bastel mir grad einen bochs. ;-)"
+2007-12-27 01:42:32,janosch,"ah ""watch"""
+2007-12-27 01:44:52,janosch,"cool, bochs stoppt noch nichtmal an der stelle, wo ich absichtlich in das TSS reinschreibe"
+2007-12-27 01:47:06,janosch,"aso, jetzt muss ich auch noch die physikalische adresse wissen"
+2007-12-27 01:49:20,FreakyPenguin,Hm irgendwie erstrecken sich meine Bochs-Flags grad über 4.5 Zeilen. *g*
+2007-12-27 01:57:36,janosch,"jetzt hab ich die physikalische adresse der speicherstelle, aber bochs sagt immer noch nichts"
+2007-12-27 02:02:16,FreakyPenguin,Hast du sie dir auch schon mal vor und nach dem PF angeschaut?
+2007-12-27 02:03:35,FreakyPenguin,Und vielleicht mal ein breakpoint beim iret?
+2007-12-27 02:04:08,janosch,"ich bekomme ja keinen Pagefault mehr, sondern TripleFault wenn er versucht ESP0 zu laden"
+2007-12-27 02:06:13,FreakyPenguin,Hm hast du mir mal das Image?
+2007-12-27 02:06:55,janosch,was für ein image?
+2007-12-27 02:07:30,janosch,floppyimage?
+2007-12-27 02:07:53,FreakyPenguin,Jo
+2007-12-27 02:07:57,janosch,mom
+2007-12-27 02:09:12,janosch,http://wonsheimlan.wo.funpic.de/meinos/floppy.img.bz2
+2007-12-27 02:10:19,janosch,das image dürfte auch die phys. und virt. addresse ausgeben
+2007-12-27 02:10:46,janosch,"und hält mir ""while (true)"" an einer stelle, wo die speicherstelle schon veränder wurde"
+2007-12-27 02:13:25,janosch,die physikalische adresse der speicherstelle ist 0x1C3AC04
+2007-12-27 02:14:08,janosch,"moment, das kommt drauf an wie viel ram dein bochs hat"
+2007-12-27 02:14:26,janosch,siehst es ja dann
+2007-12-27 02:15:48,janosch,"ahh, jetzt gehts auch"
+2007-12-27 02:16:17,FreakyPenguin,Was?
+2007-12-27 02:16:38,janosch,"jetzt zeigt bochs an, wo jemand da rein schreibt"
+2007-12-27 02:16:56,FreakyPenguin,Und meiner kompiliert noch nichtmal richtig. ;-)
+2007-12-27 02:25:56,janosch,kann man irgendwie (mit nm oder so) gucken welche funktion zu der adresse gehört
+2007-12-27 02:26:23,FreakyPenguin,objdump -d <datei> > dump
+2007-12-27 02:26:50,FreakyPenguin,Wenn du bei deine gcc und g++ noch ein -g in die Flags packst kannst du mit objdump -S noch etwas mehr sehen. ;-)
+2007-12-27 02:27:14,FreakyPenguin,Mir reichts jetzt aber für Heute. ;)
+2007-12-27 02:27:17,FreakyPenguin,Gute Nacht
+2007-12-27 02:27:38,taljeth,Mir auch.
+2007-12-27 02:27:45,schnippi,schlaft gut ihr
+2007-12-27 02:28:02,taljeth,Ich seh's schon kommen: Jeden Tag wird so spät und an Silvester mache ich dann um zehn schlapp...
+2007-12-27 02:29:31,schnippi,lol
+2007-12-27 02:29:51,schnippi,dann machs so wie ich: steh erst um 23:00 auf ;)
+2007-12-27 02:30:21,taljeth,"Wär ne Idee, ja. *h*"
+2007-12-27 02:30:30,taljeth,-h+g... 
+2007-12-27 02:43:29,janosch,"irgendwie stößt mein stack auf das TSS. Der Stack wächst ja nach unten (auf 0x0 zu). Also muss ich ihn in einem speicherbereich ja möglichts ans ende setzen, oder?"
+2007-12-27 02:44:16,janosch,mein TSS liegt hinter meinem Stack und ESP zeigt auf stack+stacksize-4.
+2007-12-27 02:45:12,janosch,"aber wieso schreibt er dann bei ""movl   $0x102c45,0x4(%esp)"" in mein TSS?"
+2007-12-27 02:50:08,janosch,"will mir denn niemand helfen? :'( Ich glaube ich sollte mir diese späten Arbeitszeiten abgewöhnen. Obwohl ich dachte, dass um diese Uhrzeit hier mehr Leute aktiv sind."
+2007-12-27 02:52:23,schnippi,"das ist der falsche ansatz, auf die hilfe anderer zu hoffe n;)"
+2007-12-27 02:53:32,janosch,"schnippi, jetzt wo du dich als anwesend bemerkbar gemacht hast, werde ich dich solange nerven, bis du mir hilfst :p"
+2007-12-27 02:54:19,janosch,"muss nur wissen was ""0x4(%esp)"" bedeutet. %esp-$4 oder %esp+$4?"
+2007-12-27 02:54:48,schnippi,ich komm mit der syntax eh nicht klar
+2007-12-27 02:56:17,janosch,"normaler at&t-syntax... aber egal. normal müsste es push entsprechen, also -4 oder? Ich bin grad voll verwirrt, ich glaub du musst mir nochmal stacks erklären^^"
+2007-12-27 02:56:49,schnippi,erkläre sie dir doch bitte besser selbst
+2007-12-27 02:57:11,schnippi,"ich finde das leicht unverschämt, sich die arbeit von anderen machen zu lassen"
+2007-12-27 02:58:30,janosch,"sry, ich wollte euch nicht so nerven. nur manchmal komm ich gar nicht vorran und dann frag ich halt ziemlich viel im channel"
+2007-12-27 03:01:16,schnippi,"wie gesagt, ich kenne nur die intel syntax"
+2007-12-27 03:01:49,_janosch,ich muss dann halt (ausnahmsweise ;) ) selber suchen
+2007-12-27 03:02:10,schnippi,richtig
+2007-12-27 07:02:42,bluecode,moin#
+2007-12-27 07:04:26,schnippi\coden,moin
+2007-12-27 07:13:04,schnippi\coden,"wieso gibts noch keine compiler, die gedanken in effizienten code umsetzen? :/"
+2007-12-27 10:15:15,Homix,morgen
+2007-12-27 10:16:07,schnippi\coden,hihohomix
+2007-12-27 10:19:58,bluecode,moin Homix
+2007-12-27 11:08:40,schnippi,re
+2007-12-27 11:20:37,bluecode,moin FreakyPenguin
+2007-12-27 11:20:56,Homix,hi
+2007-12-27 11:22:52,FreakyPenguin,Moin
+2007-12-27 13:42:46,taljeth,Guten Morgen allerseits
+2007-12-27 13:43:17,FreakyPenguin,Moin taljeth
+2007-12-27 13:43:44,Noooooooooo1,moinmoin
+2007-12-27 13:44:32,janosch,moin
+2007-12-27 13:44:52,Homix,endlich hab ich einen reproduzierenden Windows Xp reset gefunden :)
+2007-12-27 13:45:14,taljeth,"Boah, bist du t0l"
+2007-12-27 13:45:22,Homix,"startet der pc einfach neu, ohne bluescreen :)"
+2007-12-27 13:45:38,taljeth,"Weil Bluescreen standardmäßig deaktiviert ist, oder?"
+2007-12-27 13:45:43,Homix,ne
+2007-12-27 13:45:49,Homix,lol
+2007-12-27 13:46:10,taljeth,Sicher?
+2007-12-27 13:46:20,Homix,ja ^^
+2007-12-27 13:46:28,Homix,die kann man doch gar nicht deaktivieren :D
+2007-12-27 13:46:53,taljeth,"Doch, und ich meine, das sei bei manchen Ausgaben Default."
+2007-12-27 13:47:05,FreakyPenguin,"Homix: Doch, soweit ich weiss schon."
+2007-12-27 13:47:25,taljeth,"Das ist wahrscheinlich auch der Grund, warum es allgemein heißt, unter XP gibt es so gut wie keine Bluescreens mehr. ;-)"
+2007-12-27 13:47:27,FreakyPenguin,"""Um den zu aktivieren und den Neustart zu unterbinden, mit der Tastenkombination [Windows Pause] die Systemeigenschaften aktivieren. Dort unter Erweitert im Bereich Starten und Wiederherstellen auf Einstellungen klicken. Dann unter Systemfehler die Option Automatisch Neustart durchführen deaktivieren. "
+2007-12-27 13:47:49,FreakyPenguin,Bringt 10 Sekunden google zum vorschein. ;-)
+2007-12-27 13:48:02,taljeth,Und ein schönes beispiel für eine benutzerfreundliche Oberfläche. *g*
+2007-12-27 13:48:05,Homix,aber der neustart ist erst nach ca 10 sek. 
+2007-12-27 13:48:05,taljeth,Windows-Pause...
+2007-12-27 13:48:51,FreakyPenguin,"Naja, du kannst auch Rechtsklick auf den Arbeitsplatz machen, oder über die Systemsteuerung gehen. ;-)"
+2007-12-27 13:48:52,Homix,"bei diesem automatischem neustart wird nach 10 sek bluescreen erst neugestartet, nicht sofort (zumindest bei der XP SP2)"
+2007-12-27 13:49:58,Homix,"und der systemfehler passiert bei meiner WinXP Version, wenn ich auf einer Diskette einen Ordner mit HomixOS erstelle, und unter Windows in diesem Ordner eine Datei erstellen will :D"
+2007-12-27 13:50:24,taljeth,"Jo, wie gesagt, HomixOS macht die FAT kaputt"
+2007-12-27 13:50:44,taljeth,"Und Windows wurde ähnlcih programmiert wie HxOS: Die einen berücksichtigen halt keine kaputten PEs, die anderen keine kaputten FATs."
+2007-12-27 13:51:50,Homix,nun ja der fehler passiert generell wenn ein Ordner die größe 0 hat (also noch keinen startcluster hat)
+2007-12-27 13:52:19,bluecode,solche ordner gibts nicht.
+2007-12-27 13:52:29,Homix,ja ich weiss ;)
+2007-12-27 13:52:43,bluecode,warum machst du dann welche ;-)
+2007-12-27 13:52:43,Homix,mich wundert es aber dass der FAT Treiber von MS so billig ist ;)
+2007-12-27 13:52:50,taljeth,Ist aber keine Rechtfertigung für einen Absturzt. ;-)
+2007-12-27 13:52:58,taljeth,-t
+2007-12-27 13:53:32,Homix,bluecode: darum ;)
+2007-12-27 13:53:34,bluecode,"taljeth: Du weißt doch auch, dass ein Programmierer bei 2+ Zeilen den Überblick verliert ;-)"
+2007-12-27 13:53:56,Homix,weil ich übersehen hatte dass ein ordner . und .. haben MUSS ;)
+2007-12-27 13:54:17,taljeth,bluecode: Natürlich weiß ich das. ;-)
+2007-12-27 13:55:35,Homix,"ich muss wohl langsam mal meinen FAT und Floppy treiber überarbeiten, genau das worauf ich so stolz bin :)"
+2007-12-27 13:56:31,taljeth,Sieh's endliche ein: HxOS ist nicht weniger kaputt als die ganzen anderen OS hier auch
+2007-12-27 13:57:02,Homix,ne ich würde nicht lügen ;)
+2007-12-27 13:59:11,taljeth,"So, was steht heute auf dem Programm? history.h?"
+2007-12-27 14:01:05,FreakyPenguin,taljeth: Wäre sicher keine schlechte Idee. Und sonst wäre ja tcpip sicher auch noch eine Anlaufstelle. Server-Sockets und udp und sowas... ;-)
+2007-12-27 14:02:19,taljeth,Ich mag Netzwerkzeug nicht... ;-)
+2007-12-27 14:02:30,taljeth,sis900 müßte ich auch noch reparieren...
+2007-12-27 14:03:35,FreakyPenguin,Und the_one_*_netc<TAB> wäre auch noch was. ;-)
+2007-12-27 14:04:50,taljeth,"Ich weiß, aber eigentlich bräucht man dazu ein aufgebohrtes init. ;-)"
+2007-12-27 14:05:05,taljeth,"Naja, gut, ist eigentlich doch eine andere Baustelle, aber trotzdem"
+2007-12-27 14:06:28,FreakyPenguin,Hm wir sollten irgendwo mal eine TODO-Liste anlegen. ;-)
+2007-12-27 14:07:59,taljeth,"Solche TODO-Listen haben aber die unangenehme Eigenschaft, streng monoton zu wachsen. ;-)"
+2007-12-27 14:08:20,FreakyPenguin,"Hm die ANSII-Sequenzen sind 0xd00f, da kann man kaum anständige Debug-Ausgaben machen. ;-)"
+2007-12-27 14:08:48,FreakyPenguin,"taljeth: Ja aber wir können uns ja auch bemühen, sie streng monoton schrumpfen zu lassen. ;-)"
+2007-12-27 14:09:18,taljeth,"*g* Ich mag die man/info-Pages manchmal: ""It is preferable to avoid saving empty lines on the history list,since users rarely have a burning need to reuse a blank line."""
+2007-12-27 14:09:20,Homix,auf meiner roadmap schauts nicht besser aus
+2007-12-27 14:09:42,FreakyPenguin,*lrl*
+2007-12-27 14:11:37,Homix,hmm ich versteh das nicht
+2007-12-27 14:11:49,Homix,"beim SMP funzt zu 40 %, dann werden alle 4 CPUs in Qemu initialisiert"
+2007-12-27 14:11:59,Homix,aber ab und zugeht auch gar nichts
+2007-12-27 14:12:13,janosch,"Homix, hast du schon IPIs?"
+2007-12-27 14:12:23,Homix,ne
+2007-12-27 14:12:32,Homix,ich will erstmal die cpus initialisieren/starten
+2007-12-27 14:12:41,janosch,aso
+2007-12-27 14:13:26,Homix,hmm oder ich entwickle lieber mal VM86 Modus weiter
+2007-12-27 14:14:02,Noooooooooo1,homix...machst du das smp mit MPS oder ACPI tables?
+2007-12-27 14:14:19,Homix,"odder einen hack/technologie, um den VM86 Modus auch im 64 Bit Modus ausgühren lassen zu können"
+2007-12-27 14:14:34,Homix,MPS ?
+2007-12-27 14:14:56,Noooooooooo1,aha...
+2007-12-27 14:15:04,Homix,eig APIC
+2007-12-27 14:15:20,Noooooooooo1,wie?
+2007-12-27 14:15:38,Homix,"bin noch dabei, am anfang ^^"
+2007-12-27 14:15:56,Noooooooooo1,aaha...
+2007-12-27 14:16:26,janosch,eigentlich reicht es ja nur den MP header zu benutzen
+2007-12-27 14:16:34,janosch,also ich hab keine ACPI gebraucht
+2007-12-27 14:16:47,Homix,ACPI ? wenn dann APIC
+2007-12-27 14:16:57,janosch,ACPI!
+2007-12-27 14:17:10,Homix,?
+2007-12-27 14:18:35,Noooooooooo1,Advanced Configuration and Power Interface
+2007-12-27 14:18:47,Homix,aber das braucht man doch nicht für smp
+2007-12-27 14:18:54,janosch,kann man benutzen
+2007-12-27 14:18:59,Noooooooooo1,doch mehr und mehr auch
+2007-12-27 14:19:07,janosch,"z.B für die LocalAPIC ID, wenn ich mich recht erinnere"
+2007-12-27 14:19:14,Noooooooooo1,ist einfacher als MPS tables
+2007-12-27 14:19:19,janosch,finde ich nicht
+2007-12-27 14:19:38,Noooooooooo1,doch...es gibt z.B. keine deafault einstellungen
+2007-12-27 14:19:55,janosch,"stimmt..., die müsste ich auch mal einprogrammieren"
+2007-12-27 14:20:15,Noooooooooo1,und wenn du hyper threading oder dualcore unterstützen willst ist das mit MPS sehr mühsam
+2007-12-27 14:20:32,FreakyPenguin,Also ich will in LOST noch kein APCI fürs SMP benutzen. Das ganze soll ja auch auf älteren Rechnern noch tun.
+2007-12-27 14:20:51,janosch,APCI?
+2007-12-27 14:20:53,Homix,"zu meiner zeit haben die leute noch mit Floppy und FAT Treiber angefangen ein OS zu schreiben, und heutzutage wird erstmal APIC,ACPI,SMP,VGA,... eingebaut"
+2007-12-27 14:21:05,Noooooooooo1,jawoll
+2007-12-27 14:21:21,janosch,"der floppy-treiber gehört ja nicht in den kernel, zumindestens bei einem microkernel"
+2007-12-27 14:21:21,Noooooooooo1,wir beginnen alphabetisch
+2007-12-27 14:21:43,FreakyPenguin,janosch: Nur wil ich nicht tippen kann. *g*
+2007-12-27 14:21:44,Homix,ich rede von OS und nicht von Kernel ;)
+2007-12-27 14:22:57,janosch,"Homix, was will man außerdem mit FAT12, wenn man ext2 hat"
+2007-12-27 14:23:32,FreakyPenguin,"janosch: Naja, für Disketten macht FAT12 meiner Meinung nach mehr Sinn."
+2007-12-27 14:23:36,taljeth,janosch: Windows-Laufwerke lesen? ;-)
+2007-12-27 14:23:37,Homix,disketten ?
+2007-12-27 14:23:47,Homix,lol
+2007-12-27 14:24:32,janosch,taljeth: was meinst du?
+2007-12-27 14:25:27,janosch,btw: meinOS benutzt ext2 auf der diskette
+2007-12-27 14:26:46,janosch,*ist
+2007-12-27 14:27:02,Homix,doch ;)
+2007-12-27 14:27:18,janosch,also aus meiner sicht zählt windows nicht
+2007-12-27 14:27:40,Homix,"na ja immerhin habe ich es geschafft, LOST auf Linux zu compilieren ;)"
+2007-12-27 14:28:02,janosch,unter windows wär's auch schwieriger gewesen
+2007-12-27 14:28:20,Noooooooooo1,janosch womit und woran programmierst du eigentlich
+2007-12-27 14:28:47,Homix,"bitte jetzt keine sinnlose diskussion um betriebssystem, das bringt eh nichts, v.a. weil die beweise für die aussagen generell eh fehlen :)"
+2007-12-27 14:29:23,taljeth,Dann machen wir das eben oBdA.
+2007-12-27 14:30:18,janosch,"Noooooooooo1, ich arbeite auf Linux an meinOS"
+2007-12-27 14:30:35,Noooooooooo1,mit asm=
+2007-12-27 14:30:38,Noooooooooo1,?
+2007-12-27 14:30:50,Homix,linux + asm ist sehr unwahrscheinlich ;)
+2007-12-27 14:30:52,janosch,C und asm
+2007-12-27 14:31:05,FreakyPenguin,Homix: Warum denn? ;-)
+2007-12-27 14:31:08,Noooooooooo1,warum passt asm nicht zu linux?
+2007-12-27 14:31:31,Homix,hmm zumindest kenne ich keinen der linux benutzt und ausschließlich mit Asm alles macht
+2007-12-27 14:31:35,taljeth,Weil nur Windows so große Probleme mit Hochsprachen macht. ;-)
+2007-12-27 14:31:41,Homix,da könnte er keine komplizierten linux-only makefiles einsetzten :D
+2007-12-27 14:31:52,janosch,"Homix, unter windows bekommt man halt keinen c-compiler zum laufen"
+2007-12-27 14:31:57,taljeth,Eben.
+2007-12-27 14:32:20,Homix,"nun ja wäre das der fall, wäre c warscheinlich nicht so verbreitet ;)"
+2007-12-27 14:32:41,taljeth,Du brauchst unter Win halt meistens einen Crosscompiler...
+2007-12-27 14:32:44,Noooooooooo1,hehe
+2007-12-27 14:32:51,janosch,"ich hatte mal versucht gcc, make usw auf windows zum laufen zu bekommen.... ich habs aufgegeben"
+2007-12-27 14:33:02,Noooooooooo1,homix womit proggst denn du?
+2007-12-27 14:33:11,Homix,pascal
+2007-12-27 14:33:17,janosch,"unter windows braucht man erstmal eine doku, um das zu raffen. Unter Linux machst du ""gcc"" fertig is."
+2007-12-27 14:33:23,Noooooooooo1,aha...
+2007-12-27 14:33:40,FreakyPenguin,"janosch: Also ich habe es eigentlich recht einfach geschafft. Wenn man den Cross-Compiler hat, ist das ja nicht mehr so schlimm."
+2007-12-27 14:33:47,Homix,"hmm ich sollte mal eine große Kampagne starten, um Pascal bei OS Developern beliebter zu machen"
+2007-12-27 14:34:29,Homix,Freaky: zerstöre ihm doch nicht sein Anti-Windows-Argument ;)
+2007-12-27 14:34:40,FreakyPenguin,Homix: Es tut mir ja leid. *g*
+2007-12-27 14:34:57,taljeth,"Unter Linux geht es immer noch OOTB, das bleibt ein Unterschied. ;-)"
+2007-12-27 14:34:59,janosch,im prinzip hab ich nix gegen windows. es ist halt einfach nicht zum arbeiten (programmieren) geeignet
+2007-12-27 14:35:02,FreakyPenguin,"Aber ich gebe es ja zu, den Cross-Compiler hätte ich nicht bauen wollen. *g*"
+2007-12-27 14:38:43,Homix,"ob man windows weniger zum arbeiten benutzten kann, sei mal sehr fragwürdig ;)"
+2007-12-27 14:40:27,FreakyPenguin,-weniger ;-)
+2007-12-27 14:41:02,Homix,-windows +linux
+2007-12-27 14:41:28,FreakyPenguin,Hm?
+2007-12-27 14:41:32,Homix,lol
+2007-12-27 14:45:46,bluecode,da kommst mit +o nicht weit ;-)
+2007-12-27 14:46:00,taljeth,*g*
+2007-12-27 14:46:02,Homix,;)
+2007-12-27 14:52:53,taljeth,"FreakyPenguin: Kannst du beim neuen vterm gleich drauf achten, daß kein EOF kommt, wenn nur der Puffer momentan leer ist? ;-)"
+2007-12-27 14:57:03,FreakyPenguin,taljeth: Hm EOF setzt vterm aber auch aktuell nicht...
+2007-12-27 14:57:24,taljeth,"Wenn ich in readline auf EOF prüfe, kriege ich das aber sofort gesetzt."
+2007-12-27 14:59:23,Yarcanox,hi :)
+2007-12-27 14:59:26,FreakyPenguin,"Hm stimmt, LostIO setzt das automatisch, wenn die Grösse des Kontens 0 ist."
+2007-12-27 14:59:28,FreakyPenguin,Moin Yarcanox 
+2007-12-27 14:59:30,Yarcanox,wie viel bytes umfasst denn so ein diskettensektor?
+2007-12-27 14:59:34,Yarcanox,bei so normalem DOS-FAT
+2007-12-27 14:59:40,Yarcanox,das man mit mkfs.dos da macht
+2007-12-27 14:59:55,bluecode,HA! Ich hab einen Vorteil von windows gefunden!
+2007-12-27 14:59:55,bluecode,http://www.bash.org/?831285
+2007-12-27 15:00:44,FreakyPenguin,*g*
+2007-12-27 15:01:01,FreakyPenguin,Yarcanox: 512-Bytes
+2007-12-27 15:01:02,Yarcanox,weiß es keiner? :o
+2007-12-27 15:01:04,Yarcanox,ah kuhl danke
+2007-12-27 15:01:05,Yarcanox,hm
+2007-12-27 15:01:08,Yarcanox,*rechne*
+2007-12-27 15:01:09,FreakyPenguin,---
+2007-12-27 15:01:15,taljeth,"Mensch, sag mir doch einer, daß -1 in einen dword nicht reinpaßt. *g*"
+2007-12-27 15:01:22,bluecode,2880 ist das ergebnis
+2007-12-27 15:01:40,FreakyPenguin,taljeth: Das wird eng. *g*
+2007-12-27 15:01:44,Yarcanox,hm immerhin etwas mehr als 6kb is mein kernel groß
+2007-12-27 15:03:47,Homix,13 sektoren
+2007-12-27 15:04:11,Yarcanox,mehr als 12 auf jeden fall
+2007-12-27 15:04:12,Yarcanox,:)
+2007-12-27 15:04:17,Yarcanox,weil 12 sind 6 kb
+2007-12-27 15:04:21,janosch,"Homix, also wenn ich 6*2 rechne, kommt 12 raus"
+2007-12-27 15:04:31,bluecode,...
+2007-12-27 15:04:34,Yarcanox,"immer wenn es plötzlich spinnt, hau ich einfach ein paar sektoren druff"
+2007-12-27 15:04:37,Yarcanox,und dann geht's wieder^^
+2007-12-27 15:04:47,Homix,er sagte *etwas mehr* als 6 kb
+2007-12-27 15:04:51,Yarcanox,jop
+2007-12-27 15:04:54,Yarcanox,also 13 sektoren oder mehr
+2007-12-27 15:04:55,janosch,aso
+2007-12-27 15:05:12,Yarcanox,und hab bei den kleinbuchstaben alle bis auf y und z :D :D
+2007-12-27 15:08:33,taljeth,FreakyPenguin: Sie haben Post
+2007-12-27 15:21:46,bluecode,omfg......... weiß oder weis? Was meint ihr?
+2007-12-27 15:22:31,taljeth,Kontext?
+2007-12-27 15:22:52,bluecode,ich + wissen
+2007-12-27 15:22:54,taljeth,weiß
+2007-12-27 15:23:03,taljeth,weis hat was mit Weisheit zu tun. ;-)
+2007-12-27 15:23:21,bluecode,hm... google ist irreführend
+2007-12-27 15:23:39,bluecode,"4,5Mio für ""Ich weis"" und nur 350k für ""ich weiß"""
+2007-12-27 15:25:34,schnippi,lol
+2007-12-27 15:25:58,schnippi,schule.de/abitur sollte ausreichend sein ;-)
+2007-12-27 15:28:42,FreakyPenguin,taljeth: Sieht gut aus.
+2007-12-27 15:39:21,Homix,re
+2007-12-27 15:39:33,Homix,erfolgreich bei verwandten abgeseilt :)
+2007-12-27 15:39:56,schnippi,lol
+2007-12-27 15:40:05,Noooooooooo1,hehe
+2007-12-27 15:42:30,schnippi,hat von euch schon mal wer dynamische hashtabellen implementiert?
+2007-12-27 15:42:48,schnippi,"oder kennt zufällig eine c lib, die das für mich übernimmt? *g*"
+2007-12-27 15:42:51,taljeth,FreakyPenguin: Für mtest gehe ich mal nicht über die Liste...
+2007-12-27 15:43:50,Homix,"was bedeutet bei Qemu, wenn man ""info cpus"" eingibt die zeile ""CPU #0: pc=0x..."" dieses pc= ?"
+2007-12-27 15:44:21,schnippi,program counter vllt?
+2007-12-27 15:44:37,schnippi,sonst stehts sicher in irgendwelchen docs von qemu ;)
+2007-12-27 15:45:16,taljeth,"Jo, ich denke auch."
+2007-12-27 15:45:22,taljeth,"Also eip für dich, Homix ;-)"
+2007-12-27 15:45:36,Homix,hmm wieso eip ?
+2007-12-27 15:45:47,taljeth,Weil das der PC von i386 ist?
+2007-12-27 15:46:15,Homix,"die werte sind überhaupt nicht mt EIP von ""info registers"" identisch :)"
+2007-12-27 15:47:05,Homix,hmm wobwei
+2007-12-27 15:47:12,Homix,irgendwie doch ;)
+2007-12-27 15:47:41,Homix,"ne doch nicht, ähnlichkeiten aber unterschiede ;)"
+2007-12-27 15:47:56,schnippi,lol
+2007-12-27 15:48:51,taljeth,"Hast du qemu auch gestoppt, während du das hintereinander eingibst? ;-)"
+2007-12-27 15:49:18,taljeth,"Wenn dein OS im Hintergrund weiterläuft, ist es nämlich nicht verwunderlich, daß sich eip ändert. ;-)"
+2007-12-27 15:49:27,Homix,"kja mit ""stop"" :)"
+2007-12-27 15:49:39,Homix,ja*
+2007-12-27 15:50:14,taljeth,Also bei mir paßt es genua.
+2007-12-27 15:50:20,taljeth,*genau ;-)
+2007-12-27 15:50:36,Homix,bei mir spinnt irgendwie alles
+2007-12-27 15:50:42,taljeth,Windows. *g*
+2007-12-27 15:50:51,schnippi,lol
+2007-12-27 15:51:34,Homix,lol wäre genau so wie wenn ich für LOST Bugs Linux verantwortlich machen würde *g*
+2007-12-27 15:52:07,schnippi,"nö, das gilt nicht :)"
+2007-12-27 15:52:21,taljeth,LOST hat keine Bugs. ;-)
+2007-12-27 15:52:32,taljeth,Das sind alles Features.
+2007-12-27 15:52:57,schnippi,...die in keinem svn log stehen ;)
+2007-12-27 15:53:13,schnippi,als überraschung für den geneigten tester
+2007-12-27 15:55:03,Yarcanox,xD
+2007-12-27 15:57:09,taljeth,"schnippi: Richtig, irgendworin muß ja der Spaß für den Tester bestehen. ;-)"
+2007-12-27 15:57:40,schnippi,"genau, einfach als prämiensystem sehen ;)"
+2007-12-27 15:57:45,Homix,hmm eine frage
+2007-12-27 15:57:57,Homix,"das A20 Gate, muss das für jede CPU aktiviert werden ? nicht oda ?"
+2007-12-27 15:59:47,Noooooooooo1,doch
+2007-12-27 15:59:57,Homix,"ich depp, ich hab in dem Boot-Up Code ein ""call Enable_A20"" drinnen gehabt für jede CPU, dann ist Qemu immer abgestürtzt"
+2007-12-27 16:00:00,Homix,-t
+2007-12-27 16:00:21,Homix,das darf natürlich nur einmal aufgerufen werden ;)
+2007-12-27 16:00:23,Noooooooooo1,wieso sollte das a20 nicht immer nötig sein?
+2007-12-27 16:00:34,Noooooooooo1,aach so für jede cpu
+2007-12-27 16:00:45,Homix,weil man zwar mehere cpus hat aber nicht mehere Keyboard Controller :)
+2007-12-27 16:00:50,Noooooooooo1,du redest von smp
+2007-12-27 16:01:06,Homix,mit meheren CPUs meine ich generell SMP ;)
+2007-12-27 16:01:14,Noooooooooo1,du hast gesagt jede cpu
+2007-12-27 16:01:27,Homix,ja im Bootup code ;)
+2007-12-27 16:01:33,Noooooooooo1,"und ich habe gemeint du fragst ob es ausnahmen gäbe, bei denen a20-enabling nicht nötig wäre"
+2007-12-27 16:02:07,Noooooooooo1,ja das kam aber erst später
+2007-12-27 16:08:30,Homix,"hmm wenn ich in Qemu 2 CPUs emuliere, beide hochfahre und dann normal wie auf einem single-cpu system nur eine benutze, ist Qemu so ca. 5 mal langsamer ;) (nur 20% der Performance9"
+2007-12-27 16:11:12,Homix,gibt es in LOST sowas wie GetTickCount ? oder halt eine gute Zeitmessung (so 10 bis 20 ms genauigkeit)
+2007-12-27 16:12:09,taljeth,get_tick_count() ;-)
+2007-12-27 16:12:15,Homix,ah cool :)
+2007-12-27 16:12:30,taljeth,In syscall.h
+2007-12-27 16:12:33,Homix,wird das bei jedem Taskwitch um 10 ms erhöht ? 
+2007-12-27 16:12:48,Homix,evt portiere ich ein HomixOS Programm auf LOST ;)
+2007-12-27 16:13:00,taljeth,Das hat nichts mit Taskswitches zu tun...
+2007-12-27 16:13:28,Homix,"ich wollte nur wissen, wann die TickCount Variable sozusagen erhöht wird"
+2007-12-27 16:14:18,taljeth,"Erhöht wird bei jedem Timer-Interrupt und die Einheit sind Mikrosekunden, wenn ich es richtig sehe"
+2007-12-27 16:14:57,Homix,aha lso keine millisekunden ? wieso wenn der timer int eh nur alle 10 ms oder so aufgerufen wird ?
+2007-12-27 16:17:16,taljeth,"Weil das konfigurierbar ist, wie oft der Timer aufgerufen wird"
+2007-12-27 16:18:42,Homix,wenigstens habt ihr dann QWord hergenommen ;)
+2007-12-27 16:19:27,taljeth,"Ja, und der reicht vermutlich eine Weile. ;)"
+2007-12-27 16:27:48,Homix,janosch: wie sendest du einen IPI ?
+2007-12-27 16:28:54,Yarcanox,vllt verkauft mir mei muddah ihres
+2007-12-27 16:29:12,Homix,lol
+2007-12-27 16:30:09,schnippi,lol
+2007-12-27 16:30:16,Yarcanox,"was ""lol""t ihr denn alle :o"
+2007-12-27 16:30:23,schnippi,für 250e kriegst du meines :)
+2007-12-27 16:30:29,schnippi,-e
+2007-12-27 16:30:32,Yarcanox,ich gluab die teiler gibt's billiger
+2007-12-27 16:30:39,Yarcanox,wahrscheins für 5-10 euro bei ebay
+2007-12-27 16:30:40,schnippi,dann halt nicht :P
+2007-12-27 16:30:42,bluecode,schnippi: cent?
+2007-12-27 16:30:55,schnippi,"noe, EUR :)"
+2007-12-27 16:31:02,schnippi,mit schoener schwarzer front
+2007-12-27 16:31:58,schnippi,vllt geht sowas ja in 20 jahren mal an sammler weg :>
+2007-12-27 16:32:20,schnippi,"hab auch irgendwo noch nen 5 1/4"""
+2007-12-27 16:32:30,schnippi,mit ganzen 3 disketten
+2007-12-27 16:53:30,Yarcanox,hi janosch :)
+2007-12-27 16:53:39,janosch,hi
+2007-12-27 17:01:24,bluecode,"wie bringe ich gcc/ld dazu, dass er eine Funktion zwar in die .o packt sie aber nach dem linken in eine .so nicht mehr gelistet wird?"
+2007-12-27 17:05:29,taljeth,Also sozusagen liblokale Funktionen?
+2007-12-27 17:05:36,bluecode,jo
+2007-12-27 17:05:41,taljeth,Ich weiß es aber natürlich nicht.
+2007-12-27 17:06:43,FreakyPenguin,taljeth: Woran bist du eigentlich im Moment?
+2007-12-27 17:06:49,FreakyPenguin,Schon am tabben? *g*
+2007-12-27 17:09:33,taljeth,"Nein, darauf habe ich mal so richtig gar keine Lust. ;-)"
+2007-12-27 17:10:07,taljeth,"Ist die neue DNS-Version eigenltich in Ordnung, damit ich das mal eincehcken kann?"
+2007-12-27 17:12:27,FreakyPenguin,taljeth: Du könntest natürlich auch endlich mal init neu schreiben. 
+2007-12-27 17:12:39,FreakyPenguin,Der nervt mich nämlich schon wieder. ;-)
+2007-12-27 17:13:04,FreakyPenguin,"taljeth: Stimmt, das sollte ich auch noch acken. Angeschaut habe ichs aber dann ist mir irgendwas dazwischen gekommen."
+2007-12-27 17:13:53,taljeth,"Hm, init wäre eine Möglichkeit."
+2007-12-27 17:13:59,taljeth,Was ist denn dort das dringendste?
+2007-12-27 17:14:41,FreakyPenguin,Vermutlich allgemein Abhängigkeit und natürlich mein schöner Code. *g*
+2007-12-27 17:15:03,taljeth,Du meinst einen kompletten Rewrite oder wie?
+2007-12-27 17:15:27,FreakyPenguin,Hm das ist wohl vor kernel2 noch nicht wirklich sinnvoll...
+2007-12-27 17:15:45,taljeth,Könnte sein
+2007-12-27 17:16:01,taljeth,"Ich bin mir nur nicht sicher, ob es nach kernel2 sinnvoll ist ;-)"
+2007-12-27 17:16:09,FreakyPenguin,*g*
+2007-12-27 17:16:23,FreakyPenguin,"Naja, dann fliegt der LostIO-Kram schon mal raus. ;-)"
+2007-12-27 17:17:00,taljeth,"Was natürlich auch in einer gewissen Weise probilematisch ist, da init ja dafür verantwortlich ist, die passenden Services zu starten. ;-)"
+2007-12-27 17:17:46,FreakyPenguin,Jo...
+2007-12-27 17:47:39,Homix,"hmm wenn man ein IPI an eine CPU sendet, muss diese CPU dann was machen, damit wieder ein IPI bei ihr ankommen kann ?"
+2007-12-27 17:48:27,Homix,irgendwo hab ich davon was gelesen aber ich find es nicht mehr
+2007-12-27 17:49:55,Noooooooooo1,wie wärs mit einem EOI?
+2007-12-27 17:50:12,Homix,hmm ja wo muss ich den setzten ?
+2007-12-27 17:50:24,Homix,ich hab irgendwo was davon gelesen aber mir nicht gemerkt welches register :)
+2007-12-27 17:50:51,taljeth,"FreakyPenguin: Welche Datei muß ich nochmal öffnen, wenn ich sis900-Debugausgaben auf einem anderen VT haben will?"
+2007-12-27 17:51:01,Noooooooooo1,0xb0
+2007-12-27 17:51:10,Noooooooooo1,das einfach auf Null oder sonst was setzen
+2007-12-27 17:52:55,bluecode,0 wird empfohlen um aufwärtskompatibel zu sein
+2007-12-27 17:53:18,Homix,danke
+2007-12-27 17:53:19,Noooooooooo1,aufwärstskompatibel...
+2007-12-27 17:55:07,FreakyPenguin,taljeth: vterm:/vterm2/(in|out) halt
+2007-12-27 17:56:46,taljeth,"Die Antwort war gerade  rechtzeitig, daß ich sie sehe, nachdem ich genau das eingetippt hatte. ;-)"
+2007-12-27 18:01:04,taljeth,"Und korrekt wäre natürlich vterm1, weil es bei 0 anfängt. ;-)"
+2007-12-27 18:01:58,FreakyPenguin,"Was aber nicht heisst, dass es mit vterm2 nicht geht ;-)"
+2007-12-27 18:02:26,taljeth,"Das ist zwar richtig, aber dann nicht das zweite VT. ;-)"
+2007-12-27 18:02:53,taljeth,"Ach Mist, ich habe ja nur nach einem ""anderen"" gefragt..."
+2007-12-27 18:02:55,FreakyPenguin,"Das hast du ja auch nicht gesacgt, dass du das auf dem 2. möchtest. ;-)"
+2007-12-27 18:06:17,taljeth,"Hm, ist es ein gutes oder ein schlechtes Zeichen, wenn mich vor zwei Stunden jemand im ICQ gefragt hat, welchen ""File System Type"" er für Ubuntu am besten nimmt, und er seither nicht wieder aufgetaucht ist? *g*"
+2007-12-27 18:11:16,schnippi,LOL
+2007-12-27 18:26:59,taljeth,re
+2007-12-27 18:27:17,taljeth,"Wer hat denn so einen Mist programmiert, daß der sis900-Treiber bei einem RxOverflow aufgibt? *g*"
+2007-12-27 18:32:30,janosch,"Homix, du hast in deiner Roadmap zu 0.2.0 ""100%-ige Stabilität"" stehen. Ist das nicht etwas übertrieben?"
+2007-12-27 18:52:28,FreakyPenguin,"Ich hab noch selten jemanden gesehen, der sich so schlecht ausdrücken kann wie ch100. :-/"
+2007-12-27 18:52:57,bluecode,hm?
+2007-12-27 18:53:33,bluecode,"wobei wow.... er hat endlich geblickt, dass ich ihm bei seinem webzeugs nicht helfen kann *g*"
+2007-12-27 18:53:37,Homix,re
+2007-12-27 18:53:49,Homix,was soll an 100%ige Stabilität übertrieben sein ? *g*
+2007-12-27 18:54:38,FreakyPenguin,bluecode: http://famkaufmann.info/~toni/ch100.txt
+2007-12-27 18:54:56,FreakyPenguin,Vielleicht sollte er es auch einfach mal mit ganzen Sätzen probieren.
+2007-12-27 18:56:03,FreakyPenguin,"Hm ich glaube der hat es tatsächlich geschafft, jede zeile mit ""^^ xD"" abzuschliessen. ;-)"
+2007-12-27 19:02:12,taljeth,pech ^^ :P
+2007-12-27 19:06:33,stultus,moin
+2007-12-27 19:07:52,Homix,hi
+2007-12-27 19:08:18,FreakyPenguin,Moin stultus
+2007-12-27 19:11:33,FreakyPenguin,schnippi\muede: Ah ist das bei dir nicht Dauerzustand? ;-)
+2007-12-27 19:13:47,schnippi\muede,"eigentlich nicht, wieso?"
+2007-12-27 19:14:12,bluecode,schnippi war heut doch richtig früh auf ;-)
+2007-12-27 19:14:20,schnippi\muede,seit 23 uhr ;)
+2007-12-27 19:14:30,bluecode,oder so
+2007-12-27 19:14:31,schnippi\muede,ich brauch endlich wieder nen vernünftigen rhytmus
+2007-12-27 19:14:40,bluecode,jo
+2007-12-27 19:14:55,bluecode,ich hab meinen die letzten zwei tage gefunden
+2007-12-27 19:15:06,schnippi\muede,du stehst schon um 7 auf ...
+2007-12-27 19:15:14,schnippi\muede,das ist nicht vernünftig wenn ferien sind ;)
+2007-12-27 19:15:24,bluecode,"jo, ich find das eigentlich gut"
+2007-12-27 19:19:17,taljeth,Alles Müll irgendwie...
+2007-12-27 19:22:36,taljeth,"FreakyPenguin: Gleich klarstellen, daß man kein Python kann, hilft. *g*"
+2007-12-27 19:27:03,schnippi\muede,lol
+2007-12-27 19:38:03,taljeth,FreakyPenguin: Wann kommt denn das neue vterm? Das alte ist irgendwie 0xd00f
+2007-12-27 19:50:09,bluecode,*test*
+2007-12-27 19:51:17,Homix,hmm irgendwie ist Bochs für meinen SMP Scheduler zu langsam
+2007-12-27 19:51:27,bluecode,"war ja klar, dass ich jetzt wieder gefragt werde ob ich python kann... ich hab mich grade gerfeut :-/"
+2007-12-27 19:51:40,stultus,"Homix: *lol* du versucht nicht ernsthaft BOCHS zu verwenden, oder? "
+2007-12-27 19:51:54,bluecode,ich finde bochs gut
+2007-12-27 19:52:10,stultus,"jo, aber normalerweise ist er trotzdem _lahm_ :/"
+2007-12-27 19:52:17,Homix,Bochs ist gut um etwas zu testen
+2007-12-27 19:53:05,Homix,"blöderweise kann es passieren, dass, wenn die zweitre CPU einen Taskwitch macht, die erste durch den nächsten IRQ schon wieder dran ist :"
+2007-12-27 19:53:08,Homix,:)
+2007-12-27 19:53:16,schnippi\muede,stultus: wie ist dein schachturnier ausgegangen? :)
+2007-12-27 19:54:20,stultus,"schnippi\muede: die ersten 2 runden heute, schlecht."
+2007-12-27 19:54:41,stultus,"erste okay gespielt, aber gegen leute die inner dwz 600pkt besser sind, kann man auch nich viel machen."
+2007-12-27 19:54:45,stultus,zweite... njo
+2007-12-27 19:54:49,stultus,die war mies :(
+2007-12-27 19:55:07,taljeth,Mies ist ein gutes Stichwort
+2007-12-27 19:55:19,schnippi\muede,gehts um FreakyPenguins code?
+2007-12-27 19:55:30,schnippi\muede,achso
+2007-12-27 19:55:33,schnippi\muede,na dann
+2007-12-27 19:55:46,taljeth,Sollte im Kernel eher nicht passieren. ;-)
+2007-12-27 19:55:56,schnippi\muede,stultus: wurdest halt mal gepwnt :)
+2007-12-27 19:56:09,taljeth,Solange das nicht die Regel ist. ;-)
+2007-12-27 20:02:45,FreakyPenguin,taljeth: vterm kommt schon noch. ;-)
+2007-12-27 20:02:55,taljeth,"Hmpf, das war mal wieder so ein toller Spezialfall... abort_task und Feuern eines Timers in einem Zug führt zum PF..."
+2007-12-27 20:03:18,FreakyPenguin,"Nachdem ich einmal mehr bemerkt habe, dass man den Cursor nicht sieht, wenn die Farbe auf Schwarz eingestellt ist... *g*"
+2007-12-27 20:03:23,taljeth,*g*
+2007-12-27 20:03:49,schnippi\muede,lol
+2007-12-27 20:04:48,FreakyPenguin,"Nachdem ich den Code zum setzen des Cursors 5 Mal mit dem alten vterm und dem kernel verglichen habe, bin ich endlich auf diese geniale Idee gekommen. *g*"
+2007-12-27 20:06:11,taljeth,"wtf? Wenn netcard->rx_cur_buffer = 0; einen PF auslöst, stimmt irgendwas wirklich nicht..."
+2007-12-27 20:08:24,schnippi\muede,gn8
+2007-12-27 20:08:39,bluecode,taljeth: netcard = 0?
+2007-12-27 20:08:50,taljeth,"Vermutlich, aber das klingt ungesund. ;-)"
+2007-12-27 20:09:06,bluecode,richtig ;-)
+2007-12-27 20:09:13,bluecode,gut dass ich cdi noch nicht portiert habe ;-)
+2007-12-27 20:09:19,taljeth,"Wobei, kann eigentlich nicht sein, das ist mitten in reset_nic."
+2007-12-27 20:09:34,taljeth,Auf netcard wird schon davor ein paarmal zugegriffen.
+2007-12-27 20:09:48,FreakyPenguin,Huii das klingt nett. ;-)
+2007-12-27 20:10:11,taljeth,Du mich auch
+2007-12-27 20:10:44,taljeth,"Ich glaube, ich gehe mit der Anzahl der Rx-Puffer wieder auf 8 zurück, da ist sowas nicht passiert"
+2007-12-27 20:11:11,FreakyPenguin,*g*
+2007-12-27 20:11:12,bluecode,another bug fixed *g*
+2007-12-27 20:11:46,taljeth,Ich kann's mir halt nicht wirklich erklären...
+2007-12-27 20:12:47,Homix,"hmm mein Kernel wird immer unstabiler, blödes SMP ..."
+2007-12-27 20:12:51,bluecode,ah taljeth du könntest das wissen: Kriegt man über die uni ein paar standards kostenlos?
+2007-12-27 20:13:04,bluecode,Homix: dann wird nicht korrekt gelockt
+2007-12-27 20:13:40,taljeth,"mov 0x8(%ebp),%eax muß das sein, was die Sache noch weniger verständlich macht"
+2007-12-27 20:14:09,bluecode,und was ist ebp?
+2007-12-27 20:14:27,taljeth,Das habe ich selbstverständlich nicht aufgeschrieben *g*
+2007-12-27 20:14:53,taljeth,"Ist halt ungünstig, wenn Entwicklungs- und Testrechner dasselbe ist"
+2007-12-27 20:15:52,bluecode,du könntest meine Frage oben mal lesen (falls du das nicht schon getan hast) ;-)
+2007-12-27 20:16:54,taljeth,"Kommt drauf an, mit wem die Uni Verträge hat"
+2007-12-27 20:17:27,bluecode,hatte eure uni da irgendwelche verträge?
+2007-12-27 20:17:28,taljeth,"An manche Sachen kommt man ran, ich weiß es vor allem von Artikeln und sowas."
+2007-12-27 20:17:36,taljeth,Standards glaube ich eher weniger.
+2007-12-27 20:17:52,bluecode,"naja, prof fragen hilft manchmal"
+2007-12-27 20:17:53,taljeth,Habe ich aber auch nie danach gesucht
+2007-12-27 20:20:25,taljeth,"Ich habe jetzt gar keine Lust mehr, zu rebooten, wenn der d00fe Treiber sowieso nie funktioniert. :-/"
+2007-12-27 20:20:45,bluecode,hm? Du warst doch vorhin ne weile online
+2007-12-27 20:21:00,taljeth,"Ein paar Sekunden, ja..."
+2007-12-27 20:22:34,bluecode,und dann? rx/tx overflow?
+2007-12-27 20:25:43,taljeth,"Weiß ich nicht. Ich wollte ja grad ein bißchen mehr Debuginfos holen, als das Zeug angefangen hat, zu pagefaulten"
+2007-12-27 20:26:12,bluecode,das is natürlich fies.
+2007-12-27 20:27:18,taljeth,"Theoretisch sollte ein Rx-Overflow doch nichts ausmachen, oder?"
+2007-12-27 20:27:28,taljeth,Ich muß die Pakete halt auslesen und hinterher wieder Rx-Enable setzen
+2007-12-27 20:29:51,bluecode,kann ich dir ehrlich gesagt nicht sagen
+2007-12-27 20:30:56,taljeth,"Für sis900 nicht, das ist klar. Aber von den anderen Karten weißt du es auch nicht?"
+2007-12-27 20:31:21,bluecode,"nein, eben nicht"
+2007-12-27 20:31:31,taljeth,"Hm, schade."
+2007-12-27 20:32:25,taljeth,"Naja, einmal probiere ich es noch"
+2007-12-27 20:32:33,bluecode,viel Glück
+2007-12-27 20:32:47,taljeth,"Aber wenn dann wieder alles schief geht, habe ich für heute die Nase voll von dem Zeug"
+2007-12-27 20:45:37,stultus,ich höre?
+2007-12-27 20:45:45,stultus,:D
+2007-12-27 20:46:19,taljeth,"Hm, hätte ich es evtl. mit einem make clean versuchen sollen? *g*"
+2007-12-27 20:46:40,FreakyPenguin,taljeth: /home/toni/arbeitskopien/lost_aktuell/lost/trunk/src/modules/tcpip/lostio_if.c:117: undefined reference to `ip_to_string'
+2007-12-27 20:47:05,taljeth,"Ach stimmt, da waren ja noch mehr Dateien dabei..."
+2007-12-27 20:48:21,FreakyPenguin,Hm das cdi-floppy pagefaultet nach einem up auch...
+2007-12-27 20:48:30,FreakyPenguin,"Ah da hast du was in cdi kaputt gemacht, oder?"
+2007-12-27 20:50:22,taljeth,"Ja, kompilier nochmal alles durch"
+2007-12-27 20:50:37,taljeth,Da dürfte es ein paar Warnungen wegen inkompatiblen Typen geben
+2007-12-27 20:50:57,taljeth,network.h ist drin
+2007-12-27 20:52:00,taljeth,"Errorcode 6 ist schreiben, richtig?"
+2007-12-27 20:52:26,taljeth,"Wir sind immer noch beim mov 0x8(%ebp),%eax. Verstehe das, wer will..."
+2007-12-27 20:52:33,FreakyPenguin,Jo...
+2007-12-27 20:53:17,taljeth,"Hm, oder sitze ich mal wieder einen Befehl daneben?"
+2007-12-27 20:53:32,taljeth,"movl $0x0,0x68f4(%eax) sieht gefährlicher aus"
+2007-12-27 20:53:54,bluecode,taljeth: Könnt ihr mit folgendem Interface für spezielle cdi memory allokationen was anfangen? http://pastebin.com/d1f78325 Das physical kann meinetwegen weglassen werden. Das cdi_get_physical_address() soll dann nur auf so allozierte speicherbereiche definiert sein.
+2007-12-27 20:54:19,taljeth,"cdi_get_physical_address existiert nicht mehr, das ist Bullshit."
+2007-12-27 20:54:33,bluecode,wie wird es dann gemacht?
+2007-12-27 20:55:02,taljeth,"int cdi_alloc_phys_mem(size_t size, void** vaddr, void** paddr);"
+2007-12-27 20:55:06,bluecode,und warum ist das b00lshit?
+2007-12-27 20:55:25,bluecode,ein size_t type wie oben beschrieben wäre nice
+2007-12-27 20:55:31,stultus,"weil es bricht sobald swap, reallocation, .... dazukommt. *g*"
+2007-12-27 20:55:41,taljeth,"bluecode: Jo, das könnte man ergänzen."
+2007-12-27 20:56:04,bluecode,stultus: so allozierte speicherbereiche können logischerweise nicht geswappt werden ;-)
+2007-12-27 20:56:05,taljeth,"Und b00lshit ist es, weil es zu Fehlern verleitet, wie sis900 eindrucksvoll bewiesen hat. ;-)"
+2007-12-27 20:56:26,bluecode,"aber mich stört, dass das dann phys kontinuierlich sein muss..."
+2007-12-27 20:56:54,taljeth,"Genau darum geht es doch, daß man physisch kontinuierlichen Speicher bekommt?"
+2007-12-27 20:57:05,bluecode,braucht man aber meistens nicht
+2007-12-27 20:57:16,bluecode,zumindest hab ich es für pcnet nicht gebraucht.
+2007-12-27 20:57:17,taljeth,Dann kann man doch aber malloc nehmen?
+2007-12-27 20:57:35,bluecode,das hat aber kein alignment und pageboundaries machen da probs
+2007-12-27 20:58:57,taljeth,Und was ist an deiner Variante nicht kontinuierlich?
+2007-12-27 20:59:08,taljeth,"Bzw. woher weiß ich, wo es physisch bricht?"
+2007-12-27 20:59:26,taljeth,"Wenn ich der Karte einen Buffer verfüttere, sollte der doch am Stück sein."
+2007-12-27 20:59:27,bluecode,an einer page boundary
+2007-12-27 21:00:20,taljeth,"Du kannst ja vier einzelne Pages anfordern statt einmal vier Pages, dann hast du dasselbe Ergebnis."
+2007-12-27 21:00:34,bluecode,"richtig, kann man"
+2007-12-27 21:01:03,bluecode,naja mir egal... ich kann euer schon auch implementieren
+2007-12-27 21:03:21,taljeth,Als ob du in absehbarer Zeit überhaupt was implementieren würdest... ;-)
+2007-12-27 21:03:54,bluecode,hm? klar... ich bin halt momentan eher beim code cleanup
+2007-12-27 21:06:44,Homix,ich will SMP implementieren aber so gut wie gar nix geht mehr
+2007-12-27 21:07:18,stultus,Homix: Arbeite doch an LOST ;)
+2007-12-27 21:07:27,Homix,ne danke ;)
+2007-12-27 21:07:28,stultus,kernel2 hat SMP. und der is nich ganz so kaputt :)
+2007-12-27 21:07:42,bluecode,stultus: sicher?
+2007-12-27 21:07:57,stultus,in welchem Aspekt?
+2007-12-27 21:07:58,taljeth,Die Kaputtheiten sind noch nicht so offensichtlich. ;-)
+2007-12-27 21:08:57,FreakyPenguin,"Doch doch, der ist schon kaputt, da kann ich euch beruhigen. ;-)"
+2007-12-27 21:09:12,bluecode,wie weit bist du denn überhaupt mit smp in kernel2 freaky?
+2007-12-27 21:09:42,FreakyPenguin,Noch nicht sehr weit. ;-)
+2007-12-27 21:10:12,bluecode,dann hat wohl stultus wiedermal seine überragende Unwissenheit präsentiert ;-)
+2007-12-27 21:10:35,FreakyPenguin,Ich hatte 6 Testtasks auf einer Testmaschine am laufen und das hat getan. Aber die haben nichts ausser einem Pritf und einem while(1); gemacht. ;-)
+2007-12-27 21:10:59,FreakyPenguin,"Ein paar locks sind auch schon drin, aber sobald das da mit Syscalls richtig zur Sache geht rummst es schon wieder. ;-)"
+2007-12-27 21:11:06,stultus,also. es läuft. *g*
+2007-12-27 21:11:32,bluecode,"super, dann hab ich ja auch smp implementiert ;-)"
+2007-12-27 21:11:33,stultus,alles ist relativ. :)
+2007-12-27 21:27:22,FreakyPenguin,"Ich glaub ich gehe mich mal eine Weile hinlegen, ich produziere grad nur noch Mist... ;-)"
+2007-12-27 21:27:41,FreakyPenguin,Villeicht komme ich heute nochmal... vielleicht auch nicht. ;-)
+2007-12-27 21:28:12,bluecode,cu & hf
+2007-12-27 21:52:15,Homix,"hmm jeztt muss ich mein PageFault-Handler-Debug-Meldung umschreiben wiel mir ""PageFault in ZeroMemory"" gar nix sagt :)"
+2007-12-27 22:48:45,stultus,"So, bin dann wieder weg"
+2007-12-27 22:49:06,stultus,Morgen bissel ausgeschlafener sein als heute... man ist nach weniger als 7 Stunden Schlaf doch nur begrenzt denkfähig.
+2007-12-27 22:49:29,Homix,bye
+2007-12-27 22:49:41,stultus,gute nacht
+2007-12-27 22:51:47,Homix,hmm der tag hat meine roadmap maßgeblich geändert
+2007-12-27 22:52:32,Homix,SMP ist erstmal gestrichen
+2007-12-27 22:55:31,taljeth,*lol*
+2007-12-27 22:56:33,bluecode,"ich geh auch ins bett, gn8 leute"
+2007-12-27 22:56:50,Homix,gn8
+2007-12-27 23:00:26,janosch,"Homix, ist SMP so schlimm?"
+2007-12-27 23:01:53,Homix,ja
+2007-12-27 23:02:00,Homix,sehr hinterhältig
+2007-12-27 23:02:14,janosch,wo kommst du denn nicht weiter?
+2007-12-27 23:02:29,Homix,ich hab SMP komplett integriert
+2007-12-27 23:02:38,Homix,aber
+2007-12-27 23:02:44,janosch,aso du bist fertig?
+2007-12-27 23:02:47,taljeth,Es tut nicht? ;-)
+2007-12-27 23:02:55,Homix,sinlocks an den richtigen stellen zu setzen ist bei einem großen kernel schwierig ;)
+2007-12-27 23:03:31,Homix,spinlocks*
+2007-12-27 23:03:37,janosch,IPIs gehen jetzt bei dir?
+2007-12-27 23:04:02,Homix,ja
+2007-12-27 23:04:26,janosch,musst mir dann mal morgen oder so helfen. bin jetzt weg n bissl zocken
+2007-12-27 23:06:05,Homix,hmm helfen ? ich hab eigentlich nur 2 zeilen code für einen ipi ;)
+2007-12-27 23:08:00,taljeth,"Ich glaube, ich gehe dann auch mal."
+2007-12-27 23:08:08,taljeth,"Falls ich nochmal komme, nur kurz unter LOST."
+2007-12-27 23:08:11,taljeth,gn8
+2007-12-27 23:14:20,taljeth|sis900,re

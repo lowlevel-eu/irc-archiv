@@ -1,0 +1,656 @@
+date/time,nick,message
+2016-08-03 00:01:43,Quantenmagier,ok das kann ne weile dauern muß erst tex installieren eh ich dexygen installiern kann ^^
+2016-08-03 00:02:07,kevin,Glückwunsch *g*
+2016-08-03 00:02:19,Svenska,Quantenmagier: http://lpt.tyndur.org/cdi/
+2016-08-03 00:02:37,Svenska,"hmm, CDI-Code darf nicht unterbrochen werden"
+2016-08-03 00:02:38,Quantenmagier,Svenska: is immenoch veraltet ;)
+2016-08-03 00:02:40,kevin,"Ich glaube, er hat sich darüber beschwert, dass das nicht ganz aktuell ist"
+2016-08-03 00:02:52,Svenska,achso. die version ist in beiden fällen 0.2 *g*
+2016-08-03 00:03:11,kevin,Die aktuelle tyndur-Stable ist ja auch noch 0.2.x ;-)
+2016-08-03 00:03:22,Svenska,"was heißt ""darf nicht unterbrochen werden"" genau?"
+2016-08-03 00:03:28,Svenska,keine IRQs?
+2016-08-03 00:03:28,kevin,"Aber wenn sich XanClic beeilt, gibt es an Weihnachten die 0.3 *g*"
+2016-08-03 00:03:51,Quantenmagier,naja mich nervt halt vor allem daß das audio modul in 0.2 fehlt ^^
+2016-08-03 00:03:54,kevin,"Svenska: Zum Beispiel, und kein Threading"
+2016-08-03 00:04:08,Svenska,"und direkt drunter steht ""threading is allowed"""
+2016-08-03 00:04:13,Svenska,(allerdings nur per-device)
+2016-08-03 00:05:01,Svenska,"d.h. ich kann hda, hdb und ac97 jeweils in einem thread laufen lassen, aber die threads duerfen nicht gleichzeitig laufen?"
+2016-08-03 00:05:02,kevin,"Hm, dann wohl eher sowas wie Signalhandler und so"
+2016-08-03 00:05:19,Svenska,"hey, du hast das doch (mit)entwickelt *g*"
+2016-08-03 00:05:50,kevin,"Die Threads dürfen auch gleichzeitig laufen, aber halt nicht zwei Threads für dasselbe Device (also z.B. nicht parallel zwei Read-Requests)"
+2016-08-03 00:06:04,Svenska,"ja gut, das ist eindeutig"
+2016-08-03 00:06:30,kevin,"Im Prinzip kannst du den kompletten Absatz auch so lesen: Wir haben im Moment keine Lust, uns darüber näher Gedanken zu machen ;-)"
+2016-08-03 00:06:32,Svenska,"btw: die modulbeschreibung fuer Fs, Net und SCSI ist auch in der englischen doku deutsch"
+2016-08-03 00:06:36,Svenska,*g*
+2016-08-03 00:06:56,Quantenmagier,"wtf, dh ich muß die zugriffe auf das dev mit nem mutex wrappen?"
+2016-08-03 00:06:58,kevin,Svenska: Patches werden akzeptiert ;-)
+2016-08-03 00:07:11,Svenska,"Quantenmagier: ja, oder anderweitig serialisieren"
+2016-08-03 00:07:43,Svenska,"du kannst auch einfach pro device einen kernel-thread erzeugen, der eine queue aus requests abarbeitet und den befuettern"
+2016-08-03 00:08:06,Quantenmagier,lol dann kann ich cdi ja doch einfach gewrapped in mein natives interface einbinden wnen ich es eh wrappen muß xD
+2016-08-03 00:08:12,kevin,"Ich glaube, wenn man nicht absichtlich ein asynchrones Interface baut, ergibt sich das mit der Serialisierung fast automatisch"
+2016-08-03 00:08:34,Svenska,"dir ist schon klar, dass CDI das interface zwischen ""treiber"" und ""kernel"" ist?"
+2016-08-03 00:08:50,Svenska,"wie du ""userspace"" und ""kernel"" verknotest, bleibt dir ueberlassen"
+2016-08-03 00:09:03,Quantenmagier,aso
+2016-08-03 00:10:11,Svenska,"hmm, die high-level-doku fehlt ganz ;)"
+2016-08-03 00:10:11,Quantenmagier,"joa userspace und kernel sind über int 0x35 und über den TriebMeister miteinander verknüpft und der Triebmeister ist eigentlich gleichzeitig das Interface zwischen Kernel und Treiber, also eigentlich verknüpft der alles miteinander."
+2016-08-03 00:10:24,Svenska,es scheint usb und bios module zu geben *g*
+2016-08-03 00:10:46,Svenska,"egal, ich mecker mal nicht weiter ;)"
+2016-08-03 00:11:04,Svenska,"heißt das, du hast schon ein interface fuer hardware?"
+2016-08-03 00:11:27,Svenska,"dann kannst du einfach ""CDI"" als ein weiteres ""gerät"" anbinden und damit cdi-treiber benutzen"
+2016-08-03 00:11:36,Quantenmagier,jop so war ja der plan
+2016-08-03 00:11:47,Quantenmagier,und parallel kan nich dann meine nativen treiber laden
+2016-08-03 00:11:56,Quantenmagier,bzw..
+2016-08-03 00:12:04,kevin,"Svenska: Highlevel-Doku schreiben ist gar nicht so einfach. Und die Motivation dafür zu finden, erst recht nicht."
+2016-08-03 00:12:04,Svenska,"oder du machst CDI zum first-class-buerger, und portierst deine nativen treiber nach CDI ;)"
+2016-08-03 00:12:07,Quantenmagier,so ähnlich ja
+2016-08-03 00:12:14,Svenska,"kevin: ich weiß, mir geht's ja ähnlich"
+2016-08-03 00:13:03,kevin,"Eigentlich müsste man die Fragen, die dazu kommen, sammeln und das dann in die Doku packen"
+2016-08-03 00:13:22,kevin,"""man""..."
+2016-08-03 00:13:33,Svenska,s/man/kevin/ ? ;-)
+2016-08-03 00:13:36,Quantenmagier,"nee cdi als first-class-bürger lass ich besser, glaub nicht daß das in der lage wäre mein virtuelles Dateisystem mit dem Datei-Editor zu verknüpfen und so ;) :D"
+2016-08-03 00:13:46,Svenska,?
+2016-08-03 00:14:12,kevin,Das ist auch nicht die Aufgabe von einem Treiberinterface?
+2016-08-03 00:15:04,kevin,"Svenska: Ich mag es nur nicht, der einzige ""man"" im Projekt zu sein ;-)"
+2016-08-03 00:15:28,Svenska,s/man/(kevin|max)/ ?
+2016-08-03 00:15:42,Svenska,"ich hab kein OS, mit dem man spielen könnte, aber dafuer haufenweise startup-code geschrieben bisher"
+2016-08-03 00:15:43,kevin,Wär ein erster Ansatz
+2016-08-03 00:16:35,Quantenmagier,"kevin von einem gewöhnlichen treiberinterface vllt nicht, also so sieht in etwa ne treiberkette bei mir aus:"
+2016-08-03 00:16:36,Quantenmagier,;<>> ATA/PI-Treiber
+2016-08-03 00:16:36,Quantenmagier,;<> PartitionsTreiber (Interpartitionsschutz / RAID / Abstraktion)
+2016-08-03 00:16:36,Quantenmagier,;<<> DateisystemTreiber (FAT32)
+2016-08-03 00:16:36,Quantenmagier,;<> vDS (Abstraktion/mtab/Rechteverwaltung/Kompression/Verschlüsselung/Datei-Cache/Locking)
+2016-08-03 00:16:36,Quantenmagier,;<<> Editor
+2016-08-03 00:16:38,Quantenmagier,;<> ego (erweiterte grafische Oberfläche)
+2016-08-03 00:16:40,Quantenmagier,;<> hept (Window-Manager)
+2016-08-03 00:16:42,Quantenmagier,;<> gt (Grafiktreiber)
+2016-08-03 00:17:04,Svenska,"die obersten drei layer kann CDI machen, den rest nicht"
+2016-08-03 00:17:48,kevin,"Ich vermute, was du Treiberinterface nennst, ist in Wirklichkeit irgendeine Art von IPC-System"
+2016-08-03 00:18:40,Svenska,ich bin dann mal weg. gute nacht :-)
+2016-08-03 00:18:45,Quantenmagier,naja es ist vllt ne mischung aus IPC und Treiberinterface..
+2016-08-03 00:18:50,Svenska,mein internet zuhause ist ja nach wie vor karpott
+2016-08-03 00:19:21,Svenska,"ich finds uebrigens witzig, dass bei dir der grafiktreiber den editor steuert"
+2016-08-03 00:19:48,Svenska,und der grafiktreiber auf dem window-manager aufbaut ;)
+2016-08-03 00:20:00,Svenska,*duckundwech*
+2016-08-03 00:20:25,Quantenmagier,in dem beispiel da wird das programm Editor ausgeführt und das holt sich über den TriebMeister (TM) das virtuelle Dateisystem und die grafische oberfläche und der TriebMeister guckt dann das alle treiber geladen und passend verknüpft sind und gibt dem programm nen interface für die beiden treiber
+2016-08-03 00:21:21,kevin,"Jo, das ist bei mir kein Treiberinterface"
+2016-08-03 00:21:29,kevin,Aber ich bin dann auch mal weg
+2016-08-03 00:21:46,Quantenmagier,"nee man muß das aus der mitte lesen, nach hierachie, es geht nur von oben nach unten weil es den informationsfluss zeigt von einer datei auf der festplatte hin zu den zeichen der datei auf dem bildschirm"
+2016-08-03 09:26:43,yayachiken_,https://lkml.org/lkml/2016/8/2/ und intel so (einfach scrollen...)
+2016-08-03 10:16:38,darklink,Natürlich kann man für jedes zeichen einen commit machen 
+2016-08-03 10:18:47,darklink,(sagt derjenige der jeden tag nur 1-2 commits macht)
+2016-08-03 12:52:54,Quantenmagier,hab endlich bochs zum laufen gebracht aber er meckert noch wegen der festplattengeometrie
+2016-08-03 12:53:30,kevin,Dann nimm doch eine passende Geometrie
+2016-08-03 12:55:14,Quantenmagier,"joa nicht so einfach also das erste was er sagt ist disk image mußt be multiple of 512, denke mal dann muß ich nullen an meinen kernel anhängen.. und das zweite was er sagt ist specified geometry doesnt fit disk image"
+2016-08-03 12:59:36,kevin,"Nimm bximage, um das Image zu erstellen"
+2016-08-03 13:05:20,Jonathan,Moin
+2016-08-03 13:05:22,Quantenmagier,db 0x200-((Kernel_Ende-0x500)-(((Kernel_Ende-0x500)/0x200)*0x200)) dup 0xF4 ;SektorEnde für Bochs
+2016-08-03 13:05:35,Quantenmagier,so jetzt ist mein kernel nen vielfaches von 512 ^^
+2016-08-03 13:05:55,Jonathan,"Quantenmagier: Wie wär's mit ""align""? :D"
+2016-08-03 13:05:58,Quantenmagier,aber specified geometry passt immernich nicht zum disk image
+2016-08-03 13:06:25,Quantenmagier,"kp align hab ich glaubich nie benutzt, muß ich mal nachschlagen"
+2016-08-03 13:06:42,Jonathan,*g*
+2016-08-03 13:06:58,Jonathan,"Ist dafür da, bis auf ein bestimmtes Alignment zu padden"
+2016-08-03 13:07:52,Quantenmagier,aso nice
+2016-08-03 13:08:14,Quantenmagier,also schreib ich einfach align 512 0xf4 und dann padded er automatisch?
+2016-08-03 13:09:30,Jonathan,"""align 512"" sollten die meisten Assembler können, ob das mit nem bestimten Byte geht, weiß ich gerade nicht"
+2016-08-03 13:09:41,Jonathan,Da hilft dir sicherlich die Anleitung zu deinem Assembler weiter :P
+2016-08-03 13:09:53,Quantenmagier,joa die is grad offline :D
+2016-08-03 13:10:05,Quantenmagier,guck ich nacher mal ^^
+2016-08-03 13:10:11,Jonathan,Mach das :P
+2016-08-03 13:10:19,Quantenmagier,wie bekomm ich denn die passende geometry zu nem disk image?
+2016-08-03 13:10:20,Quantenmagier,"cylinders=615, heads=6, spt=17"
+2016-08-03 13:10:24,Quantenmagier,irgendsowas
+2016-08-03 13:10:59,Quantenmagier,"versteh eh nicht warum ich die bei bochs angeben muß, bei qemu war die geometry nie nötig"
+2016-08-03 13:23:39,Quantenmagier,"hm irgendwie scheint das keyboard in bochs anders zu sein als nativ oder in qemu, mein sleep code im boot manager geht irgendwie nicht in bichs"
+2016-08-03 13:23:41,Quantenmagier,"sleep:	mov	    cx,[es:040Ah]"
+2016-08-03 13:23:41,Quantenmagier,	jcxz	    sleep
+2016-08-03 13:24:12,Svenska,was hat denn der sleep-code mit der tastatur zu tun?
+2016-08-03 13:24:43,Quantenmagier,das is nen warte auf taste sleep
+2016-08-03 13:24:59,Svenska,warum nutzt du keine interrupts?
+2016-08-03 13:25:14,Quantenmagier,di enutze ich erst nachdem der kernel geladen ist
+2016-08-03 13:27:26,Svenska,dein code klingt eher nach BIOS als nach keyboard
+2016-08-03 13:29:36,Quantenmagier,aso du hast recht ich nutz doch schon nen interrupt
+2016-08-03 13:29:44,Quantenmagier,ISR_IRQ1_Tastatur:
+2016-08-03 13:29:44,Quantenmagier,	push	    ax
+2016-08-03 13:29:44,Quantenmagier,	push	    bx
+2016-08-03 13:29:45,Quantenmagier,	push	    ds
+2016-08-03 13:29:47,Quantenmagier,"	in	    ax,060h"
+2016-08-03 13:29:49,Quantenmagier,"	mov	    bx,0B800h ;"" """
+2016-08-03 13:29:53,Quantenmagier,"	mov	    ds,bx"
+2016-08-03 13:29:55,Quantenmagier,"	mov	    [040Ah],al"
+2016-08-03 13:29:57,Quantenmagier,"	mov	    [040Ch],ah"
+2016-08-03 13:29:59,Svenska,ääh
+2016-08-03 13:29:59,Quantenmagier,"	mov	    byte[040Bh],020h ;"" """
+2016-08-03 13:30:01,Quantenmagier,"	mov	    byte[040Dh],020h ;"" """
+2016-08-03 13:30:03,Quantenmagier,"	mov	    al,020h ;"" """
+2016-08-03 13:30:40,Quantenmagier,ups sry hätte ich da nopaste für verwednen müssen
+2016-08-03 13:30:48,XanClic,jop :3
+2016-08-03 13:30:50,Svenska,die regel sagt: nicht mehr als 3 zeilen
+2016-08-03 13:30:55,Quantenmagier,ok
+2016-08-03 13:32:00,Svenska,du hast also einen interrupt-getriebenen tastaturtreiber
+2016-08-03 13:32:06,Svenska,und der funktioniert unter bochs nicht?
+2016-08-03 13:32:41,Quantenmagier,jop
+2016-08-03 13:32:57,Quantenmagier,also unter qemu und nativ geht es
+2016-08-03 13:35:15,Svenska,hmm
+2016-08-03 13:36:22,Svenska,was funktioniert nicht? gibt's keine interrupts?
+2016-08-03 13:36:34,Svenska,sind interrupts aktiv und initialisierst du den kbc ueberhaupt?
+2016-08-03 13:37:54,Quantenmagier,"nee initialisieren tu ich den nicht, der is ja nach dem start aus dem bios eigentlich in nem definierten zustand?"
+2016-08-03 13:38:04,Svenska,...sicher? :-)
+2016-08-03 13:38:12,Svenska,funktionieren andere interrupts in bochs?
+2016-08-03 13:38:34,Svenska,"pruefst du auch, ob der puffer leer ist? weil wenn er nicht leer ist, kriegst du keine interrupts mehr"
+2016-08-03 13:39:11,Quantenmagier,"puh, kp kan nich nicht testen, also kann schon sein daß es am interrupt liegt, weil bochs anzeigt 00128024000i[KBD   ] internal keyboard buffer full, ignoring scancode.(a1) und so"
+2016-08-03 13:39:24,Svenska,m(
+2016-08-03 13:39:27,Quantenmagier,also das zeichen wird irgendwie nicht abgeholt
+2016-08-03 13:39:41,Quantenmagier,aber erst wen ich nen paar zeichen getippt habe
+2016-08-03 13:39:43,Svenska,"bochs SAGT dir sogar, was du falsch machst"
+2016-08-03 13:39:55,Svenska,lies beim start erstmal den KBC leer
+2016-08-03 13:39:59,Svenska,sonst gibt's keine interrupts
+2016-08-03 13:40:21,Svenska,"http://www.lowlevel.eu/wiki/Keyboard_Controller << guckst du da unter ""Initialisierung"""
+2016-08-03 13:48:20,Quantenmagier,hm keyboardpuffer leeren hat nicht geholfen
+2016-08-03 13:48:54,Svenska,hast du den link gelesen?
+2016-08-03 13:50:04,Quantenmagier,joa ich versuch mal diesen f4 befehl
+2016-08-03 13:59:58,Quantenmagier,00017846004e[DEV   ] read from port 0x0060 with len 2 returns 0xffff
+2016-08-03 14:00:19,Quantenmagier,ahh
+2016-08-03 14:01:50,Quantenmagier,"hm komisch, wenn ich in al,0x60 in den irq handler schreibe geht es aber mit in ax,0x60 gehts nicht"
+2016-08-03 14:03:07,kevin,"Liegt eventuell daran, dass der Port nur ein Byte groß ist und nicht zwei"
+2016-08-03 14:03:47,Quantenmagier,der native pc und qemu haben sich da aber nie drüber beschwert
+2016-08-03 14:04:03,kevin,Es ist trotzdem falsch
+2016-08-03 14:04:31,kevin,"Nur weil etwas falsches irgendwo trotzdem funktioniert, heißt das noch lang nicht, dass es überall funktioniert"
+2016-08-03 14:04:34,Quantenmagier,"und dieses initialisierungskram brauchte ich auch nicht, nur ein zusätzliches sti was bei qemu und nativ auch nie nötig war, bochs ist irgendwie seltsam"
+2016-08-03 14:04:35,Svenska,theorie und praxis sind oft nicht gleich
+2016-08-03 14:04:47,Svenska,aber die theorie komplett zu ignorieren ist jetzt auch nicht die beste wahl...
+2016-08-03 14:05:54,Quantenmagier,ok dann werd ich den tasterturtreiber in meinem kernel auch mal auf al ändern
+2016-08-03 14:05:58,kevin,"Ich fange ja langsam an, bei Quantenmagier ein Muster zu sehen. Konsequente Vermeidung aller Best Practices. ;-)"
+2016-08-03 14:06:07,Svenska,ja. ;-)
+2016-08-03 14:06:25,XanClic,"Best Practices sind auch nur was für Leute, die schnell fertig werden wollen"
+2016-08-03 14:06:34,XanClic,"Und wer OS Dev macht, sollte das ja eh nicht wollen"
+2016-08-03 14:06:46,kevin,Für schnell fertig werden sind Kaputt Practices
+2016-08-03 14:07:03,XanClic,Ich werd damit eher selten fertig :(
+2016-08-03 14:07:09,XanClic,Also
+2016-08-03 14:07:11,XanClic,Fertig werd ich schon
+2016-08-03 14:07:14,XanClic,Aber halt nicht fertig
+2016-08-03 14:07:27,kevin,"Du meinst, es ist dann am Ende nicht mehr kaputt, aber halt kaputt?"
+2016-08-03 14:07:38,XanClic,"Ich meinte, ich bin dann kaputt"
+2016-08-03 14:07:43,kevin,Das eh
+2016-08-03 14:07:47,XanClic,Und funktionieren tut es meistens trotzdem nicht
+2016-08-03 14:07:57,kevin,"Oh, nichtfunktionierendes kaputt :-("
+2016-08-03 14:08:50,Quantenmagier,ahh cool jetzt geht SurO unter bochs ^^
+2016-08-03 14:09:21,kevin,Funktionierendes kaputt also :-)
+2016-08-03 14:09:33,Quantenmagier,^^
+2016-08-03 14:09:42,XanClic,"Weiß nicht, das ist funktionierendes nichtfunktionierendes kaputt"
+2016-08-03 14:09:49,kevin,Hm?
+2016-08-03 14:10:23,XanClic,Funktionierende kaputts sind für mich im Allgemeinen „etwas zu clevere Hacks“
+2016-08-03 14:10:36,kevin,"Ist das sowas wie der IDE-Testcase, der jetzt zwar mit gepatchten qemu zufällig tut, aber ansonsten auch nichtfunktionierend kaputt ist?"
+2016-08-03 14:10:55,XanClic,Denke ich
+2016-08-03 14:11:14,Quantenmagier,"aber ganz schön pingelig, das man sich bei bochs genau an die portlängen halten muß, eigentlich gabs da doch so ne art konvention zu, wenn man mehr aus nem port ließt daß das dnan mit dem nächsten port gepadded wird oder sowas in der art, zumindest das lowbyte hätte ja wohl das passende sein können"
+2016-08-03 14:11:32,kevin,XanClic: Ich produziere ja meistens etwas zu wenig clevere Hacks ;-)
+2016-08-03 14:11:35,Svenska,"ganz schön pingelig, die regeln zu pruefen..."
+2016-08-03 14:11:56,kevin,"Quantenmagier: Und woher weißt du, was im höheren Port stünde?"
+2016-08-03 14:12:36,kevin,Oder ob du damit nicht die Selbstzerstörungsfunktion der Hardware aktivierst?
+2016-08-03 14:12:38,Quantenmagier,naja mein alter 486 hat zb wenn ich port 60 gelesen hab auf wordlänge mit port 61 gepadded
+2016-08-03 14:13:04,XanClic,"kevin, das ist ja auch ein stetiges Spektrum"
+2016-08-03 14:13:29,Svenska,"Quantenmagier: nur, weil manche geräte die regeln ignorieren, solltest du dich nicht drauf verlassen..."
+2016-08-03 14:14:27,Quantenmagier,"eigentlich war das in ax, dafür gedacht falls es mal keycodes größer als nen byte gibt ^^"
+2016-08-03 14:14:46,Quantenmagier,die heutige hw is einfach noch nicht aktuell genug :D
+2016-08-03 14:14:48,Svenska,"du weißt schon, dass der KBC von 1983 ist?"
+2016-08-03 14:15:13,kevin,"Bei Treibern solltest du dich daran orientieren, wie die Hardware tatsächlich funktioniert, nicht wie du dir vorstellst, dass Hardware optimalerweise funktionieren sollte"
+2016-08-03 14:16:03,Quantenmagier,"das lustige ist sogar mi fält grad auf ich hatte tatsächlich ein mov ah,0 im kernel stehen nach dem in ax,0x60 xD"
+2016-08-03 14:17:03,XanClic,"xor ax,ax; in al,0x60 braucht sogar weniger Bytes!"
+2016-08-03 14:17:24,kevin,"Wie wär's du wirfst dein OS weg und fängst was vernünftiges an? Mit C, Protected Mode, Multiboot und so? ;-)"
+2016-08-03 14:18:45,Quantenmagier,"naja hab das mov ah,0 schon durch xor ah,ah ersetzt"
+2016-08-03 14:18:58,XanClic,"xor ah,ah braucht aber wimre ein Byte mehr als xor ax,ax"
+2016-08-03 14:19:00,Quantenmagier,"meinst du xor ax,ax is noch besser?"
+2016-08-03 14:19:03,Quantenmagier,aso
+2016-08-03 14:19:18,Svenska,ein guter c-compiler weiß das uebrigens auch und muss nicht dumm fragen ^^
+2016-08-03 14:19:20,XanClic,"Hm, braucht doch beides zwei"
+2016-08-03 14:19:21,XanClic,Schade
+2016-08-03 14:19:33,Quantenmagier,oki
+2016-08-03 14:20:38,Jonathan,Erinnert mich ja fast an meinen ollen Z80-ASM-Kernel
+2016-08-03 14:20:41,Quantenmagier,ah hilfe ich hab in bochs die maus aktiviert wie komm ich da wieder raus?
+2016-08-03 14:20:42,Jonathan,"Wie gut, dass ich den weggeworfen habe"
+2016-08-03 14:22:54,Quantenmagier,hm is das ne info oder ne fehlermeldung?
+2016-08-03 14:22:55,Quantenmagier,00097072653e[HD    ] IO read(0x01f0) with drq == 0: last command was 00h
+2016-08-03 14:23:50,Quantenmagier,irgendwie funktioniert der beeper in bochs immernoch nicht
+2016-08-03 14:24:13,Quantenmagier,in qemu macht er nur beeps und keine frequenzen und in bochs macht er garkeinen ton
+2016-08-03 14:24:23,Svenska,"ich fuerchte, du machst dinge falsch"
+2016-08-03 14:24:49,Quantenmagier,"oder bochs hat einfach keinen sound, muß ich den in der config aktivieren?"
+2016-08-03 14:26:00,Quantenmagier,SurO läuft in bochs auf jedenfall echt zeitlupig im vergleich zu kvm qemu
+2016-08-03 14:26:31,kevin,"Und das, wo du doch handoptimierten Assemblerkot hast!!11!"
+2016-08-03 14:26:52,Svenska,"dann behaupte ich, es ist schlecht programmiert"
+2016-08-03 14:26:53,XanClic,"Alles nur, weil bochs nicht selbst in Assembler geschrieben ist"
+2016-08-03 14:28:45,kevin,"Hm, das heißt, unter bochs müsste C++-Code besonders gut laufen?"
+2016-08-03 14:28:56,Quantenmagier,lol
+2016-08-03 14:29:35,XanClic,"kevin, nein, das wäre dann doppelt langsam"
+2016-08-03 14:29:36,XanClic,Ist doch klar
+2016-08-03 14:29:43,Svenska,Quantenmagier: jedenfalls sollte dir einiges hier arg zu denken geben ^^
+2016-08-03 14:29:44,kevin,Minus mal minus gibt plus
+2016-08-03 14:29:55,XanClic,Ist das denn mal? Oder ist das nicht plus?
+2016-08-03 14:30:10,kevin,"Hm, stimmt. Plus plus sogar."
+2016-08-03 14:30:17,Quantenmagier,hm ich glaub ich teste mal nen standard os ob das schneller unter bochs läuft und eventuell ob da der beeper geht
+2016-08-03 14:30:26,kevin,Das ist also doppelpluslangsam
+2016-08-03 14:30:31,XanClic,Genau!
+2016-08-03 14:30:34,kevin,Oder heißt das unschnell?
+2016-08-03 14:30:35,Svenska,"ich glaube, du missverstehst ^^"
+2016-08-03 14:30:40,XanClic,Oder doppelminusschnell
+2016-08-03 14:31:07,Quantenmagier,"vllt ist ++ ne andere schreibweise für *, weil * ja wiederholtes addieren ist?"
+2016-08-03 14:31:16,Svenska,dein OS duerfte etwas weniger monströs sein als ein unix von 1990
+2016-08-03 14:31:23,Svenska,und ein unix von 1990 läuft in bochs hinreichend schnell
+2016-08-03 14:31:45,Quantenmagier,hat das auch 1024x768x24 grafik?
+2016-08-03 14:32:07,Svenska,keine ahnung
+2016-08-03 14:32:37,Svenska,"aber grafikkarten mit 4 MB VRAM gab's da schon, nur eher nicht im PC"
+2016-08-03 14:34:34,kevin,Mein erster PC war neuer als das und konnte trotzdem kein SVGA :-(
+2016-08-03 14:34:36,Svenska,"aber ich meinte ja eher den kernel, weniger dein tolles grafiksystem"
+2016-08-03 14:34:54,kevin,Deswegen konnte ich nie Simcity und Transport Tycoon spielen
+2016-08-03 14:35:16,Svenska,kein SVGA oder kein VESA?
+2016-08-03 14:35:23,Quantenmagier,naja der kernel und das grafiksystem gehören ja zusammen
+2016-08-03 14:35:44,Quantenmagier,wen ich keine grafik hab kann ich auch nicht wirklich sehen wie schnell es ist
+2016-08-03 14:35:54,kevin,Svenska: Gab es denn das eine auch ohne das andere?
+2016-08-03 14:36:03,kevin,Ich hab's jedenfalls nicht zum Laufen gebracht
+2016-08-03 14:36:11,Svenska,sicher doch
+2016-08-03 14:36:24,Svenska,so ziemlich alle alten grafikkarten hatten kein VESA im VBIOS
+2016-08-03 14:36:45,Svenska,"da gabs dann hersteller-TSRs fuer, oder später ""UniVBE"""
+2016-08-03 14:36:55,Svenska,viele spiele hatten dann ein trial davon mit
+2016-08-03 14:37:45,kevin,"Hm, ja, ich weiß, dass Simcity da einen Haufen davon dabei hatte. Aber keins davon hat wirklich funktioniert."
+2016-08-03 14:37:54,Svenska,was war's denn fuer ne grafikkarte?
+2016-08-03 14:38:04,Svenska,weil 512 KB VRAM == SVGA
+2016-08-03 14:38:41,kevin,"Hm, fragst du mich Sachen... Ich glaube, 512k müsste sie schon gehabt haben"
+2016-08-03 14:39:02,Svenska,weil dann kann sie 640x480x8 und transport tycoon brauchte das ;-)
+2016-08-03 14:40:14,kevin,"Dann war ich vermutlich nur nicht in der Lage, sie dazu zu bewegen, das auch auszunutzen ;-)"
+2016-08-03 14:40:25,Quantenmagier,kann ich unter Bochs auch COM1 zur fehlerausgabe benutzen?
+2016-08-03 14:40:44,Svenska,"mein notebook hatte das auch nicht, da brauchte ich dann von western digital ein TSR fuer VESA ;)"
+2016-08-03 14:41:11,Svenska,"achso, UniVBE war auch darum wichtig, weil viele spiele lineare framebuffer oder VBE 2.0 wollten und das VBIOS nur VESA 1.1 hatte und so"
+2016-08-03 14:41:12,kevin,Und wo hätte man damals sowas herbekommen? ;-)
+2016-08-03 14:41:32,Svenska,"vom hersteller, auf der treiberdiskette, im internet - oder der örtlichen mailbox *g*"
+2016-08-03 14:42:32,Svenska,oder eben univbe *g*
+2016-08-03 14:43:07,Svenska,"da waren uebrigens wunderbare paging-tricks drin, um den framebuffer linear erscheinen zu lassen, selbst wenn die hardware das nicht kann"
+2016-08-03 14:44:09,kevin,"Das heißt, der Treiber hat in den PM geschaltet?"
+2016-08-03 14:44:27,Svenska,"ja, deswegen inkompatibel mit EMM386"
+2016-08-03 14:44:29,kevin,"Oder sich darauf verlassen, dass die Spiele das eh tun?"
+2016-08-03 14:44:31,Svenska,...später nicht mehr
+2016-08-03 14:44:40,kevin,Irgendwie kommt mir das Zusammenspiel da nicht ganz trivial vor
+2016-08-03 14:44:54,Svenska,EMM386 bietet DPMS (oder VCPI) an
+2016-08-03 14:45:16,XanClic,"kevin, man kann doch bestimmt das Spiel im VM86 laufen lassen, bis es in den PM schalten will"
+2016-08-03 14:45:24,Svenska,"damit kannst du programme nutzen, die in den PM schalten, obwohl sie im VM86 laufen"
+2016-08-03 14:45:27,XanClic,Das fängt man dann ab und schwups ist es wunderlicherweise im PM
+2016-08-03 14:45:41,Svenska,und die meisten programme installieren keinen eigenen pagefault-handler
+2016-08-03 14:45:45,XanClic,(Das wäre übrigens ziemlich hoch auf der Funktionalitätskaputtheitsskala)
+2016-08-03 14:46:14,kevin,"Ich wollte grad sagen, ich muss mir DOS doch mal näher anschauen als schönes Beispiel für funktionierend kaputt"
+2016-08-03 14:46:18,Svenska,"DPMS und VCPI kommen uebrigens mehr oder weniger von microsoft, weil man ja DOS-Protected-Mode-Programme unter Windows laufen lassen können wollte"
+2016-08-03 14:46:47,Svenska,"oder zumindest programmen zugriff auf ""mehr speicher"" geben wollte"
+2016-08-03 14:58:29,Quantenmagier,"hm hab den beeper-code mal direkt ausgeführt ohne mein betriebssystem aber geht trotzdem nicht, scheint also irgendwas beim programmieren des PIC oder beepers schief zu gehen"
+2016-08-03 14:59:37,Quantenmagier,ich zieh mir mal nen debian für bochs und guck ob der beeper damit geht
+2016-08-03 15:05:44,Quantenmagier,"wtf in dem debian sind alle tasterturzeichen vertauscht, egal ob ich standardkeymap nehme oder deutsch es ist weder deutsche noch englishe tastertur o.O"
+2016-08-03 15:06:45,Quantenmagier,"und wirklich schnell läuft es auch nicht, da reagiert selbst SurO schneller auf die Tastertureingaben, also scheint bochs einfach generell lahm zu sein und das is kein problem meines OS"
+2016-08-03 15:07:08,Svenska,du vergleichst einen mini-kernel mit einem linux?
+2016-08-03 15:07:16,Quantenmagier,jop
+2016-08-03 15:07:44,Quantenmagier,dafür hat das linux keine grafik
+2016-08-03 15:08:08,Svenska,"der debian-installer nutzt standardmäßig den vesa-framebuffer, damit er chinesisch kann"
+2016-08-03 15:08:15,Svenska,"d.h. ""ja, es hat grafik"""
+2016-08-03 15:08:30,Quantenmagier,"is nicht installer, ist terminal"
+2016-08-03 15:10:10,Quantenmagier,Console: colour VGA+ 80x25
+2016-08-03 15:16:51,Quantenmagier,hm seltsam ls /dev/dsp sagt es sei vorhanden und cat /bin/* > /dev/dsp sagt bash: /dev/dsp: No such device
+2016-08-03 15:17:12,Svenska,"""ls /dev/dsp"" zeigt an, ob das devicefile existiert"
+2016-08-03 15:17:19,Svenska,"es zeigt nich an, ob das device existiert"
+2016-08-03 15:18:16,Quantenmagier,hm ok dann kann ich den beeper scheinbar unter dem debian auch nicht testen
+2016-08-03 15:18:33,Svenska,außerdem ist /dev/dsp OSS und dein kernel kann kein OSS
+2016-08-03 15:18:50,Svenska,das wird normalerweise per alsa-wrapper (aoss) gemacht
+2016-08-03 15:19:07,Svenska,"und drittens hat der beeper nie ein /dev/dsp, sondern ein /dev/input/irgendwas"
+2016-08-03 15:19:15,Svenska,oder snd-pcsp als normalen alsa-treiber
+2016-08-03 15:19:20,Svenska,manmanman
+2016-08-03 15:19:21,Quantenmagier,hm aplay ist auch nicht vorhanden das debian image für bichs ist irgendwie mist
+2016-08-03 15:19:32,Svenska,"ich glaube ja, du macht was falsch"
+2016-08-03 15:23:03,Svenska,"LIDL muss in Großbritannien Joghurt und Nüsse zurückrufen: Sie haben versäumt auf den Packungen darauf hinzuweisen, dass der Joghurt Milch enthält und dass die Nüsse nusshaltig sind."
+2016-08-03 15:23:22,XanClic,Bestimmt nur wegen irgendeiner EU-Verordnung
+2016-08-03 15:23:27,XanClic,Zum Glück hat das ja bald ein Ende!!
+2016-08-03 15:23:37,Svenska,die EU-verordnung wuerde im rest der EU auch gelten
+2016-08-03 15:23:52,XanClic,"Nein, weil die EU doch nur Großbritannien mobbt"
+2016-08-03 15:24:03,Svenska,"ich dachte, großbritannien mobbt gerade die EU?"
+2016-08-03 15:24:10,XanClic,Gaaa nich!!!!
+2016-08-03 15:24:18,XanClic,Voll das Victim Blaming hier
+2016-08-03 15:24:21,Svenska,zumindest haben die doch jetzt den sicherheits- und antiterrorminist0r bis zum brexit?
+2016-08-03 15:24:34,Svenska,(oder den antisicherheits- und terrorminist0r?)
+2016-08-03 15:24:57,XanClic,Sollte ein Antiterrorminister nicht eigentlich Entspannungsminister heißen?
+2016-08-03 15:25:27,Svenska,gute frage eigentlich
+2016-08-03 15:25:59,Quantenmagier,
+2016-08-03 15:26:13,Quantenmagier,hat das ne bedeutung wenn der com port 0x14 ausgibt?
+2016-08-03 15:26:25,XanClic,"Das heißt, dass der Computer kaputt ist"
+2016-08-03 15:26:32,Quantenmagier,ah ok
+2016-08-03 15:27:24,Quantenmagier,"weil eigentlich sollte der ""Test."" ausgeben und nicht 0x14 vermutlich brauch man bei bochs erst ne initialisierung"
+2016-08-03 15:27:42,Svenska,"<Svenska> ich glaube ja, du macht was falsch"
+2016-08-03 15:27:54,Svenska,wie zum beispiel relevante dinge ignorieren
+2016-08-03 15:30:18,Quantenmagier,ok also der beeper code wird ausgeführt aber irgendwie beeped nichts
+2016-08-03 15:31:14,Svenska,hat dein bochs den beeper in der config aktiviert?
+2016-08-03 15:31:21,Quantenmagier,nö muß man das?
+2016-08-03 15:31:27,Svenska,"hat dein bochs auch audiotreiber eingebaut, so dass es auf dem host dinge abspielen kann?"
+2016-08-03 15:31:45,Svenska,pruefst du _ueberhaupt_ mal irgendwelche annahmen?
+2016-08-03 15:32:06,Quantenmagier,kp ich hab einfach ./configure && make gemacht :D
+2016-08-03 15:32:21,Svenska,hast du schonmal was von paketmanagement gehört? -.-
+2016-08-03 15:32:51,Quantenmagier,joa aber das paket war kaputt und im bochsforum hieß es man soll vom svn compiliern
+2016-08-03 15:35:41,Quantenmagier,"hm im configure logfile steht auf jedenfall daß bochs kein sb16 und kein es1370 support hat, aber von pcspeaker oder beeper find ich da nix"
+2016-08-03 15:42:53,Svenska,"ich meinte nicht, ob dein bochs den pc-speaker eingebaut hat"
+2016-08-03 15:43:02,Svenska,sondern ob der auch aktiviert ist in deiner konfigurationsdatei
+2016-08-03 15:45:25,Quantenmagier,"ah ich glaub ich hab das problem gefunden: ""When compiling Bochs, the lowlevel sound support is activated if one of the soundcards is enabled (--enable-sb16 or --enable-es1370)."" schienbar hat bochs kein soundsupport wnen nicht mindestens eine soundkarte mit configured wird"
+2016-08-03 15:50:30,Quantenmagier,ah jetzt funktioniert der beeper :)
+2016-08-03 15:50:54,Quantenmagier,war also kein problem meines OS sondern bochs hatte keinen sound support ^^
+2016-08-03 15:53:24,Quantenmagier,"wie is die standard vorgehensweise für einen beep, sollte das programm was beep aufgerufen hat angehalten werden bis der speaker gebeeped hat (sleep) oder sollte ich für den beeper nen eigenen thread machen?"
+2016-08-03 15:56:47,Svenska,das ist deine eigene entscheidung
+2016-08-03 15:57:04,Svenska,"wenn du mich fragst, ist die grundannahme schon scheiße"
+2016-08-03 15:57:10,Svenska,aber das tust du ja nicht ^^
+2016-08-03 16:27:06,Quantenmagier,welche grundannahme?
+2016-08-03 16:27:44,Svenska,dass du einen pc-speaker zum piepen willst
+2016-08-03 16:27:48,Quantenmagier,aso
+2016-08-03 16:28:09,Svenska,machst schicke grafik und computermusik der 80er
+2016-08-03 16:28:30,Quantenmagier,"irgendwie hab ich auf jedenfall das gefühl das der piepton immer gleich klingt egal welche frequenz ich im pic einstelle, kann bochs etwa nur eine frequenz?"
+2016-08-03 16:31:26,Quantenmagier,ahh nee er kann scheinbar doch andere frequenzen
+2016-08-03 16:31:29,Quantenmagier,^^
+2016-08-03 16:31:44,kevin,Scheinbar oder anscheinend?
+2016-08-03 16:33:13,Quantenmagier,is da nen unterschied?
+2016-08-03 16:33:16,Quantenmagier,anscheinend
+2016-08-03 16:33:27,Quantenmagier,"also er hat ne andere frequenz gemacht, also kann er's xD"
+2016-08-03 16:34:17,kevin,"Wenn du dir die andere Frequenz nur einbildest, wäre es scheinbar ;-)"
+2016-08-03 16:36:02,Quantenmagier,ah ok :D
+2016-08-03 16:36:27,Quantenmagier,hab auf jedenfall den fehler gefunden hatte vergessen base_freq zu dereferenzieren
+2016-08-03 16:38:14,Quantenmagier,öhm nee war doch nciht der fehler
+2016-08-03 16:39:29,kevin,"Ich glaube, es ist sehr gut, wenn dein Code in VMs eingesperrt bleibt *g*"
+2016-08-03 16:41:44,Quantenmagier,naja lief ja damals schon nativ
+2016-08-03 16:42:12,Quantenmagier,nur momentan sind einfach zu viele fehler drin die ich erst beheben muß
+2016-08-03 16:43:42,kevin,Wieviel Rauch ist damals aus dem Rechner gekommen? ;-)
+2016-08-03 16:44:13,Quantenmagier,keiner :P
+2016-08-03 16:44:37,Quantenmagier,hab es auf nem 486 ganz früher ausgeführt und auf meinem alten laptop auch
+2016-08-03 16:45:51,Quantenmagier,"für den 486 hatte ich sogar nen speziellen grafiktreiber, hatte den grafikbios disassembliert und den befehl zum pagewechsel direkt in meinen grafiktreiber gepackt :D"
+2016-08-03 16:47:54,Svenska,m(
+2016-08-03 16:48:05,Quantenmagier,"so jetzt hab ich den fehler aber gefunden, fehlte nen xor edx,edx"
+2016-08-03 16:50:37,Quantenmagier,als ich mit dem schreiben des os angefangen hatte hatte ich auch garkeinen emulator hab das unter dos geschrieben ^^
+2016-08-03 16:57:32,Quantenmagier,03415745550e[WAVOUT] ALSA: underrun occurred
+2016-08-03 16:57:32,Quantenmagier,zsh: floating point exception  bochs -q
+2016-08-03 16:57:45,Quantenmagier,lol scheint nen fehler in bochs zu sein
+2016-08-03 16:59:18,Quantenmagier,yay er spielt melodien :D (wenn man das so nennen darf xD )
+2016-08-03 17:05:16,Quantenmagier,tada: https://nopaste.me/view/raw/a63ae31c
+2016-08-03 17:05:39,Quantenmagier,is doch schon fast wie ne hochsprache. :D
+2016-08-03 17:08:21,XanClic,…eigentlich nicht
+2016-08-03 17:08:49,Svenska,"und ""call .sleep"" ist auch eher suboptimal"
+2016-08-03 17:09:15,Quantenmagier,"joa das .sleep muß ich noch überarbeiten, das war improvisiert :D"
+2016-08-03 17:09:42,Quantenmagier,"zumal ich da ne schleife genommen hab und bochs optimiert die dh, der erste ton ist länger als die folgenden xD"
+2016-08-03 17:10:02,kevin,Seit wann optimiert bochs irgendwas?
+2016-08-03 17:10:08,Quantenmagier,eventuell sollte ich stattdessen rdtsc nehmen
+2016-08-03 17:10:15,kevin,Ist das nicht einfach ein dummer Interpreter?
+2016-08-03 17:10:42,Svenska,"ich hab dir schonmal gesagt, dass rdtsc dafuer keine gute wahl ist"
+2016-08-03 17:10:46,Svenska,aber ignorier mich ruhig weiter.
+2016-08-03 17:10:57,Svenska,"und ja, bochs ist ein dummer interpreter."
+2016-08-03 17:11:08,Quantenmagier,hm vllt simuliert der den cache der cpu?
+2016-08-03 17:11:18,Svenska,nein!
+2016-08-03 17:11:25,Svenska,"wenn dein code stinkt, ist bochs nicht schuld ^^"
+2016-08-03 17:11:37,Quantenmagier,hm oder ich bilde mir nur ein daß der erste ton länger ist xD
+2016-08-03 17:11:43,XanClic,du darfst nicht einfach so „nein!“ schreiben
+2016-08-03 17:11:47,kevin,doch!
+2016-08-03 17:11:50,XanClic,ooooh
+2016-08-03 17:14:48,Svenska,https://imgs.xkcd.com/comics/household_tips.png
+2016-08-03 17:16:57,kevin,"Du kannst doch nicht einfach auf das Bild verlinken, wo man gar keinen Tooltip kriegt"
+2016-08-03 17:17:34,Svenska,"oh, verzeihung. https://www.xkcd.com/"
+2016-08-03 17:18:36,XanClic,"Du kannst doch nicht einfach einen Link posten, der in den Logs schon in zwei Tagen veraltet sein wird"
+2016-08-03 17:18:49,XanClic,Oder auch das Gegenteil von veraltet
+2016-08-03 17:18:50,XanClic,Je nachdem
+2016-08-03 17:19:56,Svenska,"du postest öfter mal links, die im log schon wieder weg sind"
+2016-08-03 17:20:02,XanClic,Ich? Nie!
+2016-08-03 17:20:05,Svenska,und meine pastebins sind auch immer nur einen monat gueltig
+2016-08-03 17:23:21,kevin,"Hm, für dieses Gegenteil von veraltet bräuchte man wirklich mal ein Wort"
+2016-08-03 17:23:27,kevin,Würde auch GRUB ganz gut beschreiben
+2016-08-03 17:23:29,Svenska,aktuell?
+2016-08-03 17:23:47,kevin,Eher zu neu
+2016-08-03 17:23:48,XanClic,Immer wieder voller Überraschungen?
+2016-08-03 17:23:59,Svenska,blutige kante?
+2016-08-03 17:24:17,kevin,Man wäre halt besser beim alten geblieben
+2016-08-03 17:25:42,Quantenmagier,wie wärs mir verschlimmbessert?
+2016-08-03 17:25:51,Quantenmagier,*mit
+2016-08-03 17:25:53,Svenska,eher verschlimmneuert
+2016-08-03 17:26:30,kevin,verschlimmneuert klingt gut
+2016-08-03 17:26:38,XanClic,verschleuert?
+2016-08-03 17:26:57,Quantenmagier,"so ok mein os hat endlich audio, dann kann ich als nächstes mal meine speicherverwaltung neu schreiben damit malloc funktioniert :D"
+2016-08-03 17:27:18,kevin,Klingt nach der... fast richtigen Reihenfolge
+2016-08-03 17:27:22,Svenska,"hat dein os audio, oder kann dein os mit einer konstanten frequenz piepen?"
+2016-08-03 17:27:27,XanClic,Klingt nach meiner präferierten Reihenfolge
+2016-08-03 17:27:28,Svenska,das ist ein klitzekleiner unterschied...
+2016-08-03 17:27:55,kevin,"XanClic: Ich finde, ein malloc() braucht man schon. Sagt ja niemand, dass das nicht auf 4k-Blöcken arbeiten darf. *g*"
+2016-08-03 17:27:59,Quantenmagier,"Svenska, das kommt ganz drauf an wie man die Piepfunktionen wrapped ;)"
+2016-08-03 17:29:12,Svenska,also hast du kein audio
+2016-08-03 17:29:19,Svenska,sondern einen timer mit lautsprecher dran.
+2016-08-03 17:29:33,XanClic,"kevin, ich kann auch void *malloc(size_t sz) { static uintptr_t heap_end = KERNEL_END; void *ptr = (void *)heap_end; heap_end += sz; return ptr; }"
+2016-08-03 17:29:49,Quantenmagier,joa im prinzip schon aber wenn man die frequenzen shcnell genug ändert hat man immerhin melodien ^^
+2016-08-03 17:29:51,kevin,Auch gut
+2016-08-03 17:31:12,Svenska,"das fiese an speakersound ist ja nur, dass man eine wesentlich höhere interruptfrequenz braucht als fuer den rest des systems"
+2016-08-03 17:31:51,Quantenmagier,joa aber die pic 2 interrupts sind doch halbwegs transparent?
+2016-08-03 17:31:54,Svenska,uebliche betriebssysteme feuern ihren timer mit 100 ~ 1000 Hz
+2016-08-03 17:32:17,Quantenmagier,ich hab mein linux auf 300 Hz laufen
+2016-08-03 17:32:21,Svenska,fuer eine soundkarte auf speakerbasis brauchst du mindestens 8000 Hz (und dann klingts scheiße)
+2016-08-03 17:32:48,Svenska,und selbst dadrauf muesstest du (eigentlich) noch PWM machen *g*
+2016-08-03 17:33:00,kevin,Pollt man für sowas nicht eher?
+2016-08-03 17:33:15,Svenska,dann ist dein multitasking kaputt
+2016-08-03 17:33:39,kevin,"Wenn ich die bisherige Diskussion extrapoliere, ist es das bestimmt jetzt schon *g*"
+2016-08-03 17:34:00,Svenska,das sowieso *g*
+2016-08-03 17:34:11,kevin,Und mit 8-kHz-Timer ist es dann auch ziemlich kaputt
+2016-08-03 17:34:35,Svenska,wie haben das die alten spiele nur gemacht?
+2016-08-03 17:34:52,kevin,Nicht multigetaskt?
+2016-08-03 17:35:08,Svenska,die haben 8~16 kHz abtastrate mit 6 bit-samples (also software-pwm) auf nem 486er gemacht
+2016-08-03 17:35:18,Quantenmagier,"naja ich will ja keinen 4kHz sound haben, nen paar frequenzänderungen die sekunde sind schon völlig ok für retro games"
+2016-08-03 17:35:20,Svenska,"doch, decoder und fft muessen dazu parallel laufen"
+2016-08-03 17:35:52,Svenska,auf meinem 286er (mit richtigem gehäuse und gutem speaker) klingt das sogar ziemlich gut
+2016-08-03 17:36:44,Svenska,http://www.crossfire-designs.de/index.php?lang=en&what=articles&name=showarticle.htm&article=soundcards&page=3 << das vierte beispiel
+2016-08-03 17:37:31,Quantenmagier,hm klingt nicht schlecht
+2016-08-03 17:37:47,Quantenmagier,aber fft is mir momentan zu kompliziert gibt dringendere probleme :D
+2016-08-03 17:38:31,Svenska,"naja, ich hab einen MOD-player fuer alte PCs, der macht decoding + spektralanzeige + abspielen"
+2016-08-03 17:38:52,Quantenmagier,kewl 8)
+2016-08-03 17:39:00,Svenska,und auf nem 12 MHz 286er sind 6~8 kHz auf dem PC-Speaker drin (mit SB Pro sinds 22 kHz)
+2016-08-03 17:39:11,Svenska,*das* finde ich heftig ^^
+2016-08-03 17:39:37,Svenska,"allerdings ist dann nur noch 1 FFT/Sekunde drin, wenn ich die rate reduziere, wirds fluessiger ^^"
+2016-08-03 17:39:41,kevin,"XanClic: Es heißt ""kritikel"""
+2016-08-03 17:39:48,XanClic,ups
+2016-08-03 17:40:25,Svenska,"Quantenmagier: aprorpos, ich hab auch zwei LPT-DACs gebastelt, die klingen deutlich besser und sind weniger anstrengend fuer die CPU"
+2016-08-03 17:40:50,Quantenmagier,"Svenska, echt warum sind die denn weniger anstrengend?"
+2016-08-03 17:41:05,Svenska,weil du da jedes sample direkt rauswerfen kannst
+2016-08-03 17:41:15,Quantenmagier,aso
+2016-08-03 17:41:43,Svenska,"um 8 kHz und 6 bit samples auf dem speaker abzuspielen, musst du den mit 512 kHz ansteuern"
+2016-08-03 17:42:04,Svenska,"um 8 kHz und 8 bit samples auf dem lpt-dac abzuspielen, musst du den nur mit 8 kHz ansteuern ;)"
+2016-08-03 17:43:40,Quantenmagier,"verstehe, aber ich denke ich bin erstmal mit dem pc speaker sound zufrieden, is halt nützlich für fehlerausgabe und so und später werd ich einfach auf sb16 upgraden ^^"
+2016-08-03 17:43:49,Svenska,fehlerausgabe? naja...
+2016-08-03 17:44:55,Svenska,benutzt tyndur eigentlich den timer 0 vom PIT?
+2016-08-03 17:45:24,Svenska,vermutlich.
+2016-08-03 17:45:27,Quantenmagier,ich denke mal den benutzt es für multitasking?
+2016-08-03 17:45:40,kevin,"Ja, tut es"
+2016-08-03 17:46:12,Svenska,"uiuiui, die osdev-leute sagen ""ja, dann generier einfach mal 44,1k interrupts/sekunde"" ;)"
+2016-08-03 17:46:55,Quantenmagier,"Svenska, naja fehlerausgabe war nur nen beispiel, ich werd damit auch einfache sounds für mein tetris einbauen oder für mein schachprogramm daß es fiept wenn es nen zug berechnet hat und man an der reihe ist, gibt viele möglichkeien den pc speaker zu nutzen ohne high-end sound zu brauchen ^^"
+2016-08-03 17:47:12,kevin,Svenska: Bleibt dann noch eine Instruktion im Usermode übrig bevor der nächste Interrupt kommt? *g*
+2016-08-03 17:47:20,Svenska,*g*
+2016-08-03 17:48:19,Svenska,"aber ich glaube, ALSA hat einen treiber, der 8 kHz und 13 kHz oder so macht"
+2016-08-03 17:48:57,Svenska,ohh: 18643 und 37286 Hz basisfrequenz
+2016-08-03 17:48:58,Quantenmagier,"naja bei ner cpu mit mehreren GHz vermutlich schon. 2GHz/44,1k = 45kOp/s"
+2016-08-03 17:49:23,Quantenmagier,öhm nicht pro sekunde
+2016-08-03 17:49:30,Quantenmagier,pro interrupt
+2016-08-03 17:49:44,Quantenmagier,minus overhead
+2016-08-03 17:50:21,XanClic,am besten den treiber in den userspace packen
+2016-08-03 17:52:29,Svenska,"also VLC mag das nicht, und wenn ich den auswähle, verwirrt sich pulseaudio und schickt das audio nicht mehr via headphones zum bildschirm. seufz."
+2016-08-03 17:57:14,Svenska,http://www.reenigne.org/blog/8088-pc-speaker-mod-player-how-its-done/
+2016-08-03 17:57:27,Svenska,"ist was fuer jonathan, glaub ich ^^"
+2016-08-03 18:03:12,Jonathan,Hehe *g*
+2016-08-03 18:03:34,Svenska,"""Fortunately, there's a nice place to stick some NOPs where they will be executed only in the non-patch case, making two loops that mutually overlap without either being nested within the other:"""
+2016-08-03 18:08:16,Svenska,"""Debugging is still tricky, though - breakpoints don't work so well when your entire program is executed from the same 15 byte memory region!"""
+2016-08-03 18:09:45,kevin,*g*
+2016-08-03 18:11:26,Svenska,"hmm, wenn man T2 als One-Shot nimmt, dann braucht man keine 512 kHz mehr, sondern es reichen tatsächlich 8 kHz"
+2016-08-03 18:18:29,Quantenmagier,T2?
+2016-08-03 18:18:38,Svenska,timer 2
+2016-08-03 18:18:44,Quantenmagier,aso
+2016-08-03 18:19:05,darklink,Immerhin hat man keine probleme mit vollen caches :D
+2016-08-03 18:21:54,Quantenmagier,mit cache meinst du den sound buffer?
+2016-08-03 18:22:36,darklink,"nein, den l1 code cache"
+2016-08-03 18:22:52,Svenska,"Quantenmagier: er meint, dass ein 8088 keinen cache hat."
+2016-08-03 18:22:59,Quantenmagier,aso
+2016-08-03 18:23:07,darklink,ach für 8088
+2016-08-03 18:23:21,darklink,der hat wirklich keinen cache
+2016-08-03 18:25:56,Svenska,"darklink: dir ist aber schon klar, dass self-modifying code den cache jedesmal komplett tötet, oder?"
+2016-08-03 18:26:09,Svenska,"ein ""flush den instruction cache"" ist *echt teuer* auf modernen architekturen"
+2016-08-03 18:35:57,Svenska,"im prinzip muss man fuer den speaker nur 1-bit, 1.19 MHz daten erzeugen *g*"
+2016-08-03 18:36:11,Svenska,schneller ist der PIT nämlich nicht ;)
+2016-08-03 18:56:11,kevin,"XanClic: Bist du dir sicher, dass es taktisch klug ist, nach einem Freiwilligen zu fragen, wenn du gerade die Aufgabe übernommen hast? ;-)"
+2016-08-03 18:56:23,XanClic,…mist
+2016-08-03 19:07:32,Svenska,"hmm, das skandinavische wort fuer aufklärung heißt wörtlich ""erleuchtung"" ;-)"
+2016-08-03 19:07:44,Quantenmagier,nett ^^
+2016-08-03 19:07:48,Svenska,hab grad ne alte mail von icelandair gefunden: erleuchtung zu deinem flug
+2016-08-03 19:07:58,Svenska,fast so schön wie hochlichten.
+2016-08-03 19:08:19,Quantenmagier,hochlichten?
+2016-08-03 19:08:46,Svenska,"naja, wenn ich Quantenmagier schreibe, dann bist du hochgelichtet"
+2016-08-03 19:08:51,Svenska,denn dein irc-client sollte das merken ^^
+2016-08-03 19:08:59,Quantenmagier,:D
+2016-08-03 19:09:48,Quantenmagier,Also soviel wie Benachrichtigen? Oder farbig markieren?
+2016-08-03 19:10:01,Quantenmagier,aso nee
+2016-08-03 19:10:05,Quantenmagier,Hervorheben?
+2016-08-03 19:10:12,Svenska,highlight
+2016-08-03 19:10:14,Svenska,= hochlicht
+2016-08-03 19:10:29,Quantenmagier,jo sag ich ja hervorheben ^^
+2016-08-03 20:30:49,Svenska,hmm
+2016-08-03 20:30:57,Svenska,"wie kriege ich den linker dazu, eine section nur halb zu fuellen?"
+2016-08-03 20:31:14,Svenska,"also ich habe eine section mit ein paar bytes, ein paar instructions, einem haufen nullen"
+2016-08-03 20:31:24,Svenska,"und ich möchte, dass die nullen in der ELF-datei nicht auftauchen ;)"
+2016-08-03 20:31:31,Quantenmagier,"yay hab die ersten 4 takte der mondscheinsonate programmiert, klingt ganz annehmbar, nur bass und akzente fehlen noch ^^"
+2016-08-03 20:31:32,Svenska,muss ich dazu ne eigene section anlegen?
+2016-08-03 20:31:49,Quantenmagier,leider kann ich den sound irgendwie nicht mit audacity aufnehmen
+2016-08-03 20:33:43,Quantenmagier,ah jetzt hat das aufnehmen geklappt aber das lüftergeräusch stört etwas
+2016-08-03 20:37:24,Quantenmagier,tada: http://homepages.uni-paderborn.de/neuron/mondschein.ogg
+2016-08-03 20:42:19,Quantenmagier,kurz einkaufen
+2016-08-03 21:06:19,Quantenmagier,reh
+2016-08-03 21:07:35,Paddy,hirsch
+2016-08-03 21:08:49,Quantenmagier,also ich find das mit der mondscheinsonate kann sich wenn man noch ein paar Akzente setzt hören lassen und braucht wenn man die sleep funktion per interrupt macht kaum cpu last. ^.^
+2016-08-03 21:09:25,Svenska,"""or (1 << 31), %eax"" sieht komisch aus"
+2016-08-03 21:09:53,Quantenmagier,nö wieso sieht das komisch aus?
+2016-08-03 21:10:04,Quantenmagier,ok is nervige gas syntax
+2016-08-03 21:10:22,Svenska,^-- dies.
+2016-08-03 21:12:05,Quantenmagier,!seen MasterQ32
+2016-08-03 21:12:19,Svenska,so fancy ist tyndur nicht.
+2016-08-03 21:12:32,Svenska,...er ist nichtmal anwesend. ;-)
+2016-08-03 21:12:36,Quantenmagier,aso schade hätt ja sein könn ^^
+2016-08-03 21:12:47,Paddy,Guest377 ist anwesend ;-)
+2016-08-03 21:12:57,Quantenmagier,ach damn ja er is abwesend deswegen hatte ich ihn übersehn xD
+2016-08-03 21:13:05,Paddy,"Ach so, der"
+2016-08-03 21:13:12,Svenska,kann ihm mal einer nen neuen nick verpassen? :-d
+2016-08-03 21:23:37,Quantenmagier,wer war das eigentlich dem ich damals das Dithering mit Flyd-Steinberg empfohlen hatte?
+2016-08-03 21:23:49,Quantenmagier,*Floyd
+2016-08-03 21:23:58,Svenska,"dem master, glaub ich"
+2016-08-03 21:24:22,Quantenmagier,"aso frag mich was aus seinem projekt geworden ist, sah ja ganz interessant aus"
+2016-08-03 21:29:56,Quantenmagier,"hm vllt mach ich aus dem pc speaker so ne art midi player, also Noten rein und Rechteckschwingung raus. ^.^"
+2016-08-03 21:30:55,Quantenmagier,müßte nur die spezifikation für midid files finden
+2016-08-03 21:31:16,Svenska,"das ist relativ einfach, aber du hast mehrere noten gleichzeitig und so"
+2016-08-03 21:31:30,Svenska,die muesstest du schon irgendwie mischen...
+2016-08-03 21:32:26,Quantenmagier,joa entweder als gebrochener akkord oder ich spiele nur den violinschlüssel so war die idee
+2016-08-03 21:32:46,Svenska,auch da hast du akkorde drin
+2016-08-03 21:33:25,Svenska,"ich hab mal so einen player in basic gefunden, der hat immer nur die höchste note gespielt. fuer manche lieder war das ... einigermaßen gebrauchbar, fuer die meisten lieder war's komplett nutzlos."
+2016-08-03 21:36:28,Quantenmagier,aso
+2016-08-03 21:36:48,Quantenmagier,"ich frag mich wie es wohl klingt, wenn man einfach den mittelwert der tonhöhen bildet"
+2016-08-03 21:37:10,Quantenmagier,"oder vllt ein gewichtetes mittel, weil höhere töne haben ja mehr energie"
+2016-08-03 21:38:14,Svenska,haben sie das?
+2016-08-03 21:38:24,Svenska,(nein.)
+2016-08-03 21:45:21,darklink,Wie debuggt ihr eigentlich 64-bit kernel?
+2016-08-03 21:46:03,Svenska,garnicht.
+2016-08-03 21:47:35,Godwine,warum sollte gdb und quemu bei 64 bit nicht funktionieren?
+2016-08-03 21:48:59,darklink,Remote 'g' packet reply is too long:
+2016-08-03 21:49:09,darklink,nach dem switch in den long mode
+2016-08-03 21:49:14,Svenska,"ich tippe ja immernoch drauf, dass du was falsch machst"
+2016-08-03 21:49:23,Svenska,"z.B. dem gdb nicht mitteilen, dass du jetzt im long mode bist oder so"
+2016-08-03 21:49:58,Quantenmagier,hm kanns sein daß midi files big endian sind?
+2016-08-03 21:50:22,Godwine,wenn der quemu stub nicht funktioniert dann mach deinen eigenen und connecte über die serielle schnittstelle ^^
+2016-08-03 21:51:00,darklink,"muss immer disconnecten und dem gdb sagen, dass die elf64-x86-64 datei auch von nem i386:x86_64:intel ausgeführt wird"
+2016-08-03 21:51:27,Quantenmagier,"Svenska, doch haben sie, ist nen physikalisches Gesetz, je höher die Frequenz desto mehr energie bei gleicher Amplitude, deswegen haben Gammastrahlen mehr Energie als Radiowellen. ;)"
+2016-08-03 21:51:49,Godwine,hui physik!
+2016-08-03 21:51:57,Svenska,du hast aber nicht die gleiche amplitude ;)
+2016-08-03 21:52:46,Quantenmagier,joa die amplitude nimmt sogar ab deswegen sollte man die hohen schwingungen höher gewichten
+2016-08-03 21:52:54,Quantenmagier,kp
+2016-08-03 21:53:00,Svenska,deine ohren sind aber schon logarithmisch
+2016-08-03 21:53:17,Quantenmagier,auch logarithmisch auf die frequenz?
+2016-08-03 21:53:36,Godwine,nein aber unterschiedlich empfindlich bei verschiedenen frequenzen
+2016-08-03 21:53:46,Svenska,eine oktave ist eine frequenzverdopplung
+2016-08-03 21:53:52,Quantenmagier,jop
+2016-08-03 21:53:56,Svenska,dein hirn macht daraus einen relativ gleichmäßigen abstand
+2016-08-03 21:54:12,Quantenmagier,ach das meinst du stimmt
+2016-08-03 21:54:15,Svenska,"c'' zu c''' zu c'''' ist ungefähr gleich viel, obwohl das die vierfache frequenz ist"
+2016-08-03 21:54:41,Svenska,also ist das sowohl in der frequenz als auch in der amplitude logarithmisch
+2016-08-03 21:55:37,Svenska,"außerdem haben wir es mit schall zu tun, und der ist keine elektromagnetische welle (sollte zumindest keine sein)"
+2016-08-03 21:55:49,Svenska,und da hast du die meiste energie normalerweise auf der grundfrequenz
+2016-08-03 21:56:05,Svenska,weil mechanisch tiefpassgefiltert und so
+2016-08-03 21:59:11,Godwine,kann man beim pc speaker die amplitude überhaupt beeinflussen?
+2016-08-03 21:59:30,Svenska,"wenn du digitale sounds ausgibst, ja"
+2016-08-03 21:59:46,Svenska,"(weil du dann PWM machst, und da kannst du die samples runterskalieren)"
+2016-08-03 22:02:18,Godwine,wenn du die cpu mit der samplefrequenz deiner audiodatei interruptest könntest du theoretisch auch mehrere noten auf einmal abspielen
+2016-08-03 22:02:29,Godwine,nur nicht wenn es automatisch über den pit gehen soll
+2016-08-03 22:02:36,Svenska,das geht semi-automatisch ueber den PIT
+2016-08-03 22:03:05,Svenska,"aber ja, pro sample brauchst du einen interrupt (aber nicht fuer jedes bit des samples)"
+2016-08-03 22:04:21,Godwine,na wenn das sample positiv ist muss der strom zum lautsprecher and und wenn das sample negativ muss der strom aus :D
+2016-08-03 22:04:30,Godwine,an*
+2016-08-03 22:04:55,Svenska,"nein, das funktioniert nicht"
+2016-08-03 22:05:34,Svenska,"wenn du ein 8-bit-sample hast, dann stellst du damit ein, wie weit vom nullpunkt (in 256 schritten) die membran fuer diesen moment weg sein soll"
+2016-08-03 22:06:10,Svenska,bzw. vom minimalpunkt
+2016-08-03 22:08:15,Godwine,aber der kennt doch nur an und aus?
+2016-08-03 22:08:43,Svenska,"d.h. du kannst keine 8-bit-samples abspielen, sondern nur 1-bit-samples"
+2016-08-03 22:09:08,Godwine,ja das ist als wollte man ein true color bild auf nem monochrom monitor ausgeben
+2016-08-03 22:09:14,Svenska,nein
+2016-08-03 22:09:26,Svenska,weil der monochrommonitor kann physikalisch keine farben ausgeben
+2016-08-03 22:09:36,Svenska,"der lautsprecher kann aber trotzdem wellen machen, ist mechanik"
+2016-08-03 22:10:07,Svenska,der lautsprecher hat eine eigenschaft: er ist träge
+2016-08-03 22:10:23,Godwine,ohhh
+2016-08-03 22:10:27,Svenska,"wenn du ihm z.B. die folge 1010101010 schickst, dann wird er mittig stehen bleiben ;)"
+2016-08-03 22:10:32,Svenska,(wenn du schnell genug bist)
+2016-08-03 22:11:04,Svenska,"und nur ein ganz kleines bisschen wackeln (also eine leise oberwelle bauen, bzw. sogar ganz viele, weil ist rechteck und so)"
+2016-08-03 22:12:26,Quantenmagier,"hm ich les grad was zu midi also 8 = Note und Off 9 = Note On , heißt daß eine note on note wird so lange gespielt bis note of kommt?"
+2016-08-03 22:12:49,Quantenmagier,*Note Off und
+2016-08-03 22:13:32,Svenska,lies doch einfach mal die spec .--
+2016-08-03 22:13:37,Svenska,es gibt tausende codes fuer midi
+2016-08-03 22:13:48,Svenska,"ja, noten bleiben an, bis sie ausgemacht werden."
+2016-08-03 22:17:24,Quantenmagier,"lol les grad man kann anstelle Note off auch einfach nochmal Note on mit Volume 90 machen, ok ein ton der gleichen art kann also scheinbar nicht zweimal gleichzeitig ausgegeben werden."
+2016-08-03 22:17:38,Svenska,warum muss man eigentlich immer mit dem linker kämpfen -.-
+2016-08-03 22:17:50,Quantenmagier,"Svenska, weil der link ist ;)"
+2016-08-03 22:18:54,Svenska,"ich hab im linkerscript gesagt, dass er *(src/loader.o) tiefladen soll"
+2016-08-03 22:18:58,Svenska,warum tut der das nicht -.-
+2016-08-03 22:36:02,Svenska,"fuer identity mapping muss ich in der page table die folge { ""0x3"", ""0x1003"", ""0x2003"", ... } haben, richtig?"
+2016-08-03 22:39:57,Svenska,"oh, warte, die tabellen sollte man alignen, oder? ;-)"
+2016-08-03 22:57:29,Svenska,irgendwas ist hier faul
+2016-08-03 23:00:02,Svenska,"der multiboot-header muss in den ersten 8k liegen. die erste page ist der ELF header, die zweite page ist die build id, die dritte page ist der multiboot-header. ich mag den linker nicht."
+2016-08-03 23:04:46,Quantenmagier,bau dir nen eigenen :D
+2016-08-03 23:04:55,Svenska,"-Wl,--build-id=none"
+2016-08-03 23:05:28,Svenska,"eigentlich ne gute idee, aber wie zwinge ich den linker dazu, meine section VOR die build-id zu legen?"
+2016-08-03 23:06:33,Quantenmagier,kann man das vllt in dem linkerscript festlegen?
+2016-08-03 23:07:26,Svenska,"nee, die build id wird ja schon vorher hingelegt"
+2016-08-03 23:12:08,Svenska,"hmm, vielleicht sollte ich den kram doch ganz in asm schreiben"
+2016-08-03 23:12:20,Quantenmagier,asm is immer ne gute Idee
+2016-08-03 23:12:37,Svenska,dieses hybride inline-asm-zwischen-funktionen ist irgendwie suboptimal
+2016-08-03 23:13:04,Paddy,"Ja, ihr solltet alle nur noch Assembler schreiben"
+2016-08-03 23:13:08,Svenska,quatsch
+2016-08-03 23:13:12,Quantenmagier,"ich bin bei meinem midi asm player inzwischen bei Note_on angekommen, jetzt brauch in ne tabelle die die noten auf die frequenzen mapped"
+2016-08-03 23:13:16,Paddy,Dann holt ihr mich länger nicht ein solange ich nichts mache ;-)
+2016-08-03 23:14:04,Quantenmagier,und dann xlatb und beeper_ton und fertig ^^
+2016-08-03 23:15:58,Quantenmagier,hab den midi player midievil.asm genannt :D
+2016-08-03 23:16:20,Svenska,"hui, zwei sections machen macht die datei doch deutlich kleiner ;)"
+2016-08-03 23:16:34,Quantenmagier,wieviele sections hattest du denn vorher?
+2016-08-03 23:16:42,Svenska,fuer den loader: eine
+2016-08-03 23:16:46,Svenska,jetzt fuer den loader: zwei
+2016-08-03 23:16:51,Quantenmagier,aso krass
+2016-08-03 23:18:10,Svenska,nahezu nix = 4192 text
+2016-08-03 23:20:40,Quantenmagier,das is ja größer als mein tetris programm :D
+2016-08-03 23:21:22,Svenska,"er fuellt eine page mit 0x66 0x90 (xchg ax,ax) auf, keine ahnung wieso"
+2016-08-03 23:21:34,Quantenmagier,90 is nop
+2016-08-03 23:21:54,Svenska,der disassembler baut eine reihe aus diesen xchg's auf ;)
+2016-08-03 23:21:55,Quantenmagier,66 is extended nop mit längenumrechnung xD
+2016-08-03 23:22:34,Quantenmagier,joa die 66 is irgendwie unsinn
+2016-08-03 23:23:39,Svenska,"naja, jedenfalls sinds deswegen 4k + ein paar bytes"
+2016-08-03 23:23:48,Quantenmagier,ok
+2016-08-03 23:24:29,Svenska,"die datei fängt erstmal mit drei asm()-blöcken an, dann erst mit C code... auch nett *g*"
+2016-08-03 23:24:29,Quantenmagier,"joa SurO benutzt ja noch kaum pages, deswegen braucht das tetris nur 2056 Bytes momentan. ^^"
+2016-08-03 23:54:52,Svenska,och nööö
+2016-08-03 23:55:26,Svenska,ich soll 0x100056 nach 0xC0000000 mappen
+2016-08-03 23:55:34,Svenska,dat geit do net
+2016-08-03 23:56:23,Paddy,Ist dein Linker immer noch nicht unter Kontrolle? ;-)
+2016-08-03 23:56:39,Svenska,nicht so richtig
+2016-08-03 23:56:52,Svenska,zu allem ueberfluss soll's higher half werden
+2016-08-03 23:56:55,Svenska,sonst wär ja einfach *g*
+2016-08-03 23:57:48,Svenska,wie kriege ich denn die ladeadresse der section auf ne page ausgerichtet -.-
+2016-08-03 23:58:05,Paddy,Wie sieht dein Linkerskript denn aus?
+2016-08-03 23:58:30,Paddy,Aber im Zweifel einfach irgendwo ein ALIGN(4096) reinpacken?
+2016-08-03 23:58:33,Svenska,"ich hab zwei MEMORY-blöcke, ""lowmem"" (1..4 MB) und ""highmem"" (3G..4G)"
+2016-08-03 23:58:43,Svenska,und in der section steht unten >highmem AT >lowmem
+2016-08-03 23:59:10,Svenska,"wird mein kernel größer als 3 MB, gibt's nen overflow in lowmem und ich muss den ladecode anpassen *g*"
+2016-08-03 23:59:50,Paddy,MEMORY hab ich noch nie benutzt

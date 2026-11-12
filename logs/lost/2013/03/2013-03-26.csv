@@ -1,0 +1,168 @@
+date/time,nick,message
+2013-03-26 09:41:19,alexander,Morgen
+2013-03-26 09:46:35,kevin,Moin alexander
+2013-03-26 12:03:44,martinFTW,"So jetzt hab ich es erfolgreich auf echter HW zum Laufen gebracht; das exakte problem war dass 0xb8000 zwar in der qemu BIOS Memory map von Qemu als belegt gekennzeichnet war nicht jedoch auf der von meinem Laptop weshalb diese nicht gemappt wurde als dann nach demaktivieren von Paging aber vor dem while(1) mein kprintf(""Hi"")kam wurde ein Paging ausgelöst im Hanler nochmal weil der ja auch printen"
+2013-03-26 12:03:47,martinFTW,wollte
+2013-03-26 12:07:54,kevin,"Dein Laptop zeigt 0xb8000 als RAM an? Nicht wirklich, oder?"
+2013-03-26 12:14:05,martinFTW,kevin: Stimmt das ist eig VRAM die an dieser addresse eingeblendet wird oder was sonst:)?
+2013-03-26 12:14:47,kevin,"Ja, also letztendlich eine Art MMIO"
+2013-03-26 12:15:03,kevin,"Wenn die BIOS-Memory-Map sagt, dass dort RAM liegt, dann wäre sie ziemlich falsch. Deswegen wundere ich mich."
+2013-03-26 12:15:40,kevin,Oder sagt sie einfach gar nichts über den Bereich?
+2013-03-26 12:16:28,martinFTW,kevin: auf meiner HW sagt das Bios dass dort freie RAM sei
+2013-03-26 12:16:54,martinFTW,während in Qemu das als belegt gilt
+2013-03-26 12:17:34,martinFTW,also 0xb8000
+2013-03-26 12:17:49,kevin,"Freier RAM heißt, sie gibt es als Typ 1 an?"
+2013-03-26 12:17:55,kevin,"Hm, cool, man lernt doch immer wieder was dazu über C."
+2013-03-26 12:18:03,kevin,int testfunc(void) { return (int) { 42 }; }
+2013-03-26 12:18:10,kevin,Das ist gültiger Code
+2013-03-26 12:20:04,martinFTW,kevin: genau
+2013-03-26 12:20:33,kevin,Und wie hast du das dann gefixt?
+2013-03-26 12:20:51,kevin,"Wäre übrigens das erste Mal, dass ich davon höre, dass die Map nicht zuverlässig ist"
+2013-03-26 12:21:20,kevin,Was läuft da normal für ein OS drauf?
+2013-03-26 12:21:35,martinFTW,kevin: Ich hab 0xb8000 mit pmm_mark_used manuell als belegt gekennzeichnet
+2013-03-26 12:21:59,kevin,Habe ich fast befürchtet
+2013-03-26 12:22:00,martinFTW,kevin: Linux und Windows laufen fröhlich
+2013-03-26 12:22:15,kevin,Kannst du unter Linux mal die ersten paar Zeilen aus dmesg pasten?
+2013-03-26 12:22:26,kevin,"Also alles mit ""BIOS-e820"" und so"
+2013-03-26 12:23:05,kevin,"Ich will die Map mal sehen, von einem definitiv korrekten Parser geparst"
+2013-03-26 12:27:17,martinFTW,kevin: äh ähäm  Ich muss mich erst mal um dmesg informieren :D
+2013-03-26 12:27:38,kevin,Einfach dmesg | less eingeben
+2013-03-26 12:27:51,kevin,Das gibt dir alle Kernelmeldungen aus
+2013-03-26 12:29:35,martinFTW,alspo:
+2013-03-26 12:30:05,martinFTW,0x0 -0x9c400 (usable)
+2013-03-26 12:30:33,martinFTW,0x9c400 -0xa0000(reserved)
+2013-03-26 12:31:12,martinFTW,0xd2000 - 0xd4000 (reserved)
+2013-03-26 12:31:57,martinFTW,also da is ne lücke
+2013-03-26 12:32:27,kevin,"Eine Lücke ist aber nicht Typ 1, sondern einfach nicht angegeben"
+2013-03-26 12:32:32,kevin,"Wenn du da RAM vermutest, ist das dein eigenes Problem"
+2013-03-26 12:37:41,martinFTW,kevin: okey also eig sollten in meiner pmm nur bereiche vom Typ 1 als frei gekennzeichnet werden... aber gut wenn linux das sagt
+2013-03-26 12:38:06,kevin,"Sicher, dass du alles, was nicht angegeben ist, als belegt markierst?"
+2013-03-26 12:38:57,kevin,"Im Tut habe ich das so geschrieben, dass man erst alles als belegt markiert und dann nur Typ 1 wieder freigibt. Aber geht sicher auch anders, wenn man aufpasst."
+2013-03-26 12:40:00,martinFTW,kevin: also ich seh da grade das mein code ziemlich dem aus dem Tut ähnelt
+2013-03-26 12:40:32,martinFTW,obwohl ichs gern anders hätte...
+2013-03-26 12:41:17,kevin,"Naja, so viele Möglichkeiten gibt es auch wieder nicht, die Initialisierung umzusetzen"
+2013-03-26 12:42:38,martinFTW,https://drive.google.com/?tab=wo&authuser=0#my-drive
+2013-03-26 12:44:16,martinFTW,https://docs.google.com/file/d/0B-x3QNiQfEeCOFBXXzJNNTdVX1U/edit
+2013-03-26 12:44:32,martinFTW,das erste war ein falscher link
+2013-03-26 13:04:15,alexander,"docs.google.com ist mittlerweile auch zweifelhafter State of the Art, oder?"
+2013-03-26 13:05:38,martinFTW,alexander: Ich hoste es bald auf github
+2013-03-26 13:13:48,kevin,Was ist physbitmap und bedeutet gesetztes Bit frei oder belegt?
+2013-03-26 13:15:47,martinFTW,kevin: physbitmap ist die Bitmap für die physische Speicherverwaltung und gesetztes Bit bedeutet wie im Tut freier Speicherblock
+2013-03-26 13:16:00,kevin,Und was für ein Datentyp?
+2013-03-26 13:16:29,kevin,static uint32_t bitmap[BITMAP_SIZE] wie im Tutorial?
+2013-03-26 13:16:39,martinFTW,ja
+2013-03-26 13:16:58,martinFTW,static uint32_t physbitmap[BITMAP_SIZE];
+2013-03-26 13:17:59,martinFTW,"Ich hab das nur gepostet um zu sagen, dass0xb8000 eigentlich sowieso belegt sein muss"
+2013-03-26 13:18:21,martinFTW,vllt liegt es auch daran dass ich Grub Legacy verwende
+2013-03-26 13:18:24,kevin,"Ja, das memset() sieht dann korrekt aus"
+2013-03-26 13:18:33,kevin,"Nein, GRUB macht das BIOS nicht kaputt."
+2013-03-26 13:18:50,kevin,"Musst halt mal debuggen, wo der Bereich freigegeben wird"
+2013-03-26 13:18:59,martinFTW,kevin: gibt die Bios memory map aber vllt falsch weiter
+2013-03-26 13:19:06,martinFTW,klar
+2013-03-26 13:19:14,kevin,Warum sollte er das machen?
+2013-03-26 13:19:43,martinFTW,kevin: was weiß denn ich es wäre eine theoretische möglichkeit
+2013-03-26 13:20:16,kevin,"Nö, Linux kriegt es mit dem gleichen Bootloader ja auch auf die Reihe"
+2013-03-26 13:20:39,martinFTW,kevin: mein Linux verwendet Grub 2
+2013-03-26 13:20:39,kevin,Und GRUB 1 finde ich tendenziell vertrauenswürder als GRUB 2 ;-)
+2013-03-26 13:20:46,kevin,+ig
+2013-03-26 13:20:58,martinFTW,egal ist auch ziemlich unwahrscheinlich
+2013-03-26 13:21:06,kevin,Dann boote doch mal das Linux aus GRUB 1
+2013-03-26 13:21:46,kevin,"Aber eigentlich ist das unnötig, ja. GRUB macht da sehr sicher nichts kaputt."
+2013-03-26 13:22:56,martinFTW,oke
+2013-03-26 17:29:38,iksnagreb,moin
+2013-03-26 17:31:26,martinFTW,iksnagreb: hallo
+2013-03-26 17:35:39,kevin,Moin
+2013-03-26 17:48:00,XanClic,*lol*
+2013-03-26 17:48:10,XanClic,Erst fixe ich meine PMM-Initialisierung nach o. g. Schema
+2013-03-26 17:48:17,XanClic,"Dann wunder ich mich, wieso nichts mehr geht"
+2013-03-26 17:48:24,XanClic,"Dann stelle ich fest, dass es gar nicht an meiner PMM-Änderung liegt"
+2013-03-26 17:48:26,XanClic,Dann bisecte ich
+2013-03-26 17:48:41,XanClic,"Und lande bei einem Commit, dessen Commitmessage folgendes wagemutiges sagt:"
+2013-03-26 17:48:44,XanClic,„Kann eigentlich nicht schaden.“
+2013-03-26 17:48:52,kevin,*lol*
+2013-03-26 17:48:57,XanClic,"Ich HABE es schon GEWUSST, als ich das geschrieben hab"
+2013-03-26 17:48:57,kevin,Kommt mir aber so bekannt vor...
+2013-03-26 17:52:55,XanClic,Ah.
+2013-03-26 17:53:10,XanClic,"Wenn man wartet, bis der ATA-Server auftaucht, kann man lange warten, wenn es keine ATA-Geräte gibt"
+2013-03-26 19:46:11,iksnagreb,"komisch, wenn ich im kernel eax auf 0 setzte und es sofort danach im task auslese, steht da nicht mehr 0 drin? warum kann das o sein?"
+2013-03-26 19:46:20,iksnagreb,*so
+2013-03-26 19:49:10,bluecode,"eine Hoffnung wäre, dass du beim Taskswitchen den Status des Tasks wiederherstellst... inklusive eax"
+2013-03-26 19:52:41,iksnagreb,"ich wechsel ja nicht den task, das ist bei einem syscall"
+2013-03-26 19:54:42,bluecode,ich glaub du solltest dann den relevanten Code (im Prinzip den Controlflow von dem setzten von eax bis zum Wechseln zurück in den Task) posten (pastebin!)
+2013-03-26 19:57:39,iksnagreb,http://pastebin.com/j0j8ec2X
+2013-03-26 19:59:00,iksnagreb,danach kommt noch der interrupt handler der den cpu status wieder herstellt
+2013-03-26 19:59:19,iksnagreb,"kann es sein, dass das return cpu über eax geht?"
+2013-03-26 20:03:49,bluecode,jo
+2013-03-26 20:04:30,bluecode,"wobei du ja den Wert in irgendeiner struct anpasst und diese wiederherstellst, insofern sollte das doch keine Rolle spielen oder?"
+2013-03-26 20:08:26,iksnagreb,"ja, eigentlich nicht"
+2013-03-26 20:09:00,iksnagreb,aber in eax ist immer 2105272
+2013-03-26 20:09:41,iksnagreb,"und ich weiß nicht, wo das herkommt"
+2013-03-26 20:17:31,iksnagreb,"ich hab den fehler gefunden, da war im task noch was zwichen den aufruf und das ausleen der register gekommen"
+2013-03-26 20:17:41,iksnagreb,das hat eax benutzt
+2013-03-26 22:17:17,DerHartmut,"Guten Abend miteinander, man begrüßt sich energischst"
+2013-03-26 22:18:47,Jidder,hi
+2013-03-26 22:32:54,martinFTW,LOL wieso steht hier (http://www.cplusplus.com/reference/cstdlib/free/) nix von size? Ich meine wenn ich dass nicht in kleineren Speicherblöcken sondern mitner linkedlist mache würde das argument size doch sin machen oder?
+2013-03-26 22:33:58,livinskull,hä?
+2013-03-26 22:34:13,martinFTW,livinskull: es geht um den heap
+2013-03-26 22:34:33,livinskull,heapmanagement seichert intern die größe der blöcke
+2013-03-26 22:34:36,livinskull,+p
+2013-03-26 22:35:05,Jidder,plöcke
+2013-03-26 22:35:08,livinskull,wäre ja ekelhaft wenn man sich in nem normalen C-anwendungs-programm immer die Größe emrken müsste
+2013-03-26 22:36:32,martinFTW,Wieso da reicht doch ein simples sizeof()? außerdem ist das mit Linked lists viel schneller also ich verlange jeze size als free argument
+2013-03-26 22:37:49,martinFTW,?
+2013-03-26 22:38:31,martinFTW,:D
+2013-03-26 22:38:45,Tobiking,"Du gibts mit free nicht einen Berech bestimmter Größe frei, sondern den Bereich der vorher mit malloc angefordert wurde. Der hat also bereits eine Größe."
+2013-03-26 22:39:08,Tobiking,Also wozu der Parameter?
+2013-03-26 22:40:17,martinFTW,Naja ich dachte dass man da in der Linked List mit freiem Speicher einen neuen eintrag macht
+2013-03-26 22:40:58,martinFTW,aber jetzt wo du das so sagst versteh ichs
+2013-03-26 22:55:23,MSN,kennt irgendwer xkcd?
+2013-03-26 22:55:33,DerHartmut,Klaro
+2013-03-26 22:56:03,livinskull,sicher
+2013-03-26 23:13:47,Jidder,die machen elektromusik oder?
+2013-03-26 23:14:14,livinskull,eher elektronenmusik
+2013-03-26 23:21:38,MSN,habt ihr den neuen gesehn?
+2013-03-26 23:21:59,MSN,der sich alle halbe stunde ändert
+2013-03-26 23:21:59,MSN,:D
+2013-03-26 23:22:10,livinskull,O.o
+2013-03-26 23:24:45,martinFTW,http://xkcd.com/1185/
+2013-03-26 23:25:22,martinFTW,stimmt den hab ich schon gesehen
+2013-03-26 23:33:05,MSN,die bildurls sind 256bit hex strings
+2013-03-26 23:33:23,MSN,ich teste grad zufällig und suche neue bilder
+2013-03-26 23:33:44,martinFTW,http://xkcd.com/844/
+2013-03-26 23:33:47,MSN,aber nach so 30000 noch nix gefunden^^
+2013-03-26 23:33:54,MSN,natürlich kein wunder^^
+2013-03-26 23:35:06,martinFTW,MSN: ich glaub die sind dezimal
+2013-03-26 23:35:21,martinFTW,und höchstens 4stellig
+2013-03-26 23:35:44,MSN,die von dem comic der sich verändert nich ;)
+2013-03-26 23:36:02,MSN,die urls sind anders
+2013-03-26 23:36:26,livinskull,sha256(time) vllt?
+2013-03-26 23:36:50,MSN,nop das ham schon welche probiert^^
+2013-03-26 23:36:57,livinskull,eigentlich könnte man einfach ins js kucken
+2013-03-26 23:37:05,MSN,jop
+2013-03-26 23:37:18,MSN,das js wartet bis der server ihm bescheid sagt
+2013-03-26 23:37:25,livinskull,damn
+2013-03-26 23:37:25,MSN,und läd dann das bild
+2013-03-26 23:37:27,livinskull,xD
+2013-03-26 23:37:56,MSN,aber das js hat er schon 7 mal geupdatet glaub ich^^
+2013-03-26 23:38:04,MSN,irgendwer hat nen script geschrieben das die neuen bilder fetcht und nen gif draus macht und das im forum verlinkt..
+2013-03-26 23:38:21,livinskull,xD
+2013-03-26 23:38:21,MSN,nach nem halben tag war die seite down weil er seine cpu zeit verbraucht hat
+2013-03-26 23:38:31,martinFTW,:D
+2013-03-26 23:38:51,MSN,und explainxkcd is auch dauernd down
+2013-03-26 23:39:09,MSN,im forums thread waren vorhin 20 benutzer online
+2013-03-26 23:39:16,MSN,und 680 besucher
+2013-03-26 23:39:53,MSN,der thread hat 185235 views^^
+2013-03-26 23:40:04,MSN,ich finds total krass^^
+2013-03-26 23:40:08,martinFTW,MSN: link? :)
+2013-03-26 23:41:20,MSN,http://xkcd.com/1190/
+2013-03-26 23:41:20,MSN,http://forums.xkcd.com/viewtopic.php?f=7&t=101043
+2013-03-26 23:41:20,MSN,http://primis.org/time/output.gif
+2013-03-26 23:41:36,martinFTW,thx
+2013-03-26 23:44:17,livinskull,[23:35:56] <livinskull> .hashlens 560372e93e497f223f00fb9196494fbf2bc8e06fe01fd12548600d475ef058f6
+2013-03-26 23:44:17,livinskull,"[23:35:57] 8 matches for length 64: sha256, ripemd256, snefru, snefru256, gost, haval256,3, haval256,4, haval256,5."
+2013-03-26 23:44:31,livinskull,^_^
+2013-03-26 23:44:53,livinskull,das sind die die php unterstützt btw
+2013-03-26 23:45:11,MSN,;)
+2013-03-26 23:46:17,MSN,ich hab zuerst probiert der reihe nach 256bit zahlen durch zu gehen
+2013-03-26 23:46:53,MSN,und jez probiere ich sha256(anzahlGetesteterHashes)
+2013-03-26 23:47:05,MSN,beides noch kein erfolg gebracht ;)

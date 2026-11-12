@@ -1,0 +1,181 @@
+date/time,nick,message
+2015-10-03 10:33:24,Jonathan,Moin
+2015-10-03 10:34:08,Paddy,Moin
+2015-10-03 15:27:19,iksnagreb,moin
+2015-10-03 15:38:31,iksnagreb,l
+2015-10-03 16:55:12,Svenska,moin
+2015-10-03 16:55:51,Svenska,"kennt sich jemand mit C aus, bzw. den ekligen details mit der hardware? ;-)"
+2015-10-03 16:56:11,Svenska,"anders gefragt: was muss ein startup-code mindestens tun, damit C code funktioniert?"
+2015-10-03 16:56:36,Svenska,"also: stackpointer setzen, .data initialisieren, .bss leeren - was noch?"
+2015-10-03 17:10:53,Jonathan,"Heap initialisieren, falls nötig"
+2015-10-03 17:11:26,Svenska,"ja, mit 0xd00fda1a ;)"
+2015-10-03 17:11:44,Svenska,heap ist m.W. dynamisch und damit ein problem der anwendung
+2015-10-03 17:11:55,Jonathan,"Na, zumindest mal die Heap-Verwaltung musst du initialisieren, das meinte ich ;)"
+2015-10-03 17:11:58,Svenska,laut elf-standard gäbs da noch .init und .fini
+2015-10-03 17:12:36,Svenska,"achso ja, aber das ist teil der runtime (die gibt's nicht)"
+2015-10-03 17:12:45,Jonathan,wtf *g*
+2015-10-03 17:13:00,Svenska,"mir kam letztens eine relativ bescheuerte idee, die irgendwo zwischen genial und wahnsinn liegt. vermutlich eher wahnsinn."
+2015-10-03 17:13:14,Jonathan,Für Wahnsinn sind wir hier immer zu haben. ;)
+2015-10-03 17:13:50,Svenska,multithreading ohne multithreading-library? ;)
+2015-10-03 17:13:59,Svenska,und ohne threading-api? ;)
+2015-10-03 17:14:10,Jonathan,Was genau hast du vor? *g*
+2015-10-03 17:14:41,Svenska,"epiphany stinkt. wir haben es bisher nicht geschafft, aus dem teil akzeptable performance rauszukitzeln"
+2015-10-03 17:15:17,Jonathan,:(
+2015-10-03 17:15:20,Svenska,"und meine commlib ist zwar nett zu bedienen und hat ne nette api, ist dafuer aber relativ groß"
+2015-10-03 17:16:00,Svenska,"die runtime-performance ist einigermaßen erträglich (read() aus lokalem buffer sind etwa 600 takte, write() in remote buffer etwa 300; jeweils 1 token á 64 byte)"
+2015-10-03 17:16:43,Svenska,"naja und das hauptproblem besteht eigentlich ""nur"" darin, dass das teil aus 16 cpus besteht, und damit 16 programme ausfuehrt, und diese 16 programme von 16 verschiedenen compiler-instanzen erzeugt werden"
+2015-10-03 17:17:02,Jonathan,"Allllter... Unsere Nachbarskinder machen sich wieder einen Spaß daraus, im Garten zu stehen und zu schauen, wer am lautesten / schrillsten schreien kann"
+2015-10-03 17:17:06,Svenska,aka ein programm kennt das memory-layout der anderen programme nicht; daher elendiges runtime-init gedöns
+2015-10-03 17:17:21,Svenska,"ach, meine nachbarn haben n kleinkind, ich tippe auf 4 oder so"
+2015-10-03 17:17:25,Jonathan,D.h. du hast 16 verschiedene Binaries?
+2015-10-03 17:17:25,Svenska,die schreit nur
+2015-10-03 17:17:27,Svenska,jap
+2015-10-03 17:17:32,Jonathan,Autsch? :D
+2015-10-03 17:17:47,Jonathan,Wie verschieden sind die einzelnen Cores denn?
+2015-10-03 17:17:52,Svenska,"in meinem fall sind die alle gleich, weil ich die programme dynamisch erst ein ""wer bin ich?"" und dann ein ""oha!"" machen lasse :D"
+2015-10-03 17:17:54,Jonathan,Vermutlich doch größtenteils identisch?
+2015-10-03 17:18:07,Jonathan,Ah kay :D
+2015-10-03 17:18:24,Jonathan,Und wieso kannst du das dann nicht von einer einzelnen Compiler-Instanz erzeugen lassen?
+2015-10-03 17:18:27,Svenska,"spart compile-zeit, weil nur ein gcc und 16 ld's"
+2015-10-03 17:18:41,Jonathan,Hmm
+2015-10-03 17:18:46,Svenska,"die anderen machen das nicht so, ergo da sind es 16 verschiedene programme"
+2015-10-03 17:18:55,Svenska,"oder 2 oder 4 verschiedene programme, je nach problem"
+2015-10-03 17:19:19,Jonathan,"D.h. du willst jetzt zuerst nur 1 Core starten, der dann fork() macht?"
+2015-10-03 17:19:20,Jonathan,Oder wie?
+2015-10-03 17:19:35,Svenska,"aber du hast das problem erfasst. ich ueberlege gerade, was ich brauche, um _eine_ ELF-datei zu erzeugen, die alle 16 cores befeuert"
+2015-10-03 17:19:48,Jonathan,Hmmmm :)
+2015-10-03 17:19:53,Svenska,"ne, ich will _einen_ memory-dump ueber alle 16 kerne legen"
+2015-10-03 17:20:17,Jonathan,"D.h. du willst, dass alle auf dem selben Speicher arbeiten?"
+2015-10-03 17:20:21,Jonathan,Oder nur auf einer Kopie davon?
+2015-10-03 17:20:37,Svenska,"d.h. eine elf-datei braucht 16 startup-codes, 16 interrupt-vektoren, 16 main()-funktionen, der ganze rotz muss reentrant sein, _und_ ich muss dafuer sorgen, dass jede funktion an der richtigen stelle im speicher liegt"
+2015-10-03 17:20:48,Jonathan,lol *g*
+2015-10-03 17:21:00,Svenska,"alle 16 kerne arbeiten auf einem gemeinsamen adressraum, und der ist nicht kohärent"
+2015-10-03 17:21:11,Jonathan,Auweia
+2015-10-03 17:21:13,Svenska,bzw nur eingeschränkt kohärent
+2015-10-03 17:21:34,Svenska,"achso, und das ganze wird vom SDK natuerlich nicht unterstuetzt."
+2015-10-03 17:21:41,Jonathan,"D.h. das Programm für einen Core befindet sich für diesen Core an einer anderen Adresse, als das eines anderen?"
+2015-10-03 17:21:50,Svenska,hmm
+2015-10-03 17:22:05,Jonathan,Oder liegt der Code an der selben Adresse...?
+2015-10-03 17:22:07,Svenska,teile deinen 32-bit adressraum in scheiben von 1 MB auf
+2015-10-03 17:22:18,Svenska,"jeder core ""besitzt"" eine solche scheibe"
+2015-10-03 17:22:32,Svenska,innerhalb dieser scheibe ist fuer diesen core alles kohärent und läuft wie erwartet
+2015-10-03 17:22:46,Svenska,außerdem hat diese scheibe einen alias an adresse null...
+2015-10-03 17:23:01,Jonathan,Der Alias ist doch perfekt...?
+2015-10-03 17:23:17,Svenska,"fuer ein programm in einem binary, ja"
+2015-10-03 17:23:32,Jonathan,Du könntest zuerst einen Core starten und diesen dann die anderen bootstrappen lassen
+2015-10-03 17:23:41,Svenska,d.h. alle binaries werden an 0x0 gelinkt und dann an die jeweilige adresse geladen und dann ausgefuehrt
+2015-10-03 17:23:49,Jonathan,:D
+2015-10-03 17:24:02,Svenska,"und der core fuehrt die von 0x0 aus, was geht"
+2015-10-03 17:24:15,Svenska,"man kann auch jederzeit von einer anderen adresse ausfuehren, auch aus einem anderen core aus"
+2015-10-03 17:24:20,Jonathan,Ich würde das per Hau-Drauf-Ich-Mach-Jetzt-Komische-Dinge-Methode lösen:
+2015-10-03 17:24:22,Svenska,aber das ist extrem langsam
+2015-10-03 17:24:57,Jonathan,"1. Etwas Startup-Code schreiben, der an einer festen Adresse ein Byte enthält, das ich im Binary auf 0 setze"
+2015-10-03 17:25:12,Jonathan,2. Dieses Byte an main() übergeben
+2015-10-03 17:25:18,Svenska,"jaja, das ist alles nicht soo schwierig"
+2015-10-03 17:25:21,Jonathan,:D
+2015-10-03 17:25:24,Jonathan,Naja
+2015-10-03 17:25:37,Svenska,fies ist die frage: was ist main() ? ich hab ja 16 davon :D
+2015-10-03 17:25:41,Jonathan,*g*
+2015-10-03 17:25:45,Jonathan,Main ist überall das selbe ;)
+2015-10-03 17:26:03,Jonathan,"3. Wenn das Byte nicht 0 ist, den normalen Code in Main ausführen"
+2015-10-03 17:26:07,Svenska,d.h. du willst eine funktion 16x gleichzeitig von einer stelle ausfuehren lassen?
+2015-10-03 17:26:33,Jonathan,"4. Wenn das Byte 0 ist, lässt du den Code sich selbst in den Adressraum aller anderen Cores kopieren, wobei er das Byte mit der Nummer des Cores überschreibt..."
+2015-10-03 17:26:44,Jonathan,"5. Und dann läuft ""main(0)"" auch normal weiter."
+2015-10-03 17:27:03,Svenska,"hmm, ja, wobei ich das auch zur compilezeit erledigen lassen kann"
+2015-10-03 17:27:14,Svenska,"niemand zwingt mich, code von adresse 0 auszufuehren"
+2015-10-03 17:27:26,Jonathan,Dann hast du aber wieder jede Menge verschiedene Binaries... :D
+2015-10-03 17:27:36,Svenska,"ich muesste dem compiler nur beibringen, dass er diese funktion X bitte 16x in den speicher legen muss"
+2015-10-03 17:27:40,Jonathan,*g*
+2015-10-03 17:28:00,Jonathan,"Was spricht denn *dagegen*, die Cores so zu bootstrappen?"
+2015-10-03 17:28:05,Svenska,"ich möchte mit einer compiler-instanz 16 programme erzeugen, die dann gleichzeitig ausgefuehrt werden"
+2015-10-03 17:28:22,Svenska,der overhead :-D
+2015-10-03 17:28:32,Jonathan,Ohje :D
+2015-10-03 17:28:44,Jonathan,Wo ist denn da viel Overhead?
+2015-10-03 17:28:47,Svenska,"das problem ist nicht, dass ich _einen_ startup-code habe, der sich dann auf alle kerne verteilt"
+2015-10-03 17:29:09,Svenska,"das problem ist aber, dass ich die programme, die ich auch verteilen muss, irgendwo speichern können muss"
+2015-10-03 17:29:40,Svenska,und dafuer hat der erste core nicht genug ram
+2015-10-03 17:29:47,Jonathan,Äh...
+2015-10-03 17:30:02,Jonathan,Der erste Core kopiert *seinen eigenen Code* (mit allem drum und dran) auf die anderen Cores.
+2015-10-03 17:30:13,Svenska,"achso, das ginge fuer meine programme, aber nicht fuer die programme der anderen"
+2015-10-03 17:30:15,Jonathan,"Und ändert darin nur 1 Byte, damit die Cores wissen, wer sie sind"
+2015-10-03 17:30:22,Jonathan,Hmmm :(
+2015-10-03 17:30:55,Jonathan,"Also, so würde ich das jedenfalls machen, und hätte dann wirklich 16 Threads vom selben Programm..."
+2015-10-03 17:30:58,Svenska,"also meine beiden projekte könnten das ohne probleme tun, aber auch nur, weil ich grundsätzlich dasselbe programm ausfuehre"
+2015-10-03 17:31:37,Svenska,"aber in dem moment, wo das nicht der fall ist, stirbt die idee. unser mpeg4-decoder besteht aus 16 vollkommen verschiedenen programmen, die jeweils groß genug sind"
+2015-10-03 17:31:56,Jonathan,"Ach, doof. :("
+2015-10-03 17:32:14,Svenska,"allerdings habe ich auch vor, ein programm aus 16 threads zu bauen"
+2015-10-03 17:32:32,Svenska,"nur muss das eben bereits zur compile-zeit verteilt werden, damit ich sie an die richtigen stellen stopfen kann"
+2015-10-03 17:33:04,Jonathan,"Kannst du denn von Core 0 auf irgendeinen ""Massenspeicher"" zugreifen?"
+2015-10-03 17:33:05,Svenska,und damit muss ich - wie erik das vor langer zeit mal als vision hatte - das system lebend gebären
+2015-10-03 17:33:31,Svenska,"ja, kann ich. und als folge dessen wäre core 0 ""speziell"", was das programmdesign erschwert..."
+2015-10-03 17:33:44,Jonathan,:(
+2015-10-03 17:34:05,Jonathan,Du könntest das doch im Startup-Code wegpacken...?
+2015-10-03 17:34:06,Svenska,das SDK frisst einen hex-memory-dump
+2015-10-03 17:34:40,Svenska,"den kann ich auch so bauen, dass eine datei gleich alle 16 kernen befuettert, und wenn ich das so in die ELF-datei eintrage..."
+2015-10-03 17:35:24,Svenska,"meine commlib tut sowas ähnliches, und deren init-code (lies eine tabelle, verarbeite die einträge, erzeuge datenstrukturen und setze pointer) liegt bei knapp 1K"
+2015-10-03 17:35:39,Svenska,"die gesamte lib liegt inzwischen bei 3K - oder auch 9% des RAMs, in jedem kern"
+2015-10-03 17:36:06,Jonathan,Hmmm...
+2015-10-03 17:36:23,Svenska,"und das ist der preis, den ich fuer runtime-init bezahlen muss, weil ich nicht einfach einen pointer auf einen anderen kern erzeugen kann, weil ich dessen speicherlayout nicht kenne"
+2015-10-03 17:37:00,Jonathan,:(
+2015-10-03 17:37:07,Jonathan,Dann habe ich jetzt leider auch keine Ideen mehr...
+2015-10-03 17:37:22,Svenska,"(im master habe ich uebrigens genau das getan, weil da alle kerne den gleichen code ausgefuehrt haben. das hätte ich fuers QRD auch machen können, aber den code habe ich genutzt, um commlib zu entwickeln/debuggen)"
+2015-10-03 17:38:11,Svenska,"meine feststellung ist halt, dass auf der hardware ein init zur runtime teuer ist"
+2015-10-03 17:38:38,Svenska,"also: die toolchain so knoten, dass sie mir einen prozess aus 16 threads baut, und diese dann gleichzeitig spawnen"
+2015-10-03 17:38:51,Svenska,das könnte klappen... *g*
+2015-10-03 17:39:15,Svenska,allerdings muss ich dafuer einmal das gesamte SDK wegwerfen. *g*
+2015-10-03 17:39:51,Svenska,"fuer'n single-core arm hab ich das schon 2x gemacht, aber eben nur so weit wie nötig, nicht soweit wie man eigentlich sollte *g*"
+2015-10-03 17:40:14,Svenska,"darum ja die frage: was muss ein startup-code mindestens tun, außer ""stack-pointer; .data; .bss"" ? :-D"
+2015-10-03 17:42:12,Svenska,laut ELF gibt's da noch .init und .ctors (.fini / .dtors kann ich weglassen; die programme können eh nicht enden *g*)
+2015-10-03 17:44:25,Jonathan,Svenska: Mehr als das tu ich auf meinem Z80-OS auch nicht ;)
+2015-10-03 17:44:53,Svenska,"ja, aber du hast 100% des codes geschrieben. ich hab da noch newlib im compiler drin *g*"
+2015-10-03 17:45:07,Jonathan,"Eigentlich noch weniger: .data knote ich direkt so in das Binary, dass es gleich an der richtigen Stelle im RAM liegt, und .bss lasse ich einfach uninitialisiert *g*"
+2015-10-03 17:45:29,Jonathan,"Ja gut, aber ich hab auch die stdlib benutzt und nicht alles selbst geschrieben. :P"
+2015-10-03 17:45:29,Svenska,letzteres hat mir auf meinem sam3x schon ärger bereitet
+2015-10-03 17:45:36,Jonathan,Echt?
+2015-10-03 17:45:48,Svenska,ja... hat die speicherverwaltung zerschossen
+2015-10-03 17:45:55,Jonathan,Wie denn das? :D
+2015-10-03 17:46:08,Svenska,"du sprachst von ""heap initialisieren"" - ""static int heap_size = 0;"""
+2015-10-03 17:46:26,Jonathan,Hmm ;)
+2015-10-03 17:46:32,Svenska,das sollte beim programmstart bevorzugt auch null sein... *g*
+2015-10-03 17:46:35,Jonathan,Ich dachte eher an einen Heap per Linked List *g*
+2015-10-03 17:46:38,Svenska,jedenfalls hat das display komische dinge gemacht
+2015-10-03 17:47:18,Svenska,"ne, commlib enthält ein eigenes malloc() (das system-malloc ist broken), aber das arbeitet auf einem gegebenen array und unterstuetzt kein free()"
+2015-10-03 17:47:24,Jonathan,"Ich find das irgendwie lustig: Wenn ich meinen Finger in die Nähe meines Capmeters halte, dann zeigt das 100fF bis 2pF an, je nach Nähe. *g*"
+2015-10-03 17:47:42,Jonathan,"""und unterstuetzt kein free()"" <---- Huuuups :D"
+2015-10-03 17:47:47,Svenska,"ne, das ist absicht"
+2015-10-03 17:48:06,Svenska,die init-funktion liest eine tabelle und baut auf jedem core die benötigten datenstrukturen zusammen
+2015-10-03 17:48:15,Svenska,danach wird nie wieder dynamischer speicher benutzt
+2015-10-03 17:48:29,Svenska,"malloc() kuemmert sich nur darum, dass alles auf 8 bytes ausgerichtet ist und fertig"
+2015-10-03 17:48:32,Jonathan,Achso :)
+2015-10-03 17:48:36,Svenska,"achso, und es TRAPt bei OOM"
+2015-10-03 17:48:49,Svenska,"(bzw. malloc() trapt nicht, aber der init-code)"
+2015-10-03 17:48:57,Svenska,(vereinfacht das debuggen... *g*)
+2015-10-03 17:48:59,Jonathan,*g*
+2015-10-03 17:49:11,Svenska,ich hab keine stack-traces oder sowas :(
+2015-10-03 17:49:20,Jonathan,Ohweh :(
+2015-10-03 17:49:38,Svenska,es gibt einen gdb. das ist aber nur der simulator.
+2015-10-03 17:49:43,Jonathan,Könntest du dir aber theoretisch selbst machen
+2015-10-03 17:49:46,Jonathan,Die Traces
+2015-10-03 17:49:54,Jonathan,Solange dein Compiler keine Framepointer weglässt
+2015-10-03 17:49:58,Jonathan,Und du das Stack-Format kennst
+2015-10-03 17:50:06,Svenska,...ja. ;-)
+2015-10-03 17:50:13,Jonathan,Zu faul? ;)
+2015-10-03 17:50:43,Svenska,"ich hab irgendwo auf der TODO-liste noch ein ""printf() zum laufen kriegen"""
+2015-10-03 17:50:50,Jonathan,lol
+2015-10-03 17:50:58,Svenska,der simulator implementiert syscalls
+2015-10-03 17:51:08,Svenska,"d.h. du kannst printf() aufrufen, und der code TRAPt dann"
+2015-10-03 17:51:33,Jonathan,Ohje... :D
+2015-10-03 17:51:49,Jonathan,"Also, irgendwo hab ich noch mein printf rumfliegen"
+2015-10-03 17:51:51,Svenska,da ich aber gerade massiv an der infrastruktur schraube - daher das commlib-gedöns - will ich erstmal ein generisches programm haben
+2015-10-03 17:52:05,Svenska,"das können wir dann in diverse andere projekte eintueten, und dann erweitern"
+2015-10-03 17:52:23,Svenska,"und dann kann der host-code auch den trap abfangen und sowas wie ""putc"" nachbauen"
+2015-10-03 17:53:19,Jonathan,Na dann
+2015-10-03 17:53:49,Jonathan,Hm
+2015-10-03 17:54:05,Jonathan,"Wie wäre es mit einem Loader, der alles aufsetzt und sich dann selbst überschreibt?"
+2015-10-03 17:54:39,Svenska,"das ist alles möglich, aber den aufwand nicht wert"
+2015-10-03 17:54:57,Svenska,"und es wird vermutlich zu hardware-spezifisch sein, also in 1-2 jahren nix mehr wert"
+2015-10-03 17:55:07,Svenska,"wenn du in die präsentation reinguckst, dann siehst du irgendwo gegen ende ein bild"
+2015-10-03 17:55:27,Svenska,"das ist das beste, was wir derzeit an debug-material fuer die entwicklung haben"
+2015-10-03 18:15:49,Svenska,"immerhin können wir schauen, was ein core gerade tut (funktion, datei und zeile), und ein paar andere dinge"
+2015-10-03 18:17:04,Svenska,"solange ""das programm starten"" nicht gerade das system crasht. ansonsten hätte ich in da auch den syscall-emulator eingebunden; aber e-top crasht halt ständig das system, weil es keine möglichkeit gibt, rauszukriegen, ob ein read() auf den chip safe ist oder nicht"
+2015-10-03 19:29:07,Svenska,was tut frame_dummy() eigentlich?

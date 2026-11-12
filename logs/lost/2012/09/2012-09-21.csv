@@ -1,0 +1,62 @@
+date/time,nick,message
+2012-09-21 08:02:01,DesL,moin
+2012-09-21 09:42:27,r1cky,hallo alle zusammen :D
+2012-09-21 09:44:33,JuZtMe,moin
+2012-09-21 09:45:10,r1cky,ich hab ein problem mit gcc und inline assembly (intel style) und hab gehofft dass hier mir vielleicht jemand helfen kann :)
+2012-09-21 09:46:22,r1cky,es geht um das laden des GDT
+2012-09-21 09:47:12,JuZtMe,hmm ja normaler weise schon… aber leider ich nicht ;-)
+2012-09-21 09:47:35,JuZtMe,das letzte mal dass ich ne GDT geladen habe wäre in asm
+2012-09-21 09:47:52,JuZtMe,also ich meine nicht inline asm
+2012-09-21 09:48:07,r1cky,"vielleicht kannst du was mit dem error anfangen ""unsupported for 'lgdt'"""
+2012-09-21 09:48:23,JuZtMe,hmm so direkt nicht….
+2012-09-21 09:48:33,JuZtMe,bräuchte wenn dann auch code..
+2012-09-21 09:48:51,r1cky,ok soll ich es hier im main channel posten?
+2012-09-21 09:49:21,JuZtMe,ne
+2012-09-21 09:49:25,JuZtMe,pastebin bitte
+2012-09-21 09:50:11,r1cky,http://pastebin.com/hDLN4he2
+2012-09-21 09:50:25,r1cky,flags für gcc sind unteranderem: -m32 und -masm=intel
+2012-09-21 09:50:37,r1cky,"wenn ich kein -masm=intel hab, funktioniert der teil"
+2012-09-21 09:50:45,r1cky,und die gdt wird auch geladen
+2012-09-21 09:51:48,JuZtMe,kurze frage: was spricht denn dagegen ohne -masm=intel zu arbeiten?
+2012-09-21 09:52:22,r1cky,ich wollte alles auf intel machen weil ich das lieber hab :) ... aber wenn mir nichts anderes übrig bleibt muss ich wohl wieder alles umschreiben
+2012-09-21 09:52:51,JuZtMe,hmm oder du wartest auf jemanden der sich besser damit auskennt...
+2012-09-21 09:53:27,r1cky,"ich hatte auch schon eine IDT und die ganzen interrupt routinen nur als ich dann auf intel umgestiegen bin funktionierte ""lgdt"" nicht mehr.... und die sache ist auch, ein kollege von mir der hat die selben zeilen code und auch -masm=intel und bei dem läufts"
+2012-09-21 09:53:57,JuZtMe,unterschiedlicher compiler?
+2012-09-21 09:54:17,r1cky,ich glaube er hat g++ weil er es mit c++ macht
+2012-09-21 09:54:46,r1cky,"naja ich verweile hier mal ein bisschen :) vielleicht kommt ja noch jemand der sich damit auskennt, aber auf jeden fall vielen vielen dank schonmal :D"
+2012-09-21 09:55:12,JuZtMe,ja kein problem sorry dass ich dir nicht helfen konnte...
+2012-09-21 09:55:48,JuZtMe,achso eine Idee habe ich noch… warum machst du das nicht extern? und rufst das nur in c auf?
+2012-09-21 09:56:03,kevin,Vielleicht lgdt [%0]? Aber Intelsyntax mit gas zu verwenden ist eh kriminell.
+2012-09-21 09:57:20,kevin,juztme: Eine einzelne Zeile Assembler auszulagern macht die Sache sicher nicht übersichtlicher
+2012-09-21 09:57:54,JuZtMe,;-) aber wenn er dadurch glücklich ist
+2012-09-21 09:57:56,r1cky,"[%0] hatte ich auch schon versucht, und extern zu laden also, eine asm function mit c aufrufen hab ich auch versucht, hatte dann über den stack den pointer übergegeben und dann ""lgdt"" aufgerufen was auch funktioniert hat, nur danach beim neuladen der register ist er mitten drin ins nirvana gesprungen"
+2012-09-21 09:58:48,kevin,Aber mit AT&T-Syntax funktioniert es wie es soll?
+2012-09-21 09:58:59,r1cky,joa wenn ich dann nochmal alles umschreibe :D
+2012-09-21 09:59:10,kevin,Oder liegt das mit dem ins Nirvana springen an einer kaputten GDT?
+2012-09-21 10:00:00,r1cky,"die GDT ist die selbe bei AT&T sowie Intel, und wie gesagt register neu laden mit inline assembly und AT&T ging "
+2012-09-21 10:00:15,kevin,"Hm, nein, dein Code ist grundsätzlich falsch"
+2012-09-21 10:00:24,kevin,"unsigned int limit; sind 32 Bit, sollte nur 16 Bit sein"
+2012-09-21 10:01:13,r1cky,hm... das könnte das problem sein :D
+2012-09-21 10:01:17,r1cky,moment ich gucke mal
+2012-09-21 10:05:38,r1cky,"oooooh was ein dummer dummer fehler, jetzt funktioniert es wieder, vielen vielen dank .... :D"
+2012-09-21 10:08:26,r1cky,"ich weiß auch warum es unter at&t funktioniert hat, als ich auf intel alles umgeschrieben habe, habe ich auch alle uint32_t usw. umgeschrieben"
+2012-09-21 10:08:49,r1cky,"und dann statt ""unsigned short int"" unsigned int geschrieben....."
+2012-09-21 10:51:48,JuZtMe,oO ich hab mal wieder irgendwas verbuggt
+2012-09-21 10:52:15,JuZtMe,ls tcpip:/ zeigt mir zweimal e1000 oO
+2012-09-21 10:53:57,kevin,"Für jede Karte eins, oder wie?"
+2012-09-21 10:55:24,JuZtMe,warscheinlich
+2012-09-21 10:55:32,JuZtMe,aber ich konnte nur auf eine karte zugreifen...
+2012-09-21 10:56:45,JuZtMe,lag wahrscheinlich da dran dass ich die VirtualBox Config während des Bootens geändert habe
+2012-09-21 10:57:09,JuZtMe,hab mal nen reboot der vm gemacht und danach läuft wieder alles
+2012-09-21 10:58:50,kevin,Ah
+2012-09-21 11:01:27,JuZtMe,greift eigentlich dein Setup auf tcpip:/route zu?
+2012-09-21 11:03:39,JuZtMe,ah sehe es schon
+2012-09-21 11:04:30,JuZtMe,will noch das device hinzufügen 
+2012-09-21 11:05:51,JuZtMe,jetzt mit 2 Karten versucht der über beide das Standard Gateway zu erreichen...
+2012-09-21 11:08:39,JuZtMe,naja muss ich mich später drum kümmern bin jetzt weg.. bye
+2012-09-21 12:31:03,alexander,Morgen
+2012-09-21 12:33:59,SHyx0rmZ,Moin
+2012-09-21 12:37:07,kevin,Moin
+2012-09-21 13:14:57,DesL,moin
+2012-09-21 15:54:35,micha,moin
+2012-09-21 17:01:59,desL,rö

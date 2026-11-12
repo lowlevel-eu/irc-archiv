@@ -1,0 +1,171 @@
+date/time,nick,message
+2014-07-05 09:41:41,Jonathan,Morgähn
+2014-07-05 09:52:07,ehenkes,moin
+2014-07-05 11:02:29,Jonathan,"Dieser Moment, wenn eine 160x100-Platine einfach nicht mehr für die Grafikkarte ausreicht, und man links noch eine zweite Platine dranmacht, in dem Wissen, dass auch das knapp wird..."
+2014-07-05 13:29:15,iksnagreb,moin
+2014-07-05 15:02:43,darklink,äh jo
+2014-07-05 15:03:15,darklink,"vieleicht sollte man den stack nicht auf 0x200000 setzen, wenn der einsprungspunkt eines programms da ist"
+2014-07-05 15:32:42,Th3Falc0n,darklink: das klingt wirklich schlau ^^
+2014-07-05 15:34:05,darklink,Ja mein kernel springt immer aus dem code raus
+2014-07-05 17:24:31,Th3Falc0n,ich hab irgendwo nen null pointer write und weiß nicht wie der zustande kommt
+2014-07-05 17:25:07,Th3Falc0n,"und ja ich muss ständig meine probleme in den IRC schreiben, das regt mich ab"
+2014-07-05 17:25:48,darklink,Boah
+2014-07-05 17:26:26,darklink,Iwie schmiert php auf meinem vserver ab
+2014-07-05 17:26:35,Th3Falc0n,?
+2014-07-05 17:26:58,darklink,Mein bot is grad abgeschmiert
+2014-07-05 17:27:53,Th3Falc0n,aber php ist doch eigentlich garnicht so schlimm
+2014-07-05 17:28:07,Th3Falc0n,also mit mysql hatte ich öfter probleme
+2014-07-05 17:29:32,darklink,Mysql nutzt der net
+2014-07-05 17:29:55,darklink,Der schreibt alles was er braucht in datei
+2014-07-05 17:43:55,Th3Falc0n,"hmm mein betriebssystem schreibt immoment alles was es braucht schein an ""0x0"" darklink "
+2014-07-05 17:44:03,Th3Falc0n,+bar hinter schein
+2014-07-05 17:57:41,darklink,Mein os benötigt einen #gp
+2014-07-05 17:57:59,Th3Falc0n,?
+2014-07-05 17:58:31,Th3Falc0n,das wort benötigt in kombination mit einem interrupt < 0x20 irritiert mich
+2014-07-05 17:59:08,darklink,Mein os löst einen #gp aus um zu funktionieren
+2014-07-05 17:59:21,Th3Falc0n,bitte was?
+2014-07-05 18:00:01,darklink,"Mein os ""macht"" derzeitig nur einen general protection fault"
+2014-07-05 18:00:50,Th3Falc0n,"aber das ist doch dann nicht beabsichtigt oder? oder testest du ein asm(""cli; hlt"") im userspace?"
+2014-07-05 18:01:03,darklink,Nö
+2014-07-05 18:01:32,darklink,Der sollte was schreiben und dann in eine endlosschleife gehen
+2014-07-05 18:02:37,darklink,Naja ich mach jetze meinen pc an
+2014-07-05 18:41:55,iksnagreb,und windows is mal wieder abgelaufen...
+2014-07-05 18:43:19,darklink,Und windows is eh nur müll
+2014-07-05 18:43:28,darklink,Äh ok?
+2014-07-05 18:43:51,darklink,"Der macht alles,was er soll, er macht nur ein #GP hinterher"
+2014-07-05 18:44:54,Th3Falc0n,vllt weil return versucht außerhalb des stacks zu lesen?
+2014-07-05 18:45:12,darklink,Ja der Stackpointer is im Programm O.o
+2014-07-05 18:45:51,Th3Falc0n,hmm
+2014-07-05 18:46:45,darklink,"die erste zeile im code is mov esp, 0x200000"
+2014-07-05 18:47:04,Th3Falc0n,wo genau?
+2014-07-05 18:47:10,darklink,init.asm
+2014-07-05 18:47:33,Th3Falc0n,also ist 0x200000 der kernel stack?
+2014-07-05 18:48:32,darklink,"jo hilft auch nix, wenn ich den stack 6 MiB nach hinten verschiebe"
+2014-07-05 18:49:00,Th3Falc0n,was genau sagt ESP denn beim GPF?
+2014-07-05 18:49:41,darklink,"SS:ESP 0x1B:0x200049, SS:EBP 0x1B:0x20005B"
+2014-07-05 18:49:46,darklink,komisch
+2014-07-05 18:50:09,Th3Falc0n,da ist definitiv mehr return als call
+2014-07-05 18:50:46,darklink,EIP ist im Kernel an der Adresse 0x8:0x1022D
+2014-07-05 18:51:17,Th3Falc0n,du musst rekonstruieren wie dein esp zu hoch wird
+2014-07-05 18:51:22,Th3Falc0n,das sollte nämlich nicht passieren
+2014-07-05 18:52:46,darklink,hmm
+2014-07-05 18:53:29,darklink,wenn ich das printf durch ein puts ersetze wird ein zeichen mehr ausgegeben
+2014-07-05 18:56:03,Th3Falc0n,ich würde sagen da stimmt was nicht mit deinen strings
+2014-07-05 18:56:07,darklink,vor dem programmaufruf gibts ein INTR 0 (O.o)
+2014-07-05 18:56:23,Th3Falc0n,ja da stimmt definitiv was nicht
+2014-07-05 18:56:40,darklink,Für den String der dargestellt wird gibts einen Syscall mit EAX=1
+2014-07-05 18:56:54,darklink,EBX und EDX=0x20005D
+2014-07-05 18:57:15,darklink,ESP und EBP sind im Realmode memory (O.o)
+2014-07-05 18:57:42,darklink,dann kommt nochma #div
+2014-07-05 18:57:50,darklink,und dann ein #gp
+2014-07-05 19:00:03,darklink,da fehlt ein LD-Skript Oo
+2014-07-05 19:03:20,Th3Falc0n,kann man im qemu monitor ne vaddr zu ner paddr übersetzen lassen?
+2014-07-05 19:03:42,darklink,und mit isses keine gültige ELF
+2014-07-05 19:03:49,darklink,oh mist falsches skript
+2014-07-05 19:06:06,darklink,  Typ            Offset   VirtAdr    PhysAdr    DateiGr SpeiGr  Flg Ausr.
+2014-07-05 19:06:06,darklink,  LOAD           0x001000 0x00300000 0x00300000 0x010b0 0x010b0 R E 0x1000
+2014-07-05 19:06:06,darklink,  GNU_STACK      0x000000 0x00000000 0x00000000 0x00000 0x00000 RW  0x10
+2014-07-05 19:06:06,darklink,Sieht ok aus
+2014-07-05 19:08:29,darklink,was heißt denn Fehler code 0xFFC
+2014-07-05 19:08:37,darklink,SS ist lustigerweise 0xFFC
+2014-07-05 19:08:45,darklink,fehlercode bei gp*
+2014-07-05 19:16:48,darklink,Th3Falc0n?
+2014-07-05 19:16:54,Th3Falc0n,was los?
+2014-07-05 19:17:12,darklink,was ist denn der fehlercode 0xFFC bei #gp?
+2014-07-05 19:18:16,Th3Falc0n," 	When set, the page fault was caused while CPL = 3. This does not necessarily mean that the page fault was a privilege violation."
+2014-07-05 19:18:23,Th3Falc0n," 	When set, the page fault was caused by reading a 1 in a reserved field. "
+2014-07-05 19:18:28,Th3Falc0n,"When set, the page fault was caused by an instruction fetch. "
+2014-07-05 19:18:46,Th3Falc0n,das wären die gesetzten bits
+2014-07-05 19:19:22,Th3Falc0n,da das present bit nicht gesetzt ist würde ich sagen du bist erfolgreich in nem nicht deklarierten segment geladnet
+2014-07-05 19:19:36,Th3Falc0n,ne moment
+2014-07-05 19:19:37,darklink,geil
+2014-07-05 19:19:54,Th3Falc0n,halt stop ich hab die seite falsch dekodiert
+2014-07-05 19:19:59,Th3Falc0n,ich hab beim page-fault geguckt *g*
+2014-07-05 19:20:03,darklink,gib ma link
+2014-07-05 19:20:15,darklink,*g*
+2014-07-05 19:20:25,Th3Falc0n,http://wiki.osdev.org/Exceptions
+2014-07-05 19:21:00,darklink,ich hab doch exceptions ins suchfeld eingegeben. da kam nix
+2014-07-05 19:21:49,Th3Falc0n,also 0xFFC beim GPF ist bei index 0b0000 1111 1111 1 im LDT was schiefgegangen
+2014-07-05 19:22:04,Th3Falc0n,ich würde das problem immernoch bei deinem amok laufenden stack suchem
+2014-07-05 19:22:35,darklink,lol
+2014-07-05 19:22:44,darklink,ss is ja 0xFFC
+2014-07-05 19:24:55,Th3Falc0n,ich hab auch mal ne frage: woher weiß der prozessor eigentlich bei nem interrupt wohin er den ESP setzen soll?
+2014-07-05 19:25:07,darklink,IDT
+2014-07-05 19:25:20,darklink,und GDT
+2014-07-05 19:28:19,Th3Falc0n,hmm ich glaube mein fehler lag im TSS
+2014-07-05 19:50:39,Th3Falc0n,wenn ich zwei struct pointer habe und sage ptr_a = ptr_b... kopiert der scheiss c compiler dann wirklich die daten von ptr_b nach ptr_a?
+2014-07-05 19:51:08,darklink,ne der ptr_a ist gleich ptr_b
+2014-07-05 19:51:18,darklink,du musst schon strcpy machn
+2014-07-05 19:51:40,XanClic,memcpy heißt das
+2014-07-05 19:51:43,XanClic,oder *ptr_a = *ptr_b
+2014-07-05 19:51:44,darklink,richtig
+2014-07-05 19:51:48,Th3Falc0n,ne das der den pointer setzt ist ja genau das was ich will
+2014-07-05 19:51:52,Th3Falc0n,aber scheinbar macht er memcpy drauw
+2014-07-05 19:51:54,Th3Falc0n,aber scheinbar macht er memcpy draus
+2014-07-05 19:52:24,Th3Falc0n,"sorry für das doppelte, das war der skype nach oben und korrigier reflex xD"
+2014-07-05 19:52:56,XanClic,aber dafür benutzt man doch sowohl in skype als auch im irc s/drauw/draus/
+2014-07-05 19:53:12,Th3Falc0n,naja problemstellung: ne liste... current_pdir ist gleich first_pdir
+2014-07-05 19:53:24,Th3Falc0n,beim einfügen mach ich first_pdir = npdir
+2014-07-05 19:53:43,Th3Falc0n,und plötzlich ist alles was ich nach npdir kopiere auch in current_pdir drin
+2014-07-05 19:53:46,Th3Falc0n,oder so ähnlich
+2014-07-05 20:02:46,Th3Falc0n,ich bin mir immernoch nicht sicher woher der fehler hier überhaupt kommt
+2014-07-05 20:02:55,Th3Falc0n,scheinbar stürzen alle meine tasks ab wenn einer nicht mehr will
+2014-07-05 20:05:17,Th3Falc0n,ok jetzt stürzt nurnoch einer ab :D
+2014-07-05 20:05:35,Th3Falc0n,äh zwei
+2014-07-05 20:05:37,Th3Falc0n,wtf
+2014-07-05 20:15:42,Th3Falc0n,nabend Jidder lust mal wieder in meinen code zu gucken? :D
+2014-07-05 20:17:39,darklink,lol es gibt immernoch idioten die 1234 als passwort nehmen :D
+2014-07-05 20:25:09,Th3Falc0n,jetzt fang ich schon an mein freunde im teamspeak anzuschreien weil das nicht funktioniert... ich bin echt verzweifelt
+2014-07-05 20:40:33,Th3Falc0n,argh
+2014-07-05 20:40:53,Th3Falc0n,also das wonau ich jetzt 3:30 gesucht hab war ein kaputtes define 
+2014-07-05 21:23:25,darklink,Welches?
+2014-07-05 21:24:03,darklink,#define false ?
+2014-07-05 21:30:30,Th3Falc0n,nein die adresse für ein pagedirectory in sich selber
+2014-07-05 21:30:37,Th3Falc0n,lag im kernel bereich
+2014-07-05 21:30:45,Th3Falc0n,war also ein wenig kaputt
+2014-07-05 21:30:52,darklink,Omg
+2014-07-05 21:33:32,Th3Falc0n,ich stehe jetzt vor einer schwierigen frage: wie oft soll ich malloc implementieren?
+2014-07-05 21:33:47,Th3Falc0n,und: soll malloc im userspace in der library laufen oder ein syscall sein
+2014-07-05 21:54:33,ehenkes,soll malloc im userspace in der library laufen oder ein syscall sein <== library stdlib.h
+2014-07-05 21:54:49,ehenkes,void* malloc(size_t size);
+2014-07-05 21:54:50,ehenkes,"void* calloc(size_t num, size_t size);"
+2014-07-05 21:54:50,ehenkes,"void* realloc(void* ptr, size_t size);"
+2014-07-05 21:54:50,ehenkes,void free(void* ptr);
+2014-07-05 21:58:29,yayachiken,"du brauchst einen syscall, der dir speicher gibt. dieser gibt dir meistens größere speicherklötze. malloc zerhackt die in kleinere stücke, die programme dann byteweise anfordern können, und verwaltet die auch, wobei die verwaltung normalerweise zwischen die für das programm nutzbaren kleinen blöcke gespeichert wird"
+2014-07-05 22:13:26,Th3Falc0n,hmm dann läuft im endeffekt wirklich ein malloc im kernel für den kernel speicher und eins pro programm im userspace
+2014-07-05 22:24:26,yayachiken,"naja ""läuft"""
+2014-07-05 22:24:38,yayachiken,malloc macht halt einfach ein bisschen was beim aufruf
+2014-07-05 22:25:04,Th3Falc0n,ja aber ich hasse diese code redundanz zwischen kernel und lib-mikrOS
+2014-07-05 22:25:06,yayachiken,https://github.com/yayachiken/libc.hiken/blob/master/lib/stdlib/malloc.c
+2014-07-05 22:44:57,Jonathan,"Th3Falc0n: Theoretisch sollte es da nur wenig ""echte"" Redundanz geben - Kernel-malloc allozieert Pages, Userspace-malloc unterteilt Pages in kleinere Stücke"
+2014-07-05 22:45:41,Th3Falc0n,ich hab bzw werde im kernel auch ein void* malloc(size_t size) haben zusätzlich zu vmm_alloc()
+2014-07-05 22:45:49,Th3Falc0n,für den kernel space
+2014-07-05 22:46:31,Jonathan,"Ja, klar"
+2014-07-05 22:46:52,Jonathan,Aber das ist ja auch die sauberste und schönste Lösung
+2014-07-05 22:47:06,Th3Falc0n,aber dann hab ich eins in meiner lib und in meinem kernel
+2014-07-05 22:47:18,Th3Falc0n,ich glaub ich implementiere das nur im kernel und greif dann per syscall drauf zu
+2014-07-05 22:47:25,Jonathan,Schlechte Idee
+2014-07-05 22:47:46,Th3Falc0n,warum?
+2014-07-05 22:47:47,Jonathan,"Userspace-Programme möchten auch gern ihre eigene Speicherverwaltung nutzen, z.B. viele OOP-Compiler tun das"
+2014-07-05 22:48:02,Jonathan,"Außerdem macht es den Kernel unsicherer, da dann eine weitere komplexe Funktion offen ist"
+2014-07-05 22:48:04,XanClic,oder openssl
+2014-07-05 22:48:07,XanClic,*duck*
+2014-07-05 22:48:16,Jonathan,Welche auch sogar noch mit beliebigem Speicher hantiert
+2014-07-05 22:48:20,Jonathan,XanClic: *g*
+2014-07-05 22:48:43,Jonathan,"Userspace und Kernelspace sollten so getrennt wie möglich sein, da passt ein gemeinsames Malloc absoult nicht"
+2014-07-05 22:49:20,Jonathan,"Dieses Malloc müsste dann ja auch noch auf Page-Grenzen achten, insbesondere bei free() kann da einiges schiefgehen"
+2014-07-05 22:49:45,Jonathan,"Das wird wahrscheinlich viel zu schwierig, ein gemeinsames Malloc auch nur ansatzweise sicher zu bekommen"
+2014-07-05 22:50:24,Jonathan,"Und wenn dann mal ein Prozess irgendeine fehlerhafte Speicheranfrage macht, welche Malloc aus dem Tritt bringt, crasht sofort der Kernel"
+2014-07-05 22:50:26,Jonathan,...unschön :P
+2014-07-05 22:53:33,Th3Falc0n,unschöne sachen bringen mich gerade zu ner neuen frage: kann ich einfach float und double benutzen oder muss ich für fließkomma arithmetik was aktivieren?
+2014-07-05 22:53:50,XanClic,"wenn du double benutzt, hau ich dich persönlich"
+2014-07-05 22:53:57,XanClic,"aber ja, dafür muss man generell was aktivieren"
+2014-07-05 22:54:07,XanClic,"Erstens mal SSE in GCC abschalten, sonst muss man noch mehr aktivieren"
+2014-07-05 22:54:12,XanClic,Aber für FPU sollte finit oder so reichen
+2014-07-05 22:54:28,XanClic,[xan:24] http://wiki.osdev.org/FPU oder das lesen
+2014-07-05 22:58:33,Th3Falc0n,gibts irgendeinen open source memory manager der nicht mehr als alloc_page und free_page braucht?
+2014-07-05 23:03:32,XanClic,das wird nicht reichen
+2014-07-05 23:03:41,XanClic,weil man oft auch mehr als 4 kB reservieren will
+2014-07-05 23:04:04,XanClic,"Das heißt, jeder wird irgendeine Möglichkeit brauchen, mehr als eine konsekutive Page anzufordern"
+2014-07-05 23:04:27,Th3Falc0n,"ja ok, das wär ja kein problem"
+2014-07-05 23:08:13,Th3Falc0n,ich glaub da kümmer ich mich morgen drum

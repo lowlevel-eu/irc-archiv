@@ -1,0 +1,61 @@
+date/time,nick,message
+2016-06-21 08:52:54,MasterQ32,moin
+2016-06-21 13:30:28,darklink,"so. ich glaube ich habe wieder sleepdebuggt. mal gucken ob der fix, der sich mein gehirn ausgedacht hat passt."
+2016-06-21 13:32:39,darklink,nope
+2016-06-21 13:33:33,darklink,oder doch. passt. jetzt ist nur noch PMM kaputt
+2016-06-21 13:37:33,darklink,"das problem war GCC, der hat ein array kaputtgemacht, dass ich mit nem uint32_t dereferenziert habe"
+2016-06-21 13:37:49,darklink,"hat einfach RAX genommen, das irgend ein random bit noch gesetzthatte."
+2016-06-21 13:38:44,kevin,Wie hat dein Code ausgesehen?
+2016-06-21 13:38:55,kevin,Zufälliges Bit klingt unwahrscheinlich
+2016-06-21 13:39:16,darklink,if(pageTable[SPLIT1_UNSHIFT(curr_addr)])
+2016-06-21 13:39:37,darklink,#define SPLIT1_UNSHIFT(a) ((a)>>20)
+2016-06-21 13:40:07,darklink,und pagetable hat 262144.0 einträge
+2016-06-21 13:41:37,kevin,Und cur_addr ist der uint32_t?
+2016-06-21 13:42:07,darklink,"nein, aber aus unbekannten gründen hatte es nur geknallt, als eine komplett unabhängige variable uint32_t war"
+2016-06-21 13:42:37,darklink,cur_addr ist uintptr_t (unsigned long int)
+2016-06-21 13:46:58,darklink,"jetzt ist der nächste #GP ein nullptr deref: mov    rdx,QWORD PTR [rax] (rax=0)"
+2016-06-21 13:47:07,kevin,"Und du bist dir sicher, dass du nicht einfach über die Grenzen von pageTable hinaus zugegriffen hast?"
+2016-06-21 13:48:17,darklink,nein
+2016-06-21 13:49:29,darklink,der nullptr deref passiert wenn head der nullptr ist.
+2016-06-21 13:49:42,darklink,allerdings wird im code vorher für diesen fall geprüft
+2016-06-21 13:51:58,mgottschlag,"Interessant. Svenska ist nicht hier, aber definitiv im IRC online :)"
+2016-06-21 13:58:21,darklink,/invite Svenska #lost?
+2016-06-21 13:59:46,mgottschlag,"ich finds nur lustig, dass man Menschen manchmal plötzlich am anderen Ende des Internets wiedersieht"
+2016-06-21 14:32:47,darklink,"oh, oh"
+2016-06-21 14:32:51,darklink,nullptr deref
+2016-06-21 14:32:58,darklink,und das schon vorher
+2016-06-21 14:33:06,darklink,this ist nullptr
+2016-06-21 15:04:28,darklink,aus unbekannten gründen geht er von MTGosHAL::Output::operator<<<const char*>(const char*) zu MTGosHAL::PMM::alloc(uint32_t length) und nicht zu MTGosHAL::Display::puts(const char *)
+2016-06-21 15:09:34,darklink,da haben wir den fehler: if(cpu->intr>=48)
+2016-06-21 15:10:23,darklink,"den syscall anfordern etwas zu allozieren, was noch gar nicht initialisiert ist, ist hinderlich"
+2016-06-21 15:12:41,darklink,"so, jetzt crasht der nicht mehr in PMM, aber dafür wieder in PMM2"
+2016-06-21 15:12:45,darklink,verdammt
+2016-06-21 15:32:45,Godwine,moin
+2016-06-21 16:02:52,Godwine,"ne frage zu sys/queue.h: Muss eine LIST_HEAD struktur immer einen namen haben? ich meine man benutzt das ja so: LIST_HEAD(head_s, element_s) list; und fügt dinge mit LIST_INSERT_HEAD(&list) hinzu"
+2016-06-21 16:03:08,Godwine,warum muss man ein head_s angeben
+2016-06-21 16:03:38,Godwine,das wird soweit ich das sehe gar nicht gebraucht und sorgt nur für mehrfachdeklaration wenn man diesen typ liste mehrmals braucht
+2016-06-21 16:04:30,Godwine,es sei denn man benutzt später struct head_s list2
+2016-06-21 16:05:18,Godwine,"aber dann könnte man doch auch LIST_HEAD(,element_s) list; benutzen oder?"
+2016-06-21 16:30:23,kevin,"Jo, kann man"
+2016-06-21 16:30:41,kevin,Macht qemu fast überall ;-)
+2016-06-21 16:31:50,Godwine,Ich find makros noch recht verwirrend xD
+2016-06-21 16:32:28,Godwine,ich hab nicht gewusst dass man solche funktionen als makros definieren kann
+2016-06-21 16:36:06,Godwine,__containerof wird von gcc definiert oder?
+2016-06-21 16:39:43,kevin,"Hm, war mir nicht bewusst, aber könnte sein"
+2016-06-21 16:39:58,kevin,"Ist aber auch einfach genug ""von Hand"" zu definieren"
+2016-06-21 16:40:29,Godwine,also per #ifndef __containerof?
+2016-06-21 16:41:16,Godwine,bei linux heißt das wohl container_of tut aber das selbe
+2016-06-21 20:22:23,darklink,Oh
+2016-06-21 20:22:32,darklink,größe <= PAGESIZE
+2016-06-21 20:22:36,darklink,epic fail
+2016-06-21 20:24:31,darklink,jetzt ist es wieder iret das wieder mal CS nicht mag
+2016-06-21 20:31:37,darklink,CALL_Eq: canonical RIP violation
+2016-06-21 20:31:38,darklink,auch gut
+2016-06-21 20:35:26,darklink,ok
+2016-06-21 20:35:53,darklink,qemu und bochs knallen an unterschiedlichen stellen
+2016-06-21 20:36:02,darklink,mal gucken wie es auf echter hardware aussieht
+2016-06-21 20:37:49,darklink,So wie bochs
+2016-06-21 20:38:17,darklink,"was macht qemu? Schaut es, ob ein bereich gemappt ist, nachdem es springt?"
+2016-06-21 20:47:34,darklink,ok das passiert nachdem multitasking initialisiert worden ist.
+2016-06-21 20:52:14,darklink,Was generiert denn gcc für komischen code?
+2016-06-21 20:52:15,darklink,"mov    eax,eax"

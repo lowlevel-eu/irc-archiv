@@ -1,0 +1,45 @@
+date/time,nick,message
+2016-08-31 14:03:51,darklink,Ist RSA keygen O(n^2) oder O(2^n)?
+2016-08-31 14:22:06,darklink,Hmm. Wenn man einen 128-bit counter nimmt passen bloß 2^32 byuusekunden rein
+2016-08-31 14:22:35,darklink,also ist das zeitformat einen 256-bit counter mit der auflösung 2^-96 s
+2016-08-31 14:24:30,darklink,reicht dann für ganze 4*10^40 jahre
+2016-08-31 14:25:13,darklink,Anders als 64-bit was bloß für 500 milliarden jahre reicht
+2016-08-31 14:36:58,darklink,"derzeitige uhrzeit: 3,4477344256754*10^46 byuusekunden seit beginn der zeit"
+2016-08-31 14:46:08,sur3,"ich versuch mir grad einen möglichst einfachen Prozessor mit wenig transistoren auszudenken, das ergebnis ist bisher, daß eine Addition 10+ Instruktionen braucht.. :D"
+2016-08-31 14:46:10,sur3,https://nopaste.me/view/raw/83ec43ba
+2016-08-31 14:55:09,darklink,2^-128s sind immer noch 50000x die planck-zeit
+2016-08-31 14:55:38,darklink,"Wie wärs, du nimmst eine OISC"
+2016-08-31 14:55:56,darklink,also sowas wie NOR and jump if carry
+2016-08-31 14:56:45,sur3,das is dann aber nicht mehr komfortabel zu programmieren
+2016-08-31 14:56:56,kevin,Das ist es schon jetzt nicht mehr
+2016-08-31 15:10:18,sur3,hm 2ISC wär vllt noch komfortabel sowas wie NOR und JNZ und dann lass ich den Stack und die General Purpose Register Weg und lasse alle NOR und JNZ ausschließlich mit speicheradressen arbeiten.
+2016-08-31 15:12:14,sur3,"aso und ROL wär auch noch gut, das läßt sich über logik ja schwer ausdrücken"
+2016-08-31 15:14:55,sur3,"Vllt auch noch nen XOR und OR statt NOR, weil das so viele NORs sind, OR leicht zu implementieren ist und man XOR für verschlüsselung oder XOR Swap braucht"
+2016-08-31 15:20:54,sur3,oder ich mach nen MOV befehl dann spar ich das XOR Swap
+2016-08-31 15:23:47,sur3,"hm ne MOV A->B is ja XOR B,B \n OR A,B->B denke dann bleib ich bei XOR und OR, das ist ja mächtiger als MOV"
+2016-08-31 15:31:05,sur3,"4ISC: XOR [adr0],[adr1],[zieladr] // OR [adr0],[adr1],[zieladr] // ROL [adr0],[zieladr] // JNZ [adr0],[zieladr] /// 2bit pro instruction + 2 oder 3 speicheradressen"
+2016-08-31 15:32:48,sur3,"hm ich denke dann brauch ich architekturmäßig zwei speicherbausteine und hab dann in jedem speicherbaustein ein paar adressen zum akkumulieren reserviert, weil man vermutlich nicht auch den selben speicherstein gleichzeitig schreiben kann von dem man ließt"
+2016-08-31 16:13:25,darklink,sur3: warum machst du keinen addjleq?
+2016-08-31 16:13:35,darklink,add and jump lower equal
+2016-08-31 16:14:04,darklink,1 register: PC
+2016-08-31 16:15:02,darklink,"addjleq src, drn, tgt"
+2016-08-31 16:15:41,darklink,wenn src kleiner oder gleich ist nach der addition mit drn springt er nach tgt
+2016-08-31 16:16:09,darklink,Oder eher subleq?
+2016-08-31 16:17:24,darklink,subleq klingt mehr turing-komplett
+2016-08-31 19:01:30,sur3,"substraktion geht über addition und addition ist so ähnlich wie bei meiner ersten idee implementierbar, die frage ist dann bloß ob lower equal einfach implementierbar ist, eventuell sollte ich statt JNZ doch JNA implementieren.. *grübel*"
+2016-08-31 19:02:36,sur3,oder das JB0 was springt wenn bit null gesetzt ist
+2016-08-31 19:03:40,sur3,"mit jb0 wäre es auf jeden fall turing vollständig und das ist einfach hw mäßig zu bauen, nur ein einziges bit prüfen"
+2016-08-31 19:09:27,sur3,"also ROL heißt einfach die speicherleitungen um eins rotiert verlöten, XOR-gatter dürfte auch mit wenigen transistoren implementierbar sein, OR erst recht und JB0 ist auch leicht, weil man nur ein einziges bit für einen sprung prüfen muß, das komplizierteste an der architektur ist also bisher eigentlich nur das wechseln der daten zwischen den beiden speicherbausteinen und das inkrementieren des programm counters. ^^"
+2016-08-31 19:21:15,sur3,"ich überleg noch ob ich statt XOR/OR doch NOR nehme und dafür dann irgendnen anderen befehl implementiere der noch nützlich sein könnte, ich find es mit XOR/OR zwar wesentlich leichter zu programmieren, aber man kann ja theoretisch einfach routinen dafür an eine speicheradresse packen und jedesmal wenn man das ausführen will einfach da hin springen, sowas wird man für add und mul eh machen denke ich"
+2016-08-31 19:25:48,sur3,"CALL/SUB sind auch möglich, man muß einfach nur die rücksprungadresse an den sprungbefehl der aufgerufenen routine schreiben"
+2016-08-31 19:25:56,sur3,*CALL/RET
+2016-08-31 19:32:06,sur3,"hm wenn ich NOR, ROL und JB0 verwende welcher Befehl fehlt dann noch für die ultimative funktionalität? vielleicht POPCOUNT oder sowas?"
+2016-08-31 19:34:09,sur3,ahh oder HCF :D
+2016-08-31 21:09:46,sur3,"Ich bräuchte einen Computer mit ternärsystem, dann würden NOR, ROL, JB0 genau durch ein trit codierbar sein, abgesehn von den angehangenen speicheradressen :D"
+2016-08-31 21:10:31,sur3,aber vermutlich bäruchte ich auf einem ternärrechner auch einen weiteren befehl um 0 und 1 von -1 bzw 2 unterscheiden zu können.. *grübel*
+2016-08-31 21:12:13,sur3,"vllt schreib ich einfach mal nen simulator für meine rechnerarchitektur, einmal in binär und einmal in ternär, die 3 bis 6 befehle sind ja schnell emuliert. ^^"
+2016-08-31 21:43:55,Jonathan,Moin
+2016-08-31 21:43:58,Jonathan,Irgendwie dreh ich grad am Rad
+2016-08-31 21:44:35,Jonathan,"Neue Tastatur gekauft, eingesteckt, Problem: Ziffernblock funktioniert nicht, Backspace funktioniert zwar, aber macht jedes mal beim Loslassen eine Raute..."
+2016-08-31 21:45:39,Jonathan,"Ich denke mal, ich bin im falschen Scancode-Set, oder so?"
+2016-08-31 21:46:58,Jonathan,Wobei das auch nicht auf den Fehler passt

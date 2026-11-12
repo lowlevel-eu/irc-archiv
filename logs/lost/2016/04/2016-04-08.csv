@@ -1,0 +1,132 @@
+date/time,nick,message
+2016-04-08 14:44:29,masterq32,huhu
+2016-04-08 15:37:45,kevin,XanClic: Dein close_all ist ja doof
+2016-04-08 15:38:09,XanClic,Das ist ja doof
+2016-04-08 15:38:15,kevin,Das nimmt meinem Blockjob-BBs ihr BDS weg bevor er den Job zu Ende bringt
+2016-04-08 15:38:35,kevin,"Sollten wir vielleicht nicht lieber nur die BBs leeren, die dem Monitor gehören?"
+2016-04-08 15:38:42,XanClic,Es gibt einen remove_bs-Notifier ;-)
+2016-04-08 15:39:19,kevin,Und den sollen Jobs registrieren und sich dann beenden oder wie? ;-)
+2016-04-08 15:39:31,kevin,Ist ddas nicht ein bisschen von hinten durch die Brust ins Auge?
+2016-04-08 15:39:44,XanClic,Weiß nicht
+2016-04-08 15:39:48,XanClic,Finde ich eigentlich nicht
+2016-04-08 15:40:12,XanClic,"Ich finde, die richtige Variante wäre, wenn es einen qemu-is-quitting-Notifier gäbe, und die Blockjobs darauf reagieren müssten"
+2016-04-08 15:40:27,XanClic,Aber das wäre genauso schwer zu implementieren wie einen remove_bs-Notifier zu setzen
+2016-04-08 15:40:46,XanClic,"Ach so, da fällt mir ein"
+2016-04-08 15:40:49,kevin,"Auf jeden Fall fühlt es sich falsch an, den Block Jobs einfach ihr BDS wegzuschießen"
+2016-04-08 15:40:59,XanClic,"Stimmt, die richtige Variante ist, wenn halt die Blockjobs von bdrv_close_all gecancelt werden"
+2016-04-08 15:41:07,XanClic,"Na ja, da muss man das dann wohl einfach hochziehen?"
+2016-04-08 15:41:15,XanClic,"Das war halt unten, weil es keine Liste von Blockjobs gab"
+2016-04-08 15:41:26,XanClic,Aber kann man ja genauso gut auch zuerst in bdrv_close_all machen
+2016-04-08 15:41:30,XanClic,Wenn man eine Liste hat
+2016-04-08 15:41:35,kevin,"Das wollte ich grad nachschauen, ob du einen Grund für die Reihenfolge hattest"
+2016-04-08 15:42:22,kevin,Haben wir eine Liste?
+2016-04-08 15:42:28,XanClic,Ich glaube eigentlich nicht
+2016-04-08 15:42:52,XanClic,/* List of jobs */
+2016-04-08 15:42:55,XanClic,vielleicht ja doch ;-)
+2016-04-08 15:43:28,XanClic,"Ach, das war nur die Transaction"
+2016-04-08 15:43:52,kevin,Also weiterhin alle BDS durchgehen und halt die Assertion wegmachen?
+2016-04-08 15:43:53,XanClic,Dann wohl nicht
+2016-04-08 15:44:03,XanClic,Wieso nicht einfach eine Liste hinzufügen?
+2016-04-08 15:44:20,kevin,Weil das ja jeder könnte
+2016-04-08 15:44:43,XanClic,Einfach die Assertion wegmachen wird nicht gehen
+2016-04-08 15:44:56,kevin,"Ja, und die while-Bedigung durch dwim ersetzen"
+2016-04-08 15:44:59,XanClic,jo
+2016-04-08 15:48:35,kevin,"Aber letztendlich sollte dann blk_remove_all_bs() trotzdem nur die Monitorreferenzen aufgeben und hinterher müssten wir asserten können, dass nichts mehr übrig ist, oder?"
+2016-04-08 15:49:30,XanClic,"Ich wüsste nicht genau, warum nur die Monitorreferenzen"
+2016-04-08 15:49:42,XanClic,Aber dagegen sagen kann ich auch nichts
+2016-04-08 15:50:13,kevin,Weil das quit vom Benutzer kommt und dem gehören halt nur die Monitorreferenzen
+2016-04-08 15:50:28,XanClic,Muss nicht vom Benutzer kommen
+2016-04-08 15:50:34,XanClic,Der Gast kann ja auch ein shutdown machen
+2016-04-08 15:51:23,XanClic,"Meine Idee wäre eher, dass es nur bei bestimmten BlockBackends in Ordnung ist, das BDS rauszuziehen; und das sind alle die BBs, die nicht an irgendwelchen qemu-internen Sachen hängen"
+2016-04-08 15:51:25,kevin,"Ähm... also...  das ist indirekt vom Benutzer, wenn er das nicht wollte, hätte er ja -no-shutdown benutzt ;-)"
+2016-04-08 15:51:31,XanClic,"Bleiben die BBs übrig, die an Gastgeräten sind"
+2016-04-08 15:51:39,XanClic,Oder an gar nichts
+2016-04-08 15:51:59,XanClic,"Und das könnten zufälligerweise genau die sein, auf die es eine Monitorreferenz gibt"
+2016-04-08 15:52:00,kevin,Was ziemlich genau die gleiche Menge sein dürfte wie die der Monitorreferenzen
+2016-04-08 15:52:45,XanClic,"Find ich ein bisschen fishy, aber noch zu tracken, wem das BB jetzt genau gehört, wird vermutlich nicht besser ;-)"
+2016-04-08 15:53:21,kevin,Also qemu-intern = !benannt find ich eigentlich ziemlich offensichtlich
+2016-04-08 15:53:48,XanClic,"Na ja, man könnte ja auch unbenannte BBs an Gastgeräten haben"
+2016-04-08 15:53:57,kevin,Und wie schafft man das?
+2016-04-08 15:54:00,XanClic,"Oder vielleicht wird es irgendwann möglich, benannte BBs für Blockjobs zu haben"
+2016-04-08 15:54:08,XanClic,Weiß ich doch nicht *g*
+2016-04-08 15:54:35,kevin,"Wenn man benannte BBs für Blockjobs hätte, dann hätten die einen Refcount 2 (solange der Job noch läuft)"
+2016-04-08 15:54:57,XanClic,"Ich finde nur, dass der Zusammenhang zwischen „BB ist benannt“ und „Man kann das BDS einfach rausziehen“ eher eine Korrelation als ein Kausalzusammenhang ist"
+2016-04-08 15:56:04,kevin,"Wahrscheinlich sollten wir theoretisch eh eher das BB droppen, nur gäbe das sicher praktisch gesehen wieder Probleme"
+2016-04-08 15:56:06,XanClic,"Na ja, dann haben die halt einen Refcount von 2, nichtsdestrotrotz müssen zuerst alle qemu-internen Dienste, die ein BB haben können, gestoppt werden"
+2016-04-08 15:56:33,XanClic,"Und vor blk_remove_all_bs() dürfen halt keine BBs mehr existieren, aus denen man das BDS nicht ejecten darf"
+2016-04-08 15:57:18,kevin,"Wenn man es richtig macht, finde ich, dass wir dieses ""zuerst"" nicht haben dürften. Es muss alles gestoppt werden, aber um die Reihenfolge, wie sie freigegeben werden, sollte sich das Refcounting kümmern."
+2016-04-08 15:57:55,XanClic,"Tja, das blk_remove_all_bs() existiert deshalb, weil man sonst in allen Device Models rumfummeln müsste"
+2016-04-08 15:57:59,XanClic,Damit die freiwillig ihr BB abgeben
+2016-04-08 15:58:09,kevin,"Solange wir praktisch gesehen für die Monitorreferenz kein blk_unref() machen, sondern das BDS rausreißen, müssen wir halt sicherstellen, dass nur noch die Monitorreferenz übrig ist"
+2016-04-08 15:58:28,XanClic,"Das ist eigentlich nicht für die Monitorreferenz, sondern für die Gerätereferenz"
+2016-04-08 15:58:39,kevin,"Hm, stimmt"
+2016-04-08 15:59:08,kevin,Wir müssen beim Prozessende die komplette Hardware hotunpluggen
+2016-04-08 15:59:13,kevin,Klingt nach einer Aufgabe für Markus *g*
+2016-04-08 15:59:30,XanClic,"Na ja, aus Blocksicht ist halt das blk_remove_all_bs() sehr einfach und tut seinen Job"
+2016-04-08 15:59:49,XanClic,"Wenn wir sicherstellen können, dass nur noch Geräte- und Monitor-BBs übrig sind, reicht das"
+2016-04-08 16:02:19,kevin,"Ist jetzt schon der richtige Zeitpunkt für ""Ach, das ist doch alles kaputt""?"
+2016-04-08 16:04:48,XanClic,"Weiß nicht, eigentlich gehts, finde ich ;-)"
+2016-04-08 16:05:17,XanClic,"Das kann aber noch alles richtig kaputt werden, wenn es neben Blockjobs noch andere interne Dinge gibt, die BBs haben können *g*"
+2016-04-08 16:05:30,XanClic,Vielleicht so Imageerstellung in einem anderen AioContext oder so
+2016-04-08 16:06:25,XanClic,"Ach, Fam ist doch doof"
+2016-04-08 16:07:29,kevin,Also Imageerstellung ist zum Glück bisher noch immer synchron
+2016-04-08 16:07:38,kevin,Was macht denn der böse Fam?
+2016-04-08 16:07:45,XanClic,Patches für MAINTAINERS schicken
+2016-04-08 16:07:49,kevin,Ach so
+2016-04-08 16:09:02,kevin,"Kann er ja nicht wissen, dass ich so reagiere ;-)"
+2016-04-08 16:09:26,XanClic,Aber ich wusste es ;-)
+2016-04-08 16:10:30,kevin,Warum muss ich die Mail dann erst tatsächlich schreiben? ;-)
+2016-04-08 16:11:05,XanClic,Patches sind doch Aufwand ;-)
+2016-04-08 16:43:31,XanClic,"kevin, würdest du die iotest-Patches noch für 2.6 reinnehmen?"
+2016-04-08 16:43:39,XanClic,"Hm, wenn ich so frage, ist die Antwort vermutlich „ja“"
+2016-04-08 16:44:06,XanClic,"Aber das wüsste ich gerne, bevor ichs tue, weil ich mir irgendwie vor dem 3. RC ein bisschen schlecht vorkomme, sechs unkritische Patches zu mergen"
+2016-04-08 16:44:22,kevin,Für Tests spielt Hard Freeze an sich keine Rolle
+2016-04-08 16:44:38,XanClic,"Na dann, du schickst ja den PR ;-)"
+2016-04-08 16:44:40,kevin,Genauso wie man auch in -rc3 noch gefahrlos Dokumentation ändern kann
+2016-04-08 16:45:41,kevin,"Ach so, 3. RC, nicht -rc3. Dann ist es ja eh nochmal unkritischer ;-)"
+2016-04-08 16:45:52,XanClic,"OK, 4. RC ;-)"
+2016-04-08 16:46:03,kevin,Nächste Woche ist doch erstmal -rc2?
+2016-04-08 16:46:19,XanClic,"Weiß nicht, der letzte Schedule, den ich gefunden hab, hat rc2 für den 5. April ausgezeichnet"
+2016-04-08 16:46:35,XanClic,Aber vielleicht hätte ich in die Antworten sehen sollen *g*
+2016-04-08 16:46:45,kevin,Ich geh nach dem hier: http://wiki.qemu.org/Planning/2.6
+2016-04-08 16:46:54,XanClic,"Ach, ist ja langweilig ;-)"
+2016-04-08 16:47:03,kevin,"Passt bisher auch mit den Announcements zusammen, glaube ich ;-)"
+2016-04-08 16:47:47,XanClic,Ich bin nach http://lists.nongnu.org/archive/html/qemu-devel/2016-02/msg00371.html gegangen
+2016-04-08 16:47:54,XanClic,Hätte aber http://lists.nongnu.org/archive/html/qemu-devel/2016-02/msg03251.html nehmen sollen
+2016-04-08 16:50:23,kevin,"Hm, das ist ja blöd. block_job_cancel() in einem QLIST_FOREACH ist wahrscheinlich keine gute Idee, wenn der in die Job-Coroutine wechselt."
+2016-04-08 19:14:31,XanClic,"kevin, wofür sollte ich mich denn bei maintainers eintragen? Für alles von dir, was mit block zu tun hat? Irgendwie hab ich keine Lust, mich bei vvfat zu vermerken ;-)"
+2016-04-08 19:15:47,kevin,"XanClic: ""Block layer core"" deckt sowieso vvfat mit ab ;-)"
+2016-04-08 19:16:06,XanClic,Auch wieder wahr…
+2016-04-08 19:16:10,kevin,"Oha, vvfat ist ""supported"""
+2016-04-08 19:16:50,kevin,"XanClic: Aber ja, ich würde sagen, bei den Blocktreiber musst du nicht. qcow2 könnte noch Sinn machen, aber sonst..."
+2016-04-08 19:17:00,XanClic,"Ja, ich hätte jetzt noch qcow2 und blkdebug genommen"
+2016-04-08 19:17:19,kevin,raw vielleicht noch
+2016-04-08 19:17:25,XanClic,Da war so viel aio drin ;-)
+2016-04-08 19:17:26,kevin,Oder kennst du dich damit auch nicht aus?
+2016-04-08 19:17:31,kevin,"Jo, okay"
+2016-04-08 19:17:41,kevin,Und nach dem KVM-Forum nimmst du dann Coroutinen noch dazu *G*
+2016-04-08 19:17:49,XanClic,Bestimmt *g*
+2016-04-08 19:22:02,XanClic,"Hm, eigentlich müsste ich dann noch meinen Tree dazu schreiben, aber irgendwie hab ich dann keine Lust, da github reinzuschreiben…"
+2016-04-08 19:23:05,XanClic,"Na, was heißt schon „eigentlich“, dann halt nicht"
+2016-04-08 20:02:06,kevin,Was ist das Problem mit github?
+2016-04-08 20:02:37,XanClic,"Einerseits, dass github doch doof ist, und andererseits, dass ich da irgendwie ungern XanClic reinschreiben würde ;-)"
+2016-04-08 20:02:38,kevin,Also vor allem weil du es ja eh dort hostest du den Link ständig postest
+2016-04-08 20:02:58,XanClic,"Ja, aber in so einer E-Mail ist das ja noch was anderes als in maintainers selbst!"
+2016-04-08 20:03:13,kevin,"Stimmt, die Mails sind sichtbarer"
+2016-04-08 20:03:17,XanClic,:-)
+2016-04-08 20:03:33,XanClic,"Na ja, in E-Mail heißt das, ich könnte jederzeit ein neues Repo einrichten"
+2016-04-08 20:03:47,XanClic,"Aber wenn das in maintainers ist, müsste ich das da auch ändern"
+2016-04-08 20:04:12,XanClic,"Nicht, dass ich es wohl jemals ändern würde, aber das tut ja nichts zur Sache"
+2016-04-08 20:04:47,kevin,"Hm, der Patch ist wohl eindeutig ein Bugfix und damit für 2.6"
+2016-04-08 20:06:02,XanClic,Zählt das nicht sowieso als Dokumentation? ;-)
+2016-04-08 21:56:03,masterq32,huhu
+2016-04-08 22:02:05,Paddy,Moin masterq32
+2016-04-08 22:02:15,masterq32,"hey, da is ja jemand da :D"
+2016-04-08 22:02:43,Paddy,Oder es tut zumindest jemand so als wäre er da
+2016-04-08 22:10:19,masterq32,stimmt
+2016-04-08 22:10:34,masterq32,bist du fit mit instruction sets?
+2016-04-08 22:29:32,Paddy,Inwiefern?
+2016-04-08 22:31:46,Paddy,"Oder aus Effizienzgründen, wenn ich gleich wieder kurz vom Rechner verschwinde: Don't ask to ask, just ask ;-)"
+2016-04-08 23:06:00,Paddy,"Oder gar nicht, das geht natürlich auch"
+2016-04-08 23:07:30,XanClic,Da ist wohl lieber er vom Rechner verschwunden
+2016-04-08 23:07:52,Paddy,Oder zumindest der Rechner von uns

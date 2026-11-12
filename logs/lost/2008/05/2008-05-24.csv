@@ -1,0 +1,251 @@
+date/time,nick,message
+2008-05-24 05:41:03,janosch,"ui, ich bin mal ganz alleine hier :)"
+2008-05-24 09:32:25,Noooooooooos,moin
+2008-05-24 09:51:14,taljeth,Moin
+2008-05-24 09:51:32,FreakyPenguin,Moin
+2008-05-24 10:00:27,FreakyPenguin,"Hm irgendwie tut das mkdir noch nicht wirklich: ""Root Inode ist kein Verzeichnis."" *g*"
+2008-05-24 10:02:39,taljeth,"Ach, immer solche Details... ;-)"
+2008-05-24 10:03:00,taljeth,Dann mach mal einen passenden Testfall. ;-)
+2008-05-24 10:05:38,taljeth,Hast du eine neue Version von next2 gemacht oder wie?
+2008-05-24 10:06:21,FreakyPenguin,"Das auch, aber im Moment teste ich das mit etool, das ist etwas komfortabler. ;-)"
+2008-05-24 10:06:59,taljeth,"Dann dürfte es ja kein Problem sein, daraus einen Testcase zu machen"
+2008-05-24 10:08:26,tyndur,"r86 | toni | 2008-05-24 10:08:16 +0200 (Sat, 24 May 2008) | 4 lines"
+2008-05-24 10:08:26,tyndur,+ etool: Hilfsfunktionen etool_basename und etool_dirname
+2008-05-24 10:08:26,tyndur,"+ etool: mkdir (ist zwar noch kaputt, aber man sieht schon mal, was es mal tun"
+2008-05-24 10:08:26,tyndur,         sollte)
+2008-05-24 10:08:27,FreakyPenguin,Ich checke das jetzt trotzdem mal ein. ;-)
+2008-05-24 10:08:43,FreakyPenguin,Sonst mache ich es noch mehr kaputt. ;-)
+2008-05-24 10:08:46,taljeth,*g*
+2008-05-24 10:09:23,taljeth,"Gehe ich recht in der Annahme, daß du dir jetzt die 42 schnappst? ;-)"
+2008-05-24 10:09:44,FreakyPenguin,"Jo es kann sich nur noch um Stunden handeln, bis ich den einchecke. ;-)"
+2008-05-24 10:10:04,taljeth,Das Problem ist ein einfaches mkdir auf einem leeren Image?
+2008-05-24 10:11:04,FreakyPenguin,"Nein die kleinen Images in den testfällen tun. Aber mein 5 Mb-Image macht probleme. Mit rev1 etwas mehr, mit rev 0 etwas weniger. ;-)"
+2008-05-24 10:11:20,taljeth,Mehrere Blockgruppen?
+2008-05-24 10:12:24,taljeth,Von wegen tut mit kleinen Images: Fehler: Verzeichnis 'testdir' konnte nicht erstellt werden in '.'!
+2008-05-24 10:12:51,taljeth,"Wenn du die 42 noch nicht hast, nehme ich sie jetzt"
+2008-05-24 10:13:31,FreakyPenguin,Naja das Image aus 36 tut bei mir
+2008-05-24 10:13:35,FreakyPenguin,Ok nimm sie
+2008-05-24 10:13:42,taljeth,Das aus 41 tut bei mir nicht
+2008-05-24 10:14:24,FreakyPenguin,Dann machen vermutlich mehrere BGs probleme
+2008-05-24 10:14:34,taljeth,Könnte wohl sein
+2008-05-24 10:15:57,taljeth,"Ah, das könnte der Testcase für inode_alloc sein"
+2008-05-24 10:18:38,taljeth,Muß man die Anzahl der Blockgruppen ausrechnen?
+2008-05-24 10:18:45,FreakyPenguin,Jo
+2008-05-24 10:19:46,taljeth,Das mach ich garantiert wieder falsch... *g*
+2008-05-24 10:20:10,FreakyPenguin,Hauptsache kaputt ;-)
+2008-05-24 10:21:03,taljeth,(block_count - 1) / blocks_per_group? Oder was anderes statt dem -1?
+2008-05-24 10:21:42,FreakyPenguin,Hm das ist vermutlich wieder first_data_block
+2008-05-24 10:22:33,taljeth,Sicher? Die Gruppe geht doch nicht erst bei den Datenblöcken los.
+2008-05-24 10:23:07,FreakyPenguin, 956     sbi->s_groups_count = ((le32_to_cpu(es->s_blocks_count) -
+2008-05-24 10:23:07,FreakyPenguin, 957                 le32_to_cpu(es->s_first_data_block) - 1)
+2008-05-24 10:23:07,FreakyPenguin, 958                     / EXT2_BLOCKS_PER_GROUP(sb)) + 1;
+2008-05-24 10:23:36,taljeth,Das sieht ja noch komplizierter aus... *g*
+2008-05-24 10:23:47,taljeth,Aber mit first_data_block hast du recht
+2008-05-24 10:24:19,FreakyPenguin,"Ich glaube das wird benutzt, dass irgendwelche Erweiterungen am Anfang noch ein Bisschen was reinpacken können..."
+2008-05-24 10:24:37,taljeth,Wieso macht dein Code dieses -1 und +1?
+2008-05-24 10:24:59,taljeth,"Ach, das ist Rundung einmal andersrum aufgeschrieben... :-/"
+2008-05-24 10:25:12,FreakyPenguin,Frag das mal die Leute von Linux... *g*
+2008-05-24 10:26:02,taljeth,    return (sb->block_count - sb->first_data_block +
+2008-05-24 10:26:02,taljeth,        (sb->blocks_per_group - 1)) / sb->blocks_per_group
+2008-05-24 10:26:06,taljeth,Stimmt das so?
+2008-05-24 10:27:27,FreakyPenguin,"Ich glaube schon, ja. Sieht so etwas weniger verwirrend aus. ;-)"
+2008-05-24 10:28:12,taljeth,"Gut, jetzt meldet nur noch fsck einen Fehler... *g*"
+2008-05-24 10:29:16,taljeth,"Autsch, das sieht richtig kaputt aus."
+2008-05-24 10:38:42,taljeth,"""Inode 42 ist ein Null-Länge Verzeichnis."" - wo kommt denn sowas her?"
+2008-05-24 10:39:45,FreakyPenguin,"Versuchs mal mit einem rev0-Dateisystem, ich glaube beim rev1-Dateisystem reicht das einfache -1 nicht, ich bin grad ein bisschen am refactorn um das nachher zu fixen."
+2008-05-24 10:40:06,taljeth,Welches - 1?
+2008-05-24 10:42:33,FreakyPenguin,"Das -1 wie es zum Beispiel hier benutzt wird: if (!ext2_inode_read(fs, dirent->inode - 1, &testfile))"
+2008-05-24 10:42:40,FreakyPenguin,Beim allozieren kommt das selbe auch vor
+2008-05-24 10:43:18,taljeth,"Hm, gut, dann wird das mit dem rev1-Dateisystem eben die 43 und ich mach dasselbe mit rev0 als 42"
+2008-05-24 10:44:09,FreakyPenguin,"Nett, jetzt segfaultet bei mir mehr als die Hälfte der Tests, das nenne ich mal einen Erfolg. ;-)"
+2008-05-24 10:44:25,taljeth,*hehe*
+2008-05-24 10:48:41,tyndur,"r87 | taljeth | 2008-05-24 10:48:38 +0200 (Sat, 24 May 2008) | 2 lines"
+2008-05-24 10:48:41,tyndur,+ 42: mkdir mit mehreren Blockgruppen (rev0)
+2008-05-24 10:49:42,FreakyPenguin,"Hm ein dir_foreach mit vorher einem inode_read(fs, 0,...) führt zu einem Segfault, das ist schlecht."
+2008-05-24 10:51:45,bluecode,moin
+2008-05-24 10:51:50,FreakyPenguin,Moin bluecode
+2008-05-24 10:52:09,taljeth,Moin
+2008-05-24 10:54:24,taljeth,FreakyPenguin: Soll ich dir den 43 einchecken oder hast du selbst sowas ähnliches?
+2008-05-24 10:54:49,FreakyPenguin,"Jo gerne, ich bin noch nicht soweit gekommen. ;-)"
+2008-05-24 10:57:08,taljeth,"Das ist nur ein kaputter Testcase, den du fixen sollst. ;-)"
+2008-05-24 10:58:54,taljeth,"Eben das Verzeichnis anlegen auf dem 41-Image. Wenn du das selbst schon hast, brauche ich ja nicht einchecken"
+2008-05-24 11:09:01,FreakyPenguin,"So jetzt passen die Tests wieder, da kann ich mir ja jetzt die Konflikte holen. ;-)"
+2008-05-24 11:11:39,taljeth,"Ach richtig, :wq sollte ich noch machen, wenn ich einchecken will..."
+2008-05-24 11:11:46,tyndur,"r88 | taljeth | 2008-05-24 11:11:43 +0200 (Sat, 24 May 2008) | 3 lines"
+2008-05-24 11:11:46,tyndur,"+ Neues Verzeichnis anlegen (mehrere Blockgruppen, rev1-Dateisystem)"
+2008-05-24 11:11:46,tyndur,"  Momentan kaputt, aber Freaky will das fixen."
+2008-05-24 11:16:51,tyndur,"r89 | toni | 2008-05-24 11:16:47 +0200 (Sat, 24 May 2008) | 6 lines"
+2008-05-24 11:16:51,tyndur,* Fuer die Nummer des Rootverzeichnisses gibt es jetzt EXT2_ROOTDIR_INODE
+2008-05-24 11:16:51,tyndur,"* Im Inode steht jetzt die Nummer, wie sie auch in Verzeichniseintraegen"
+2008-05-24 11:16:51,tyndur,"  benutzt wird, damit verschwindet das -1/+1"
+2008-05-24 11:16:51,tyndur,* Funktionen wie inode_read benutzen auch diese Inodenummer
+2008-05-24 11:16:51,tyndur,* Testfaelle angepasst
+2008-05-24 11:17:05,FreakyPenguin,"So, das war jetzt ein dicker commit. ;-)"
+2008-05-24 11:17:45,taljeth,"Wow, der ändert ja fast jeden Testfall"
+2008-05-24 11:18:02,FreakyPenguin,Jo da wurde ja ueberall 1 als Nummer fuer den Root-inode benutzt
+2008-05-24 11:32:28,FreakyPenguin,"taljeth: Es liegt wohl daran, dass block_alloc nur BG 0 benutzt..."
+2008-05-24 11:32:54,taljeth,Ah. Warum auch immer das mit rev0 nicht passiert...
+2008-05-24 11:34:08,FreakyPenguin,Naja auf dem rev0-Image sind ja auch noch Blocks frei in der ersten Blockgruppe
+2008-05-24 11:34:56,taljeth,"Hm, also war Kopieren der Dateien keine gute Konvertierung."
+2008-05-24 11:35:42,FreakyPenguin,"Nein, laut dumpe2fs nicht. ;)"
+2008-05-24 11:36:54,taljeth,Was besseres ist mir aber nicht eingefallen. ;-)
+2008-05-24 11:37:15,taljeth,"Na gut, dann fix block_alloc halt, sollte ja nicht zu schwer sein"
+2008-05-24 11:51:30,FreakyPenguin,Ah /sbin/debugfs ist vermutlich noch praktisch um Images für die Testfälle zu erstellen
+2008-05-24 12:03:22,tyndur,"r90 | toni | 2008-05-24 12:03:21 +0200 (Sat, 24 May 2008) | 3 lines"
+2008-05-24 12:03:22,tyndur,+ 43: Beim allozieren von Blocks in allen Blockgruppen nach Freien suchen
+2008-05-24 12:03:22,tyndur,! 43: Anzahl der Verzeichnisse in richtiger Blockgruppe erhoehen
+2008-05-24 12:33:14,taljeth,Haut das jetzt auch in der Praxis mit Schreibzugriff hin?
+2008-05-24 12:33:22,taljeth,"Hm, okay, ein truncate wäre vielleicht noch sinnvoll"
+2008-05-24 12:53:18,FreakyPenguin,Nein für mein 5Mb Image reicht das irgendwie noch nicht
+2008-05-24 13:28:05,tyndur,"r91 | toni | 2008-05-24 13:28:00 +0200 (Sat, 24 May 2008) | 3 lines"
+2008-05-24 13:28:05,tyndur,! make clean loescht jetzt auch die img.run
+2008-05-24 13:28:05,tyndur,* Ein paar trailing spaces geloescht
+2008-05-24 13:29:16,Homix,morgen
+2008-05-24 13:29:22,FreakyPenguin,Moin Homix
+2008-05-24 13:41:29,Homix,was tut sich bei LOST so ?
+2008-05-24 13:44:22,FreakyPenguin,Wir machen ext2 kaputt. :-)
+2008-05-24 13:55:39,Coffee,HEHE
+2008-05-24 13:55:48,Coffee,mhh und ich probiere mich immer noch am druckertreiber
+2008-05-24 13:56:09,Coffee,aber nach dem initialisieren druckt der nur müll aus wenn ich einfach daten in die leitung setzt^^
+2008-05-24 13:56:22,Coffee,hat lost nen druckertreiber für LPT?
+2008-05-24 13:57:05,Homix,duckertreiber wollte ich auch mal ganz kurz schreiben .. aber die verschiedenen protokolle haben mich gleich mal abgeschreckt :D
+2008-05-24 13:57:30,FreakyPenguin,Coffee: Nein
+2008-05-24 13:57:54,FreakyPenguin,Naja in CUPS müsste man doch sehen wie das geht?
+2008-05-24 13:58:06,FreakyPenguin,Am besten gleich ein CUPS port. ;-)
+2008-05-24 14:00:08,Homix,cups ?
+2008-05-24 14:00:29,Homix,ah .. Common UNIX Printing System
+2008-05-24 15:30:50,taljeth,Reh
+2008-05-24 15:32:03,FreakyPenguin,Hirsch
+2008-05-24 15:49:18,FreakyPenguin,Endlich habe ich das Mistding von einem Bug. ;-)
+2008-05-24 15:51:47,tyndur,"r92 | toni | 2008-05-24 15:51:42 +0200 (Sat, 24 May 2008) | 5 lines"
+2008-05-24 15:51:47,tyndur,! In block_alloc wurde bis jetzt first_data_block erst zuspaet zur Blocknummer
+2008-05-24 15:51:47,tyndur,"  addiert, beim Auffuellen mit Nullen, hats somit den falschen Block erwischt."
+2008-05-24 15:51:47,tyndur,+ ext2_inode_dump wichtigste Felder im Inode anzeigen
+2008-05-24 15:51:47,tyndur,+ etool: inode_dump
+2008-05-24 16:44:18,taljeth,FreakyPenguin: Was ist denn jetzt noch alles kaputt?
+2008-05-24 16:45:09,FreakyPenguin,Hm den segfault mit inode 1 und einem dir_foreacht
+2008-05-24 16:45:14,FreakyPenguin,+ habe ich noch nicht gefixt
+2008-05-24 16:47:28,FreakyPenguin,"Und mehr werden wir wohl sehen, wenn ich den nächsten Anlauf in LOST starte ;-)"
+2008-05-24 16:47:51,taljeth,*g*
+2008-05-24 17:36:03,FreakyPenguin,Moin Yarcanox
+2008-05-24 17:36:48,Yarcanox,mein OS zockt alle ab. qemu lässt es mit kalter schulter abblitzen :P
+2008-05-24 17:37:05,Yarcanox,"nu hab ich wieder ubuntu, da wird dann auch bochs wieder das machen, was ich will (unter debian war das alles ein wenig verwachsen)"
+2008-05-24 17:38:53,taljeth,Ubuntu is an ancient african word that means 'I cannot install Debian'
+2008-05-24 17:39:19,Yarcanox,"debian funzt schon, wenn man ned so blöd ist und die normale stable nimmt"
+2008-05-24 17:39:27,Yarcanox,und dann auf den paketen von vor 5 jahren sitzt
+2008-05-24 17:39:50,taljeth,"Etch ist noch nichtmal ein Jahr alt, wenn ich mich nicht täusche"
+2008-05-24 17:40:17,Yarcanox,"keine ahnung obs nu tatsächlich 5 jahre sind, aber auf jeden fall sind sie veraltet"
+2008-05-24 17:41:43,FreakyPenguin,"Hm stimmt, nur Verzeichnisse und Dateien erstellen reicht wohl noch nicht ganz, in die Dateien schreiben wär noch was für next2. *g*"
+2008-05-24 17:42:46,Yarcanox,lol
+2008-05-24 17:44:42,taljeth,FreakyPenguin: *g*
+2008-05-24 17:46:19,FreakyPenguin,Ich hätte den Kram beinahe schon eingecheckt. ;-)
+2008-05-24 17:55:04,Jidder,moin moin
+2008-05-24 17:55:11,taljeth,Moin Jidder
+2008-05-24 17:55:40,FreakyPenguin,dito
+2008-05-24 17:55:56,Dingoman,Moin
+2008-05-24 18:51:06,FreakyPenguin,"Hm sehr überzeugend sieht das noch nicht aus. Ein mkdir geht zwar mittlerweile, aber viel mehr ist nicht gut fürs Dateisystem. ;-)"
+2008-05-24 18:51:22,taljeth,Dann fehlen offenbar Testcases.
+2008-05-24 19:40:48,bluecode,Da sag noch einer das Analysis keinen Spaß macht: http://idle.slashdot.org/article.pl?sid=08/05/24/1335258&from=rss
+2008-05-24 19:46:20,taljeth,*lol* Seht mir die Wortwahl nach: Einfach zu geil. *g*
+2008-05-24 19:50:21,bluecode,"das heißt tanzende Nerds, die zum Thema Analysis singen, erregt dich sexuell? *g*"
+2008-05-24 19:50:47,bluecode,"und ich dachte schon, ich wäre sexuell orientierungslos"
+2008-05-24 19:50:49,bluecode,:-P
+2008-05-24 19:50:51,taljeth,Öhm... *g*
+2008-05-24 19:51:01,taljeth,Du hast einen Syntaxfehler in diesem Satz. ;-)
+2008-05-24 19:51:17,bluecode,in welchem?
+2008-05-24 19:51:22,taljeth,Im ersten
+2008-05-24 19:52:21,bluecode,"whateva, auf den Inhalt kommt es an, oder so"
+2008-05-24 19:53:12,taljeth,Das sag ich dem gcc nächstes Mal auch ;-)
+2008-05-24 19:54:42,taljeth,"FreakyPenguin: Willst du erst noch fixen, bevor du next2 eincheckst?"
+2008-05-24 19:55:00,FreakyPenguin,"Das geht doch nicht, wenn mich bluecode ablenkt. *g*"
+2008-05-24 19:55:17,FreakyPenguin,Ich glaube ich checke mal ein was ich habe
+2008-05-24 19:57:15,bluecode,taljeth: Du degradierst dich zur kontextsensitiven Grammatik?
+2008-05-24 19:57:49,taljeth,Wieso das?
+2008-05-24 19:58:01,bluecode,[19:53:18] <taljeth> Das sag ich dem gcc nächstes Mal auch ;-)
+2008-05-24 19:58:05,taljeth,"Und habt ihr Grammatiken mittlerweile gehabt, daß du jetzt mit neuem Wissen protzen mußt? *g*"
+2008-05-24 19:58:20,bluecode,natürlich :-P
+2008-05-24 19:58:26,bluecode,aber ich musste nachschauen
+2008-05-24 19:58:41,taljeth,Hast du auch schon die Grammatik für Nicht-Primzahlen gebastelt? ;-)
+2008-05-24 19:58:46,bluecode,nicht das kontextsensitive Grammatiken gleich mächtig wie unbeschränkte sind *g*
+2008-05-24 19:58:54,taljeth,*g*
+2008-05-24 19:59:31,bluecode,"nein, haben wir/ich noch nicht"
+2008-05-24 19:59:50,bluecode,muss euch jetzt leider alleine hier zurücklassen ;-)
+2008-05-24 19:59:51,bluecode,cu
+2008-05-24 20:00:08,taljeth,bd
+2008-05-24 20:02:57,Jidder,cu
+2008-05-24 20:12:49,FreakyPenguin,taljeth: Ich hab next2 mal eingecheckt. 
+2008-05-24 20:13:03,taljeth,Hilfe! *g*
+2008-05-24 20:14:12,FreakyPenguin,*g*
+2008-05-24 20:14:27,FreakyPenguin,Es geht schon nicht auf deine Platte los ;-)
+2008-05-24 20:15:45,taljeth,Die qemu-Zeile wird mir allmählich zu lang
+2008-05-24 20:16:04,taljeth,Ich sollte mal den Patch für Konfigurationsdateien ein wenig pushen *g*
+2008-05-24 20:16:41,FreakyPenguin,Dafür habe ich schon lange ein shellskript gemacht *g*
+2008-05-24 20:18:06,taljeth,"Wenn ich wenig genug anderes mache, tut es Strg-R ;-)"
+2008-05-24 20:22:58,taljeth,"Stimmt, das Schreiben ist nicht wirklich überzeugend..."
+2008-05-24 20:23:24,FreakyPenguin,Vielleicht findest du ja den Bug während ich essen gehe ;-)
+2008-05-24 20:23:38,FreakyPenguin,Ein etool cp fehlt ja leider noch ;-)
+2008-05-24 20:27:42,Jidder,"warum nicht einfach ein shellskript schreiben, dass eine konfigurations datei in eine kommandozeile wandelt?"
+2008-05-24 20:56:24,taljeth,FreakyPenguin: Du machst da irgendwelche richtig kaputten Sachen. Bei mir hat sich grad ein Verzeichnis in eine Datei verwandelt...
+2008-05-24 21:25:08,FreakyPenguin,Reh
+2008-05-24 21:25:10,FreakyPenguin,Das ist ein fiehtscher ;-)
+2008-05-24 21:36:36,taljeth,Na dann *g*
+2008-05-24 22:27:12,Jidder,"ihr kennt doch sicherlich das tolle time, was man in der linux shell hat, zum messen wieviel zeit ein programm im userspace und kernel verbracht hat"
+2008-05-24 22:27:36,Jidder,"wenn man nach ""time"" googelt kriegt man nu nicht allzu relevante informationen. kann mir jemand ein besseres stichwort verraten?"
+2008-05-24 22:29:07,FreakyPenguin,Vielleicht getrusage?
+2008-05-24 22:30:22,Jidder,ah das klingt sehr gut. danke
+2008-05-24 22:38:02,FreakyPenguin,"Hm so ein cp ist ja garnicht so einfach, wenn das einigermassen benutzbar sein soll ;-)"
+2008-05-24 22:49:14,schnippi,hiho
+2008-05-24 22:50:51,taljeth,Moin
+2008-05-24 22:53:23,FreakyPenguin,"Moin, das schnippi kommt gleich nach ;-)"
+2008-05-24 22:54:24,taljeth,"Also bevor das schnippi nachkommt, will ich doch noch sehen, wer alles douze points bekommt. ;-)"
+2008-05-24 22:57:57,FreakyPenguin,Ist das irgend was RL-bezogenes oder warum verstehe ich das nicht? ;-)
+2008-05-24 22:59:45,taljeth,*lol*
+2008-05-24 22:59:50,taljeth,Glaubt dir eh keiner. ;-)
+2008-05-24 23:00:09,FreakyPenguin,Darf ich es trotzdem wissen? ;-)
+2008-05-24 23:00:18,schnippi,hehe
+2008-05-24 23:00:22,schnippi,deutschland wird eh letzter
+2008-05-24 23:00:26,schnippi,wie immer halt
+2008-05-24 23:00:29,FreakyPenguin,Fussball oder was? ;-)
+2008-05-24 23:00:36,schnippi,aaaaaaaaber wenn man die tabelle umdrehen würde!!!
+2008-05-24 23:01:47,taljeth,"schnippi: Auf Letzter würde ich nicht wetten, war nicht das einzige schlechte. ;-)"
+2008-05-24 23:01:47,schnippi,grand prix de la schongsong ;)
+2008-05-24 23:03:36,Jidder,jurowischn zongg kontest
+2008-05-24 23:04:02,schnippi,zonk? tor 3? oder doch lieber den roten umschlag? oder 500 euro?
+2008-05-24 23:04:06,Jidder,extra von frankreichisch nach amerikanisch übersetzt damit die germanen das verstehen
+2008-05-24 23:04:12,taljeth,Ach was. d'örovision klingt viel besser als wie jurowischn
+2008-05-24 23:04:30,schnippi,ich hab nur den schnelldurchlauf gesehen
+2008-05-24 23:04:37,FreakyPenguin,"Ah _das_ ist es, stimmt davon hat der Physiklehrer doch am Donnerstag noch was erzählt... *g*"
+2008-05-24 23:04:49,schnippi,das reicht mir auch
+2008-05-24 23:06:19,schnippi,ich will letzter werden :D
+2008-05-24 23:08:37,schnippi,das lied atm ist noch eines der besseren
+2008-05-24 23:11:43,schnippi,blasmusik fdS
+2008-05-24 23:11:53,taljeth,*g*
+2008-05-24 23:12:07,taljeth,Ich ziehe dann doch die Finnen und Türken vor
+2008-05-24 23:13:19,schnippi,türken? bist du bekloppt? ;)
+2008-05-24 23:14:26,schnippi,"ich hab heute 3 döner gekauft, das muss erstmal reichen"
+2008-05-24 23:15:36,schnippi,boah
+2008-05-24 23:15:41,schnippi,das lied geht schon ne gefühlte viertelstunde
+2008-05-24 23:24:42,letzter,noch steht mein tipp
+2008-05-24 23:24:51,letzter,0 punkte sind doch auch was feines
+2008-05-24 23:25:36,letzter,"nichtmal schweiz oder österreich sind dabei, die uns mit den punkten für ein frühes EM ausscheiden bestechen könnten"
+2008-05-24 23:32:06,letzter\depri,:(
+2008-05-24 23:40:57,FreakyPenguin,Moin schnippi
+2008-05-24 23:41:51,letzter\depri,"es muss doch zu schaffen sein, noch letzter zu weredn"
+2008-05-24 23:53:24,Jidder,ich war jetzt extra im keller und hab den fernseher angemacht um zu gucken wer hinter uns is
+2008-05-24 23:54:06,Jidder,aber ich glaube den rückstand holen uk und polen nich mehr auf
+2008-05-24 23:54:10,letzter\depri,wooooooooooooohooooooo
+2008-05-24 23:54:19,letzter\depri,WOOOOOOOOOOHOOOOOOOOOOOOOOO
+2008-05-24 23:54:24,Jidder,watt?
+2008-05-24 23:54:29,letzter\happy,letzter!!!
+2008-05-24 23:54:33,Jidder,du bist mein mittelsmann zur außenwelt
+2008-05-24 23:54:35,Jidder,yay
+2008-05-24 23:54:36,letzter\happy,neeein
+2008-05-24 23:54:38,Jidder,watt
+2008-05-24 23:54:39,letzter\happy,2 punkte von schweiz
+2008-05-24 23:54:48,letzter\happy,drittletzter :(
+2008-05-24 23:54:56,Jidder,zum glück ist freakypenguin weg
+2008-05-24 23:55:02,Jidder,der wär sonst rausgeflogen
+2008-05-24 23:55:15,letzter\depri,der hat sicher angerufen nur um mich zu verärgern ;)
+2008-05-24 23:55:33,Jidder,bestimmt. deswegen is er auch mit so nem frechen kommentar gegangen
+2008-05-24 23:55:47,letzter\depri,ah die letzten drei haben alle die selbe pktzahl
+2008-05-24 23:58:51,Jidder,hehe

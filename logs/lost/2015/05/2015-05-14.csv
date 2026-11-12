@@ -1,0 +1,334 @@
+date/time,nick,message
+2015-05-14 09:35:23,Jonathan,Moin
+2015-05-14 13:23:08,Schorsch_,moin
+2015-05-14 16:16:01,Svenska,moin
+2015-05-14 16:17:50,Schorsch_,moin
+2015-05-14 16:20:40,Schorsch_,ich habe mal ne doofe Frage. Ich versuche mich grad an dem interrupt Tutorial(http://www.lowlevel.eu/wiki/Teil_5_-_Interrupts) und nach dem Aufsetzen der IDT und beim auslösen von interrupt 0 startet mein Kernel neu. Die Ressourcen auf die verlinkt werden reichen mir irgendwie nicht ganz aus. Ich hab nur echt keine Ahnung wie ich da an Fehlersuche gehen kann. Debugging geht ja schlecht
+2015-05-14 16:21:15,Svenska,nutzt du qemu=
+2015-05-14 16:21:15,Svenska,?
+2015-05-14 16:21:15,Schorsch_,Hat vielleicht jemand einen Tipp wie ich auf Problemsuche gehen könnte?
+2015-05-14 16:21:15,Schorsch_,jau
+2015-05-14 16:21:16,Svenska,"dann starte den mal mit ""-d int"" oder so ähnlich, also debugging für interrupts"
+2015-05-14 16:21:26,Schorsch_,ok wird gecheckt danke
+2015-05-14 16:21:34,Svenska,dann wirft der dir ein ziemlich langes logfile aus
+2015-05-14 16:21:46,Svenska,"ich such mal einen von jidders posts im forum, der hat das ein paarmal gut erklärt"
+2015-05-14 16:22:49,Schorsch_,ok ich gucke danach mal. Vielen Dank:)
+2015-05-14 16:24:37,Svenska,"ok, also zusammenfassend: starte qemu mit ""-d int"", und gucke dir die logdatei an"
+2015-05-14 16:24:45,Svenska,könnte qemu.log oder /tmp/qemu.log sein
+2015-05-14 16:25:03,Svenska,"und dadrin suchst du nach zeilen, die mit ""v="" anfangen, dahinter steht dann die interruptnummer"
+2015-05-14 16:26:01,Schorsch_,das log wird in der Konsole ausgegeben. Zumindest solange ich es nicht umleite. 
+2015-05-14 16:26:12,Svenska,"ok, dann hat sich das geändert"
+2015-05-14 16:26:19,Svenska,e= ist der fehlercode der exception
+2015-05-14 16:27:03,Svenska,"und dann natürlich noch die standardsachen, also eip, cs und so"
+2015-05-14 16:30:04,Schorsch_,hmm v= und e= finde ich in der Ausgabe nicht
+2015-05-14 16:31:19,Schorsch_,check_exception old: 0x8 new 0xd ist das eine hilfreiche Information? Also für mich grad nicht
+2015-05-14 16:31:42,Svenska,die zeile danach müsste es sein...
+2015-05-14 16:32:02,Schorsch_,SMM: enter
+2015-05-14 16:32:12,Schorsch_,und dann kommen die Register
+2015-05-14 16:32:33,Svenska,hmm
+2015-05-14 16:32:35,Schorsch_,ich habe nur den Eintrag für den einen interrupt den ich auslöse geschrieben. Liegt da möglicherweise das Problem?
+2015-05-14 16:33:21,Svenska,114: v=20 e=0000 i=0 cpl=0 IP=0008:e01057d9 pc=e01057d9 SP=0010:00104fe8 env->regs[R_EAX]=00000001
+2015-05-14 16:33:26,Svenska,"so sehen die zeilen aus, die ich meine"
+2015-05-14 16:34:08,Schorsch_,14: v=08 e=0000 i=0 cpl=0 IP=0008:00100871 pc=00100871 SP=0010:00001fe0 env->regs[R_EAX]=00000000
+2015-05-14 16:34:15,Schorsch_,da ist sie. Hattest recht. Hab sie übersehen
+2015-05-14 16:34:37,Svenska,das ist der #DF
+2015-05-14 16:34:49,Svenska,guck dir mal die letzten 3 an
+2015-05-14 16:36:28,Schorsch_,die letzten 3 was soll ich mir angucken?
+2015-05-14 16:36:30,Schorsch_,Einträge?
+2015-05-14 16:36:34,Svenska,die letzten 3 interrupts
+2015-05-14 16:36:58,Svenska,"da müsste dein int 0 auftauchen, dann vermutlich ein #GP, und dann der #DF, der den reset auslöst"
+2015-05-14 16:37:06,Schorsch_,13: v=0d e=0002 i=0 cpl=0 IP=0008:00100871 pc=00100871 SP=0010:00001fe0 env->regs[R_EAX]=00000000
+2015-05-14 16:37:08,Schorsch_,der war davor
+2015-05-14 16:37:33,Schorsch_,12: v=00 e=0000 i=1 cpl=0 IP=0008:00100871 pc=00100871 SP=0010:00001fe0 env->regs[R_EAX]=00000000
+2015-05-14 16:37:56,Schorsch_,das war der davor. Der den ich selbst gefeuert hab. 08  ist der Tick oder?
+2015-05-14 16:38:00,Svenska,nein
+2015-05-14 16:38:04,Svenska,00 => was du feuerst
+2015-05-14 16:38:15,Svenska,"0d => general protection fault, #GP"
+2015-05-14 16:38:20,Svenska,"08 => double fault, #DF"
+2015-05-14 16:38:37,Schorsch_,ok
+2015-05-14 16:39:20,Schorsch_,dann ist mein Eintrag in der IDT vermutlich fehlerhaft oder nicht?
+2015-05-14 16:40:23,Svenska,oder die idt selbst ist fehlerhaft
+2015-05-14 16:40:50,Svenska,ein #GP gibt dir einen errorcode von 0x0002
+2015-05-14 16:41:34,Svenska,"was eine segmentnummer ist, also ein eintrag in der gdt"
+2015-05-14 16:41:45,Schorsch_,ok
+2015-05-14 16:41:51,Schorsch_,ich habe wie gesagt nur Eintrag 0 dort drin
+2015-05-14 16:41:58,Svenska,in der gdt?
+2015-05-14 16:42:04,Schorsch_,oh halt
+2015-05-14 16:42:13,Schorsch_,ich war grad bei IDT. Ne dort mehr
+2015-05-14 16:43:45,Schorsch_,die GDT sieht im Prinzip so aus wie man sie im Tutorial bis dahin zusammen bastelt. 4 Einträge.
+2015-05-14 16:44:10,Schorsch_,ah aber ich hab eine IDee
+2015-05-14 16:46:08,Schorsch_,"ok das war es nicht. In dem Tutorial stehen recht wenig Informationen zu der Sache. Ich kann halt den Code der mitgeliefert wird öffnen und den Kram abschreiben, da hab ich aber nichts von. Kennst du/ihr sonst noch andere gute Ressouren um da rein zu kommen?"
+2015-05-14 16:46:25,Svenska,spontan kenn ich nur die doku
+2015-05-14 16:46:30,Svenska,und ich könnte deinen code mit meinem code abgleichen :-)
+2015-05-14 16:47:53,Schorsch_,das wäre auch cool. Warte ich lade ihn fix hoch
+2015-05-14 16:49:05,Schorsch_,http://pastebin.com/46AU4yrY hier rufe ich am Ende alles auf
+2015-05-14 16:49:52,Schorsch_,http://pastebin.com/ZiXFUrX1 intr.h
+2015-05-14 16:50:27,Schorsch_,http://pastebin.com/Wdkme15i intr.c
+2015-05-14 16:51:13,Schorsch_,http://pastebin.com/v5hVYmuA
+2015-05-14 16:51:17,Schorsch_,das ist die int_stub.S
+2015-05-14 16:52:06,Svenska,ok mom
+2015-05-14 16:52:26,Schorsch_,den Code um die Einträge in die IDT zu kriegen habe ich mir aus den Beispielcodes gesucht. Da bin ich mir auch nicht bei allem 100% sicher von daher ist da vermutlich ordentlich was falsch
+2015-05-14 16:52:28,Schorsch_,vielen Dank
+2015-05-14 16:53:57,Schorsch_,vermutlich werde ich jetzt erschlagen;)
+2015-05-14 16:54:09,Svenska,ne
+2015-05-14 16:54:14,Svenska,pizza ist grad angekommen :D
+2015-05-14 16:54:56,Schorsch_,^^ guten Hunger
+2015-05-14 16:55:45,Svenska,mein stub handler sieht anders aus
+2015-05-14 16:55:57,Svenska,"aber das dürfte der fehler nicht sein, erstmal"
+2015-05-14 16:56:15,Schorsch_,der Handler soll ja im Prinzip erst mal nicht viel machen
+2015-05-14 16:56:31,Jidder,"das add $8, %esp fehlt am ende, aber ich weiß nicht, ob die exception nicht schon vorher auftritt"
+2015-05-14 16:56:33,Schorsch_,mir reicht ja die Rückmeldung dass da ein interrupt gefeuert wurde und das ganze zu laufen scheint
+2015-05-14 16:56:40,Svenska,eben
+2015-05-14 16:56:44,Schorsch_,brauche ich das in dem Fall denn ?
+2015-05-14 16:56:46,Svenska,"ich meinte den intr-stub, der den c-code aufruft"
+2015-05-14 16:57:03,Schorsch_,aso
+2015-05-14 16:57:24,Jidder,"ja, in intr_stub_* pusht du 2 werte auf den stack. die müssen da wieder runter"
+2015-05-14 16:57:38,Schorsch_,ach ja natürlich
+2015-05-14 16:57:49,Schorsch_,das hatte ich erst nicht gemacht und deshalb hatte ich die Zeile weggelassen
+2015-05-14 16:58:21,Svenska,"aus irgendwelchen gründen pushe ich noch ds, es, fs, gs"
+2015-05-14 16:59:42,Schorsch_,das habe ich so zumindest noch nicht gesehen
+2015-05-14 16:59:53,Schorsch_,habe das add mal wieder aufgenommen aber daran lag es nicht. 
+2015-05-14 17:01:13,Svenska,"nein, weil es vorher schon kracht"
+2015-05-14 17:01:42,Schorsch_,an sich müsste es doch krachen bevor der Handler überhaupt aufgerufen wird oder nicht
+2015-05-14 17:01:50,Svenska,eben
+2015-05-14 17:03:22,Schorsch_,AH
+2015-05-14 17:03:28,Schorsch_,Problem glaube ich gefunden
+2015-05-14 17:03:43,Schorsch_,beim setzen der IDT Einträge überschreibe ich jedes mal da ich immer = und nicht |= benutze
+2015-05-14 17:03:49,Svenska,ja
+2015-05-14 17:04:31,Schorsch_,und es läuft:)
+2015-05-14 17:04:42,Schorsch_,genial ihr zwei:) echt vielen Dank:)
+2015-05-14 17:42:19,Schorsch_,"jetzt wo ich alles mehr oder weniger fertig habe kommen irgendwie keine Interrupts an, es sei denn ich sorge selbst dafür. Aber Hardwareinterrupts müsste ich eigentlich auch so bekommen oder"
+2015-05-14 17:42:22,Schorsch_,?
+2015-05-14 17:42:43,Svenska,wenn du sie einschaltest ja
+2015-05-14 17:43:11,Svenska,"also STI ausführen, dann dürfte es timer-interrupts regnen"
+2015-05-14 17:43:55,Schorsch_,"mache ich, kommt aber nichts durfh"
+2015-05-14 17:43:56,Schorsch_,durch
+2015-05-14 17:44:55,Schorsch_,mein Code ist quasi der Beispielcode. Da wird sti aufgerufen nachdem die idt geladen wurde
+2015-05-14 17:44:57,Paddy,Bekommst du gar keine IRQs oder hört es irgendwann auf?
+2015-05-14 17:45:04,Schorsch_,bekomme gar keine
+2015-05-14 17:45:20,Schorsch_,hab im Handler gesagt er soll  eine Ausgabe machen sobald was ankommt aber das passiert nicht
+2015-05-14 17:45:35,Svenska,und du hast alle einträge in die idt getan?
+2015-05-14 17:45:39,Paddy,"Im PIC hast du aber nichts maskiert, oder?"
+2015-05-14 17:45:51,Paddy,"Svenska: Wenn nicht, müsste es einen GP geben"
+2015-05-14 17:46:51,Schorsch_,laut Tutorial habe ich sie demaskiert
+2015-05-14 17:47:41,Paddy,Zeigt qemu -d int denn Hardwareinterrupts an?
+2015-05-14 17:48:28,Paddy,"Also wenn du dem Tutorial folgst, müsste IRQ 0 auf v=20 rauslaufen"
+2015-05-14 17:49:06,Schorsch_,da tut sich auch nichts
+2015-05-14 17:49:32,Schorsch_,"startet mit SMM: enter, dann Register, dann SMM: after und wieder Register"
+2015-05-14 17:50:23,Paddy,"Die SMM-Einträge kannst du ignorieren, die kommen halt einmal beim Booten"
+2015-05-14 17:50:36,Schorsch_,jau. Danach passiert quasi nichts mehr
+2015-05-14 17:51:37,Paddy,"Wenn du mal info registers anschaust, ist IF in eflags gesetzt?"
+2015-05-14 17:51:51,Schorsch_,checke ich eben
+2015-05-14 17:51:59,Paddy,"Muss eigentlich, wenn du sti machst, aber dass gar nicht ankommt, ist seltsam"
+2015-05-14 17:52:17,Paddy,"Normal kenne ich das nur so, dass nach dem ersten IRQ nichts mehr kommt, weil der erste nicht richtig verarbeitet wurde"
+2015-05-14 17:53:25,Schorsch_,gehts da jetzt um die Debug Ausgabe oder?
+2015-05-14 17:54:12,Paddy,"Was ich meinte, ist dass du im qemu-Monitor ""info registers"" ausführst, während dein OS so dasteht und nichts mehr macht"
+2015-05-14 17:55:35,Schorsch_,du meinst jetzt im Terminal info registers tippen und Enter?
+2015-05-14 17:56:05,Schorsch_,bin sofort wieder da
+2015-05-14 17:56:32,Paddy,In den qemu-Monitor kommst du mit Strg-Alt-2
+2015-05-14 18:16:25,Schorsch_,so da bin ich wieder sorry
+2015-05-14 18:18:57,Schorsch_,ich bin im Monitor und konnte auch info registers ausführen aber weiter weiß ich grad auch nicht. was meinst du mit EFLAGS und IF genau
+2015-05-14 18:19:54,Svenska,eflags ist ein prozessorregister
+2015-05-14 18:20:09,Svenska,"dadrin speichert die cpu ihre flags, u.a. auch das interrupt-flag"
+2015-05-14 18:20:21,Svenska,"wenn IF nicht gesetzt ist, dann führt die cpu keine interrupts aus"
+2015-05-14 18:21:03,Svenska,(IF änderst du mit den befehlen CLI und STI)
+2015-05-14 18:21:03,Schorsch_,eflags wird hier nicht aufgeführt
+2015-05-14 18:21:03,Svenska,führst du in deinem code irgendwo sti aus?
+2015-05-14 18:21:07,Schorsch_,ja
+2015-05-14 18:21:14,Schorsch_,wie gesagt direkt nachdem ich die idt lade
+2015-05-14 18:21:25,Schorsch_,warte
+2015-05-14 18:21:32,Svenska,das ist unklug :)
+2015-05-14 18:21:56,Schorsch_,http://pastebin.com/dRswiPBa
+2015-05-14 18:21:58,Svenska,"im moment ist das relativ egal, aber normalerweise solltest du interrupts erst aktivieren, wenn dein kernel fertig initialisiert ist"
+2015-05-14 18:22:17,Schorsch_,so stand es auch in dem Tutorial ja. Aber bei mir passiert danach ja an sich nichts mehr.
+2015-05-14 18:22:37,Paddy,"Schorsch_: Wie erwartest du eigentlich, den Timer zu erkennen?"
+2015-05-14 18:22:53,Paddy,Für die IRQs macht dein Code doch nur ein EOI und nichts sichtbares?
+2015-05-14 18:23:14,Paddy,"Ach das ""ff"", sorry, hab ich übersehen"
+2015-05-14 18:23:25,Schorsch_,oben im Handler
+2015-05-14 18:23:53,Schorsch_,genau. Keine sinnvolle Ausgabe aber eben irgendetwas
+2015-05-14 18:25:58,Schorsch_,wenn ich selbst nen int 0x0 mache kommt der beim Handler auch an
+2015-05-14 18:26:07,Svenska,int 0x0 != irq 0
+2015-05-14 18:26:13,Paddy,Dein info registers gibt jedenfalls so eine Zeile aus:
+2015-05-14 18:26:14,Paddy,EIP=0000e0d9 EFL=00000246 [---Z-P-] CPL=0 II=0 A20=1 SMM=0 HLT=1
+2015-05-14 18:26:19,Svenska,probier mal int 0x20
+2015-05-14 18:26:27,Paddy,"Hm, auch ein guter Vorschalg"
+2015-05-14 18:26:49,Paddy,Das EFL= in meiner Zeile ist der Inhalt des eflags-Registers
+2015-05-14 18:27:21,Paddy,"Das das II= ist sogar das Interrupt-Flag schon bequem rausgeparst, wenn ich mich grad nicht täusche"
+2015-05-14 18:27:34,Schorsch_,ah ok
+2015-05-14 18:27:44,Schorsch_,stimmt int ist ja ein Software interrupt
+2015-05-14 18:27:57,Schorsch_,wie soll int 20 helfen? Dafür habe ich doch gar keinen Eintrag
+2015-05-14 18:28:02,Schorsch_,oder seh ich das falsch
+2015-05-14 18:28:11,Paddy,"0x20, nicht 20"
+2015-05-14 18:28:23,Schorsch_,das meinte ich damit
+2015-05-14 18:28:24,Paddy,Das ist IRQ 0
+2015-05-14 18:28:39,Schorsch_,ah das meine ich sogar irgendwo gelesen zu haben
+2015-05-14 18:28:41,Paddy,"Svenska meint, dass du den mal testweise per Software auslösen sollst"
+2015-05-14 18:28:43,Svenska,"in dem tutorial werden die PICs so programmiert, dass IRQ 0 = INT 32"
+2015-05-14 18:28:49,Svenska,und 32 = 0x20
+2015-05-14 18:29:04,Schorsch_,ff wird ausgegeben
+2015-05-14 18:29:44,Svenska,hm
+2015-05-14 18:29:48,Svenska,das ist interessant.
+2015-05-14 18:29:53,Schorsch_,der Unterschied ist mir schon klar. Mit 20 war eben die hexadezimale Zahl gemeint. 
+2015-05-14 18:30:20,Svenska,hast du die IRQs in den PICs maskiert (=ausgeschaltet)?
+2015-05-14 18:30:25,Schorsch_,ich führe den kernel direkt mit qemu aus. Kann das damit zusammen hängen? Sollte nicht oder
+2015-05-14 18:30:34,Svenska,"ne, ich mach das auch immer"
+2015-05-14 18:31:43,Schorsch_,"outb(0x20, 0x0);"
+2015-05-14 18:31:47,Schorsch_,darauf willst du hinaus oder?
+2015-05-14 18:32:13,Svenska,"maskieren heißt abschalten, das ist nicht jedem klar :)"
+2015-05-14 18:32:27,Paddy,Ich führe meinen Kernel auch meistens mit qemu -kernel aus und bei mir tun IRQs
+2015-05-14 18:32:41,Svenska,"du müsstest auch einen irq kriegen, wenn du eine taste drückst"
+2015-05-14 18:32:48,Svenska,allerdings nur das erste mal
+2015-05-14 18:33:22,Schorsch_,das hatte ich als erstes versucht. Und als sich da nichts getan hat bin ich dann drauf gekommen dass ja wneigstens der Tick kommen sollte.
+2015-05-14 18:34:17,Paddy,Hast du deinen Code irgendwo online?
+2015-05-14 18:34:43,Schorsch_,sofort
+2015-05-14 18:35:26,Schorsch_, http://pastebin.com/dRswiPBa
+2015-05-14 18:35:42,Schorsch_,die hatte ich ja eben geschickt. Und interessant ist ansonsten hierfür eigentlich nur...
+2015-05-14 18:36:01,Schorsch_,http://pastebin.com/H0cfbv0L
+2015-05-14 18:36:50,Schorsch_,init_gdt und init_intr werden dann nacheinander ausgeführt. 
+2015-05-14 18:36:56,Paddy,"Ich meine als Komplettpaket, dass ich's selber bauen und debuggen kann"
+2015-05-14 18:37:06,Paddy,Mit Ferndiagnosen komme ich im Moment jedenfalls nicht mehr weiter
+2015-05-14 18:37:14,Paddy,Aber du kannst natürlich auch selber weitersuchen
+2015-05-14 18:37:14,Svenska,ich auch nicht
+2015-05-14 18:37:27,Svenska,aber wenn das interrupt-flag aus ist
+2015-05-14 18:37:32,Paddy,Ist es das?
+2015-05-14 18:37:37,Svenska,"...du hast doch in deinem init sicherlich ne endlosschleife, richtig?"
+2015-05-14 18:37:47,Svenska,"mach mal ein >asm volatile(""sti"")< davor"
+2015-05-14 18:37:51,Svenska,einfach zur sicherheit
+2015-05-14 18:38:14,Schorsch_,warte mal ich gucke kurz
+2015-05-14 18:38:17,Paddy,"Schorsch_: eflags hast du noch nicht gepostet, oder?"
+2015-05-14 18:38:58,Svenska,oh ups
+2015-05-14 18:39:02,Svenska,das war deine zeile :-D
+2015-05-14 18:40:35,Paddy,"Jo, meins war eine VM ohne Image, da könnten Interrupts gut deaktiviert sein ;-)"
+2015-05-14 18:40:35,Schorsch_,ich gucke grad wegen eflags aber ich hab irgendwie ein Brett vorm Kopf. EFL raucht nicht auf. Ich schicke euch mal einen Screenshot
+2015-05-14 18:41:54,Schorsch_,https://dumpyourphoto.com/photo/tc25jSnklq
+2015-05-14 18:42:14,Svenska,du kannst mit ctrl+pgup hochscrollen
+2015-05-14 18:42:53,Schorsch_,das klappt bei mir nicht
+2015-05-14 18:42:59,Schorsch_,:D
+2015-05-14 18:43:10,Svenska,strg+bild-auf ? ;)
+2015-05-14 18:43:36,Svenska,ansonsten strg+pfeiltaste-hoch?
+2015-05-14 18:43:36,Schorsch_,schon klar;) ganz son schlimmer DAU bin ich hoffentlich nicht :D
+2015-05-14 18:43:57,Schorsch_,war wegen num lock
+2015-05-14 18:44:21,Schorsch_,funzt doch. Oh man ich bin erst seit kurzem unter Linux unterwegs. Hatte das vorher immer nur für Lleinigkeiten in der VM.
+2015-05-14 18:44:34,Schorsch_,0x12
+2015-05-14 18:44:34,Svenska,notebook mit nummernblock ohne echte sondertasten?
+2015-05-14 18:44:36,Schorsch_,ist der Wert
+2015-05-14 18:44:46,Svenska,guck mal was bei II steht
+2015-05-14 18:44:51,Paddy,0x12 hat kein 0x200 drin
+2015-05-14 18:45:00,Paddy,"IF ist Bit 9, also 0x200"
+2015-05-14 18:45:06,Paddy,Wenn ich mich nicht grad verrechne ;-)
+2015-05-14 18:45:15,Schorsch_,hab das Notebook erst seit dem Wochenende aber jetzt wo du es sagst ist tatsächlich die Taste direkt drauf
+2015-05-14 18:45:43,Schorsch_,II ist 0
+2015-05-14 18:46:01,Svenska,sag ich ja :D
+2015-05-14 18:46:08,Svenska,also vor deine endlosschleife mal ein STI knallen
+2015-05-14 18:46:11,Schorsch_,EFL 0000000012 ist 0x12 mit gemeint oder?
+2015-05-14 18:46:13,Schorsch_,ist das dec 12
+2015-05-14 18:46:19,Svenska,das ist 0x12
+2015-05-14 18:46:20,Paddy,Hex
+2015-05-14 18:46:47,Paddy,"Hm, das II=0 hab ich bei meinem Kernel auch, aber das benutzt definitiv Interrupts. Vielleicht heißt das dann doch was anderes? :-/"
+2015-05-14 18:46:51,Schorsch_,welche Endlosschleife meinst du?
+2015-05-14 18:47:01,Svenska,"öh, dein init endet?"
+2015-05-14 18:47:06,Paddy,Hast du mehrere davon?
+2015-05-14 18:47:09,Paddy,Oder gar keine?
+2015-05-14 18:47:13,Schorsch_,ich jetzt?
+2015-05-14 18:47:16,Paddy,Ja
+2015-05-14 18:47:17,Schorsch_,im Handler sind welche
+2015-05-14 18:47:21,Schorsch_,ansonsten nein
+2015-05-14 18:47:23,Svenska,m(
+2015-05-14 18:47:32,Paddy,Zeig mal deine Hauptfunktion her
+2015-05-14 18:47:35,Schorsch_,"idt_set_entry(48, intr_stub_48, 0x8, IDT_FLAG_INTERRUPT_GATE | IDT_FLAG_RING3 | IDT_FLAG_PRESENT);"
+2015-05-14 18:47:35,Schorsch_,"	asm volatile(""lidt %0"" : : ""m"" (idtp));"
+2015-05-14 18:47:35,Schorsch_,"	asm volatile(""sti"");"
+2015-05-14 18:47:52,Schorsch_,und davor werden halt die anderen Einträge gesetzt
+2015-05-14 18:48:27,Paddy,"Wie sieht die C-Funktion aus, mit der Kernel anfängt? init, main oder wie auch immer du die nennst?"
+2015-05-14 18:48:33,Schorsch_,clrscr();
+2015-05-14 18:48:33,Schorsch_,"	kprintf(""was geeeeeht\n%%\n%d\n%p\n%t"", 42, 1337);"
+2015-05-14 18:48:33,Schorsch_,	init_gdt();
+2015-05-14 18:48:33,Schorsch_,	init_intr();
+2015-05-14 18:48:45,Paddy,Und das war's?
+2015-05-14 18:48:48,Svenska,und danach sollte eine endlosschleife kommen
+2015-05-14 18:48:49,Schorsch_,jau
+2015-05-14 18:48:55,Paddy,"Was meinst du, was anschließend passiert?"
+2015-05-14 18:48:57,Svenska,denn diese funktion sollte nie zurückkehren können...
+2015-05-14 18:49:02,Schorsch_,:D
+2015-05-14 18:49:03,Schorsch_,neeeein
+2015-05-14 18:49:31,Schorsch_,und da haben wir das Problem:)
+2015-05-14 18:49:44,Paddy,"Theoretisch könnte die Endlosschleife auch im Assemblercode sein, der diese Funktion aufruft, aber aus deinen Aussagen schließe ich mal, dass das auch nicht der Fall ist"
+2015-05-14 18:49:48,Schorsch_,da hätte ich echt selbst drauf kommen sollen eigentlich. Aber echt vielen Dank. Wer weiß wie lange ich daran noch gesessen hätte
+2015-05-14 18:49:56,Svenska,"zumindest mein startup-code macht am ende ein ""cli; jmp $"""
+2015-05-14 18:50:07,Paddy,"Der führt dann halt fröhlich das aus, was da anschließend im Speicher steht"
+2015-05-14 18:50:13,Schorsch_,ist nicht im assembler Teil nein
+2015-05-14 18:50:19,Schorsch_,wie gesagt habs grad getestet und damit gehts
+2015-05-14 18:50:23,Svenska,"Paddy: ich glaube, der tutorial-startup-code hat da auch eine endlosschleife, aber einer mit cli davor"
+2015-05-14 18:50:34,Svenska,"wenn das os tot ist, sind die interrupt-handler vom os nicht mehr vertrauenswürdig"
+2015-05-14 18:51:09,Paddy,Mein Code hat normal sowohl im Assembler- als auch im C- (bzw. in meinem eigenen Kernel Pascal-)Teil eine Schleife
+2015-05-14 18:51:13,Paddy,Doppelt hält besser und so ;-)
+2015-05-14 18:51:32,Svenska,hab ich auch immer
+2015-05-14 18:51:50,Paddy,"Oh, hups, stimmt gar nicht"
+2015-05-14 18:52:03,Schorsch_,Pascal? Das tust du dir echt an?
+2015-05-14 18:52:10,Paddy,Der Kernelteil hört bei mir damit auf:
+2015-05-14 18:52:15,Paddy," mov first_isf, %eax"
+2015-05-14 18:52:16,Paddy,        jmp run_first_task
+2015-05-14 18:53:24,Paddy,Schorsch_: Irgendwas besonderes muss man doch machen ;-)
+2015-05-14 18:53:45,Paddy,"Und das einzige, was daran ein bisschen nervig ist, ist, dass der FPC nicht ganz so ausgereift wie der gcc ist"
+2015-05-14 18:54:19,Schorsch_,ich arbeite normal meistens mit C#. Bin vor Jahren irgendwie von C++ weg gekommen.
+2015-05-14 18:54:42,Paddy,Viel Spaß mit einem C#-Kernel
+2015-05-14 18:54:45,Schorsch_,und halt ansonsten immer was man so braucht. Aber Pascal mag ich nicht:) Aber jedem das seine:)
+2015-05-14 18:55:28,Schorsch_,mit eigenem Compiler könnte man das ja im Prinzip machen. Oder mit eingebettetem C Code wobei das ja dann gecheatet ist
+2015-05-14 18:55:39,Paddy,"Magst du nicht, weil aus Prinzip? ;-)"
+2015-05-14 18:55:47,Schorsch_,Pascal? 
+2015-05-14 18:55:50,Paddy,Ja
+2015-05-14 18:56:08,Paddy,Und joa machen kann man das schon. Aber ist halt richtig aufwendig
+2015-05-14 18:56:09,Schorsch_,Haben das damals in der Schule gelernt bzw damit gearbeitet
+2015-05-14 18:57:04,Schorsch_,mir hat es da schon nicht gefallen ich ich wüsste auch nicht warum ich da zurück wollte. Gut bei uns war es irgendwie Turbo Pascal 5 oder so. Ich hab von den verschiedenen Pascal Versionen keine Ahnung. Aber man hatte ne Menge Einschränkungen und die Syntax ist nicht so schön.
+2015-05-14 18:57:25,Paddy,TP 5 ist von wann nochmal? ;-)
+2015-05-14 18:57:38,Schorsch_,begin und end überall mag ich nicht so gern. Und zumindest in der Version die wir genutzt haben mussten Variablen immer am Anfang eines Codeblocks stehen und solche Dinge
+2015-05-14 18:57:46,Paddy,1988 sagt Wikipedia
+2015-05-14 18:58:25,Svenska,pascal ist ne lernsprache
+2015-05-14 18:58:26,Schorsch_,echt? Ok dann war es vielleicht auch ne neuere Version. Wir hatten damals mal geguckt und irgendwo gesehen dass die Version seit Mitte der 90er nicht mehr weiter entwickelt wurde.
+2015-05-14 18:58:35,Svenska,und da sind ein paar dinge aus prinzip gelöst
+2015-05-14 18:58:42,Paddy,"Naja, Variablen am Anfang des Codeblocks definieren ist eh guter Stil, imho"
+2015-05-14 18:58:44,Schorsch_,ja wie mit den Variablen eben
+2015-05-14 18:59:02,Svenska,"z.B. ""alle variablen werden am anfang des codeblocks deklariert"" oder ""eine funktion hat nur einen einzigen return"""
+2015-05-14 18:59:03,Paddy,"Muss man in C zwar seit C99 nicht mehr, aber meistens mach ich es trotzdem"
+2015-05-14 18:59:07,Schorsch_,da lässt sich drüber streiten. Die haben es denke ich eher der Einfachheit halber gemacht.
+2015-05-14 18:59:15,Schorsch_,das erspart beim Übersetzerbau etwas Arbeit
+2015-05-14 18:59:20,Svenska,"ne, bei pascal ist es ne prinzipfrage"
+2015-05-14 18:59:39,Schorsch_,ok
+2015-05-14 18:59:44,Svenska,in c89 konnte man in jedem block variablen deklarieren
+2015-05-14 18:59:49,Svenska,in pascal ging das klassisch nicht
+2015-05-14 19:00:01,Svenska,"(wie hatten delphi in der schule, aber das ist auch nur object pascal)"
+2015-05-14 19:00:09,Schorsch_,das hatten wir zuerst.
+2015-05-14 19:00:30,Paddy,"""Funktion mit nur einem return"" ist in der Praxis ja abgeschafft"
+2015-05-14 19:00:33,Schorsch_,danach gabs dann Linux Rechner mit Larzarus. Aber ich meine da wurde Turbo Pascal genutzt. Aber mag auch object pascal sein
+2015-05-14 19:00:44,Svenska,lazarus = delphi = object pascal
+2015-05-14 19:00:54,Schorsch_,mag sein:)
+2015-05-14 19:00:57,Svenska,"und ja, auch pascal hat sich nach dem nikolaus weiterentwickelt :)"
+2015-05-14 19:00:59,Paddy,ObjFPC
+2015-05-14 19:01:05,Paddy,"Fast Delphi, aber doch anders"
+2015-05-14 19:01:39,Svenska,"aber wo c die sprache der maximalen effizienz bei geringstem aufwand ist, ist *pascal halt eine lernsprache"
+2015-05-14 19:03:08,Schorsch_,macht ihr nur low level oder?
+2015-05-14 19:03:14,Paddy,Das mit dem geringen Aufwand ist halt die Frage
+2015-05-14 19:03:29,Paddy,"Ich finde nach wie vor, dass man für Stringverarbeitung nicht unbedingt C will"
+2015-05-14 19:03:41,Schorsch_,absolut nicht
+2015-05-14 19:03:47,Svenska,"andererseits können c-strings beliebig lang sein, pascal-strings nicht..."
+2015-05-14 19:03:50,Schorsch_,da finde ich selbst c++ nicht besonders schön
+2015-05-14 19:04:15,Svenska,"strings sind der erste klassische datentyp, der dynamisch ist"
+2015-05-14 19:04:15,Paddy,Die klassischen Pascal-Strings sind ja eh mehr oder weniger tot
+2015-05-14 19:04:23,Paddy,Und die AnsiStrings finde ich ganz vernünftig
+2015-05-14 19:04:33,Svenska,"und wenn die sprache nunmal nicht dynamisch ist, dann sind die kacke..."
+2015-05-14 19:04:44,Svenska,was ist ein ansistring?
+2015-05-14 19:05:07,Paddy,"Das, was seit Delphi normal benutzt wird"
+2015-05-14 19:05:21,Paddy,"Hat auch eine Länge am Anfang, aber danach kommt ein nullterminierter String"
+2015-05-14 19:05:25,Paddy,Und hat einen Refcount
+2015-05-14 19:05:42,Svenska,länge _und_ nullterminiert?
+2015-05-14 19:05:48,Svenska,wozu das? nachteile beider welten?
+2015-05-14 19:05:54,Schorsch_,^
+2015-05-14 19:05:54,Paddy,"Und das ganze ordentlich integriert, dass die normalen Stringfunktionen und -operatoren einfach tun"
+2015-05-14 19:05:58,Svenska,"refcount ist ne sache der speicherverwaltung, also garbage collector usw"
+2015-05-14 19:06:31,Schorsch_,refcount muss ja nicht GC sein
+2015-05-14 19:06:40,Schorsch_,das kann ja auch als smartpointer wie in C++ verpackt werden
+2015-05-14 19:06:57,Schorsch_,GC hat ja auch nicht nur Vorteile
+2015-05-14 19:07:22,Svenska,"ja klar, aber das heißt in erster linie eine runtime"
+2015-05-14 19:07:44,Svenska,und dynamische speicherverwaltung
+2015-05-14 19:08:00,Svenska,beides gibt's in c per default nicht... wenn man es nicht selbst macht
+2015-05-14 20:15:59,Schorsch_,so ich mach mich mal wieder auf den Weg. Noch mal vielen Dank für die super Hilfe:) Möglicherweise habt ihr mich jetzt öfter an der Backe:P Habt einen schönen Abend

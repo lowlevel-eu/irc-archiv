@@ -1,0 +1,593 @@
+date/time,nick,message
+2010-02-07 00:44:19,ehenkes,Ich hab mal eine Frage zur Systemfrequenz
+2010-02-07 00:44:32,DesL,PIC?
+2010-02-07 00:44:47,ehenkes,wir haben in letzter Zeit 1000 Hz eingesetzt. Dies führte nun aber zu Ausgabeverschiebnungen auf dem Screen
+2010-02-07 00:45:01,ehenkes,"reduktion auf 100 HZ, und die Sache ist wieder ok"
+2010-02-07 00:45:07,ehenkes,wie sind da die Erfahrungen?
+2010-02-07 00:45:20,JanDing,100 Hz ist genug
+2010-02-07 00:45:23,taljeth,"""Ausgabeverschiebungen""?"
+2010-02-07 00:45:49,taljeth,"100 Hz sind schon genug, aber 1000 Hz sollten doch eigentlich auch funktionieren"
+2010-02-07 00:46:07,ehenkes," ello, Pretty..."
+2010-02-07 00:46:07,ehenkes,This piece of...
+2010-02-07 00:46:07,ehenkes,$>
+2010-02-07 00:46:07,ehenkes,H
+2010-02-07 00:46:11,ehenkes,so etwas
+2010-02-07 00:46:34,taljeth,Das klingt aber eher danach als hättest du da noch ein paar Bugs drin
+2010-02-07 00:46:38,JanDing,ist denn alles mit kritischen abschnitten oder so gesichert?
+2010-02-07 00:46:55,taljeth,"Irgendwelche Races, die mit 100 Hz halt unwahrscheinlicher werden, aber sicher nicht gefixt sind"
+2010-02-07 00:47:17,JanDing,"race war das wort, das ich gesucht habe"
+2010-02-07 00:47:20,ehenkes,ist denn alles mit kritischen abschnitten oder so gesichert? <--- nein
+2010-02-07 00:47:51,ehenkes,"sind keine Threads, sondern richtige Tasks"
+2010-02-07 00:48:33,taljeth,Und weiter?
+2010-02-07 00:48:37,ehenkes,Mutexe etc. kenne ich nur vom Multithreading
+2010-02-07 00:48:43,taljeth,"Deswegen können die Nebenläufigkeit ignorieren, oder wie?"
+2010-02-07 00:48:59,JanDing,jeder task hat einen thread
+2010-02-07 00:49:07,ehenkes,ja klar
+2010-02-07 00:49:30,taljeth,"Naja, es ist recht eindeutig, dass da irgendwo ein Race ist. Das wegdefinieren zu wollen hilft vermutlich nicht. ;-)"
+2010-02-07 00:49:35,ehenkes,"ok, also absichern"
+2010-02-07 00:50:07,ehenkes,wie macht ihr das mit dem kritischen Abschnitt? Was wird genau abgesichert?
+2010-02-07 00:50:42,taljeth,"Wahrscheinlich solltest du erstmal rausfinden, wie die Ausgabe denn zustandekommt"
+2010-02-07 00:51:02,JanDing,ich sichere alles mit einem einzigen lock ab
+2010-02-07 00:51:18,ehenkes,ok
+2010-02-07 00:51:26,JanDing,aber das ist ziemlich anspruchslos ...
+2010-02-07 00:52:04,ehenkes,"das kann ich ja durch Hochschlaten auf 1000 Hz provozieren und entsprechend die kritischen Punkte für einen Task ""locken"""
+2010-02-07 00:52:49,ehenkes,Thx
+2010-02-07 00:53:20,ehenkes,Noch eine Frage zur FAT (Floppy Disk)
+2010-02-07 00:54:02,DesL,12?
+2010-02-07 00:54:17,JanDing,gleich 1
+2010-02-07 00:54:18,ehenkes,"ich grase beim Laden einer Datei versuchsweise die gesamte FAT ab. Das dauert viel zu lange, weil das Lesen langsam ist."
+2010-02-07 00:54:42,ehenkes,wie macht ihr das mit den Infos aus der root dir und den FAT chains?
+2010-02-07 00:57:20,taljeth,Wie abgrasen? Du lädst die gesamte FAT in den Speicher?
+2010-02-07 00:58:13,ehenkes,"Ich entziffere sie und lese sie in FAT[...], ist zu langsam, also wie ist das richtige Vorgehen? jeweils nur die FAT-Chain selbst verfolgen?"
+2010-02-07 00:59:42,taljeth,"Ist wohl sinnvoller, so eine FAT kann ganz schön groß werden"
+2010-02-07 00:59:46,ehenkes,bei FAT12 muss man ja zwei Byte lesen und seine 12 Bit daraus sortieren. lesen ist der langsamste schritt dabei.
+2010-02-07 01:00:08,ehenkes,"Lest ihr bereits ganz vorne schon etwas ein, also beim/nach dem Booten?"
+2010-02-07 01:00:25,ehenkes,"oder erst, wenn die Datei gesucht wird?"
+2010-02-07 01:00:38,JanDing,ich würde die fat beim ersten zugriff komplett in den speicher laden
+2010-02-07 01:01:00,taljeth,Komplett? Auch für eine Platte mit mehreren GB?
+2010-02-07 01:01:13,ehenkes,"Ja, das Lesen kostet zuviel zeit, alles andere ist problemlos"
+2010-02-07 01:01:26,JanDing,besser als für jeden eintrag in der fat einmal den sektor mit der fat zu lesen
+2010-02-07 01:01:33,taljeth,"ehenkes: Naja, auf einer Floppy sollte einmal einlesen nicht zu viel kosten"
+2010-02-07 01:01:50,ehenkes,bei einer Floppy sind das nur 9*512 Byte
+2010-02-07 01:02:02,ehenkes,Was macht man eigentlich mit FAT2
+2010-02-07 01:02:04,taljeth,"Eben, das ist mit einem einzigen Zugriff erledigt"
+2010-02-07 01:02:21,taljeth,"Wenn dein Floppytreiber da zu langsam ist, solltest du lieber den verbessern"
+2010-02-07 01:02:58,ehenkes,"ja, macht Sinn"
+2010-02-07 01:03:00,ehenkes,FAT2?
+2010-02-07 01:03:28,ehenkes,wie/wann bindet man die ein?
+2010-02-07 01:03:47,JanDing,was ist FAT2? meinst du die zweite FAT-Tabelle?
+2010-02-07 01:03:50,ehenkes,ja
+2010-02-07 01:04:08,JanDing,die ist redundant soweit ich weiß
+2010-02-07 01:04:16,ehenkes,was macht man damit?
+2010-02-07 01:04:35,JanDing,vermutlich um durch Vergleich die Integrität der FAT zu überprüfen
+2010-02-07 01:04:50,ehenkes,wann?
+2010-02-07 01:05:08,JanDing,keine ahnung
+2010-02-07 01:05:28,JanDing,gibt sicherlich unterschiedliche Anwendungsszenarien
+2010-02-07 01:07:23,DesL,Warum eigtl zwei FATs? Programmierfehler in DOS?
+2010-02-07 01:07:38,JanDing,wie bereits gesagt: Redundanz
+2010-02-07 01:08:08,JanDing,das macht man zur Fehlererkennung oder Korrektur 
+2010-02-07 01:08:14,JanDing,hier wohl nur zur Fehlererkennung
+2010-02-07 01:08:44,JanDing,Disketten waren und sind nicht übermäßig haltbar
+2010-02-07 01:08:59,DesL,war auch mehr ein Joke^^
+2010-02-07 01:10:37,ehenkes,"Wegen ihrer grundlegenden Bedeutung für das Dateisystem existieren in der Regel zwei Kopien der FAT, um bei Datenverlust noch immer eine funktionsfähige andere FAT zu haben. Mit diversen Programmen ist eine Datenwiederherstellung  in vielen Fällen möglich. Auf Installationsdisketten oder mit Spezialprogrammen formatierten Medien findet man manchmal keine zweite FAT, wodurch der verfügbare Speicherplatz etwas größer"
+2010-02-07 01:10:37,ehenkes," wird. Theoretisch ist es auch möglich, ein Dateisystem mit mehr als zwei FAT-Kopien zu formatieren. Diese Dateisysteme können zwar in der Regel von jedem Betriebssystem gelesen werden, jedoch wird die dritte (und jede weitere FAT-Kopie) bei Schreibzugriffen meist nicht aktualisiert, so dass bei Beschädigung der ersten beiden FATs oft keine Reparatur über die weiteren Kopien möglich ist."
+2010-02-07 01:10:55,ehenkes,http://wapedia.mobi/de/File_Allocation_Table
+2010-02-07 01:12:01,ehenkes,Also wird die 2. FAT im Normalbetrieb ignoriert außer beim schreiben auf die erste FAT
+2010-02-07 01:12:35,ehenkes,ok
+2010-02-07 01:13:00,taljeth,gn8
+2010-02-07 01:13:05,JanDing,gn8
+2010-02-07 01:13:06,ehenkes,bb
+2010-02-07 01:13:11,DesL,bb
+2010-02-07 01:14:32,DesL,du kannst dich auch nicht endscheiden?!
+2010-02-07 01:46:35,DesL,bb
+2010-02-07 11:24:56,ehenkes,Good morning
+2010-02-07 11:25:12,Guest249322,bonjour
+2010-02-07 11:25:39,DickHuuhn,konnichi-wa
+2010-02-07 11:26:18,mastamind,"linux gibt jedem programm jeden speicher, den es will. erst wenn es ihn wirklich braucht, bekommt es echten speicher. ist keiner mehr da, wird das programm abgewürgt (oder per zufall irgendein anderes). macht ihr das auch alle so?"
+2010-02-07 11:28:22,bluecode,"nein, ist schwierig in nem microkernel"
+2010-02-07 11:30:49,taljeth2,"Hm, inwiefern?"
+2010-02-07 11:31:24,bluecode,der kernel muss beim dateisystemtreiber nachfragen nach den fetzen der executable
+2010-02-07 11:31:43,taljeth2,"Ah, das meinst du"
+2010-02-07 11:31:57,taljeth2,Ich dachte mastamind redet von dynamisch alloziertem Speicher
+2010-02-07 11:32:04,bluecode,hm
+2010-02-07 11:32:05,taljeth2,"Also das, was mit Nullen initialisiert werden würde"
+2010-02-07 11:32:24,bluecode,du meinst wegen sicherheit?
+2010-02-07 11:33:22,bluecode,"naja, antwort auf die ursprungsfrage: ich mappe gleich den allozierten speicher"
+2010-02-07 11:33:26,taljeth2,"Das Initialisieren? Eigentlich habe ich darüber nicht groß nachgedacht, aber Sicherheit ist da wohl ein Argument. ;-)"
+2010-02-07 11:33:38,taljeth2,"Naja, dann kannst du halt nicht overcommitten"
+2010-02-07 11:33:40,bluecode,ansonsten fällt mir da keins ein ;-)
+2010-02-07 11:34:09,bluecode,oder hast du grad vom bss und nicht vom heap geredet?
+2010-02-07 11:34:47,taljeth2,"Weder noch. ;-) Einfach von Speicherbereichen, die gemappt werden."
+2010-02-07 11:35:14,taljeth2,"Also der Heap ist schon eher was ich meinte, nur dass der Heap halt ein bestimmter Speicherbereich ist"
+2010-02-07 11:35:23,bluecode,dann fällt mir wirklich kein grund ein warum ich die mit 0 initialisieren sollte außer sicherheit im sinne von möglichst wenig versteckte kanäle
+2010-02-07 11:35:28,mastamind,ja. taljeth2 hat recht.
+2010-02-07 11:35:32,mastamind,ich red von was anderem.
+2010-02-07 11:36:34,mastamind,ich habs jedenfalls ausprobiert. zumindest zum teil.
+2010-02-07 11:36:51,bluecode,"hast du deine bäumchen hingekriegt, gestern? *g*"
+2010-02-07 11:37:05,mastamind,hab. klappt nach 40k tests wunderbar. :-)
+2010-02-07 11:37:15,mastamind,hab ich...
+2010-02-07 11:37:54,mastamind,ich muss aber die tests noch erweitern. ich möchte das möglichst alles testen. is ja ein wichtiger teil des is.
+2010-02-07 11:37:57,mastamind,os
+2010-02-07 11:38:34,bluecode,"ungetestet macht das aber mehr Spaß, dann frickelt man paar Monate später an ganz was anderem und das Speichermanagement kommt einen holen :-)"
+2010-02-07 11:39:33,mastamind,hehe ja. :-) soviel abenteuer brauch ich im leben nicht. *g*
+2010-02-07 11:39:49,mastamind,der code is ganze 33 zeilen lang. und dafür hab ich ewig gebraucht.
+2010-02-07 11:42:08,taljeth2,"Ich kann dir einen einfachen Algorithmus verraten, um ihn auf eine Zeile runterzubringen ;-)"
+2010-02-07 11:42:28,taljeth2,Oder befolgst du etwa einen bestmmten Codestil?
+2010-02-07 11:43:09,mastamind,so ca k&r mäßig.
+2010-02-07 11:43:18,mastamind,taljeth2: und wie lautet deine zeile?
+2010-02-07 11:43:18,DickHuuhn,lol taljeth2 ^^
+2010-02-07 11:43:41,taljeth2,mastamind: Das ist einfach dein Code ohne \n drin ;-)
+2010-02-07 11:43:54,taljeth2,"Ich wollte nur sagen, dass LOC nicht immer ein gutes Maß für Komplexität sind ;-)"
+2010-02-07 11:44:53,mastamind,taljeth2: :-)) also so unleserlich ist er nicht.
+2010-02-07 11:45:30,mastamind,"ja, da hast du wohl recht. aber so komplex ist der code nicht. ich musste nur eine große erkenntnis machen, bevor das zeug klappte. sobald alles fertig is, paste ich es mal zum ansehen."
+2010-02-07 11:46:42,bluecode,was war denn das für ne erkenntnis?
+2010-02-07 11:48:00,DickHuuhn,was den code im kern zusammenhält
+2010-02-07 11:48:04,DickHuuhn,:D
+2010-02-07 11:49:38,mastamind,"bluecode: dass ich immer von oben wieder beginnen muss, wenn ich mal ganz unten war."
+2010-02-07 11:49:48,mastamind,im baum. nicht psychisch. :-)
+2010-02-07 11:50:29,DickHuuhn,bäume haben auch gefühle
+2010-02-07 11:51:05,bluecode,"die armen, da sollte man das mit der baumzerlegung wohl lassen"
+2010-02-07 11:51:44,taljeth2,mastamind: Was für Bäume sind das denn überhaupt?
+2010-02-07 11:51:56,taljeth2,"Hm, 33 Zeilen klingt eigentlich nach Baum ohne alles..."
+2010-02-07 11:52:40,mastamind,"taljeth2: es ist ohne alles. wie gesagt, sehr simpel."
+2010-02-07 11:53:50,mastamind,"sobald das ganze speichermanagment fertig ist, so wie ich es mir denke, zeig ich es euch gerne. bis jetzt ist einfach zu wenig vorhanden, um wirklich was zeigen zu können."
+2010-02-07 11:55:15,bluecode,mastamind: du darfst auch gern was ins wiki schreiben
+2010-02-07 11:55:33,mastamind,"ob mein zeug das wert ist, muss sich erst herausstellen."
+2010-02-07 11:56:15,mastamind,"ich muss das dann mit tyndur noch vergleichen. oder mit einer anderen implementierung. nur wenn meines echt vorteile hat, bringt es was."
+2010-02-07 12:22:50,JanDing,moin moin
+2010-02-07 13:57:05,JanDing,"ich wollte gerade in meinem code mit search & replace ""free"" durch ""node"" ersetzen. aber ich bin ja so genial und spare bytes, indem ich ""fre"" durch ""nod"" ersetze"
+2010-02-07 13:57:53,JanDing,dadurch ging es auch viel schneller
+2010-02-07 13:58:05,JanDing,"weil das waren immerhin 19 vorkommen, die da ersetzt wurden"
+2010-02-07 14:10:31,mastamind,"ich freu mich, dass meine tests gut verlaufen. bisher haben alle geklappt. :-)))"
+2010-02-07 14:17:31,mastamind,"es will sich nicht zufällig jemand melden, der mir ein paar tests schreibt? *gg*"
+2010-02-07 14:17:40,mastamind,also noch zusätzliche.
+2010-02-07 14:21:24,mgottschlag,wollt ihr nicht lieber alle meine arbeit machen=
+2010-02-07 14:21:26,mgottschlag,?
+2010-02-07 14:21:49,mastamind,welche wäre das?
+2010-02-07 14:21:59,mgottschlag,also ich schreib grad ne gameengine :p
+2010-02-07 14:22:19,mastamind,das is nicht so mein gebiet.
+2010-02-07 14:22:22,mastamind,sorry.
+2010-02-07 14:22:41,bluecode,ich hätte auch noch arbeit zu vergeben
+2010-02-07 14:22:53,mastamind,ja?
+2010-02-07 14:23:18,bluecode,"joa, CCS lernen"
+2010-02-07 14:24:19,mastamind,was is ccs?
+2010-02-07 14:24:38,bluecode,Calculus of Communicating Systems
+2010-02-07 14:24:42,bluecode,eine Prozessalgebra
+2010-02-07 14:24:46,mastamind,ok
+2010-02-07 14:25:09,bluecode,http://en.wikipedia.org/wiki/Calculus_of_Communicating_Systems
+2010-02-07 14:26:10,mastamind,dort bin ich grad.
+2010-02-07 14:26:32,JanDing,ah das hatte ich auch mal
+2010-02-07 14:26:41,bluecode,JanDing: huh?
+2010-02-07 14:26:50,JanDing,aber nur oberflächlich. den meisten teil der vorlesung haben wir mit logik und theo inf verdaddelt
+2010-02-07 14:27:14,JanDing,hatte ne vorlesung spezifikationstechnik im vierten semester
+2010-02-07 14:27:21,bluecode,"hm, joa das passt eigentlich gut zu Logik"
+2010-02-07 14:27:41,bluecode,die Semantik von CCS ist ein Herleitungssystem
+2010-02-07 14:28:08,JanDing,"das problem war, dass ich logik und theo inf im 5ten semester habe. deswegen kam in spezifikationstechnik erstmal prädikatenlogik und automaten und so dran ..."
+2010-02-07 14:28:25,bluecode,"hm, komische reihenfolge..."
+2010-02-07 14:28:38,JanDing,"ja weiß auch nicht, was die sich dabei gedacht haben"
+2010-02-07 14:28:45,bluecode,"bei uns is TI im 2ten, Logik im 3ten und spezifikation erst im Hautpstudium"
+2010-02-07 14:29:07,mastamind,"wir haben recht wenig zu dem thema gemacht, da wir vor allem viel mathematik gehabt haben. außerdem software entwicklung. so theoretisches zeug kam sehr wenig."
+2010-02-07 14:29:28,bluecode,ich wähle eigentlich bewusst theoretisches/formales Zeug
+2010-02-07 14:29:49,mastamind,bei uns gabs nichts zu wählen.
+2010-02-07 14:30:02,bluecode,das ist schade...
+2010-02-07 14:30:16,mastamind,"wir hatten eine gruppe an wahlfächern. damit man aber die stunden zusammenbekam, die man brauchte, hat man alles nehmen müssen."
+2010-02-07 14:30:44,bluecode,was hast du denn so in Mathe gehört?
+2010-02-07 14:31:22,mastamind,"ich denke, den standard. analysis, statistik, linear algebra, ..."
+2010-02-07 14:31:25,mastamind,graphentheorie.
+2010-02-07 14:31:31,mastamind,hmm die kann man eh als zwischendinge sehen.
+2010-02-07 14:31:45,mastamind,nicht logik aber auch nicht mathematik.
+2010-02-07 14:31:55,bluecode,"hm, graphentheorie gibts bei uns eigentlich nur in Info"
+2010-02-07 14:32:02,bluecode,da gibts garkeine Mathevorlesung dazu
+2010-02-07 14:32:20,mastamind,bei uns war das eine eigene vorlesung. war aber ganz nett.
+2010-02-07 14:32:51,bluecode,"hm, mathematische Graphentheorie macht glaube ich aber nicht wirklich Spaß"
+2010-02-07 14:32:58,bluecode,zumindest wenn man das rigoros durchzieht
+2010-02-07 14:33:13,mastamind,"irgendwie frag ich mich sowieso, was ich in meiner zeit an der uni gelernt habe. das meiste, was an anderen unis standard ist, kam bei uns nie."
+2010-02-07 14:33:30,mastamind,oder halt kaum.
+2010-02-07 14:33:36,Tobiking,Wir haben Graphentheorie nur kurz in der Mathevorlesung angeschnitten. Das Problem war wohl das Mathematiker da ganz andere Sachen interessieren
+2010-02-07 14:33:44,bluecode,Tobiking: exakt
+2010-02-07 14:34:03,bluecode,"so Dinge wie ""Eine Schleife teilt die Ebene in zwei Flächen"" muss man da beweisen"
+2010-02-07 14:34:12,bluecode,und laut nem infoprof von mir ist das nicht trivial
+2010-02-07 14:35:10,mastamind,"hm ja. ich denke, dass viele vorlesungen bei uns total sinnlos waren."
+2010-02-07 14:35:22,mastamind,in keiner sind wir zum kern der sache vorgedrungen.
+2010-02-07 14:36:06,mastamind,"wir haben vieles gemacht, aber nichts wirklich. das fand ich schade. vor allem waren alle vorlesungen einzeln zu sehen. keine hat auf eine andere aufgebaut."
+2010-02-07 14:36:12,mastamind,"ich weiß nicht, wie das bei euch ist."
+2010-02-07 14:36:34,bluecode,den zusammenhang muss man sich meistens sowieso selber bauen
+2010-02-07 14:36:48,bluecode,wäre wohl meine Einschätzung zumindest
+2010-02-07 14:37:19,mastamind,"die themen der vorlesungen waren einfach komplett verschieden. man hat das, was man in der einen gelernt hat, in keiner anderen je wieder gesehen."
+2010-02-07 14:37:47,Tobiking,Es ist manchmal etwas blöd das z.B. Algorithmen so gewählt werden das man die in der Prüfung auf nem Zettel anwenden kann und nicht so wie sie auf dem Computer gewählt würden.
+2010-02-07 14:38:16,mastamind,zb?
+2010-02-07 14:38:58,bluecode,"Tobiking: es ist immer so, dass man beim Implementieren eine gewisse Transferleistung machen muss ;-)"
+2010-02-07 14:39:32,Tobiking,"Das schon, aber wenn einen ein Thema richtig interessiert muss man sich da selber durcharbeiten"
+2010-02-07 14:39:49,mastamind,das ist der sinn der uni.
+2010-02-07 14:39:55,Tobiking,Aber Recherche gehört natrlich dazu
+2010-02-07 14:40:04,mastamind,"manches ""lehrpersonal"" sieht die uni sogar nur mehr als prüfungsort an."
+2010-02-07 14:40:25,mastamind,"und wenn nicht mindestens die hälfte die prüfung nicht schafft, ist was schief gelaufen."
+2010-02-07 14:40:34,bluecode,Tobiking: ich würde eigentlich auch gern ein Beispiel hören
+2010-02-07 14:41:26,Tobiking,Also wenn man in den grundlegenden Betriebssystem Vorlesungen über Scheduler spricht kommt da kaum mehr als Round Robin dran
+2010-02-07 14:41:45,bluecode,"oh doch, lauter unrealistische Schedulingtechniken"
+2010-02-07 14:41:57,bluecode,das ist wirklich ein gutes Beispiel wo es schiefläuft ^^
+2010-02-07 14:42:12,bluecode,"ao Dinge wie ""shortest job first"" mein ich"
+2010-02-07 14:42:24,bluecode,das weiß doch keiner wie lang ein Job braucht...
+2010-02-07 14:42:55,mastamind,die os vorlesung hat bei uns einer von der grid forschungsgruppe gehalten. dort sind so shortest job first schon ganz interessant.
+2010-02-07 14:42:59,Tobiking,Bei Eingebetteten Systemen wo das vorgeplant ist schon ^^
+2010-02-07 14:43:01,mastamind,man muss es abschätzen.
+2010-02-07 14:43:25,bluecode,"mastamind: klar, ich beziehe mich meist auf Desktop-OS"
+2010-02-07 14:43:26,mastamind,scheduling ist ja nicht nur das automatische wie bei den desktop os.
+2010-02-07 14:43:30,mastamind,ok
+2010-02-07 14:43:35,mastamind,dort ist das natürlich sinnlos.
+2010-02-07 14:46:25,mastamind,für was wird das ccs bei euch verwendet?
+2010-02-07 14:47:10,mastamind,"mir scheint immer, dass solche formalismen die sache noch komplizierter machen. das wird selbst bei kleinen systemen schnell so komplex, dass man massenhaft fehler machen kann und der ganze beweis nutzlos wird."
+2010-02-07 14:47:51,bluecode,mir ist selbst ein bisschen schleierhaft was man damit anfangen könnte
+2010-02-07 14:48:22,bluecode,wenn überhaupt geht es um automatisches Beweisen
+2010-02-07 14:49:12,bluecode,"also du modelierst was, spezifiziert eigentschaften die du wünscht (meistens Safety oder Liveness eigenschaften) und willst dann irgendwelche Tools die das automagisch beweisen können"
+2010-02-07 14:49:34,mastamind,automagisch ist das richtige wort...
+2010-02-07 14:49:49,bluecode,"es ist natürlich klar, dass man nicht alles automagisch machen kann ;-)"
+2010-02-07 14:49:57,bluecode,sonst würde man das Halteproblem lösen
+2010-02-07 14:50:01,mastamind,"ich find das witzig, dass der out port eines agents einen überstrich hat. ist das bei deinen folien auch so?"
+2010-02-07 14:50:09,bluecode,ja
+2010-02-07 14:50:34,mastamind,"gbts dafür einen grund? oder ist das nur gedacht, damit es möglichst komplex aussieht?"
+2010-02-07 14:51:40,bluecode,"die Idee von CCS ist, dass a und a quer zusammen ausgeführt synchronisieren und zu einer internen Aktion \tau werden"
+2010-02-07 14:51:50,bluecode,deswegen macht man da lieber nen strich als ne komplett andere Aktion
+2010-02-07 14:52:46,mastamind,"ah. ok. das sieht anders aus auf den folien, die ich gefunden hab."
+2010-02-07 14:58:37,mastamind,"bluecode: jedenfalls ist das in gutes beispiel für etwas, was ich als schwierig erachte. und einer universität angemessen."
+2010-02-07 14:59:22,bluecode,"nur weil da ein griechischer Buchstabe vorkommt, oder? xD"
+2010-02-07 14:59:40,mastamind,der kommt bei mir nit vor. *gg*
+2010-02-07 14:59:46,bluecode,\tau ?
+2010-02-07 14:59:55,mastamind,hmm nein.
+2010-02-07 15:00:03,bluecode,"hm, es sei denn die nennen es anders"
+2010-02-07 15:00:10,mastamind,was wäre es denn?
+2010-02-07 15:00:12,bluecode,aber ohne das Konzept von \tau macht CCS keinen Sinn
+2010-02-07 15:00:25,bluecode,mastamind: was hast du denn für Folien?
+2010-02-07 15:00:55,mastamind,von einer uni aus linz. ich such den link.
+2010-02-07 15:02:05,bluecode,"du kannst dir auch http://www.informatik.uni-augsburg.de/de/lehrstuehle/swt/ti/lehre/ws0910/procalg/skript/abpp_stud.pdf anschauen, dass ist unser Skript"
+2010-02-07 15:02:51,bluecode,Kap 2.3 ist wohl das wesentliche um zu verstehen was ein CCS-Term macht
+2010-02-07 15:03:03,bluecode,und dort das Regelsystem
+2010-02-07 15:03:10,mastamind,moodle.risc.uni-linz.ac.at/file.php/31/ccs/ccs.pdf
+2010-02-07 15:03:19,mastamind,der link funktioniert aber nur fallweise.
+2010-02-07 15:03:43,DesL,moin
+2010-02-07 15:04:33,bluecode,"mastamind: dann Folie 14, Com3"
+2010-02-07 15:06:14,bluecode,"rofl, die Beispiele von den Folien kommen mir so bekannt vor, wer hat da nur wieder von wem abgeschrieben xD"
+2010-02-07 15:06:33,bluecode,"wobei, das ist wahrscheinlich beides aus dem Milner"
+2010-02-07 15:06:34,DesL,Folie?
+2010-02-07 15:06:57,bluecode,DesL: vergiss es einfach ;-)
+2010-02-07 15:07:09,DesL,XD
+2010-02-07 15:07:40,mastamind,"ja, ich seh es auch gerade."
+2010-02-07 15:07:58,mastamind,"mir scheint, dass dieser milner der einzige ist, der was zu dem theme gemacht hat."
+2010-02-07 15:07:59,mastamind,kann das sein?
+2010-02-07 15:08:18,bluecode,"nein, da haben schon mehr was gemacht"
+2010-02-07 15:08:34,bluecode,zB unser Prof hat CCS erweitert (um worst-case Zeitschritte)
+2010-02-07 15:08:43,mastamind,ok
+2010-02-07 15:08:43,bluecode,"das heißt aber dann anders, ich glaube TACS"
+2010-02-07 15:08:47,DickHuuhn,carbon capture and storage? :O
+2010-02-07 15:08:52,mastamind,*g*
+2010-02-07 15:09:01,bluecode,DickHuuhn: calculus of communicating systems
+2010-02-07 15:09:19,bluecode,und es gibt auch noch was mit best-case Zeitschritten oder so
+2010-02-07 15:13:37,mastamind,für mich ist das zu schwer.
+2010-02-07 15:13:58,bluecode,was genau?
+2010-02-07 15:14:22,mastamind,alles
+2010-02-07 15:14:23,mastamind,:-)
+2010-02-07 15:14:39,mastamind,sorry.
+2010-02-07 15:14:50,JanDing,"und ich dachte schon, du wolltest dich nach 30 minuten skriptquerlesen noch für die prüfung anmelden^^"
+2010-02-07 15:15:02,bluecode,"glaub mir, dass ist nicht wirklich schwer ;-)"
+2010-02-07 15:15:17,bluecode,zumindest wenn man dazu 3 Monate ne VL hat und mit Formalismus umgehen kann
+2010-02-07 15:15:31,mastamind,das hast du mir mit dem netzwerkstack auch nicht geglaubt. *gg+
+2010-02-07 15:15:42,bluecode,*g*
+2010-02-07 15:16:12,bluecode,die meisten Mitstudenten scheitern eigentlich am Formalismus
+2010-02-07 15:16:22,mastamind,das tu ich auch.
+2010-02-07 15:16:49,bluecode,von 10minuten querlesen würde ich bei mir auch nichts anderes erwarten ;-)
+2010-02-07 15:16:58,mastamind,"vielleicht versteh ich den sinn, wenn es mir jemand erklärt, aber nur mit diesen massenhaften syntax definitionen bringt mir das nichts."
+2010-02-07 15:17:16,bluecode,"naja, den sinn hab ich ja selber nicht verstanden xD"
+2010-02-07 15:19:58,mastamind,"wohl wie du gesagt hast, dass man das definierte verhalten eines systems auf korrektheit zumindest teilweise prüfen kann."
+2010-02-07 15:20:16,bluecode,"die quintessenz dürfte sein: Man will Prozesse formal mittels eines CCS-Terms beschreiben, dann möchte man sich anschauen welche Aktionen ein CSS-Term machen kann, dazu stellt man ein Regelsystem ""->"" auf, um die Aktion eines Terms formal herleiten zu können, anschließend Teilt man die Aktionen in von außen sichtbare ein (alles außer \tau) und unsichtbar (\tau), dann versucht man eine Gleichheit zu definieren die \tau teilweise "
+2010-02-07 15:20:17,bluecode,ignoriert (weil es eben von außen unbeobachtbar sein soll)
+2010-02-07 15:20:55,mastamind,so blackbox mäßig?
+2010-02-07 15:21:44,mastamind,"damit man in einer hierarchischen art und wiese das system prüft? nach dem motto, klappt alles eine eben tiefer, muss ich nur mehr alle höheren ebenen prüfen?"
+2010-02-07 15:22:35,bluecode,ich glaube ich sehe gerade keine Hierarchie
+2010-02-07 15:23:10,mastamind,systeme von teilsystemen.
+2010-02-07 15:23:37,mastamind,"naja. wie gesagt, ich hab keine ahnung davon und will dich beim lernen nicht aufhalten."
+2010-02-07 15:23:44,bluecode,"prinzipiell bestimmt, aber ne konkrete vorstellung habe ich davon halt überhaupt nicht"
+2010-02-07 15:24:43,mastamind,"frag mal deinen infoprof, was er damit tut. :-)"
+2010-02-07 15:25:08,mastamind,"den, der da was dazu erfunden hat. der muss ja dann auch wissen, was ihm das gebracht hat."
+2010-02-07 15:26:14,bluecode,"er wollte die worst-case Zeit von solchen Systemen vergleichen, d.h. er hat eine schneller-als relation auf den Prozessen/Termen eingeführt"
+2010-02-07 15:27:01,mastamind,hmm ok :-)
+2010-02-07 15:27:07,mastamind,"wie gesagt, ich will dich nicht aufhalten."
+2010-02-07 15:28:20,DesL,Was ist eigentlich mit dem Speicher von 0x500-xA0000? Kann man den ohne Bedenken Nutzen?
+2010-02-07 15:28:33,bluecode,"tust du nicht, ich war eh grad beim kaffeetrinken eher"
+2010-02-07 15:28:39,mastamind,bluecode: ok :-)
+2010-02-07 15:28:47,bluecode,DesL: da könnte die EBDA sein
+2010-02-07 15:29:00,bluecode,ansonsten halt der Bootloader
+2010-02-07 15:29:20,DesL,Also? jein?
+2010-02-07 15:29:20,bluecode,sollte man insofern erst nutzen wenn man die Infos vom bootloader nicht mehr braucht
+2010-02-07 15:29:49,bluecode,"wo die EBDA liegt kannst du über die BDA rausfinden, siehe wiki, insofern ja"
+2010-02-07 15:30:20,DesL,Der Link zur EBDA im EBDA Artikel ist Kaputt.
+2010-02-07 15:30:29,bluecode,"mastamind: ah btw. was ich noch fragen wollte, du hast ja irgendwo mal gearbeitet, habt ihr dort einen konkreten SW-Entwicklungsprozess eingesetzt?"
+2010-02-07 15:31:04,mastamind,nein
+2010-02-07 15:31:04,mastamind,bzw ja
+2010-02-07 15:31:13,bluecode,DesL: hä? bei mir gehen alle artikel im EBDA artikel
+2010-02-07 15:31:16,mastamind,"der chef hat gesagt, was ihm gefällt und das wurde gemacht."
+2010-02-07 15:31:25,bluecode,*lol*
+2010-02-07 15:32:07,mastamind,"ich kennen niemanden, der arbeit und dort die softwareentwicklungsmethoden der universitäten verwendet."
+2010-02-07 15:32:50,JanDing,ich kenn auch niemandenm der arbeitet
+2010-02-07 15:33:22,bluecode,mastamind: hm... bedenklich *g*
+2010-02-07 15:33:25,mastamind,es gab aber noch andere probleme bei der firma. zb war die hierarchie genauso hoch wie die anzahl der mitarbeiter. jeder hatte eine definierte position in der hierarchie. mit titel und allem. *g* es gab mehr chefs als angestellte.
+2010-02-07 15:33:58,mastamind,"und je weiter man in der hierarchie nach oben ging, desto gringer wurde die fachliche kompetenz."
+2010-02-07 15:36:05,bluecode,klingt nach ganz doll viel Spaß da zu arbeiten
+2010-02-07 15:36:31,mastamind,hmm es ging allen ums geld verdienen.
+2010-02-07 15:36:52,mastamind,spaß ist da nebensache.
+2010-02-07 15:38:41,DesL,der Hier: http://heim.ifi.uio.no/~stanisls/helppc/ebda.html
+2010-02-07 15:38:55,mastamind,"bluecode: ich glaube aber kaum, dass das grundsätzlich die richtige art von job für einen universitätsabsolventen ist."
+2010-02-07 15:38:56,JanDing,http://web.archive.org/web/20060508100419/http://heim.ifi.uio.no/~stanisls/helppc/ebda.html
+2010-02-07 15:39:32,DesL,Artikel Ändern?
+2010-02-07 15:39:38,JanDing,kannste machen
+2010-02-07 15:39:43,DesL,jup
+2010-02-07 15:39:44,JanDing,kannst die informationen auch gleich einarbeiten
+2010-02-07 15:40:50,DesL,Später ^^
+2010-02-07 15:44:16,bluecode,de rlink ist doch nicht down?
+2010-02-07 15:44:37,bluecode,mastamind: ich dachte du wärst ein uni-absolvent?
+2010-02-07 15:44:41,JanDing,aber zugriff verweigert^^
+2010-02-07 15:44:53,bluecode,äh nein?
+2010-02-07 15:44:59,DesL,Doch!
+2010-02-07 15:45:41,JanDing,der link im artikel zeigt inzwischen auf archive.org
+2010-02-07 15:45:50,DesL,^^
+2010-02-07 15:46:28,bluecode,sagt das doch gleich :-)
+2010-02-07 15:46:49,mastamind,"bluecode: nein, bin ich nicht. *g* ich hab nur die meisten prüfungen aber keinen titel."
+2010-02-07 15:46:57,bluecode,"ah, das wars"
+2010-02-07 15:47:04,bluecode,und fertig machen geht nicht oder?
+2010-02-07 15:47:31,mastamind,du meinst rechtlich?
+2010-02-07 15:47:48,bluecode,nicht nur
+2010-02-07 15:48:12,bluecode,das war mehr so ganzheitlich gemeint *g*
+2010-02-07 15:48:19,mastamind,"rechtlich ist das kein problem. ich müsste ein oder zwei vorlesungen nachmachen, damit ich alles für den neuen studienplan hätte."
+2010-02-07 15:48:37,mastamind,"ganzheitlich nein, da es ja gute gründe hat, dass ich den abschluss nicht schon hab. *gg*"
+2010-02-07 16:14:44,DesL,"Gesetzt den Fall, ich habe das BDA und das EBDA gesichert, könnte ich dann den speicherbereich von 0x400 bis 0xA0000 nutzen? Und was passiert mit der IVT (0x0 - 0x400) im PM? könnte ich das auch nutzen?"
+2010-02-07 16:16:44,JanDing,ja
+2010-02-07 16:17:35,DesL,Alles Ja?
+2010-02-07 16:18:41,JanDing,ist normaler ram
+2010-02-07 16:19:38,JanDing,wo willst du BDA und EBDA sichern? die können doch an ihrer position verbleiben^^
+2010-02-07 16:20:17,DesL,Da will ich was anderes hin malen^^ außerdem brauche irgendwann ja nicht mehr alle daten an einem Klotz
+2010-02-07 16:41:59,DesL,Ich habe absolut keine Ahnung was ich falsch mache: http://pastebin.com/d60a28bba
+2010-02-07 16:42:08,DesL,Kann mir wer helfen?
+2010-02-07 16:48:41,JanDing,erster schritt bei der fehleranalyse ist die fehlerbeschreibung
+2010-02-07 16:48:55,mastamind,steht eh da.
+2010-02-07 16:49:01,mastamind,undefined reference.
+2010-02-07 16:49:22,mastamind,"DesL: die idt.asm assembilerst du zu einer idt.o, oder?"
+2010-02-07 16:49:29,mastamind,ist die beim linken dann auch dabei?
+2010-02-07 16:54:14,DesL,ja
+2010-02-07 16:57:04,mastamind,verwendest du linux?
+2010-02-07 16:57:07,mastamind,als entwicklungssystem?
+2010-02-07 16:58:02,DesL,nö
+2010-02-07 16:58:25,mastamind,"hmm dann weiß ich leider nicht, wie ich dir helfen kelfen kann. kenn mich im windows nicht aus."
+2010-02-07 16:58:44,DesL,nutze schon gccc
+2010-02-07 16:58:58,mastamind,hast du das nm programm auch?
+2010-02-07 16:59:09,DesL,nm?
+2010-02-07 16:59:43,mastamind,"hmm wie gesagt, ich kenn mich im windows nicht aus. musst jemanden fragen, der damit entwickelt. sorry."
+2010-02-07 17:00:20,DesL,vieleicht gibt es was ähnliches unter win?
+2010-02-07 17:00:34,DesL,oder nen Port? beschreib mal.
+2010-02-07 17:01:40,mastamind,nm zeigt die symbole einer objektdatei an.
+2010-02-07 17:01:50,mastamind,nm idt.o würde dir idt_p: anzeigen.
+2010-02-07 17:01:58,DesL,objdump?
+2010-02-07 17:02:07,mastamind,das ginge auch.
+2010-02-07 17:02:27,DesL,na biite.
+2010-02-07 17:02:36,mastamind,--syms ist die option.
+2010-02-07 17:02:37,DesL,nach schauen ob idt_p da ist?
+2010-02-07 17:02:41,mastamind,genau
+2010-02-07 17:02:54,DesL,mo
+2010-02-07 17:03:04,mastamind,mo?
+2010-02-07 17:03:14,DesL,moment
+2010-02-07 17:03:18,mastamind,ok *g*
+2010-02-07 17:03:24,DesL,sollte mom werden^^
+2010-02-07 17:03:28,mastamind,ok
+2010-02-07 17:08:44,DesL,"ja,"
+2010-02-07 17:09:13,mastamind,genau der gleiche name?
+2010-02-07 17:09:47,DesL,ja
+2010-02-07 17:10:19,mastamind,"dann musst noch mal prüfen, ob du die objekt datei auch wirklich mitlinkst."
+2010-02-07 17:10:48,DesL,tu ich
+2010-02-07 17:11:34,mastamind,dann weiß ich es wirklich nicht. sorry.
+2010-02-07 17:11:53,DesL,mysteriös O_o
+2010-02-07 17:11:58,mastamind,du könntest nur noch die reihenfolge der objektdateien beim linken ändern. das sollte aber keine auswrikungen haben.
+2010-02-07 17:12:08,DesL,mh
+2010-02-07 17:12:39,DesL,mache ich mal
+2010-02-07 17:12:43,mastamind,ok
+2010-02-07 17:13:51,DesL,kein effekt
+2010-02-07 17:14:01,mastamind,hätt mich auch gewundert.
+2010-02-07 17:15:08,JanDing,vielleicht existiert der fehler gar nicht
+2010-02-07 17:15:46,mastamind,wie meinst?
+2010-02-07 17:15:47,DesL,will meinen?
+2010-02-07 17:16:41,JanDing,hab ich diese theorie nicht in eurer anwesenheit schon mal bei einem anderen fehler geäußert?
+2010-02-07 17:16:55,DesL,nicht das ich wüsste?
+2010-02-07 17:17:41,JanDing,vor drei tagen
+2010-02-07 17:17:59,JanDing,war ein ähnlicher fehler
+2010-02-07 17:18:05,DesL,Donnerstag?
+2010-02-07 17:18:08,DesL,bei mir?
+2010-02-07 17:18:17,JanDing,jop
+2010-02-07 17:19:35,DesL,ich schau mal ins lag
+2010-02-07 17:19:43,DesL,*log
+2010-02-07 17:19:59,JanDing,da konnte ich dir auch nicht helfen
+2010-02-07 17:20:08,JanDing,vielleicht kompletten quelltext zippen und hochladen
+2010-02-07 17:22:05,DesL,da muss ich es auch irgendwie gelöst haben.
+2010-02-07 17:23:05,DesL,Donnerstag habe ich doch überhaupt nichts an epOS gemacht? sondern nur am IRC-Proxy?!
+2010-02-07 17:25:41,JanDing,stimmt war in der nacht von mittwoch auf donnerstag
+2010-02-07 17:26:17,DesL,moment
+2010-02-07 17:30:23,DesL,"habe jetzt die idt.asm in idt.inc umbenannt, und in die Kernelg.asm includiert, jetzt geht es"
+2010-02-07 17:31:36,DesL,"jetz tillt zwar noch der int-handler, aber immerhin."
+2010-02-07 17:32:20,JanDing,hast du zufällig eine idt.c?
+2010-02-07 17:32:58,DesL,nö
+2010-02-07 17:33:07,DesL,sollte ich?
+2010-02-07 17:33:14,JanDing,nönö
+2010-02-07 17:33:20,JanDing,egal
+2010-02-07 17:33:25,DesL,wieso fragst du?
+2010-02-07 17:34:11,JanDing,weil das eine erklärung für das verhalten wäre
+2010-02-07 17:34:30,DesL,du meinst zwei idt.o?
+2010-02-07 17:34:43,JanDing,ja
+2010-02-07 17:34:44,DesL,ne
+2010-02-07 17:35:21,DesL,^^
+2010-02-07 17:35:29,JanDing,IDTEnt = (uint*)(&idt_p+(IntNr*8)); ist nicht korrekt
+2010-02-07 17:36:00,DesL,?
+2010-02-07 17:36:13,DesL,ohen &?
+2010-02-07 17:36:41,JanDing,ja
+2010-02-07 17:36:56,JanDing,wobei nein
+2010-02-07 17:37:14,DesL,was jetzt?
+2010-02-07 17:37:15,JanDing,"idt_p ist ja kein zeiger, sondern ein array"
+2010-02-07 17:38:23,JanDing,"wenn du &idt_p + 1 rechnest, machst du einen 4-byte-schritt"
+2010-02-07 17:38:30,DesL,"im code steht ""idt_p: times (36*8) db 0"""
+2010-02-07 17:38:47,JanDing,deswegen musst du sowas machen wie (unsigned int)(&idt_p) 
+2010-02-07 17:39:21,JanDing,bzw. (uint*)(((unsigned int)&idt_p))+(IntNr*8))
+2010-02-07 17:39:44,DesL,IDTEnt = (unsigned int*)((uint)(&idt_p)+(intNr*8))
+2010-02-07 17:39:46,DesL,oh
+2010-02-07 17:39:47,DesL,^^
+2010-02-07 17:40:32,JanDing,kann passen. hab nicht im kopf ob casts stärker binden als addition. aber glaub schon
+2010-02-07 17:43:56,DesL,tillt dennoch.
+2010-02-07 17:44:29,JanDing,war zu erwarten^^
+2010-02-07 17:48:44,DesL,wieso? ^^
+2010-02-07 17:58:44,JanDing,weil ein einziger fehler im code unwahrscheinlich ist
+2010-02-07 17:59:02,JanDing,die treten immer in rudeln auf
+2010-02-07 18:06:38,DesL,*g*
+2010-02-07 18:13:07,mastamind,gcc 4.4 hat an extrem nervenden bug....
+2010-02-07 18:14:25,mastamind,"er konvertiert mir zuerst eine uint16 zu einem uint und regt sich dann auf, dass er das nicht mehr nach unt16 konvertieren kann. so ein depp."
+2010-02-07 18:14:46,taljeth,Hm?
+2010-02-07 18:15:10,taljeth,"Das klingt eher nicht nach etwas, was ein Compiler falsch machen würde"
+2010-02-07 18:16:19,mastamind,es scheint ein echter bug zu sein.
+2010-02-07 18:17:04,mastamind,ich initialisier eine struct per initialisierungsliste. dann klappt es nicht.
+2010-02-07 18:17:34,mastamind,"weist man die einzelnen attribute einzeln zu, geht es, obwohl die rechte seite das gleiche ist wie zuvor in der liste."
+2010-02-07 18:17:56,mastamind,"ich hab also das gleiche nur anders geschrieben. beim einen gehts, beim anderen nicht."
+2010-02-07 18:17:59,taljeth,Zeig mal den Code und die Fehlermeldung
+2010-02-07 18:18:14,taljeth,Bzw. die beiden Codevarianten
+2010-02-07 18:19:28,taljeth,"Und wenn's nur dafür ist, dass ich den Fehler mal gesehen habe ;-)"
+2010-02-07 18:19:58,mastamind,sekunde
+2010-02-07 18:23:28,mastamind,http://pastebin.com/m5e86c862
+2010-02-07 18:24:01,mastamind,der auskommentierte teil geht nicht. da jammert er wegen der konvertierung. bei der zuweisung an ein attribut ist es kein problem.
+2010-02-07 18:24:19,mastamind,beides hat aber genau die selbe bedeutung.
+2010-02-07 18:26:07,mastamind,gcc 4.3 hat das problem nicht.
+2010-02-07 18:27:26,taljeth,"Ah, das ist ja sogar noch C++..."
+2010-02-07 18:28:14,taljeth,"Würde bla b = { (unsigned short) x, 2 }; funktionieren?"
+2010-02-07 18:28:29,taljeth,Bzw. den richtigen C++-Cast stattdessen ;-)
+2010-02-07 18:29:16,mastamind,"leider nein. hab alles, was ich an casts kenne, probiert."
+2010-02-07 18:29:38,taljeth,"Hm, und was meckert er genau?"
+2010-02-07 18:30:49,mastamind,struct.cc: In function ‘int main()’:
+2010-02-07 18:30:49,mastamind,struct.cc:8: error: narrowing conversion of ‘x’ from ‘unsigned int’ to ‘short unsigned int’ inside { }
+2010-02-07 18:31:35,taljeth,"Hm, das ist aber eigentlich nur eine Warnung und -Werror, oder?"
+2010-02-07 18:31:55,mastamind,genau
+2010-02-07 18:32:35,JanDing,ich glaube das ist ein feature von c++0x
+2010-02-07 18:32:40,mastamind,"aber ich nehm warnungen ernst. ich hab so gut wie alles eingeschaltet, was es an warnungen gibt. ich muss mich aber korrigieren."
+2010-02-07 18:33:31,mastamind,JanDing: dann ist es nicht konsequent genug. wo ist der unterschied zw initialisierung und zuweisung?
+2010-02-07 18:36:47,JanDing,"nicht das initialisieren, sondern dass eine narrowing conversion ein fehler ist"
+2010-02-07 18:37:02,JanDing,http://www2.research.att.com/~bs/C++0xFAQ.html#narrowing
+2010-02-07 18:37:28,mastamind,sie ist es nur beim initialisieren.
+2010-02-07 18:38:34,mastamind,was sich die wohl dabei gedacht haben?
+2010-02-07 18:38:41,JanDing,"wer weiß, ob gcc bei weiterer umsetzung/entwicklungs des standards nicht auch warnungen beim zuweisen erzeugt"
+2010-02-07 18:39:46,mastamind,"ich könnte mir vorstellen, dass das probleme bringen wird."
+2010-02-07 18:40:04,mastamind,"vor allem würde dann auch short x = 4; einen fehler geben müssen, da 4 vom typ int ist."
+2010-02-07 18:40:36,taljeth,"JanDings Link sagt dazu was: ""The way C++0x avoids a lot of incompatibilities is by relying on the actual values of initializers (such as 7 in the example above) when it can (and not just type) when deciding what is a narrowing conversion"""
+2010-02-07 18:40:45,mastamind,hab ich gelesen.
+2010-02-07 18:41:00,taljeth,Aber?
+2010-02-07 18:41:31,mastamind,nichts aber.
+2010-02-07 18:42:33,mastamind,"es wird sich zeigen, ob der standard mal fertig wird. 0x ist es ja schon seit 1,5 monaten nicht mehr."
+2010-02-07 18:43:26,DesL,dann halt c++1x
+2010-02-07 18:44:51,mastamind,ja :-)
+2010-02-07 18:44:55,mastamind,hoffentlich.
+2010-02-07 18:45:05,JanDing,wann wohl c++0x default wird. c89 ist ja auch noch default
+2010-02-07 18:45:20,JanDing,vermutlich nie ^^
+2010-02-07 18:56:35,DesL,c89? ernsthaft?
+2010-02-07 18:57:29,JanDing,warum nicht?
+2010-02-07 18:57:44,DesL,und c99?
+2010-02-07 18:58:56,JanDing,ja?
+2010-02-07 18:59:21,mastamind,"es ist schade, dass der c++ standard mit 0x noch mehr an der stl hängen wird."
+2010-02-07 18:59:22,mastamind,"damit wird man gezwungen, die stl zu implementieren."
+2010-02-07 18:59:31,taljeth,Wenn man die Features will
+2010-02-07 18:59:50,taljeth,Was hängt denn an Sprachfeatures an der STL?
+2010-02-07 19:00:01,mastamind,die initialisierungslisten.
+2010-02-07 19:01:59,taljeth,"Hm, warum sie da was eigenes erfinden mussten, verstehe ich nicht ganz"
+2010-02-07 19:02:34,mastamind,solche listen haben doch viele sprachen.
+2010-02-07 19:02:41,DesL,initialisierungliste?
+2010-02-07 19:03:21,taljeth,"mastamind: Ja, zum Beispiel C99. Aber das zu nehmen, wäre natürlich zu einfach und würde ja vor allem Code kompatibel machen. Das hat man also nicht machen können."
+2010-02-07 19:04:07,mastamind,"mir ist nicht klar, wie man das vergleichen kann."
+2010-02-07 19:04:49,mastamind,DesL: http://www2.research.att.com/~bs/C++0xFAQ.html#init-list
+2010-02-07 19:04:53,taljeth,"Vielleicht habe ich auch nur den besonderen Trick dabei nicht verstanden, aber mir kommt das nicht wie was besonders tolles vor, was C nicht hätte"
+2010-02-07 19:07:02,DesL,haben die eigtl ne Deadline für c++1x?
+2010-02-07 19:09:13,mastamind,wahrscheinlich das jahr 2019. :-)
+2010-02-07 19:09:40,mastamind,"taljeth: es geht darum, dass man zb einer listen klasse gleich beim initialisieren eine liste spenden kann."
+2010-02-07 19:09:50,Tobiking,Oder 2016 wenn es 0x bleibt und Hexadezimal ist ^^
+2010-02-07 19:10:06,taljeth,Notfalls wird es halt Heptadezimal ;-)
+2010-02-07 19:11:06,taljeth,"mastamind: Und was ist da jetzt an dieser Liste so viel toller als an dem Array, das man da in C übergeben könnte?"
+2010-02-07 19:13:07,mastamind,"das musst du die leute fragen, die den standard entwickelt haben..."
+2010-02-07 19:13:53,taljeth,"[19:01] <taljeth> Hm, warum sie da was eigenes erfinden mussten, verstehe ich nicht ganz"
+2010-02-07 19:14:03,taljeth,Das war ja im Prinzip die Frage dazu?
+2010-02-07 19:14:59,JanDing,wer wohl außer den sprachforschern und compilerbauern die ganzen features von 0x noch haben will ...
+2010-02-07 19:15:43,mastamind,"taljeth: es geht darum, dass man das an einer klasse als eine art constructor verwenden kann."
+2010-02-07 19:15:52,mastamind,soweit ich es verstanden haben.
+2010-02-07 19:16:11,mastamind,"ich muss das auch erst mal ausprobieren, damit ich es komplett verstehe."
+2010-02-07 19:16:32,JanDing,"allein diese ""Suffix return type syntax"" ... demnächst kommt noch indentation induced blockstructure und dann ist jeder c++ compiler auch ein compiler für haskell"
+2010-02-07 19:16:33,mastamind,manche erweiterungen sind wirklich klug und vereinfachen komplexe syntax-konstrukte.
+2010-02-07 19:16:50,DesL,gitb es da Schon (deutschprachige) lektüre zu?
+2010-02-07 19:17:11,mastamind,JanDing: das ist ein beispiel für eine in meinen augen komplett sinnfreie erweiterung.
+2010-02-07 19:17:59,JanDing,jop
+2010-02-07 19:18:08,JanDing,ich finde ja sowieso sind neue features im gcc perlen vor die säue
+2010-02-07 19:18:20,JanDing,die sollen die mal lieber in llvm implementieren
+2010-02-07 19:18:47,JanDing,bei denen kommt der code ja auch aus der steckdose -.-
+2010-02-07 19:19:23,DesL,?
+2010-02-07 19:19:41,JanDing,das darf nur ich machen
+2010-02-07 19:19:48,taljeth,"Hm, irgendwie scheint C++ immer noch mehr Magie anzusammeln..."
+2010-02-07 19:20:09,taljeth,Kennt denn überhaupt irgendjemand die Sprache noch halbwegs vollständig?
+2010-02-07 19:20:30,DesL,Bjarne...
+2010-02-07 19:20:56,taljeth,Also ich finde das ziemlich beängstigend
+2010-02-07 19:21:31,mastamind,es wird sehr komplex leider.
+2010-02-07 19:21:47,JanDing,ich finde das eine code grundlage für die den nächsten obfuscated coding contest
+2010-02-07 19:22:11,taljeth,"Hm, richtig, man muss ja Perl 6 was entgegenhalten können *g*"
+2010-02-07 19:25:40,mastamind,"ich find den nullptr ganz gut. ich hätte ihn zwar null genannt und nicht nullptr, aber ok."
+2010-02-07 19:25:43,mastamind,besser als 0.
+2010-02-07 19:25:49,mastamind,auto ist auch praktisch.
+2010-02-07 19:26:41,mastamind,"decltype is vielleicht ganz nett. ob ich das je brauche, weiß ich nicht. aber ich finde schon mal schade, dass man ein neues schlüsselwort genommen hat und nicht einfach typeof verwendet hat."
+2010-02-07 19:28:22,mastamind,extern template bzw explicit template instantiation ist auch eine sehr gute idee.
+2010-02-07 19:35:52,mastamind,bis dann
+2010-02-07 19:54:14,DesL,bb
+2010-02-07 20:00:40,erik,Guten Abend
+2010-02-07 20:08:02,JanDing,nabend
+2010-02-07 20:14:50,taljeth,Hallo erik
+2010-02-07 20:17:11,erik,heute ist hier kaum was los? letztens war es viel lebhafter da hatte ich schon befürchtet jene Invasionsankündigung wurde in die Tat umgesetzt
+2010-02-07 20:17:57,taljeth,Invasionsankündigung? Hab ich was verpasst?
+2010-02-07 20:18:38,erik,ich hatte doch extra einen Link gepostet
+2010-02-07 20:19:05,erik,soll ichs noch mal raussuchen?
+2010-02-07 20:20:40,taljeth,"Ach du meinst, dass ehenkes sich hierher verlegen wollte?"
+2010-02-07 20:21:17,taljeth,"Wenn der seine zwei Hanseln mitbringt, sind sie immer noch weit in der Unterzahl. ;-)"
+2010-02-07 20:21:25,taljeth,Aber das ist ja bisher überhaupt nicht passier
+2010-02-07 20:22:47,erik,jene Ankündigung is weg???  da hat der Hausherr wohl was gelöscht
+2010-02-07 20:23:35,taljeth,Sieht ihm gleich...
+2010-02-07 20:26:11,erik,"Ich hab heute ein paar alte Bücher gefunden u.a. ""Assembler-Buch"" (8086 bis 80386 im RM + x87, alle RM-Befehle ist dort sehr gut/bildhaft beschrieben) oder ""Undocumented-DOS"", jemand Interesse (wegschmeißen währe irgendwie schade)"
+2010-02-07 20:29:17,taljeth,"Hm, ich mache im allgemeinen einen großen Bogen um Assembler ;-)"
+2010-02-07 20:29:27,taljeth,"Und wenn doch, dann tut's die Intel-Doku ja ganz gut"
+2010-02-07 20:30:17,erik,die is sehr trocken und in englisch
+2010-02-07 20:30:40,taljeth,"Ich will sie ja nicht wie einen spannenden Roman von vorne bis hinten durchlesen, sondern ab und zu einen Befehl nachschlagen ;-)"
+2010-02-07 20:30:41,erik,und nicht für RM
+2010-02-07 20:30:57,taljeth,"RM ist da aber auch drin enthalten, nur halt zusätzlich noch PM und LM"
+2010-02-07 20:32:14,erik,"dazu musst du aber schon wissen worum es geht, dieses Buch erläutert auch den Speicheraufbau im RM und vieles andere sehr detailliert und leicht verständlich"
+2010-02-07 20:32:56,taljeth,"Jo, für irgendjemanden wird es sicher nützlich sein. Aber ich glaube, ich bin nicht derjenige. ;-)"
+2010-02-07 20:33:19,taljeth,"Wenn sich hier niemand meldet, kannst du es ja im Forum anbieten, da findet sich sicher ein Abnehmer"
+2010-02-07 20:34:11,erik,"ich wies das Du das nicht mehr brauchst, ich ja auch nicht mehr, aber wegschmeißen tut irgendwie weh"
+2010-02-07 20:34:31,taljeth,"Jo, kann ich nachvollziehen"
+2010-02-07 20:36:32,erik,"ich hab da heute Bücher mit bestimmt deutlich über 500 DM Neuwert geborgen, heute gibts das internet aber dort ist vieles nicht so verständlich erklärt und man muss sich alles mühsam zusammensuchen bzw. in Foren erfragen"
+2010-02-07 20:37:48,taljeth,"Einerseits ja, aber andererseits: Was will ich heutzutage noch mit dem RM?"
+2010-02-07 20:39:05,erik,"ich hab da z.B. ein ""386/486-Programmierhandbuch"" da wird der PM in allen Details sehr ausführlich erklärt, damit hab ich mal einen primitiven DOS-Extender programmiert"
+2010-02-07 20:39:38,erik,ach da erwachen alte Erinerungen
+2010-02-07 20:40:26,taljeth,hehe
+2010-02-07 20:42:47,erik,wäre der Offtopic Bereich richtig für sowas?
+2010-02-07 20:42:55,taljeth,Ich denke ja
+2010-02-07 20:43:12,taljeth,Dort hätte ich es jedenfalls reingestellt
+2010-02-07 20:44:29,erik,na dann muss ich mal überlegen ob ich das mit meinem Gewissen vereinbaren kann
+2010-02-07 20:46:05,taljeth,"Ach so, du willst sie eigentlich behalten? Dann mach das doch. Ich dachte nur, du wolltest sie auf irgendeine Weise loswerden."
+2010-02-07 20:49:08,erik,"Jein, eigentlich brauch ich die Bücher nicht mehr (hoffe ich auf jedenfalls) andererseits stecken auch ein paar Erinnerungen an vergangene Zeiten (wo Segmentierung im RM noch Vergnügungssteuerpflichtig war) dran. Die Bücher sind jedenfalls in sehr guten Zustand und deshalb will ich sie nicht auf ""irgendeine Weise"" loswerden"
+2010-02-07 20:50:41,erik,"Das behalten möchte meine bessere Hälfte definitiv nicht, da muss ich dann um jedes Buch feilschen"
+2010-02-07 21:19:58,DesL,kennt wer nen IRC-Client der Klingelt wenn man eine neue Nachricht hat?
+2010-02-07 21:21:02,taljeth,Dürfte das nicht so gut wie jeder können?
+2010-02-07 21:21:10,taljeth,Konversation kann es jedenfalls
+2010-02-07 21:21:32,DesL,HydraIRC kann es nicht.
+2010-02-07 21:23:46,DesL,Konversation gibbet nicht für windows oder?
+2010-02-07 21:26:43,taljeth,"Hm... Vermutlich schon. Aber keine Ahnung, ob das Spaß macht."
+2010-02-07 21:27:10,DesL,"ich steig mal auf mIRC um, bis gleich^^"
+2010-02-07 21:34:14,DesL,sag mal wer was
+2010-02-07 21:35:05,DesL,pls
+2010-02-07 21:37:44,DesL,sag mal wer was
+2010-02-07 21:41:56,erik,hi
+2010-02-07 21:43:05,DesL,miRC ist wohl doch nicht so das ware
+2010-02-07 21:43:08,DesL,*wahre
+2010-02-07 21:47:54,DesL,HydraIRC ist dann doch wieder anders.
+2010-02-07 22:02:08,DesL,gn8
+2010-02-07 22:13:41,erik,"bye bye, ich muss noch eine Kiste ausräumen"

@@ -1,0 +1,626 @@
+date/time,nick,message
+2009-05-08 00:00:00,JSheridan,sprich das CTRL wieder rausgenommen was mit 5766 rein kam
+2009-05-08 00:00:15,taljeth,Ach kam das dort erst rein'?
+2009-05-08 00:00:19,JSheridan,ja
+2009-05-08 00:01:06,taljeth,"Ah, das erklärt, warum es erst damit kaputtgegangen ist"
+2009-05-08 00:02:11,taljeth,"Aber einfach ersatzlos rausnehmen kannst du es nicht, sonst machst du die VLAN-Funktionalität kaputt"
+2009-05-08 00:02:42,JSheridan,stimmt auch wieder :/ da war doch was
+2009-05-08 00:03:07,taljeth,"Du brauchst eine eigene Handlerfunktion, die die Reset-Bits rausmaskiert, aber den Rest tatsächlich setzt"
+2009-05-08 00:03:29,taljeth,"Mach mit dem Abschicken am besten mal langsam, wir bringen das morgen ordentlich zu Ende"
+2009-05-08 00:03:30,JSheridan,wird wohl darauf hinauslaufen
+2009-05-08 00:04:13,taljeth,"Ein Patch, der gleich im ersten Anlauf ordentlich aussieht, hat bessere Chancen"
+2009-05-08 00:04:51,taljeth,Ich geh dann mal
+2009-05-08 00:05:02,taljeth,"Können wir in Zukunft öfter mit dir rechnen, JSheridan ?"
+2009-05-08 00:06:15,JSheridan,denke schon^^
+2009-05-08 00:06:18,JSheridan,achja
+2009-05-08 00:06:18,JSheridan,hab den fix
+2009-05-08 00:06:20,JSheridan,"	putreg(RDBAL),	putreg(LEDCTL), [CTRL] = set_ctrl,	putreg(VET),"
+2009-05-08 00:06:42,JSheridan,static void
+2009-05-08 00:06:42,JSheridan,"set_ctrl(E1000State *s, int index, uint32_t val)"
+2009-05-08 00:06:42,JSheridan,{
+2009-05-08 00:06:42,JSheridan,    s->mac_reg[index] = val & 0x04000000;
+2009-05-08 00:06:42,JSheridan,}
+2009-05-08 00:06:45,JSheridan,sollte es tun
+2009-05-08 00:07:16,JSheridan,solang ich als hiwi am rainbow debuggen darf bin ich sicher öfter hier^^
+2009-05-08 00:07:16,taljeth,"0x84000000, glaube ich ist besser"
+2009-05-08 00:07:37,JSheridan,stimm für phy
+2009-05-08 00:07:39,JSheridan,t
+2009-05-08 00:07:42,taljeth,Gibt es dafür nicht auch Konstanten?
+2009-05-08 00:07:52,JSheridan,noch besser^^
+2009-05-08 00:08:33,JSheridan,s->mac_reg[index] = val & ~(E1000_CTRL_RST|E1000_CTRL_PHY_RST);
+2009-05-08 00:08:35,JSheridan,so ist es korrekt
+2009-05-08 00:08:40,JSheridan,hatte die invertierung vergessen
+2009-05-08 00:08:53,taljeth,Ja
+2009-05-08 00:09:45,JSheridan,also ich bin jedenfalls morgen wieder da
+2009-05-08 00:09:55,JSheridan,werde da versuchen die restlichen probleme zu beseitigen
+2009-05-08 00:10:08,taljeth,Ok.
+2009-05-08 00:10:58,taljeth,gn8
+2009-05-08 00:11:03,JSheridan,gn8
+2009-05-08 00:12:01,Jidder,gn8
+2009-05-08 11:32:09,kwolf,Moin JSheridan
+2009-05-08 11:44:11,Homix,hi
+2009-05-08 11:46:44,kwolf,"Ah, Homix. Du hast heute auch wieder einen Frei-Tag? ;-)"
+2009-05-08 11:47:50,Homix,*g*
+2009-05-08 11:49:30,kwolf,"Kommst du mit deinem OS eigentlich noch voran, oder was das nur mal zwischendurch ein Tag?"
+2009-05-08 11:50:47,Homix,so halbe halbe ;)
+2009-05-08 11:52:13,kwolf,"Ich seh schon, du willst dich gegen unsere 0.3 positionieren ;-)"
+2009-05-08 11:53:50,Homix,in gewisser weise hast du recht ;) aber ich reagier wohl dann doch lieber auf die 0.2.2
+2009-05-08 11:54:18,kwolf,*lol*
+2009-05-08 11:54:40,kwolf,Haben wir die überhaupt schon angekündigt?
+2009-05-08 11:54:59,Homix,indirekt ;)
+2009-05-08 11:55:20,Homix,"wenn noch keine gui für eine 0.3 da ist, muss es ja eine 0.2.2 geben :)"
+2009-05-08 11:55:36,kwolf,"GUI ist 0.4, frühestens"
+2009-05-08 11:56:04,kwolf,0.3 ist kernel2 mit LIOv2
+2009-05-08 11:56:26,Homix,ach dann .. reicht es ja auf die 0.4 zu reagieren
+2009-05-08 11:57:19,kwolf,"Du meinst, wenn du gar keine Chance mehr hast, auch nur in die Nähe zu kommen? ;-)"
+2009-05-08 11:58:17,Homix,"mein plan seit jahren ist ja, erst ab den GUI versionen wieder vorbeizukommen ;) aber wenn ihr so lang mit der gui braucht ..."
+2009-05-08 12:00:32,kwolf,GUI ist halt irgendwie mehr nettes Addon als wirkliche Kernfunktionalität
+2009-05-08 12:00:47,kwolf,Außerdem fehlt mir noch die revolutionäre kaputte Idee ;-)
+2009-05-08 12:01:23,Homix,"ohne gui kann man nicht wirklich arbeiten, aber ansonsten unwichtig .. :)"
+2009-05-08 12:03:52,kwolf,"Das kann man auf deinem OS eh nicht, weil es keine Features hat"
+2009-05-08 12:05:07,Homix,die GUI wird das Feature sein
+2009-05-08 12:06:05,Homix,"einleuchtendes konzept, oder? :D"
+2009-05-08 12:07:55,kwolf,Hmm.... nein?
+2009-05-08 12:09:01,Homix,;)
+2009-05-08 12:09:10,Homix,hm endlich ein reproduzierbarer fehler
+2009-05-08 12:09:46,Homix,"wenn ich 4 mal in der shell enter drücke kommt ja viermal ""Befehl nicht gefunden"", und nach dem 4. mal stürzt das Kernel-Speichermanagement ab :D"
+2009-05-08 12:14:22,kwolf,Klingt gut
+2009-05-08 12:14:36,kwolf,"Ich glaube, du bist auf dem Stand, auf dem wir vor zwei Jahren waren ;-)"
+2009-05-08 12:15:34,Homix,"nicht ganz ;) ich bin bei dem stand, wo ICH vor 2 jahren war ..."
+2009-05-08 12:15:52,Homix,jetzt nach meinem redesign ;)
+2009-05-08 12:16:48,Jidder,heyho
+2009-05-08 12:16:52,Jidder,idaho
+2009-05-08 12:17:01,Jidder,und E 150d
+2009-05-08 12:17:12,Jidder,und bevor jemand fragt: nein das ist kein mercedes -.-
+2009-05-08 12:18:04,Guest71626,hier klappt ja gar nix -.-
+2009-05-08 12:32:31,JSheridan,ah moin^^
+2009-05-08 13:54:33,bluecode,"hm, systemnahe Informatik ist überraschend interessant :-)"
+2009-05-08 13:54:50,kwolf,Was macht ihr denn schönes?
+2009-05-08 13:55:12,bluecode,wir haben uns eine einfache Pipeline (die vom DLX) angesehen
+2009-05-08 13:56:26,kwolf,"Ah, das Zeug"
+2009-05-08 13:56:41,kwolf,"Jo, das ist ganz nett"
+2009-05-08 13:59:11,bluecode,kwolf: was machst du so?
+2009-05-08 13:59:41,kwolf,Dreimal darfst du raten
+2009-05-08 14:00:30,bluecode,ich meine was konkret :-)
+2009-05-08 14:01:26,kwolf,Wie konkret willst du es wissen? Soll ich dir den Patch schicken? ;-)
+2009-05-08 14:01:42,bluecode,darfst du mittlerweile mal ein viehtschur implementieren oder bist du wiedermal um bugfixen?
+2009-05-08 14:02:34,bluecode,^ so genau auch wieder nicht ;-)
+2009-05-08 14:02:36,kwolf,"Ich bau grad das Erstellen von Images um, damit man formatspezifische Optionen haben kann, ohne in qemu-img alles hartkodieren zu müssen"
+2009-05-08 14:03:15,kwolf,Mittlerweile tut es sogar irgendwie
+2009-05-08 14:28:09,stultus,moin
+2009-05-08 14:28:38,kwolf,Moin stultus
+2009-05-08 14:29:33,stultus,"Was war jetzt eigentlich mit GUI-Team, wolltest du das nicht wieder einberufen? "
+2009-05-08 14:32:16,kwolf,Ich wollte viel ;-)
+2009-05-08 14:32:27,stultus,*g*
+2009-05-08 14:32:36,stultus,deswegen frag ich ja nach
+2009-05-08 14:32:42,kwolf,"Ja, eigentlich schon. Willst du das Team übernehmen?"
+2009-05-08 14:32:49,stultus,so als Leitung?
+2009-05-08 14:32:53,kwolf,Jo
+2009-05-08 14:32:55,stultus,Uhm.
+2009-05-08 14:33:05,stultus,Generell hab ich so langsam ja zeit.
+2009-05-08 14:33:10,stultus,Klausurphase ist in 2 Wochen rum
+2009-05-08 14:33:26,stultus,"ob ich koordinieren kann... naja, das ist was anderes ;)"
+2009-05-08 14:33:54,kwolf,"Bevor es was zu koordinieren gibt, mußt du erstmal Leute finden ;-)"
+2009-05-08 14:33:59,stultus,stimmt auch wieder ;)
+2009-05-08 14:34:34,stultus,"Aber, bevor ich das in Angriff nehme, bastel ich nochmal an lpt rum ;)"
+2009-05-08 14:35:09,stultus,"Wie sieht das aus, kann ich gefahrlos die ganzen Sektions/Pakete/Versions-Strukturen selber füllen, oder gibts da irgendwelche Shortcuts?"
+2009-05-08 14:35:40,stultus,Damit kann ich für Install die Notwendigkeit nach 2 Instanzen von TTarArchive umgehen.
+2009-05-08 14:35:54,stultus,"für Web-Repos liegt es schon vor, für die Files muss ich das nur gesondert neu bilden."
+2009-05-08 14:36:42,kwolf,"""selber"" heißt in dem Fall eine Methode von einem TLocalRepository oder sowas?"
+2009-05-08 14:37:33,stultus,über Repositories wollte ich eigentlich nicht gehen
+2009-05-08 14:37:42,stultus,"nur TPackageSection, TPackage, TPackageVersion"
+2009-05-08 14:38:27,stultus,"wobei ne Repository-Erweiterung auch drin wär, dann müsste man nur Download umstricken."
+2009-05-08 14:38:44,kwolf,"Wir wollen ja eh lokale Repositories, für die CD"
+2009-05-08 14:38:56,kwolf,"Aber stimmt, zum direkt installieren brauchst du sowas wohl nicht"
+2009-05-08 14:39:04,stultus,ebend.
+2009-05-08 14:39:15,stultus,und virtuelle Repos erzeugen klingt nach fehlerträchtig ;)
+2009-05-08 14:39:39,kwolf,Ich würde trotzdem ein Art TempRepository machen. Dann kann sich lpt mit den Abhängigkeiten austoben wie es grad paßt.
+2009-05-08 14:45:48,stultus1,Das ganze Zeug lesen ist schlimm *g*
+2009-05-08 14:45:55,stultus1,"Die Installation blickt man ja schnell, aber woher die Paketdaten kommen"
+2009-05-08 14:50:03,kwolf,"Verbesser es. Ich gebe zu, daß der Code nicht besonders schön ist"
+2009-05-08 14:50:15,stultus1,*g*
+2009-05-08 14:50:18,stultus1,Verbessern erfordert verstehen.
+2009-05-08 14:50:27,stultus1,Temporäre Repositories sind imho übrigens absolut unmöglich.
+2009-05-08 14:50:34,kwolf,"Hm, wieso?"
+2009-05-08 14:50:45,stultus1,die Paketlisten werden aus Files geladen.
+2009-05-08 14:51:06,stultus1,Die einzige Option wäre Temporäre Files im Konfigurationsordner zu erzeugen. Imho nicht wirklich ne Option.
+2009-05-08 14:51:28,kwolf,Und daß sie zwingend aus Dateien geladenwerden zu ändern ist absolut unmöglich?
+2009-05-08 14:51:41,stultus1,Hm.
+2009-05-08 14:51:58,kwolf,"Wer der Code nicht passend ist, macht man ihn eben passend"
+2009-05-08 15:02:06,stultus1,"Okay, ich brauch noch ne Ecke git-Geekness"
+2009-05-08 15:02:24,stultus1,"wenn ich ne Patchreihe als commits im lokalen git hab, und nur Teile davon akzeptiert werden"
+2009-05-08 15:02:34,stultus1,Wie bring ich das dann mit git-svn und der Reihenfolge in Ordnung?
+2009-05-08 15:02:52,stultus1,"ohne alles zu resetten und komplett zu rebasen, um dannach eigene patches aufzuspielen."
+2009-05-08 15:04:48,stultus1,"oder isses günstiger zu branchen, patches die ins svn sollen zurückzumergen, und git-svn anzuweisen nur trunk zu überspielen?"
+2009-05-08 15:05:06,kwolf,rebase erkennt das eigentlich
+2009-05-08 15:05:35,kwolf,"Also in deinem Branch ein git rebase master, das sollte alles rauswerfen, was mittlerweile in master drin ist"
+2009-05-08 15:06:08,kwolf,Oder arbeitest du in master?
+2009-05-08 15:06:18,stultus1,tu ich. *g*
+2009-05-08 15:06:25,kwolf,"Hm, solltest du dir abgewöhnen"
+2009-05-08 15:06:30,stultus1,"schlechte angewohnheit, ändern?"
+2009-05-08 15:06:30,stultus1,gut *g*
+2009-05-08 15:06:31,bluecode,"branch, reset hard?"
+2009-05-08 15:06:33,kwolf,Aber git svn rebase könnte auch was sinnvolles tun
+2009-05-08 15:06:49,stultus1,"tat es aber nich, das hat mir grad nen paar Konflikte beschert "
+2009-05-08 15:06:59,kwolf,Schade ;-)
+2009-05-08 15:07:41,bluecode,wie macht ihr das eigentlich wenn ich aus einem branch teile in den master zurückhaben möchte?
+2009-05-08 15:12:42,stultus1,"So, git wieder in nem brauchbaren Status. kurz afk, dann gehts hacken los"
+2009-05-08 15:13:39,kwolf,bluecode: cherry-pick?
+2009-05-08 15:13:42,kwolf,Oder was meinst du?
+2009-05-08 15:14:24,kwolf,Aber mit git-svn ist die Vorgehensweise sowieso anders. Da kannst du aus einem Branch raus ins SVN committen und updatest master später wieder aus dem SVN
+2009-05-08 15:21:06,bluecode,"^ das ist aber irgendwie d00f, das cherry-pick"
+2009-05-08 15:21:14,bluecode,ich meinte auch nicht auf git-svn bezogen
+2009-05-08 15:22:22,kwolf,Was ist daran d00f?
+2009-05-08 15:23:41,bluecode,das war letztes mal irgendwie so anstrengend
+2009-05-08 15:26:03,kwolf,Huch?
+2009-05-08 15:26:30,kwolf,"Viel einfacher als zu sagen, welchen Commit er rüberziehen soll, geht es doch nicht mehr?"
+2009-05-08 15:27:34,bluecode,muss man da nicht den commithash nachschauen und dann die dinger einzeln rübernehmen?
+2009-05-08 15:29:15,kwolf,"Ich dachte, du willst nur einzelne Sachen rübernehmen?"
+2009-05-08 15:29:42,kwolf,"Wenn es mehr wird, würde ich vermutlich den Branch branchen, alles rauswerfen, was nicht nach master soll und dann mergen"
+2009-05-08 15:29:47,bluecode,mehrere aber nicht alle
+2009-05-08 15:29:57,bluecode,wie werfe ich das raus?
+2009-05-08 15:30:02,kwolf,rebase -i?
+2009-05-08 15:30:21,bluecode,"ah richtig, das wollte ich auch mal ausprobieren"
+2009-05-08 15:30:36,bluecode,wobei letztes mal als ich ein rebase auf master versucht habe wollte der irgendwie nicht
+2009-05-08 15:30:45,kwolf,"rebase -i ist so ungefähr die Antwort auf alle Fragen, die du haben könntest ;-)"
+2009-05-08 15:31:02,kwolf,"Wollte nicht? Konflikt, oder wie?"
+2009-05-08 15:31:19,bluecode,"nö, der erzählte mir fröhlich, dass alles up to date ist"
+2009-05-08 15:31:40,kwolf,War aber nicht so?
+2009-05-08 15:31:54,kwolf,Klingt irgendwie schon nach PEBCAK
+2009-05-08 15:32:24,bluecode,^ nein
+2009-05-08 15:32:26,bluecode,könnte sein
+2009-05-08 15:32:51,bluecode,aber es kann ja nicht immer alles optimal laufen *g*
+2009-05-08 15:47:05,bluecode,"kwolf: wie muss ich denn git rebase -i aufrufen? Das Manual sagt ""git rebase -i <after-this-commit>"" aber was genau das bedeuten soll versteh ich nicht wirklich..."
+2009-05-08 15:47:36,kwolf,git rebase -i master
+2009-05-08 15:47:52,kwolf,Wenn du auf master rebasen willst
+2009-05-08 15:48:51,bluecode,Da steht dann aber nur ein noop drin
+2009-05-08 15:49:02,bluecode,der sollte doch eigentlich die commits anzeigen oder nicht?
+2009-05-08 15:49:15,kwolf,"Die Commits, die seit master dazugekommen sind, ja"
+2009-05-08 15:54:44,bluecode,"kann es sein, dass ein git rebase -i andersrum tut wie ein git rebase? Oder hab ich das auch immer falschrum ausgeführt? *g*"
+2009-05-08 15:55:15,bluecode,"wobei ne, so hat er zwar die commits angezeigt aber nixhts gemacht"
+2009-05-08 15:55:24,kwolf,Vermutlich hast du das
+2009-05-08 15:55:31,kwolf,"-i funktioniert genauso wie ohne, nur interaktiv"
+2009-05-08 15:56:08,bluecode,"ich muss als in master sein, und git rebase some_branch um die änderungen von some_branch nach master zu holen, richtig?"
+2009-05-08 15:56:22,kwolf,wtf?
+2009-05-08 15:56:31,kwolf,master rebasen ist evil
+2009-05-08 15:56:48,kwolf,"Aber grundsätzlich ist das die Richtung, in die es funktioniert"
+2009-05-08 15:57:04,bluecode,^ Warum?
+2009-05-08 15:57:13,kwolf,"Später, ich pack's jetzt ;-)"
+2009-05-08 15:57:17,bluecode,meh
+2009-05-08 15:57:19,bluecode,cu
+2009-05-08 16:06:00,stultus1,"Aww, grade jetzt isser weg."
+2009-05-08 16:06:03,stultus1,Das is schlecht *g*
+2009-05-08 16:06:18,JSheridan,"hihi, ist das nicht immer so?`"
+2009-05-08 16:06:39,stultus1,jup *g*
+2009-05-08 16:07:41,stultus1,Das ist jetzt natürlich auch ne Problemstellung für die Pascal doof ist.
+2009-05-08 16:07:48,stultus1,mit Python ginge das deutlich schöner
+2009-05-08 16:08:10,stultus1,"(bastel grade an lpt, und bräuchte nen Enumerator über alle bekannten Repositories statt Abfrage nach bestimmten per Name)"
+2009-05-08 16:18:41,JSheridan,dann muss das wohl leider warten... mit python kenne ich mich leider nicht wirklich aus ;)
+2009-05-08 16:24:47,JSheridan,hmpf... Receive Descriptor Base Low ... setzen geht irgendwie ins leere
+2009-05-08 16:26:54,stultus1,python hat halt eingebaute Operatoren für Iteratoren
+2009-05-08 16:27:12,stultus1,"d.h. ich muss auch in eigenen Klassen nur schnell ne funktion next() implementieren, und das wars ;)"
+2009-05-08 16:27:39,JSheridan,das ist natürlich nicht schlecht^^
+2009-05-08 16:27:47,JSheridan,wofür genau verwendest du eigentlich pascal?^^
+2009-05-08 16:27:57,stultus1,ich? weil ich dran gebunden bin
+2009-05-08 16:28:13,stultus1,"lpt ist halt dadrin geschrieben, ich möchte da was ändern, also... ;)"
+2009-05-08 16:30:44,JSheridan,"naja ein argument dafür, das stimmt^^"
+2009-05-08 17:16:44,bluecode,hi taljeth
+2009-05-08 17:16:53,bluecode,spucken Sie es aus!
+2009-05-08 17:17:19,taljeth,"Hi bluecode, wie geht's dir? ;-)"
+2009-05-08 17:17:28,bluecode,"mir gehts gut, und selbst?"
+2009-05-08 17:17:44,taljeth,Aber selbstverständlich
+2009-05-08 17:18:07,taljeth,"Ist schließlich Wochenende und ich kann mir selber raussuchen, welche Projekte ich kaputtmache ;-)"
+2009-05-08 17:18:30,bluecode,"stimmt nicht, bei mir darfst du nicht ;-)"
+2009-05-08 17:18:58,taljeth,Was soll ich denn bei dir stattdessen? ;-)
+2009-05-08 17:19:39,bluecode,mir ezählen was an einem rebase auf master böse ist
+2009-05-08 17:19:43,taljeth,stultus1: Gibt es nirgends eine Liste aller Repos?
+2009-05-08 17:19:56,bluecode,das könnte nämlich erklären warum es nicht funktioniert
+2009-05-08 17:20:09,taljeth,"Nein, funktionieren tut es schon irgendwie"
+2009-05-08 17:20:16,taljeth,"Es ist böse, weil master normalerweise public ist"
+2009-05-08 17:20:31,taljeth,Und öffentliche Branches rebast man nicht
+2009-05-08 17:20:45,taljeth,Weil ansonsten alle anderen ein Problem kriegen
+2009-05-08 17:21:02,FreakyPenguin,Ach pull --force regelt das schon. *g*
+2009-05-08 17:21:06,taljeth,"Also master ist natürlich nicht direkt öffentlich, aber es wird halt gepusht"
+2009-05-08 17:21:19,bluecode,und warum ist dann der rebase ein problem?
+2009-05-08 17:21:23,taljeth,"FreakyPenguin: Ja, genau... Das erklärt es relativ gut *g*"
+2009-05-08 17:21:37,taljeth,bluecode: Weil du die History umschreibst
+2009-05-08 17:21:39,stultus1,re
+2009-05-08 17:21:56,taljeth,"Wehe irgendein anderer referenziert Commits, die es jetzt nicht mehr gibt..."
+2009-05-08 17:21:57,stultus1,taljeth: geben tuts die schon. aber die ist nur für implementation deklariert :/
+2009-05-08 17:22:16,bluecode,wieso sollten nach einem rebase commits weg sein?
+2009-05-08 17:22:40,taljeth,stultus1: Was hast du denn genau vor?
+2009-05-08 17:22:52,taljeth,bluecode: Technisch sind die alten weg und dafür neue da
+2009-05-08 17:22:59,taljeth,"Auch wenn die was ""ähnliches"" machen"
+2009-05-08 17:23:14,taljeth,Die haben andere Hashes
+2009-05-08 17:23:21,stultus1,"ReadPkglists geht alle pkglist.* durch. So eine gibts natürlich für Temp-Repos nicht, ergo kann sie nicht durchsucht werden."
+2009-05-08 17:23:54,stultus1,"da der name aber von Repos abhängt, kann ich genausogut alle Repos durchnummerieren, und entsprechend die Files einbinden oder je Typ auch was anderes anstellen ;)"
+2009-05-08 17:24:06,stultus1,s/nummerieren/gehen/
+2009-05-08 17:24:16,bluecode,"meh, jetzt muss ich leider nach Hause"
+2009-05-08 17:24:45,taljeth,"stultus1: Ich glaube, ich sollte erstmal den Code anschauen"
+2009-05-08 17:24:51,bluecode,bis später
+2009-05-08 17:24:58,taljeth,bd
+2009-05-08 17:25:35,taljeth,"stultus1: Ok. ReadPkglists liest alle Dateien ein. Beim installieren aus einer Datei braucht man halt noch ein zusätzliches Repo, das registriert wird. Wo ist das Problem?"
+2009-05-08 17:26:03,taljeth,"Was du vorhast, ist irgendwie falschrum"
+2009-05-08 17:26:11,taljeth,"Die Repos sind ja erst in der Liste, wenn sie aus der Datei geladen wurden"
+2009-05-08 17:26:36,stultus1,"die Repos inner Liste dafür, ja"
+2009-05-08 17:26:36,taljeth,lpt geht alle Verzeichniseinträge in file:/config/lpt/pkglist.* durch
+2009-05-08 17:26:42,stultus1,aber die Paketlisten werden dannach gesondert geladen
+2009-05-08 17:26:50,stultus1,jo. Und da kann ich für Temp ja doof was reinmachen.
+2009-05-08 17:26:59,taljeth,Aber du kannst was zusätzliches machen?
+2009-05-08 17:27:27,stultus1,wie denn?
+2009-05-08 17:27:37,taljeth,Indem du es programmierst?
+2009-05-08 17:27:43,stultus1,in dem Pfad sollte ich imho nicht rumspucken
+2009-05-08 17:28:55,taljeth,Natürlich nicht
+2009-05-08 17:29:11,taljeth,"Es sagt ja niemand, du sollst ReadPkgsrc benutzen, das ist offensichtlich das falsche Werkzeug dafür"
+2009-05-08 17:29:38,taljeth,"Mach halt ein ReadPkgFiles oder so, das die Metadaten aus den übergebenen Dateien rausholt und daraus ein Repo aufbaut. Oder irgendwie sowas."
+2009-05-08 17:30:27,stultus1,"nochmal, an ReadPkgsrc will ich nix drehen, nur an ReadPkglists"
+2009-05-08 17:30:57,stultus1,Nur die Richtung der Zuordnung ändern. Statt File -> Repos zu Repos->File. ist doch 1:1
+2009-05-08 17:32:22,taljeth,"Du hast aber die Repos gar nicht, weil du die nur dadurch kriegst, daß du die Dateien durchgehst?"
+2009-05-08 17:32:39,stultus1,"Genau das wollte ich ja ändern, die Frage ist nur wie."
+2009-05-08 17:33:41,taljeth,"Hm, okay. In der pkgsrc stehen auch alle Quellen, stimmt"
+2009-05-08 17:34:12,stultus1,"hm, die könnte man wirklich durchgehen"
+2009-05-08 17:34:17,taljeth,"Wenn du eine Funktion machst, die repos zurückgibt, könnte das auch sorum gehen"
+2009-05-08 18:01:08,JSheridan,abend taljeth ^^
+2009-05-08 18:04:44,taljeth,Hi JSheridan 
+2009-05-08 18:31:43,Fireknight,Abend.
+2009-05-08 18:39:46,JSheridan,"ich muss zwar leider gleich weg, aber ich hab da wieder mal ein problem. er will die descriptoren von mir nicht annehmen. ich hab das mal aus den src von euch gezogen aber irgendwie geht das ebenfalls nicht"
+2009-05-08 18:39:49,JSheridan,"    reg_outl(netcard, REG_RXDESC_ADDR_HI, 0);"
+2009-05-08 18:39:49,JSheridan,"    reg_outl(netcard, REG_RXDESC_ADDR_LO, PHYS(netcard, rx_desc[0]));"
+2009-05-08 18:39:49,JSheridan,"    reg_outl(netcard, REG_RXDESC_LEN,"
+2009-05-08 18:39:58,JSheridan,das resultat ist das in den registern 0x0000000 drin steht
+2009-05-08 18:44:40,JSheridan,ich muss doch eigentlich nur aufpassen das ich halt ein vielfaches von 8 an descriptoren habe. und dann natürlich den entsprechendne bufferspace. und dann trage ich quasi die speicheradresse des ersten descriptors in REG_RDBAL ein. danach die Länge nach REG_RDLEN (diese müsste ein vielfaches von 128 sein)
+2009-05-08 18:49:46,Fireknight,Sollte man bei memcpy ein unsigned int size oder eher unsigned long size nehmen?
+2009-05-08 18:50:16,JSheridan,so
+2009-05-08 18:50:19,JSheridan,ich bin dann erstmal weg
+2009-05-08 18:50:21,janosch,POSIX sagt afaik size_t. bei mir ist das unsigned int
+2009-05-08 18:50:23,JSheridan,bis später :)
+2009-05-08 18:50:26,janosch,cu JSheridan
+2009-05-08 18:51:05,janosch,"aber auf i386 ist int und long doch beides 32bit groß, also egal..."
+2009-05-08 19:13:25,Fireknight,Dann mal hoffen dass mein memalloc funktioniert *g*
+2009-05-08 19:18:05,janosch,da nimmt man ein fertiges malloc ;)
+2009-05-08 19:19:32,bluecode,reh!
+2009-05-08 19:19:37,taljeth,hirsch!
+2009-05-08 19:20:09,stultus1,wz
+2009-05-08 19:20:24,stultus1,"taljeth: logische verknüpfungen in if, mach ich mit Pascal wie? ^^"
+2009-05-08 19:21:30,stultus1,"Ah, habs schon..."
+2009-05-08 19:21:30,janosch,mit AND und OR?
+2009-05-08 19:21:31,taljeth,"Indem du and hinschreibst, oder or, oder xor ;-)"
+2009-05-08 19:21:35,stultus1,hatte nur nen Satz klammern vergessen ;)
+2009-05-08 19:21:48,taljeth,Ah
+2009-05-08 19:22:30,stultus1,"So, das neue Durchsuchen der pkglists funzt."
+2009-05-08 19:22:44,stultus1,"Oh, und so ganz nebenbei ist es nurnoch halb so lang ;)"
+2009-05-08 19:23:04,Fireknight,Weird.
+2009-05-08 19:23:09,taljeth,Klingt nach einem guten Patch
+2009-05-08 19:23:31,Fireknight,in foo.h habe ich struct bar { int baz; }; und foo.c inkludiert foo.h
+2009-05-08 19:23:39,Fireknight,GCC will aber bar nicht kennen.
+2009-05-08 19:23:54,stultus1,"ehm, was hast du in foo.c ?"
+2009-05-08 19:24:07,Fireknight,sizeof(struct bar)
+2009-05-08 19:24:18,stultus1,hm. das is komisch.
+2009-05-08 19:24:36,stultus1,irgendwelche schiefgegangenen Includeguards?
+2009-05-08 19:25:06,Fireknight,nicht das ich wuesste.
+2009-05-08 19:25:09,Fireknight,meine #defines kennt er.
+2009-05-08 19:25:13,Fireknight,nur das struct nicht.
+2009-05-08 19:25:21,stultus1,o_O komisch.
+2009-05-08 19:25:24,bluecode,Fireknight: zeig code
+2009-05-08 19:25:34,stultus1,würd ich auch sagen ;)
+2009-05-08 19:25:38,bluecode,tits or it didn't happen :-P
+2009-05-08 19:25:57,Fireknight,Dann seht ihr mein krueppliges memalloc :(
+2009-05-08 19:26:18,stultus1,dann zeigs nur mir
+2009-05-08 19:26:22,stultus1,ich hab keine ahnung von allocs 
+2009-05-08 19:26:24,stultus1,^^
+2009-05-08 19:26:38,bluecode,ich doch auch nicht ;-)
+2009-05-08 19:26:46,Fireknight,http://rafb.net/p/uLP1eR94.html <- mem.h
+2009-05-08 19:27:19,Fireknight,http://rafb.net/p/OmfFgI22.html <- mem.c
+2009-05-08 19:28:09,stultus1,sizeof(mementry) ???
+2009-05-08 19:28:14,stultus1,"struct oder typedef, eines fehlt ;)"
+2009-05-08 19:29:27,bluecode,"jop, exakt"
+2009-05-08 19:29:49,Fireknight,wie castet man ein void* f; zu einem unsigned int?
+2009-05-08 19:29:56,Fireknight,(jetzt bei unsigned int address = MEM_TABLE_START;)
+2009-05-08 19:29:58,bluecode,(unsigned int)f
+2009-05-08 19:30:12,stultus1,"oder richtig, über intrptr_t ;)"
+2009-05-08 19:30:17,bluecode,uintptr_t
+2009-05-08 19:30:21,stultus1,wurde mir jedenfalls male rzählt das das so richtig wäre.
+2009-05-08 19:30:28,bluecode,"wenn man es hat, jo"
+2009-05-08 19:34:28,Fireknight,das extern void kernel_end(); mag er nicht.
+2009-05-08 19:34:52,stultus1,Boah
+2009-05-08 19:34:58,stultus1,in einer Hinsicht ist Pascal grausam
+2009-05-08 19:34:58,Fireknight,Dazu muesste wohl kend.o vor mem.o an ld uebergeben werden?
+2009-05-08 19:35:10,stultus1,Bei nem elseif hat man schnell mehr Schlüsselwörter als Vergleich inner Zeile *g*
+2009-05-08 19:35:13,Fireknight,(kend.o enthaelt global kernel_end; kernel_end: nop)
+2009-05-08 19:35:17,bluecode,Fireknight: definiere mag er nicht
+2009-05-08 19:35:24,bluecode,"^ nein, muss nicht sein"
+2009-05-08 19:35:27,stultus1,Reihenfolge sollte egal sein.
+2009-05-08 19:35:29,Fireknight,undefined reference to kernel_end
+2009-05-08 19:35:33,Fireknight,in mem.o
+2009-05-08 19:35:38,bluecode,"extern ""C"""
+2009-05-08 19:35:56,Fireknight,"wozu das ""C""?"
+2009-05-08 19:36:05,Fireknight,Das hatte er bei den irqs auch nicht benoetigt.
+2009-05-08 19:36:09,bluecode,um den Unterstrick wegzubekommen
+2009-05-08 19:36:16,bluecode,*strich
+2009-05-08 19:36:26,bluecode,ich rate ja auch nur mit meinem 1W2
+2009-05-08 19:36:27,Fireknight,(da wird irq.o vorher angegeben)
+2009-05-08 19:36:43,stultus1,wie ist kernel_end denn deklariert?
+2009-05-08 19:36:45,stultus1,in ASM ?
+2009-05-08 19:36:49,Fireknight,bluecode: GCC macht keinen Unterstrich.
+2009-05-08 19:36:56,bluecode,linkerscript würde ich schätzen
+2009-05-08 19:37:04,bluecode,sagt zumindest die Glaskugel
+2009-05-08 19:37:11,bluecode,"Fireknight: kommt drauf an, was man ihm sagt"
+2009-05-08 19:37:18,Fireknight,extern irq0_asm; irq0_asm: pusha call keyboard_handler; popa iret hat auch geklappt ;)
+2009-05-08 19:37:46,bluecode,wie ist kernel_end nu definiert? Wäre interessant zu wissen ;-)
+2009-05-08 19:37:49,bluecode,und wo ;-)
+2009-05-08 19:38:18,Fireknight,http://rafb.net/p/ab5QrP56.html <- linker
+2009-05-08 19:38:24,Fireknight,kernel_end ist in kend.asm definiert.
+2009-05-08 19:38:29,Fireknight,welches zu bin/kend.o kompiliert wird.
+2009-05-08 19:38:41,bluecode,auch mit global kernel_end?
+2009-05-08 19:39:01,bluecode,warum ist das überhaupt in asm definiert?
+2009-05-08 19:39:22,stultus1,Leichter Masochismus ;)
+2009-05-08 19:39:27,Fireknight,Damit es ganz am Schluss ist?
+2009-05-08 19:39:31,stultus1,"*hust* nicht übel nehmen, aber es ist asm... ;)"
+2009-05-08 19:39:41,bluecode,"und warum dann nicht im Linkerscript, Fireknight?"
+2009-05-08 19:39:46,stultus1,wo das im Binary landet is doch schnuppe.
+2009-05-08 19:39:51,bluecode,eben
+2009-05-08 19:39:54,Fireknight,bluecode: Ich habe keine Ahnung von linkerscript.
+2009-05-08 19:39:56,bluecode,das is born to fail
+2009-05-08 19:40:05,bluecode,Fireknight: schade
+2009-05-08 19:40:46,bluecode,"Fireknight: es gibt genug im Internet, schau dir eins an"
+2009-05-08 19:41:05,Fireknight,mv kend.asm src/; <- daran lags *hust*
+2009-05-08 19:41:22,stultus1,*lol*
+2009-05-08 19:41:22,Fireknight,"er hat kend.asm zwar verschoben, aber die Datei war danach leer."
+2009-05-08 19:41:41,Fireknight,ich hatte kend.asm mit dem Code erstellt und dann verschoben
+2009-05-08 19:41:46,bluecode,"dann linkt es vielleicht, das macht es nicht richtig."
+2009-05-08 19:44:01,Fireknight,mal memalloc probieren *g*
+2009-05-08 19:44:45,bluecode,"du bist zu optimistisch, selbst wenn das jetzt funktioniert heißt das noch lange nicht, dass es korrekt ist ;-)"
+2009-05-08 19:48:10,taljeth,Reh
+2009-05-08 19:48:13,Fireknight,"char* msg = (char*)memalloc(4*sizeof(char)); msg=""foo""; <- ""assignment makes integer of pointer without cast"""
+2009-05-08 19:48:28,Fireknight,Wo sollte da der Integer sein?
+2009-05-08 19:48:38,Fireknight,ehm.
+2009-05-08 19:48:46,Fireknight,"*msg=""foo"" <- da liegt der Fehler."
+2009-05-08 19:49:04,bluecode,das ist doch kaputt
+2009-05-08 19:49:16,bluecode,"""="" kopiert keine Strings"
+2009-05-08 19:49:41,Fireknight,wie geht das dann?
+2009-05-08 19:49:47,bluecode,strcpy
+2009-05-08 19:49:50,bluecode,selbst schreiben
+2009-05-08 19:49:57,chris12,moin
+2009-05-08 19:50:06,bluecode,moin chris12
+2009-05-08 19:50:19,Fireknight,"msg[0]=""f""; muesste aber gehen?"
+2009-05-08 19:50:29,mgottschlag,'f'
+2009-05-08 19:50:37,stultus1,"ansonsten, ja"
+2009-05-08 19:50:58,stultus1,taljeth: hab nen Problem.
+2009-05-08 19:51:19,bluecode,stultus1: Jidder hat sicher ein Fix xD
+2009-05-08 19:51:22,stultus1,Ich brauch entweder Erase oder ne Möglichkeit nen File innen Ram zu entpacken ;)
+2009-05-08 19:51:51,taljeth,Dann implementier eS?
+2009-05-08 19:51:58,stultus1,:(
+2009-05-08 19:52:06,stultus1,Ich hab aber KA von Pointern :/
+2009-05-08 19:52:07,taljeth,"Ich mein, Datei in den RAM entpacken sollte doch trivial sein?"
+2009-05-08 19:52:41,bluecode,"die sind doch in pascal sicher nicht anders, oder?"
+2009-05-08 19:52:52,Fireknight,"So, wer will wetten? *g*"
+2009-05-08 19:52:57,bluecode,Fireknight: auf?
+2009-05-08 19:52:59,taljeth,bluecode: Pointer sind halt Poiner
+2009-05-08 19:53:11,taljeth,"Die Syntax ist vielleicht minimal anders, aber das war's"
+2009-05-08 19:53:13,stultus1,nen gummipunkt auf GPF @ Fireknight
+2009-05-08 19:53:18,bluecode,taljeth: ^ als Syntax und ohne Arithmetik oder?
+2009-05-08 19:53:58,taljeth,Arithmetik zumindest teilweise. Inc(p) geht schon.
+2009-05-08 19:54:04,taljeth,In FPC jedenfalls
+2009-05-08 19:54:16,bluecode,da kann man sich ja dann alles zusammenbasteln :-)
+2009-05-08 19:55:07,taljeth,"Vielliecht gehen auch die üblcihen Operatoren, aber sowas braucht man ja kaum mal"
+2009-05-08 19:56:01,bluecode,huh?
+2009-05-08 19:56:11,taljeth,"Hm, irgendwo hier muß ein fkrauthan in der Nähe sein"
+2009-05-08 19:56:12,bluecode,"Selbst wenn man das nicht braucht, das baut man doch zum Spaß ein :-)"
+2009-05-08 19:56:17,taljeth,*hehe*
+2009-05-08 19:56:40,bluecode,"naja, der ist aber wenn dann noch ein ganzes Stück entfernt ;-)"
+2009-05-08 19:56:49,Fireknight,Lustigerweise ist es nicht mal ein GPF.
+2009-05-08 19:56:58,stultus1,Njo
+2009-05-08 19:57:00,bluecode,PF wäre schön
+2009-05-08 19:57:13,stultus1,strncpy und malloc wären nett ;)
+2009-05-08 19:57:28,stultus1,"Oder allgemein nen Link zu ner Funktionsreferenz, ich find keine. -,-"
+2009-05-08 19:57:39,bluecode,C?
+2009-05-08 19:57:44,stultus1,Pascal
+2009-05-08 19:57:52,bluecode,dacht ich mirs doch
+2009-05-08 19:57:53,taljeth,Move und GetMm
+2009-05-08 19:57:57,taljeth,*GetMem
+2009-05-08 19:58:01,Fireknight,"Sieht eher danach aus, als wuerde meminit failen."
+2009-05-08 19:58:07,bluecode,Move? Ihr verschiebt strings?
+2009-05-08 19:58:18,taljeth,stultus1: ftp://ftp.freepascal.org/pub/fpc/docs-pdf/rtl.pdf
+2009-05-08 19:58:28,taljeth,"bluecode: Stimmt, das war memcpy"
+2009-05-08 19:58:31,stultus1,thx
+2009-05-08 19:58:36,stultus1,memcpy tuts auch ;)
+2009-05-08 19:58:39,taljeth,"strncpy braucht man nicht, weil man nicht mit C-Strings arbeitet"
+2009-05-08 19:58:57,stultus1,hauptsache ich kann Buffer innen Speicher schieben.
+2009-05-08 19:59:14,taljeth,"Ah, gibt es sogar in HTML: http://community.freepascal.org:10000/docs-html/rtl/index.html"
+2009-05-08 20:00:29,Fireknight,oder for(i=0;i<(1024*1024*sizeof(struct mementry));i++) dauert zu lange ;)
+2009-05-08 20:00:55,bluecode,was machst du da (tm)
+2009-05-08 20:01:13,taljeth,Es dauert ihm ganz oft zu lange
+2009-05-08 20:02:18,taljeth,"bluecode: Jetzt muß ich grad mal Linux 0.01 anschauen. Wußte ich gar nicht, daß der Hardwaremultitasking macht"
+2009-05-08 20:02:47,bluecode,wußte ich vorher auch nicht
+2009-05-08 20:03:04,Fireknight,meminit sieht nach einer Endlosschlaufe aus :(
+2009-05-08 20:03:10,taljeth,Wo macht denn der das ganze Zeug?
+2009-05-08 20:03:22,bluecode,"hm, wobei mir einfällt, das ich vielleich tiefer nachsehen sollte"
+2009-05-08 20:03:29,bluecode,ich hab mir nur das fork angesehen
+2009-05-08 20:03:40,taljeth,"Ah, boot/head.S dürfte es sein, oder?"
+2009-05-08 20:03:58,taljeth,"Hm, nein, irgendwie nicht"
+2009-05-08 20:04:06,Fireknight,Yo. Das aufsetzen der mementries dauert zu lange *g*
+2009-05-08 20:29:31,stultus1,"Okay, die Nichtkalkulierbarkeit von Pointern ist doof."
+2009-05-08 20:29:58,taljeth,"""Nichtkalkulierbarkeit""?"
+2009-05-08 20:30:19,stultus1,"Jo, ich kann nicht mit denen rechnen."
+2009-05-08 20:30:40,taljeth,Was willst du denn rechnen?
+2009-05-08 20:30:43,stultus1,mehr als Addition und Multiplikation brauch ich ja nich. Nur irgendwoher muss ich wissen wo der nächste Block des Archivs hingehört.
+2009-05-08 21:03:03,DickHuuhn,Moin
+2009-05-08 21:45:48,taljeth,"stultus1: Nachdem du vorhin das Thema GUI-Team angesprochen hast, meinst du es könnte was bringen, im Forum zu versuchen so ein Team aus dem Boden zu stampfen?"
+2009-05-08 21:49:58,taljeth,FreakyPenguin: Hast du eine Meinung?
+2009-05-08 21:57:28,Fireknight,Kann es sein dass mein memset ueberdurchschnittlich langsam ist?
+2009-05-08 21:57:38,taljeth,Kann schon sein
+2009-05-08 21:57:48,taljeth,Du solltest das sleep(5) in der Schleife rausnehmen
+2009-05-08 21:57:52,Fireknight,1024*1024*sizeof(struct mementry); sollte ja wohl kaum laenger als 5 Minuten gehen.
+2009-05-08 21:58:10,Fireknight,(nach 5 Minuten hab ich aufgehoert zu messen ;) )
+2009-05-08 21:58:18,taljeth,Das kommt auf die struct mementry an
+2009-05-08 21:58:31,Fireknight,ist nur ein unsigned int
+2009-05-08 21:58:38,Fireknight,also 4 bytes.
+2009-05-08 21:58:40,taljeth,Und was machst du damit?
+2009-05-08 21:58:44,Fireknight,1024*1024*4 sind also 4MB.
+2009-05-08 21:59:00,Fireknight,"taljeth: memset(dst,0,1024*1024*4)"
+2009-05-08 21:59:06,Fireknight,ich will den Bereich mit nullen fuellen.
+2009-05-08 21:59:14,taljeth,"Wie sieht dein memset aus, meine ich"
+2009-05-08 21:59:58,taljeth,"Du willst doch nicht meine Kristallkugel durch Überlastung kaputtmachen, oder?"
+2009-05-08 21:59:59,Fireknight,http://rafb.net/p/UvIPX814.html <- so
+2009-05-08 22:00:12,Fireknight,taljeth: Neeh
+2009-05-08 22:01:21,taljeth,"Kann man wohl so implementieren. Damit 4 MB vollzuschreiben, sollte nicht ewig dauern"
+2009-05-08 22:01:31,taljeth,"Sicher, daß er da drin hängt?"
+2009-05-08 22:02:22,Fireknight,ja
+2009-05-08 22:03:07,taljeth,"Dann schau mal nach, was i ist und ob sich was vorwärtsbewegt"
+2009-05-08 22:03:25,taljeth,Oder ob das wirklich nur so langsam ist
+2009-05-08 22:05:47,Fireknight,wenn ich nur 1024*sizeof(struct mementry) mache laeuft das etwa in einer Sekunde durch.
+2009-05-08 22:06:29,Fireknight,oh.
+2009-05-08 22:06:56,Fireknight,es ist ein unsigned short im struct.
+2009-05-08 22:07:08,Fireknight,das heisst 1024*2
+2009-05-08 22:08:14,Fireknight,also.
+2009-05-08 22:08:17,taljeth,Dann kannst du ja ausrechnen. 1s * 1024 sind schon ein paar Minuten.
+2009-05-08 22:08:22,Fireknight,i ist 2097152
+2009-05-08 22:08:35,taljeth,Klingt nach 2 MB
+2009-05-08 22:08:37,Fireknight,ja
+2009-05-08 22:08:49,Fireknight,2MB auf 0 zu setzen kann doch nicht Minuten dauern?
+2009-05-08 22:10:50,Fireknight,taljeth: Erscheint in eine Endlosschleife zu fallen wenn der Wert 2MB ist.
+2009-05-08 22:10:53,Fireknight,*Er scheint
+2009-05-08 22:12:04,taljeth,"Dan schau nach, warum"
+2009-05-08 22:13:05,Fireknight,triple fault.
+2009-05-08 22:13:14,Fireknight,eigentlich fang ich exceptions ab.
+2009-05-08 22:16:44,taljeth,Kaputte Pagetables oder sowas?
+2009-05-08 22:17:02,taljeth,"Wer der Interrupthandler nicht gemappt ist, ist schnell Schluß"
+2009-05-08 22:17:35,Fireknight,war er mal.
+2009-05-08 22:17:43,Fireknight,ich konnte mal eine Double Fault Exception abfangen.
+2009-05-08 22:17:58,Fireknight,aber gcc will gerade foo /0; nicht durchgehen lassen damit ich das testen koennte.
+2009-05-08 22:18:25,taljeth,"asm volatile(""int $0"")"
+2009-05-08 22:19:04,Fireknight,[ ISR ] Divison By Zero Exception
+2009-05-08 22:19:06,pharno,hm frage
+2009-05-08 22:19:14,Fireknight,d.h das funktioniert.
+2009-05-08 22:19:18,pharno,habt ihr euch auch schon n 700mb porn per torrent geladen?
+2009-05-08 22:19:43,Fireknight,"asm(""mov $0,%edx""); asm(""div %edx""); loest also eine Exception aus die vom Kernel abgefangen wird."
+2009-05-08 22:20:16,taljeth,pharno: ECHAN
+2009-05-08 22:20:36,pharno,gibts vom chanel hier auch ne OT version?
+2009-05-08 22:20:50,taljeth,"#0,0"
+2009-05-08 22:21:25,taljeth,Fireknight: Überschreibt dein memset vielleicht irgendwelche Pagetables oder sowas?
+2009-05-08 22:21:54,Fireknight,Das waere gut moeglich.
+2009-05-08 22:22:02,Fireknight,Wo liegen die Pagetables?
+2009-05-08 22:22:03,taljeth,Das tut denen nämlich nicht so gut
+2009-05-08 22:22:17,taljeth,Dort wo du sie hinlegst?
+2009-05-08 22:22:26,taljeth,"Aus deiner Frage schließe ich, daß du noch kein Paging hasT?"
+2009-05-08 22:22:33,Fireknight,ich schreibe die 2MB genau nach meinem Kernel.
+2009-05-08 22:22:54,Fireknight,"Ich link ein ""global kernel_end; kernel_end:"" an. Und schreibe direkt nach kernel_end"
+2009-05-08 22:22:57,Fireknight,"Und nein, noch kein Paging."
+2009-05-08 22:23:11,taljeth,"Hast du mal geschaut, wie der Triple Fault zustandekommt?"
+2009-05-08 22:23:27,taljeth,qemu mit -d int oder bochs mit einem geeigneten Loglevel dürften da sicher was dazu sagen
+2009-05-08 22:25:35,Fireknight,http://rafb.net/p/50ujxF72.html <_ waere mal log.
+2009-05-08 22:25:50,Fireknight,sieht nach gpf aus
+2009-05-08 22:26:11,Fireknight,check_exception old: ffffffff soll fuer GPF stehen soweit man mir mal gesagt hat.
+2009-05-08 22:26:19,Fireknight,"wo die interrupt nummer steht, kA"
+2009-05-08 22:27:06,taljeth,Das ist Blödsinn
+2009-05-08 22:27:23,taljeth,"ffffffff steht für ""das ist der erste Interrupt"""
+2009-05-08 22:27:40,taljeth,"Danach kommt ""check_exception old: d new d"" => Double Fault"
+2009-05-08 22:28:01,taljeth,"Und dann ""check_exception old: 8 new d"" (8 ist Double Fault) => Triple Fault"
+2009-05-08 22:28:32,Fireknight,und kann mir qemu sagen was den double fault ausloest?
+2009-05-08 22:28:46,taljeth,Der GPF beim Behandeln des GPFs
+2009-05-08 22:28:58,taljeth,"Das ist genau, was dir das ""check_exception old: d new d"" sagt"
+2009-05-08 22:29:32,Fireknight,Dann ueberschreibe ich also irgendwas was ich nicht sollte.
+2009-05-08 22:29:45,Fireknight,und das obwohl ich im Ring 0 bin?
+2009-05-08 22:30:11,taljeth,Und zwar passiert das direkt nach dem v=20
+2009-05-08 22:30:23,taljeth,"Wenn du den PIC so programmiert hast, wie wir das normal tun, ist das der Timer"
+2009-05-08 22:30:24,Fireknight,Wofuer steht das v?
+2009-05-08 22:30:31,Fireknight,ok.
+2009-05-08 22:30:32,taljeth,Interruptnummer
+2009-05-08 22:30:35,taljeth,v wie Vektor
+2009-05-08 22:30:54,Fireknight,IRQ0 sollte aber int 32 sein.
+2009-05-08 22:31:01,Fireknight,"ah, das ist pit."
+2009-05-08 22:31:01,taljeth,Das ist Hex
+2009-05-08 22:31:04,Fireknight,oh.
+2009-05-08 22:31:05,Fireknight,*g*
+2009-05-08 22:31:08,Fireknight,Alles klar.
+2009-05-08 22:31:17,Fireknight,dann ueberschreibe ich wohl die idt?
+2009-05-08 22:31:33,taljeth,"Wenn der Timer vorher mal funktioniert hat, könnte das wohl sein"
+2009-05-08 22:31:46,Fireknight,hat er @funktioniert.
+2009-05-08 22:32:06,taljeth,Wo legst du denn die IDT hin?
+2009-05-08 22:32:36,taljeth,"Oder wart... War da nicht vorher was, daß bluecode dir gesagt hat, daß deine Methode zum bestimmten des Kernelendes kaputt ist?"
+2009-05-08 22:32:59,Fireknight,kA.
+2009-05-08 22:33:12,Fireknight,Ich erwarte von ld eigentlich dass kend.o am Schluss liegt?
+2009-05-08 22:33:27,taljeth,"Wenn du es ihm nicht sagst, liegt es erstmal irgendwo"
+2009-05-08 22:33:27,Fireknight,Aber bluecode deutet etwas mit dem linkerscript an.
+2009-05-08 22:34:14,taljeth,Dann solltest du das vielleicht machen
+2009-05-08 22:34:23,taljeth,Ab und zu hat nämlich sogar bluecode recht
+2009-05-08 22:34:52,Fireknight,Ich gab ihm ja nicht unrecht.
+2009-05-08 22:35:11,taljeth,Außer daß du ihn halt ignoriert hast
+2009-05-08 22:35:15,Fireknight,"Ich glaube euch eigentlich ziemlich alles, da ich selber sehr neu bin im osdev ;)"
+2009-05-08 22:35:43,Fireknight,taljeth: Oder nicht verstanden.
+2009-05-08 22:36:36,taljeth,"Daß du ein Linkerskript benutzen sollst, hast du ja offensichtlich schon verstanden"
+2009-05-08 22:39:23,Fireknight,Eigentlich ist das eher vom Wiki kopiert ;)
+2009-05-08 22:39:38,taljeth,"Macht ja nichts, solange es tut"
+2009-05-08 22:40:09,taljeth,Linkerskripte sind ja im Prinzip ganz einfach und nur im Detail unverständlich
+2009-05-08 22:41:29,Fireknight,das . = 0x00100000 legt die Startadresse fest?
+2009-05-08 22:41:36,taljeth,Jo
+2009-05-08 22:41:47,taljeth,". ist die aktuelle Adresse, an der der Linker grad ist"
+2009-05-08 22:42:02,taljeth,"Dort wird dann eingefügt, was halt auch immer als nächstes im Skript kommt"
+2009-05-08 22:42:16,Fireknight,dann kommt eine text sektion eine rodata und eine data
+2009-05-08 22:42:17,taljeth,Zum Beispiel ein kernel_start = .;
+2009-05-08 22:42:23,Fireknight,und bss.
+2009-05-08 22:42:32,Fireknight,Danach muessten dann meine video.o irq.o etc. kommen?
+2009-05-08 22:42:50,taljeth,"Nein, Dateien sind dem Linker egal"
+2009-05-08 22:42:58,taljeth,Es geht nach Sektionen
+2009-05-08 22:43:05,taljeth,"Ist es für dich wichtig, welche Datei wo liegt?"
+2009-05-08 22:43:24,Fireknight,"Der Code von kend.asm (-> kend.o) sollte ganz am Schluss liegen, ja."
+2009-05-08 22:43:34,Fireknight,Sonst ist die Funktion kernel_end nicht ganz am Schluss.
+2009-05-08 22:43:44,taljeth,Die gehört dort nicht rein
+2009-05-08 22:44:01,taljeth,kernel_end muß im Linkerskript definiert werden
+2009-05-08 22:44:46,taljeth,Du schreibst vor das .text ein  kernel_start = .; und hinter die letzt Sektion (bss vermutlich) ein kernel_end = .;
+2009-05-08 22:45:12,taljeth,"Und dann deklarierst du das in C als ein externes irgendwas, am besten als Funktion"
+2009-05-08 22:45:27,taljeth,Aber du kannst auch eine Variable machen
+2009-05-08 22:46:03,taljeth,"Das Kernelende kriegst du dann über &kernel_end raus (was bei einer Funktion dasselbe wie kernel_end ohne & ist, deswegen ist dieser Trick toll)"
+2009-05-08 22:52:26,Fireknight,triple faultet wohl immer noch :(
+2009-05-08 22:54:32,Fireknight,Normalerweise wuerde ein GPF ja die ISR 13 oder so aufrufen.
+2009-05-08 22:54:50,Fireknight,"also sieht es so aus, als wuerde ich die IDT immer noch ueberschreiben :("
+2009-05-08 22:55:26,taljeth,"Gib dir halt mal die Adresse aus, an der die IDT liegt und den Bereich, der überschrieben wird"
+2009-05-08 22:55:33,taljeth,"Dann siehst du schnell, ob das was böses passiert"
+2009-05-08 22:56:53,Fireknight,(kernel_end + 0xF) = 0x10338f
+2009-05-08 22:59:32,Fireknight,IDT = 0x103040
+2009-05-08 22:59:54,Fireknight,d.h die idt liegt unter kernel_end
+2009-05-08 23:00:59,Fireknight,"was passiert wenn man an Speicher schreibt, den es nicht gibt?"
+2009-05-08 23:01:04,PopUp,ich geh off
+2009-05-08 23:01:07,PopUp,cya
+2009-05-08 23:01:09,Fireknight,"z.b wenn ich nach 1GB schreiben will, aber nur 512MB Ram hat?"
+2009-05-08 23:01:32,taljeth,Vermutlich nichts
+2009-05-08 23:01:48,taljeth,"Mit etwas ""Glück"" triffst du einen MMIO-Bereich"
+2009-05-08 23:02:22,Fireknight,"Gibt es keine Stelle im Speicher bei dem man weiss, dass da definitiv nichts ist? ;P"
+2009-05-08 23:02:39,taljeth,"Öh, nein?"
+2009-05-08 23:03:40,Fireknight,"Und woher will ein OS wissen, ob da was ist oder nicht?"
+2009-05-08 23:04:13,Fireknight,Angenommen mein Kernel waere 2MB groesser.
+2009-05-08 23:04:22,Fireknight,Dann wuerde ja schon GRUB beim Laden diesen Bereich ueberschreiben?
+2009-05-08 23:04:48,taljeth,Welcher Bereich?
+2009-05-08 23:05:01,Fireknight,"den, den ich jetzt mit memset ueberschreibe."
+2009-05-08 23:05:20,taljeth,"Das sollte das OS selbst wissen, ob es da was liegen hat, was es noch braucht"
+2009-05-08 23:06:05,Fireknight,Ich habe da nichts liegen.
+2009-05-08 23:06:23,taljeth,Wo liegt deine GDT?
+2009-05-08 23:07:05,Fireknight,schwierig zu sagen.
+2009-05-08 23:07:07,Fireknight,die laedt grub irgendwo hin.
+2009-05-08 23:08:05,Fireknight,ah
+2009-05-08 23:08:12,Fireknight,GDT = 00009108 00000027
+2009-05-08 23:08:13,taljeth,Wie tun dann deine Interrupts?
+2009-05-08 23:08:29,taljeth,"IDT ohne GDT geht irgendwie schlecht, oder?"
+2009-05-08 23:08:42,Fireknight,taljeth: GDT hab ich schon. Aber GRUB laedt die mir.
+2009-05-08 23:08:51,Fireknight,Ich mach nichts mit der GDT.
+2009-05-08 23:09:08,taljeth,"Dir ist aber schon klar, daß es völlig undefiniert ist, was dir GRUB für eine GDT hinstellt?"
+2009-05-08 23:09:26,Fireknight,Jetzt schon.
+2009-05-08 23:12:02,Fireknight,Das wird jetzt sicher ein gefrickel die zu aendern :-*
+2009-05-08 23:12:28,Fireknight,oder laedt man die am Besten ganz neu?
+2009-05-08 23:12:38,Fireknight,das waere wohl einfacher.
+2009-05-08 23:13:16,Fireknight,"Wenn der Kernel einen GPF begeht, wird wohl kein GPF-Interrupt ausgefuehrt?"
+2009-05-08 23:18:49,taljeth,"Die solltest du ganz neu machen, ja"
+2009-05-08 23:18:59,taljeth,Und natürlich wird der GPF ausgeführt
+2009-05-08 23:19:06,taljeth,"Außer halt, der Handler tut nicht"
+2009-05-08 23:22:40,Fireknight,hm. ist euer websvn kaputt?
+2009-05-08 23:23:13,taljeth,Kann sein. Nimm das git.
+2009-05-08 23:23:50,taljeth,Also bei mir tut auch das WebSVN
+2009-05-08 23:27:25,Fireknight,Archivdownload geht auch.
+2009-05-08 23:27:49,Fireknight,Mal von euch gdt abgucken *g*
+2009-05-08 23:27:54,taljeth,Mach das
+2009-05-08 23:27:56,taljeth,Ich geh dann mal
+2009-05-08 23:27:57,taljeth,gn8
+2009-05-08 23:28:05,Fireknight,gn8 und thx fuer deine/eure Hilfe
+2009-05-08 23:28:16,Fireknight,und die Geduld ;)
+2009-05-08 23:28:49,taljeth,"Ach, solange man nicht merkt, daß der Fall hoffnungslos ist, gerne ;-)"
+2009-05-08 23:51:34,chris12,nacht ich fang schon an über nicht lustige witze zulachen es wird zeit ....

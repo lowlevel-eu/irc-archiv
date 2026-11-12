@@ -1,0 +1,101 @@
+date/time,nick,message
+2013-10-02 10:17:28,alexander,Morgen
+2013-10-02 13:02:29,alexander,"Wie, Paddy? Urlaub?"
+2013-10-02 13:05:46,max,Überhaupt nicht
+2013-10-02 13:05:54,max,"Gestern hat er mir noch gesagt, was alles bei týndur gefixt werden muss"
+2013-10-02 13:06:31,Paddy,"In Paddygree gäbe es vorher auch noch genug zu tun, keine Sorge"
+2013-10-02 15:56:52,Guest1151,Ahoi
+2013-10-02 16:32:45,Jonathan,moin
+2013-10-02 17:19:22,tufel,huhu
+2013-10-02 17:19:46,Manello,"Woher finde ich über Den Floppy Driver raus, wie viele zylinder oder seiten die diskette hat?"
+2013-10-02 17:32:59,Darkchaos,"soo, ich glaube bald habe ich das paging im griff"
+2013-10-02 17:33:09,Darkchaos,nur was kommt dann?
+2013-10-02 17:33:25,Darkchaos,printf() und gescheites COM-Debugging?
+2013-10-02 17:37:34,Darkchaos,Oder die ersten Schritte gen libc
+2013-10-02 17:59:18,mgottschlag,Darkchaos: ich würde so schnell wie möglich ein möglichst gutes printf haben
+2013-10-02 17:59:20,mgottschlag,wollen
+2013-10-02 17:59:38,mgottschlag,"das ist nur dann erlässlich, wenn du gdb-integration hast"
+2013-10-02 17:59:56,Darkchaos,Wobei ich doch da auch eine gute Implementation aus dem Netz übernehmen könnte
+2013-10-02 18:00:50,mgottschlag,klar
+2013-10-02 18:01:51,Paddy,Erstmal eine gute finden
+2013-10-02 18:04:01,mroman_,printf-debugging
+2013-10-02 18:04:24,mroman_,C koennte eigentlich ruhig dbgprintf in die stdlib nehmen :)
+2013-10-02 18:04:39,mroman_,das natuerlich als Makro mit #ifdef DEBUG implementiert ist .
+2013-10-02 18:20:31,Darkchaos,"Nochmals zum Rekursiven Mapping: PD = PD[1023]. Wenn ich nun aber auf die PageTable 3 zugreifen möchte, wie komme ich darauf? Ich bin gerade geistig blockiert"
+2013-10-02 18:21:19,mgottschlag,"naja, wo ist den der 3. PD-Eintrag in einer PD zu finden, d.h. wie traversierst (?) du deine Strukturen, um dahin zu kommen?"
+2013-10-02 18:21:22,mgottschlag,*in einer PT
+2013-10-02 18:21:49,mgottschlag,"also, wo ist die Adresse der Pagetable in deinen Paging-Strukturen zu finden, meine ich"
+2013-10-02 18:21:56,mgottschlag,die existiert ja an zwei Punkten
+2013-10-02 18:25:39,Darkchaos,"naja, normalerweiße wäre die pt an PD[1023][3];"
+2013-10-02 18:25:53,Darkchaos,aber da sind ja immer nur physische adressen
+2013-10-02 18:26:16,Darkchaos,deswegen tippe ich eher auf (pd[1023] + 3 * sizeof(pt))
+2013-10-02 18:28:15,Darkchaos,"oder ist pd[1023][3]; identisch? (Vorausgesetzt der compiler wüsste, dass pt 4096 byte groß ist)"
+2013-10-02 18:29:59,Darkchaos,mgottschlag?
+2013-10-02 18:30:35,mgottschlag,"öhm, ich denke mal, du meinst das richtige"
+2013-10-02 18:30:42,Darkchaos,obwohl moment
+2013-10-02 18:30:45,mgottschlag,"d.h., der erste Index ist 1023, der zweite 3"
+2013-10-02 18:31:05,Darkchaos,die PageTable ist an &pd[1023][3]. Aber nicht an *(&pd[1023][3])
+2013-10-02 18:31:09,mgottschlag,"das macht 1023 * 4MB + 3 * 4kB, damit bekommst du die Adresse, an der der Inhalt der Seite ist"
+2013-10-02 18:31:25,mgottschlag,"Darkchaos: ich will nicht wissen, wie dus in C implementierst, ich will nur das Verständnis ^^"
+2013-10-02 18:31:44,Darkchaos,"genau. Aber nicht, wie man vermuten würde, dass an der Adresse, die Adresse der Pagetable steht"
+2013-10-02 18:32:46,Darkchaos,"also normalerweiße müsste man ja 1023 * 4MB + 3 * 4B nach einer Adresse auslesen, dem istaber nicht so"
+2013-10-02 18:36:45,mgottschlag,hä?
+2013-10-02 18:37:43,mgottschlag,"der Eintrag in einer Pagetable verursacht, dass die 4kB an dieser Adresse (1023 * 4MB + 3 * 4kB) mit den 4kB hinter der dort hinterlegten Adresse ersetzt werden"
+2013-10-02 18:37:56,mgottschlag,d.h. die *Daten* hinter dem PT-Eintrag werden in den Adressraum gemappt
+2013-10-02 18:41:53,Darkchaos,"ja. Aber prinzipiell gesehen bin ich mit pd[1023] erst im Page-Directory. Normalerweiße sind dort die physischen Adressen der Page-Tables zu finden. Der Clou an dem Trick ist aber, dass wir nicht die Physische Adresse verfolgen dürfen, sondern dass die Adresse bereits die Page ist"
+2013-10-02 18:44:33,Darkchaos,Ich glaube ich sehe das einfach zu kompliziert
+2013-10-02 18:44:42,mgottschlag,hm?
+2013-10-02 18:45:01,Darkchaos,"Aber mal so: Jedes mal wenn ich eine neue PT anlege oder entferne, muss ich doch prinzipiell auch das rekurisve Mapping erneuern, oder?"
+2013-10-02 18:45:21,mgottschlag,"das, was du da gesagt hast, trifft auf PD[3] zu in deinem Beispiel, aber nicht PD[1023] - letzteres wird wie immer als PT-Adresse interpretiert"
+2013-10-02 18:45:24,mgottschlag,ne
+2013-10-02 18:45:47,mgottschlag,"das rekursive Mapping besteht ja nur aus dem Eintrag PD[1023], und der ändert sich nicht, wenn sich die Adresse von PD nicht ändert"
+2013-10-02 18:46:58,Darkchaos,"achso, es wird ja immer auf die physischen daten zugegriffen"
+2013-10-02 18:47:05,Darkchaos,quasi ein pointer
+2013-10-02 18:50:40,Darkchaos,"und PAGE_PRESENT ist auf der page_table direkt, nicht auf dem page_directory"
+2013-10-02 18:50:58,Darkchaos,weil ich da ein komisches konstrukt habe. pd[entry] & PAGE_PRESENT
+2013-10-02 18:51:02,Darkchaos,ach nein
+2013-10-02 18:51:20,Darkchaos,das ist _nicht_ auf der page_table sondern noch im directory
+2013-10-02 18:53:58,mgottschlag,"naja, rekursives Mapping bedeutet, dass das pagedir auch als page table fungiert"
+2013-10-02 18:54:03,Darkchaos,"dazu bräuchte ich dann ""1023 * 4MB + 3 * 4kB"", weil das der 3. PD eintrag ist"
+2013-10-02 18:54:10,Darkchaos,aber das ist doch zugleich die page_table
+2013-10-02 18:54:36,mgottschlag,hm?
+2013-10-02 18:54:48,Darkchaos,"normalerweiße wäre ja die page_table nun an der Adresse ""... 3 * 4kB & PD_KILLALLFLAGS"""
+2013-10-02 18:55:20,Darkchaos,"naja. Ich habe ein Problem. Die Flags der einzelnen page_tables müssten an ""1023 * 4MB + entry * 4096"" liegen"
+2013-10-02 18:55:35,mgottschlag,was?
+2013-10-02 18:55:50,mgottschlag,"nein, da liegen die *Daten*, die gemappt werden"
+2013-10-02 18:56:08,Darkchaos,Wie komme ich dann auf die flag ob eine page_table schon existiert oder noch gemappt werden muss?
+2013-10-02 18:56:22,mgottschlag,"1023 * 4MB + entry * 4096 ist eine virtuelle Adresse, die aufgelöst wird, indem erst der 1023. Eintrag der PD und dann der 3. Flag der PT verfolgt wird"
+2013-10-02 18:56:27,mgottschlag,Darkchaos: die Flags stehen im PD
+2013-10-02 18:56:34,mgottschlag,und nur da
+2013-10-02 19:01:11,Darkchaos,Ich möchte nun aber herrausfinden ob 1023*4MB + entry *4k überhaupt existiert
+2013-10-02 19:01:47,mgottschlag,"dann machst du das, was die CPU machen würde - du löst die Adresse auf"
+2013-10-02 19:01:55,Darkchaos,könnteja das erste mapping im 4MB bereich sein
+2013-10-02 19:01:59,mgottschlag,"indem du erst im Pagedir nachschlägst, ob da was steht"
+2013-10-02 19:05:12,Darkchaos,"naja, pd[1023] ist ja das page_dir in dem sinne"
+2013-10-02 19:05:21,Darkchaos,und wenn dann + entry * 4096 == null?
+2013-10-02 19:11:02,mgottschlag,"ja, das kannst du ja ablesen"
+2013-10-02 19:11:29,mgottschlag,"zum Beispiel in pd[1023][1023], da ist nämlich an 1023 * 4MB + 1023 * 4kB das Pagedir selbst rekursiv gemappt"
+2013-10-02 19:33:53,DerHartmut,hallo
+2013-10-02 19:36:42,Darkchaos,Hallo DerHartmut
+2013-10-02 19:37:54,Darkchaos,"mgottschlag: Das heißt, pd[1023][1023][entry] & PAGE_PRESENT?"
+2013-10-02 19:38:12,Darkchaos,und pd[1023][1023][entry] enthält die physische adresse der pt
+2013-10-02 19:38:48,mgottschlag,"joa, klingt richtig"
+2013-10-02 19:57:42,DerHartmut,Hi Darkchaos 
+2013-10-02 20:43:26,tufel,huhu
+2013-10-02 20:43:58,tufel,werden if-verzweigungen in vhdl parallel abgearbeitet ?
+2013-10-02 21:03:40,mgottschlag,tufel: ja
+2013-10-02 21:03:53,tufel,mmh ok
+2013-10-02 21:04:27,tufel,gibts ne möglichkeit verzweigungen hintereinander abzuarbeiten?
+2013-10-02 21:04:38,mgottschlag,warum möchtest du das?
+2013-10-02 21:06:37,tufel,"naja für meinen shifter, ich möchte nicht 16 verschiedene Verzweigungen haben, sondern nur 4 : codeviewer.org/view/code:3718"
+2013-10-02 21:06:55,tufel,http://codeviewer.org/view/code:3718
+2013-10-02 21:08:30,mgottschlag,"aber die musst du nicht ""nacheinander"" ausführen"
+2013-10-02 21:08:46,mgottschlag,du musst nur das Ergebnis des einen ans andere geben
+2013-10-02 21:08:49,mgottschlag,über eine variable
+2013-10-02 21:09:14,tufel,also brauch ich 4 Variablen ?
+2013-10-02 21:09:32,mgottschlag,"je nachdem, wie dus machst, joa"
+2013-10-02 21:56:06,tufel,"cool es tut, danke mgott :D"
+2013-10-02 22:12:14,tufel,werden die variablen einer Funktion immer resetet wenn diese in einem Prozess neu aufgerufen wird ?
+2013-10-02 22:14:53,mgottschlag,"kP, mit Funktionen hab ich in VHDL praktisch nie gearbeitet"
+2013-10-02 22:15:43,tufel,naja ich teste es einfach mal :D
+2013-10-02 22:32:07,tufel,"mmh joar sieht so aus, als würden sich die werte reseten..."

@@ -1,0 +1,287 @@
+date/time,nick,message
+2016-08-06 00:01:18,Paddy,"Das ist so eine Frage, wo die korrekte Antwort nur ""kommt drauf an"" sein kann"
+2016-08-06 00:01:29,Paddy,"Wenn du anschließend nicht mehr darauf zugreifst, nein"
+2016-08-06 00:02:01,Paddy,"Wenn du sie noch brauchst, vielleicht ;-)"
+2016-08-06 00:02:54,MasterQ32,"nun, ich würde hier vollassoziativen cache für sowohl FAT selbst als auch für sektoren verwenden"
+2016-08-06 00:03:22,MasterQ32,aber eben getrennt
+2016-08-06 00:03:28,MasterQ32,ich muss ja nicht die ganze FAT im RAM halten
+2016-08-06 00:04:01,Paddy,"Für die FAT macht es vermutlich Sinn. Und für die Daten kommt es echt darauf an, was die Programme mache."
+2016-08-06 00:04:29,MasterQ32,joar
+2016-08-06 00:04:38,MasterQ32,"schaden kanns nicht, im zweifel ist es mehr gewinn als verlust"
+2016-08-06 00:04:42,MasterQ32,vorallem wenn man viel seeked
+2016-08-06 00:05:20,Paddy,"Kommt drauf an, wohin man seekt"
+2016-08-06 00:05:38,MasterQ32,stimmt
+2016-08-06 00:05:43,Paddy,Aber für byteweises sequenzielles Lesen hilft so ein Cache schon enorm
+2016-08-06 00:05:46,MasterQ32,jup
+2016-08-06 00:06:01,Paddy,"Wobei der Fall natürlich noch besser optimiert wird, wenn man nicht mehr byteweise liest... ;-)"
+2016-08-06 00:06:04,MasterQ32,:D
+2016-08-06 00:06:28,MasterQ32,"naja, kommt auf den dateityp an ;)"
+2016-08-06 00:06:29,MasterQ32,:D
+2016-08-06 00:06:41,MasterQ32,aber grade bei ner ELF seeke ich halt am anfang irgendwo rum
+2016-08-06 00:06:47,MasterQ32,und dann straight nach hinten durch lesen
+2016-08-06 00:06:53,MasterQ32,das ist ja der hauptanwendungsfall
+2016-08-06 00:07:06,Paddy,"Also ich finde, mit ""kommt drauf an"" war mein erster Versuch schon recht nah dran *g*"
+2016-08-06 00:12:12,Quantenmagier,hm woher weiß man wie groß der stack bei ner elf sein muß?
+2016-08-06 00:12:52,Quantenmagier,"ich hab immer pauschal 4k vergeben, aber wenn das nicht reicht, hab ich ja nen overflow"
+2016-08-06 00:15:27,Jonathan,"Quantenmagier: Weiß man nicht, der Stack sollte dynamisch wachsen können"
+2016-08-06 00:15:32,Jonathan,(Guard Pages)
+2016-08-06 00:15:40,Quantenmagier,und wenn man keine pages hat?
+2016-08-06 00:15:53,Jonathan,Dann hat man ein Problem :D
+2016-08-06 00:16:17,Jonathan,Du kannst doch das Stack-Segment resizen?
+2016-08-06 00:17:00,Quantenmagier,"schon, aber das problem ist gcc schient zu erwarten daß das stacksegment mit dem datensegment übereinstimmt von der addressierung, dh ich muß es bei 0 beginnen lassen"
+2016-08-06 00:17:36,Quantenmagier,und dann kann man es nicht mehr resizen
+2016-08-06 00:18:10,Jonathan,"Klingt nach ""ist doof, funktioniert nur mit Paging"""
+2016-08-06 00:18:30,Quantenmagier,"joa, voll dumm irgendwie"
+2016-08-06 00:24:00,Quantenmagier,"""At least, not using traditional Data Segments anyway, which is why Intel designed Expand Down Segments."""
+2016-08-06 00:24:11,Quantenmagier,ok werd ich mir die mal ungucken
+2016-08-06 00:24:30,Quantenmagier,das hab ich bei osdev gefunden in dem wiki steht es geht nur mir expand down segments
+2016-08-06 00:27:26,Quantenmagier,hoffentlich vertragen sich expand down segments mit gcc-output sonst mach ich das umsonst
+2016-08-06 00:30:28,Paddy,Mit denen müsste es gehen
+2016-08-06 00:31:56,Quantenmagier,"ich hoffe, aber es geht nur wenn gcc den stack nicht benutzt um auf das datensegment zuzugreifen oder so"
+2016-08-06 00:32:57,Quantenmagier,ich glaub wenn mein os fertig ist is es eines der besten x86 OSes die ohne paging gut sind :D
+2016-08-06 00:34:42,Quantenmagier,"wobei ich pagimg ja auch noch implementieren will, aber das hat keine priorität und flat mode paging kann ich ja schon nur das bringt nix ^^"
+2016-08-06 00:39:09,Quantenmagier,"meint ihr 64k maximaler stack reichen, weil wenn ich mehr mache funktioniert der speicherschutz nicht mehr aufgrund des designs der expand down pages"
+2016-08-06 00:43:03,Quantenmagier,"lol ""the CPU is still adding the offset to the Base - but since the offset is so large it's effectively negative"""
+2016-08-06 00:59:20,Quantenmagier,"""a nommu system can't automatically grow the stack (no ""guard page"" faults)"" - http://nommu.org/"
+2016-08-06 00:59:36,Quantenmagier,interessantes projekt dieses nommu linux
+2016-08-06 10:46:33,MasterQ32,morgen
+2016-08-06 11:00:41,Quantenmagier,moin
+2016-08-06 11:02:35,Quantenmagier,"man macht ja free immer nur mit der adresse des speichers die freigegeben werden soll und läßt die länge weg, kann ich einfach 4 byte mehr beim malloc reservieren und dadrin die länge speichern, so daß er die länge beim freigeben kennt oder sollte ich das besser extern speichern, damit c programme mit fehlerhafter adressierung z.B. [-1] den längenwert nicht überschrieben?"
+2016-08-06 11:03:05,MasterQ32,"ja, das hab ich mir auch schon überlegt"
+2016-08-06 11:03:17,Quantenmagier,ah ok und zu welchem schluss bist du gekommen?
+2016-08-06 11:03:23,MasterQ32,"ich speicher meine malloc-werte in einer linked list mit einer struktur, welche so aussieht:"
+2016-08-06 11:03:54,MasterQ32,struct { uint32_t magic; uint32_t length; void *next; char data[0]; }
+2016-08-06 11:03:59,MasterQ32,also dirket die linked list
+2016-08-06 11:04:14,MasterQ32,ist anfällig gegen fehlerhafte addressierung
+2016-08-06 11:04:33,MasterQ32,aber ich kann fehlerhafte addressierung beim nächsten malloc/free feststellen und das programm beenden oder sonst wie darauf reagieren
+2016-08-06 11:04:41,Quantenmagier,was is magic? willst du damit testen ob ne fehladresseirung aufgetreten ist?
+2016-08-06 11:04:44,MasterQ32,ja
+2016-08-06 11:05:04,MasterQ32,das ist nen hashcode über alle sonstigen einträge des listeneintrags
+2016-08-06 11:05:28,MasterQ32,"das problem mit der externen liste ist, dass du zwei heaps brauchst, deren größe du im zweifel nicht kennst"
+2016-08-06 11:05:57,Quantenmagier,was ist denn char data[0] sind das die mit malloc angeforderten daten?
+2016-08-06 11:08:48,MasterQ32,ja
+2016-08-06 11:09:14,MasterQ32,"ist jetzt nur so dargestellt, im endeffekt liegt das struct an (char*)malloc() - sizeof(list)"
+2016-08-06 11:09:40,Quantenmagier,aso
+2016-08-06 11:10:58,MasterQ32,"ich hab gestern rausgefunden, wie ich um eine malloc im kernel komme und trotzdem FILE supporten kann :)"
+2016-08-06 11:12:09,Quantenmagier,ah ok mit nem puffer?
+2016-08-06 11:14:36,Quantenmagier,"das problem mit FILE support hab ich momentan auch, mein kernel benutzt zwar dateien, aber für meien c bibliothek hab ich noch kein gutes konzept"
+2016-08-06 11:18:36,MasterQ32,ich allokier das FILE-struct einfach beim User :D
+2016-08-06 11:26:27,Quantenmagier,ah ok dein FILE is also ein struct? meins is nen (unsigned int*)
+2016-08-06 11:26:38,Quantenmagier,öhm nee nicht pointer
+2016-08-06 11:26:42,Quantenmagier,nur unsigned int
+2016-08-06 11:26:54,MasterQ32,warum sollte es kein struct sein? :D
+2016-08-06 11:28:29,Quantenmagier,hm ja stimmt schon kann ja theoretisch alles beliebige sein
+2016-08-06 11:29:29,Quantenmagier,"aber der user wird ja meist FILE *datei benutzen und das nicht initialisieren, wie initialisierst du das zur compilezeit, außer den platz für den pointer im .bss zu haben?"
+2016-08-06 11:30:11,MasterQ32,FILE *fopen() sieht ungefähr so aus:     FILE *fopen() { FILE *f = malloc(sizeof(FILE)); ... return f; }
+2016-08-06 11:30:23,MasterQ32,und fclose() macht einfach nen free(FILE *f) { free(f); }
+2016-08-06 11:30:37,Quantenmagier,öhm also hast du doch malloc
+2016-08-06 11:30:59,MasterQ32,ja
+2016-08-06 11:31:02,MasterQ32,aber im user space :D
+2016-08-06 11:31:08,Quantenmagier,aso dir ging es nur darum das malloc im kernel zu beseitigen
+2016-08-06 11:31:11,MasterQ32,richtig
+2016-08-06 11:31:19,Quantenmagier,joa das geht so natürlich
+2016-08-06 11:31:47,MasterQ32,"und das kernel-fopen sieht quasi so aus: SYSCALLS.fopen(filePtr, ""fileName"", ""r"")"
+2016-08-06 11:31:48,MasterQ32,:D
+2016-08-06 11:32:05,Quantenmagier,der userspace hat dann natürlich macht über die filestruktur und könnte da falsche werte eintragen um böse sachen zu machen und fremde dateien zu schreiben ^^
+2016-08-06 11:32:23,MasterQ32,örm
+2016-08-06 11:32:30,MasterQ32,"was ist eine ""fremde"" datei? :D"
+2016-08-06 11:32:34,Quantenmagier,xD
+2016-08-06 11:33:00,Quantenmagier,ich geb zu SurO kennt das Konzept von mein und dein auch (noch) nicht. ^^
+2016-08-06 11:33:10,MasterQ32,ich hab kein multitasking
+2016-08-06 11:33:12,MasterQ32,:D
+2016-08-06 11:33:25,Quantenmagier,aso
+2016-08-06 11:36:19,MasterQ32,"ich hab grade nach dem känguru-zitat gesucht: ""Mein, Dein, das sind doch bürgerliche Kategorien."""
+2016-08-06 11:36:23,MasterQ32,habe dabei das hier gefunden: https://www.youtube.com/watch?v=kelqsUjsr0k
+2016-08-06 11:37:11,Quantenmagier,"""+c""(((unsigned int)pos)[-1])"
+2016-08-06 11:37:17,MasterQ32,uarks :D
+2016-08-06 11:37:25,Quantenmagier,müßte doch gehen oder nicht? :D
+2016-08-06 11:37:43,Quantenmagier,aso hab den * vergessen
+2016-08-06 11:37:47,MasterQ32,:P
+2016-08-06 11:38:01,Quantenmagier,"""+c""(((unsigned int*)pos)[-1])"
+2016-08-06 11:38:44,Paddy,MasterQ32: FILE im Kernel macht man nicht
+2016-08-06 11:38:49,Paddy,Das ist zu highlevel
+2016-08-06 11:38:58,MasterQ32,hm?
+2016-08-06 11:39:03,MasterQ32,was wäre dann das richtige level?
+2016-08-06 11:39:42,Paddy,"FILE ist eine Usermode-libc-Abstraktion um das OS-Interface rum, die Sachen wie Buffering dazupackt (weswegen ein einfacher int vermutlich auch nicht genug ist)"
+2016-08-06 11:39:51,Paddy,Wozu willst du sowas im Kernel haben?
+2016-08-06 11:40:12,Paddy,"Ein einfaches read(fd, offset, size, buf) ist doch gut genug"
+2016-08-06 11:40:21,MasterQ32,und was tut das anders als ein FILE? :D
+2016-08-06 11:40:25,Paddy,Oder meinetwegen noch ein readv
+2016-08-06 11:40:30,Paddy,Es puffert nicht ;-)
+2016-08-06 11:40:35,MasterQ32,macht FILE auch nicht? :P
+2016-08-06 11:40:39,Paddy,Doch
+2016-08-06 11:40:41,MasterQ32,*duckÜ
+2016-08-06 11:40:52,Paddy,Wie implementierst du sonst fungetc?
+2016-08-06 11:41:18,Paddy,"Hm, blödes Beispiel, das ist nochmal ein extra Puffer, glaube ich *g*"
+2016-08-06 11:41:35,Quantenmagier,klingt nach fun :D
+2016-08-06 11:41:38,Paddy,Aber der Puffer ist eigentlich das Hauptfeature von FILE
+2016-08-06 11:41:45,MasterQ32,"fungetc wird einfach zu seek(f, -1, SEEK_CUR)"
+2016-08-06 11:41:45,MasterQ32,:D
+2016-08-06 11:42:17,Paddy,Mit anschließendem write? ;-)
+2016-08-06 11:42:40,Paddy,Weil fungetc packt ja ein beliebiges Zeichen rein
+2016-08-06 11:42:48,Paddy,"Nicht unbedingt das, was man vorher gelesen hat"
+2016-08-06 11:43:16,Paddy,Du kannst natürlich auch ein FILE ohne alles das basteln
+2016-08-06 11:43:45,Paddy,"Nur frage ich mich immer, warum Leute die Funktionsnamen aus dem Standard benutzen, wenn die Implementierung so weit vom Standard weg ist, dass die Funktionen kaum was miteinander zu tun haben"
+2016-08-06 11:44:00,Paddy,Oder Typnamen in diesem Fall
+2016-08-06 11:44:16,Quantenmagier,meine besten funktionsnamen: void* sur_RAM_gib(unsigned int size);
+2016-08-06 11:44:16,Quantenmagier,void sur_RAM_weg(void* pos);
+2016-08-06 11:44:19,MasterQ32,"ja gut, ich kanns natürlich auch völlig anders nennen :D"
+2016-08-06 11:44:34,MasterQ32,"ich glaube, das ist die sinnvollere variante :D"
+2016-08-06 11:50:28,Quantenmagier,so mein improvisiertes free ist fertig :D
+2016-08-06 11:51:00,Quantenmagier,dafür daß ich für malloc gestern fast den ganzen tag gebraucht hab ging das jetzt echt schnell :D
+2016-08-06 11:51:15,MasterQ32,"naja, warum hast du für dein malloc so lange gebraucht?"
+2016-08-06 11:51:35,Quantenmagier,weil ich an einer stelle nen ja hatte und das mußte nen jbe sein ^^
+2016-08-06 11:52:45,Quantenmagier,"und weil ich alle deskriptorranges ändern mußte und auch erst ram nach der aktuellen deskriptoradresse suchen mußte, das anpassen des deskriptos hab ich mir für free erstmal ersparrt und zum befreien des speichers muß man zum glück nicht mehr prüfen ob er nach dem deskriptor liegt"
+2016-08-06 11:53:22,MasterQ32,http://www.conitec.net/beta/afile_open_read.htm
+2016-08-06 11:53:22,MasterQ32,http://www.conitec.net/beta/afile_str_write.htm
+2016-08-06 11:53:31,MasterQ32,an sowas könnte man sich ja orientieren
+2016-08-06 11:53:35,MasterQ32,nur das ganze ein wenig durchdenken :D
+2016-08-06 11:54:36,Quantenmagier,warum macht man nicht glein ein typedef string (char*)
+2016-08-06 11:54:42,MasterQ32,:D
+2016-08-06 11:54:46,Quantenmagier,oder umgedreht?
+2016-08-06 11:55:08,Quantenmagier,jop umgedreht sry benutz das zu selten :D
+2016-08-06 11:55:16,Quantenmagier,typedef (char*) string
+2016-08-06 11:55:52,MasterQ32,why? :D
+2016-08-06 11:57:10,MasterQ32,ich würde versuchen eher pascal-strings zu verwenden :D
+2016-08-06 11:57:22,Quantenmagier,naja weil die char als STRING redefiniert haben
+2016-08-06 11:57:30,MasterQ32,:D
+2016-08-06 11:57:33,Quantenmagier,dann kann man den pointer ja auch noch dazu nehmen xD
+2016-08-06 11:57:56,Quantenmagier,was sind denn pascal strings?
+2016-08-06 11:58:03,Quantenmagier,hab das ewig nicht mehr benutzt
+2016-08-06 11:58:15,MasterQ32,länge + daten anstelle von nullterminierung
+2016-08-06 11:58:30,Quantenmagier,ahh so hab ich das früher auch gemacht ^^
+2016-08-06 11:58:48,MasterQ32,finde ich sinnvoller
+2016-08-06 11:59:03,Quantenmagier,oder wie wärs mit länge+datentyp+pointer :D dann kann man auch aufwärtskopatibel zu unicode sein :D
+2016-08-06 11:59:35,MasterQ32,ist man doch so schon :P
+2016-08-06 11:59:49,MasterQ32,"mein string wird ja eh ""uint32_t len; uint32_t *data;"""
+2016-08-06 11:59:51,Quantenmagier,kopatibel kommt von copper kupfer :P
+2016-08-06 12:00:05,Quantenmagier,urgs
+2016-08-06 12:00:08,MasterQ32,hm?
+2016-08-06 12:00:20,Quantenmagier,kostet viel zu viel platz so nen uint32
+2016-08-06 12:02:29,Quantenmagier,wie wärs mit nem bitstream und zwei bit vor jedes zeichen die sagen wieviele bytes folgen :D
+2016-08-06 12:02:39,MasterQ32,:D
+2016-08-06 12:04:47,MasterQ32,grr :D
+2016-08-06 12:04:56,MasterQ32,"ich grübel grade noch nach, wie ich das ganze umsetze :D"
+2016-08-06 12:06:56,Quantenmagier,"ich muß mal zu ner hochzeit, cya"
+2016-08-06 12:07:27,MasterQ32,hau rein und viel spaß!
+2016-08-06 12:07:29,MasterQ32,ess nicht zu wenig :P
+2016-08-06 12:08:21,Quantenmagier,hehe ich versuchs ^^
+2016-08-06 12:23:00,Paddy,"MasterQ32: Hättest du dem Quantenmagier nicht verraten können, dass es UTF-8 gibt? ;-)"
+2016-08-06 12:23:35,MasterQ32,:D
+2016-08-06 12:23:45,MasterQ32,aber will man wirklich string indexing mit utf-8 machen? :D
+2016-08-06 12:24:36,XanClic,Da man eigentlich nur sehr selten einen String indizieren will
+2016-08-06 12:24:37,XanClic,ja
+2016-08-06 12:25:33,MasterQ32,"sagst du zu einem menschen, der regelmäßig mit strings spielt? :D"
+2016-08-06 12:25:45,MasterQ32,ich hab in gefühlt jedem programm ein stgring[2] o.ä. :D
+2016-08-06 12:25:55,XanClic,Über was für Strings reden wir gerade?
+2016-08-06 12:26:17,MasterQ32,text
+2016-08-06 12:26:29,XanClic,"OK, also die im Computer"
+2016-08-06 12:26:44,XanClic,"Meine Erfahrung ist, dass man Strings eher von vorne nach hinten durchparst"
+2016-08-06 12:26:45,MasterQ32,:D
+2016-08-06 12:27:02,XanClic,"Man muss sich vielleicht Positionen merken und die später wieder abrufen, aber das geht ja auch bei UTF-8 trivial"
+2016-08-06 12:27:14,MasterQ32,hmm
+2016-08-06 12:32:15,Paddy,"In einem Texteditor oder so würde ich natürlich auch eher wchar_t-Arrays halten, aber sonst..."
+2016-08-06 12:32:48,Paddy,"Wobei ich eh noch nicht rausgefunden habe, wie man Texteditoren richtig macht"
+2016-08-06 12:33:52,MasterQ32,das ist ne kunst für sich
+2016-08-06 12:34:02,MasterQ32,ich würde wohl eine liste aus zeilen speichern
+2016-08-06 12:34:26,Paddy,Eine einfach verkette Liste?
+2016-08-06 12:34:29,XanClic,Ich würde ja gar nichts speichern und die eigentliche Arbeit von ed machen lassen
+2016-08-06 12:34:39,Paddy,?
+2016-08-06 12:35:35,MasterQ32,höh? und eher sowas wie eine doppelt verkettete liste
+2016-08-06 12:35:40,Paddy,"Hm, aber ein Frontend um ed herum klingt nach einer lustigen Idee"
+2016-08-06 12:35:54,MasterQ32,dann kannste bei enter einfach einen eintrag in der nächsten zeile einfügen
+2016-08-06 12:36:17,Paddy,Und was ist in der Liste gespeichert? Einfach ein char*?
+2016-08-06 12:36:33,MasterQ32,hmm
+2016-08-06 12:36:51,MasterQ32,ich würde wahrscheinlich erst mal pro zeile char* mit ausreichend pufferspeicher hinten raus speichern
+2016-08-06 12:36:55,MasterQ32,so dass man auch noch kram einfügen kann
+2016-08-06 12:48:48,Paddy,Und alles wird komplett im Speicher gehalten?
+2016-08-06 12:49:27,MasterQ32,könnte man machen
+2016-08-06 12:49:34,MasterQ32,ist aber sicher auch optimierbar
+2016-08-06 12:49:44,Paddy,"Solange man keine großen Dateien hat, kann man das machen, ja ;-)"
+2016-08-06 12:49:46,MasterQ32,Programmers Notepad hat ne saugute Implementierung
+2016-08-06 12:49:54,MasterQ32,aber ich weiß was du meinst
+2016-08-06 12:51:19,Paddy,"Ich meine, eine Liste ist natürlich trotzdem schonmal besser als das statische Array, das kedit in tyndur hat..."
+2016-08-06 14:54:01,Godwine,moin
+2016-08-06 14:55:39,MasterQ32,huhu
+2016-08-06 14:56:36,Godwine,hat jemand schon mal das ubuntu subsystem von windows ausprobiert?
+2016-08-06 14:57:30,MasterQ32,nope
+2016-08-06 14:57:33,Godwine,ist schon witzig was microsoft alles tut nur weil die windows shells alle kaputt sind :D
+2016-08-06 14:57:35,MasterQ32,ist das jetzt offiziell raus?
+2016-08-06 14:57:48,Godwine,ne ist immernoch beta
+2016-08-06 14:58:02,Godwine,aber das meiste funktioniert schon ganz gut find ich
+2016-08-06 14:58:20,Godwine,ich bin grad auch mit irssi unter ubuntu unter windows hier :D
+2016-08-06 14:59:33,Godwine,bisher hab ich cygwin benutzt aber ich wollte das mal ausprobieren
+2016-08-06 15:02:29,Godwine,hab gestern mein tablet neu aufgesetzt. wollte eigentlich debian drauf schmeißen da funktioniert nur vieles nicht wie bluetooth oder audio und das mousepad da hab ich wieder windows installiert
+2016-08-06 15:27:37,MasterQ32,bist du grade unter windows oder unter linux?
+2016-08-06 15:30:43,Jonathan,Er ist unter Windows :P
+2016-08-06 15:30:47,Jonathan,(Führt aber ELFs aus)
+2016-08-06 15:30:59,MasterQ32,:D
+2016-08-06 15:31:52,Jonathan,"Ich hab mich schon gewundert, wieso Microsoft NT so entwickelt hat, dass sie andere OS-APIs darauf abbilden können, aber das bisher nur bei der Windows-API getan haben"
+2016-08-06 15:31:55,Jonathan,:D
+2016-08-06 15:42:03,Godwine,es gab ein posix subsystem und ein os/2 subsystem
+2016-08-06 15:42:21,Godwine,aber das wurde irgendwann nicht weiterentwickelt und dann entfernt
+2016-08-06 15:44:03,MasterQ32,"eigentlich schade, damit hätten sie sicher noch was schickes machen können"
+2016-08-06 15:44:25,Godwine,und das neue ubuntu subsystem funktioniert ganz ähnlich wie cygwin indem es über dlls systemaufrufe übersetzt nur geht das windows subsystem noch einen schritt weiter und simuliert nen ganzen linux kernel auf dem dann ein ganz normales ubuntu aufgesetzt wurde
+2016-08-06 15:45:05,Godwine,ja das was das posix subsystem konnte hat cygwin dann ja nachgemacht xD
+2016-08-06 15:54:59,MasterQ32,https://github.com/MasterQ32/iAIM
+2016-08-06 15:55:06,MasterQ32,"so, mein gamejam eintrag  wird langsam was"
+2016-08-06 15:58:56,Godwine,was soll iAIM heißen ich dachte du schreibst DasSpiel? :P
+2016-08-06 16:00:51,MasterQ32,DasSpiel wird doch aber für DasOS :D
+2016-08-06 16:00:51,MasterQ32,:P
+2016-08-06 16:02:31,MasterQ32,brb
+2016-08-06 16:05:39,Godwine,unter deiner vm? :D
+2016-08-06 16:09:38,Jonathan,Godwine: Die Windows-API selbst ist nur ein Subsystem ;)
+2016-08-06 16:10:30,Jonathan,"Der eigentliche Kernel spricht nativ nur die NT-API, Usermode-Programme können die via Exports in ntdll benutzen..."
+2016-08-06 16:10:45,Jonathan,(Das tun native Programme wie csrss und winlogon)
+2016-08-06 16:10:59,Jonathan,(Wobei ich mir bei winlogon gerade gar nicht so sicher bin)
+2016-08-06 16:11:33,Jonathan,"Normale Windows-Programme benutzen kernel32, das ist die Windoofs-API, und die callt dann entsprechend in ntdll :D"
+2016-08-06 16:12:32,Jonathan,"Heißt, wenn Microsoft ihr Linux-Subsystem auch so als Usermode-DLL zwischen Programm und NT-Kernel geschrieben hat, laufen Windows und Linux völlig gleichberechtigt auf dem selben Kernel"
+2016-08-06 16:12:34,Jonathan,Irgendwie cool
+2016-08-06 16:15:31,Godwine,nt wurde ursprünglich ja als mikrokernel konzipiert
+2016-08-06 16:16:13,Godwine,ich verstehe aber nicht ganz warum microsoft das macht
+2016-08-06 16:16:15,Jonathan,NT ist auch eigentlich noch ein Mikrokernel :)
+2016-08-06 16:16:51,Godwine,ja aber einige sachen laufen aus performancegründen im kernelmode wesshalb leute den ja als hybrid bezeichnen
+2016-08-06 16:17:04,Godwine,is aber auch nicht das wesentliche xD
+2016-08-06 16:17:48,Godwine,aber warum baut microsoft ubuntu in windows ein?
+2016-08-06 16:18:08,Godwine,kaufen die etwa konkurrenz auf die art auf?
+2016-08-06 16:18:12,Jonathan,"Keine Ahnung, aber ich find's nett ;)"
+2016-08-06 16:18:25,Jonathan,Und viele Sachen laufen im Kernelmode
+2016-08-06 16:18:28,Jonathan,Sehr viele Sachen sogar
+2016-08-06 16:18:33,Godwine,wird windows in zukunft richtung posix entwickelt?
+2016-08-06 16:18:48,Jonathan,Wer weiß? :D
+2016-08-06 16:18:54,Jonathan,Gab ja schon mal ein Posix-Subsystem
+2016-08-06 16:19:06,Jonathan,Zur Sache mit dem Mikrokernel:
+2016-08-06 16:19:32,Godwine,windows ist ja eigentlich die ausnahme weil die meisten betriebsysteme für desktops orientieren sich ja an unix
+2016-08-06 16:19:35,Jonathan,"NT-Treiber etc. sind auch nur ""Kernelmode-DLLs"", insofern würd ich das schon noch als Mikrokernel sehen"
+2016-08-06 16:23:45,Godwine,osx basiert auf mach oder?
+2016-08-06 16:24:07,Godwine,das heißt doch die zwei größten desktop systeme basieren beide auf mikrokerneln :D
+2016-08-06 16:36:49,MasterQ32,re
+2016-08-06 16:41:17,MasterQ32,der windows build läuft ganz problemlos
+2016-08-06 17:49:21,darklink,und gibts jetzt ein fork()?
+2016-08-06 17:49:56,darklink,Handy neu aufgesetzt
+2016-08-06 17:50:19,darklink,"app2sd partition enthielt fehler, die fsck.ext4 nicht finden konnte"
+2016-08-06 17:56:54,Jonathan,"darklink: Ja, es gibt fork :P"
+2016-08-06 19:12:07,Godwine,hey darklink hast du noch nen link zu deinem crosscompiler script? :D
+2016-08-06 19:26:23,darklink,mom
+2016-08-06 19:27:45,darklink,https://github.com/Mtgxyz/mtgos-old/blob/master/buildcrosscompiler.sh
+2016-08-06 19:28:09,darklink,das braucht noch folgende dateien im selben verzeichnis:
+2016-08-06 19:28:19,darklink,https://github.com/Mtgxyz/mtgos-old/blob/master/binutils.patch.xz
+2016-08-06 19:28:25,darklink,https://github.com/Mtgxyz/mtgos-old/blob/master/gcc.patch.xz
+2016-08-06 19:28:42,darklink,und es erstellt die crosscompiler in ~/opt
+2016-08-06 19:29:57,darklink,Test test test
+2016-08-06 19:32:20,MasterQ32,test bestanden
+2016-08-06 19:34:49,darklink,heute habe ich rein gar nichts am kernel geschrieben
+2016-08-06 19:35:06,MasterQ32,ich auch nicht :D
+2016-08-06 19:35:14,MasterQ32,ich hab an bildchen gebastelt
+2016-08-06 19:36:55,darklink,"ich frage mich gerade, warum windows als serverbetriebsystem genutzt wird"
+2016-08-06 19:37:16,darklink,muss ja dauernd gewartet werden. Wegen fragmentierung
+2016-08-06 19:43:04,darklink,an einem tag fragmentiert windows stärker als ext4 (90% voll) in nem monat
+2016-08-06 20:30:41,Godwine,windows defragmentiert aber auch permanent oder nich? :D
+2016-08-06 20:31:25,Godwine,viel schlimmer ist die sicherheit von windows im vergleich zu linux was der eigentliche grund ist warum nur verantwortunglose hosts windows benutzen xD
+2016-08-06 20:31:39,Godwine,und danke btw darklink ^^
+2016-08-06 20:33:35,Godwine,ich komme irgendwie auch kaum zum schreiben weil ich zu viel über das design nachdenke >.<
+2016-08-06 21:43:06,darklink,Godwine: jeden mittwoch 1:00
+2016-08-06 21:43:19,darklink,rate wann die vm nicht an ist
+2016-08-06 21:45:39,darklink,aber ich frage mich eins: Warum kann m$ keinen unix-style blockallokator für *FAT* und NTFS nehmen? 
+2016-08-06 21:46:41,darklink,"dem treiber ist es ja eigentlich ziemlich wumpe ob dateien direkt nebeneinander gespeichert werden, oder ob es einen zwischenraum von 1MB gibt"
+2016-08-06 22:23:35,MasterQ32,pacman -S love

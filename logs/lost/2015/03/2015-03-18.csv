@@ -1,0 +1,486 @@
+date/time,nick,message
+2015-03-18 09:33:04,kevin,"Spam auf Vietnamesisch, spannend. War die Absicht früher nicht irgendwann mal, dass man das Zeug liest?"
+2015-03-18 18:22:40,max,"Hm, virtio-input"
+2015-03-18 18:22:49,max,"Ich glaube, ich will gar nicht wissen, wem die Tastaturemulation zu langsam ist"
+2015-03-18 19:22:52,iksnagreb,moin
+2015-03-18 20:15:50,MasterQ32,heyhoh
+2015-03-18 20:16:00,Svenska,hohyeh
+2015-03-18 20:16:09,Jonathan,ehhhoy
+2015-03-18 20:16:41,MasterQ32,"bin grade (mal wieder nach langer zeit) daran, an einem hello-world-kernel zu basteln"
+2015-03-18 20:17:01,MasterQ32,"hab interrupts jetzt soweit laufen, dass ich via ""int 0x**"" nen interrupts auslösen kann"
+2015-03-18 20:17:18,MasterQ32,"hab nach tutorial auch den pic initialisiert und sti aufgerufen, aber irgendwie kommt nix"
+2015-03-18 20:17:23,MasterQ32,habt ihr mir nen tipp?
+2015-03-18 20:17:43,Svenska,"du rufst ""int 0x80"" auf, und nix passiert?"
+2015-03-18 20:18:03,Svenska,"wenn du ne taste drueckst, passiert dann was?"
+2015-03-18 20:18:21,Svenska,"(software-interrupts gehen nicht durch den PIC, und sind auch von STI nicht betroffen.)"
+2015-03-18 20:18:47,MasterQ32,"wenn ich int 0x01 aufrufe, bekomme ich eine einmalige meldung meines interrupts"
+2015-03-18 20:18:59,MasterQ32,bei int 0x80 scrollt meine konsole fröhlich vor sich hin
+2015-03-18 20:19:04,MasterQ32,also bekomme massig interrupts
+2015-03-18 20:19:27,MasterQ32,"wird daran liegen, dass die IDT für 0x80 nix enthält, oder?"
+2015-03-18 20:19:36,Svenska,möglich
+2015-03-18 20:19:55,Svenska,"hast du genug interrupt-stubs, und die auch alle in der idt eingetragen?"
+2015-03-18 20:20:10,Svenska,"wenn die idt zu klein fuer den interrupt ist, solltest du eine exception bekommen."
+2015-03-18 20:23:31,MasterQ32,"okay, habs grade mal getestet. bekomme interrupts 13"
+2015-03-18 20:23:39,MasterQ32,"mal nachschlagen, welche exception das is"
+2015-03-18 20:24:30,Svenska,#GP. top: lass deinen handler das kuerzel von exceptions ausgeben ;)
+2015-03-18 20:25:01,Svenska,s/top/tip/
+2015-03-18 20:25:25,MasterQ32,"klingt gut und vorallem hilfreich, man dankt"
+2015-03-18 20:26:35,Svenska,"vermutlich ist es sinnvoll, einfach alle interrupt-stubs auf vorrat anzulegen und in die idt zu stecken"
+2015-03-18 20:27:15,Svenska,"zumindest, wenn der speicher nicht soo extrem knapp ist, dass das weh tut ;-)"
+2015-03-18 20:27:53,MasterQ32,joar stimmt schon
+2015-03-18 20:28:09,Svenska,"mich ueberrascht uebrigens, dass da ein #GP kommt. ich hätte da ein #DF erwartet"
+2015-03-18 20:30:26,Svenska,klingt aber beides nachvollziehbar
+2015-03-18 20:32:13,MasterQ32,"okay, bei 0x20 kommt nen triple fault, bei 0x80 nen GPF"
+2015-03-18 20:32:48,Svenska,"dann solltest du mal nachschauen, wo der triple fault herkommt. irgendwas an deiner initialisierung ist falsch"
+2015-03-18 20:33:10,MasterQ32,jep
+2015-03-18 20:33:23,Svenska,"wieviele einträge hat deine idt, und uebergibst du auch die korrekten werte beim laden?"
+2015-03-18 20:34:42,MasterQ32,256 einträge
+2015-03-18 20:36:40,MasterQ32,"okay, ich bin jetzt ein bisschen verwirrt"
+2015-03-18 20:37:03,MasterQ32,ich befülle grade die IDT mal komplett mit meinem stub für den handler 0 (also div/0)
+2015-03-18 20:37:10,MasterQ32,und jetzt bekomm ich die div/0 exception
+2015-03-18 20:37:58,Svenska,"du nutzt qemu? dann lass dir mal interrupts loggen und schaue nach, was da genau feuert, wenn du deinen triple-fault kriegst"
+2015-03-18 20:38:05,MasterQ32,jo
+2015-03-18 20:38:48,MasterQ32,ups
+2015-03-18 20:38:59,MasterQ32,anscheinend passt 0x20 doch ganz gut
+2015-03-18 20:39:59,MasterQ32,"okay, klappt jetzt alles"
+2015-03-18 20:40:09,MasterQ32,hab nur die richtigen pointer gebraucht
+2015-03-18 20:40:15,MasterQ32,hw-interrupts tun nur noch nich
+2015-03-18 20:42:59,MasterQ32,"theoretisch müsste ich doch jetzt nur sti aufrufen und n bisschen auf die tastatur hauen und dann sollten mir interrupts um die ohren fliegen, oder?"
+2015-03-18 20:43:16,Svenska,"einer, ja."
+2015-03-18 20:43:40,Svenska,du musst einen interrupt immer beim pic und fast immer bei der hardware bestätigen
+2015-03-18 20:43:51,MasterQ32,"jo, das is klar"
+2015-03-18 20:43:54,MasterQ32,aber kommt gar nix
+2015-03-18 20:43:58,Svenska,"bei der tastatur tust du das, indem du den scancode da raus liest. sonst schickt die keine weiteren irqs ;)"
+2015-03-18 20:44:36,MasterQ32,joar ich hatte in ner alten version schon mal nen tastaturtreiber am laufen
+2015-03-18 20:48:43,MasterQ32,ich guck grade mal den assembler durch
+2015-03-18 20:51:39,MasterQ32,wird inline im normalen modus nicht inlined?
+2015-03-18 20:52:00,Svenska,"was meinst du mit ""normaler modus""?"
+2015-03-18 20:52:34,Svenska,inline ist fuer den compiler nicht verpflichtend
+2015-03-18 20:52:36,MasterQ32,oh :D ohne optimierung
+2015-03-18 20:53:09,Svenska,"wenn die funktion nicht static ist, oder es einen pointer auf die funktion irgendwo gibt, muss der compiler sowieso die funktion einbinden, unabhängig davon, ob er sie woanders inlined oder nicht."
+2015-03-18 20:54:02,MasterQ32,"jo das is bekannt. ist im header definiert, static inline"
+2015-03-18 20:54:41,Svenska,du kannst inline aber erzwingen (gcc-extension) :-)
+2015-03-18 20:55:13,MasterQ32,hehe
+2015-03-18 20:55:25,MasterQ32,sieht aber in ordnung aus alles
+2015-03-18 20:55:29,MasterQ32,is nix verschwunden :P
+2015-03-18 20:55:50,Svenska,hast du die initialisierung nach dem tutorial gemacht?
+2015-03-18 20:56:30,MasterQ32,"jep, zur sicherheit auch mal via copy&paste"
+2015-03-18 20:58:25,Svenska,dann gäbe es noch den kaputten stack
+2015-03-18 21:00:33,MasterQ32,irgendein tipp wie man nen delay erzeugt? for(size_t i = 0; i < xxx; i++); wäre jetzt meine idee
+2015-03-18 21:00:48,Svenska,for(volatile size_t i = 0; i < xxx; i++);
+2015-03-18 21:01:02,MasterQ32,ah volatile macht sinn
+2015-03-18 21:02:40,MasterQ32,while(0); ist natürlich ne super hauptschleife für nen kernel :D
+2015-03-18 21:02:58,Svenska,"ja, großartig. :p"
+2015-03-18 21:03:41,MasterQ32,whey! :D
+2015-03-18 21:03:45,MasterQ32,ganz viele 0x20igers
+2015-03-18 21:03:51,MasterQ32,ich glaub ich hab das problem
+2015-03-18 21:07:43,MasterQ32,"ich danke für die Hilfe, auch wenn es mehr Metainformation :D"
+2015-03-18 21:07:48,Svenska,:D
+2015-03-18 21:08:03,Svenska,die mit ohne metafasel sind auch da ;)
+2015-03-18 21:08:12,Svenska,zumindest einer
+2015-03-18 21:08:28,MasterQ32,hehe
+2015-03-18 21:09:52,MasterQ32,"ich weiß nicht, irgendwie komm ich von der bescheuerten Idee nicht weg, Lua soweit runter zu strippen, dass es auf meinem Kernel läuft :D"
+2015-03-18 21:10:12,Svenska,lua ist in netbsd integriert...
+2015-03-18 21:10:33,MasterQ32,why not? is ne tolle Sprache
+2015-03-18 21:10:59,Svenska,"ich wollte damit sagen: ""ja, das kann man machen. guck dir mal netbsd an, die haben das gemacht."" ;)"
+2015-03-18 21:11:35,MasterQ32,schon längst dabei
+2015-03-18 21:13:18,MasterQ32,"hab mir auch mal lua mit objdump angeguckt, die sprache benötigt (mit standardlibrary) 56 c-stdlib funktionen, das wird wahrscheinlich noch wegschrumpfen, wenn ich erst den ganzen IO-Kram rausgeworfen hab"
+2015-03-18 21:13:51,Svenska,oder du implementierst einfach stubs in deiner c-lib ;)
+2015-03-18 21:14:43,MasterQ32,"hm, dann is aber die todoliste gleich so lang :D"
+2015-03-18 21:14:53,Svenska,fuer stubs? ;)
+2015-03-18 21:14:56,MasterQ32,hehe :D
+2015-03-18 21:15:27,MasterQ32,"aber joar, ich brauch jetzt erst mal PMM und Paging (<< davor hab ich noch ein bisschen bammel, aber nix was sich nicht mit zeit lösen lässt)"
+2015-03-18 21:16:22,Svenska,jo
+2015-03-18 21:21:01,Jonathan,"masterq32: Huch, haben wir jetzt schon 2 Lua-Freaks hier? *g*"
+2015-03-18 21:21:17,MasterQ32,du auch?
+2015-03-18 21:21:29,Jonathan,Aber unbedingt :P
+2015-03-18 21:21:30,MasterQ32,"und ja, ich bin einer"
+2015-03-18 21:21:39,Jonathan,Hehe
+2015-03-18 21:21:58,Jonathan,"Leider find ich keine Lua-Version, die klein genug ist, um auf meinem Z80-Drahthaufen zu laufen :("
+2015-03-18 21:22:10,MasterQ32,I feel with you
+2015-03-18 21:22:29,Jonathan,"Vielleicht kann ich ja einen reinen Bytecode-Intepreter schreiben, oder so, ohne den Lua-Compiler"
+2015-03-18 21:22:34,MasterQ32,:D
+2015-03-18 21:22:42,MasterQ32,aber selbst der luacompiler ist verflucht klein
+2015-03-18 21:22:47,Svenska,"ich weiß nicht, ob scriptsprachen ueberhaupt auf nem z80 spaß machen"
+2015-03-18 21:22:53,MasterQ32,sicher
+2015-03-18 21:23:00,Svenska,wobei basic und so...
+2015-03-18 21:23:01,Jonathan,"Ja, ""verflucht klein"" in den Größenordnungen normaler PCs"
+2015-03-18 21:23:07,MasterQ32,"BBC Basic läuft auch ""extrem"" performant bei 4 MHz"
+2015-03-18 21:23:13,MasterQ32,hast schon recht
+2015-03-18 21:23:17,Jonathan,Mein Lua muss mit 48k klarkommen :(
+2015-03-18 21:23:24,Svenska,"naja, was heißt extrem... basic ist scheiße langsam ;)"
+2015-03-18 21:23:29,Jonathan,*g*
+2015-03-18 21:23:38,MasterQ32,also TI-Basic vs. BBC Basic is schon nen Unterschied
+2015-03-18 21:23:39,Svenska,deswegen haben performance basic-programme auch immer unten so einen anhang aus DATA-zeilen
+2015-03-18 21:23:48,Jonathan,Hehe
+2015-03-18 21:24:04,Svenska,"Jonathan: ich hab uebrigens mal ins c64-basic reingeguckt, das konnte irgendwie ~72 funktionen oder so"
+2015-03-18 21:24:12,Jonathan,Hmmm :D
+2015-03-18 21:24:21,Jonathan,Das ist aber auch handoptimierter Assemblercode
+2015-03-18 21:24:21,MasterQ32,doch so viele? :D
+2015-03-18 21:24:33,Svenska,"da könntest du vermutlich 20 wegkuerzen, und das float-zeugs auch"
+2015-03-18 21:24:41,Svenska,aber den rest wirst du brauchen.
+2015-03-18 21:24:42,Jonathan,Die nächste Baustelle auf meinem System wäre demnächst übrigens mal ne RAMDisk
+2015-03-18 21:25:01,Svenska,hm
+2015-03-18 21:25:09,Jonathan,256kB oder so
+2015-03-18 21:25:14,Svenska,den code dafuer solltest du in page 0 legen ;)
+2015-03-18 21:25:21,Jonathan,Vermutlich ;)
+2015-03-18 21:25:34,Jonathan,"Wobei auch Treiber ummappen können, wenn sie ein bisschen aufpassen"
+2015-03-18 21:25:53,Svenska,"""ein bisschen"" ist gut"
+2015-03-18 21:25:54,Jonathan,"Pageslot 2 müsste gehen, solange der Treiber aufpasst, dass er danach die Daten nicht wieder benutzen will"
+2015-03-18 21:26:04,Jonathan,Das geht eigentlich vom Aufwand her
+2015-03-18 21:26:22,Jonathan,Oder halt doch in den Kernel integrieren :)
+2015-03-18 21:26:24,Svenska,"tu die sector_read()/sector_write() funktionen in page0, dann ist das problem beseitigt :D"
+2015-03-18 21:26:34,Jonathan,^^
+2015-03-18 21:26:37,Svenska,masterq32: z80-freaks und so. selbstgebaute systeme.
+2015-03-18 21:26:39,Jonathan,Jo
+2015-03-18 21:26:56,MasterQ32,achsow
+2015-03-18 21:27:12,MasterQ32,dann fehlt mir nur die kenntnis des systems
+2015-03-18 21:27:16,Jonathan,"Jeweils mit MMU, die den physischen Adressraum auf x MB erweitert (beim Svenska 1MB mit 4kB-Pages, bei mir 4MB mit 16kB-Pages, hat beides Vor- und Nachteile)"
+2015-03-18 21:27:17,Jonathan,:P
+2015-03-18 21:27:35,MasterQ32,"hehe, ist mir bekannt"
+2015-03-18 21:27:49,Jonathan,"Bei mir noch ein Auto-Config-Fähiges Bussystem, ein modularer monolithischer Kernel und so ne grundlegende Shell"
+2015-03-18 21:27:55,Svenska,"ich: Z80, 4 MHz, NMOS, TTL-Logik, 256k Flash, 768k DRAM"
+2015-03-18 21:28:00,MasterQ32,"wollte auch mal was zusammenbasteln, bin aber leider auf der elektrischen seite zu unerfahren"
+2015-03-18 21:28:19,Svenska,"planung ist zwar halbwegs durch, aber bis ich das zusammengelötet kriege, dauert noch ne weile"
+2015-03-18 21:28:27,Jonathan,"Ich: Z80, 4 MHz, CMOS, CMOS-Logik, 1MB SRAM (max. 4MB), 16kB BIOS-ROM"
+2015-03-18 21:28:36,Jonathan,Uuuund: VGA! :D
+2015-03-18 21:28:51,Jonathan,"Und RS232, PS/2 und ein Dateisystem"
+2015-03-18 21:29:03,Svenska,"ich plane einen TMS9929A ein (TV-Ausgang), und RS232 und PS/2 (nur Tastatur)"
+2015-03-18 21:29:07,MasterQ32,VGA klingt gut
+2015-03-18 21:29:15,Jonathan,80x60 Textmodus s/w :)
+2015-03-18 21:29:35,Svenska,"Jonathan: apropros, ich habe rausgefunden, dass man tatsächlich den bildschirm pixelweise ansteuern kann"
+2015-03-18 21:29:35,Jonathan,Der VRAM ist ein WOM *g*
+2015-03-18 21:29:47,Jonathan,Svenska: Hmmm? Du meinst beim TMS?
+2015-03-18 21:29:51,Svenska,ja
+2015-03-18 21:30:20,MasterQ32,das is der grafikchip ausm mega driver
+2015-03-18 21:30:21,MasterQ32,goil
+2015-03-18 21:30:22,Jonathan,Klingt gut? :P
+2015-03-18 21:30:23,Jonathan,Jo
+2015-03-18 21:30:27,Svenska,"das ding hat 24 zeilen, und du kannst pro 8 zeilen eine zeichentabelle angeben"
+2015-03-18 21:30:33,Jonathan,"Aaaaaah, verstehe"
+2015-03-18 21:30:44,Jonathan,Also in etwa so wie bei Text-LCDs
+2015-03-18 21:30:45,MasterQ32,ah doch net
+2015-03-18 21:30:50,Svenska,"damit kannst du alle 256x192 einzeln ansteuern, aber nur s/w"
+2015-03-18 21:31:26,Svenska,"die farbtabelle ist trotzdem nur ""pro zeichen"", also 32x24"
+2015-03-18 21:31:38,MasterQ32,https://www.youtube.com/watch?v=YBxq7k45pBo
+2015-03-18 21:31:45,Jonathan,Svenska: Riecht nach buntem Pacman? *g*
+2015-03-18 21:31:46,MasterQ32,muss ich mir das so vorstellen?
+2015-03-18 21:32:11,Svenska,also 64x24 ist damit machbar
+2015-03-18 21:32:52,Svenska,naja nicht ganz
+2015-03-18 21:33:07,Jonathan,masterq32: Sofern du alle 3D-Renderings weglässt und bunte 2D-Sprites über den Bildschirm hüpfen lässt? :D
+2015-03-18 21:33:27,Svenska,aber pacman klingt schon gut :D
+2015-03-18 21:33:39,MasterQ32,:D
+2015-03-18 21:33:44,MasterQ32,pacman ist doch nen anfang
+2015-03-18 21:33:50,MasterQ32,aber 3d rendering is doch gar net sooo schwer :P
+2015-03-18 21:34:14,Jonathan,*hust* *g*
+2015-03-18 21:34:25,Svenska,erstmal das system zusammenbauen. dann startup-code hinkriegen.
+2015-03-18 21:34:29,Jonathan,"Naja gut, wenn man da nen FPGA dran klemmt, ist 3D-Rendering wirklich nicht so schwer"
+2015-03-18 21:34:32,Svenska,diesmal wirds bisschen schwieriger :-)
+2015-03-18 21:34:39,Jonathan,Wieso wird's schwieriger?
+2015-03-18 21:34:54,Svenska,weil ich auf der basisplatine kein i/o habe und den flash beschreiben können muss
+2015-03-18 21:35:03,Jonathan,Oh
+2015-03-18 21:35:22,Jonathan,Mach's doch wie in den guten alten Zeiten: DIP-Schalter und viel Geduld ;)
+2015-03-18 21:35:28,Svenska,bringt nix
+2015-03-18 21:35:41,Jonathan,Vermutlich hast du recht
+2015-03-18 21:35:45,Jonathan,Hmmmm
+2015-03-18 21:35:47,Jonathan,Apropos Speicher
+2015-03-18 21:35:51,Svenska,also avr auf lochraster tun
+2015-03-18 21:36:09,Svenska,und einen bootstrapper auf die NMI-adresse legen
+2015-03-18 21:36:12,Jonathan,Ich könnte vielleicht ja mal einen 512k-SRAM mit ner Backup-Batterie versehen und das dann als Festspeicher verwenden
+2015-03-18 21:36:25,Svenska,jo
+2015-03-18 21:36:26,MasterQ32,why not?
+2015-03-18 21:36:29,Jonathan,Das wäre vermutlich die beste Lösung für beschreibbaren nichtflüchtigen Speicher im System :)
+2015-03-18 21:36:43,Svenska,"wobei ich nie begriffen habe, wie man sowas elektrisch baut, ohne dass das system aus der backup-batterie betrieben wird"
+2015-03-18 21:36:45,MasterQ32,"schneller, ziemlich persistenter speicher"
+2015-03-18 21:36:48,Jonathan,"Insbesondere: Verreckt nicht, wenn die CPU durch nen Softwarefehler die selbe Adresse 100000-Mal beschreibt"
+2015-03-18 21:36:57,MasterQ32,diode?
+2015-03-18 21:37:00,Jonathan,Svenska: Diode
+2015-03-18 21:37:00,Svenska,"man kann zwar ne diode reinpflanzen, aber dann sind 0,7V weg"
+2015-03-18 21:37:01,Jonathan,lol
+2015-03-18 21:37:02,Jonathan,*g*
+2015-03-18 21:37:20,Jonathan,"Svenska: Die RAMs halten ihre Daten bis runter auf 1,5V (zumindest tut meiner das)"
+2015-03-18 21:37:23,Svenska,"naja mein flash wird auch nicht abnippeln, wenn ich da versehentlich reinschreibe :D"
+2015-03-18 21:37:41,Jonathan,"Eine Diode ist durchaus der ""Way to go"""
+2015-03-18 21:37:44,Svenska,"Jonathan: ja, aber VIH > Vcc ist doof"
+2015-03-18 21:38:01,Svenska,bei mir wuerde das tatsächlich gehen... *g*
+2015-03-18 21:38:06,Jonathan,Öhm
+2015-03-18 21:38:27,Jonathan,VIH > Vcc ist durchaus zulässiger Betrieb bei diesen RAMs
+2015-03-18 21:38:39,Jonathan,Dafür wurden sie gemacht
+2015-03-18 21:38:46,MasterQ32,gebaut um nicht kaputt zu gehen :D
+2015-03-18 21:38:52,Jonathan,*g*
+2015-03-18 21:38:55,Svenska,"oh, ok. normalerweise kenn ich das nur als VIH < Vcc+0,3V"
+2015-03-18 21:39:13,Svenska,und da sind dioden echt ne doofe idee :-D
+2015-03-18 21:39:27,Jonathan,"Im ""Standby"" fällt die Spannung dann auf ~2,3V ab, wenn ich's mit ner Lithiumbatterie puffere"
+2015-03-18 21:39:32,Jonathan,Das ist auch zulässig
+2015-03-18 21:39:42,Svenska,"bleibt noch als zusatzfrage: wie stellst du sicher, dass du die batterie nicht im betrieb lädst? ^^"
+2015-03-18 21:39:51,Jonathan,Noch ne Diode? ;)
+2015-03-18 21:40:00,Svenska,hm
+2015-03-18 21:40:02,MasterQ32,den ram nur aus der diode versorgen
+2015-03-18 21:40:26,Svenska,"also versorgst du den sram dann mit 3,7 V, hast aber datenpegel von 5V"
+2015-03-18 21:40:43,Jonathan,Nö
+2015-03-18 21:40:57,Svenska,öh lol ne passt denkfehler
+2015-03-18 21:41:04,Jonathan,"Wenn das restliche System läuft, hat der RAM über die andere Diode 4,3V ^^"
+2015-03-18 21:41:04,Jonathan,Jo
+2015-03-18 21:41:28,MasterQ32,"so, ich wander mal ins bett"
+2015-03-18 21:41:32,Svenska,mach das
+2015-03-18 21:41:37,MasterQ32,"ich hoffe ich find die tage wieder zeit, weiterzucoden"
+2015-03-18 21:41:38,Svenska,"ich wander kurz zum supermarkt, eh der zu macht"
+2015-03-18 21:41:42,MasterQ32,aber interrupts gehen jetzt schon mal
+2015-03-18 21:42:31,MasterQ32,wie sind denn eigentlich NMIs bei x86 verkabelt?
+2015-03-18 21:42:52,Svenska,klassisch hängen die beim pc am speichercontroller
+2015-03-18 21:43:08,Svenska,"also wenn der dram nen paritätsfehler meldet, gibt's nen NMI"
+2015-03-18 21:43:13,Svenska,"keine ahnung, ob das noch so ueblich ist"
+2015-03-18 21:43:39,Jonathan,"Svenska: Sieht so aus, als ob doch nur Vcc+0,3V erlaubt sind"
+2015-03-18 21:43:45,Jonathan,Also bau ich da nen FET ein
+2015-03-18 21:43:51,Svenska,sag ich ja ;)
+2015-03-18 21:43:54,Svenska,also 2 dioden und ein fet
+2015-03-18 21:43:56,Jonathan,Der die Versorgung dann auf 5V bringt :P
+2015-03-18 21:43:57,Jonathan,Jo
+2015-03-18 21:44:02,Jonathan,Ist ja auch nicht schlimm
+2015-03-18 21:44:03,Svenska,*kopfschuettel*
+2015-03-18 21:44:05,Svenska,*g*
+2015-03-18 21:44:15,MasterQ32,danke
+2015-03-18 21:44:23,MasterQ32,"würde behaupten, das mit dem FET is ne gute Idee"
+2015-03-18 21:44:23,Svenska,"apropros, meine idee mit den 4 LEDs, die mir bank-select anzeigen, find ich irgendwie cool"
+2015-03-18 21:44:28,Jonathan,^^
+2015-03-18 21:44:31,MasterQ32,blinkt schön?
+2015-03-18 21:44:35,Svenska,jup
+2015-03-18 21:44:41,Svenska,"und ich sehe, ob die mmu-initialisierung funktioniert hat"
+2015-03-18 21:44:44,Jonathan,Hmmm
+2015-03-18 21:44:52,Svenska,"im sinne von: ""dinge passieren im ram"""
+2015-03-18 21:45:12,MasterQ32,einfach an die 16 bit adressleitungen LEDs klemmen :D 
+2015-03-18 21:45:19,Jonathan,"Der RAM braucht dann noch ein Register zum Abschalten von Schreibzugriffen, das beim Herunterfahren des Systems alles sichert"
+2015-03-18 21:45:32,Svenska,wtf? ;)
+2015-03-18 21:46:41,Svenska,du meinst beim poweroff?
+2015-03-18 21:46:57,Svenska,reicht da nicht ein pullup an /CE ?
+2015-03-18 21:48:16,MasterQ32,"so, bin weg. gn8"
+2015-03-18 21:57:30,Jonathan,"Svenska: Wenn man die Stromversorgung abschaltet, geht alles auf 0V und macht vorher noch komische Dinge"
+2015-03-18 21:57:58,Jonathan,Ist das selbe wie beim Brownout in AVRs... Ohne den Brownout geht beim Powerdown öfters mal der Inhalt vom EEPROM kaputt
+2015-03-18 21:58:06,Jonathan,Deshalb brauche ich einen gescheiten Brownout
+2015-03-18 21:58:20,Svenska,"an sich musst du nur dafuer sorgen, dass /CE nicht fällt"
+2015-03-18 21:58:26,Jonathan,Richtig :)
+2015-03-18 21:58:33,Svenska,denn fuer den SRAM gibt's keinen brownout (die spannung sinkt nicht unter Vbat)
+2015-03-18 21:58:45,Jonathan,Klar gibt's nen Brownout
+2015-03-18 21:58:54,Svenska,also nen pullup von der sram-versorgung nach /CE ? :-D
+2015-03-18 21:59:07,Jonathan,Dann zieht das dranhängende System das auf 0V :P
+2015-03-18 21:59:17,Jonathan,"Da muss ein bisschen Logik zwischen, die von der Batterie gespeist wird"
+2015-03-18 21:59:19,Svenska,mh
+2015-03-18 21:59:29,Jonathan,In CMOS geht das ja bis 2V und mit wenigen µA :)
+2015-03-18 21:59:55,Svenska,alternativ ein schalter :-D
+2015-03-18 22:00:07,Svenska,dann aber an /WR
+2015-03-18 22:00:19,Svenska,(umschalter)
+2015-03-18 22:00:19,Jonathan,*g*
+2015-03-18 22:00:29,Svenska,das wäre dann ein schöner hardware-schreibschutz fuer deine festplatte
+2015-03-18 22:00:39,Jonathan,"Lieber automatisch, das ist vor dem Deppen vor der Tastatur sicher :P"
+2015-03-18 22:01:06,Svenska,wie willst du das automatisch ohne spannungsteiler machen?
+2015-03-18 22:01:13,Svenska,oder adc
+2015-03-18 22:01:25,Jonathan,Mit ganz einfachen Transistoren? :P
+2015-03-18 22:01:47,Svenska,?
+2015-03-18 22:02:09,Svenska,"du muesstest vergleichen: wenn Vcc < Vbat, dann /CE auf high halten"
+2015-03-18 22:02:21,Jonathan,"Wenn Vcc < 4,5V"
+2015-03-18 22:02:38,Jonathan,Wobei das mit Vbat ja noch einfacher wäre :P
+2015-03-18 22:02:41,Svenska,alternativ auch das ;)
+2015-03-18 22:03:02,Jonathan,"Transistor mit Emitter an Vcc, Basis über $schaltung an Vbat"
+2015-03-18 22:03:04,Svenska,(ein einigermaßen dicker C an der batterie wuerde das abfedern)
+2015-03-18 22:03:25,Jonathan,"Und dann schaltet der Transistor immer dann durch, wenn Vcc anliegt"
+2015-03-18 22:03:37,Jonathan,Ansonsten sperrt er und es fließt auch kein Basisstrom
+2015-03-18 22:04:09,Svenska,?
+2015-03-18 22:04:38,Svenska,"das setzt aber voraus, dass die batterie vorhanden ist, und du wuerdest im betrieb die batterie leersaugen?"
+2015-03-18 22:04:56,Jonathan,Nö
+2015-03-18 22:06:32,Svenska,an der basis sitzt doch der steuerstrom (bzw steuerspannung)
+2015-03-18 22:06:51,Svenska,äähh
+2015-03-18 22:06:52,Svenska,lol
+2015-03-18 22:07:00,Svenska,du könntest einfach ne zenerdiode da reinpflanzen
+2015-03-18 22:07:01,Svenska,:-D
+2015-03-18 22:07:07,Jonathan,Zenerdioden sind doof ^^
+2015-03-18 22:07:11,Svenska,oder ist das zu einfach gedacht?
+2015-03-18 22:07:19,Jonathan,Die leiten auch bei ~40% Spannung noch ein paar µA
+2015-03-18 22:07:28,Svenska,pullup...
+2015-03-18 22:07:39,Svenska,:-D
+2015-03-18 22:07:46,Jonathan,"""Ein paar µA"" saugen mir die Batterie leer :)"
+2015-03-18 22:07:46,Svenska,scheiß auf batterielebensdauer :P
+2015-03-18 22:07:48,Jonathan,*g*
+2015-03-18 22:08:26,Jonathan,Die Schaltung mit dem Transistor zwischen Vcc und Vbat funktioniert im Prinzip
+2015-03-18 22:08:45,Jonathan,"Einziges Problem ist, dass die Batterie durch den Basisstrom langsam *geladen* wird"
+2015-03-18 22:09:02,Svenska,"solange das nur ein paar uA sind, ist das kein problem..."
+2015-03-18 22:09:09,Jonathan,Für ne Lithium-Zelle?
+2015-03-18 22:09:53,Jonathan,Da fließen momentan 6µA in die Zelle hinein
+2015-03-18 22:10:00,Jonathan,Wenn ich es so machen würde
+2015-03-18 22:10:26,Jonathan,Eine Alternative wäre ne getrennte Spannungsreferenz
+2015-03-18 22:10:35,Jonathan,Ließe sich auch einfach realisieren
+2015-03-18 22:11:10,Svenska,zwei AA-zellen? :D
+2015-03-18 22:11:27,Jonathan,*g*
+2015-03-18 22:11:33,Svenska,"oder du setzt nen lithium-akku ein, LR32 oder so"
+2015-03-18 22:11:36,Jonathan,"Ja gut, das wäre dann ""Hau drauf und hauptsache geht"""
+2015-03-18 22:11:41,Jonathan,"Akku wäre auch eine Variante, ja"
+2015-03-18 22:11:53,Svenska,*LR2032
+2015-03-18 22:12:09,Jonathan,"Jo, genau die"
+2015-03-18 22:13:09,Svenska,aber ne CR2032 sollte auch bis zu nem mA oder so vertragen
+2015-03-18 22:14:04,Jonathan,"Kann sein, ich will aber keine Explosion riskieren, und wenn's nur 6µA sind"
+2015-03-18 22:14:24,Jonathan,"Ein Komparator für die Versorgungsspannung (<4,5V) lässt sich auch mit 2 Transistoren realisieren"
+2015-03-18 22:14:56,Jonathan,"2 Transistoren, 3 Widerstände, 2 Dioden :P"
+2015-03-18 22:16:21,Svenska,"oder du nimmst ne LR44 (alkaline), die lädt sich damit sogar auf"
+2015-03-18 22:16:48,Jonathan,"Svenska: Ich schalte einfach zwei Konstantstromquellen in Serie: Eine sinkt gegen Vcc einen konstanten Strom, die andere sourct von Vcc einen zur Versorgungsspannung proportionalen Strom"
+2015-03-18 22:17:29,Jonathan,"Sobald der Strom ""von oben"" den ""nach unten"" unterschreitet, fällt die Ausgangsspannung zwischen den beiden KSQs schlagartig ab"
+2015-03-18 22:17:46,Jonathan,Genau das will ich :)
+2015-03-18 22:19:33,Svenska,hmm
+2015-03-18 22:19:45,Svenska,"warte mal, was willst du eigentlich genau tun? /CE im normalfall durch eine schaltung jagen?"
+2015-03-18 22:20:06,Svenska,"die entweder durchschaltet, oder (fuer Vcc < 4.5V) auf high hält?"
+2015-03-18 22:21:03,Jonathan,Genau das
+2015-03-18 22:26:38,Jonathan,Svenska: http://j-strobl.dyndns-free.com/vcc_comp.png
+2015-03-18 22:27:10,Jonathan,"Die Schaltung häng ich am besten *vor* die Vcc-Diode, sodass sie stromlos ist, wenn die Batterie übernimmt (sie gibt ja dann sowieso nen Low-Pegel aus)"
+2015-03-18 22:27:25,Jonathan,Dann hängt nur noch etwas CMOS-Logik und der SRAM an der Batterie
+2015-03-18 22:27:45,Svenska,ein gatter
+2015-03-18 22:27:53,Jonathan,Jap :P
+2015-03-18 22:28:00,Jonathan,Im besten Fall ein einzelner Inverter
+2015-03-18 22:28:08,Svenska,"ne, du brauchst 2 eingänge"
+2015-03-18 22:28:10,Jonathan,"Wenn ich /CE nur für den Brownout ""reserviere"""
+2015-03-18 22:28:26,Svenska,"eingang: /CE und Comp_out, ausgang /C"
+2015-03-18 22:28:30,Svenska,"äh, /CE"
+2015-03-18 22:28:32,Jonathan,Nope :P
+2015-03-18 22:28:46,Jonathan,Ich kann /OE und /WR durch meine IORQ-Logik führen
+2015-03-18 22:28:49,Svenska,hm
+2015-03-18 22:28:55,Svenska,"wenn du nur eine bank hast, geht das"
+2015-03-18 22:28:57,Jonathan,Diese Logik kann von der nichtgepufferten Spannung versorgt werden
+2015-03-18 22:28:59,Jonathan,Jo
+2015-03-18 22:29:06,Jonathan,Mehr hab ich auch nicht :)
+2015-03-18 22:29:13,Jonathan,Nur einen einzelnen 512k-Chip
+2015-03-18 22:29:31,Svenska,"ich dachte, du baust da auch 4 MB RAM ein in dein maschinchen :D"
+2015-03-18 22:29:38,Jonathan,"Äh, nein? *g*"
+2015-03-18 22:29:44,Jonathan,Die Chips kosten $viel € pro Stück
+2015-03-18 22:29:58,Svenska,"hmm, ich hab da so simm-sockel rumliegen... *grins*"
+2015-03-18 22:30:03,Jonathan,*g*
+2015-03-18 22:30:06,Jonathan,SIMMs hab ich auch noch da :D
+2015-03-18 22:30:17,Svenska,ich auch
+2015-03-18 22:30:18,Jonathan,"16x 1MB, oder sowas"
+2015-03-18 22:30:28,Jonathan,Wieso verbaust du die nicht? Ist doch auch nur DRAM :P
+2015-03-18 22:30:28,Svenska,nett
+2015-03-18 22:30:40,Svenska,ich hab noch die einzelchips
+2015-03-18 22:30:43,Svenska,die verbau ich zuerst
+2015-03-18 22:30:46,Jonathan,Nagut ^^
+2015-03-18 22:30:51,Svenska,:D
+2015-03-18 22:30:57,Svenska,macht sich auf ner lochrasterplatine besser
+2015-03-18 22:30:58,Jonathan,Einzelchips hab ich auch noch ein paar :D
+2015-03-18 22:31:03,Svenska,besonders in sandwichbauweise
+2015-03-18 22:31:16,Jonathan,"Aber /RAS und /CAS anzusteuern war für mich damals noch ""Bäh"""
+2015-03-18 22:31:17,Svenska,"mh, ich hab da ein ganz komisches sortiment"
+2015-03-18 22:31:20,Jonathan,"Inzwischen weiß ich, wie's geht *g*"
+2015-03-18 22:31:39,Svenska,"8x 256kx4, 4x 256kx1, und 1x 64kx1 :D"
+2015-03-18 22:31:46,Jonathan,lol *g*
+2015-03-18 22:31:51,Svenska,"und nein, ich hab keine ahnung, wo der letzte herkommt."
+2015-03-18 22:31:56,Jonathan,Apropos
+2015-03-18 22:32:04,Jonathan,Ich hab noch einen 64?k x1 SRAM
+2015-03-18 22:32:04,Svenska,und ich verbaue auch keine parität :-D
+2015-03-18 22:32:17,Jonathan,Oh
+2015-03-18 22:32:20,Jonathan,Da fällt mir was auf!
+2015-03-18 22:32:30,Jonathan,Ich hab ja noch 128k-SRAMs
+2015-03-18 22:32:37,Jonathan,512k + 128k = 640k
+2015-03-18 22:32:45,Jonathan,"""640k shall be enough for everyone"""
+2015-03-18 22:32:55,Jonathan,Ich könnte meinen i8088 damit befeuern *g*
+2015-03-18 22:32:55,Svenska,lol
+2015-03-18 22:33:00,Jonathan,Das wäre doch mal was!
+2015-03-18 22:33:15,Svenska,willst du einen pc nachbauen?
+2015-03-18 22:33:23,Jonathan,Wäre ne Möglichkeit :D
+2015-03-18 22:33:31,Svenska,hm
+2015-03-18 22:33:42,Jonathan,i8088 mit DOS sollte ja schon möglich sein
+2015-03-18 22:33:57,Svenska,ich fänd ja ne maschine mit 896 KB konventionellem speicher und DOS lustig
+2015-03-18 22:34:18,Jonathan,Wieso genau 896k? :D
+2015-03-18 22:34:25,Svenska,128k ROM
+2015-03-18 22:34:49,Svenska,irgendwo hab ich die sourcen fuer dos 3.3 rumfliegen
+2015-03-18 22:35:01,Jonathan,Hmmm :)
+2015-03-18 22:35:06,Svenska,aber auch fuer dos 5.0 (vielleicht auch 6) sollten die oem-sourcen verfuegbar sein
+2015-03-18 22:35:17,Svenska,"du musst ja ""im prinzip"" nur io.sys neu bauen"
+2015-03-18 22:35:19,Jonathan,Vielleicht FreeDOS?
+2015-03-18 22:35:30,Svenska,"weiß nicht, ob freedos so auf portabel geeicht ist"
+2015-03-18 22:35:45,Jonathan,Kann man ja nachsehen
+2015-03-18 22:36:04,Svenska,"ich mag freedos allein schon aus dem grund nicht, dass der mir beim boot den bildschirm zuspammt"
+2015-03-18 22:36:16,Svenska,"ist ja schön, dass das gpl ist. interessiert im produktivsystem nur nicht"
+2015-03-18 22:36:36,Jonathan,Hmmm
+2015-03-18 22:36:45,Jonathan,Am liebsten würd ich ja nen Schmitt-Trigger verbauen
+2015-03-18 22:37:01,Jonathan,HCT14 hab ich noch da
+2015-03-18 22:37:39,Svenska,NAND nicht?
+2015-03-18 22:37:48,Jonathan,Wieso NAND?
+2015-03-18 22:37:56,Jonathan,HC00 hab ich auch noch
+2015-03-18 22:38:12,Svenska,(oder NOR? ich krieg da immer n knoten im kopf)
+2015-03-18 22:38:27,Jonathan,"Gut, HCT kann ich knicken"
+2015-03-18 22:38:31,Jonathan,"Läuft erst ab 4,5V"
+2015-03-18 22:38:40,Jonathan,Nur HC läuft ab 2V
+2015-03-18 22:38:43,Svenska,bau's aus transistoren ;)
+2015-03-18 22:38:49,Jonathan,*g*
+2015-03-18 22:38:55,Svenska,"bin mal ne halbe stunde weg, eh der supermarkt zumacht ^^"
+2015-03-18 22:39:08,Jonathan,Dann müsste ich aber ein paar meiner wenigen Kleinsignal-FETs verschwenden :(
+2015-03-18 22:39:11,Jonathan,"Okay, bis dann ^^"
+2015-03-18 22:39:52,Jonathan,(Ein 74HC00 sollte ja eigentlich tun)
+2015-03-18 23:17:26,Jonathan,"Bin mal weg, gute Nacht ;)"
+2015-03-18 23:26:26,Svenska,re
+2015-03-18 23:34:21,ehenkes,Svenska: können das video-daten sein? https://www.c-plusplus.net/forum/p2447269#2447269
+2015-03-18 23:34:35,ehenkes,Format ist offenbar YuY2
+2015-03-18 23:34:44,ehenkes,also 4:2:2
+2015-03-18 23:38:08,Svenska,du meinst YUYV
+2015-03-18 23:39:12,Svenska,"und das wäre YUV 4:2:0, wenn ich mich nicht irre"
+2015-03-18 23:39:15,ehenkes,"nein, YUY2"
+2015-03-18 23:39:29,Svenska,okay
+2015-03-18 23:39:34,ehenkes,sieht das nache solchen video-Daten aus?
+2015-03-18 23:39:56,Svenska,wirf einfach mal jedes zweite byte weg und mache ein graustufenbild draus
+2015-03-18 23:40:16,Svenska,"gib mir ein paar minuten, ich schau mal, ob ich das spontan hinkriege"
+2015-03-18 23:40:27,ehenkes,welches zweite byte?
+2015-03-18 23:40:44,ehenkes,das ist nur ein ausschnitt
+2015-03-18 23:41:16,Svenska,"also YUY2 hat ""Y0, Cb, Y1, Cr"""
+2015-03-18 23:41:35,Svenska,"wenn du Cb und Cr weglässt, bekommst du ein 8-bit graustufenbild"
+2015-03-18 23:41:48,ehenkes,ok
+2015-03-18 23:42:10,ehenkes,die kamera schaute ins dunkle
+2015-03-18 23:42:35,Svenska,"du kannst dir, wenn du möchtest, die daten auch direkt als PNM ausgeben lassen"
+2015-03-18 23:43:24,Svenska,"""P2\nBREITE\nHÖHE\n"" als kopf, und dann direkt die dezimalen helligkeitswerte untereinander klammern, dabei jedes 2. byte weglassen"
+2015-03-18 23:43:41,Svenska,das ergebnis sollte sich mit nem besseren bildbetrachter anzeigen lassen
+2015-03-18 23:44:25,Svenska,"oh, warte"
+2015-03-18 23:44:43,Svenska,"""P2\nBREITE\nHÖHE\n255\n"" und dann die daten, jeweils getrennt durch leerzeichen oder \n oder sowas"
+2015-03-18 23:45:22,ehenkes,sieht das überhaupt nach video aus?
+2015-03-18 23:45:28,Svenska,das sind standbilder
+2015-03-18 23:45:39,Svenska,aber du kannst jedes bild in eine datei schreiben
+2015-03-18 23:45:54,ehenkes,das ist ein video stream unformatted
+2015-03-18 23:46:02,Svenska,und?
+2015-03-18 23:46:08,Svenska,"du musst ja trotzdem wissen, wo jedes bild anfängt"
+2015-03-18 23:46:11,ehenkes,ja
+2015-03-18 23:46:25,Svenska,also kannst du aus dem videostream auch ein einzelnes bild raustrennen
+2015-03-18 23:46:26,ehenkes,"ich bin froh, dass ich es endlich geschfft habe, überhaupt daten zusehen"
+2015-03-18 23:46:42,ehenkes,was kommt da vorne?
+2015-03-18 23:46:46,Svenska,"wenn du nix genaues weißt, kannst du davon ausgehen, dass das erste byte oben links ist"
+2015-03-18 23:46:59,ehenkes,ok
+2015-03-18 23:47:17,Svenska,"das P2-zeugs ist, wenn du daraus ein bild im PNM-format speichern willst. das wird deine kamera nicht ausgeben"
+2015-03-18 23:47:20,ehenkes,wenn wir eine zeilenehmen
+2015-03-18 23:47:22,ehenkes,53 FF 00 F0 53 FF 00 F0 53 FF 00 F0 53 FF 00 F0
+2015-03-18 23:47:35,ehenkes,"sieht man da, was Y0/1 ist?"
+2015-03-18 23:47:40,Svenska,nö
+2015-03-18 23:48:07,ehenkes,aber der rhytmus ist drinnen
+2015-03-18 23:48:11,Svenska,"aber du kannst davon ausgehen, dass - wenn du das YUY2 format hast - jeweils 4 byte zusammengehören und 2 pixel beschreiben"
+2015-03-18 23:48:51,ehenkes, ok
+2015-03-18 23:48:54,Svenska,"entweder, die helligkeitsinformation ist abwechselnd ""53 00 53 00 53 00"" oder es ist ""FF F0 FF F0 FF F0"""
+2015-03-18 23:49:10,ehenkes,die kamera schasut hier ins dubbkle
+2015-03-18 23:49:15,ehenkes,dunkle
+2015-03-18 23:49:18,Svenska,(was sehr komisch aussieht. das sollte eigentlich uniform sein.)
+2015-03-18 23:49:54,ehenkes,ich kann ja mal anstrahlen mit taschenlampe
+2015-03-18 23:50:27,Svenska,welche auflösung ist das?
+2015-03-18 23:51:14,ehenkes,weiß nicht genau
+2015-03-18 23:52:28,Svenska,ok
+2015-03-18 23:52:37,ehenkes,anstrahlen mit taschenlampe
+2015-03-18 23:52:38,Svenska,"die auflösung ist höchstwahrscheinlich CIF, also 352x288"
+2015-03-18 23:52:39,ehenkes,53 FF 00 F0 53 FF 00 F0 53 FF 00 F0 53 FF 00 F0                                 
+2015-03-18 23:52:39,ehenkes,53 FF 00 F0 53 FF 00 F0 DC E9 00 F0 53 FF 00 F0                                 
+2015-03-18 23:52:39,ehenkes,A5 FE 00 F0 87 E9 00 F0 53 FF 00 F0 46 E7 00 F0                                 
+2015-03-18 23:52:39,ehenkes,46 E7 00 F0 46 E7 00 F0 57 EF 00 F0 53 FF 00 F0
+2015-03-18 23:53:13,Svenska,"kannst du die daten, die du empfängst, wegspeichern?"
+2015-03-18 23:54:04,ehenkes,ich muss das alles mal richtig aus den buffers holen
+2015-03-18 23:54:12,ehenkes,das ist komplex
+2015-03-18 23:54:23,ehenkes,8 transactions ah 3072
+2015-03-18 23:54:33,ehenkes,und 6 buffer mit 4096
+2015-03-18 23:54:40,ehenkes,"ah, 7 buffer"
+2015-03-18 23:54:56,ehenkes,ich hole momentan 3072
+2015-03-18 23:55:19,ehenkes,das muss ich aufeinander folgend ablegen in den buffers und dann speichermn
+2015-03-18 23:55:22,Svenska,ein kompletter frame á 202752 bytes hat 66 transactions je 3072 bytes
+2015-03-18 23:55:32,ehenkes,aber angestrahlt hat sich nix verändert
+2015-03-18 23:55:38,Svenska,eben
+2015-03-18 23:55:45,ehenkes,seltsam
+2015-03-18 23:56:07,Svenska,"ich wuerde die kamera mal mitten in den raum richten oder so, bei guter beleuchtung"
+2015-03-18 23:56:40,Svenska,"aber die framegröße lässt auf CIF schließen, wenn man YVU 4:2:2 ansetzt"
+2015-03-18 23:59:28,ehenkes,http://pastebin.com/1uAMxGyD <--- kamera in den raUM BEI LICHT
+2015-03-18 23:59:57,Svenska,sieht sehr komisch aus

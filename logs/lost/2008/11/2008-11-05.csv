@@ -1,0 +1,610 @@
+date/time,nick,message
+2008-11-05 00:04:57,JuZtMe,-.-
+2008-11-05 00:10:30,JuZtMe,oO fehler behoben
+2008-11-05 00:10:48,Jidder,ich hoffe du weißt was du getan hast ^^
+2008-11-05 00:10:57,JuZtMe,jein
+2008-11-05 00:11:13,JuZtMe,ich weis was ich gemacht habe aber nicht warum das jetzt funzt
+2008-11-05 00:11:45,Jidder,vielleicht positive energie aus dem astralraum
+2008-11-05 00:11:54,JuZtMe,^^
+2008-11-05 00:11:54,JuZtMe,int col=0;
+2008-11-05 00:11:54,JuZtMe,int row=0;
+2008-11-05 00:11:58,JuZtMe,das hab ich gemacht
+2008-11-05 00:12:12,Jidder,wo? global?
+2008-11-05 00:12:16,JuZtMe,aber col und row wird in video_init auf 0 gesetzt
+2008-11-05 00:12:38,JuZtMe,naja datei weit
+2008-11-05 00:12:48,Jidder,jo das is global ^^
+2008-11-05 00:12:55,JuZtMe,^^
+2008-11-05 00:13:15,Jidder,"aber das war nicht alles, oder?"
+2008-11-05 00:13:20,JuZtMe,doch
+2008-11-05 00:13:27,Jidder,"wenn du die änderung rückgängig machst, funktioniert es dann nicht mehr"
+2008-11-05 00:13:28,Jidder,?
+2008-11-05 00:13:31,JuZtMe,mom
+2008-11-05 00:13:57,JuZtMe,bingo
+2008-11-05 00:13:59,JuZtMe,^^
+2008-11-05 00:14:05,JuZtMe,funzt nicht mehr
+2008-11-05 00:14:15,Jidder,hm das ist interessant ...
+2008-11-05 00:14:20,Jidder,lädst du deinen kernel mit grub?
+2008-11-05 00:14:27,JuZtMe,das war beim pointer genauso
+2008-11-05 00:14:34,JuZtMe,ja ich boote ueber grub
+2008-11-05 00:14:52,Jidder,"ja ich vermute, die bss-sektion wird nicht korrekt in den kernel gelinkt"
+2008-11-05 00:15:04,JuZtMe,oO
+2008-11-05 00:15:08,Jidder,kannste mal dein linkerscript posten?
+2008-11-05 00:15:15,JuZtMe,istn makefile
+2008-11-05 00:15:32,JuZtMe,aber mom
+2008-11-05 00:15:41,Jidder,hmmm ... dann bitte den linkeraufruf und objcopy oder was auch immer du mit dem kernel noch so machst
+2008-11-05 00:16:42,JuZtMe,@ld -Ttext 0x100000 --oformat elf32-i386 -O 1 -o bin/$(TARGET) $(OBJECT)
+2008-11-05 00:17:42,JuZtMe,das gesamte makefile: http://pastebin.com/m6d4ff40c
+2008-11-05 00:17:42,Jidder,hm ... hm ...
+2008-11-05 00:20:18,Jidder,"also ich hab keine ahnung, warum der da die bss-sektion unterschlägt (und ob der das überhaupt tut)"
+2008-11-05 00:20:48,JuZtMe,was ist nochmal in der bss-sektion? ^^
+2008-11-05 00:21:00,Jidder,"daten, die nicht initialisiert sind"
+2008-11-05 00:21:51,Jidder,"eine elf hat normalerweise mindestens drei sektionen. eine für code (text), eine für daten (data) und eine für nicht initialisierte daten (bss)"
+2008-11-05 00:22:03,Jidder,letztere wird dann halt nicht in der datei gespeichert
+2008-11-05 00:22:09,Jidder,um platz zu sparen
+2008-11-05 00:22:45,JuZtMe,hmm
+2008-11-05 00:22:51,Jidder,"das betriebssystem weiß aber, dass diese sektion existiert und reserviert dafür speicher und initialisiert den mit 0"
+2008-11-05 00:23:00,Jidder,"ich vermute aber, dass ld diese sektion bereits unterschlägt"
+2008-11-05 00:24:50,JuZtMe,das selbe prob war warscheinlich eben bei vdata
+2008-11-05 00:25:09,Jidder,jo
+2008-11-05 00:26:00,Jidder,"übrigens: wenn du deine assemblerdateien nicht so nennst wie deine c-dateien (kernel_asm.asm vs. kernel_c.c) sondern unterschiedliche namen gibst (wie entry.asm und kernel.c), dann kannst du deine regeln vereinfachen und nur bin/%.o: src/%.c und bin/%.o: src/%.asm schreiben. dann müssen deine dateien nicht den doppelten suffix haben ;)"
+2008-11-05 00:26:24,JuZtMe,oehm
+2008-11-05 00:26:48,JuZtMe,nur die .o dateien haben doppelten suffix
+2008-11-05 00:26:57,Jidder,achso
+2008-11-05 00:27:00,Jidder,verrückt ^^
+2008-11-05 00:27:15,Jidder,na dann lass es so ^^
+2008-11-05 00:27:59,JuZtMe,ja ich hab n bischen gefrickelt damit ich asm und c dateien als object haben kann
+2008-11-05 00:29:23,JuZtMe,wenn ich ﻿bin/%.o: src/%.c und bin/%.o: src/%.asm nehmen wuerde gibt es 2 mal das target ﻿bin/%.o !
+2008-11-05 00:29:39,Jidder,jo dann kannste ja deine quelltextdateien umbenennen
+2008-11-05 00:29:56,JuZtMe,?
+2008-11-05 00:29:57,Jidder,zweimal das selbe target ist ansonsten kein problem
+2008-11-05 00:30:35,JuZtMe,echt?
+2008-11-05 00:30:39,Jidder,jo
+2008-11-05 00:30:48,Jidder,solange die quelldatei eindeutig ist
+2008-11-05 00:31:02,JuZtMe,aso ja
+2008-11-05 00:31:18,JuZtMe,hab aber zb exception als .asm und .c
+2008-11-05 00:31:43,JuZtMe,dann wuerde der die .o datei ueberschreiben
+2008-11-05 00:31:45,Jidder,"jo eine von beiden müssteste umbenennen, damit das klappt"
+2008-11-05 00:32:11,JuZtMe,nene hab mich daran gewoehnt bzw ich bekomme es ja garnet mit ^^
+2008-11-05 00:32:27,Jidder,"aber da du eh deine verzeichnisstruktur mit bin/ und src/ hast, lohnt sich das nicht so recht"
+2008-11-05 00:32:44,Jidder,"bei mir landen die .o-dateien im quelltextverzeichnis, weil ich die eingebauten make-regeln ausnutze"
+2008-11-05 00:32:56,Jidder,"aber das muss man natürlich nicht, und bei deiner verzeichnisstruktur geht das auch gar nicht"
+2008-11-05 00:33:12,Jidder,deswegen kannste es auch so lassen
+2008-11-05 00:33:30,JuZtMe,jo ich finde meine makefile gut ^^
+2008-11-05 00:33:40,Jidder,solange du es nicht so wie lost machst
+2008-11-05 00:34:15,Jidder,"weil das is echt nicht mehr schön mit ner makefile, die erstmal 50 shell skripte erstellt und aufruft -.-"
+2008-11-05 00:34:23,JuZtMe,oO
+2008-11-05 00:34:39,JuZtMe,hab mir die makefile von lost noch nicht angeguckt
+2008-11-05 00:34:43,Jidder,tus nicht
+2008-11-05 00:34:53,JuZtMe,mach ich jetzt.... ok dann net
+2008-11-05 00:34:57,Jidder,^^
+2008-11-05 00:35:10,JuZtMe,^^
+2008-11-05 00:35:26,JuZtMe,hmm
+2008-11-05 00:35:39,JuZtMe,iwie will ich jetzt noch das scrollen ueberpruefen
+2008-11-05 00:35:48,Jidder,hehe
+2008-11-05 00:38:03,Jidder,also wegen dieser variablengeschichte würd ich wirklich empfehlen ein linkerscript zu nutzen
+2008-11-05 00:38:05,JuZtMe,oO funzt ja mal garnet
+2008-11-05 00:38:32,JuZtMe,hatte mal ein linkerscript aber das ist aufm anderen pc und da ist die graka fratze
+2008-11-05 00:38:36,Jidder,naja sollen deine nutzer halt nicht so viel auf den bildschirm schreiben ^^
+2008-11-05 00:38:43,JuZtMe,^^
+2008-11-05 00:38:54,JuZtMe,ne das muss ich noch fixen
+2008-11-05 00:39:21,Jidder,http://lowlevel.brainsware.org/wiki/index.php/C-Kernel_mit_Grub#Linken schaut ganz vernünftig aus
+2008-11-05 00:39:42,Jidder,den ALIGN (0x1000) kram kannste auch rauswerfen
+2008-11-05 00:39:48,Jidder,is was für warmduscher
+2008-11-05 00:40:11,Jidder,wobei ich seh gerade mein kernel nutzt das auch ^^
+2008-11-05 00:40:25,Jidder,http://pastebin.com/m5099622d
+2008-11-05 00:40:32,Jidder,um dich mal mit varianten zu bombadieren
+2008-11-05 00:40:47,JuZtMe,oO
+2008-11-05 00:40:52,Jidder,mein kernel ist an 0xff000000 und nicht 0x00100000. das wär also etwas das du anpassen müsstest ^^
+2008-11-05 00:41:05,JuZtMe,ich hatte das ldscript schon im ordner ^^
+2008-11-05 00:41:11,Jidder,auch gut ^
+2008-11-05 00:41:13,Jidder,^^^
+2008-11-05 00:41:16,Jidder,^^
+2008-11-05 00:41:17,Jidder,so
+2008-11-05 00:41:19,Jidder,^^
+2008-11-05 00:41:29,JuZtMe,^^
+2008-11-05 00:44:14,JuZtMe,so ist eingebaut
+2008-11-05 00:44:23,JuZtMe,scrollen ich komme
+2008-11-05 00:44:30,JuZtMe,^^
+2008-11-05 00:50:41,JuZtMe,das ist jetzt auch komisch
+2008-11-05 00:52:18,Jidder,ja
+2008-11-05 00:52:43,Jidder,warum schmeisst sido fuffies im club
+2008-11-05 00:52:45,Jidder,und nicht fuffis?
+2008-11-05 00:52:58,JuZtMe,^^
+2008-11-05 00:53:23,JuZtMe,der kopiert jetzt die 2te zeile in jede zeile oO
+2008-11-05 00:54:09,Jidder,gemein
+2008-11-05 00:54:42,JuZtMe,und jetzt zeigt der schon wieder nicht mehr die 1te zeile an oO
+2008-11-05 00:54:45,Jidder,"die sache is, dass man memcpy nicht für sowas nutzt"
+2008-11-05 00:55:03,Jidder,mach dir von hand ne schleife
+2008-11-05 00:55:26,Jidder,"und denk dran, dass du speicher teilweise auf sich selbst kopierst"
+2008-11-05 00:55:43,Jidder,"also zweite zeile auf die erste, dritte zeile auf die zweite und so weiter"
+2008-11-05 00:56:00,Jidder,memcpy macht das nicht mit
+2008-11-05 00:56:06,Jidder,(meistens)
+2008-11-05 00:56:10,JuZtMe,ja aber der kopiert ja von oben nach unten das sollte funzen
+2008-11-05 00:56:38,JuZtMe,mein memcpy: http://pastebin.com/m190e0a04
+2008-11-05 00:57:20,JuZtMe,oO ich habs xD
+2008-11-05 00:57:33,Jidder,benutz mal nicht so viel word
+2008-11-05 00:57:39,Jidder,bist ja nicht auf nem 16 bit system
+2008-11-05 00:57:58,Jidder,aber das memcpy sollte wohl keine probleme machen
+2008-11-05 00:58:05,JuZtMe,man sollte quelle und ziel in der richtigen reihenfolge angeben xD
+2008-11-05 00:59:02,JuZtMe,juhuu scrollen funzt
+2008-11-05 00:59:13,Jidder,"und ganz am anfang als alle über memcpy gelabert haben kam mir noch der gedanke: ""ist die parameterreihenfolge korrekt"" ^^"
+2008-11-05 00:59:18,Jidder,ich verhau die nämlich auch immer
+2008-11-05 00:59:24,Jidder,dann gratuliere ich ^^
+2008-11-05 00:59:30,JuZtMe,aber die erste zeile ist trotzdem verschwunden
+2008-11-05 00:59:30,JuZtMe,danke
+2008-11-05 01:00:18,Jidder,das kriegste bestimmt auch noch hingefummelt
+2008-11-05 01:00:27,Jidder,ich bin mal an der matratze horchen
+2008-11-05 01:00:33,Jidder,gn8
+2008-11-05 01:00:33,JuZtMe,gn8
+2008-11-05 01:00:40,JuZtMe,bin auch weg
+2008-11-05 11:43:53,bluecode,haha!
+2008-11-05 11:45:13,kwolf,Moin bluecode
+2008-11-05 12:02:27,JuZtMe,moin moin
+2008-11-05 14:02:00,phoenix64,moin
+2008-11-05 14:05:33,JuZtMe,moin
+2008-11-05 14:08:14,bluecode,haha!
+2008-11-05 14:13:33,kwolf,bluecodes Wortschatz ist beeindruckend. *g*
+2008-11-05 14:15:54,phoenix64,"initialisiert ""int whatever[10] = {0};"" das ganze Array, oder theoretisch nur den ersten Wert?"
+2008-11-05 14:16:02,phoenix64,"bzw, ist das definiert?"
+2008-11-05 14:16:14,phoenix64,"oder ""Zufall""?"
+2008-11-05 14:17:06,kwolf,Eigentlich nur den ersten Wert. Aber das ganze Zeug wird sowieso mit Nullen initialisiert...
+2008-11-05 14:17:20,kwolf,int whatever[10]; ist praktisch genauso gut
+2008-11-05 14:17:34,kwolf,"Außer wir reden vom Stack, natürlich"
+2008-11-05 14:17:45,phoenix64,"""If there are too few initializers for all members, the remaining members are initialized to 0."""
+2008-11-05 14:18:10,kwolf,"Hm, okay, das wußte ich nicht. Global funktioniert es auch ohne und lokal habe ich immer memset genommen."
+2008-11-05 14:18:42,kwolf,Reicht dann auch  int whatever[10] = {}; ?
+2008-11-05 14:18:56,Homix,hi
+2008-11-05 14:19:01,kwolf,Moin Homix
+2008-11-05 14:19:25,Homix,kann man eigentlich irgendwie direkt in den Speicher des BIOSes schreiben?
+2008-11-05 14:19:51,Homix,"ich meine damit, dass es auf dem BIOS-Speicherbaustein dann auch gespeichert bleibt ;)"
+2008-11-05 14:19:57,Homix,sozusagen manuelles BIOS Update :)
+2008-11-05 14:20:06,kwolf,"Du meinst, das BIOS flashen?"
+2008-11-05 14:20:13,phoenix64,"kwolf, kP, aber mir ist iwie neu, dass globale Variablen, wenn nicht definiert, per Definition genullt werden"
+2008-11-05 14:20:14,Homix,ja
+2008-11-05 14:20:15,kwolf,"Ich hoffe nicht, daß das in den RAM gemappt ist... *g*"
+2008-11-05 14:20:33,phoenix64,*wenn nicht initialisiert
+2008-11-05 14:20:34,kwolf,phoenix64: Per ELF-Definition
+2008-11-05 14:20:42,phoenix64,aso
+2008-11-05 14:20:45,kwolf,"Ob andere Formate mitspielen, weiß ich nicht"
+2008-11-05 14:23:15,JuZtMe,Der ATA artikel im wiki ist ja mal mager
+2008-11-05 14:24:29,kwolf,Bau ihn aus ;-)
+2008-11-05 14:24:36,JuZtMe,^^
+2008-11-05 14:24:54,JuZtMe,werd ich machen sobald ich mich mit ata auskenne 
+2008-11-05 14:24:55,kwolf,"Das Problem ist, daß es hier nicht allzu viele gibt, die einen funktionierenden Treiber haben, also was zuverlässiges schreiben könnten"
+2008-11-05 14:25:15,JuZtMe,hmm
+2008-11-05 14:25:33,kwolf,"So Sachen wie Paging sind einfacher, das kann jeder hier auswendig. ;-)"
+2008-11-05 14:25:45,JuZtMe,gibts iwo ne vernuenftige documentation fuer ata??
+2008-11-05 14:26:03,kwolf,"Die offiziellen Specs. Sind im Artikel verlinkt, glaube ich."
+2008-11-05 14:26:11,JuZtMe,bei t13 hab ich nichts gefunden -.-
+2008-11-05 14:26:19,JuZtMe,ist sehr unuebersichtlich da
+2008-11-05 14:26:29,kwolf,"Doch, da gibt es irgendwo welche. Aber sie verstecken das Zeug gut..."
+2008-11-05 14:26:47,JuZtMe,-.-
+2008-11-05 14:27:45,JuZtMe,das es iwo welche gibt davon bin ich ausgegangen
+2008-11-05 14:28:03,JuZtMe,aber ich suche seit 3 stunden -.-
+2008-11-05 14:29:06,JuZtMe,ich glaube man muesste fast alle artikel da auf der seite durchlesen
+2008-11-05 14:30:13,kwolf,"Ich habe das neulich recht zügig gefunden. Versuch mal, die Spec direkt anzugoogeln"
+2008-11-05 14:34:36,JuZtMe,lol
+2008-11-05 14:34:48,JuZtMe,da gibts ja x abweichungen
+2008-11-05 14:36:21,JuZtMe,aber nen direktlink finde ich nicht
+2008-11-05 14:36:57,JuZtMe,alle verweisen auf die hauptseite
+2008-11-05 14:37:02,bluecode,"ehm, int whatever[10] = {0} initialisiert alles mit nullen int whatever[10]; initialisiert garnichts"
+2008-11-05 14:37:47,bluecode,"es sei denn natürlich letzteres ist global, aber das ist ein anderes thema"
+2008-11-05 14:37:57,JuZtMe,naja
+2008-11-05 14:38:07,phoenix64,Zu dem Schluss sind wir doch auch gekommen?
+2008-11-05 14:38:08,kwolf,bluecode: Sag ich doch.
+2008-11-05 14:38:28,bluecode,ich fange im normalfall oben an zu lesen und schreibe dann einfach mal ;-)
+2008-11-05 14:38:31,JuZtMe,hatte gestern auch meine probs mit nicht initialisierten variablen
+2008-11-05 14:38:36,JuZtMe,^^
+2008-11-05 14:39:22,phoenix64,"ich mach das genau anders herum, siehe memmove -.-"
+2008-11-05 14:39:24,bluecode,kwolf: haha!
+2008-11-05 14:42:00,JuZtMe,-.-
+2008-11-05 14:42:04,kwolf,Ihr solltet euch beide mal nach passenden Lockingalgorithmen umschauen ;-)
+2008-11-05 14:47:03,JuZtMe,-.- die links sind veraltet http://linux-ata.org/devel.html
+2008-11-05 14:48:36,JuZtMe,glaube ich hab sie -.- das hat lange gedauert
+2008-11-05 14:49:10,bluecode,"jo, die ftp seite von t13 ist nicht sehr doll übersichtlich"
+2008-11-05 14:49:13,kwolf,Gleich ins Wiki eintragen für nächstes Mal ;-)
+2008-11-05 14:49:57,JuZtMe,jau mom
+2008-11-05 14:53:24,JuZtMe,ist eingetragen
+2008-11-05 14:54:39,JuZtMe,da hab ich jetzt auch ne lektuere fuer die naechsten 3-6 monate wenn nicht laenger
+2008-11-05 14:55:03,kwolf,*g*
+2008-11-05 14:55:23,kwolf,"Die Kunst ist, die entscheidenden Teile zu finden und lesen. ;-)"
+2008-11-05 14:55:39,JuZtMe,^^
+2008-11-05 14:55:53,bluecode,seh ich auch so
+2008-11-05 14:57:30,JuZtMe,ja die teile mit den technischen details ueberspringe ich
+2008-11-05 16:10:02,bluecode,sach mal wie dreist ist das denn? Oo Da wird von den Leuten erwartet das sie einen Algo aus dem Skript (euklidischer Algo für Ggt) mit konkreten Zahlen nachvollziehen und dann verändern die einfach den Algorithmus wies denen gerade passt
+2008-11-05 16:10:22,kwolf,Sind doch vermutlich nur triviale Änderungen
+2008-11-05 16:11:38,bluecode,tz
+2008-11-05 16:12:58,bluecode,nur weil sie irgendwie 32mod80 aus dem Konzept bringt
+2008-11-05 16:14:28,kwolf,Hm?
+2008-11-05 16:15:06,bluecode,keine Ahnung die hat das irgendwie verwirrt und alle wollen immer 80mod32 also die eingabe vertauschen
+2008-11-05 16:16:41,kwolf,Solange das Ergebnis stimmt? ;-)
+2008-11-05 16:17:00,bluecode,"es ging um den Weg, nicht das ergebnis ;-)"
+2008-11-05 16:17:58,kwolf,Bist du zu den Theoretikern übergelaufen? ;-)
+2008-11-05 16:21:45,bluecode,eigentlich nicht
+2008-11-05 16:21:59,kwolf,Hm...
+2008-11-05 16:22:24,FreakyPenguin,Hm warum? ;-)
+2008-11-05 16:22:49,kwolf,"Äh... Sagen wir, interessantes Design *g*"
+2008-11-05 16:23:08,FreakyPenguin,*lol*
+2008-11-05 16:23:16,kwolf,"Ist lustig, mal durchzugehen, was eigentlich passiert, wenn man ein Blockdevice attacht. Vor allem im Fehlerfall."
+2008-11-05 16:24:24,bluecode,Fehlerfall? Das ist doch was für Memmen
+2008-11-05 16:24:31,JanDing,moin moin
+2008-11-05 16:24:44,JanDing,ich hab eine geniale geschäftsidee
+2008-11-05 16:24:51,JanDing,was braucht jeder zivilisierte mensch?
+2008-11-05 16:24:58,JanDing,richtig! handtucher
+2008-11-05 16:25:02,JanDing,mit ü
+2008-11-05 16:25:25,JanDing,deswegen jetzt neu: JanDing sein Handtuchbringdienst
+2008-11-05 16:25:34,JanDing,mit express und overnight shipment
+2008-11-05 16:26:09,kwolf,"Du gibst dich mit Leuten ab, die ihr Handtuch nicht immer dabei haben?"
+2008-11-05 16:26:26,JanDing,ich leiste hier harte wiederaufbauarbeit
+2008-11-05 16:26:31,JanDing,gleiches recht für alle
+2008-11-05 16:26:37,bluecode,wie handtücher? für was braucht man sowas?
+2008-11-05 16:27:05,JanDing,natürlich um ein kletterseil aus dem 5ten stock für notfälle zu knoten
+2008-11-05 16:27:24,bluecode,"kwolf: das gibt aber -unendlich auf dem Geekindex, es sei denn dir fällt eine tolle erklärung ein ;-)"
+2008-11-05 16:27:54,JanDing,war nicht waschen das problem? abtrocknen is doch okay
+2008-11-05 16:28:24,bluecode,"hm, also du meinst, falls du unfreiwillig wasser abbekommst?"
+2008-11-05 16:28:29,JanDing,genau
+2008-11-05 16:28:34,kwolf,bluecode: Soll ich dich auf die Fachliteratur verweisen? ;-)
+2008-11-05 16:28:34,bluecode,hm
+2008-11-05 16:28:36,bluecode,haha!
+2008-11-05 16:28:42,bluecode,kwolf: definitiv.
+2008-11-05 16:28:56,kwolf,"Das gibt Minuspunkte für dich, denn den Anhalter solltest du schon gelesen haben."
+2008-11-05 16:29:26,JanDing,gibts davon ne iso zum download? ich nehm nur xvid
+2008-11-05 16:29:27,bluecode,haha!
+2008-11-05 16:29:32,bluecode,"aber stimmt, ich habe das buch nicht gelesen"
+2008-11-05 16:29:36,kwolf,haha!
+2008-11-05 16:29:43,JanDing,haha?
+2008-11-05 16:29:46,bluecode,haha!
+2008-11-05 16:29:50,phoenix64,haha!
+2008-11-05 16:29:50,JanDing,nachtisch
+2008-11-05 16:29:57,bluecode,nachttisch
+2008-11-05 16:30:00,phoenix64,"so, wollte ich nur mal gesagt haben"
+2008-11-05 16:30:04,kwolf,nachtttisch
+2008-11-05 16:30:06,JanDing,nachttttisch
+2008-11-05 16:30:15,bluecode,haha!
+2008-11-05 17:06:55,kwolf,Ui... :-)
+2008-11-05 17:06:58,kwolf,[Qemu-devel] [5627] Add KVM support to QEMU
+2008-11-05 17:12:03,bluecode,heu?
+2008-11-05 17:16:47,kwolf,"Ja, das war die Mail zu einem SVN-Commit."
+2008-11-05 17:17:14,bluecode,"hm, hat was :-)"
+2008-11-05 17:17:41,kwolf,Und bei uns im Forum scheinen langsam regelmäßig Spammer durchzukommen. Und wir haben keinen Zugriff mehr. :-/
+2008-11-05 17:18:03,kwolf,"Was die Umlaute betrifft, hat hannibals Wirken wohl auch nichts gebracht"
+2008-11-05 17:18:08,FreakyPenguin,Keinen Zugriff mehr?
+2008-11-05 17:18:12,kwolf,FTP
+2008-11-05 17:18:23,kwolf,Oder tut das wieder?
+2008-11-05 17:21:21,bluecode,heu? Warum/wann hat das mal nicht getan
+2008-11-05 17:21:41,bluecode,und warum brauchst du ftp access du hast doch admin/mod im forum
+2008-11-05 17:26:47,kwolf,Tut es denn bei dir?
+2008-11-05 17:27:39,kwolf,"Ich krieg nur ""530 Login incorrect."""
+2008-11-05 17:29:54,bluecode,"stimmt, das tut nicht"
+2008-11-05 17:30:49,kwolf,"Wären wir also wieder bei deinem Einwand mit Admin/Mod. Was bringt mir der, wenn ich nicht ständig manuell hinterherlöschen will?"
+2008-11-05 17:31:36,JuZtMe,das bringt dann garnix ^^
+2008-11-05 17:31:51,bluecode,ich hab kA was du alles alles mod/admin machen bzw. nicht machen kannst
+2008-11-05 17:32:08,kwolf,Ich auch nicht *g*
+2008-11-05 17:32:10,bluecode,"ich hätte schon gedacht, dass man einen benutzer dauerhaft sperren könnte"
+2008-11-05 17:32:15,JuZtMe,denke mal loeschen verschieben usw
+2008-11-05 17:32:38,kwolf,bluecode: Dann kommt der nächste...
+2008-11-05 17:32:40,bluecode,oder was genau machst du per ftp?
+2008-11-05 17:32:57,JuZtMe,naja dauerhaft sperren bringt nix dann kann man sich neu anmelden
+2008-11-05 17:32:58,kwolf,Da könnte ich das Registrierungsformular ändern
+2008-11-05 17:33:51,bluecode,und was genau ändern?
+2008-11-05 17:34:53,kwolf,"Ich gehe davon aus, daß man die Bots relativ leicht verwirren kann, wenn die Feldnamen nicht mehr passen oder plötzlich ein zusätzliches Feld ausgefüllt werden muß"
+2008-11-05 17:35:24,JuZtMe,von welchem forum sprecht ihr eigentlich? ^^
+2008-11-05 17:35:31,kwolf,Lowlevel?
+2008-11-05 17:35:54,JuZtMe,aso hab da bewusst noch keinen bot gesehen
+2008-11-05 17:36:07,kwolf,Weil ich manuell lösche
+2008-11-05 17:36:15,JuZtMe,aber gegen bots sind captcha scripts nuetzlich
+2008-11-05 17:44:45,JuZtMe,aber dazu braucht man auch ftp zugriff
+2008-11-05 17:46:05,kwolf,Gut erkannt
+2008-11-05 17:48:09,JuZtMe,kein bock mehr auf ata fuer heute
+2008-11-05 17:57:15,JuZtMe,aehm wie compiliert man eigentlich lost? ^^
+2008-11-05 18:01:42,kwolf,make
+2008-11-05 18:02:06,JuZtMe,-.-
+2008-11-05 18:02:06,JuZtMe,schon klar
+2008-11-05 18:02:14,kwolf,"Dann mußt du sagen, was schiefgeht ;-)"
+2008-11-05 18:02:24,JuZtMe,hab make ausgefuehrt aber es wird kein image erstellt
+2008-11-05 18:02:39,kwolf,make image-floppy
+2008-11-05 18:02:49,kwolf,"Wenn du Glück hast, funktioniert für dich auch make image-hd"
+2008-11-05 18:03:00,JuZtMe,ich werds versuchen ^^
+2008-11-05 18:03:25,kwolf,"Wahrscheinlich zerreißt es dir aber grub, wie bei den meisten ;-)"
+2008-11-05 18:04:12,JuZtMe,jup
+2008-11-05 18:04:30,JuZtMe,mal sehen vllt bekomme ich das gefixt
+2008-11-05 18:04:45,kwolf,Wenn du dich mit dem ext2-Treiber von grub auskennst?
+2008-11-05 18:05:19,kwolf,"Okay, ein Workaround auf unserer Seite wäre natürlich auch nett"
+2008-11-05 18:06:05,JuZtMe,habe auf jeden fall ein ext2 grub image zum laufen gebracht
+2008-11-05 18:06:23,JuZtMe,muss nur gucken was schief laeuft
+2008-11-05 18:06:47,JuZtMe,"""NUR"" ^^"
+2008-11-05 18:06:56,kwolf,Genau. *g*
+2008-11-05 18:10:11,JuZtMe,meinst du es geht wenn ich einfach mein image nehme?
+2008-11-05 18:10:44,JuZtMe,ich finde diese makefile etwas unuebersichtlich
+2008-11-05 18:11:23,kwolf,"Ich weiß gar nicht, was ihr alle gegen das Buildsystem habt."
+2008-11-05 18:11:34,kwolf,Ist immerhin bisher das langlebigste Dauerprovisorium *g*
+2008-11-05 18:12:02,JuZtMe,:p
+2008-11-05 18:15:20,JuZtMe,ist aber auch ein makefile - bash mischmasch
+2008-11-05 18:15:43,kwolf,Aber funktioniert. ;-)
+2008-11-05 18:16:17,JuZtMe,naja bei mir nicht ^^
+2008-11-05 18:16:56,kwolf,"Ich dachte, bei dir ist es auch nur der grub, der kaputt ist?"
+2008-11-05 18:17:44,FreakyPenguin,kwolf: Workaround: grub-static von gentoo nehmen. ;-)
+2008-11-05 18:17:53,JuZtMe,wie kann dass an grub liegen wenn ich ein anderes hd image erstellt habe?
+2008-11-05 18:18:44,kwolf,FreakyPenguin: Patchen die das Problem weg oder wieso tut der?
+2008-11-05 18:18:56,FreakyPenguin,"Keine Ahnung, aber er tut. ;-)"
+2008-11-05 18:19:03,kwolf,"JuZtMe: Wenn grub abschmiert, ist das immer ein Problem in grub."
+2008-11-05 18:19:05,JuZtMe,ich glaube ihr macht da nur nen fehler im script
+2008-11-05 18:19:11,JuZtMe,ne
+2008-11-05 18:19:14,kwolf,Doch.
+2008-11-05 18:19:38,FreakyPenguin,Jo eine division durch Null im ext2-Treiber ist nicht gesund. Dafür können wir nichts.
+2008-11-05 18:19:41,JuZtMe,ich kann doch ein grub hd image erstellen
+2008-11-05 18:19:53,FreakyPenguin,"JuZtMe: Ich auch, aber nicht immer."
+2008-11-05 18:20:01,kwolf,Dann triggerst du den grub-Bug halt vielleicht mit deinem Image zufällig gerade nicht
+2008-11-05 18:20:09,kwolf,Vorhanden ist er trotzdem
+2008-11-05 18:21:22,kwolf,"FreakyPenguin: Ist grub-static eine besondere Variante, oder heißt der einfach nur anders?"
+2008-11-05 18:22:04,FreakyPenguin,kwolf: Der ist für Gentoo-Verhältnisse ziemlich binär. Was sie da anders machen weiss ich nicht.
+2008-11-05 18:22:51,kwolf,Aber die Sourcen muß es doch trotzdem geben?
+2008-11-05 18:25:46,kwolf,Wir haben hier einen Patch für Inodegrößen != 128
+2008-11-05 18:25:50,kwolf,Könnte das was damit zu tun haben?
+2008-11-05 18:27:09,kwolf,"Ach Mist, strip ist ja auch noch kaputt..."
+2008-11-05 18:27:50,FreakyPenguin,"kwolf: Ich glaube nicht, die müssten 128-Bytes gross sein bei uns."
+2008-11-05 18:28:21,FreakyPenguin,"ftp://mirror.switch.ch/mirror/gentoo/distfiles/grub-static-0.97.tar.bz2 wäre das Archiv, das ich benutze."
+2008-11-05 18:29:35,kwolf,"Dein mkfs-Aufruf spezifiziert die Größe nicht, es ist also einfach nur irgendwas."
+2008-11-05 18:37:32,kwolf,Also auf der 11.1 scheint make image-hd zu tun
+2008-11-05 18:45:29,JuZtMe,oO mount: Konnte ./disk nicht in /etc/fstab oder /etc/mtab finden
+2008-11-05 18:46:47,JuZtMe,auf den fehler komm ich grade nicht klar
+2008-11-05 18:48:50,kwolf,Du willst einen Mountpoint angeben?
+2008-11-05 18:49:44,JuZtMe,^^
+2008-11-05 18:49:47,JuZtMe,mom
+2008-11-05 18:52:20,JuZtMe,-.- hab den fehler behobe
+2008-11-05 18:52:23,JuZtMe,+n
+2008-11-05 18:52:26,FreakyPenguin,kwolf: Wo muss ich da suchen für die src-rpms?
+2008-11-05 18:52:32,JuZtMe,hatte ne variable geloescht
+2008-11-05 18:52:48,kwolf,FreakyPenguin: Willst du dir das wirklich anschauen?
+2008-11-05 18:53:05,FreakyPenguin,Gute Frage *g*
+2008-11-05 18:53:17,kwolf,http://download.opensuse.org/repositories/openSUSE:/Factory/standard/src/grub-0.97-150.1.src.rpm
+2008-11-05 18:53:55,FreakyPenguin,Hm 404
+2008-11-05 18:53:59,JuZtMe,so
+2008-11-05 18:54:35,kwolf,Hm. Stimmt...
+2008-11-05 18:58:21,kwolf,"Den bietet er noch an, dürfte auch sowas ähnliches sein... ;-) http://download.opensuse.org/repositories/Base:/install/standard/src/grub-0.97-140.3.src.rpm"
+2008-11-05 18:59:38,kwolf,Scheint aber schon etwas älter zu sein
+2008-11-05 19:00:29,JuZtMe,aehm kopiert das makefile den kernel direkt aufs image?
+2008-11-05 19:01:08,JuZtMe,ich habe jetzt mein script benutzt um das image zu erstellen
+2008-11-05 19:04:28,FreakyPenguin,kwolf: Hm ein sauberer grub von alpha.gnu.org tut auch...
+2008-11-05 19:10:53,JuZtMe,oO ihr benutzt nicht fdisk zum partitionieren!?!?
+2008-11-05 19:20:17,JuZtMe,-.- hab das frontend fuer menuconfig nicht
+2008-11-05 19:21:47,JuZtMe,ihr seid ja auch mal gespraechig
+2008-11-05 19:39:20,phoenix64,re :)
+2008-11-05 19:40:11,kwolf,wz
+2008-11-05 19:40:23,phoenix64,thx
+2008-11-05 20:05:10,kwolf,"Hm, der strip-Segfault ist nett..."
+2008-11-05 20:10:40,FreakyPenguin,kwolf: Unter gentoo geht grub wirklich durch den Patch 810_all_grub-0.97-ext3_256byte_inode.patch kaputt. ;-)
+2008-11-05 20:11:16,kwolf,Dann mal fleißig reporten. ;-)
+2008-11-05 20:11:19,FreakyPenguin,Der sieht aber ganz schön übersichtlich aus. Müsste sich mit etwas Gedankenarbeit fixen lassen. ;-)
+2008-11-05 20:17:19,FreakyPenguin,Der ist aber sehr peinlich :-/
+2008-11-05 20:17:37,stultus,Nabend
+2008-11-05 20:17:37,stultus,was?
+2008-11-05 20:17:49,FreakyPenguin,grub-Patch-Bug ;-)
+2008-11-05 20:17:49,FreakyPenguin,66 +#define EXT2_INODE_SIZE(s)             (SUPERBLOCK->s_inode_size)
+2008-11-05 20:17:49,FreakyPenguin,67 +#define EXT2_INODES_PER_BLOCK(s)       (EXT2_BLOCK_SIZE(s)/EXT2_INODE_SIZE(s))
+2008-11-05 20:18:03,FreakyPenguin,"Wobei s_inode_size 0 ist, wenn das Dateisystem Revision 0 hat"
+2008-11-05 20:18:05,phoenix64,lol?
+2008-11-05 20:18:33,FreakyPenguin,"Es muss wohl nichtmal 0 sein, sondern kann auch irgendwas sein."
+2008-11-05 20:18:37,phoenix64,haben die da sowas wie QA? ^^
+2008-11-05 20:18:46,kwolf,Autsch *g*
+2008-11-05 20:18:49,stultus,bei Gentoo?
+2008-11-05 20:18:51,stultus,"Ja, Benutzer *g*"
+2008-11-05 20:19:21,stultus,Wobei ich zugeben muss auch schon nen gutes stabiles schnelles Gentoo erlebt zu haben.
+2008-11-05 20:19:40,stultus,Das war dummerweise bevor ich die vielfältigen Möglichkeiten von USE-Flags genutzt hab. ^^
+2008-11-05 20:19:46,FreakyPenguin,Meines funktioniert im Allgemeinen auch. ;-)
+2008-11-05 20:19:48,kwolf,FreakyPenguin: Der Patch scheint derselbe zu sein. ;-)
+2008-11-05 20:19:50,bluecode,*lol*
+2008-11-05 20:20:07,stultus,"Naja, seitdem ich versuche die zu verwenden... Geht irgendwas immer schief. "
+2008-11-05 20:20:34,kwolf,"Interessanterweise hat es bei mir aber vorhin funktioniert, obwohl es immer noch derselbe ist"
+2008-11-05 20:22:10,FreakyPenguin,kwolf: Jo bei mir hat das Suse-Zeug funktioniert
+2008-11-05 20:22:25,FreakyPenguin,"Aber bei Gentoo reporte ich das jetzt mal, danach sehe ich mir mal den SUSE-Patch an..."
+2008-11-05 20:24:28,kwolf,Das ist aber genau dasselbe #define
+2008-11-05 20:31:36,kwolf,"Ist es eigentlich eine clevere Idee, eine lib/lostio/sync.c und eine lib/rpc/sync.c zu haben und beide in dieselbe library.a stecken zu wollen?"
+2008-11-05 20:35:46,stultus,Ist imho ein wenig irritierend
+2008-11-05 20:35:52,stultus,"Vorallem da wohl beide ähnliches enthalten, oder?"
+2008-11-05 20:37:40,kwolf,Nein
+2008-11-05 20:37:51,kwolf,"Oder genauergesagt, keine Ahnung, was lostio da hat"
+2008-11-05 20:38:03,kwolf,"Die Frage ist halt, ob es nur dich verwirrt oder auch die Tools"
+2008-11-05 20:56:32,livinskull,yay nt4 source fertig geladen :D
+2008-11-05 20:56:40,livinskull,tach btw :P
+2008-11-05 20:56:41,phoenix64,"livinskull, lass ma"
+2008-11-05 20:56:46,livinskull,xD
+2008-11-05 20:56:56,phoenix64,du disqualifizierst dich rechtlich gesehen damit selber
+2008-11-05 20:57:06,phoenix64,"und das *kann* Probleme geben, sobald irgendwer das hier liest :p"
+2008-11-05 20:57:24,bluecode,copyright infringement!
+2008-11-05 20:57:27,livinskull,mh.....
+2008-11-05 20:57:53,the_riaa_will_get_you_really_s,oon
+2008-11-05 20:58:10,phoenix64,geht mehr um MS :p
+2008-11-05 20:58:15,the_riaa_will_get_you_really_s,damn
+2008-11-05 20:59:28,the_riaa_will_get_you_really_s,"meh, jetzt gibts keinen weg mehr zurück!"
+2008-11-05 20:59:58,FreakyPenguin,taljeth: Hast du noch ein kaupttes grub-RPM?
+2008-11-05 21:00:11,taljeth,"Source willst du, oder?"
+2008-11-05 21:00:25,FreakyPenguin,Jo
+2008-11-05 21:00:30,taljeth,"Such dir am besten selber im Buildservice, das für die 11.0 müßte kaputt sein"
+2008-11-05 21:00:44,taljeth,http://software.opensuse.org/search
+2008-11-05 21:01:45,FreakyPenguin,"Jo habe ich auch grad ergoogelt, danke"
+2008-11-05 21:04:22,FreakyPenguin,taljeth: Könntest du dann bei Gelegenheit mal den ata-Patch testen?
+2008-11-05 21:04:38,taljeth,"Stimmt, da war ja was..."
+2008-11-05 21:05:06,FreakyPenguin,Ein Switch? ;-)
+2008-11-05 21:05:18,taljeth,"Hey, woher weißt du? *g*"
+2008-11-05 21:05:28,FreakyPenguin,*g*
+2008-11-05 21:05:36,livinskull,yepheh.. hab seid heute nen 22er tft :D
+2008-11-05 21:08:10,stultus,boah
+2008-11-05 21:08:13,stultus,ich hab nichmal nen TFT
+2008-11-05 21:08:25,livinskull,jo ich hatte davor auch keinen ;)
+2008-11-05 21:08:34,stultus,Aber die Tatsache dass ich hier 2 Anzeigegeräte hab gleicht das innen Nerdpunkten wohl mehr als aus ^^
+2008-11-05 21:08:53,livinskull,gleichzeitig angeschlossen?
+2008-11-05 21:08:56,livinskull,am gleichen PC?
+2008-11-05 21:09:05,stultus,"Mal an einem, mal an Zwei PC's"
+2008-11-05 21:09:05,phoenix64,"naja, bei mir ist iwie der Tisch zu klein für nen 2. Monitor -.-"
+2008-11-05 21:09:28,livinskull,"jup, so gehts mir auch :P"
+2008-11-05 21:09:34,stultus,^^
+2008-11-05 21:09:37,stultus,Vorschlag...
+2008-11-05 21:09:48,stultus,"Baumarkt nach Wahl suchen, 2-Meter-arbeitsplatte"
+2008-11-05 21:10:07,livinskull,kein platz^^
+2008-11-05 21:10:12,stultus,wtf?
+2008-11-05 21:10:15,stultus,Muss man machen
+2008-11-05 21:10:21,stultus,Im zweifelsfall fliegt das Bett raus ^^
+2008-11-05 21:10:21,livinskull,hier stehen 3 tische und ein bett im grossformat drin :P
+2008-11-05 21:10:37,stultus,"Na, und die andern 2 Tische sind nich für Monitore brauchbar?"
+2008-11-05 21:10:47,phoenix64,"stultus, rechts is ne Tür, links ein Regal"
+2008-11-05 21:10:56,livinskull,na da is kein platz :P
+2008-11-05 21:10:57,phoenix64,mein Test-PC steht hinter mir
+2008-11-05 21:11:02,phoenix64,und ich bin nicht in meinem Zimmer
+2008-11-05 21:11:09,livinskull,un dauf dem hier steht noch n dicker laser
+2008-11-05 21:11:40,stultus,Oha
+2008-11-05 21:12:07,livinskull,*laserdrucker
+2008-11-05 21:12:09,livinskull,;P
+2008-11-05 21:12:16,stultus,Schon klar ^^
+2008-11-05 21:12:36,taljeth,Die Kabel sind alle viel zu lang *g*
+2008-11-05 21:12:44,phoenix64,wtf?
+2008-11-05 21:12:47,stultus,_wtf_ ???
+2008-11-05 21:12:49,FreakyPenguin,*g*
+2008-11-05 21:12:51,FreakyPenguin,Wie schrecklich ;-)
+2008-11-05 21:12:52,phoenix64,Den Überschuss kannst du mir senden.
+2008-11-05 21:12:54,stultus,taljeth.nerdpunkte -= 100;
+2008-11-05 21:12:59,stultus,oder mir
+2008-11-05 21:13:10,stultus,Dann gibts auch Punkte wieder *g*
+2008-11-05 21:13:14,taljeth,*lol*
+2008-11-05 21:14:08,FreakyPenguin,taljeth: Hm bei mir funktioniert der 11.1 grub auch nicht
+2008-11-05 21:14:26,stultus,*lol*
+2008-11-05 21:14:31,taljeth,Hätte mich auch gewundert.
+2008-11-05 21:14:32,stultus,SUSE? ^^
+2008-11-05 21:14:40,taljeth,Weil der kaputte Patch ist ja immer noch drin
+2008-11-05 21:14:48,taljeth,Nur: Für mich hat er vorhin funktioniert
+2008-11-05 21:15:37,FreakyPenguin,Nach einem make clean
+2008-11-05 21:16:01,taljeth,Wahrscheinlich hat das 11.1-mkfs andere Defaulteinstellungen
+2008-11-05 21:16:13,FreakyPenguin,Hm aber wir geben doch explizit -r0 an?
+2008-11-05 21:16:22,taljeth,Tun wir das?
+2008-11-05 21:16:33,FreakyPenguin,Soweit ich weiss schon...
+2008-11-05 21:16:48,taljeth,"Ja, stimmt"
+2008-11-05 21:18:09,taljeth,Es hat trotzdem funktioniert. Vielleicht ist mkfs ja kaputt? *g*
+2008-11-05 21:18:34,FreakyPenguin,Hm... -*g*
+2008-11-05 21:19:04,phoenix64,"jaaah, immer sind die schuld, die sich nich wehren können ^^"
+2008-11-05 21:19:20,taljeth,FreakyPenguin: http://nopaste.info/428a1e7cc4.html
+2008-11-05 21:19:45,taljeth,Also Rev 0 scheint es schon zu sein
+2008-11-05 21:22:22,FreakyPenguin,"taljeth: Hm kannst du versuchen rauszukriegen ob das inode_size-Feld im Superblock gefuellt ist, oder ob es 0 ist? Oder das Image irgendwo hochladen"
+2008-11-05 21:22:40,taljeth,Für Hochladen ist es vermutlich etwas zu groß...
+2008-11-05 21:23:15,FreakyPenguin,Ist dein bzip2 kaputt oder ist deine Verbindung nicht dick genug? ;-)
+2008-11-05 21:23:40,taljeth,Wie du meinst...
+2008-11-05 21:23:49,FreakyPenguin,"taljeth: Dann mach halt einen hexdump von den 1024 Bytes von 1024 an, das müsste eigentlich reichen."
+2008-11-05 21:24:26,taljeth,"Für mich ist das nur ein cp, du bist derjenige, der runterladen muß *g*"
+2008-11-05 21:25:17,FreakyPenguin,taljeth: Ok mach ein dd von dem superblock ;-)
+2008-11-05 21:25:24,taljeth,http://w3.suse.de/~kwolf/hd.img.bz2
+2008-11-05 21:25:38,taljeth,"Du hast recht, so schlecht ist die Idee mit dem Packen gar nicht ;-)"
+2008-11-05 21:25:52,FreakyPenguin,*g*
+2008-11-05 21:25:58,taljeth,Ist der Server überhaupt öffentlich? *g*
+2008-11-05 21:27:31,FreakyPenguin,Verbindungsaufbau zu w3.suse.de|149.44.160.58|:80... dann passiert nix mehr... ;-)
+2008-11-05 21:27:40,taljeth,Offensichtlich nicht...
+2008-11-05 21:29:29,taljeth,Dann der da: http://vs6503.vserver4free.de/~kevin/hd.img.bz2
+2008-11-05 21:29:49,FreakyPenguin,1.4s geht ja noch ;-)
+2008-11-05 21:29:57,taljeth,Jo *g*
+2008-11-05 21:30:36,taljeth,"Und für nächstes Mal kann ich mir merken, daß ich schlecht bei mir testen kann, ob der Server wirklich öffentlich ist, solange ich im VPN bin... ;-)"
+2008-11-05 21:31:05,FreakyPenguin,*lol*
+2008-11-05 21:32:12,FreakyPenguin,Tz mein Bug wurde bei Gentoo schon von critical nach normal degradiert ;-)
+2008-11-05 21:32:58,taljeth,Diese Schweine *g*
+2008-11-05 21:35:10,taljeth,Du mountest nach /tmp? ;-)
+2008-11-05 21:35:22,taljeth,"Ich dachte immer, dafür wäre /mnt da"
+2008-11-05 21:36:22,FreakyPenguin,Da habe ich aber andere Mountpoints drin ;-)
+2008-11-05 21:36:43,taljeth,"Ja, aber in /tmp sind doch meine ganzen Arbeitskopien... *g*"
+2008-11-05 21:36:55,FreakyPenguin,Sind die nicht in /tmp/tmp/tmp? *g*
+2008-11-05 21:38:16,taljeth,"Hm, nein, /tmp/tmp ist für die das höchste der Gefühle *g*"
+2008-11-05 21:41:07,FreakyPenguin,taljeth: Da steht für die Inode-Grösse wirklich 128 drin. Ihr habt wohl mk2efs auch kaputt gemacht. ;-)
+2008-11-05 21:42:00,taljeth,Aber erst seit der 11.1 ;-)
+2008-11-05 21:42:18,FreakyPenguin,Finde ich diese rpms auch dort?
+2008-11-05 21:43:12,taljeth,"Jo, dort sollte die ganze Distribution drin sein"
+2008-11-05 21:44:12,FreakyPenguin,factory?
+2008-11-05 21:44:14,taljeth,Upstream ist das immer noch anders?
+2008-11-05 21:44:24,taljeth,"Jo, Factory"
+2008-11-05 21:46:30,taljeth,"Hm, stimmt, das war vorhin auch Factory..."
+2008-11-05 21:49:03,FreakyPenguin,Dann kannst du ja gleich 2 Bugs reporten ;-)
+2008-11-05 21:50:12,taljeth,"Also so wie ich das sehe, setzt die Upstream-Version von e2fsprogs immer EXT2_GOOD_OLD_INODE_SIZE"
+2008-11-05 21:56:07,FreakyPenguin,Hm  also meine Version 1.40.9 tut das nicht.
+2008-11-05 21:57:07,taljeth,Das ist ja auch eine 1.41.1
+2008-11-05 21:57:58,taljeth,initialize.c:185 ist das bei mir
+2008-11-05 22:00:19,FreakyPenguin,taljeth: Hm was hast du in /etc/mke2fs.conf?
+2008-11-05 22:00:47,livinskull,gn8
+2008-11-05 22:03:19,taljeth,FreakyPenguin: Suchst du was bestimmtes?
+2008-11-05 22:03:41,taljeth,"        base_features = sparse_super,filetype,resize_inode,dir_index,ext_attr"
+2008-11-05 22:03:41,taljeth,        blocksize = 4096
+2008-11-05 22:03:41,taljeth,        inode_size = 256
+2008-11-05 22:03:41,taljeth,        inode_ratio = 16384
+2008-11-05 22:04:13,taljeth,"Der Rest ist das Zeug für fs_types, vermutlich nicht interessant, oder?"
+2008-11-05 22:04:49,NoTrace,"hallo, ich wollte fragen, wie man in asm den videomodus umstellt... ich hab im inet nix gefunden^^"
+2008-11-05 22:05:03,taljeth,Real Mode?
+2008-11-05 22:05:07,NoTrace,jap
+2008-11-05 22:05:15,janosch,siehe Interruptlist
+2008-11-05 22:05:19,NoTrace,ok
+2008-11-05 22:05:23,NoTrace,thx...
+2008-11-05 22:05:23,taljeth,int 10h
+2008-11-05 22:05:28,NoTrace,ich schau mal...
+2008-11-05 22:06:37,FreakyPenguin,"taljeth: inode_size = 256 suchte, ich, jo."
+2008-11-05 22:06:58,FreakyPenguin,Könntest du das mal auskommentieren?
+2008-11-05 22:07:22,taljeth,Wie geht das denn? Mit #?
+2008-11-05 22:07:55,FreakyPenguin,Gute frage... *g*
+2008-11-05 22:08:14,taljeth,man hilft ;-)
+2008-11-05 22:08:49,FreakyPenguin,"""Comments are delimited by a semicolon (';') or a hash ('#') character"" jo.."
+2008-11-05 22:09:47,taljeth,Tut immer noch
+2008-11-05 22:10:13,FreakyPenguin,So ein Mist aber auch. ;-)
+2008-11-05 22:16:25,NoTrace,"wenn ich also in AL 00h lade und in AH 12h, bin ich im 16 Farben 640x480 modus... jetzt ist der grafikspeicher bereich 640x480x0.5 Byte groß oder?!?"
+2008-11-05 22:17:43,phoenix64,ne
+2008-11-05 22:17:48,phoenix64,argh ^^
+2008-11-05 22:27:37,taljeth,FreakyPenguin: Datetest du fertig up? ;-)
+2008-11-05 22:37:10,FreakyPenguin,Jo bug weg ;-)
+2008-11-05 22:37:28,FreakyPenguin,Hexeditor bestätigt das auch. ;-)
+2008-11-05 22:39:34,taljeth,Warum machst du eigentlich -r0? Kann ext2 nicht auch mit Rev-1-Dateisystemen umgehen?
+2008-11-05 22:41:37,FreakyPenguin,"Müsste es eigentlich, aber da war irgendwann mal was. ;-)"
+2008-11-05 22:42:55,taljeth,"Du meinst, beim allerersten ext2-Treiber?"
+2008-11-05 22:43:10,taljeth,Wir hatten doch eigentlich lauter Tests mit Rev 1
+2008-11-05 22:43:22,FreakyPenguin,"Vermutlich auch noch in newext2, aber jetzt könnte man es vielleicht mal wagen... *g*"
+2008-11-05 22:46:55,phoenix64,gn8
+2008-11-05 22:47:45,phoenix64,"falls NoTrace nochma kommt, sag wer, dass es 640x480 / 8 Bytes sind, * 4 Pages ^^"
+2008-11-05 22:58:19,FreakyPenguin,"22:47:53 < phoenix64> falls NoTrace nochma kommt, sag wer, dass es 640x480 / 8 Bytes sind, * 4 Pages ^^"
+2008-11-05 22:59:28,taljeth,Grad noch rechtzeitig *g*
+2008-11-05 23:15:31,NoTrace,wie war jetzt die berechnung?
+2008-11-05 23:16:08,NoTrace,"für video 16 Farben 640x480, anzahl der Bytes"
+2008-11-05 23:19:40,taljeth,"[22:58] <FreakyPenguin> 22:47:53 < phoenix64> falls NoTrace nochma kommt, sag wer, dass es 640x480 / 8 Bytes sind, * 4 Pages ^^"
+2008-11-05 23:19:43,taljeth,re btw
+2008-11-05 23:19:55,NoTrace,thanks...
+2008-11-05 23:20:58,taljeth,FreakyPenguin: Wie war das jetzt mit ata? ;-)
+2008-11-05 23:21:34,FreakyPenguin,"Jo das wollte ich wissen, genau. ;-)"
+2008-11-05 23:21:46,FreakyPenguin,Brauchst du den Pätsch nochmal?
+2008-11-05 23:22:08,taljeth,"Ja, sonst müßte ich tyndur bemühen"
+2008-11-05 23:23:10,NoTrace,taljeth: hab gerade im chatlog gesehen... aber in der minute in der ich da online angezeigt werde konnte ich nix sehen
+2008-11-05 23:23:49,FreakyPenguin,Hm stimmt da fehlt ja noch eine Suchfunktion ;-)
+2008-11-05 23:23:56,FreakyPenguin,http://tyndur.org/~toni/ata_init.patch
+2008-11-05 23:24:58,NoTrace,welchen assembler benutzt ihr eigentlich?
+2008-11-05 23:25:16,FreakyPenguin,"Wenn es ASM sein muss, dann gas, sonst C ;-)"
+2008-11-05 23:25:40,NoTrace,ok
+2008-11-05 23:26:11,NoTrace,ich scheue es aber ne neue c stdlib zu entwickeln.
+2008-11-05 23:26:58,NoTrace,"und sooo gut ist mein asm noch nicht, als dass ich es schaffen würde :-D"
+2008-11-05 23:27:31,taljeth,Dann nimm C
+2008-11-05 23:28:06,NoTrace,^^ ich hab gehört damit kann man nicht alles lösen.
+2008-11-05 23:28:23,taljeth,"Ja, eine Handvoll Assembler-Zeilen brauchst du schon"
+2008-11-05 23:28:32,taljeth,Aber nur mit Assembler kannst du praktisch gesehen auch nichts lösen
+2008-11-05 23:28:52,NoTrace,sondern?
+2008-11-05 23:29:24,NoTrace,es wurde mir als allheilmittel angepriesen
+2008-11-05 23:30:49,taljeth,[23:24] <FreakyPenguin> http://tyndur.org/~toni/ata_init.patch
+2008-11-05 23:33:39,taljeth2,"Ist ja schlimm, hier war nichtmal ein quilt drauf..."
+2008-11-05 23:36:19,taljeth,"FreakyPenguin: Der Boorvorgang endet immer noch mit ""Service 'ata' laeuft nicht"""
+2008-11-05 23:37:16,taljeth,Und den Bus 1 hat er dieses Mal gar nicht durchsucht. Dafür gibt es zweimal Spurious IRQ 15
+2008-11-05 23:40:13,taljeth,"FreakyPenguin: Hilft nicht wirklich weiter, oder?"
+2008-11-05 23:40:32,taljeth,Und den Status 0x51 gibt es auch immer noch
+2008-11-05 23:41:19,FreakyPenguin,Hm schade ;-)
+2008-11-05 23:45:13,taljeth,"Noch ein Patch, den ich testen soll? ;-)"
+2008-11-05 23:45:42,stultus,"Hm, Frage..."
+2008-11-05 23:45:57,stultus,"im Long Mode Artikel steht, das man zum aktivieren paging deaktivieren muss?"
+2008-11-05 23:46:08,stultus,Wie funktioniert denn dann die Speicherverwaltung etc. ? ^^
+2008-11-05 23:48:46,FreakyPenguin,taljeth: Im Moment nicht :-/
+2008-11-05 23:49:07,FreakyPenguin,Ich gehe jetzt erstmal schlafen
+2008-11-05 23:49:31,taljeth,stultus: Indem man Paging hinterher anschaltet?
+2008-11-05 23:49:58,taljeth,gn8 FreakyPenguin
+2008-11-05 23:55:30,stultus,gn8 FreakyPenguin
+2008-11-05 23:55:37,stultus,"Hm, Das geht so einfach? na dann ^^"
+2008-11-05 23:56:34,taljeth,Wieso soll das nicht so einfach gehen?
+2008-11-05 23:57:52,stultus,"Njo, ich hätte mal gedacht das der Kernel selber keinen Speicher mehr verwenden kann wenn Paging weg ist."
+2008-11-05 23:58:15,stultus,Neueste Vermutung wäre jetzt er geht einfach auf Physikalische Adressen zurück. Korrekt?
+2008-11-05 23:58:22,taljeth,Jo
+2008-11-05 23:58:36,taljeth,"So wie im PM auch, solange kein Paging eingeschaltet ist"
+2008-11-05 23:58:40,taljeth,Und im RM sowieso
+2008-11-05 23:59:24,stultus,"Njo, PM ohne Paging sieht man eigentlich nie, vorallem nicht wenn man nicht selber an den Ecken schreibt *g*"

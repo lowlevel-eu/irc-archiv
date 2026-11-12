@@ -1,0 +1,59 @@
+date/time,nick,message
+2017-05-18 16:58:08,dietzi,Seit gegrüßt
+2017-05-18 16:58:22,Svenska,namd
+2017-05-18 16:58:29,MasterQ32,uhuh
+2017-05-18 16:59:02,dietzi,Leidiges Thema Paging..... Ich bekomme sowohl in qemu als auch auf reeller Hardware nach einem Context-Wechsel einen Triple-Fault. Woran kann das liegen? Kann ich sowas mit GDB tracken?
+2017-05-18 16:59:23,MasterQ32,du kannst sowas mit qemu tracken
+2017-05-18 16:59:32,MasterQ32,"qemu -d intr,cpu_reset"
+2017-05-18 16:59:35,dietzi,qemu macht einfach einen reset
+2017-05-18 16:59:36,Svenska,triple-fault = reset
+2017-05-18 16:59:45,Svenska,"vermutlich findet die cpu ihre instruction nicht, nachdem du paging einschaltest"
+2017-05-18 16:59:45,MasterQ32,damit bekommst du nen log über alle interrupts sowie den cpu reset
+2017-05-18 16:59:46,dietzi,cpu_reset ist gesetzt
+2017-05-18 17:00:58,dietzi,EIP beim reset zeigt auf die geschweifte geschlossene Klammer
+2017-05-18 17:01:00,dietzi,void vmm_activate_context(struct vmm_context* context)
+2017-05-18 17:01:00,dietzi,{
+2017-05-18 17:01:00,dietzi,"    asm volatile(""mov %0, %%cr3"" : : ""r"" (context->pagedir));"
+2017-05-18 17:01:00,dietzi,}
+2017-05-18 17:01:14,Svenska,"ja, ist der kontext korrekt?"
+2017-05-18 17:01:48,dietzi,wo genau steht der im Log?
+2017-05-18 17:02:05,MasterQ32,gar nicht
+2017-05-18 17:02:15,MasterQ32,"das musst du wissen, was du wie gemappt hast"
+2017-05-18 17:02:25,dietzi,theoretisch sollte gemappt sein
+2017-05-18 17:03:01,kevin,Die Frage ist eher nach praktisch
+2017-05-18 17:03:20,kevin,"Das kannst du im qemu-Monitor nachprüfen, wenn du qemu dazu bringst, dass er nicht resettet, sondern die VM anhält"
+2017-05-18 17:03:37,kevin,-no-reboot -no-shutdown
+2017-05-18 17:03:38,dietzi,Welcher Parameter ist das?
+2017-05-18 17:03:40,dietzi,Danke
+2017-05-18 17:03:58,dietzi,Ich teste kurz
+2017-05-18 17:06:22,dietzi,qemu steht jetzt. GDB läuft mit
+2017-05-18 17:06:34,dietzi,über welchen Befehl sehe ich jetzt das Mapping?
+2017-05-18 17:13:21,kevin,"Einfach cr3 anschauen, ob das stimmt"
+2017-05-18 17:13:28,kevin,"Dann das PD anschauen, ob der Eintrag dort stimmt"
+2017-05-18 17:13:30,kevin,Und danach die PT
+2017-05-18 17:13:50,kevin,"cr2 sagt dir, auf welche Adresse er zugreifen wollte, aber nicht konnte"
+2017-05-18 17:14:02,kevin,"Und ich glaube, der qemu-Monitor ist dafür nützlicher als gdb"
+2017-05-18 17:14:39,Svenska,"ich habe mit gdb mal nen breakpoint auf das ""mov cr3..."" gesetzt, dann einen single-step gemacht, und dann im qemu-monitor ""info tlb"" gespielt"
+2017-05-18 17:14:54,Svenska,"da konnte ich mir das mapping angucken, bevor qemu gecrasht ist"
+2017-05-18 17:15:05,Svenska,dietzi: hast du den vram gemappt?
+2017-05-18 17:15:53,dietzi,info tlb: 0000000000000000: 0000000000804000 -------UW
+2017-05-18 17:16:08,dietzi,cr3: 00010000
+2017-05-18 17:16:17,dietzi,cr2: 004190e0
+2017-05-18 17:17:31,dietzi,Svenska: vram heißt?
+2017-05-18 17:19:44,dietzi,gemappt werden kernel und der idle-task beim init
+2017-05-18 17:19:53,Svenska,vram = vga-speicher @ 0xa0000
+2017-05-18 17:19:58,dietzi,ist gemappt
+2017-05-18 17:20:00,dietzi,1:1
+2017-05-18 17:20:02,Svenska,ok
+2017-05-18 17:20:06,Svenska,war damals mein problem :)
+2017-05-18 17:20:07,dietzi,0xb0000
+2017-05-18 17:20:22,dietzi,oder soll ich auf 0xa0000 runter?
+2017-05-18 17:20:26,Svenska,nein
+2017-05-18 17:20:31,dietzi,gut
+2017-05-18 17:20:43,Svenska,"a0000 ist der grafikspeicher, textmodus war woanders"
+2017-05-18 17:20:55,dietzi,text ist von 0xB8000 bis 0xC0000
+2017-05-18 17:21:40,Svenska,ja :)
+2017-05-18 17:21:42,Svenska,zu lange her bei mir
+2017-05-18 17:23:11,dietzi,Was ich mir als Problem vorstellen könnte: ich habe noch nicht alle pmm_alloc durch vmm_alloc ersetzt. Jetzt habe ich 0xe mit cr2 = 0x401734 (das ist reeller Speicher)
+2017-05-18 17:23:27,dietzi,Aber laut Exception tritt der Fehler beim gemappten Speicher auf
+2017-05-18 17:23:43,dietzi,Also bei der Exception nach dem Context-Wechsel

@@ -1,0 +1,304 @@
+date/time,nick,message
+2009-11-23 08:51:35,kwolf,Good morning
+2009-11-23 09:45:52,kwolf,pcmattman: So you want to implement some generic IPC mechanism in CDI?
+2009-11-23 10:44:46,pcmattman,"kwolf: I wouldn't label it ""IPC"", because it may not necessarily be inter-process, but yes, I do think there should be a method for device drivers to communicate with each other"
+2009-11-23 10:46:22,kwolf,"Right, not necessarily, but they need to be designed to allow implementing them by IPC"
+2009-11-23 10:46:40,pcmattman,"Ah, yes, I understand what you're saying"
+2009-11-23 10:47:09,kwolf,I'm not sure what I should be thinking of it
+2009-11-23 10:47:39,kwolf,On the one hand I have a feeling that it would be the clean solution for all future drivers
+2009-11-23 10:47:45,kwolf,"On the other hand, I'm scared ;-)"
+2009-11-23 10:48:04,pcmattman,Heh :)
+2009-11-23 10:49:04,pcmattman,"It's not an easy thing to design, really"
+2009-11-23 10:51:21,kwolf,Getting the one IPC method right in your OS is difficult enough. I'm not sure what getting it right for all sorts of IPC is like...
+2009-11-23 10:54:00,kwolf,"For example, if shared memory is available, you surely want to use it. But should we make it a requirement for CDI?"
+2009-11-23 10:54:39,kwolf,Creating an interface that looks the same for both variants seems hard to me
+2009-11-23 10:59:19,pcmattman,"I think ideally the IPC method would merely expose an interface to send ""messages"" to a ""destination"""
+2009-11-23 10:59:40,pcmattman,"For example, cdi_ipc_send(void *msg, size_t length, const char *dest);"
+2009-11-23 10:59:59,pcmattman,The method through which said message is routed is then totally up to the OS
+2009-11-23 11:01:25,pcmattman,"And then drivers might have something like cdi_ipc_register_dest(const char *dest, func_ptr callback) which links the ""destination"" to a callback"
+2009-11-23 11:02:15,kwolf,"I'd like to avoid copying msg, so I'd prefer implementing this as SHM. Which in turn means for tyndur that the page for msg needs to be allocated as SHM in the first place."
+2009-11-23 11:02:34,pcmattman,Perhaps a method for obtaining IPC-specific memory then?
+2009-11-23 11:02:41,pcmattman,cdi_ipc_malloc(size_t) ?
+2009-11-23 11:03:11,pcmattman,"That would solve that problem, as tyndur could implement that as allocating shared memory, and other OS's as some other mechanism"
+2009-11-23 11:03:25,kwolf,Could work
+2009-11-23 11:05:15,kwolf,Are you sure that const char* dest is really helpful? I feel that an OS specific struct cdi_ipc_endpoint could be more appropriate
+2009-11-23 11:05:43,pcmattman,"Hmm, good point"
+2009-11-23 11:06:22,pcmattman,That'd probably make it easier to integrate into an existing IPC system
+2009-11-23 11:08:13,kwolf_,[11:04] <kwolf> But maybe I just don't see what you want the strings to look like
+2009-11-23 11:08:28,pcmattman,"(8:05:21 PM) pcmattman: Hmm, good point"
+2009-11-23 11:08:28,pcmattman,(8:06:00 PM) pcmattman: That'd probably make it easier to integrate into an existing IPC system
+2009-11-23 11:08:53,kwolf,"No need to repost your lines, #tyndur is logged ;-)"
+2009-11-23 11:08:55,pcmattman,"And I was thinking driver defined strings, but that wouldn't solve the mixer communication problem at all in hindsight"
+2009-11-23 11:09:02,pcmattman,"Ah, good to know :)"
+2009-11-23 11:09:11,kwolf,http://irc.tyndur.org/index.php
+2009-11-23 11:09:18,kwolf,Just in case you need it some time
+2009-11-23 11:09:30,pcmattman,Thanks
+2009-11-23 11:10:34,kwolf,The problem with a string is that needs to be unique. Which would probably mean things like encoding driver PIDs in the string.
+2009-11-23 11:10:51,pcmattman,"Yup, and to be honest, I like the cdi_ipc_endpoint idea better"
+2009-11-23 11:11:26,pcmattman,"If it's OS-specific, you can store all kinds of useful information"
+2009-11-23 11:12:05,pcmattman,"There probably needs to be a way to enumerate all CDI IPC endpoints, and they probably need some form of well-defined control protocol"
+2009-11-23 11:12:08,kwolf,I think (hope) there is no need for the drivers to look into the struct.
+2009-11-23 11:12:25,pcmattman,"The control protocol would be something like ""what type of device are you"", if that makes sense"
+2009-11-23 11:12:53,pcmattman,"Well, I imagine cdi_ipc_endpoint would be much like FILE in POSIX - don't depend on its layout"
+2009-11-23 11:12:56,kwolf,Right. One of the existing constants?
+2009-11-23 11:13:03,kwolf,pcmattman: I agree
+2009-11-23 11:13:20,pcmattman,"Yes, the control protocol can hook in to existing information"
+2009-11-23 11:13:52,pcmattman,"The control protocol might also add things such as ""unload"" in the future, but that's mere speculation"
+2009-11-23 11:14:01,kwolf,"""what type of device are you"" would mean a cdi_device_type_t, right? CDI_NETWORK and so on."
+2009-11-23 11:14:10,pcmattman,"Yup, that's what I was thinking"
+2009-11-23 11:16:40,kwolf,"Ok. I think this mechanism is doable if someone volunteer to implement it. ;-) I guess it means no sound in 0.2.2, though..."
+2009-11-23 11:17:40,pcmattman,"Hmm, I'm going to be unable to code for most of December and part of January"
+2009-11-23 11:17:52,pcmattman,Otherwise I'd get in there and write it
+2009-11-23 11:18:40,kwolf,"Yeah, I read that in #pedigree. Lots of RL stuff to do?"
+2009-11-23 11:19:04,pcmattman,"Yup, and for part of that I won't even be internet connected"
+2009-11-23 11:19:49,kwolf,Enjoy the time without internet. It's always amazing how much sleep one can get. ;-)
+2009-11-23 11:20:07,pcmattman,Haha :)
+2009-11-23 11:21:03,kwolf,"Do you think eddyb would be a help in this area, or would he rather be an impediment?"
+2009-11-23 11:21:12,pcmattman,I'm not sure
+2009-11-23 11:21:26,pcmattman,"It would give him something to work on, while I'm away :)"
+2009-11-23 11:21:47,kwolf,"I wouldn't let him do the interface, but maybe porting the existing ac97 onto it or something like this"
+2009-11-23 11:22:19,pcmattman,"Right, he'd probably be able to do that"
+2009-11-23 11:23:26,kwolf,"Probably he would also need to implement the IPC interface for Pedigree. But it will be mostly a nop, so he should manage to do it"
+2009-11-23 11:24:18,kwolf,"We just need to agree on a concrete interface before, i.e. best a header file that contains all of the data structures and function prototypes"
+2009-11-23 11:24:34,pcmattman,"Right, I can put together a proposal again in an email"
+2009-11-23 11:25:16,pcmattman,"The Pedigree CDI IPC interface will end up basically calling a callback function defined in cdi_ipc_endpoint, I imagine"
+2009-11-23 11:25:35,kwolf,Probably with some pointer to a Device
+2009-11-23 11:25:57,kwolf,But that should be really enough
+2009-11-23 11:26:13,pcmattman,"For Pedigree, yes"
+2009-11-23 11:26:16,pcmattman,I don't know what tyndur would need
+2009-11-23 11:26:55,kwolf,I think it's going to be minimally more sophisticated ;-)
+2009-11-23 11:27:46,kwolf,Especially for the enumeration we need to introduce something new. But we'd need this anyway.
+2009-11-23 11:29:52,pcmattman,I think it will be highly beneficial in the future with other drivers which need to communicate with each other
+2009-11-23 11:31:29,kwolf,"Definitely. We have the very same problem with USB, for example. Currently all of the USB related drivers are in one monolithic CDI driver."
+2009-11-23 11:33:38,kwolf,"At the same time I'm concerned about how difficult/time-consuming it might become to get CDI running. Maybe we need to define several ""levels"" of CDI implementations"
+2009-11-23 11:34:01,pcmattman,"Hmm, perhaps"
+2009-11-23 11:34:13,pcmattman,"Maybe something like a ""config.h"" but for the OS to specify what it supports?"
+2009-11-23 11:34:40,kwolf,You mean like #define CDI_HAVE_IPC?
+2009-11-23 11:34:49,pcmattman,Yup
+2009-11-23 11:35:04,pcmattman,"A header like that, provided by the OS, which would switch on and off different features"
+2009-11-23 11:35:49,kwolf,"I suggested adding such defines myself earlier, so I think that makes a lot of sense."
+2009-11-23 11:39:24,kwolf,"By the way, have you read that thread in the osdev.org forum? I kind of hate it when people dream of UDI... ;-)"
+2009-11-23 11:40:24,kwolf,We should get CDI in a shape that we could advertise it more loudly in the community
+2009-11-23 11:48:49,pcmattman,I agree
+2009-11-23 11:49:10,pcmattman,"At the moment the problem is that nobody knows what CDI is, so they look at UDI and think it's the answer to life :)"
+2009-11-23 11:53:40,kwolf,Probably it's me who needs to do the next step. Finally implementing the changes we discussed a month ago and adding English comments.
+2009-11-23 11:56:40,pcmattman,"I'd be happy to contribute, it's just difficult to start anything right now as I'm not going to be coding for a couple of months"
+2009-11-23 11:58:08,kwolf,"So when does it start? (whatever ""it"" may be)"
+2009-11-23 11:59:55,pcmattman,Saturday 28 November
+2009-11-23 12:00:27,kwolf,"Ok, that's really soon"
+2009-11-23 12:00:34,pcmattman,Yup
+2009-11-23 12:00:46,kwolf,And you'll be back end of January?
+2009-11-23 12:02:04,pcmattman,Probably about halfway through
+2009-11-23 12:02:24,pcmattman,"I will still have access to email every now and then, and possibly IRC on my phone, but not coding"
+2009-11-23 12:04:26,kwolf,Somehow we'll get by without you for some weeks ;-)
+2009-11-23 12:04:39,kwolf,afk
+2009-11-23 12:04:49,pcmattman,"I don't worry about you, I worry about my own project ;)"
+2009-11-23 12:19:29,kwolf,Back
+2009-11-23 12:19:37,pcmattman,Welcome back
+2009-11-23 12:19:45,kwolf,pcmattman: You mean eddyb will destroy it while you're away? ;-)
+2009-11-23 12:30:16,pcmattman,"Perhaps, I'm more concerned about the fact that it's a long time to be away; code that you haven't seen in a long time always looks worse ;)"
+2009-11-23 12:31:10,kwolf,But that's great. You can improve it then. ;-)
+2009-11-23 12:33:28,pcmattman,"Yep, it's just always a lot of effort to improve :)"
+2009-11-23 12:34:31,kwolf,"Well, if you don't want to invest effort, you can stop developing an OS."
+2009-11-23 12:34:58,pcmattman,"Well, there's effort, of course"
+2009-11-23 12:35:10,pcmattman,But effort to improve is usually also quite depressing ;)
+2009-11-23 12:35:53,kwolf,"But if you find a way how to let an OS create itself while you merely think about its design, let me know I could use that, too, at times ;-)"
+2009-11-23 12:36:34,pcmattman,"Heh, we'd all be out of a job if such a thing existed"
+2009-11-23 12:40:21,FreakyPenguin,Good Morning
+2009-11-23 12:40:41,kwolf,pcmattman: I'm curious what CDI redesign you'll bring up when you look at it again in January ;-)
+2009-11-23 12:40:45,kwolf,Moin FreakyPenguin
+2009-11-23 12:52:15,FreakyPenguin,"pcmattman: Do you have some other possible applications (besides sound) in mind for such an ""ipc"" mechanism?"
+2009-11-23 12:53:19,pcmattman,"Graphics, perhaps?"
+2009-11-23 12:53:57,FreakyPenguin,"If I look at usb i think it would be a good idea to ""hide"" the communication between the different drivers in cdi, seems somhow cleaner to me..."
+2009-11-23 12:54:16,pcmattman,"Do you mean via IPC, or remove communication at all?"
+2009-11-23 12:56:36,FreakyPenguin,Well I think the drivers have to communicate somehow
+2009-11-23 12:56:49,pcmattman,Right
+2009-11-23 12:57:25,pcmattman,"I also think a better term might be ""IDC"" - ""Inter-driver communication"", as it may not necessarily be between two processes"
+2009-11-23 12:57:31,kwolf,"Bascially, the two options are a generic IPC mechanism or specific cdi_audio_mixer_* and cdi_usb_* functions"
+2009-11-23 12:57:31,pcmattman,But that's purely aesthetic :)
+2009-11-23 12:57:56,FreakyPenguin,"kwolf: That's what I had in mind, yes"
+2009-11-23 12:58:18,kwolf,"pcmattman: You're complety right, but everyone knows what IPC is and noone knows IDC ;-)"
+2009-11-23 12:58:33,FreakyPenguin,The second way looks somehow more structured and cleaner to me
+2009-11-23 12:58:39,kwolf,FreakyPenguin: The latter means that for each new device class we need to add more and more functions to the framework
+2009-11-23 12:58:51,kwolf,Instead of solving the problem just once
+2009-11-23 13:03:46,kwolf,"Obviously, solving the problem just once means that you need to get a complex thing right"
+2009-11-23 13:04:00,FreakyPenguin,Well of course. But doesn't this mean that we take code out of the cdi implementation and duplicate it in each driver?
+2009-11-23 13:04:03,kwolf,"For example, we haven't even discussed what messages would look like"
+2009-11-23 13:04:56,kwolf,Does it?
+2009-11-23 13:06:36,FreakyPenguin,"Well at least the code for handling the messages and splitting it up, into the different handlers, and somehow do synchronisation when sending some data back"
+2009-11-23 13:20:39,kwolf,pcmattman: You don't feel like discussing this? I wanted to leave the answer to you. ;-)
+2009-11-23 13:21:46,pcmattman,"Well, I think communication between drivers is something CDI will need, and it'll help avoid clogging up the CDI interfac with lots of functions"
+2009-11-23 13:30:31,pcmattman,"On the other hand, implementing a new way of talking between drivers may be a lot of hard work and involve a lot of rewriting"
+2009-11-23 13:31:54,kwolf,Possibly. But I think what FreakyPenguin is worried about is that your simple cdi_send_message isn't enough
+2009-11-23 13:31:55,pcmattman,bbs
+2009-11-23 13:57:31,pcmattman,Back
+2009-11-23 13:57:58,pcmattman,"And the cdi_send_message idea centers around each message being a part of a ""protocol"" between drivers"
+2009-11-23 13:58:37,pcmattman,"The control protocol defines the generics (type, etc...) while you have a more specific protocol for the device type (eg, for the mixer, it'd be centered around functionality to do with the mixer's relationship to devices)"
+2009-11-23 14:00:55,pcmattman,"But it's your driver interface, it's just an idea :)"
+2009-11-23 14:01:12,kwolf,"So if you needed a response from the other driver, you would need to implement this logic for each driver, right?"
+2009-11-23 14:01:19,kwolf,"pcmattman: No, it's your driver interface as well"
+2009-11-23 14:01:37,pcmattman,"Well, you'd need to reimplement the logic for the current drivers"
+2009-11-23 14:01:46,pcmattman,"But future drivers, it'd be just a part of writing that driver"
+2009-11-23 14:02:01,kwolf,The point is if this means a lot of code duplication
+2009-11-23 14:02:21,kwolf,"Current drivers don't communicate with other drivers, so they won't need reimplementation"
+2009-11-23 14:02:40,pcmattman,"Perhaps the common code, such as the control protocol, can be hidden away in a CDI function?"
+2009-11-23 14:03:28,pcmattman,"The only thing that's really going to be duplicated is the control protocol code, the other code is driver-specific (ie, mixer -> device interface will have one device handle messages differently from another device)"
+2009-11-23 14:04:13,kwolf,"We have only one mixer, but n different sound drivers"
+2009-11-23 14:04:28,pcmattman,Yup
+2009-11-23 14:04:34,pcmattman,The mixer has code to communicate with the sound drivers
+2009-11-23 14:04:54,pcmattman,The sound drivers take those messages (whatever they may be) and performs the action it needs to (which is device-specific)
+2009-11-23 14:05:29,pcmattman,An alternative that can get around the need for any communication is to allow drivers to access a list of other devices/drivers in the system
+2009-11-23 14:06:04,kwolf,FreakyPenguin: Do you have some specific example in mind where we would actually need a response or other more complicated communication patterns?
+2009-11-23 14:06:44,kwolf,"pcmattman: How that? The mixer would still need to send to audio data, wouldn't it?"
+2009-11-23 14:07:04,pcmattman,"Well, it can do that via the sound device interface"
+2009-11-23 14:07:55,pcmattman,(cdi_audio_driver)
+2009-11-23 14:08:33,pcmattman,"I'm merely looking at another alternative here, in order to find where the IPC-style interface works better"
+2009-11-23 14:08:47,kwolf,"This would lead to the solution with many cdi_usb_* and cdi_audio_* functions, I think"
+2009-11-23 14:09:19,pcmattman,"Perhaps, but realistically the mixer (as an example) takes streams, mixes them into one output stream, and sends that to the sound device"
+2009-11-23 14:10:15,pcmattman,"I don't know enough about USB in CDI to comment intelligently there, it's probably very different"
+2009-11-23 14:10:35,kwolf,It's basically nonexistent as of today ;-)
+2009-11-23 14:10:45,pcmattman,"The way I see it, the mixer is going one way - Application -> Mixer -> Sound device - so two-way communication isn't necessary"
+2009-11-23 14:10:48,FreakyPenguin,*g*
+2009-11-23 14:11:10,pcmattman,"However, USB is Application <-> Controller <-> Device (I *think* so anyway) - there's two-way communication everywhere"
+2009-11-23 14:11:45,FreakyPenguin,"kwolf: Well I don't know about usb either, but I had somthing in mind like reading some memory/storage/whatever, you have to send offset and size and get some data back."
+2009-11-23 14:11:52,kwolf,pcmattman: Hm... We can make audio two-way very easily. What about recording?
+2009-11-23 14:12:04,pcmattman,I was really hoping someone wouldn't bring up recording ;)
+2009-11-23 14:13:06,pcmattman,"I think IPC may be a bit over-the-top for audio, but it may be just the right thing for USB"
+2009-11-23 14:13:07,kwolf,"You're trying to talk us into a bad design, so you take over world domination alone? ;-)"
+2009-11-23 14:13:36,pcmattman,"I also think IPC should be done on a per-device-class basis, not necessarily across the entire interface, to keep things simple"
+2009-11-23 14:15:16,kwolf,"I'm not sure what to think about IPC and ""keep it simple"" in one sentence."
+2009-11-23 14:15:25,pcmattman,Haha
+2009-11-23 14:15:27,FreakyPenguin,*g*
+2009-11-23 14:15:54,kwolf,"I mean we could easily expose the whole tyndur RPC functions to CDI, but I'm unsure if other OSes would like it"
+2009-11-23 14:16:04,pcmattman,"I feel that IPC should be used as little as possible, where communication is required"
+2009-11-23 14:16:07,kwolf,"I'm not even sure if we would like it, to be honest ;-)"
+2009-11-23 14:16:17,pcmattman,"For instance, there's no point having IPC in network drivers"
+2009-11-23 14:16:49,kwolf,Unless someone has the idea of moving the TCP/IP stack into CDI
+2009-11-23 14:16:54,FreakyPenguin,Whell what about protocol-stacks in cdi?
+2009-11-23 14:17:16,pcmattman,"If that were to happen, you would add IPC"
+2009-11-23 14:17:40,kwolf,Right. It's going to happen always when you need to stack drivers.
+2009-11-23 14:18:31,pcmattman,"So I guess it comes down to a) IPC as a necessity in drivers, or b) Add more and more functions to CDI to suit the needs of the communication between drivers"
+2009-11-23 14:24:31,kwolf,"Right, as I said above. FreakyPenguin, I think it's your turn. ;-)"
+2009-11-23 14:26:36,FreakyPenguin,But I'm just reviewing some nice well commented pascal code. *g*
+2009-11-23 14:33:26,kwolf,Moin XanClic
+2009-11-23 14:33:36,XanClic,Good afternoon
+2009-11-23 14:34:12,kwolf,"You might want to read up the log, we're discussing pretty fundamental questions ;-)"
+2009-11-23 14:39:54,XanClic,"First of all I wouldn't call it ""IPC"""
+2009-11-23 14:40:05,XanClic,In a monolithic kernel that's no IPC
+2009-11-23 14:40:39,kwolf,Meh... s/IPC/IDC/g if you all insist on it...
+2009-11-23 14:41:09,XanClic,And why not using the cdi_device structure as the destination operand?
+2009-11-23 14:41:31,XanClic,This structure also tells you what kind of device it is
+2009-11-23 14:41:50,kwolf,"Hm, it's not a perfect match"
+2009-11-23 14:42:47,kwolf,It contains pointer to the driver and so on which probably don't exist for the caller
+2009-11-23 14:46:01,XanClic,"So you could use an index in an array or something like that, just a handle that can be used to receive more information about the destination driver"
+2009-11-23 14:49:44,kwolf,"Hm, how would receiving a message look like for a driver? A callback function called?"
+2009-11-23 14:49:59,XanClic,I think so
+2009-11-23 14:50:26,XanClic,I gives a function pointer to the OS and that one is called upon receiving a message
+2009-11-23 14:50:28,XanClic,*it
+2009-11-23 14:54:05,kwolf,"Well then, let's copy the tyndur RPC interface ;-)"
+2009-11-23 14:55:18,XanClic,I think it's enough to tell the called driver what driver called it and a pointer to a message (driver-defined format)
+2009-11-23 14:57:19,kwolf,Messages need to consist of at least two different parts to avoid copying things around while constructing the message
+2009-11-23 14:57:37,kwolf,Metadata and payload.
+2009-11-23 14:57:52,XanClic,Couldn't you include the metadata in the payload?
+2009-11-23 14:58:16,kwolf,By copying the payload into the message
+2009-11-23 14:59:19,kwolf,"Maybe it's unavoidable, don't know"
+2009-11-23 14:59:50,XanClic,And what would be the content of this metadata?
+2009-11-23 15:01:22,kwolf,"At least a function number for ""play this data"" or ""set the volume"""
+2009-11-23 15:01:39,XanClic,Why can't you include that in the payload?
+2009-11-23 15:02:03,XanClic,"That format would be user-defined, so the first 32 bits are the function number (for example)"
+2009-11-23 15:02:27,kwolf,The idea was that you don't copy the data that you get from the application but directly pass it on
+2009-11-23 15:03:01,XanClic,But the sender knows about this format so it has to use it
+2009-11-23 15:03:44,kwolf,"And in the most inefficient way possible, right?"
+2009-11-23 15:04:22,XanClic,"Is it more efficient to pass this one parameter out of the data? I don't know, you're the ""IPC"" expert ;-)"
+2009-11-23 15:05:03,kwolf,Not copying is more efficient than copying
+2009-11-23 15:05:24,kwolf,I'm just not completely sure what it needs to completely avoid copying
+2009-11-23 15:05:45,XanClic,You mean sometimes there are functions without parameters so there would be no payload to copy?
+2009-11-23 15:06:43,FreakyPenguin,No but you can just remap the buffer into the next drivers' address space and so on
+2009-11-23 15:07:22,XanClic,Why can't you do that if the function number is not on the stack but in that buffer?
+2009-11-23 15:08:02,kwolf,Application (A) wants to play a sound. A sends 512k of data to the mixer (M). M needs to pass the data to the driver (D) but needs to add the M-D protocol header. It can allocate memory for header+data and copy the data into that memory. Or it's using a more intelligent mechanism where it doesn't need to copy.
+2009-11-23 15:09:36,XanClic,So you would put the complete header in an extra memory space?
+2009-11-23 15:10:03,XanClic,"Sounds reasonable, so you have two buffers instead of one..."
+2009-11-23 15:10:37,pcmattman,"I'll leave you to continue having this discussion, I'm off, sleep time - night all"
+2009-11-23 15:10:54,kwolf,Night pc[away]
+2009-11-23 15:11:01,FreakyPenguin,gn8 pc[away]
+2009-11-23 15:11:10,XanClic,Good night
+2009-11-23 15:11:25,FreakyPenguin,Hm good idea... *g*
+2009-11-23 15:11:41,kwolf,XanClic: To do it right you need the possibility to receive data as SHM that you can directly pass on to the sound driver
+2009-11-23 15:11:57,kwolf,"FreakyPenguin: It's how tyndur RPC works, by the way... ;-)"
+2009-11-23 15:12:19,XanClic,I think that's very complicate for a driver interface which should be a simple one...
+2009-11-23 15:12:20,FreakyPenguin,I meant the thing about gn8... *g*
+2009-11-23 15:12:53,XanClic,*complicated
+2009-11-23 15:12:54,kwolf,"Oh. It would be more like ""moin schippi"" at this time ;-)"
+2009-11-23 15:13:43,kwolf,"XanClic: Right, so I'm waiting for your proposal that is easy, convenient and efficient"
+2009-11-23 15:13:46,FreakyPenguin,XanClic: I dont think passing on two buffers is much more complicated than passing one...
+2009-11-23 15:13:58,XanClic,"FreakyPenguin: That's not it, I mean SHM"
+2009-11-23 15:14:02,kwolf,FreakyPenguin: It's the SHM part that makes it hard
+2009-11-23 15:14:27,FreakyPenguin,"You don't have to use it in your implementation, if you dont want to?"
+2009-11-23 15:14:40,XanClic,"kwolf: My proposal would be a very monolithic one, just specific functions for every kind of stack ;-)"
+2009-11-23 15:14:56,XanClic,"FreakyPenguin: I do have to if I want to use some drivers, don't I?"
+2009-11-23 15:16:16,kwolf,FreakyPenguin: The interface needs to allow it
+2009-11-23 15:16:26,FreakyPenguin,"I don't see why I cannot just copy the buffer, if I dont want to implement shm?"
+2009-11-23 15:16:30,kwolf,In a monolithic kernel most of it will boil down to a nop
+2009-11-23 15:16:54,XanClic,kwolf: I know but I look forward on paloxena2 ;-)
+2009-11-23 15:17:08,kwolf,"FreakyPenguin: That's not the point. We're discussing interfaces, not implementations"
+2009-11-23 15:17:21,FreakyPenguin,kwolf: Agreed. But that doesn't make the cdi implementation more complicated
+2009-11-23 15:17:33,kwolf,"And if the interface doesn't allow for SHM, then you are forced to copy"
+2009-11-23 15:17:56,XanClic,Isn't message passing enough?
+2009-11-23 15:18:20,kwolf,Except for being slow...
+2009-11-23 15:18:26,XanClic,Every OS developer may device on his own if he wants to share that memory or if he wants to copy
+2009-11-23 15:18:33,XanClic,s/device/decide
+2009-11-23 15:19:43,kwolf,"XanClic: [15:16] <kwolf> That's not the point. We're discussing interfaces, not implementations"
+2009-11-23 15:19:58,XanClic,I know but you say the implementation would be always slow.
+2009-11-23 15:21:10,kwolf,"If the interface enforces copies, it will"
+2009-11-23 15:21:16,FreakyPenguin,"And the driver too, because it has to copy the data"
+2009-11-23 15:21:16,XanClic,Does it?
+2009-11-23 15:22:05,XanClic,"The driver says ""here is my data, send it to that driver."" The OS may decide to copy it or not. It isn't enforced to do so, is it?"
+2009-11-23 15:22:40,FreakyPenguin,But the driver has to put it in one big buffer together with the metadata and everything?
+2009-11-23 15:23:05,XanClic,"""Together""? You told me that would be a sub-optimal idea, didn't you? ;-)"
+2009-11-23 15:23:26,XanClic,"I thought we had two buffers, one filled with metadata and one filled with payload"
+2009-11-23 15:24:20,FreakyPenguin,Well then I don't understand the point of this discussion ;-)
+2009-11-23 15:24:26,kwolf,"XanClic: No, it can't freely decide whether to copy or not"
+2009-11-23 15:24:39,kwolf,Shared Memory needs to be allocated as such
+2009-11-23 15:24:57,kwolf,You only can share whole pages
+2009-11-23 15:26:05,XanClic,"But CDI was planned to be an easy interface, wasn't it?"
+2009-11-23 15:26:16,XanClic,And I think SHM is not very easy...
+2009-11-23 15:26:51,XanClic,And it would be hard to copy the buffer all the time it changed
+2009-11-23 15:27:07,XanClic,You would have to set all the pages to read-only and handle all the pagefaults then
+2009-11-23 15:27:10,FreakyPenguin,"Well two additional functions that are in the case without shm just wrappers to malloc and free arent very hard to implement, are they?"
+2009-11-23 15:27:56,XanClic,So the driver developer had to handle both cases?
+2009-11-23 15:28:18,FreakyPenguin,What two cases?
+2009-11-23 15:28:27,XanClic,Having SHM and don't having it
+2009-11-23 15:28:32,FreakyPenguin,I only see one ;-)
+2009-11-23 15:28:54,XanClic,"If you don't have SHM you cannot create a simple wrapper, do you?"
+2009-11-23 15:29:10,XanClic,You would have to copy the buffer all the time it is changed
+2009-11-23 15:29:11,kwolf,You'd fall back to copying
+2009-11-23 15:29:17,XanClic,*All the time*
+2009-11-23 15:29:22,XanClic,On byte set... Copy it.
+2009-11-23 15:29:31,FreakyPenguin,No?
+2009-11-23 15:29:37,XanClic,But that's SHM?
+2009-11-23 15:29:38,FreakyPenguin,You just copy it once?
+2009-11-23 15:29:46,kwolf,Oh. We're not intending to use the SHM to actually _update_ data
+2009-11-23 15:29:46,FreakyPenguin,We don't want to emulate shm
+2009-11-23 15:29:57,XanClic,So the driver would have to tell the OS when the buffer is done?
+2009-11-23 15:30:00,kwolf,It's just for sending data one without copying
+2009-11-23 15:30:05,kwolf,*once
+2009-11-23 15:30:28,XanClic,"Sorry, but sounds too sophisticated in my opinion ;-)"
+2009-11-23 15:30:49,FreakyPenguin,You dont have to do it that way
+2009-11-23 15:30:58,kwolf,Wait... How are you going to solve the problem without SHM anyway?
+2009-11-23 15:31:11,kwolf,I mean what you've just said that you actually _do_ need SHM
+2009-11-23 15:31:16,XanClic,"<XanClic> kwolf: My proposal would be a very monolithic one, just specific functions for every kind of stack ;-)"
+2009-11-23 15:31:26,XanClic,I do need SHM?
+2009-11-23 15:31:36,kwolf,That doesn't answer the question
+2009-11-23 15:31:40,XanClic,"No, my USB driver has no problem on working without it"
+2009-11-23 15:31:52,kwolf,I'm talking about audio
+2009-11-23 15:32:17,XanClic,Do what you want to ;-)
+2009-11-23 15:32:44,kwolf,+the fuck
+2009-11-23 15:32:52,kwolf,As it's stated in the license
+2009-11-23 15:33:06,XanClic,"As stated in #niwohlos, too *g*"
+2009-11-23 15:33:34,kwolf,afk
+2009-11-23 15:44:11,kwolf,back
+2009-11-23 15:44:42,kwolf,XanClic: So your solution is to ignore problems?
+2009-11-23 15:45:04,XanClic,My solution is to ignore them as long as I'm able to ;-)
+2009-11-23 15:46:20,kwolf,The problem is that a CDI interface is more or less set in stone once it's defined
+2009-11-23 15:47:06,XanClic,So I can't define CDI.usb right now because I don't know all about USB 2.0
+2009-11-23 15:52:35,FreakyPenguin,"Well, you know what you have to do *g*"

@@ -1,0 +1,420 @@
+date/time,nick,message
+2009-05-07 19:26:42,JSheridan,abend ^^
+2009-05-07 19:26:54,bluecode,abend JSheridan
+2009-05-07 19:28:30,JSheridan,darf man hier auch fragen stellen die nicht unbedingt tyndur selbst betreffen?
+2009-05-07 19:28:45,bluecode,natürlich
+2009-05-07 19:29:15,JSheridan,konkret wäre es in meinem fall ein problem mit qemu + e1000 emulation
+2009-05-07 19:29:26,bluecode,taljeth!
+2009-05-07 19:29:51,JSheridan,"hihi, ich dachte mir fast das ich an ihn verwiesen werde :)"
+2009-05-07 19:32:21,JSheridan,"also nur angemerkt^^ ich bin kein profi in dem bereich, habe erst wieder angefangen damit und darf an meiner uni nebenher als hiwi für deren interne os-entwicklung bisschen helfen. die entwickeln ein auf java aufgebautes betriebssystem, das geht in diesem fall soweit das selbst der kernel mit einem speziellen compiler in java-syntax geschrieben wird..."
+2009-05-07 19:33:15,JSheridan,"aber das nur am rande, ich selber arbeite zum testen jedenfalls lieber in meinem in c geschriebenen kernel zum testen."
+2009-05-07 19:33:35,bluecode,was ist denn überhaupt die Frage ;-)
+2009-05-07 19:33:54,bluecode,"ich habe an taljeth verwiesen, weil der den tyndur treiber dafür geschrieben hat iirc"
+2009-05-07 19:34:27,JSheridan,ja die wollte ich jetzt stellen... auch wenn ich mich frage wie ich sie am besten formuliere...
+2009-05-07 19:35:33,JSheridan,"ich würde ja doof sagen die e1000 emulation ist komisch, oder ich habe was wesentliches übersehen oder falsch gemacht. I/O-Register (IOADDR, IODATA) lassen sich nicht verwenden und..."
+2009-05-07 19:35:45,bluecode,"^ an welcher uni bist denn, wenn man fragen darf?"
+2009-05-07 19:35:57,JSheridan,ulm
+2009-05-07 19:37:31,bluecode,"es könnte sein, dass der I/O Bereich durch eines der Register im PCI Config Space deaktiviert wurde"
+2009-05-07 19:38:21,JSheridan,laut dem PCI-Command register und der Dokumentation von intel ist zumindest I/O-Access aktiviert
+2009-05-07 19:39:33,JSheridan,"oder gibt es außer dem ""Command Register"" noch etwas das die I/Os blockieren könnte?"
+2009-05-07 19:40:09,JSheridan,ein lesen auf den I/Os liefert ein 0xFFFFFFFF
+2009-05-07 19:40:39,JSheridan,"das witzige ist ja, der Treiber läuft auf der realen hardware die wir haben"
+2009-05-07 19:42:24,JSheridan,in quemu bleibt der orginaltreiber beim reset der karte hängen da sich das reset-bit nicht wie es sollte zurücksetzt.
+2009-05-07 19:42:33,JSheridan,ups ich meinte qemu
+2009-05-07 19:46:06,JSheridan,"aber solang taljeth nicht da ist mal was anderes... evtl. ist die frage sau blöd, aber: kann man eigentlich herausfinden welche IOs im system vergeben/benutzt sind. bei pci-geräten kann man das ja auslesen, aber keyboard und dma controller etc. sind ja afaik an festen adressen."
+2009-05-07 19:51:05,bluecode,"jo, exakt :-)"
+2009-05-07 19:52:47,bluecode,"eventuell kann ACPI da was, aber das weiß ich leider nicht genau"
+2009-05-07 19:54:18,JSheridan,wäre zumindest mal nen versuch wert nachzuschauen.
+2009-05-07 20:00:39,FreakyPenguin,JSheridan: Hast du schon mal in unseren e1000-Treiber geschaut? Der müsste in qemu funktionieren...
+2009-05-07 20:01:51,FreakyPenguin,http://git.tyndur.org/?p=tyndur.git;a=tree;f=src/modules/cdi/e1000
+2009-05-07 20:04:00,FreakyPenguin,"Und im Zweifelsfall einfach mal den qemu-Code ansehen und ggf dort debugging aktivieren oder eigene Debugmeldungen einbane, das hilft fast immer. ;-)"
+2009-05-07 20:06:15,JSheridan,"also ich habe mal soweit es ging in den treiber geschaut, aber konnte damit das problem noch nicht lösen"
+2009-05-07 20:08:14,taljeth,re
+2009-05-07 20:08:15,FreakyPenguin,Dann schaust du dir am Besten mal die Emulation in qemu an ;-)
+2009-05-07 20:08:27,JSheridan,wb^^
+2009-05-07 20:09:00,FreakyPenguin,wz taljeth
+2009-05-07 20:09:11,taljeth,"Hm, mal die Log lesen. Klingt irgendwie nach Arbeit. ;-)"
+2009-05-07 20:10:03,JSheridan,"frage != arbeit, musst sie nicht beantworten ;-) allerdings freu ich mich über jede hilfe^^"
+2009-05-07 20:10:11,taljeth,"FreakyPenguin: Unser e1000-Treiber tut auf realer Hardware noch nicht, oder?"
+2009-05-07 20:10:23,taljeth,"Zumindest nicht auf der, die du hast"
+2009-05-07 20:10:36,FreakyPenguin,"Nein, ich müsste wohl das mit der MAC-Adresse mal machen... ;-)"
+2009-05-07 20:10:57,FreakyPenguin,Aber erst muss ich noch den sturen nano bändigen. ;-)
+2009-05-07 20:11:48,FreakyPenguin,"Mittlerweile habe ich zwar schon einen Umlaut auf dem Bildschirm, aber nano oder curses kommen mit dem irgendwie nicht so richtig klar..."
+2009-05-07 20:12:15,JSheridan,was w#re eigentlich die kürzeste initialisierung soweit bis ein reset der karte funktionieren müsste? da ich ja (wie erwähnt) das nur als nebenjob mache bin ich leider nicht so fit da drin und übersehe sicherlich was kritisches
+2009-05-07 20:12:18,taljeth,JSheridan: Vielleicht konkretisierst du deine Frage mal. 
+2009-05-07 20:12:33,JSheridan,also ich schilder mal kurz meinen ablauf
+2009-05-07 20:12:34,taljeth,"Öhm, ich nehme an, meine Initialisierung ist relativ minimal"
+2009-05-07 20:13:30,JSheridan,"ich suche die netzwerkkarte, danach schau ich mir die BAR# an für MMIO und IO (BAR0 und BAR1, laut intel doku wäre das BAR0 und BAR2)"
+2009-05-07 20:13:30,taljeth,"Ich habe den Treiber nach der Intel-Doku geschrieben und in qemu tut er, also in einer gewissen Weise dürfte das schon zusammenpassen"
+2009-05-07 20:14:06,JSheridan,im pci command-register schau ich vorsichtshalber nochmal nach das IO und MMIO enabled ist
+2009-05-07 20:14:18,taljeth,"JSheridan: Kann sein, welche BARs das waren, darauf habe ich nicht geachtet"
+2009-05-07 20:14:42,JSheridan,"gut ist ja auch nicht schlimm, da die sich ja eh ergeben wenn man einfach alle durchläuft^^"
+2009-05-07 20:14:55,taljeth,Eben
+2009-05-07 20:15:00,JSheridan,jedenfalls mappe ich mir speicher im 1:1 bereich
+2009-05-07 20:15:13,JSheridan,schaue das er entsprechend aligned ist
+2009-05-07 20:15:21,taljeth,"Hmpf, ich hab hier noch das alte qemu-Repo. Schon lang nicht mehr gepullt..."
+2009-05-07 20:15:24,JSheridan,und trage die adresse in das BAR ein
+2009-05-07 20:16:01,JSheridan,so jetzt müsste ich über den adressbereich ja z.B. einen reset durchführen können
+2009-05-07 20:16:29,taljeth,"Ah, du willst dir den IO-Speicher selbst neu mappen"
+2009-05-07 20:16:35,taljeth,"Theoretisch sollte das gehen, ja"
+2009-05-07 20:16:36,JSheridan,den MMIO
+2009-05-07 20:16:44,taljeth,Ja
+2009-05-07 20:16:54,taljeth,Aber es passiert einfach nichts?
+2009-05-07 20:17:10,JSheridan,das RST bit bleibt auf 1
+2009-05-07 20:17:15,JSheridan,statt wieder auf 0 zu fallen
+2009-05-07 20:17:27,JSheridan,auf der realen hardware funktioniert das wohl^^
+2009-05-07 20:17:43,taljeth,"Hast du mal geschaut, ob ""info pci"" den neuen BAR richtig anzeigt?"
+2009-05-07 20:17:50,JSheridan,jup
+2009-05-07 20:18:18,JSheridan,zumindest beim lesen der bars stehen dann die passenden werte drin
+2009-05-07 20:19:01,taljeth,"Ich meine nicht auslesen im Gast-OS, sondern info pci im qemu-Monitor"
+2009-05-07 20:20:04,bluecode,"hm, irgendwelche Franzosen singen da draußen... das muss die Hölle sein"
+2009-05-07 20:20:42,JSheridan,"hmm okay, scheint so würden die nicht gesetzt werden"
+2009-05-07 20:20:48,JSheridan,sekunde :)
+2009-05-07 20:22:51,JSheridan,okay wird gesetzt
+2009-05-07 20:23:15,JSheridan,problem bleibt aber (hatte nur kurz mmio nicht gesetzt)
+2009-05-07 20:24:12,JSheridan,sprich vorher:  BAR0: 32 bit memory at 0xf2020000 [0xf203ffff].   nachher: BAR0: 32 bit memory at 0x006c0000 [0x006dffff]    (speicherbereich mal ignorieren^^)
+2009-05-07 20:25:39,taljeth,"Du könntest ja in der e1000-Emulation ein paar printfs reinhauen, wenn es einen MMIO-Zugriff gibt. Ich bin mir fast sicher, daß da nichts ankommt."
+2009-05-07 20:26:54,JSheridan,also die e1000.c editieren und neu compilen^^... der arme pc
+2009-05-07 20:27:24,JSheridan,"aber werde ich mal machen. die frage ist nur, falls das der fall ist, warum kommt nichts an"
+2009-05-07 20:27:49,taljeth,So groß ist die e1000.c auch wieder nicht ;-)
+2009-05-07 20:28:33,JSheridan,das schon aber ich glaube er hat vom letzten compilen die tmps gelöscht^^ dann müsste ich ganz qemu neu compilen nehme ich an^^
+2009-05-07 20:29:39,JSheridan,achja ich hatte erwähnt das es mit der realtek 8139 emulation keine probleme gibt ja?^^
+2009-05-07 20:30:07,taljeth,Die hat auch kein MMIO
+2009-05-07 20:30:27,JSheridan,"hihi, die e1000 hat ja nichtmal einen IO der funktioniert... bei mir :P"
+2009-05-07 20:30:51,taljeth,"Ach, wegen qemu komplett neu kompilieren... Du kompilierst nur das x86_64-Target, hoffe ich? Sonst dauert es wirklich."
+2009-05-07 20:31:33,JSheridan,werde ich machen ja^^
+2009-05-07 20:34:36,JSheridan,oh wenn ich das gerade sehe^^ die meldungen generiert durch DBGOUT() kann man sich nicht auf die console geben lassen oder?
+2009-05-07 20:35:09,JSheridan,hab erst einen umstieg von bochs auf qemu hinter mir... 
+2009-05-07 20:35:56,taljeth,Ganz oben in der Datei die debugflags weiter aufdrehen vielleicht?
+2009-05-07 20:39:39,taljeth,"Ich denke mal, das wirklich interessante beim remappen passiert bei pci.c:413"
+2009-05-07 20:40:03,taljeth,Hast du deinen Code irgendwo online?
+2009-05-07 20:41:03,JSheridan,"leider nein, ich müsste vorher kurz klären ob ich den rausgeben darf, nicht das mir mein prof auf den kopf steigt ;-)"
+2009-05-07 20:41:46,taljeth,"Das würde mich stören, meinen Code nicht rausgeben zu dürfen... ;-)"
+2009-05-07 20:42:54,FreakyPenguin,Wäre aber vielleicht besser... *g*
+2009-05-07 20:43:44,taljeth,Du bist doof.
+2009-05-07 20:44:27,taljeth,"Darf ich das übrigens so verstehen, daß du die locale.c jetzt doch überehmen willst? *g*"
+2009-05-07 20:44:35,FreakyPenguin,Nein. *g*
+2009-05-07 20:44:42,JSheridan,"naja der auf realer hardware funktionierende treiber ist nicht von mir, deswegen^^ und mein code ... trau ich mich garnicht rauszugeben, da er hmm, gerade aussieht wie aus /dev/random"
+2009-05-07 20:45:05,taljeth,"Das ist okay, ich bin qemu-Code gewohnt"
+2009-05-07 20:46:40,FreakyPenguin,taljeth: Ich habe übrigens für dropbear ein halbes /dev/urandom nachgebaut... Dreimal darfst du raten wie *g*
+2009-05-07 20:46:59,FreakyPenguin,"Und nein, ext2 kann man dafür nicht mehr benutzen. ;-)"
+2009-05-07 20:47:24,taljeth,"Ja, ich überlege grad, was momentan noch kaputt genug ist ;-)"
+2009-05-07 20:47:30,JSheridan,"hihi, gut, aber ich hab dich gewarnt und vor morgen geht's nicht, muss das kurz bereinigen. jedenfalls das was du bekommst, ist nur eine spielwiese und nicht als realer entwicklungsversuch gedacht... kurz gesagt, der kernel kann paging und tasks ohne richtigen task-switch => bäh ;)"
+2009-05-07 20:47:59,Fireknight,Abend.
+2009-05-07 20:48:22,taljeth,"JSheridan: Eigentlich will ich mir den Code nicht großartig anschauen, ich will mir nur die Mühe sparen, das Remapping selbst nachzubasteln, um zu schauen, was qemu da macht"
+2009-05-07 20:48:31,taljeth,Hi Fireknight 
+2009-05-07 20:49:30,JSheridan,dann schaue ich mal kurz danach... sekunde
+2009-05-07 20:49:46,Fireknight,Frage zu RPC. Wie werden da die Parameter uebergeben?
+2009-05-07 20:50:03,FreakyPenguin,Bei uns?
+2009-05-07 20:50:12,Fireknight,z.B
+2009-05-07 20:50:26,Fireknight,Oder einfach allgemein.
+2009-05-07 20:51:00,FreakyPenguin,Bei uns kopiert der Kernel einfach einen vom Aufrufer angegenen Puffer rüber und gibt dem Aufgerufenen einen Pointer darauf
+2009-05-07 20:51:48,Fireknight,"Das ist so etwa so, wie ich es vor habe. Ich dachte jedoch, das wuerde eher zu memleaks fuehren *g*"
+2009-05-07 20:51:58,FreakyPenguin,Warum?
+2009-05-07 20:52:07,Fireknight,Weil der Puffer nicht statisch ist?
+2009-05-07 20:52:24,FreakyPenguin,Bei uns ist der nach dem RPC wieder weg.
+2009-05-07 20:52:48,Fireknight,"Ich ueberlege mir, ob wenn ein Prozess eine Funktion fuer RPC freigibt nicht auch noch die groesse des Puffers dem Kernel sagen muss."
+2009-05-07 20:53:15,FreakyPenguin,"Ich glaube der wird beim RPC_RETURN-Syscall freigegeben, oder wie war das taljeth?"
+2009-05-07 20:53:38,Fireknight,"also register_rpc_func(char* funcname,void* ptr,unsigned int size)"
+2009-05-07 20:53:52,FreakyPenguin,"Bei uns macht das der Aufrufer, der Puffer muss nicht immer gleich gross sein."
+2009-05-07 20:54:09,Fireknight,Was passiert wenn ich einen zu kleinen Puffer uebergebe?
+2009-05-07 20:54:22,Fireknight,"Die Funktion erwartet ja einen Puffer mit bspw. 32 bytes, oder?"
+2009-05-07 20:54:32,FreakyPenguin,Dann mussd ie das eben abfangen?
+2009-05-07 20:54:47,Fireknight,Anhand eines Pointers kannst du aber nicht die groesse des Puffers bestimmen?
+2009-05-07 20:54:48,taljeth,"FreakyPenguin: Die Nachricht kommt auf den Stack, deswegen ist die hinterher wieder weg"
+2009-05-07 20:55:14,Fireknight,d.h deine Funktion begeht dann wohl eine access violation ;)
+2009-05-07 20:55:37,taljeth,Wieso?
+2009-05-07 20:55:47,taljeth,"Also tyndur funktioniert, falls dir das noch nicht aufgefallen ist ;-)"
+2009-05-07 20:55:48,FreakyPenguin,"Fireknight: Jo, der kernel muss natürlich die Grösse des Puffers auch mitgeben."
+2009-05-07 20:55:56,Fireknight,du nimmst an dass Puffer[28] bis Puffer[32] ein unsigned int foo sind.
+2009-05-07 20:56:18,taljeth,"Ach so. Die Größe kommt auch auf den Stack, ja"
+2009-05-07 20:56:20,Fireknight,"Ich bin so fies und uebergeb nur 28 Bytes. Was die restlichen 4 bytes sind, ist undefined behaviour."
+2009-05-07 20:56:31,Fireknight,"Ok, wenn die Groesse auf dem Stack landet ist das ok.p"
+2009-05-07 20:56:42,Fireknight,Wer gibt die Groesse an?
+2009-05-07 20:56:54,Fireknight,Nicht dass ich fieserweise einen falschen Wert auf dem Stack ablegen koennte?
+2009-05-07 20:57:20,taljeth,Der Aufrufer gibt die Größe an den Kernel und der kopiert dann genau so viel auf den Stack des aufgerufenen Prozesses
+2009-05-07 20:57:24,FreakyPenguin,Du kannst dem anderen Prozess doch nicht einfach auf den Stack schreiben.
+2009-05-07 20:58:04,Fireknight,"taljeth: Ja. Wenn ich da jetzt einfach einen Pointer und eine beliebige Groesse uebergebe, kann ich doch einfach mal so anderen Speicher auslesen?"
+2009-05-07 20:58:18,Fireknight,Der Kernel kopiert es ja dann.
+2009-05-07 20:58:38,FreakyPenguin,"Der schaut erst, ob der Speicher auch dem Prozess gehört."
+2009-05-07 20:58:47,FreakyPenguin,Der ist ja schliesslich nicht doof. ;-)
+2009-05-07 20:59:04,Fireknight,Gut :-)
+2009-05-07 20:59:36,FreakyPenguin,Aber unsere RPCs solltest du nicht zu genau anschauen... ;-)
+2009-05-07 21:00:13,Fireknight,Meine sucken auch irgendwie.
+2009-05-07 21:00:28,taljeth,FreakyPenguin: kernel2 geht halbwegs
+2009-05-07 21:00:52,taljeth,"Ich mein, das Prinzip ist natürlich immer noch kaputt, aber die Umsetzung ist halbwegs lesbar, glaube ic"
+2009-05-07 21:01:02,FreakyPenguin,Ich meinte auch ersteres. ;-)
+2009-05-07 21:02:13,Fireknight,struct RPCEntry rpc_entries[1024];
+2009-05-07 21:02:13,taljeth,Man müßte sie halt anders benutzen als wir es tun
+2009-05-07 21:02:18,Fireknight,maximal 1024 Funktionen.
+2009-05-07 21:02:29,Fireknight,Ich hab noch keine Idee wie ich die dynamisch wachsen lassen koennte :(
+2009-05-07 21:02:32,taljeth,Fireknight: tree_t fdS ;-)
+2009-05-07 21:02:46,Fireknight,linked list vlt.
+2009-05-07 21:03:09,taljeth,"Das ist die einfache Variante, ja"
+2009-05-07 21:03:32,taljeth,JSheridan: Tut nicht
+2009-05-07 21:04:03,JSheridan,jup grad gesehen muss noch nen port freigeben^^ hatte mirc lange nicht drauf ;)
+2009-05-07 21:04:28,Fireknight,Das Speicherverwalten macht mir auch noch einiges an Kopfzerbrechen.
+2009-05-07 21:04:32,taljeth,"mirc? War das nicht unter diesem OS, das man nicht benutzen will? ;-)"
+2009-05-07 21:04:42,taljeth,Fireknight: Dann sollest du das wohl zuerst anpacken
+2009-05-07 21:04:43,Fireknight,Wenn ich den Speicher in 4KB Bloecke aufteile.... dann ist das Chaos ja schon vorprogrammiert.
+2009-05-07 21:04:48,taljeth,Wieso?
+2009-05-07 21:04:55,Fireknight,Wenn mein String 5KB hat+
+2009-05-07 21:05:00,Fireknight,*hat?
+2009-05-07 21:05:12,FreakyPenguin,Was ist dann?
+2009-05-07 21:05:15,taljeth,Dann holt dein malloc() eben zwei 4k-Blöcke
+2009-05-07 21:05:18,JSheridan,hihi du darfst mich doppelt schlagen
+2009-05-07 21:05:25,Fireknight,taljeth: Die muessen aber aneinander sein.
+2009-05-07 21:05:27,JSheridan,mein linux läuft nur auf nem p3-550
+2009-05-07 21:05:29,JSheridan,und hier läuft 7
+2009-05-07 21:06:07,taljeth,Solang es auch wirklich läuft ;-)
+2009-05-07 21:06:09,Fireknight,"Irgendwo muss ich eine Tabelle anlegen, welcher Block wem gehoert."
+2009-05-07 21:06:09,FreakyPenguin,Fireknight: Dafür hat man ja Paging?
+2009-05-07 21:06:55,taljeth,"JSheridan: Ui, ich bin begeistert ;-)"
+2009-05-07 21:06:58,Fireknight,Du meinst virtueller Speicher?
+2009-05-07 21:07:13,taljeth,"Jetzt müßte ich nur noch wissen, wo er das hin speichert *g*"
+2009-05-07 21:07:19,taljeth,Fireknight: Jo
+2009-05-07 21:08:45,JSheridan,"hihi, make sollte funktionieren auch wenn ich... kaum ahnung von make habe ^^ allgemein weiß ich von linux nur recht wenig, gerade so das ich mein gentoo warten kann :-/"
+2009-05-07 21:09:21,FreakyPenguin,Gentoo vernünftig warten ist doch schon mal nicht schlecht. *g*
+2009-05-07 21:09:43,FreakyPenguin,Ich meine das gibt doch ab und zu ein paar Abenteuer. ;-)
+2009-05-07 21:09:54,JSheridan,ehhhh ja
+2009-05-07 21:09:56,taljeth,JSheridan: Gentoo auf einem P3? Klingt lustig.
+2009-05-07 21:10:40,taljeth,"Den nächsten Monat kompilieren wir OpenOffice. Oh, schon wieder eine neue Version da? Schade. ;-)"
+2009-05-07 21:10:48,FreakyPenguin,"taljeth: Hey, dort wo ich während der Ferien Arbeite gibts sowas sogar auf einem P1 *g*"
+2009-05-07 21:10:48,JSheridan,"ein emerge -uDN world = 3 tage später.... und das obwohl ich kein gui habe, das ist ein reiner server mit 14"" röhre und keinerlei desktops"
+2009-05-07 21:11:24,FreakyPenguin,glibc-Update und er Server ist eine Woche lang voll ausgelastet. *g*
+2009-05-07 21:12:24,JSheridan,quemu komplett dauert 1-2h
+2009-05-07 21:13:06,JSheridan,aber ich bin zu faul mir cygwin aufzusetzen um remote compiling zu nutzen ...
+2009-05-07 21:13:25,taljeth,Was willst du denn mit einem kompletten qemu?
+2009-05-07 21:13:39,taljeth,Für 90% der Architekturen wirst du doch eh nie was machen
+2009-05-07 21:14:10,taljeth,"Und die Userspaceemulation kompiliert man ja auch nur, um zu sehen, ob seine Patches was kaputtmachen"
+2009-05-07 21:14:24,JSheridan,"ja, das war das erste mal qemu compilieren... nachts um 3 *gähn* m...a....k...e"
+2009-05-07 21:14:42,JSheridan,naja nicht nochmal
+2009-05-07 21:18:17,taljeth,"Also MMIO kommt ganz offensichtlich keiner an, hast du mittlerweile sicher auch schon gesehen"
+2009-05-07 21:18:33,Fireknight,benutzt ihr die MMU?
+2009-05-07 21:19:42,taljeth,"Fireknight: Ohne MMU wird es mühsam, ein OS zu schreiben"
+2009-05-07 21:19:44,stultus,nabend
+2009-05-07 21:19:48,taljeth,Moin stultus 
+2009-05-07 21:20:57,JSheridan,die MMU ist aktiv
+2009-05-07 21:21:03,JSheridan,und 1:1 gemapped
+2009-05-07 21:21:10,JSheridan,zumindest in dem bereich den ich mir hole.
+2009-05-07 21:21:25,JSheridan,wie es beim os rainbow von der uni aussieht müsste ich schauen.
+2009-05-07 21:21:36,taljeth,JSheridan: Ach du Held hast den Reset ja auskommentiert. Kein Wunder kommt da nichts.
+2009-05-07 21:21:38,JSheridan,caching müsste ich noch abschalten wenn ich das richtig sehe
+2009-05-07 21:21:44,JSheridan,eh ja
+2009-05-07 21:21:57,JSheridan,"seh ich noch, hast die falsche version bekommen ^^"
+2009-05-07 21:22:51,JSheridan,kommentier mal den reset ein (zeile 128) ein
+2009-05-07 21:23:09,JSheridan,achja zum aufrufen einfach d1000 eingeben
+2009-05-07 21:23:10,taljeth,Und deine Makefile tut auf x86_64 nicht
+2009-05-07 21:23:23,taljeth,Das mit dem d1000 habe ich schon rausgefunden
+2009-05-07 21:24:03,JSheridan,ja liegt daran das ich bisher nur auf 32bit gearbeitet habe^^ 
+2009-05-07 21:24:11,JSheridan,wie gesagt bin da leider nicht so firm :-/
+2009-05-07 21:25:14,taljeth,Gib dem gcc ein -m32 und dem ld ein -melf_i386
+2009-05-07 21:26:43,taljeth,"JSheridan: Hm, wie genau äußert sich das Problem, wenn ich den Reset wieder anschalte?"
+2009-05-07 21:28:00,JSheridan,ach ich depp habe die schleife raus sekunde.
+2009-05-07 21:28:41,taljeth,"Hm, gut, die Debugausgaben sehen auch seltsam aus. Einige reads, aber kein write"
+2009-05-07 21:28:51,JSheridan,Zeile 149: while ( *((unsigned int*)(e1000_MMIO_BASE+0x00000))&=0x04000000 ) ;
+2009-05-07 21:29:03,JSheridan,dort wird er hängen bleiben
+2009-05-07 21:29:12,JSheridan,da das RST-Bit nie auf 0 zurück fällt
+2009-05-07 21:29:20,Fireknight,Das + 0x00000 ist irgendwie suspekt?
+2009-05-07 21:29:51,JSheridan,das Control Register liegt bei offset 0h
+2009-05-07 21:30:12,JSheridan,das ganze ist nur kurz zusammengehacked... ein richtiger code-salat :/
+2009-05-07 21:31:10,taljeth,"Sieht bei mir etwas anders aus, aber ich nehme den Codeblock einfach mal rein"
+2009-05-07 21:31:41,FreakyPenguin,Hm vielleich noch ein volatile oder so?
+2009-05-07 21:32:05,FreakyPenguin,Nicht dass der gcc da reinfunkt.
+2009-05-07 21:32:57,JSheridan,sollte nicht. im rainbow (dem anderen os) ist das volatile
+2009-05-07 21:45:26,tyndur,"r1145 | svn-meuchler | 2009-05-07 21:46:35 +0200 (Thu, 07 May 2009) | 3 lines"
+2009-05-07 21:45:26,tyndur,! lpt: Name im Quelltext korrigiert (vorher pashello)
+2009-05-07 21:45:50,FreakyPenguin,Dann wäre dein heutiger Trivialcommit auch erledigt. *g*
+2009-05-07 21:45:58,stultus,jup *g*
+2009-05-07 21:46:10,stultus,der lbuild-patch
+2009-05-07 21:46:25,stultus,"steht ja bei, lpt sollte entsprechend erweitert werden das die nicht entpackt oder korrekt installiert wird."
+2009-05-07 21:46:32,FreakyPenguin,Ah der war ja garnicht von kevin. og*
+2009-05-07 21:46:41,stultus,beides drin und beides wegen mangel der pascal-rtl nicht funktional ;) darf ich commiten? ;)
+2009-05-07 21:47:11,taljeth,"JSheridan: Hm, ich habe den Eindruck, der tyndur-Treiber tut auch nur aus Versehen *g*"
+2009-05-07 21:47:13,stultus,(die -> die metainfos im archiv)
+2009-05-07 21:47:15,JSheridan,also
+2009-05-07 21:47:27,JSheridan,das mmio wird tatsächlich nicht erfasst
+2009-05-07 21:47:33,taljeth,"Doch, das kommt an"
+2009-05-07 21:47:57,JSheridan,zumindest habe ich im treiber für alle io und mmio funktionen debugs dazu und sehe nur die von io
+2009-05-07 21:47:57,JSheridan,echt?
+2009-05-07 21:48:27,taljeth,"MMIO hat keine Debugausgaben, die habe ich von Hand reinmachen müssen"
+2009-05-07 21:48:41,taljeth,Nur... die e1000-Emulation macht halt irgendwie keinen Reset
+2009-05-07 21:49:41,FreakyPenguin,*g*
+2009-05-07 21:50:08,taljeth,"Das heißt, der tyndur-Treiber bleibt bei seinem Reset auch ganz am Anfang hängen"
+2009-05-07 21:50:15,taljeth,Zum Glück registriert er die Handler und den Interrupt schon vorher *g*
+2009-05-07 21:50:18,JSheridan,eh ja hast recht^^ copy-paste fehler gehabt ;)
+2009-05-07 21:50:36,JSheridan,jmmm
+2009-05-07 21:50:39,JSheridan,eh hmm
+2009-05-07 21:51:07,taljeth,Wobei er dann seine MAC-Adresse nicht kriegen dürfte. Das tut aber üblicherweise. Hm...
+2009-05-07 21:51:13,JSheridan,"dann geh ich mal von folgendem aus: der e1000 hat einen reset-bug und die io-ports gehen nicht, mmio geht aber theoretisch so halbwegs"
+2009-05-07 21:52:00,JSheridan,"nach dem power-on müsste das quasi wie ein reset sein, sprich mac sollte geladen sein"
+2009-05-07 21:52:15,taljeth,FreakyPenguin: Wo landen eigentlich die e1000-Debugausgaben?
+2009-05-07 21:52:19,stultus,Nächster Trivia-Commit kommt :)
+2009-05-07 21:52:26,tyndur,"r1146 | svn-meuchler | 2009-05-07 21:53:18 +0200 (Thu, 07 May 2009) | 5 lines"
+2009-05-07 21:52:26,tyndur,lpt: Erweitung der Tar-Funktionalitäten
+2009-05-07 21:52:26,tyndur,+ lpt: Untar akzeptiert als zweites Argument einen Zielpfad (Standardmäßig file:/)
+2009-05-07 21:52:40,FreakyPenguin,taljeth: Nicht in vt9?
+2009-05-07 21:53:24,taljeth,"Theoretisch wohl in vt2, aber da ist nichts"
+2009-05-07 21:53:55,EinandererUser,cya
+2009-05-07 21:53:59,FreakyPenguin,Hm servmgr leitet doch nach vt2 weiter?
+2009-05-07 21:54:04,FreakyPenguin,*9
+2009-05-07 21:56:45,taljeth,FreakyPenguin: Aber e1000 macht ein stdout = fopen(); auf vt2 ;-)
+2009-05-07 21:56:59,FreakyPenguin,Ach ;-)
+2009-05-07 21:57:11,taljeth,JSheridan: Mit meinem qemu-kvm tut das aber. Welche qemu-Version benutzt du denn?
+2009-05-07 21:57:36,JSheridan,0.10.3 von der hp^^
+2009-05-07 21:58:00,JSheridan,hatte es auch mit 0.10.1 aus dem gentoo portage probiert
+2009-05-07 21:58:15,taljeth,Eine 0.9 wäre wohl mal einen Versuch wert
+2009-05-07 21:58:54,JSheridan,war da der e1000 schon dabei?^^
+2009-05-07 21:59:01,stultus,jup
+2009-05-07 21:59:34,stultus,"oder wenigstens in einer der vielen versionen dazwischen, die überall mit entsprechend doofer versionierung paketiert wurden ;)"
+2009-05-07 22:00:16,taljeth,Ich bau mal grad eine Version aus dem Oktober
+2009-05-07 22:00:23,stultus,"Ok,grad nachgesehn, im changelog stehts erst für 0.10.0"
+2009-05-07 22:00:49,taljeth,"Ja, da gab's ja ewig kein Release mehr"
+2009-05-07 22:01:19,stultus,taljeth: wie dachtest du das mit den lbuilds-metadaten?
+2009-05-07 22:01:34,stultus,"die Datei direkt in dem Pfad im Archiv ablegen, oder seitens lpt dahin verschieben?"
+2009-05-07 22:01:42,JSheridan,hmmm dann frage ich mich welche version ich nehmen soll^^
+2009-05-07 22:01:45,taljeth,Und damit tut es. Auf geht's zum fröhlichen git bisect
+2009-05-07 22:02:09,JSheridan,also 0.9
+2009-05-07 22:03:26,taljeth,"0.9 ist wohl zu alt, wenn e1000 erst später dazugekommen ist"
+2009-05-07 22:03:54,JSheridan,hast du eine e1000 im system? wenn du kvm verwendest?
+2009-05-07 22:04:28,stultus,"die hardware-emulation tut doch auch mit kvm noch, oder?"
+2009-05-07 22:04:54,JSheridan,hätte ja sein können das er dann die reale karte über kvm anspricht
+2009-05-07 22:06:02,taljeth,"Ne, die wird emuliert"
+2009-05-07 22:10:43,taljeth,SVN Rev 5766 ist schuld
+2009-05-07 22:11:31,stultus,wie funktioniert bisect eigtl ?
+2009-05-07 22:11:57,taljeth,Es bisectet halt
+2009-05-07 22:12:00,JSheridan,was haben die mit 5766 verbockt?
+2009-05-07 22:12:15,taljeth2,"""e1000 VLAN offload emulation (Alex Williamson)"""
+2009-05-07 22:12:47,taljeth,"Ist wohl irgendein komischer Seiteneffekt gewesen, daß das Resetbit zurückgesetzt wurde, und jetzt passiert der nicht mehr"
+2009-05-07 22:13:03,taljeth,"Mich wundert es nur, daß Linux da nicht drüber stolpert"
+2009-05-07 22:13:14,FreakyPenguin,Dann weisst du wohl was zu tun ist. ;-)
+2009-05-07 22:13:15,JSheridan,hihi
+2009-05-07 22:13:18,JSheridan,hab mir den linux-treiber angeschaut
+2009-05-07 22:13:24,JSheridan,der wartet ohne schleife ^^
+2009-05-07 22:13:32,JSheridan,und geht davon aus das es geklappt hat
+2009-05-07 22:16:36,taljeth,Jo
+2009-05-07 22:17:14,taljeth,"Ich würde mal vorschlagen, du bereitest einen Patch für qemu vor, der MMIO auf CTRL abfängt und die Reset-Bits rausmaskiert"
+2009-05-07 22:17:48,taljeth,"Zusatzpunkte gibt es, wenn du ein halbwegs bekanntes OS findest, das ebenfalls drüber stolpert"
+2009-05-07 22:18:09,JSheridan,windows 2003
+2009-05-07 22:18:12,JSheridan,der microsoft treiber
+2009-05-07 22:18:30,JSheridan,soweit ich das noch in erinnerung habe
+2009-05-07 22:18:58,JSheridan,da hilft als bugfix der intel treiber^^
+2009-05-07 22:21:58,stultus,"taljeth, FreakyPenguin: bitte neuen lbuild-patch acken ;)"
+2009-05-07 22:23:00,JSheridan,hat mir jemand den den link zum svn rep von qemu? ^^ 
+2009-05-07 22:37:33,taljeth,JSheridan: SVN gibt's nicht mehr
+2009-05-07 22:37:44,taljeth2,git://git.savannah.nongnu.org/qemu.git
+2009-05-07 22:38:58,taljeth,"stultus: Das soll mal FreakyPenguin acken, ich hab den alten Patch ja schon gesehen ;-)"
+2009-05-07 22:40:48,JSheridan,danke^^ na dann schau ich mal ob ich das hin bekomme oO
+2009-05-07 22:41:43,stultus,"Btw, wäre nen C-Rewrite von lpt machbar?"
+2009-05-07 22:41:59,taljeth,stultus: Würde ich jetzt nicht wirklich als sinnvoll ansehen
+2009-05-07 22:42:28,stultus,jetzt?
+2009-05-07 22:43:00,taljeth,"Das war ein verstärkendes jetzt, kein zeitliches. Oder so."
+2009-05-07 22:43:28,stultus,"uhm, also eher nicht"
+2009-05-07 22:43:34,stultus,so zu verstehen?
+2009-05-07 22:43:50,FreakyPenguin,Fände ich auch doof ;-)
+2009-05-07 22:44:05,FreakyPenguin,Ich wäre ja eher für mehr von c nach pascal ;-)
+2009-05-07 22:44:10,taljeth,"Machbar wäre es, aber irgendwie ist es halt eine schlechte Idee"
+2009-05-07 22:44:16,stultus,Damnit. Dann muss ich ja weiter mit Pascal tricksen :(
+2009-05-07 22:44:23,taljeth,"FreakyPenguin: Jo, ungefähr alles, was nicht gerade ein Treiber ist"
+2009-05-07 22:44:47,FreakyPenguin,Vorallem alles was mit Strings zu tun hat. ;-)
+2009-05-07 22:44:57,taljeth,ObjFPC ist eine wesentlich angenehmere Sprache als C
+2009-05-07 22:45:11,taljeth,"(Unicode-)Strings, OOP und so weiter."
+2009-05-07 22:46:47,FreakyPenguin,"Jo, ich konnte mich zwar noch nicht so recht mit dem viel tippen anfreunden, aber angenehmer als C ist es auf jeden Fall. *g*"
+2009-05-07 22:46:57,taljeth,"JSheridan: Hast du eigentlich ein Win 2k3 da, mit dem du testen kannst, ob der Patch da auch hilft? Wäre wohl ein sehr gutes Argument."
+2009-05-07 22:47:21,taljeth,FreakyPenguin: Dafür gelten noch keine Styleguides *g*
+2009-05-07 22:47:31,stultus,damnit
+2009-05-07 22:47:43,stultus,Wird zeit das ich doch mal ne stdlibc++ baue
+2009-05-07 22:48:04,taljeth,*hehe*
+2009-05-07 22:48:23,FreakyPenguin,"taljeth: Stimmt, das könntest du mal ändern. ;-)"
+2009-05-07 22:48:28,stultus,oder das python läuft ;)
+2009-05-07 22:48:44,taljeth,"stultus: Ich widerspreche nicht, solange du das alles übernimmst ;-)"
+2009-05-07 22:48:55,FreakyPenguin,"Ist nämlich schade, dass der Pascal-Code eher nicht so unserem Qualitätsstandard enstpricht. ;-)"
+2009-05-07 22:48:58,taljeth,FreakyPenguin: Dazu müßte ich mir ja erstmal welche ausdenken ;-)
+2009-05-07 22:49:20,FreakyPenguin,Doxygen wäre dort auch toll... ;-)
+2009-05-07 22:49:31,stultus,"Trotzdem, pro C"
+2009-05-07 22:49:41,FreakyPenguin,Dein Pech *g*
+2009-05-07 22:49:42,stultus,einfach um den Ärger mit compilerbau zu vermeiden.
+2009-05-07 22:49:42,taljeth,FreakyPenguin: Schluckt der (** foo *) oder sowas?
+2009-05-07 22:49:57,FreakyPenguin,taljeth: Keine Ahnung. ;-)
+2009-05-07 22:50:05,taljeth,stultus: Ich vermeide lieber Ärger mit Pagefaults und so
+2009-05-07 22:51:13,stultus,:\
+2009-05-07 22:51:48,FreakyPenguin,"taljeth: Ach, wenn ich da Hand anlege, kommt das auch, das ist kein Problem. *g*"
+2009-05-07 22:51:48,taljeth,"Ich kann ja nichts dafür, daß ich kein C kann"
+2009-05-07 22:51:53,taljeth,Aber ich muß mich halt drauf einstellen ;-)
+2009-05-07 22:52:19,taljeth,FreakyPenguin: Dann kommen aber in erster Linie RTE 216 raus *g*
+2009-05-07 22:52:39,FreakyPenguin,taljeth: Array-Index doof?
+2009-05-07 22:52:53,taljeth,Eher ganz allgemein Segfault
+2009-05-07 22:53:00,FreakyPenguin,Ah auch gut. *g*
+2009-05-07 22:58:57,JSheridan,@tal jup win 2k3 habe ich da^^
+2009-05-07 22:59:22,stultus,taljeth: der python-port ist von dir?
+2009-05-07 22:59:50,FreakyPenguin,gn8
+2009-05-07 22:59:55,stultus,gn8 FreakyPenguin
+2009-05-07 23:00:03,JSheridan,n8 FreakyPenguin
+2009-05-07 23:03:49,taljeth,gn8 FreakyPenguin 
+2009-05-07 23:03:58,taljeth,"stultus: Ja, tut aber nur ansatzweise"
+2009-05-07 23:04:19,taljeth,"Sprich, wenn du etwas Zeit investieren willst, könnte es das sicher vertragen"
+2009-05-07 23:11:20,Jidder,moinsen
+2009-05-07 23:12:12,JSheridan,moin
+2009-05-07 23:12:25,Guest69291,ach mensch
+2009-05-07 23:12:30,Guest69291,schätten is so komplimiert
+2009-05-07 23:12:57,taljeth,Kompiliert heißt das Wort.
+2009-05-07 23:13:05,taljeth,Moin Jidder
+2009-05-07 23:13:06,Guest69291,danke
+2009-05-07 23:14:09,Jidder,"so ich glaube 4 monate sind gut, um mal die aufkleber vom notebook zu entfernen"
+2009-05-07 23:14:18,Jidder,vor allem weil ich schon die ganze zeit an den ecken rumgefummelt hab
+2009-05-07 23:14:45,Jidder,"son quatsch. ""warranty void if removed"" was solln das heißen?"
+2009-05-07 23:14:49,Jidder,egal weg damit^^
+2009-05-07 23:16:13,Jidder,"wenigstens hab ich kein notebook, wo die aufkleber aus papier sind und mit tesa befestigt sind"
+2009-05-07 23:17:06,taljeth,Das kannst du ja ändern
+2009-05-07 23:17:43,Jidder,stimmt
+2009-05-07 23:18:31,Jidder,dieser intel pentium mmx aufkleber und der riva tnt2 sind die hartnäckigsten
+2009-05-07 23:18:54,taljeth,*hehe*
+2009-05-07 23:19:34,Jidder,ach diese kleberreste werden irgendwann vom schweiß wegkorrodiert
+2009-05-07 23:19:46,Jidder,der sommer kommt bestimmt
+2009-05-07 23:19:52,Jidder,und ansonsten die schweinegrippe
+2009-05-07 23:19:59,Jidder,da gehört schwitzen bestimmt auch zum symptom
+2009-05-07 23:22:37,Jidder,ob ich meine aufkleber bei ebay verkaufen kann?
+2009-05-07 23:23:34,Jidder,"ich hab nu letztens gehört, dass leute bei ebay kassenbelege kaufen, um die dann von der steuerabzusetzen ^_^"
+2009-05-07 23:26:04,Jidder,natürlich werden die auf dem kassenbeleg angeführten einkäufe abgesetzt
+2009-05-07 23:26:25,Jidder,"ich denke mal nicht, dass jemand in seine steuererklärung schreibt, dass er das finanzamt betrügt ^^"
+2009-05-07 23:27:13,Jidder,"wo issn bluecode? der hätte bestimmt in sekunden einen link zur hand, der mich lügen straft ^^"
+2009-05-07 23:27:47,taljeth,"Gut, daß man für jede Aufgabe Spezialisten hier hat"
+2009-05-07 23:27:50,taljeth,Oder eben auch nicht ;-)
+2009-05-07 23:28:04,Jidder,hehe
+2009-05-07 23:28:22,taljeth,Eine Roadmap kann ich dir momentan leider auch nicht als Ersatz anbieten
+2009-05-07 23:30:40,Jidder,wir sollten über vertragsstrafen bei ausbleiben der leistungserbringung nachdenken
+2009-05-07 23:30:43,Jidder,das kann ja so nich angehen
+2009-05-07 23:34:10,taljeth,Absolut
+2009-05-07 23:43:54,JSheridan,"achja der win2k3 bug hatte eine andere ursache, außer es gibt noch einen, in den sourcen steht jedenfalls ein kommentar zu einem bugfix für win2k3"
+2009-05-07 23:44:40,taljeth,Schade
+2009-05-07 23:44:45,JSheridan,die karte selbst wird aber nie resettet... gut wurde sie vorher auch nicht wirklich scheint es
+2009-05-07 23:45:03,taljeth,"Aber wäre auch seltsam gewesen, wenn über ein halbes Jahr niemand merkt, daß es mit Win 2k3 nicht mehr tut"
+2009-05-07 23:45:13,taljeth,Die BSDs resetten auch nicht?
+2009-05-07 23:46:51,JSheridan,naja^^ egal ob mit oder ohne den fix wird führt er nur den mmio-write aus :/
+2009-05-07 23:47:07,taljeth,Hm?
+2009-05-07 23:47:12,JSheridan,und die reads natürlich aber ansonsten keine der anderen funktionen
+2009-05-07 23:47:31,taljeth,Weil für CTRL halt nichts anderes implementiert ist
+2009-05-07 23:47:33,taljeth,Oder was meinst du?
+2009-05-07 23:47:36,JSheridan,bei einem richtigen reset müsste er theoretisch ja reinitialisieren
+2009-05-07 23:47:41,JSheridan,ja
+2009-05-07 23:47:56,taljeth,"Es würde reichen, den Reset weitestgehend als nop zu implementieren"
+2009-05-07 23:48:02,taljeth,Er müßte nur das Reset-Bit sofort zurücksetzen
+2009-05-07 23:48:04,JSheridan,so wurde es gemacht
+2009-05-07 23:48:53,taljeth,Im aktuellen qemu-Source ist es nicht so
+2009-05-07 23:49:00,JSheridan,"allerdings ergeben sich dadurch natürlich leichte abweichungen vom hardware manual nach dem reset status, sind aber nicht weiter tragisch wenn man sauber alles setzt"
+2009-05-07 23:49:08,taljeth,Eben
+2009-05-07 23:49:17,taljeth,"Es geht ja nur drum, daß man nicht in der Schleife hängen bleibt"
+2009-05-07 23:49:25,JSheridan,genau
+2009-05-07 23:49:30,JSheridan,und das habe ich gefixed
+2009-05-07 23:49:42,taljeth,Wo ist also das Problem? ;-)
+2009-05-07 23:50:28,taljeth,"Außer daß du möglicherweise Schwierigkeiten hast, die Relevanz von deinem OS herauszustellen, wenn du den Patch submittest. ;-)"
+2009-05-07 23:50:30,JSheridan,nichtmehr da hoffe ich :)
+2009-05-07 23:50:47,JSheridan,naja es ist ein bug :P
+2009-05-07 23:51:07,taljeth,"Ja, wenn man Anthony gut zuredet, wird er es schon nehmen"
+2009-05-07 23:55:05,taljeth,"Bist du mit den Prozessen halbwegs vertraut, wie man einen Patch reinkriegt?"
+2009-05-07 23:56:16,Jidder,käseplatte servieren
+2009-05-07 23:56:54,JSheridan,"ich jaein, ein freund/studienkollege ja, werde das nachher kurz an ihn weiter geben, der soll das noch gegenchecken^^"
+2009-05-07 23:57:34,taljeth,"Ich kann auch nochmal drüberschauen, wenn du willst"
+2009-05-07 23:59:33,JSheridan,"die Zeile mit putreg(RDBAL),	putreg(LEDCTL), putreg(CTRL),	putreg(VET),"
+2009-05-07 23:59:42,JSheridan,"durch: putreg(RDBAL),	putreg(LEDCTL), putreg(VET),"
+2009-05-07 23:59:44,JSheridan,ersetzt

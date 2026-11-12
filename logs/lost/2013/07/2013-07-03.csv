@@ -1,0 +1,224 @@
+date/time,nick,message
+2013-07-03 00:06:01,Darkchaos2,MEIN OS bleibt fast stable:)
+2013-07-03 00:06:38,Darkchaos2,benötigt man für outb Ring0?
+2013-07-03 00:09:00,Jidder,man kann es auch für ring 3 aktivieren
+2013-07-03 00:09:05,Jidder,IOPL ist das stichwort
+2013-07-03 00:09:12,Jidder,oder I/O bitmap in der TSS
+2013-07-03 00:10:04,Darkchaos2,oder com driver :)
+2013-07-03 00:10:19,Jidder,was auch immer das sein soll
+2013-07-03 00:10:20,Darkchaos2,nur ich glaube ich habe gerade ein kleines problem beim syscall
+2013-07-03 00:10:43,Darkchaos2,"jedenfalls gibt es einen PF, weil die Page Kernel Modeist"
+2013-07-03 00:13:18,Darkchaos2,Das schreiben in den Videospeicher
+2013-07-03 00:14:27,Darkchaos2,"Soll ich den einfach als Ring0 mit einmappen, oder beim syscall in den eigentlich nicht vorhanden kernel_mem switchen^^"
+2013-07-03 00:14:34,Darkchaos2,bzw einfach den Kernel Task
+2013-07-03 00:18:54,Darkchaos2,halt. Liegt der Videospeicher nicht im Kernel?
+2013-07-03 00:20:37,Darkchaos2,"Jidder: Der Videospeicher liegt doch im Kernelspace. Wenn ich einen #PF bekomme, wechsele ich den Ring nicht richtig? Denn der Kernel ist ja Kernel."
+2013-07-03 00:20:50,Darkchaos2,"Kann ich irgendwie mit info registers herausbekommen, ob ich doch Ring0 bin?"
+2013-07-03 00:22:47,Jidder,"wenn du die ersten 4 mb als kernel space definierst, liegt der video ram im kernel space"
+2013-07-03 00:23:23,Jidder,"du siehst, ob du in ring 0 bist an cs und ss"
+2013-07-03 00:23:36,Jidder,wenn die nicht auf 0 oder 8 enden bist du im user space
+2013-07-03 00:25:11,Darkchaos2,1b und 23 zur zeit des pagefaults.
+2013-07-03 00:25:28,Jidder,also user space
+2013-07-03 00:28:55,Darkchaos2,"nur komischerweiße tritt das Problem jetzt nicht mehr auf, bzw garkein syscall, dafür ein register-dump _ohne_ Fault-error"
+2013-07-03 00:29:38,Jidder,wer gibt einen register dump aus?
+2013-07-03 00:29:43,Jidder,dein interrupt handler?
+2013-07-03 00:30:31,Darkchaos2,"jap. Wenn ich nun den task als kernel_space setze, dann kommt ein syscall an. Dort ist cs 0x8 und ss 0x50"
+2013-07-03 00:30:40,Darkchaos2,"es scheint, als kommt ein syscall garnicht durch im userspace?"
+2013-07-03 00:31:02,Jidder,ist der idt eintrag für den syscall auch vom user space aufrufbar?
+2013-07-03 00:32:34,Jidder,ich weiß nicht aus dem kopf welches flag das ist
+2013-07-03 00:33:04,Darkchaos2,"ich schaue. Ich glaube auch zu wissen, warum das komische kein error kommt. Wenn der erste Error durch zugriff auf den Videospeicher entsteht, kann er logischerweiße im Interupt Handler auch nix mehr ausgeben:)"
+2013-07-03 00:33:09,Jidder,ach der IDT eintrag hat ein DPL feld
+2013-07-03 00:33:13,Jidder,da muss natürlich 3 drin stehen
+2013-07-03 00:33:31,Jidder,ein page fault wechselt in den kernel mode
+2013-07-03 00:33:40,Jidder,dann sollte er was ausgeben können
+2013-07-03 00:33:44,Jidder,außer du machst was ganz falsch
+2013-07-03 00:33:45,Darkchaos2,hmm komisch
+2013-07-03 00:34:03,Darkchaos2,"also idt_entry .. Interrupt_Gate, IDT_FLAG_RING3 (0x60), IDT_FLAG_PRESENT"
+2013-07-03 00:34:37,Jidder,tjo keine ahnung
+2013-07-03 00:35:07,Jidder,page faults anhand der beschreibungen zu debuggen ist immer schwierig
+2013-07-03 00:36:13,Darkchaos2,"ich muss es erstmal schaffen, alles ins git zu posten (ich soll ne push url suchen)"
+2013-07-03 00:37:03,Jidder,davon gibts ja zum glück genug 
+2013-07-03 00:37:55,Darkchaos2,ah ich brauche das ssh url ding :)
+2013-07-03 00:39:37,Jidder,präzise
+2013-07-03 00:46:27,Darkchaos2,"""This Git object is too large to be displayed in the browser. Consider cloning the repository locally and look at the object there"" WAS SOLL DASS? :D"
+2013-07-03 00:46:34,Darkchaos2,10kB changes
+2013-07-03 00:51:04,Darkchaos2,<< hat es raus
+2013-07-03 00:51:43,Darkchaos2,doch nicht
+2013-07-03 00:52:01,Darkchaos2,jedenfalls wird ein #PF ausgelöst
+2013-07-03 00:53:32,Darkchaos2,Und: Mein Interrupthandler (auf den #PF) wird mit CS: 0x1B und SS: 0x23 ausgelöst
+2013-07-03 00:54:59,Darkchaos2,aber ehrlichgesagt: https://gitorious.org/tuxmaniac/arctic_revenge/blobs/master/kernel/idt.S Hier wird nirgends der Ring gewechselt!
+2013-07-03 00:58:28,Darkchaos2,"Jidder: Oder wird das von mov $0x10, %ax erledigt? Das ist ja aber nur der eine Wert, oder?"
+2013-07-03 01:20:00,Darkchaos2,Bis morgen Leute :)
+2013-07-03 09:33:14,kevin,"Einen wunderschönen guten Morgen, alexander"
+2013-07-03 09:33:55,alexander,"kevin, so wünsche auch ich Dir einen außerordentlich wunderschönen guten Morgen!"
+2013-07-03 10:12:44,Darkchaos,"kevin: Der Tutorialkernel sollte doch in Ring0 springen, oder?"
+2013-07-03 10:27:14,Darkchaos,"Ok Jungs ich habe folgendes Problem: Ich bekomme keine Userspace Prozesse mehr zum laufen. Ich bekomme ein #PF sobald ich in den Task springe. Fakt ist jedenfalls, dass ich beim PIC Interrupt noch im Ring0 bin (CS 8 und SS (vermutlich auslesefehler: 104FF3 (hört sich eher wie die adresse des SS an))"
+2013-07-03 10:27:28,Darkchaos,Jedenfalls bekomme ich beim PF dann nur noch 1B und 23 als CS und SS
+2013-07-03 10:27:39,Darkchaos,daher kann mein interupt_handler garnix mehr machen
+2013-07-03 10:31:05,Darkchaos,"Also ich sehe gerade, dass meine scheduler Interrupts alle ohne Ringwechsel stattfinden! Bei Taskwechsel wird zwar der Ring gewechselt, aber bei einem Interupt nicht. Zuständiger Code: https://gitorious.org/tuxmaniac/arctic_revenge/blobs/master/kernel/idt.S"
+2013-07-03 10:35:06,DesL,"ah, 545981/1002001 Bits sind Hi, das sieht schon viel besser aus als 50/10020001 :D"
+2013-07-03 10:41:27,kevin,"Darkchaos: Was heißt ""in Ring 0 springen""?"
+2013-07-03 10:41:48,Darkchaos,In den Ring wechseln
+2013-07-03 10:41:49,kevin,"Darkchaos: GRUB startet den Kernel in Ring 0, falls du das meinst"
+2013-07-03 10:41:57,kevin,"Ja, von wo in den Ring wechseln?"
+2013-07-03 10:43:23,Darkchaos,Von einem Ring3 task bei einem Interupt in Ring0
+2013-07-03 10:43:37,kevin,"Jo, natürlich tut er das"
+2013-07-03 10:44:06,kevin,"Wie versuchst du denn rauszufinden, in welchem Ring dein Code läuft?"
+2013-07-03 10:44:29,Darkchaos,auslesen von cs und ss in handle_interupt
+2013-07-03 10:44:55,Darkchaos,und da hat es immer abwechselnd Ring 3 und Ring 0 (abhänig welcher Task gerade läuft/den scheduler aufruft)
+2013-07-03 10:45:14,kevin,"Hm, in welcher Datei ist das?"
+2013-07-03 10:46:23,Darkchaos,der check?
+2013-07-03 10:46:52,kevin,"Ah, interrupt_to_com() in kernel.cpp, richtig?"
+2013-07-03 10:47:00,kevin,"Hast du verstanden, was du da tust?"
+2013-07-03 10:47:34,Darkchaos,https://gitorious.org/tuxmaniac/arctic_revenge/blobs/master/kernel/kernel.cpp#line318
+2013-07-03 10:47:35,Darkchaos,hier
+2013-07-03 10:47:48,Darkchaos,(musste kurz was pushen)
+2013-07-03 10:49:56,kevin,"Okay, ich bleibe bei meiner Frage"
+2013-07-03 10:49:58,kevin,"Hast du verstanden, was du da tust?"
+2013-07-03 10:50:32,kevin,"Oder konkreter: Weißt du, wohin cpu zeigt?"
+2013-07-03 10:50:52,Darkchaos,wo genau? cpu ist der state wie er beim interrupt automatisch und manuell gesichert wurde
+2013-07-03 10:51:03,kevin,Korrekt
+2013-07-03 10:51:16,Darkchaos,geschiet der ring-wechsel dannach? Bei einem call?
+2013-07-03 10:51:23,kevin,cpu->cs ist also das Codesegment zu welchem Zeitpunkt?
+2013-07-03 10:51:25,kevin,"Vor dem Interrupt, gnau"
+2013-07-03 10:51:50,kevin,Der Ringwechsel geschieht beim Sprung zum Interrupthandler
+2013-07-03 10:52:21,Darkchaos,"Das erklärt jedoch nicht, warum ich bei einem syscall eine Exception für den Videospeicher bekomme"
+2013-07-03 10:52:24,kevin,Du hast nämlich ein Ring-0-Codesegment in der IDT angegeben
+2013-07-03 10:52:35,Darkchaos,moment
+2013-07-03 10:52:38,kevin,"Nein, erklärt es nicht, aber es erklärt, warum du meinst, den Kernel in Ring 3 laufen zu sehen"
+2013-07-03 10:53:07,Darkchaos,"heißt das: FLAG_RING0/3 gibt nicht an, wer triggern darf, sondern worein gesprungen wird?"
+2013-07-03 10:53:21,kevin,Nein
+2013-07-03 10:53:30,Darkchaos,* in welchen Ring gewechselt werden darf
+2013-07-03 10:53:34,kevin,Nein
+2013-07-03 10:53:38,kevin,Codesegment != Flag
+2013-07-03 10:53:56,kevin,"Das Flag legt fest, wer den Interrupt aufrufen darf, das Codesegment, wohin gesprungen wird"
+2013-07-03 10:54:10,Darkchaos,ok
+2013-07-03 10:54:38,Darkchaos,demnach müsste ich aber beim syscall auch im Kernel-Modus sein
+2013-07-03 10:54:55,Darkchaos,"demnach darf es in einem Task, der syscalls aufruft, keine #PFs geben"
+2013-07-03 10:56:18,kevin,Was ist denn der Error Code für deinen PF?
+2013-07-03 10:57:30,Darkchaos,"5, d.h. gemappte page, aber nur usermode"
+2013-07-03 11:00:06,Darkchaos,das komische daran:
+2013-07-03 11:00:28,Darkchaos,"ich möchte einen SYSCALL aufrufen, erhalte aber zuvor schon einen PF"
+2013-07-03 11:01:00,Darkchaos,Ich glaube ich habe es -.-
+2013-07-03 11:01:28,Darkchaos,"ich schäme mich. Ich habe direkt das Backend aufrufen wollen, also ohne syscall, voll rein in den Kernel^^"
+2013-07-03 11:02:39,Darkchaos,jetzt habe ich einen error 7 :D
+2013-07-03 11:03:24,Darkchaos,es kommt aber ein syscall an
+2013-07-03 11:26:21,Darkchaos,"Ich glaube meinen Fehler zu haben, bin aber dabei auf einen Paging Bug gestoßen:"
+2013-07-03 11:27:58,Darkchaos,"Wenn eine neue PageTable angelegt wird, muss diese ja gemappt werden. Aber wie ohne freien Page-Eintrag?"
+2013-07-03 11:28:17,Darkchaos,"Außerdem sind ja die PageDirectory_einträge physische adressen, oder?"
+2013-07-03 11:28:42,Darkchaos,ja ist es (nachgesehen)
+2013-07-03 11:29:24,Darkchaos,"Also zurück: Wie möchte ich etwas in eine neue Pagetable eintragen, wenn ich sie, aufgrund von pagetable-mangel, nicht eintragen kann?"
+2013-07-03 11:37:08,kevin,Platz für alle Page Tables im aktiven PD freihalten
+2013-07-03 11:37:18,kevin,Mit selbstmappenden PDs kriegst du das automatisch
+2013-07-03 11:39:48,Darkchaos,selbstmappende PDs?
+2013-07-03 11:39:55,Darkchaos,Wenn das PD selbst als eine PT gemappt ist?
+2013-07-03 12:46:32,Darkchaos,"ok, nun wird gearbeitet :D kevin: Was muss ich alles bedenken, wenn ich von einem an xyz gemappten PD zu einem an PD[1023] gemappten PD wechsle?"
+2013-07-03 12:47:14,Darkchaos,"prinzipiell muss ich ja nur die virtuelle adresse ändern, muss ich aber dann auch alle funkionen umbauen, damit sie die Flags killen?"
+2013-07-03 12:50:19,iksnagreb,moin
+2013-07-03 12:50:28,Darkchaos,Hi :)
+2013-07-03 13:21:00,Darkchaos,"iksnagreb: Hast du Erfahrung damit, ein PD als letzte PT zu mappen?"
+2013-07-03 13:21:42,iksnagreb,"nein, leider nicht, ich hab mit paging noch ziemlich große Probleme"
+2013-07-03 13:22:59,Darkchaos,"Ich auch, bzw. ich war gerade fertig und habe festgestellt, dass ich bei überschreiten der 4MB-Schwelle ein Problem habe^^"
+2013-07-03 13:23:15,Darkchaos,Ich würde ja am liebsten mal alle highlighten :D
+2013-07-03 13:25:43,kevin,"Darkchaos: Wenn du in pd[1023] die phyische Adresse des PD einträgst, dann hast du einfach nur alle Page Tables dieses PDs am Stück gemappt"
+2013-07-03 13:25:52,kevin,"Darkchaos: Ich weiß nicht, was du da noch mit Flags machen willst?"
+2013-07-03 13:25:57,Darkchaos,"kevin, Antoine: Wenn ich die PD als eine Table mappe, dann ist die Page-Table sobald ich sie PRESENT setze auch gemappt, sie wird ja als Page interpretiert. Gibt es da kein Problem, da eine Page normalerweiße keine Adresse hat?"
+2013-07-03 13:26:43,Darkchaos,"Naja, wenn ich das PD bearbeiten will, muss ich das Present-Flag von pd[1023] extrahieren, oder?"
+2013-07-03 13:26:46,kevin,"Öhm, wenn eine Page keine Adresse hat, was trägst du dann in deine PT ein?"
+2013-07-03 13:27:09,Darkchaos,"Nein. Aber die Page selbst, hat keine Adresse auf die sie deutet, eine PT die als Page angesehen wird schon"
+2013-07-03 13:28:04,kevin,"Jo, aber die wird dann ja nicht mehr weiter interpretiert"
+2013-07-03 13:28:11,kevin,Das sind einfach Daten
+2013-07-03 13:28:16,Darkchaos,Das ist das worauf ich hinaus wollte :)
+2013-07-03 13:28:20,kevin,"Die du verändern kannst, wenn du irgendwas ummappen willst"
+2013-07-03 13:28:28,kevin,"Das ist der CPU doch egal, was für Daten :-)"
+2013-07-03 13:29:09,Darkchaos,Also muss ich im Endeffekt einfach die virtuelle Adresse zu &pd[1023] ändern?
+2013-07-03 13:29:26,Darkchaos,bzw eigentlich &(pd[1023] & PD_KILLALLFLAGS)
+2013-07-03 13:30:30,kevin,Welche virtuelle Adresse?
+2013-07-03 13:31:04,Darkchaos,memory->virtual_pagedir Wird benutzt um auf das PD zuzugreifen
+2013-07-03 13:31:21,Darkchaos,"wobei halt, das wäre ja schon pd"
+2013-07-03 13:31:37,Darkchaos,aber für pagetables muss ich dann in pd[1023] suchen statt in pd?
+2013-07-03 13:32:27,kevin,"Die virtuelle Adresse, die von pd[1023] beschrieben wird, ist nicht die physische Adresse, die in diesem Eintrag steht"
+2013-07-03 13:32:31,kevin,Sondern 1024 * 4 MB
+2013-07-03 13:32:34,kevin,*1023
+2013-07-03 13:33:17,kevin,An dieser Stelle wird die Page Table für die ersten 4 MB stehen
+2013-07-03 13:34:23,Darkchaos,für die letzten 4MB oder?
+2013-07-03 13:34:37,Darkchaos,"d.h. auf gut deutsch aber auch, dass die letzten 4MB nie addressiert werden dürfen"
+2013-07-03 13:35:18,Darkchaos,und ich statt page = pd[dir_index][table_index]; page = pd[1023][dir_index][table_index]; ?
+2013-07-03 13:53:12,kevin,"Hä? Wieso ""nie adressiert werden dürfen""?"
+2013-07-03 13:53:31,kevin,"Du adressierst sie genau dann, wenn du ihren Inhalt (also die Page Tables) zugreifen willst"
+2013-07-03 13:53:38,kevin,Wie bei jeder anderen Page auch
+2013-07-03 13:54:19,kevin,"pd[dir_index][table_index] ist fundamental kaputt, weil pd[dir_index] eine physische Adresse mit Flags ist, keine virtuelle Adresse"
+2013-07-03 13:55:25,Darkchaos,"Wenn in den letzten 4 MB die PageTables selbst liegen, kann ich ja die letzten 4MB nicht regulär mappen? bzw sie sind durch Page_Tables belegt"
+2013-07-03 13:56:07,Darkchaos,Wie komme ich dann auf die virtuellen adressen? Also abgesehen von den Flags.
+2013-07-03 14:48:39,Darkchaos_,Und wie kann ich nochmal einen Cast von void* zu uint32_t realisieren? (weil ich mit void* nicht rechnen darf)
+2013-07-03 14:48:52,Darkchaos_,"ich weiß da gibt es probleme, weil die größe von void nicht definiert ist etc."
+2013-07-03 14:53:16,kevin,(uint32_t) foo?
+2013-07-03 15:09:07,mgottschlag,s/uint32_t/uintptr_t/g
+2013-07-03 15:10:29,kevin,Das eh
+2013-07-03 15:13:52,mgottschlag,"Darkchaos: außerdem, mit char* kann man recht gut rechnen"
+2013-07-03 15:16:26,kevin,Mit uint8_t* auch
+2013-07-03 15:18:09,mgottschlag,"hm, wie machen das denn Architekturen, wo ein Byte 7bit ist, mit C99-Kompatibilität? :D"
+2013-07-03 15:18:28,mgottschlag,s/machen/würden machen/ oder so
+2013-07-03 15:23:47,kevin,"Du meinst, wie die ein uint8_t hinkriegen?"
+2013-07-03 15:24:14,kevin,Vermutlich mit langsamer Softwareemulation oder so
+2013-07-03 15:24:34,kevin,"14 Bit nehmen und dafür sorgen, dass die oberen Bits immer 0 bleiben vielleicht?"
+2013-07-03 15:25:31,kevin,"Oh, cool, intN_t ist auf jeden Fall Zweierkomplement?"
+2013-07-03 15:26:02,kevin,Muss ich mir für die nächste Sinnlosdiskussion mit mroman merken
+2013-07-03 16:27:16,Darkchaos,"(uint32_t) foo klappt aufjedenfall nicht,"
+2013-07-03 16:29:15,mgottschlag,"""klappt nicht"". schade."
+2013-07-03 16:30:57,Darkchaos_,ungültige Umwandlung von »void*« in »uint32_t {aka unsigned int}« [-fpermissive]
+2013-07-03 16:32:00,Darkchaos_,"vmm_unmap_page(mem, (void*)((uintptr_t)mem_addr + (i * PAGE_SIZE)));"
+2013-07-03 16:32:06,Darkchaos_,mem_addr = void*
+2013-07-03 16:32:18,Darkchaos_,und ich möchte eigentlich nur die Adresse erhöhen ^
+2013-07-03 16:33:42,mgottschlag,"huh, ist das x86 oder amd64? o.O"
+2013-07-03 16:33:55,mgottschlag,"ich hätte erwartet, dass das mit x86 gheht"
+2013-07-03 16:34:07,Darkchaos_,sollte x86 sein^
+2013-07-03 16:34:11,mgottschlag,und (char*)mem_addr + (i * PAGE_SIZE) ist auch kürzer
+2013-07-03 16:34:19,mgottschlag,und wenn man die Klammern weglässt...
+2013-07-03 16:37:19,Darkchaos_,War mein Fehler. unmap_page möchte uint32_t statt void*
+2013-07-03 16:38:49,mgottschlag,"oh, stimmt, der Fehler war ja andersrum"
+2013-07-03 18:34:38,Darkchaos_,"ok, ich beginne nun mit der mutigen Transplantation :D"
+2013-07-03 18:36:36,Darkchaos_,#define PAGING_SELFMAP 1023 << 22 // 4GiB - 4MiB
+2013-07-03 18:36:38,Darkchaos_,soweit richtig? 
+2013-07-03 18:40:42,mgottschlag,#defines immer klammern.
+2013-07-03 18:42:01,Darkchaos_,"Dann kann ich allerdings keine Kernel-Kontexte mehr hin und herschieben, wenn ich alle an virtuell PAGING_SELFMAP schiebe, oder? (Ich meine die Kernel_PDs aktuell zu halten)"
+2013-07-03 18:42:25,Darkchaos_,"Wobei ich ja jedes PD wo anders hinschieben kann, wichtig ist nur, dass das PD in sich selbst gemappt ist"
+2013-07-03 18:43:48,mgottschlag,hä? :)
+2013-07-03 18:44:26,Darkchaos,Ich habe ja verschiedene cr3-kontexte. Alle sollten die gleichen Mappings des Kernels haben
+2013-07-03 18:45:08,Darkchaos,Die PDs waren früher alle im Kernel gemappt an belibige Stellen. Daher konnte der Kernel einfach mit memcpy das übernehmen
+2013-07-03 18:45:36,Darkchaos,"Wenn nun aber alle PDs an PAGING_SELFMAP sind, dann kann ich sie nicht mehr in den Kernelcontext mappen"
+2013-07-03 18:46:18,Darkchaos,"demnach müsste ich zum kopieren eine art byte temp[4096]; im kernel einrichten, um dann von context1 -> temp -> cr3 wechsel -> context2 zu kommen"
+2013-07-03 18:48:05,mgottschlag,oder die directories nochmal separat in den Kernel-Bereich mappen
+2013-07-03 18:48:41,Darkchaos,"Ich habe allerdings gehört, dass der kernel-context eigentlich später entfernt werden sollte"
+2013-07-03 18:49:00,Darkchaos,Da ja der kernel in jedem Prozess liegt
+2013-07-03 18:49:11,Darkchaos,"dagegen spricht, dass die Synchronisation einfacher wird, wenn es ihn noch gibt"
+2013-07-03 18:52:16,Darkchaos,"Naja dann fange ich mal an. Never break a running system, aber egal :D"
+2013-07-03 18:52:23,Darkchaos,nach 3 Jahren verzweifeltem Paging :D
+2013-07-03 18:53:17,mroman,Du Anti-Anarchist.
+2013-07-03 18:53:36,Darkchaos_,oder verzweifelter :D
+2013-07-03 18:54:17,mroman,Informatikermotto
+2013-07-03 18:54:31,mroman,"""Always break a running system so you can fix it again."""
+2013-07-03 18:54:49,mroman,"""Nothing broken, no job, no money"""
+2013-07-03 18:58:27,Darkchaos_,:D Aber bei einem Hobby-OS? :D
+2013-07-03 18:58:35,mgottschlag,Kernel-Bereich != Kernel-Kontext
+2013-07-03 18:58:53,mgottschlag,"der Kernel-Bereich ist in der Tat in jedem Kontext, du hast dann halt alle Directories in jeden Kontext gemappt"
+2013-07-03 18:59:53,Darkchaos_,"In dem Falle mappe ich das PD des Kernel-Kontext (das ist das, welches bearbeitet wird) einfach in den Kernel-Bereich, an eine andere Adresse"
+2013-07-03 19:00:04,Darkchaos_,"daher kann dann jeder Prozess, da er den Kernel mapped, darauf zugreifen."
+2013-07-03 19:01:28,Darkchaos,"Ein PD an sich ist ja nur 4096 Byte groß, da es 1024 32-bit Integer (Page-Table-Referenzen) hat"
+2013-07-03 19:13:04,Darkchaos,mgottschlag: sizeof(PD) = 4096?
+2013-07-03 19:13:40,Darkchaos,"und das mit dem an virtuell PAGING_SELFMAP ist ja nur optional, ich kann es ja nochmal seperat mappen"
+2013-07-03 19:14:59,Darkchaos,"Wozu mappt man das PD überhaupt nach 4GiB, nur aus ästhetischen Gründen? Oder weil der Speicher eh durch das PD belegt ist?"
+2013-07-03 19:15:15,mroman,bei 64bit?
+2013-07-03 19:15:24,Darkchaos,32bit natürlich^^
+2013-07-03 19:16:12,Darkchaos,"bzw mappt man überhaupt nach 4GiB - 4MiB oder ergibt sich das, durch das Einhängen der Pagetable?"
+2013-07-03 19:16:52,mgottschlag,"das kannst du machen, wie du willst, an jede 4MB-Grenze"
+2013-07-03 19:17:02,mroman,Muss das PD nicht im physischen Speicher sein?
+2013-07-03 19:17:09,mroman,oder ist CR3 (?) eine virtuelle Adresse?
+2013-07-03 19:17:30,mgottschlag,"CR3 ist physisch, aber das heißt ja nicht, dass man es nicht auch mappen kann :)"
+2013-07-03 19:17:37,XanClic,"Ich persönlich mapp das PD ja überall hin, wo es mir gerade passt"
+2013-07-03 19:17:58,mgottschlag,Ich persönlich habe ja schon länger kein PD mehr gemappt.
+2013-07-03 19:18:19,XanClic,"Ich zitiere: „context->arch.pd = kernel_map(context->arch.cr3, 4096);“"
+2013-07-03 19:48:28,PascalJ,Hallo
+2013-07-03 20:40:09,Darkchaos,Muss es physisch auch eine 4MB-Grenze haben? da reicht doch eine Page oder? Da ja alles verlinkt wird
+2013-07-03 21:05:25,iksnagreb,guten abend
+2013-07-03 23:40:19,DerHartmut,Nabend

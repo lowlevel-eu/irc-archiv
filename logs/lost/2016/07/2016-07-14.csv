@@ -1,0 +1,114 @@
+date/time,nick,message
+2016-07-14 00:06:08,Quantenmagier,"ok ich hab jetzt doch ne eigene routine geschrieben für die debug ausgabe statt dem selbstmodifizierendem code, jetzt hab ich zwar knapp 250 Bytes mehr Kernelcode, aber dafür eine mögliche Fehlerquelle weniger. ^^"
+2016-07-14 00:24:34,Quantenmagier,"so die fehlerbehandlung funktioniert jetzt wieder so lange man nicht die veralteten schriftzeichen einschaltet, villeicht sollte ich die mal komplett aus dem code löschen, zu viel abwärtskompatibilität ist auch nicht gut. ^^"
+2016-07-14 01:13:59,Quantenmagier,hm seltsam er schmeißt mir bei der adresse des jump befehls nen gpf: zeile1: hlt zeile2: jmp zeile1
+2016-07-14 01:14:20,Quantenmagier,ich werd doch wohl ne zeile zurückspringen dürfen.. o.O
+2016-07-14 01:20:56,Quantenmagier,"ah ok ich sehe gerade der gpf tritt beim aufrufen des nulltasks auf, hat also nichts mit dem sprungbefehl zu tun sindern der sprung in dne sprungbefehl lößt den gpf aus, schienbar weigert sich der prozessorkern den task auszuführen, seltsam"
+2016-07-14 01:47:02,Quantenmagier,"ah fehlercode 17b dh der fehler hat irgendwas mit der IDT zu tun, das würde auch sinn machen, weil tastertur und maus ein wenig spinnen wenn smp aktiviert ist"
+2016-07-14 01:56:54,Quantenmagier,"hm seltsam idt deskriptor 0x178 existiert garnicht, frag mich warum der den versucht aufzurufen, das kann ja nur nen gpf geben"
+2016-07-14 02:04:05,Quantenmagier,"ok 178 ist scheinbar wie ich das verstehe irq14, aber verstehe nicht warum der den auf einmal aufrufen will, ohne smp benutzt er den ja auch nicht.. vllt hängt das aich mit diesen lAPIC rundruf/wech sachen zusammen die man nur bei smp braucht..."
+2016-07-14 02:04:22,Quantenmagier,*weck
+2016-07-14 09:36:49,MasterQ32,moin
+2016-07-14 10:27:21,Quantenmagier,moin
+2016-07-14 10:27:47,MasterQ32,huhu
+2016-07-14 10:28:03,MasterQ32,"was war das denn, du und kevin übt euch im synchronjoinen?"
+2016-07-14 10:29:43,Quantenmagier,wer ich?
+2016-07-14 10:30:16,MasterQ32,ja
+2016-07-14 10:30:28,MasterQ32,"ne, vergiss es :D"
+2016-07-14 10:30:43,Quantenmagier,xD
+2016-07-14 10:31:27,Quantenmagier,ich würd mich niemals mit dem großen allmächtigen chan op messen ;)
+2016-07-14 10:34:29,Quantenmagier,"aber daß ich im smp modus nen gp durch nen irq14 bekomme ist seltsam, wenns wenigstens irq15 wär dann könnte es der spuriose interruptor sein, aber irq14 macht irgendwie garkeinen sinn.."
+2016-07-14 10:35:57,kevin,"14 war IDE, oder?"
+2016-07-14 10:36:43,Quantenmagier,jop
+2016-07-14 10:36:46,kevin,"Hm, und ist es wirklich IRQ 14 oder Interrupt 14?"
+2016-07-14 10:37:29,Quantenmagier,"nee irq 14, hab die irqs direkt nach den exceptions liegen also bei interrupt descriptor 0x178 zeigt er den gpf"
+2016-07-14 10:38:47,Quantenmagier,und die maus also irq 12 liegt bei 0x168 also muß logischerweise irq14 bei 0x178 liegen
+2016-07-14 10:42:25,Quantenmagier,"und irgendwie macht irq14 halt garkeinen sinn da ich zu dem zeitpunkt wo er auftritt garnicht auf ide zugreife, selbst wenn ich vergessen hätte den zu maskieren dürfte er also nicht auftreten aus meiner sicht?"
+2016-07-14 12:07:19,Quantenmagier,"hm um so höher die anzahl der kerne ist desto früher tritt dieser irq14 auf und ich hab auch das gefühl, wenn ich die lAPIC auf den AP deaktiviere dauert es etwas länger"
+2016-07-14 12:08:34,Quantenmagier,"ich glaub ich versuch einfach mal ne interruptroutine die nen reines iret und eventuell eoi macht für irq14 einzutragen, mal schaun ob ich dann immernoch nen gpf bekomme"
+2016-07-14 12:18:05,Quantenmagier,"faszinierend, jetzt bekomme ich neben 178 noch 7f8 gibt es so nen hohen interruptvektor überhaupt? o.O"
+2016-07-14 12:22:10,Quantenmagier,"wow und ich glaub ich hab grad nen bug in htview gefunden, normalerweise kann ich die addresse eingeben wo ich hinspringen will z.B. 0xef6-0x500 und das geht auch, aber wenn ich 0xecb-0x500 eingebe macht er irgendnen unsinn und springt sonstwo hin.. o.O"
+2016-07-14 12:24:27,Quantenmagier,*hteditor meine ich http://hte.sourceforge.net/
+2016-07-14 12:25:36,Quantenmagier,"aber seh grad ich verwende nicht die aktuellste version, ich werd den mal updaten und gucken ob er den fehler dann noch hat"
+2016-07-14 12:38:46,Quantenmagier,ok der fehler scheint in der aktuellen version immernoch drin zu sein
+2016-07-14 13:12:45,Quantenmagier,hm ich hab mal den dummy irq14 angelegt der einfach nur returned und die lAPIC auf den AP ausgeschlatet und jetzt tritt auf einmal kein Fehler mehr auf und das obwohl der dummy irq14 nicht mal aufgerufen wird.. o.O
+2016-07-14 13:20:49,Quantenmagier,ahh moment
+2016-07-14 13:21:53,Quantenmagier,"hab grad rausgefunden, daß er doch irq15 ausführt und nicht irq14, dann ist das vermutlich doch ein Spurious Interrupt der die Probleme macht.."
+2016-07-14 13:22:40,Quantenmagier,"is nur seltsam weil er als fehlercode 178 zurückgibt und nicht 180 und irq 15 is eigentlich 180, bzw er führt 180 aus.. o.O"
+2016-07-14 13:25:02,Quantenmagier,also er führt jetzt mehrmal irq15 aus und dann bekomme ich ein gpf durch interruptvektor 7f8 wo immer der her kommt.. o.O
+2016-07-14 13:25:59,Quantenmagier,die scheinen aber unabhängig voneinander zu sein manchmal bekomme ich direkt 7f8 ohne irq15 davor
+2016-07-14 13:27:05,Quantenmagier,"wie kann es überhaupt sein, daß ich spurious interrupts bekomme, in welchen fällen sendet qemu die? er kann ja als simulator keine probleme mit einer interruptleitung haben.."
+2016-07-14 13:39:43,Quantenmagier,"immerhin weiß ich jetzt warum er interrupt vektor 178 anzeigt wenn der an stelle 180 liegt, in adresse 180 sind 8 bytes enthalten zum laden der idt die nicht zu den vektoren gehören, hatte vergessen die abzuziehen."
+2016-07-14 13:43:29,kevin,"Wenn ein Interrupt reproduzierbar kommt, dann ist er garantiert nicht spurious ;-)"
+2016-07-14 13:43:43,kevin,Und im Emulator eh nicht
+2016-07-14 13:46:03,Quantenmagier,"aber irq15 ist ja nur für ide und spi, und ide sprech ich in den moment nicht an, also kann es eigentlich nur spi sein, hab mal gelesen daß spi auch kommen wenn man zu früh ein eoi sendet oder so, vielleicht hängt es damit irgendwie zusammen?"
+2016-07-14 13:48:30,Quantenmagier,"und 7f8 ist int 255 hab ich gerade nachgerechnet, hat int 255 irgendeine spezielle funktion oder wie kann es sein daß der aufgerufen wird?"
+2016-07-14 13:50:07,kevin,"Hast du schonmal geschaut, ob -d int auch das mitloggt was du glaubst zu sehen?"
+2016-07-14 13:50:43,Quantenmagier,"nope, klingt nach ner interessanten option, werd ich mal ausprobieren"
+2016-07-14 13:52:23,Quantenmagier,hm wo loggt der das denn mit? im terminal seh ich nix und er müßte ja zumindest die tasterturinterrupts anzeigen?
+2016-07-14 13:54:33,Quantenmagier,-d int geht irgendwie nicht
+2016-07-14 14:01:55,Quantenmagier,"ich hab mal auch nen dummy für int 255 angelegt jetzt läuft smp stabil es schmeißt halt nur ab und an die beiden interrupts: 15,255,255,255,255,15,15,255,"
+2016-07-14 14:02:09,Quantenmagier,also irq15 und int255
+2016-07-14 14:08:00,kevin,Benutzt du KVM?
+2016-07-14 14:09:02,Quantenmagier,jop
+2016-07-14 14:09:18,Quantenmagier,wieso?
+2016-07-14 14:09:50,kevin,Weil dann -d int nicht tut ;-)
+2016-07-14 14:09:58,kevin,Lass mal das -enable-kvm weg dafür
+2016-07-14 14:09:58,Quantenmagier,ah das erklärts ^^
+2016-07-14 14:10:01,Quantenmagier,ok
+2016-07-14 14:10:27,Quantenmagier,und ich hab grad rausgefunden wenn ich die maus deaktiviere tritt irq15 nicht mehr auf int 255 aber trotzdem noch
+2016-07-14 14:11:47,Quantenmagier,"ok jetzt scheint -d int zu gehen aber ganz schönes durcheinander dank dem timer interrupt erkenn ich nix, kann man sagen daß er irq0 nicht mit loggen soll?"
+2016-07-14 14:15:06,kevin,"Ne, aber du kannst in eine Datei loggen"
+2016-07-14 14:15:18,kevin,-D /tmp/qemu-log oder sowas
+2016-07-14 14:16:28,Quantenmagier,"hm ohne kvm treten die beiden interrupts aber eh nicht mehr auf, dann bringt auch das loggen nichts"
+2016-07-14 14:16:53,Quantenmagier,vllt liegt das auch daran daß es ohne kvm nur in zeitlupe läuft und deswegen keine raceconditions mehr auftreten
+2016-07-14 14:18:32,kevin,Problem gefixt *g*
+2016-07-14 14:18:36,Quantenmagier,lol
+2016-07-14 14:19:54,kevin,"Hm, ich versteh den tyndur-Code nicht. Der erlaubt Interrupt 255 für Ring 3, aber tut dann nichts damit."
+2016-07-14 14:20:08,Quantenmagier,joa int 255 schient
+2016-07-14 14:20:14,Quantenmagier,schieint irgendwas sletsames zu sein ^^
+2016-07-14 14:22:42,Quantenmagier,hm seltsam mein tasterturtreiber spinnt wenn ich smp und maus an hab aber paging aus.
+2016-07-14 14:24:30,Quantenmagier,hm is dieser int 255 vllt irgendnen feature vom lAPIC? weil der tritt nur auf wenn ich smp einschalte
+2016-07-14 14:26:06,Quantenmagier,"und irq15 tritt ja nur auf wenn ich maus und smp an hab, ich vermute der verpasst irgendwelche bytes von der maus wenn ich mehrere prozessoren nutze und lößt deswegen nen spurious interrupt aus, irgendsowas."
+2016-07-14 14:37:40,Quantenmagier,"naja immerhin läuft es jetzt mit den dummy interrupt handlern größtenteils stabil, dann werd ich mal seiltanz aktivieren und gucken ob das taskbalancing zwischen den kernen noch funktioniert.."
+2016-07-14 14:42:22,Quantenmagier,"ohn interessante fehlermeldung, mein os is unter die satanisten gegangen wie es aussieht.. xD"
+2016-07-14 14:42:23,Quantenmagier,"15,15,15,255;255;255;255;DG6666666666666666666666!V6.!VVGG666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666255;"
+2016-07-14 14:51:09,Quantenmagier,"hm eventuell sollte ich in die exception hanlder nen mutex einbauen, die verschiednen kerne schienen sich da in die quere gekommen zu sein, D G 6 V gibt es nämlich nicht das könnte Dbl! GP! 6! und V. meinen..."
+2016-07-14 17:03:53,Quantenmagier,"ach hi XanClic, hab grad deinen namen in meinem code wiedergefunden :D"
+2016-07-14 17:04:04,Quantenmagier,push 8   ;von XanClic empfohlen
+2016-07-14 17:04:46,XanClic,Klingt fast nach PrettyOS-Code
+2016-07-14 17:06:05,Quantenmagier,hm das kenne ich nicht wirklich aber geht um http://www.lowlevel.eu/wiki/SurO
+2016-07-14 17:06:44,XanClic,"dann will ich gar nicht wissen, wie das passiert ist"
+2016-07-14 17:06:50,Quantenmagier,"das war in ner routine zum erstellen von fenstern, da hatte ich irgendwas mit mov ds,ax oder so gemacht und vorher ax auf 8  gesetzt und du meintest dann ich soll einfach die 8 pushen und mit ds popen :D"
+2016-07-14 17:07:44,XanClic,"Zumindest braucht das ein Byte weniger Platz, schneller ist es vermutlich eher nicht"
+2016-07-14 17:08:18,Quantenmagier,hm jein ist es doch weil ich ax dafür im stack sichern mußte :D
+2016-07-14 17:21:54,Quantenmagier,tze der sagt immer division durch 0 dabei sagt mein printf debug der divisor dword[edx+0x10] sei 0x300 .. div dword[edx+10h]
+2016-07-14 17:23:07,Quantenmagier,"so moment, ich glaub ich muß edx auf null setzen.."
+2016-07-14 17:25:16,Quantenmagier,"ok jetzt ist die division durch 0 weg auch wenn es unlogisch ist, daß er ne division durch null schmeißt, wenn ich edx:eax duch [edx+0x10] teile, scheinbar verändert der den wert von edx bevor er die adresse ausließt.. o.O"
+2016-07-14 17:32:39,XanClic,"Die Exception heißt offiziell nicht Division by Zero, sondern Divide Error"
+2016-07-14 17:33:05,XanClic,Und die Beschreibung im Manual ist:
+2016-07-14 17:33:11,XanClic,> Indicates the divisor operand for a DIV or IDIV instruction is 0 or that the result cannot be represented in the number of bits specified for the destination operand.
+2016-07-14 17:36:44,Quantenmagier,"ah ok danke, dann war es vermutlich der zweite fehler"
+2016-07-14 17:50:13,Quantenmagier,"ach damn ich idiot such die ganze zeit im code waurm diese zeichenroutine nicht richtig geht, dabie hab ich nur x und y vertauscht.. xD"
+2016-07-14 18:07:08,Quantenmagier,push eax; push ebx;
+2016-07-14 18:07:29,Quantenmagier,"wenn ich jetzt eax haben will muss ich dann mov eax,[ebp+4] machen?"
+2016-07-14 18:07:48,kevin,"esp, nicht ebp"
+2016-07-14 18:07:51,Quantenmagier,öhm esp meine ich
+2016-07-14 18:07:59,Quantenmagier,sry aber es ist plus und nicht minus?
+2016-07-14 18:08:01,kevin,Aber Adressierung über ebp ist natürlich schöner
+2016-07-14 18:08:09,kevin,"Ja, plus. Der Stack wächst nach unten"
+2016-07-14 18:08:14,Quantenmagier,ok
+2016-07-14 18:09:01,Quantenmagier,ist der mov befehl wesentlich langsamer als ein gewöhnlicher pop befehjl weiß das zufällig jemand?
+2016-07-14 18:16:16,kevin,Warum sollte er?
+2016-07-14 18:16:42,Quantenmagier,naja dachte daß push pop befehle optimiert sind
+2016-07-14 18:17:27,Quantenmagier,"und jetzt gerade habe ich die wahl zwischen mov ebx,eax; add esp,4; und pop ebx; nimmt sich das wohl was?"
+2016-07-14 18:22:31,Quantenmagier,"ach hab jetzt pop ebx genommen, ist nur ein befehl statt zweien, denke das ist dann zumindest besser für den cache"
+2016-07-14 18:26:26,kevin,Ein Speicherzugriff ist normal langsamer als kein Speicherzugriff
+2016-07-14 18:29:44,Quantenmagier,auch wenn kein speicherzugriff ein befehl mehr ist und der speicherzugriff nur ein pop ist?
+2016-07-14 18:44:00,Quantenmagier,"oh ich hab eine bound range exception, das ist neu ^^"
+2016-07-14 18:45:06,Quantenmagier,"ich hab die bound instruktion nie benutzt, seltsam, vllt interpretier ich die fehlerausgabe auch einfach falsch"
+2016-07-14 18:45:38,Quantenmagier,aso jo es war doch nur nen divide error ^^
+2016-07-14 18:45:49,Quantenmagier,wie lame
+2016-07-14 19:22:00,Quantenmagier,so divide error mit ne assert abgefangen und irgendwann muß ich mal gucken wo der herkommt. ^^
+2016-07-14 20:09:20,Quantenmagier,ah der divide error kam von ner debug-printf-routine aus dem maustreiber :D
+2016-07-14 20:25:42,Quantenmagier,man sieht sich. ^^

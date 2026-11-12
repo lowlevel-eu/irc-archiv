@@ -1,0 +1,375 @@
+date/time,nick,message
+2010-03-14 00:00:58,Jarvix,a cpu_state can be done per cpu right
+2010-03-14 00:01:07,Jarvix,so u could simply add support? or am i reading wrong?
+2010-03-14 00:01:24,Jarvix,JamesM calls it registers_t ?
+2010-03-14 00:01:27,XanClic,I doubt that's intended
+2010-03-14 00:02:16,XanClic,I have simple SMP support and I don't use any structure to describe the CPUs for now
+2010-03-14 00:02:17,taljeth2,"I have never done SMP, but I guess the scheduling works more or less the same"
+2010-03-14 00:02:39,Jarvix,i dunno exactly how to do SMP
+2010-03-14 00:02:41,XanClic,"There is just a point which contains the ""ID"" of the current CPU"
+2010-03-14 00:02:46,taljeth2,"Or task switching, not scheduling"
+2010-03-14 00:02:54,XanClic,This is at [esp & 0xFFFFE000]
+2010-03-14 00:03:06,Jarvix,:S
+2010-03-14 00:03:10,XanClic,At least in kernel space
+2010-03-14 00:03:14,Jarvix,dont get it :P
+2010-03-14 00:03:15,XanClic,"Yeah, I took that trick from Linux ;-)"
+2010-03-14 00:03:45,taljeth2,"Hm, they use a page for per-CPU things?"
+2010-03-14 00:03:50,Jarvix,"u store the cpu number in the task struct, so wheere it is located (the task) ?"
+2010-03-14 00:03:55,taljeth2,I had in mind it used segmentation
+2010-03-14 00:04:04,XanClic,"taljeth2: No, they use 8 kB for the kernel stack"
+2010-03-14 00:04:24,XanClic,And the lower 60 Byte (or similar) are used for task specific stuff
+2010-03-14 00:05:11,XanClic,Jarvix: Every thread has its own kernel stack
+2010-03-14 00:05:30,Jarvix,"thrread, or task?"
+2010-03-14 00:05:34,XanClic,"And when a CPU fetches a new thread, it writes its own ID into the stack"
+2010-03-14 00:05:36,XanClic,thread
+2010-03-14 00:05:40,Jarvix,k
+2010-03-14 00:06:06,XanClic,"Well, wait, it writes the thread pointer there *g*"
+2010-03-14 00:06:11,Jarvix,do u make those stacks in kmalloc?
+2010-03-14 00:06:24,Jarvix,or some other way?
+2010-03-14 00:06:39,XanClic,"Hrm, let me take a look..."
+2010-03-14 00:06:43,Jarvix,:P
+2010-03-14 00:07:19,XanClic,"No, I have a special function for that, called alloc_aligned_area"
+2010-03-14 00:07:34,XanClic,"But that's bad, I see right now *g*"
+2010-03-14 00:07:39,Jarvix,i see\wich mapes phys with virt in an area in kernel space?
+2010-03-14 00:07:43,XanClic,"Wait, my whole concept is crap xD"
+2010-03-14 00:07:43,Jarvix,:P:P:P
+2010-03-14 00:07:47,Jarvix,xD
+2010-03-14 00:07:53,XanClic,Because alloc_aligned_area allocates physically aligned
+2010-03-14 00:08:00,XanClic,But my mapping function doesn't _map_ aligned
+2010-03-14 00:08:08,Jarvix,He just dicovers his whole os is crap xD
+2010-03-14 00:08:15,XanClic,"Well, it worked until now *g*"
+2010-03-14 00:08:16,Jarvix,ah lol
+2010-03-14 00:08:24,Jarvix,why ultil now?
+2010-03-14 00:08:31,Jarvix,u screwed it?
+2010-03-14 00:08:33,XanClic,It still works ;-)
+2010-03-14 00:08:37,Jarvix,hi pc
+2010-03-14 00:08:44,XanClic,But I noticed the fault right now
+2010-03-14 00:08:45,Jarvix,ah k
+2010-03-14 00:14:17,taljeth2,Jarvix: Wil je geen duits meer lezen? ;-)
+2010-03-14 00:14:33,Jarvix,nah
+2010-03-14 00:14:36,Jarvix,ik las het toch niet meer
+2010-03-14 00:14:46,Jarvix,klikte eraleen ff op om gele balletje weg te krijgen
+2010-03-14 00:14:55,Jarvix,ben jij nederlands ofzo? Dat je t zo goed kan :P
+2010-03-14 00:15:09,taljeth2,Is het goed?
+2010-03-14 00:15:23,Jarvix,jups
+2010-03-14 00:15:30,Jarvix,ccorrect nederlands :)
+2010-03-14 00:15:51,taljeth2,Schrijven is niet zo makkelijk voor mij
+2010-03-14 00:16:12,Jarvix,"is een goede zin, alleen zou een nederlander het nooi zo zeggen"
+2010-03-14 00:16:15,taljeth2,Lezen gaat beter
+2010-03-14 00:16:26,Jarvix,Voor mij is schrijven moeilijk
+2010-03-14 00:16:27,Jarvix,of
+2010-03-14 00:16:38,Jarvix,ik vind schrijven niet makkelijk / moelijk
+2010-03-14 00:16:50,Jarvix,;)
+2010-03-14 00:17:54,taljeth2,"Niet schrijven algemeen, maar schrijven in nederslands ;-)"
+2010-03-14 00:18:03,Jarvix,weet ik
+2010-03-14 00:18:13,Jarvix,zet er 2 maal het tusen
+2010-03-14 00:18:34,Jarvix,"niet het schrijven in het algemeen, maar schrijven in nederlands"
+2010-03-14 00:18:36,Jarvix,:P
+2010-03-14 00:18:53,Jarvix,kan XanClic dit lezen?
+2010-03-14 00:19:07,XanClic,I think so
+2010-03-14 00:19:08,taljeth2,Ik denk hij kan
+2010-03-14 00:19:27,Jarvix,Ik denk dat hij het kan*
+2010-03-14 00:19:32,Jarvix,een ACI :P
+2010-03-14 00:19:50,taljeth2,That's the same mistake I always make with Dutch
+2010-03-14 00:19:56,Jarvix,:P
+2010-03-14 00:19:58,taljeth2,I try to mimic English instead of German :-/
+2010-03-14 00:20:20,XanClic,"""Ich denke, er kann es""."
+2010-03-14 00:20:24,XanClic,"Works in German, too ;-)"
+2010-03-14 00:20:40,taljeth2,"But it needs the ""es"" at least"
+2010-03-14 00:20:49,XanClic,"Hm, well, not necessarily"
+2010-03-14 00:21:00,XanClic,At least when speaking
+2010-03-14 00:21:10,taljeth2,Doch ;-)
+2010-03-14 00:21:15,XanClic,*g*
+2010-03-14 00:21:18,Jarvix,xD
+2010-03-14 00:21:25,XanClic,"I thought it's ""quok"", isn't it? ;-)"
+2010-03-14 00:21:45,Jarvix,thats the guy who is away all the time?
+2010-03-14 00:22:09,taljeth2,"quok_: See, I dare writing a language I'm not good at ;-)"
+2010-03-14 00:22:54,Jarvix," ? u talking to quok, but he never said a thing"
+2010-03-14 00:23:29,XanClic,Not today
+2010-03-14 00:23:44,XanClic,"taljeth2: Well, qemu seems to be _very_ broken"
+2010-03-14 00:23:53,XanClic,Or at least the OHCI part
+2010-03-14 00:23:56,taljeth2,Then... fix it? ;-)
+2010-03-14 00:24:03,XanClic,But how?
+2010-03-14 00:24:05,XanClic,mom
+2010-03-14 00:24:22,XanClic,http://pastebin.com/QxbvCnCM
+2010-03-14 00:24:27,XanClic,Segfaults in line 7
+2010-03-14 00:24:29,XanClic,Not earlier
+2010-03-14 00:24:37,XanClic,With -O0
+2010-03-14 00:24:46,XanClic,"Ah, wait"
+2010-03-14 00:24:48,XanClic,str >.<
+2010-03-14 00:24:52,XanClic,*facepalm*
+2010-03-14 00:25:35,taljeth2,Was soll mir der Paste sagen?
+2010-03-14 00:25:42,XanClic,"Hm, na ja"
+2010-03-14 00:25:52,XanClic,Also in Zeile 3 geht es auch mit %s
+2010-03-14 00:26:07,XanClic,"Er soll halt sagen, dass an sich alle Zugriffe gehen, das Gesamt-printf dann aber nicht mehr"
+2010-03-14 00:26:33,taljeth2,"Hm, was ist dprintf?"
+2010-03-14 00:26:42,XanClic,#define dprintf printf
+2010-03-14 00:26:47,taljeth2,Schade
+2010-03-14 00:27:04,Jarvix,"Schade, we call that: KUT"
+2010-03-14 00:27:27,Jarvix,"Xan, nice, when u wanna remove dprintf"
+2010-03-14 00:27:29,Jarvix,u just do
+2010-03-14 00:27:32,Jarvix,#define dprintf
+2010-03-14 00:27:52,XanClic,"It's dprintf(...), but in general that's true, yes ;-)"
+2010-03-14 00:29:25,Jarvix,"a thread structure conans all registers, and has its own kernelstack"
+2010-03-14 00:29:30,Jarvix,also its own userstack right?
+2010-03-14 00:29:35,Jarvix,but not own userheap
+2010-03-14 00:29:45,XanClic,Yes
+2010-03-14 00:29:45,Jarvix,correct?
+2010-03-14 00:29:49,Jarvix,cool
+2010-03-14 00:47:39,Jarvix,any update on the pretty-os-situation?
+2010-03-14 00:52:53,taljeth2,"I'm not following it very closely. If they manage to get it running everywhere, we'll notice soon enough."
+2010-03-14 00:54:37,Jarvix,lol @ my comments:     task->next = task; // Circular loop
+2010-03-14 00:54:49,Jarvix,"tal, i think ur right ;)"
+2010-03-14 00:55:02,Jarvix,circular loop is a bit double
+2010-03-14 00:55:36,taljeth2,Maybe you should concentrate on non-circular loops instead
+2010-03-14 01:18:41,Jarvix,:P
+2010-03-14 01:19:08,XanClic,Jarvix: Problem solved by implementing an aligning map function ;-)
+2010-03-14 01:19:35,taljeth2,Which problem?
+2010-03-14 01:19:46,XanClic,My kernel stack alignment
+2010-03-14 01:20:05,XanClic,"""esp & 0xFFFFE000"" works with 8k aligned stacks only, obviously"
+2010-03-14 01:20:16,XanClic,But I aligned the physical address instead of the virtual one ;-)
+2010-03-14 01:20:33,taljeth2,Clever.
+2010-03-14 01:35:08,Jarvix,lol
+2010-03-14 13:44:46,Jarvix,hi
+2010-03-14 13:45:24,XanClic,"moin, Jarvix"
+2010-03-14 13:45:38,Jarvix,How are uy today?
+2010-03-14 13:45:51,Jarvix,i am watching HarryPotter6 on ipod while programming the VM8086
+2010-03-14 13:46:23,XanClic,I'm reading comics on the internet because I don't know really what to do :-)
+2010-03-14 13:46:57,eddyb,XanClic: gone thru abstruse goose?
+2010-03-14 13:46:58,Jarvix,OHCI?
+2010-03-14 13:47:03,Jarvix,hi eddyb
+2010-03-14 13:47:09,eddyb,hi
+2010-03-14 13:47:23,Jarvix,currently i have #PF :(
+2010-03-14 13:47:40,eddyb,i was messing with fonts until i gave up and tried to refresh the vbe module...
+2010-03-14 13:47:44,XanClic,"eddyb: Nope, cyanide & happiness"
+2010-03-14 13:48:14,Jarvix,"cyanide, isnt that a posion?"
+2010-03-14 13:48:27,XanClic,I guess yes
+2010-03-14 13:48:29,Jarvix,poision
+2010-03-14 13:48:40,XanClic,Or at least there are poisonous cyanides
+2010-03-14 13:48:42,Jarvix,used in WII ?
+2010-03-14 13:49:02,eddyb,"i do recommend abstruse goose, if you are (too much of)a geek..."
+2010-03-14 13:49:12,eddyb,cyanide is a substance
+2010-03-14 13:49:12,Jarvix,xD
+2010-03-14 13:49:38,eddyb,containing N and C(nitrogen and carbon)
+2010-03-14 13:49:49,Jarvix,someone knows how the vm8086 exactly works? How to program it?
+2010-03-14 13:50:16,eddyb,http://www.wolframalpha.com/input/?i=cyanide
+2010-03-14 13:50:29,XanClic,"Well, you set the appropriate bit in the EFLAGS register and push some more registers on the stack before doing the iret"
+2010-03-14 13:50:34,taljeth,"Jarvix: Heh, you're working on VM86, too?"
+2010-03-14 13:50:41,Jarvix,yeh
+2010-03-14 13:50:46,Jarvix,to make the MT more completer
+2010-03-14 13:50:49,Jarvix,i set the bit yes
+2010-03-14 13:50:54,Jarvix,and i set osme pages
+2010-03-14 13:51:03,Jarvix,0x0 - 0x1000 to 0x0 - 0x1000 phsyical
+2010-03-14 13:51:12,XanClic,You're also pushing more than you'd normally do?
+2010-03-14 13:51:25,Jarvix,"i make  apage at 0x1000 and 0x2000, i set stack to 0x3000, and put code at 0x1000, also IP"
+2010-03-14 13:51:26,taljeth,"He's getting PF, not GPF, so probably yes"
+2010-03-14 13:51:29,XanClic,"i.e., ds, es, fs, gs"
+2010-03-14 13:51:33,Jarvix,"yes, pushing all segments too"
+2010-03-14 13:51:35,XanClic,"Ah, missed that *g*"
+2010-03-14 13:51:46,Jarvix,IRET says so :)
+2010-03-14 13:52:02,taljeth,Jarvix: So what is your cr2?
+2010-03-14 13:52:22,Jarvix,same as ESP :P
+2010-03-14 13:52:26,taljeth,"Fixing the VM86 page faults is easy... If it's ROM, just identity map it. If not, map something else there."
+2010-03-14 13:52:27,Jarvix,ESP = 0xf000xxxxx
+2010-03-14 13:52:29,Jarvix,soooo wrong
+2010-03-14 13:52:33,Jarvix,dunno how it becomes so
+2010-03-14 13:52:42,Jarvix,the switch seems right
+2010-03-14 13:53:09,Jarvix,"the PF happends in the ISR, after the c code"
+2010-03-14 13:53:37,Jarvix,"pop ebx = pop the old content of the segmenets (DS, ES, FS, GS)"
+2010-03-14 13:53:59,Jarvix,thats where it happends because stack is fucked
+2010-03-14 13:54:18,taljeth,"Ah, I see. I thought in BIOS code"
+2010-03-14 13:54:46,Jarvix,about the segments
+2010-03-14 13:54:58,Jarvix,do u set the segments of the vm task to not-0x00 ?
+2010-03-14 13:55:11,taljeth,It's RM segments
+2010-03-14 13:55:20,taljeth,So for cs certainly yes
+2010-03-14 13:55:23,Jarvix,"Real mode, and hwta may they be?"
+2010-03-14 13:55:49,taljeth,It's just the usual (seg * 16) + ofs address calculation
+2010-03-14 13:55:50,Jarvix,"atm,my cs is 0x8, if i set it 0, which should be, i get a triplle fault on #PF"
+2010-03-14 13:56:06,taljeth,0x8 is most probably wrong
+2010-03-14 13:56:29,taljeth,"Not sure what code you try to execute, I for one use VM86 for the BIOS interrupts"
+2010-03-14 13:56:39,taljeth,So it take both cs and ip from the IVT
+2010-03-14 13:57:00,taljeth,"For the video BIOS cs is c000, usually"
+2010-03-14 13:57:12,Jarvix,"unless i add a debug printf pritning old and new ESP in a taskswitch, then i get a pagefalt (no triple)"
+2010-03-14 13:57:28,Jarvix,org 1000h
+2010-03-14 13:57:28,Jarvix,bits 16 
+2010-03-14 13:57:28,Jarvix,main:
+2010-03-14 13:57:28,Jarvix,"       mov al, 01h"
+2010-03-14 13:57:28,Jarvix,        jmp $
+2010-03-14 13:57:32,Jarvix,is what i am exectuing :P
+2010-03-14 13:57:36,Jarvix,4 bytes
+2010-03-14 13:57:54,XanClic,I'd anyway recommend using the SMP trampoline code for that *g*
+2010-03-14 13:57:55,taljeth,Then you'll want to execute it at either 0001:0000 or 0000:1000
+2010-03-14 13:58:27,taljeth,"I guess your ip is 0x1000, then cs = 0 would be right"
+2010-03-14 13:58:35,Jarvix,0x0:0x1000 plz
+2010-03-14 13:58:36,XanClic,"taljeth: But there is no absolute jump, is there?"
+2010-03-14 13:58:41,Jarvix,yeh
+2010-03-14 13:58:53,Jarvix,offset jump
+2010-03-14 13:59:00,Jarvix,the binary is:
+2010-03-14 13:59:09,Jarvix,b001ebfe
+2010-03-14 14:00:05,Jarvix,all segments to zero?
+2010-03-14 14:00:17,XanClic,"So CS and IP should be ignored, if IP is below 0xFFFC, I guess"
+2010-03-14 14:00:24,XanClic,"And not in ROM, of course *g*"
+2010-03-14 14:00:37,Jarvix,"normally i update the segments myself too, for kernel and user tasks yes?"
+2010-03-14 14:00:42,Jarvix,So i do for vm86
+2010-03-14 14:01:03,Jarvix,"i set those to 0x10, is that wrong?"
+2010-03-14 14:02:41,Jarvix,the esp is just WRONG
+2010-03-14 14:03:13,taljeth,Your esp doesn't look like a VM86 one
+2010-03-14 14:03:21,taljeth,It should be 16 bit
+2010-03-14 14:04:25,Jarvix,the #PF is in kernel mode
+2010-03-14 14:04:59,taljeth,Then you need to know yourself what it should look like
+2010-03-14 14:05:03,Jarvix,"its at the isr handler (IRQ handler, timer interrupt for scheduelr)"
+2010-03-14 14:05:10,Jarvix,h yes
+2010-03-14 14:05:13,Jarvix,C0400xxxx
+2010-03-14 14:06:06,taljeth,Does it crash immediately at the start of the ISR then?
+2010-03-14 14:06:21,taljeth,Because usually an ISR does use the stack
+2010-03-14 14:13:44,Jarvix,not at the start
+2010-03-14 14:13:54,Jarvix,the first code after
+2010-03-14 14:13:55,Jarvix,"mov esp, eax"
+2010-03-14 14:13:59,Jarvix,so eax is fucked up
+2010-03-14 14:14:08,taljeth,Where do you get that eax from?
+2010-03-14 14:17:03,Jarvix,return of the call
+2010-03-14 14:21:53,Jarvix,wtf
+2010-03-14 14:22:06,Jarvix,#PF at DS: 0xFF53F010 xD
+2010-03-14 14:22:23,eddyb,"okey, he's my cousin or what?"
+2010-03-14 14:22:37,Jarvix,??
+2010-03-14 14:22:41,eddyb,i was thinking the debugging monologue is copyrighted?
+2010-03-14 14:22:53,Jarvix,lol
+2010-03-14 14:23:18,taljeth,eddyb: Looks like this is what Romanian copyright is worth ;-)
+2010-03-14 14:23:39,eddyb,rofl
+2010-03-14 14:25:01,eddyb,"seriously, i still understand copyright as ""I made it, <insert here 'you have to' phrase> in order to use it :P"""
+2010-03-14 14:25:24,eddyb,just thinking about legal stuff makes me sick
+2010-03-14 14:26:53,Jarvix,maybe ive the problem
+2010-03-14 14:27:22,Jarvix,"eddyb, is it seriously copyrighted?"
+2010-03-14 14:27:56,eddyb,what?
+2010-03-14 14:29:03,Jarvix,its fixed :D
+2010-03-14 14:29:30,Jarvix,Some bad design of my mate didnt allow me to make the initial stack bigger xDDD
+2010-03-14 14:35:11,Jarvix,Youpi :D a Vm8086 #GPF :)
+2010-03-14 14:49:47,taljeth,"Sure, bad design can't be your own code ;-)"
+2010-03-14 14:58:45,Jarvix,didnt say that :P
+2010-03-14 14:58:57,Jarvix,sure it can be
+2010-03-14 15:54:09,Jarvix,how much do i need to identity map for IVT to work?
+2010-03-14 15:54:29,taljeth,The first page
+2010-03-14 15:54:55,taljeth,"256 vectors, 4 bytes each"
+2010-03-14 15:55:32,Jarvix,"yes, but its acording interrupt handlers"
+2010-03-14 15:55:36,Jarvix,i mapepd the first page
+2010-03-14 15:55:50,taljeth,"Ah, you mean for executing one of the BIOS ints?"
+2010-03-14 15:56:06,Jarvix,but i get a #PF at 0xFF841
+2010-03-14 15:56:10,Jarvix,yeh :P
+2010-03-14 15:56:20,taljeth,"Obviously depends on the interrupt, but c0000 - fffff would be a good start"
+2010-03-14 15:57:02,Jarvix,ok
+2010-03-14 15:57:08,Jarvix,mainly
+2010-03-14 15:57:19,Jarvix,"10h, 13h, 15h and 16h"
+2010-03-14 16:01:38,taljeth,Why 16h?
+2010-03-14 16:02:00,taljeth,"If Google doesn't lie, this is keyboard. Isn't it easy enough to do yourself?"
+2010-03-14 16:12:42,eddyb,lol?
+2010-03-14 16:13:14,eddyb,"it's even in bkerndev, rofl :D"
+2010-03-14 16:13:34,eddyb,"or however it's called, i don't remember"
+2010-03-14 16:29:37,Jarvix,"lolz, theyw ere just on bios page of wiki :P"
+2010-03-14 16:29:42,Jarvix,they work :)
+2010-03-14 16:29:48,Jarvix,"at least vga, didnt test others"
+2010-03-14 16:30:05,Jarvix,"i already have keyboard, doh"
+2010-03-14 16:30:15,Jarvix,"and yes, its called bkerndev"
+2010-03-14 16:30:23,Jarvix,my Vm8086 monitor is almost done
+2010-03-14 16:43:13,taljeth,It's always amazing how you can turn a channel into English with a single line ;-)
+2010-03-14 16:43:26,XanClic,Two lines ;-)
+2010-03-14 16:44:12,Jarvix,talkign about what chan?
+2010-03-14 16:44:27,XanClic,"#PrettyOS, I guess"
+2010-03-14 16:44:29,Jarvix,:P
+2010-03-14 16:44:34,Jarvix,'How is pretty os?'
+2010-03-14 16:44:41,XanClic,"And ""Hii"" ;-)"
+2010-03-14 16:44:41,Jarvix,then everybody started english
+2010-03-14 16:44:49,Jarvix,:P
+2010-03-14 16:45:09,Jarvix,#lost is not easy to turn
+2010-03-14 16:45:31,Jarvix,"maybe only when there is no body, and there is an english conversation already"
+2010-03-14 16:45:46,XanClic,There's never an English conversation ;-)
+2010-03-14 16:45:54,Jarvix,LOOL @ taljeth
+2010-03-14 16:46:04,XanClic,*g*
+2010-03-14 16:46:04,Jarvix,english <> german
+2010-03-14 16:46:08,eddyb,o key
+2010-03-14 16:46:33,XanClic,"eddyb: ""When there is nobody"" ;-)"
+2010-03-14 16:47:20,Jarvix,did eddyb try to do it in #lost?
+2010-03-14 16:47:32,XanClic,"Actually, yes"
+2010-03-14 16:47:36,Jarvix,:P
+2010-03-14 16:47:37,Jarvix,and failed?
+2010-03-14 16:47:52,eddyb,[17:46] <eddyb> hi guys :)
+2010-03-14 16:47:54,eddyb,[17:46] <eddyb> what's up?
+2010-03-14 16:47:55,eddyb,"[17:46] <XanClic> Moin, eddyb"
+2010-03-14 16:47:57,eddyb,"[17:46] <eddyb> hi, XanClic ;)"
+2010-03-14 16:47:58,eddyb,￼
+2010-03-14 16:47:58,Jarvix,"taljeth, ur are not gonna make it"
+2010-03-14 16:48:00,eddyb,[17:47] <taljeth> Hallo eddyb
+2010-03-14 16:48:01,XanClic,"Maybe you wanna join, Jarvix ;-)"
+2010-03-14 16:48:01,eddyb,[17:47] <taljeth> Du kannst doch nicht etwa deutsch? ;-)
+2010-03-14 16:48:08,Jarvix,:D
+2010-03-14 16:48:08,XanClic,"Uuuh, too late"
+2010-03-14 16:50:28,eddyb,"oh, not again"
+2010-03-14 16:50:38,eddyb,living is damn hard...
+2010-03-14 16:50:49,XanClic,"And USB is even harder, right"
+2010-03-14 16:51:03,eddyb,why the fuck do I have to get depressed??
+2010-03-14 16:51:36,eddyb,"gimme a brake, i would rather implement all fucking controllers than being sad 4 hours"
+2010-03-14 16:51:56,eddyb,:((
+2010-03-14 16:52:51,eddyb,no one cares.... good way to stop one of my monologues :P
+2010-03-14 16:53:55,taljeth,"No, we're just waiting for you to implement all fucking controllers ;-)"
+2010-03-14 16:54:22,eddyb,you didn't get the point...
+2010-03-14 16:54:42,eddyb,"is not like i want to be sad, i *am*"
+2010-03-14 16:55:06,taljeth,"I know, but I don't think I can't do anything about it"
+2010-03-14 16:55:15,taljeth,-not
+2010-03-14 16:55:32,taljeth,You may choose yourself which one :-)
+2010-03-14 16:55:41,eddyb,???
+2010-03-14 16:56:32,taljeth,My line had one negation too much in it
+2010-03-14 16:57:01,eddyb,i'm used to double negations...
+2010-03-14 16:57:19,eddyb,"afaik, all latin-based languages go it"
+2010-03-14 16:57:23,eddyb,or i think so
+2010-03-14 16:58:32,eddyb,"""i don't have any of these"" translated into romanian, then back into english, but word by word, it'd be like ""i don't have *none* of these"" :P"
+2010-03-14 16:58:38,taljeth,"Sorry, Dutch was hard enough yesterday, but I have no chance with Romanian ;-)"
+2010-03-14 16:59:43,Jarvix,lolz
+2010-03-14 17:00:20,eddyb,"http://forum.osdev.org/viewtopic.php?f=7&t=21685 << again, gimme a break. maybe you can find similarities between a geek and an ape, but take an average human and you'll see you have no chance of prooving evolution"
+2010-03-14 17:02:59,eddyb,"don't ""blame"" time, you can't get a human from an ape, not even in 1 << 128 years"
+2010-03-14 17:03:32,XanClic,"So that's not the right place to discuess that, neither here nor in that forum."
+2010-03-14 17:03:36,XanClic,*discuss
+2010-03-14 17:03:59,eddyb,whatever
+2010-03-14 17:04:29,eddyb,when i'm depressed i can get easily annoyied by stupid stuff
+2010-03-14 17:04:41,XanClic,Depends on the definition of stupid
+2010-03-14 17:05:20,eddyb,http://www.wolframalpha.com/input/?i=stupid
+2010-03-14 17:05:29,eddyb,"you wanted a definition, right :P ?"
+2010-03-14 17:05:54,XanClic,"By that definition, stuff cannot be stupid"
+2010-03-14 17:06:04,XanClic,"""a person who is not very bright"""
+2010-03-14 17:06:19,XanClic,Ah
+2010-03-14 17:06:25,XanClic,me <- supid ;-)
+2010-03-14 17:06:59,taljeth,"stupid, even"
+2010-03-14 17:07:07,XanClic,"Oh, yes ;-)"
+2010-03-14 17:07:13,XanClic,"But supid is nice, too"
+2010-03-14 17:07:18,XanClic,superuser process id
+2010-03-14 17:07:38,taljeth,Sounds like a nicely broken concept ;-)
+2010-03-14 17:07:53,XanClic,"Of course, it's mine ;-)"
+2010-03-14 17:07:55,eddyb,wouldn't switch user process id be better :P ?
+2010-03-14 17:11:16,eddyb,i don't think wolfram alpha is good at definitions of english nouns...
+2010-03-14 17:11:19,eddyb,but rather...
+2010-03-14 17:11:21,eddyb,http://www.wolframalpha.com/input/?i=1+<<+128
+2010-03-14 17:11:54,eddyb,i didn't even have to write 2^128 :P
+2010-03-14 17:12:13,taljeth,Konversation gets the link wrong
+2010-03-14 17:12:19,eddyb,exactly
+2010-03-14 17:12:24,XanClic,Then copy it ;-)
+2010-03-14 17:12:28,eddyb,err
+2010-03-14 17:12:33,taljeth,Impossible while you're writing ;-)
+2010-03-14 17:12:37,XanClic,*g*
+2010-03-14 17:12:46,eddyb,i meant exactly after he said copy it..
+2010-03-14 17:12:52,eddyb,"wait, i got a problem"
+2010-03-14 17:13:23,eddyb,"i said ""exactly"" before he said the thing i should say ""exactly"" to?"
+2010-03-14 17:13:42,taljeth,return -EMAGIC;
+2010-03-14 17:13:48,eddyb,:P
+2010-03-14 17:14:00,eddyb,1<<64 is about 16 trillions...
+2010-03-14 17:14:26,eddyb,of DDDRAM5 :P
+2010-03-14 17:15:49,Jarvix,lol
+2010-03-14 17:16:45,eddyb,i need to watch a movie or something to get to normal state again...
+2010-03-14 17:16:54,eddyb,anything recommended?
+2010-03-14 17:19:58,Jarvix,pr0n
+2010-03-14 17:20:14,eddyb,gimme a break
+2010-03-14 17:29:05,eddyb,http://www.collegehumor.com/article:1802516 :)))
+2010-03-14 17:38:09,Jarvix,"My os works nice on Vmware, Bochs, and real hardware (didnt test on more)"
+2010-03-14 17:40:27,Jarvix,lol @ the images
+2010-03-14 18:20:24,eddyb,"bah, today was today"
+2010-03-14 18:20:28,eddyb,another day tomorrow
+2010-03-14 18:20:50,eddyb,5.3h of school
+2010-03-14 18:20:55,eddyb,whatever
+2010-03-14 18:20:57,eddyb,seeya

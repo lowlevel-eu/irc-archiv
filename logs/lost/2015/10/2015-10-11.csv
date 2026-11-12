@@ -1,0 +1,582 @@
+date/time,nick,message
+2015-10-11 00:00:05,darklink,Ok
+2015-10-11 00:00:08,Paddy,Oder Exception? Hm...
+2015-10-11 00:00:10,XanClic,"Nein, nichts"
+2015-10-11 00:00:17,Sur3,ich hab auch das gefühl mein pc bootet immer 3ns zu langsam :D
+2015-10-11 00:00:27,darklink,dann macht das ja keinen spaß
+2015-10-11 00:01:01,Paddy,"""setting the PG flag when the PE flag is clear causes a general-"
+2015-10-11 00:01:02,Paddy,"protection exception (#GP)"""
+2015-10-11 00:01:05,darklink,"Ich bin mir ziemlich sicher, in grub sind  zu viele nops drinne"
+2015-10-11 00:01:09,Paddy,"Ups, \n vergessen wegzumache"
+2015-10-11 00:01:11,XanClic,Ist doch nix
+2015-10-11 00:01:13,XanClic,*hust*
+2015-10-11 00:01:32,darklink,Pg is welches bit?
+2015-10-11 00:01:39,Paddy,Mit passendem IVT-Limit ist das immerhin ein Triple Fault!
+2015-10-11 00:01:44,Paddy,31
+2015-10-11 00:02:04,Sur3,cool 31 hat ich sogar noch in erinnerung obwohl ewig nicht benutzt krass da´ß das tatsächlich stimmt :D
+2015-10-11 00:03:40,Sur3,"so ich werd mal weiter an meinem vFS schreiben, wenn ihr nen weg gefunden habs aus einem Emulator zu Escapen sagt mir bescheid :D"
+2015-10-11 00:03:51,XanClic,Den Code patchen
+2015-10-11 00:04:18,Paddy,"Ja, hab ich. Ist mittlerweile gefixt. ;-)"
+2015-10-11 00:04:40,Sur3,cool ^^
+2015-10-11 00:04:57,Sur3,hast du selbst reported?
+2015-10-11 00:05:43,Paddy,"Und gefixt, ja"
+2015-10-11 00:06:23,Sur3,welch verschwendung von 0dayz :D
+2015-10-11 00:07:32,Paddy,"Ich hab bisher keine gebraucht, von daher... ;-)"
+2015-10-11 00:07:38,Sur3,;)
+2015-10-11 00:09:01,darklink,http://pastebin.com/MVg2A9Na
+2015-10-11 00:09:46,darklink,Ich teste das heute
+2015-10-11 00:10:04,darklink,(morgen passt ja nicht mehr)
+2015-10-11 00:10:05,XanClic,int 0 reicht auch
+2015-10-11 00:10:10,XanClic,und ich habs schon getestet
+2015-10-11 00:10:26,darklink,"Und, triple fault?"
+2015-10-11 00:10:34,XanClic,"und das sollte wohl cs(ivtp) sein, oder wie auch immer das in AT&T mit Segmentangaben funktioniert"
+2015-10-11 00:10:37,XanClic,Ja
+2015-10-11 00:11:14,Paddy,Ein Triple Fault müsste doch aber mit viel weniger Bytes als das gehen
+2015-10-11 00:11:28,darklink,"Ich wollte da ja nur zeigen, dass paging auch im realmode zu nem triple fault führen kanm"
+2015-10-11 00:12:09,Paddy,Jeder Interrupt kann das mit kaputter IVT
+2015-10-11 00:12:13,XanClic,"Paddy, mov eax,1; mov cr0,eax; int3 hätte ich anzubieten"
+2015-10-11 00:12:15,Paddy,Insofern nicht wirklich überraschend
+2015-10-11 00:12:26,XanClic,Das wären zehn
+2015-10-11 00:12:44,darklink,Im endeffekt bräuchte man lidt [ds:nullidt]; int 3
+2015-10-11 00:12:48,Paddy,"Ui, das reicht für einen TF?"
+2015-10-11 00:13:06,darklink,13 bytes
+2015-10-11 00:13:08,XanClic,Hatten wir doch vorhin
+2015-10-11 00:13:12,XanClic,die IVT wird vermutlich als IDT interpretiert
+2015-10-11 00:13:16,XanClic,Da sind alle Segmente kaputt
+2015-10-11 00:13:24,Paddy,"Hm, stimmt"
+2015-10-11 00:13:30,XanClic,"Und selbst wenn sie das nicht wären, die Segmente sind aus Prinzip kaputt, weil keine GDT existiert"
+2015-10-11 00:13:49,Paddy,"Gibt es das Konzept ""GDT existiert nicht""?"
+2015-10-11 00:13:57,XanClic,"Na ja, vermutlich nur Nulldeskriptor"
+2015-10-11 00:13:59,Paddy,"Oder ist die einfach bei 0, Limit 0?"
+2015-10-11 00:14:00,darklink,Ja
+2015-10-11 00:14:18,XanClic,"Vielleicht auch das, das Ergebnis ist jedenfalls, dass es keine gültigen Selektoren gibt"
+2015-10-11 00:14:26,darklink,Aber das führt zum triple fault
+2015-10-11 00:15:34,Sur3,weiß zufällig jemand ob es nen geschwindigkeitsunterschied ist ob ich xchg oder lock bts für mutexe benutze?
+2015-10-11 00:15:58,XanClic,"Soweit ich mich erinnere, sollte man nie bt/bts/btc benutzen"
+2015-10-11 00:16:26,Paddy,xor/inc kommt dann auf 9 Bytes
+2015-10-11 00:17:37,Sur3,"hö xor/inc kommt auf 9 bytes, wie bitte?"
+2015-10-11 00:17:46,XanClic,"cdq; inc edx; mov cr0,edx auf 8"
+2015-10-11 00:17:52,XanClic,Auch wenn cdq immer ein bisschen schummeln ist ;-)
+2015-10-11 00:17:58,masterq32,"darf man fragen, was ihr grade vorhabt?"
+2015-10-11 00:18:03,XanClic,"Hm, cdq; inc dx ginge auch"
+2015-10-11 00:18:26,XanClic,"masterq32, ein minimaler Triple Fault im Boot Loader"
+2015-10-11 00:18:39,XanClic,cdq; inc dx wären 7
+2015-10-11 00:18:46,Paddy,Was ist denn cdq?
+2015-10-11 00:18:56,masterq32,why?
+2015-10-11 00:19:05,XanClic,"Wenn das MSb von eax 0 ist, wird edx 0; wenn es 1 ist, wird edx 0xffffffff"
+2015-10-11 00:19:16,XanClic,Also Vorzeichenerweiterung von eax auf edx:eax
+2015-10-11 00:19:44,XanClic,"masterq32, [00:11:15] <Paddy> Ein Triple Fault müsste doch aber mit viel weniger Bytes als das gehen"
+2015-10-11 00:19:50,masterq32,lol okay :D
+2015-10-11 00:21:44,Paddy,"Aber woher weißt du, wie eax am Anfang gesetzt ist?"
+2015-10-11 00:21:49,Sur3,hm ich hab grad mal gegoogled ich find nichts warum man bts nciht benutzen sollte und im ODdev verwenden die das auch.. http://wiki.osdev.org/Spinlock
+2015-10-11 00:21:52,Paddy,Garantiert das BIOS da was?
+2015-10-11 00:21:54,XanClic,"Paddy, ich rate? *g*"
+2015-10-11 00:21:59,XanClic,Das passt fast immer *g*
+2015-10-11 00:22:45,XanClic,"Na ja, meine Schlussfolgerung wäre, dass die CPU etwas über den Initialzustand garantiert, und dass das BIOS daran ja hoffentlich nichts ändert, weil das BIOS ja RM ist und damit nichts mit dem höherwertigen Teil anstellen sollte *hust hust*"
+2015-10-11 00:23:01,Paddy,"Du meinst so Java2k-artig ""wahrscheinlich Triple Fault""? ;-)"
+2015-10-11 00:23:08,XanClic,Klar ;-)
+2015-10-11 00:26:05,XanClic,"Sur3, dann hab ich mich wohl falsch erinnert"
+2015-10-11 00:28:29,Sur3,ich finds eh verwirrend daß intel keine standardtaktzyklen mehr für seine cpu-instruktionen angibt.. :/
+2015-10-11 00:29:10,Sur3,"könnte man eigentlich ein os in mikrocode schreiben, das wäre vllt noch ein zusätzlicher performancegewinn.. :D"
+2015-10-11 00:29:20,XanClic,nein :D
+2015-10-11 00:29:44,Paddy,"Och, theoretisch geht das sicher"
+2015-10-11 00:29:51,XanClic,Ich meine das mit der Performance
+2015-10-11 00:30:16,Paddy,"Ach so, ja, eher nicht"
+2015-10-11 00:30:22,Paddy,Da wird es dann sehr theoretisch
+2015-10-11 00:30:45,Paddy,So wie bei Assembler halt auch schon
+2015-10-11 00:32:17,Sur3,ich könnte mir zumindest vorstellen daß das umprogrammieren einzelner funktionen was bringen könnte oder man benutzt codebereiche die normalerweise ncith definiert sind für weitere mikrocodeinstruktionen ^^
+2015-10-11 00:33:00,XanClic,"Das könnte beinahe eine gute Idee sein, wenn sich herausgestellt hätte, dass CISC tatsächlich Leistung bringt"
+2015-10-11 00:33:37,Paddy,"Hm, aber ich könnte mir endlich ein rlwinm auf x86 basteln! *g*"
+2015-10-11 00:33:44,XanClic,Ooooh!
+2015-10-11 00:33:53,XanClic,Und vielleicht sogar ein dwim
+2015-10-11 00:34:06,Paddy,Das überlasse ich dir
+2015-10-11 00:34:15,XanClic,Ich mein aber vielleicht was anderes als du
+2015-10-11 00:34:34,XanClic,"Und dann tut dein Prozessor, was ich will, und nicht, was du willst"
+2015-10-11 00:34:38,XanClic,Wie dämonisch!
+2015-10-11 00:35:14,Paddy,"Das ""I"" bezieht sich selbstverständlich auf den Autor des Assemblercodes, der die dwim-Instruktion aufruft"
+2015-10-11 00:35:19,Sur3,"joa ein virus in mikrocode wär krass, wenn der erstmal eingeschleust ist findet kein scanner den XD"
+2015-10-11 00:35:32,XanClic,"Paddy, zum Glück schreibst du ja auch keinen Assemblercode"
+2015-10-11 00:36:08,Paddy,"Stimmt. Und benutzerfreundlich ist er auch noch: Man braucht keine Desinfektionssoftware, sondern ein Reboot reicht."
+2015-10-11 00:36:27,Paddy,"XanClic: Wenn du wüsstest, was ich heimlich so mache! *g*"
+2015-10-11 00:36:37,XanClic,…jetzt hab ich ein bisschen Angst
+2015-10-11 00:36:55,Sur3,hm überlebt mikrocode nen neustart nciht? fixen die mit mikrocode nciht auch cpu-bugs?
+2015-10-11 00:37:17,Paddy,"Jo, das muss man bei jedem Bootvorgang machen"
+2015-10-11 00:37:54,Sur3,"aso krass, wenn das so ist sollte ich mal versuchejn mikrocode zu schreiben kaputtmachen kann ich ja nix wenns eh beim neustart weg ist ^^"
+2015-10-11 00:38:22,Paddy,Höchstens du führst den Mikrocode für Rauchzeichen aus
+2015-10-11 00:38:40,Sur3,xD
+2015-10-11 00:39:07,Sur3,gibts den? cputakt auf 100GHz setzen oder so? xd
+2015-10-11 00:39:10,XanClic,LPT1 on fire?
+2015-10-11 00:40:04,Sur3,ich weiß es gab mal ne bootcd mit der man radiosongs über röhrenmonitor versenden konnte :D
+2015-10-11 00:57:28,masterq32,mein OS laggt nach einiger zeit so heftig :D
+2015-10-11 00:57:33,masterq32,weil irgendwo ein memory leak ist
+2015-10-11 00:57:41,masterq32,und meine speicherverwaltung noch ziemlich doof ist
+2015-10-11 00:59:21,masterq32,so und mit dieser erkenntnis bin ich mal weg
+2015-10-11 00:59:26,masterq32,wünsche eine  gute nacht
+2015-10-11 01:31:10,Sur3,ah ich hab meine syslib aufrufe die ich für mein noch nicht vorhandenes virtuelles dateisystem vor 3 jahren definiert hatte wiedergefunden.. :D http://dpaste.com/2N56JPB
+2015-10-11 01:46:19,Sur3,"was ist die beste möglichkeit den aktuellen task zu identifizieren, ich hol momentan die lAPIC-ID und iterier damit durch die Prozessorliste und kann dann wenn ich den aktuellen Prozessor gefunden habe den Task ablesen, wäre das über ltr/str besser oder wie identifiziert ihr den aktuellen task?"
+2015-10-11 01:47:01,XanClic,Mit einem Pointer am unteren Ende des Stacks
+2015-10-11 01:47:50,XanClic,was dann also auf *(struct process *)(esp % 8192) rausläuft
+2015-10-11 01:47:52,XanClic,äh
+2015-10-11 01:47:59,Sur3,"hm auch keine schlechte idee, aber dann könnte der task seine taskid ändern und zugriffe auf dateien anderer tasks bekommen"
+2015-10-11 01:48:05,XanClic,*(struct process *)(esp & ~8191)
+2015-10-11 01:48:11,XanClic,"Nö, ist ja Kernelstack"
+2015-10-11 01:50:03,Sur3,wie kann ich denn jedem prozessorkern nen eigenen kernelstack geben?
+2015-10-11 01:50:23,XanClic,Jeder Prozessorkern muss sowieso einen eigenen Kernelstack haben
+2015-10-11 01:50:37,XanClic,Sonst könnte man ja nicht gleichzeitig Interrupts auf verschiedenen Kernen behandeln
+2015-10-11 01:50:42,XanClic,Also mit einem TSS pro Kern
+2015-10-11 01:50:52,Sur3,hm ok hast recht
+2015-10-11 01:51:43,Sur3,und das ist dann schneller als mit str ax ??
+2015-10-11 01:52:16,XanClic,"Ich hab keine Ahnung, wie lange str dauert, und ich könnte durch das TR auch keinen Thread identifizieren"
+2015-10-11 01:53:41,Sur3,aso hat deine taskid 32 it oder wie?
+2015-10-11 01:53:47,Sur3,*bit
+2015-10-11 01:54:04,XanClic,"Ich hab einfach nicht ein TSS pro Thread, sondern ein TSS pro Kern"
+2015-10-11 01:58:34,Sur3,ok das mit dem kenrelstack ist auf jedenfall ne gute idee
+2015-10-11 02:02:04,Sur3,was hat es denn mit (esp & ~8191) auf sich? benutzt du immernoch das limit von 8191 tasks obwohl du keine TSS für die tasks benutzt?
+2015-10-11 02:02:25,XanClic,"Damit hat es auf sich, dass der Kernelstack 8 kB groß und an 8 kB ausgerichtet ist"
+2015-10-11 02:02:37,Sur3,asoo
+2015-10-11 02:03:28,Sur3,verstehe du verschwendest sozusagen speicherplatz indem du mehr reservierst als du brauchst um es auszurichen?
+2015-10-11 02:04:43,XanClic,"Ich würde die Stacks auch 8 kB groß machen, wenn ich sie nicht ausrichten wöllte"
+2015-10-11 02:05:02,XanClic,"Und dank Paging müssen die auch nicht 8 kB belegen, sondern es könnten auch 4 sein, wenn einer nur 4 braucht"
+2015-10-11 02:05:19,Sur3,aso
+2015-10-11 02:05:42,XanClic,Außerdem finde ich 8 kB pro Kern jetzt nicht so harte Verschwendung
+2015-10-11 02:06:07,XanClic,Wobei… Man muss ja pro Task idealerweise einen Kernelstack haben
+2015-10-11 02:06:09,Sur3,ne die frage war kein vorwurf sondern diente bloß de verständnis
+2015-10-11 02:06:10,XanClic,Sonst wirds kompliziert
+2015-10-11 02:06:11,XanClic,Na gut
+2015-10-11 02:06:44,Sur3,bei nem 256kerner wärs natürlich problematischer klar :D
+2015-10-11 02:07:23,Sur3,"ich bin ja mal gespannt, die neuen intel und amd cpus die angekündigt sind mit 64 kernen und mehr wann man die mal real im alltag sieht :D"
+2015-10-11 02:42:50,Sur3,"wow ich hab mir grad mal meinen smp code angeguckt, ich bon noch großzügiger als du ich reserviere 64kB Stack pro CPU und 4kB Notfallstack XD"
+2015-10-11 02:43:07,Sur3,das sollte ich vielleicht mal reduzieren :D
+2015-10-11 02:43:48,Sur3,vermutlich hatte ich mich vertippt 0x10000 statt 0x1000 also 64kB statt 4kB :D
+2015-10-11 02:46:42,Sur3,grad mal auf 16 Bytes Stack pro CPU reduziert und mein OS läuft trotzdem noch weil es die meisten Werte eh per Register übergibt :D
+2015-10-11 08:05:41,darklink,^^
+2015-10-11 08:06:19,darklink,Wenn ich es mir so recht überlege wird mein multiprozessor sheduling so:
+2015-10-11 08:07:14,darklink,"Jeder task kriegt eine bestimmte cpu, sodass jede cpu gleich viele tasks hat"
+2015-10-11 08:08:47,darklink,(Mit abweichungen von einem task auf den letzen cpu
+2015-10-11 08:09:17,darklink,s)
+2015-10-11 08:12:52,darklink,Das sheduling an sich ist einfach ein round-robin
+2015-10-11 08:21:29,darklink,Das mit dem selbstmodifizierenden code hätte eh nie geklappt
+2015-10-11 08:21:43,darklink,wegen der pipeline
+2015-10-11 08:34:00,darklink,Bääh ebda
+2015-10-11 08:37:22,darklink,"D.h. ich muss nach _MP_ im 1. KB von ebda, im letzten KB des basisrams (511 KB/639 KB) oder im bios zwischen 0xF0000 bis 0xFFFFF"
+2015-10-11 08:53:00,darklink,endlich assembler code
+2015-10-11 10:03:39,darklink,Jetzt mache ich die PM IDT und IVT
+2015-10-11 10:28:05,Jonathan,Moin
+2015-10-11 10:43:15,darklink,äh
+2015-10-11 10:43:16,darklink,hi
+2015-10-11 10:43:17,darklink,   4089	      0	   8204	  12293	   3005	mtgos
+2015-10-11 10:43:18,darklink,   8001	      0	   8204	  16205	   3f4d	optim
+2015-10-11 10:44:22,darklink,40K	mtgos - 16K	optim
+2015-10-11 10:45:16,darklink,warum ist die text von dem mit -O9 kompiliertem Kernel größer
+2015-10-11 10:47:40,Jonathan,"darklink: Vielleicht optimiert dein Compiler ja auf Geschwindigkeit, nicht auf Codegröße?"
+2015-10-11 10:47:51,masterq32,moin
+2015-10-11 10:48:01,darklink,was ist der unterschied zwischen -g und -g3?
+2015-10-11 10:48:18,darklink,hi masterg
+2015-10-11 10:48:27,darklink,masterq*
+2015-10-11 10:48:40,masterq32,master reicht auch 
+2015-10-11 10:48:41,masterq32,:D
+2015-10-11 10:49:08,darklink,^^
+2015-10-11 11:13:08,darklink,"je mehr casts auf einer zeile, desto besser ist der code??"
+2015-10-11 11:14:00,Paddy,Ich dachte je mehr WTFs pro Zeile
+2015-10-11 11:14:28,darklink,je mehr casts und shifts und pointer auf einer zeile
+2015-10-11 11:14:57,Paddy,Jonathan ist dein Mann für Vierfachpointer
+2015-10-11 11:15:09,Jonathan,*g*
+2015-10-11 11:15:12,darklink,^^
+2015-10-11 11:15:18,darklink,ich komme selten auf mehr als 2
+2015-10-11 11:15:30,darklink,obwohl. einmal hatte ich schonmal 3
+2015-10-11 11:15:34,Paddy,Woanders hab ich das auch noch nicht gesehen *g*
+2015-10-11 11:15:38,darklink,einen pointer auf ein stringarray
+2015-10-11 11:15:45,Paddy,"Ich glaube auf drei bin ich schonmal gekommen, aber vier nicht"
+2015-10-11 11:16:08,Jonathan,Dann bin ich hier wohl der Pointerkönig? :D
+2015-10-11 11:16:14,darklink,ja
+2015-10-11 11:16:18,Jonathan,Hehe *g*
+2015-10-11 11:16:23,Paddy,Sieht so aus
+2015-10-11 11:16:24,darklink,		idt[i]=(uint16_t)((uint32_t)offset);
+2015-10-11 11:16:32,Paddy,Deswegen hast du ja auch +v
+2015-10-11 11:16:35,Jonathan,Genau ;)
+2015-10-11 11:16:46,Paddy,darklink: wtf?
+2015-10-11 11:17:06,darklink,erst castet der den pointer in einen uint32_t und dann in einen uint16_t
+2015-10-11 11:17:12,darklink,ansonsten kommt ne warnung
+2015-10-11 11:17:13,Jonathan,Wieso castest du da nicht gleich auf uint16_t? :D
+2015-10-11 11:17:15,Paddy,Und wozu=
+2015-10-11 11:17:25,darklink,warnungen sind blöd
+2015-10-11 11:17:29,Jonathan,Hmmm ;)
+2015-10-11 11:17:35,Jonathan,Vielleicht will dir die Warnung ja was sagen?
+2015-10-11 11:17:35,Paddy,"Die einzige Variante wo es Sinn ergeben könnte, ist, wenn offset ein Pointer ist"
+2015-10-11 11:17:47,darklink,offset ist ein pointer
+2015-10-11 11:17:47,Paddy,"Aber dann wäre s/uint32_t/uintptr_t/ angebracht, finde ich"
+2015-10-11 11:17:57,Paddy,Und die Klammerung ist überflüssig
+2015-10-11 11:18:17,Paddy,offset ist im übrigen ein bescheidener Name für einen Pointer
+2015-10-11 11:18:29,darklink,es ist der offset im segmen
+2015-10-11 11:18:33,darklink,segment*
+2015-10-11 11:19:08,Jonathan,"Wenn es ein Offset ist, wieso benutzt du nicht size_t oder sowas? ;)"
+2015-10-11 11:20:26,darklink,weil deswegen
+2015-10-11 11:23:23,Paddy,Du benutzt auch Segmentierung?
+2015-10-11 11:23:27,darklink,nein
+2015-10-11 11:23:28,Paddy,Was ist denn zur Zeit hier los?
+2015-10-11 11:23:52,darklink,es ist nullbasiert
+2015-10-11 11:23:59,masterq32,@Paddy: was meinst?
+2015-10-11 11:24:06,darklink,quasi könnte man den offset auch phys nennen
+2015-10-11 11:24:59,Paddy,Physische Adressen haben kein Segment
+2015-10-11 11:25:13,darklink,und was ist mit cs?
+2015-10-11 11:25:25,darklink,oder den anderen segmentregistern?
+2015-10-11 11:25:26,Paddy,Das wird zum Auflösen von virtuellen Adressen in lineare benutzt
+2015-10-11 11:25:46,darklink,...
+2015-10-11 11:25:57,darklink,bei mir ist die physische gleich der linearen addresse
+2015-10-11 11:26:07,Paddy,Kein Paging?
+2015-10-11 11:26:11,darklink,noch nicht
+2015-10-11 11:26:13,Paddy,Ok
+2015-10-11 11:26:25,Paddy,Die lineare Adresse ist jedenfalls linear und hat keine Segmente mehr ;-)
+2015-10-11 11:26:26,darklink,ich habe ja nicht von virtuellen addressen geredet
+2015-10-11 11:26:43,Paddy,Nur die virtuelle Adresse besteht aus Segment:Offset
+2015-10-11 11:27:41,darklink,?
+2015-10-11 11:27:42,darklink,warum
+2015-10-11 11:28:18,darklink,die addresse die du aufrufst (egal ob paging an/aus ist oder pmode an/aus) besteht aus segment:offset
+2015-10-11 11:28:36,Paddy,Wie ruft man denn eine Adresse auf?
+2015-10-11 11:28:53,Paddy,"Aber falls du meinst, dass die normalen Adressen, mit denen man so arbeitet, so aussehen, dann ja: Sind ja auch virtuelle Adressen."
+2015-10-11 11:28:58,darklink,s/aufruf/zugreif/
+2015-10-11 11:29:23,darklink,dann sollte ich das in virtuell ändern?
+2015-10-11 11:29:32,Paddy,Vermutlich
+2015-10-11 11:29:38,Paddy,"Ich weiß ja nicht, was du da genau machst"
+2015-10-11 11:29:54,Paddy,Physisch und virtuell verwechseln klingt für mich nach einem sehr grundsätzlichen Problem
+2015-10-11 11:30:05,darklink,eintrag in der IDT setzen
+2015-10-11 11:30:24,Paddy,"Jo, das sind virtuelle Adressen, die da drin stehen"
+2015-10-11 11:31:05,darklink,ok
+2015-10-11 11:31:09,Paddy,"Es gibt sowieso nur ein paar wenige Ausnahmen, wo was anderes benötigt wird. cr3 braucht offensichlich eine physische Adresse und lgdt eine lineare."
+2015-10-11 11:32:50,darklink,"ich weiß, dass man die pagingstrukturen wegmappen kann^^"
+2015-10-11 11:33:18,darklink,"(mit wegmappen meine ich, aus dem RAM mappen)"
+2015-10-11 11:33:43,darklink,virtuellem addressraum*
+2015-10-11 11:56:30,masterq32,habt ihr mir zufällig n paar ressourcen zu speicherallokation? bräuchte nen small object allocator und so kram :D
+2015-10-11 11:59:47,darklink,nein ich versehts auch nicht: http://pastebin.com/Ra9MZAf7
+2015-10-11 12:00:20,darklink,s/seht/steh/
+2015-10-11 12:07:05,Paddy,masterq32: Für Objekte gleicher Größe? Das sollte ja nicht so schwer sein.
+2015-10-11 12:07:11,masterq32,joar denk ich auch
+2015-10-11 12:07:52,masterq32,"grade überleg ich, ob ich nich einfach next-""fit"" bitmap nehme"
+2015-10-11 12:08:13,Paddy,Für gleiche Größe ist die Allokationsstrategie doch eh fast egal
+2015-10-11 12:08:22,Paddy,Fragmentieren wird dir jedenfalls nichts
+2015-10-11 12:08:36,masterq32,joar
+2015-10-11 12:08:49,masterq32,weil grade stirbt mir mein OS weg weil ich irgendwo speicher leake :D
+2015-10-11 12:08:55,Paddy,"Aber ich würde keine Bitmap machen, sondern eine klassische Freispeicherliste"
+2015-10-11 12:08:55,masterq32,und mein alloc unglaublich scheiße langsam wird :D
+2015-10-11 12:09:46,masterq32,ich hab aber auch gestern gestgestellt
+2015-10-11 12:09:59,masterq32,s/ges/fes/
+2015-10-11 12:10:19,masterq32,meine freispeicherlistenstrategie ist absolut dämlich :D
+2015-10-11 12:34:17,darklink,irgendwas #gp't
+2015-10-11 12:37:54,darklink,ok jetzt bin ich fertig mit der IDT
+2015-10-11 12:42:03,darklink,"ich habe jetzt code eingespart, aber die handler an 16 bytes zu alignen, ähh"
+2015-10-11 12:42:55,darklink,das vergrößert die ersten 127 handler um ca. 8-10 bytes
+2015-10-11 12:47:34,darklink,7-9*
+2015-10-11 12:48:10,darklink,die letzten 4 bytes
+2015-10-11 12:48:19,darklink,bei den letzten*
+2015-10-11 12:50:52,Paddy,Wieso musst du denn sparen?
+2015-10-11 12:54:41,darklink,ich muss nicht sparen
+2015-10-11 12:55:32,Paddy,"Dann verstehe ich nicht, warum du auf die Codegröße schaust"
+2015-10-11 12:55:59,Paddy,Sowas macht man doch entweder aus Spaß (kürzester triplefaultender Code) oder weil man muss?
+2015-10-11 12:57:08,masterq32,pro interrupt hab ich grade so 224 malloc calls
+2015-10-11 12:58:10,darklink,Interrupt 0x20 was raised.
+2015-10-11 12:58:10,darklink,The IRQ 0 was handled.
+2015-10-11 12:58:10,darklink,Transmit stats: 0 times waited; 50 bytes sent.
+2015-10-11 12:58:20,darklink,voll gute debug ausgaben :O
+2015-10-11 12:58:57,masterq32,definitiv :D
+2015-10-11 12:59:09,masterq32,ich hab pro keyhit grade 284 allokationen und 224 frees
+2015-10-11 12:59:15,darklink,"ich find das komisch, dass der nicht warten musste, um sachen auszugeben über das serial. ich habe keinen COM0 an meinem PC, also leite ich die Ausgabe ganz einfach mal an den bildschirm weiter"
+2015-10-11 12:59:26,masterq32,a) es leakt. b) das ist verdammt viel.
+2015-10-11 12:59:30,darklink,Und ich teste dadurch den kernel im allgemeinen
+2015-10-11 12:59:35,masterq32,:)
+2015-10-11 13:01:32,darklink,bg
+2015-10-11 13:08:14,darklink,Es funktioniert
+2015-10-11 13:08:25,masterq32,gz :)
+2015-10-11 13:44:39,darklink,jetzt schreibe ich eine input klasse für eingabegeräte wie tastatur und der serielle anschluss
+2015-10-11 13:45:07,masterq32,mach das
+2015-10-11 13:45:18,masterq32,"""da bastel ich grade auch noch dran"""
+2015-10-11 13:45:51,darklink,Als erstes seriellen anschluss
+2015-10-11 13:46:08,masterq32,"klar, der is am nützlichsten"
+2015-10-11 13:46:11,darklink,"kann dann sowas machen wie ""cpuinfo"""
+2015-10-11 13:46:16,masterq32,:D
+2015-10-11 13:46:37,darklink,und dann kriegt man nen zustand von der cpu
+2015-10-11 13:46:41,masterq32,ich hab grade die anzahl der memory leaks von 21% auf 23% gesteigert :P
+2015-10-11 13:47:00,darklink,meminfo - da kriegt man einen ram dump
+2015-10-11 13:47:03,masterq32,:)
+2015-10-11 13:47:40,masterq32,dafür hab ich meine gesamtanzahl von memory leaks um 56% reduzieren können
+2015-10-11 13:47:43,darklink,put addr byte - ändert ein byte im ram
+2015-10-11 13:47:58,darklink,auf 10%?
+2015-10-11 13:48:09,masterq32,ähm wait
+2015-10-11 13:48:17,masterq32,allokationen um 56% reduzieren
+2015-10-11 13:48:18,masterq32,so :D
+2015-10-11 13:48:31,masterq32,von 284/keyhit auf 134/keyhit
+2015-10-11 13:49:04,darklink,"das heißt, jetzt wird mehr gefreed als gealloced?"
+2015-10-11 13:49:16,masterq32,nein :D
+2015-10-11 13:49:21,masterq32,es wird erst mal 56% weniger allokiert
+2015-10-11 13:49:37,masterq32,durch die optimierung leakt jetzt aber prozentual mehr speicher :D
+2015-10-11 13:49:54,masterq32,"heißt, ich hab an der falschen stelle gearbeitet, aber trotzdem ne gute optimierung hinbekommen"
+2015-10-11 13:51:08,masterq32,ich muss mal gucken wie viele prozesse usw ich freigebe
+2015-10-11 13:51:16,masterq32,vielleicht hab ich da dinge verpeilt :D
+2015-10-11 13:53:22,masterq32,"aber meine werte in der VM speichern jetzt ""pointer-lokal"" daten"
+2015-10-11 13:53:36,masterq32,"also wenn die daten <= 4 sind, speichere ich die klasse direkt im pointer anstelle speicher zu allokieren"
+2015-10-11 13:59:43,darklink,qemu ignoriert die baudrate
+2015-10-11 13:59:48,masterq32,yep
+2015-10-11 13:59:56,masterq32,qemu ignoeriert alle informationen
+2015-10-11 14:07:40,Paddy,Wo kriegst du denn so viele Allokationen her?
+2015-10-11 14:07:47,Paddy,Ist das mit interpretiertem Code?
+2015-10-11 14:08:10,masterq32,"ich hab ne virtual machine a'la Java geschrieben, die OS-Code ausführt"
+2015-10-11 14:08:19,masterq32,"also ja, interpretierter code grade"
+2015-10-11 14:09:12,Paddy,Und interne Allokationen vom Interpreter dann wohl? Oder explizit beabsichtigte?
+2015-10-11 14:09:44,masterq32,"ne, alles nur interne"
+2015-10-11 14:09:44,Paddy,Obwohl... Warum soll ein Interpreter groß was allozieren? Klingt irgendwie so oder so seltsam.
+2015-10-11 14:09:50,masterq32,naja
+2015-10-11 14:09:55,masterq32,ich hab nen relativ aufwändiges typsystem
+2015-10-11 14:10:02,masterq32,der alloziert halt dynamisch stack usw
+2015-10-11 14:11:03,Paddy,Du machst bei jedem Tastendruck (bzw. Interrupt allgemein?) einen neuen Stack?
+2015-10-11 14:11:11,masterq32,yep
+2015-10-11 14:11:20,masterq32,ich starte einen neuen thread im irq-service
+2015-10-11 14:11:36,Paddy,"Hm, vielleicht würde sich da ein Pool doch lohnen ;-)"
+2015-10-11 14:11:40,masterq32,definitiv
+2015-10-11 14:22:55,masterq32,hast du globale destruktoren für deine objekte=
+2015-10-11 14:23:31,masterq32,weil ich hab nen paar wirklich fette tables in meiner VM die speicher brauchen :D
+2015-10-11 14:26:43,darklink,Jetzt habe ich einen seriellen debugeingang
+2015-10-11 14:26:46,masterq32,nice
+2015-10-11 14:26:59,masterq32,"ich habe keine start_dtors, end_dtors"
+2015-10-11 14:27:05,masterq32,irgendeine idee?
+2015-10-11 14:27:11,darklink,Interrupt 0x20 was raised.
+2015-10-11 14:27:11,darklink,The IRQ 0 was handled.
+2015-10-11 14:27:11,darklink,Transmit stats: 500 times waited; 50 bytes sent.
+2015-10-11 14:27:31,darklink,das klaut mir nur 500 io-zyklen :)
+2015-10-11 14:29:00,masterq32,"okay, nevermind"
+2015-10-11 14:29:02,masterq32,hab mein problem gefixed
+2015-10-11 14:43:06,darklink,The interactive debug shell was started.
+2015-10-11 14:43:06,darklink,> Shell closed.
+2015-10-11 14:43:06,darklink,Transmit stats: 30545622 times waited; 114 bytes transferred.
+2015-10-11 15:29:21,masterq32,hast du erfahrung im lesen von decorated c++ names?
+2015-10-11 15:39:36,darklink,?
+2015-10-11 15:39:58,masterq32,ich such grade mit stack traces nach meinen memory leaks
+2015-10-11 15:40:08,masterq32,_ZN3ker10DictionaryINS_6StringES1_EC1Ev
+2015-10-11 15:40:13,masterq32,"das hier is noch relativ klar, aber :D"
+2015-10-11 15:42:14,darklink,"echo ""_ZN3ker10DictionaryINS_6StringES1_EC1Ev"" | c++filt"
+2015-10-11 15:42:30,darklink,"ker::Dictionary<ker::String, ker::String>::Dictionary() oder?"
+2015-10-11 15:42:46,masterq32,gute frage
+2015-10-11 15:42:47,masterq32,kann hinhauen
+2015-10-11 15:42:51,masterq32,danke für das tool
+2015-10-11 15:43:16,darklink,ich habs nicht geschrieben^^
+2015-10-11 15:43:29,masterq32,"egal, du hast mich darauf hingewiesen"
+2015-10-11 15:43:35,darklink,"jo, kp"
+2015-10-11 15:46:10,darklink,du kannst btw auch objdump -d da reinpipen
+2015-10-11 15:46:26,masterq32,nice :D
+2015-10-11 15:46:31,darklink,und kriegst anstatt dieser kryptischen namen überall richtige namen
+2015-10-11 15:47:20,masterq32,"objdump -d kernel | grep -i 1138E2 -B 50 | grep -e "">:$"" | tail -n 1 | sed -E ""s|.*<(.*)>:|\1|"" | c++filt"
+2015-10-11 15:47:21,masterq32,yay _D
+2015-10-11 15:47:36,Sur3,"ich hab grad mal ein paar timingtests unter qemu gemacht, was mich am meisten erstaunt hat ist wohl, daß dec ecx jnz schneller ist als loop und daß das vertauschen zweier register mit 3mov und xchg fast gleichschnell und mit xor langsamer ist"
+2015-10-11 15:48:33,darklink,Warum testest du das?
+2015-10-11 15:48:36,darklink,:P
+2015-10-11 15:49:09,Sur3,um meinen asm code zu optimieren natürlich
+2015-10-11 15:49:14,Sur3,ich will die timingtests auch gleich mal auf richtiger hw machen aber dafür muß ich erstmal ne neue partition anlegen..
+2015-10-11 15:51:08,masterq32,so
+2015-10-11 15:51:18,masterq32,ich hab jetzt ein stacktrace programm :)
+2015-10-11 15:51:23,darklink,^^^^
+2015-10-11 15:51:24,Sur3,cool
+2015-10-11 15:51:42,darklink,ich versuche qemu im realmode zu triplefaulten
+2015-10-11 15:51:49,masterq32,lol why? :D
+2015-10-11 15:51:55,darklink,weil deswegen :)
+2015-10-11 15:51:56,Sur3,warum machst du das? :P
+2015-10-11 15:52:01,Sur3,:D
+2015-10-11 15:52:36,masterq32,http://mq32.de/?x77c
+2015-10-11 15:52:39,masterq32,so muss das aussehen :D
+2015-10-11 15:53:51,Sur3,"und lock bts läuft übrigens schneller beim locken eines mutex als xchg aber mov ist scheller beim freigeben als btr irgendwie auch logisch, ich bin mal auf die testergebnisse auf nativer hw gespannt ^^"
+2015-10-11 15:55:51,Sur3,"was ich mir grad nicht erklären kann ist daß das vertauschen von zwei variablen mit mov schneller ist als mit xor, aber das nullsetzen einer variable ist mit xor schneller als mit mov, das ist irgendwie seltsam, man sollte meinen entweder der eine oder der andere befehl ist schneller, vllt hat qemu da irgendwelchen abkürzungscode drin für manche befehle"
+2015-10-11 15:55:53,darklink,klappt
+2015-10-11 15:57:07,darklink,http://pastebin.com/Uh0izpgG
+2015-10-11 15:58:08,Sur3,nice
+2015-10-11 15:58:24,masterq32,und das crashed ?:D
+2015-10-11 15:58:41,Sur3,warum springst du zu start bevor du den code ausführst?
+2015-10-11 16:00:52,darklink,"weil manche biose zu 0x07C0:0x0000 springen, andere nach 0x0000:0x7C00"
+2015-10-11 16:01:15,masterq32,ah
+2015-10-11 16:01:31,Sur3,aso
+2015-10-11 16:01:38,darklink,"theorethisch könnten biose zu anderen virtuellen addressen springen, solange die physische 0x7C00 ist"
+2015-10-11 16:01:45,darklink,s/00/000/
+2015-10-11 16:03:44,Sur3,sämtliche systeme die ich getestet hab sind immer bei 0:7c00 gestartet ist das nicht in der bios-spezifikation so festgelegt meien ich?
+2015-10-11 16:04:07,Sur3,aso moment nee
+2015-10-11 16:06:27,Sur3,ich hab es implizit auf dei adresse gesetzt ohne direkt zu springen :D
+2015-10-11 16:06:35,darklink,die bios spefikation legt afaik nur die physische addresse gesetzt
+2015-10-11 16:07:04,darklink,"das bios darf zu jeder virtuellen addresse springen, falls die physische gleich 0x7C000 ist"
+2015-10-11 16:07:23,darklink,0x7C00*
+2015-10-11 16:07:41,Sur3,mein bootloader relokalisiert sich nämlich zu 0:500 und lädt dann das OS nach 0:700 ^^
+2015-10-11 16:08:22,darklink,^^
+2015-10-11 16:08:34,darklink,ich würd nen farjump am anfang machen
+2015-10-11 16:09:21,Sur3,nee wozu ich mach einfach das hier http://pastebin.com/Y1dFLsLS
+2015-10-11 16:11:30,masterq32,"yay, normale ausführung reduziert auf 45 ""leaks"""
+2015-10-11 16:11:32,masterq32,wird langsam
+2015-10-11 16:13:01,masterq32,also wird langsam schneller :D
+2015-10-11 16:14:11,Sur3,"kann ich mein os irgendwie in ne fat partition packen, dann muß ich in dem bootsektor des FAT die reservierten sektoren angeben oder?"
+2015-10-11 16:20:50,Sur3,ich hab mein os sonst immer mit dd auf eine gesonderte partition gepackt aber überleg grad ob das ncith irgendwie besser geht
+2015-10-11 16:23:19,Sur3,vllt zieh ich mir mal die multiboot-spezifikation rein
+2015-10-11 16:29:14,masterq32,_GLOBAL__sub_I_opcodes.cpp
+2015-10-11 16:29:22,masterq32,das dürfte doch die sektion für initialisierung sein
+2015-10-11 16:29:26,masterq32,"von opcodes.cpp, oder?"
+2015-10-11 16:37:38,masterq32,"""ker::Dictionary<ker::String, OpCode>::Dictionary(std::initializer_list<ker::Pair<ker::String, OpCode> > const&)"""
+2015-10-11 16:37:45,masterq32,dat zeug gibts eigentlich nicht mehr :D
+2015-10-11 16:37:51,masterq32,ich frag mich wo das her kommt ^^
+2015-10-11 16:51:50,masterq32,yay
+2015-10-11 16:51:54,masterq32,es wird weniger
+2015-10-11 16:52:51,darklink,was zum teufel
+2015-10-11 16:52:51,darklink,"io/keyboard.cpp:23:57: error: no matching function for call to ‘MTGosHAL::IDT::request(int, void (MTGosHAL::Keyboard::*)(cpu_state*))’"
+2015-10-11 16:53:17,masterq32,dein irq handler?
+2015-10-11 16:53:24,darklink,warum wird nicht void(*)(struct cpu_state*) übergeben...
+2015-10-11 16:53:47,masterq32,wie sieht request aus?
+2015-10-11 16:53:55,darklink,ich muss nur casten
+2015-10-11 16:53:55,masterq32,und was wird erwartet?
+2015-10-11 16:53:59,masterq32,ohje :D
+2015-10-11 16:54:03,masterq32,lieber nicht 
+2015-10-11 16:54:07,darklink,"auto request(uint8_t intr, void (*handler)(struct cpu_state*)) -> bool;"
+2015-10-11 16:54:18,darklink,also ein und dasselbe
+2015-10-11 16:54:33,darklink,nur muss ich das namespace und die klasse wegcasten
+2015-10-11 16:54:40,masterq32,nein
+2015-10-11 16:54:49,masterq32,das obere ist ein memberfunction pointer
+2015-10-11 16:54:56,masterq32,also 
+2015-10-11 16:55:02,masterq32,"auto request(uint8_t intr, void (*Keyboard::handler)(struct cpu_state*)) -> bool;"
+2015-10-11 16:55:15,masterq32,"ähm auto request(uint8_t intr, void (Keyboard::*handler)(struct cpu_state*)) -> bool;"
+2015-10-11 16:55:16,masterq32,so
+2015-10-11 16:55:23,masterq32,die methode muss statisch sein
+2015-10-11 16:55:27,masterq32,"und darf kein ""this"" erwarten"
+2015-10-11 16:55:56,darklink,"ich möchte nicht nur Keyboards haben, die IRQ-handler requesten dürfen"
+2015-10-11 16:56:04,masterq32,ja
+2015-10-11 16:56:08,masterq32,"static auto request(uint8_t intr, void (*handler)(struct cpu_state*)) -> bool;"
+2015-10-11 16:56:11,masterq32,dann gehts ;)
+2015-10-11 16:56:12,darklink,BZW interrupt handler
+2015-10-11 16:56:28,masterq32,wenn du ne instanz haben willst
+2015-10-11 16:56:33,masterq32,musst du dir nen wrapper bauen
+2015-10-11 16:57:43,darklink,ich greife btw in der funktion request auf member zu
+2015-10-11 16:57:51,masterq32,okay
+2015-10-11 16:57:55,masterq32,dann musst du das ganze wrappen
+2015-10-11 16:58:11,darklink,oder zweimal casten um warnungen zu vermeiden
+2015-10-11 16:58:19,darklink,und fehler
+2015-10-11 16:58:26,masterq32,rufst du das dann auch mit this als ersten parameter auf?
+2015-10-11 16:58:39,darklink,ne
+2015-10-11 16:58:43,masterq32,dann wirds knallen
+2015-10-11 16:58:47,darklink,"if(!idt->request(0x21, (void(*)(struct cpu_state))((void *)&MTGosHAL::Keyboard::handleIRQ1))) {"
+2015-10-11 16:59:04,darklink,äääh
+2015-10-11 16:59:20,masterq32,"class { static auto request(uint8_t intr, void (*handler)(struct cpu_state*)) -> bool;  }"
+2015-10-11 16:59:25,masterq32,dann gehts
+2015-10-11 16:59:30,masterq32,"class { auto request(uint8_t intr, void (*handler)(struct cpu_state*)) -> bool; }"
+2015-10-11 16:59:33,masterq32,das ist eigentlich
+2015-10-11 16:59:41,masterq32,"class { static auto request(Keyboard *this, uint8_t intr, void (*handler)(struct cpu_state*)) -> bool; }"
+2015-10-11 17:00:56,darklink,wie geht denn die warnung weg: io/keyboard.cpp:23:84: warning: converting from ‘void (MTGosHAL::Keyboard::*)(cpu_state*)’ to ‘void*’ [-Wpmf-conversions]
+2015-10-11 17:01:21,masterq32,gar nicht afaik
+2015-10-11 17:01:28,masterq32,memberfunctionpointers sind da so ne sache
+2015-10-11 17:05:14,darklink,naja hab gecheatet mit -Wno-pmf-conversion
+2015-10-11 17:05:46,masterq32,wird immernoch nicht funktionieren :D
+2015-10-11 17:05:57,masterq32,oder hast du die signatur angepasst?
+2015-10-11 17:07:50,darklink,zwangsläufig ist es ja ein zeiger auf eine funktion
+2015-10-11 17:07:59,masterq32,"ja, das stimmt"
+2015-10-11 17:08:01,darklink,"da kann es egal sein, in welchem namespace/klasse sie ist"
+2015-10-11 17:08:05,masterq32,nein
+2015-10-11 17:08:11,darklink,this-> benutze ich nicht
+2015-10-11 17:08:18,masterq32,ist die methode statisch oder nichtß
+2015-10-11 17:08:20,masterq32,?
+2015-10-11 17:08:30,masterq32,"wenn du auf member zugreifst, verwendest du this"
+2015-10-11 17:08:56,darklink,äh ok
+2015-10-11 17:09:18,masterq32,das this-> ist nicht pflicht
+2015-10-11 17:09:21,masterq32,aber implizit vorhanden
+2015-10-11 17:09:29,darklink,und auf funktionen?
+2015-10-11 17:09:45,masterq32,methode oder funktion? :D
+2015-10-11 17:09:47,darklink,(obwohl die greifen genauso auf member zu)
+2015-10-11 17:10:04,darklink,äh ja
+2015-10-11 17:10:45,darklink,es gibt ein objekt namens keyboard im namespace
+2015-10-11 17:11:07,darklink,und darüber könnte ich die sachen zugreifen
+2015-10-11 17:11:29,masterq32,jo 
+2015-10-11 17:11:44,masterq32,nen tipp
+2015-10-11 17:11:52,masterq32,falls du nicht zuviel umstellen willst:
+2015-10-11 17:12:17,masterq32,class Keyboard { private: static Keyboard obj; static bool request(cpu_state*); };
+2015-10-11 17:12:29,masterq32,machst halt nen singleton
+2015-10-11 17:12:54,darklink,io/keyboard.cpp:20:61: error: cannot declare member function ‘static void MTGosHAL::Keyboard::handleIRQ1(cpu_state*)’ to have static linkage [-fpermissive]
+2015-10-11 17:12:54,darklink,  static auto Keyboard::handleIRQ1(struct cpu_state* cpu) -> void {
+2015-10-11 17:12:54,darklink, dazu sag ich nichts
+2015-10-11 17:13:22,masterq32,ja
+2015-10-11 17:13:33,masterq32,"static bei deklaration, nicht bei definition"
+2015-10-11 17:13:40,darklink,oh
+2015-10-11 17:13:41,masterq32,also in der klassendefinition
+2015-10-11 17:13:51,darklink,ich dachte man müsste static bei beidem machen
+2015-10-11 17:13:54,masterq32,ne
+2015-10-11 17:14:11,masterq32,mh
+2015-10-11 17:14:30,darklink,und kompiliert
+2015-10-11 17:14:34,masterq32,:)
+2015-10-11 17:14:37,darklink,danke
+2015-10-11 17:14:45,masterq32,kein ding
+2015-10-11 17:14:54,masterq32,kannst mich gerne zu c++ interna ausfragen :D
+2015-10-11 17:15:00,darklink,^^
+2015-10-11 17:15:03,masterq32,hab mittlerweile doch nen berg ahnung angesammlt :D
+2015-10-11 17:15:11,darklink,mein c++ ist eher c mit klassen
+2015-10-11 17:15:19,darklink,und mit nem auto-keyword
+2015-10-11 17:15:25,masterq32,:D
+2015-10-11 17:17:13,darklink,"meiner meinung nach sieht ""namespace foo { auto blah::blubb() -> blah; } besser aus als namespace foo { foo::blubb blubb::bar();"
+2015-10-11 17:17:56,masterq32,joar
+2015-10-11 17:17:57,darklink,ich sende dann mal das kommando 0xF4 an mein keyboard
+2015-10-11 17:18:00,masterq32,c++14 machts noch schöner
+2015-10-11 17:18:02,masterq32,:D
+2015-10-11 17:18:04,darklink,^^
+2015-10-11 17:18:07,darklink,ja ich weiß
+2015-10-11 17:18:29,darklink,muss man in klassendefinitionen diesen pfeil machen?
+2015-10-11 17:18:54,masterq32,hm?
+2015-10-11 17:18:55,masterq32,wie meinst?
+2015-10-11 17:19:13,darklink,class blah { public: auto blubb(); };
+2015-10-11 17:19:17,darklink,ich glaube schon
+2015-10-11 17:19:30,masterq32,ah
+2015-10-11 17:19:35,masterq32,"ja, den pfeil muss man immer machen"
+2015-10-11 17:19:40,darklink,ok
+2015-10-11 17:20:03,darklink,"dann kann ich ja jetzt die unnötigen ""-> void"" entfernen"
+2015-10-11 17:20:27,darklink,oder doch nicht
+2015-10-11 17:21:01,masterq32,nope
+2015-10-11 17:41:22,darklink,make clean; make
+2015-10-11 17:41:59,masterq32,:D
+2015-10-11 17:42:15,darklink,irc != console
+2015-10-11 17:42:29,masterq32,stimmt
+2015-10-11 17:44:20,darklink,warum springt der jetzt aus dem code hinaus?
+2015-10-11 17:44:31,masterq32,hm
+2015-10-11 17:44:36,masterq32,immer diese fragen
+2015-10-11 17:45:38,masterq32,"ich frage mich, warum 10 strings nicht gefreed werden"
+2015-10-11 17:47:12,darklink,äää
+2015-10-11 17:47:20,darklink,warum startet er den kernel 2x??
+2015-10-11 17:47:58,masterq32,:D
+2015-10-11 17:48:39,darklink,der returnt aus outb() nach inb() :O
+2015-10-11 17:48:53,masterq32,hö?
+2015-10-11 17:49:11,darklink,jetzt muss ich herausfinden wer den stack smasht
+2015-10-11 17:51:06,darklink,was?
+2015-10-11 17:55:36,darklink,http://bit.ly/1MlPIiO
+2015-10-11 17:56:06,darklink,wo beginnt denn DIESE funktion
+2015-10-11 17:58:42,darklink,warum inlined g++ die funktion nicht?
+2015-10-11 18:02:31,darklink,WAT THE
+2015-10-11 18:13:25,darklink,er springt mit undefinierten vtables
+2015-10-11 18:14:16,darklink,WAS ZUM
+2015-10-11 18:14:17,darklink,der springt wieder mit undefinierten vtables...
+2015-10-11 18:14:25,darklink,o
+2015-10-11 18:14:27,darklink,test?
+2015-10-11 18:14:51,darklink,...
+2015-10-11 18:14:59,darklink,das war ein lag
+2015-10-11 18:15:45,Sur3,echt ej die meiste zeit verpennt :-/
+2015-10-11 18:16:01,Sur3,aso lag ich hatte tag gelesen sry XD
+2015-10-11 18:17:26,darklink,mein kernel ist kaputt ohne grund
+2015-10-11 18:17:38,darklink,der übernimmt die vtables nicht?
+2015-10-11 18:17:49,darklink,ohne veränderung an der klasse!
+2015-10-11 18:17:56,XanClic,"Ich sags ungern, aber ohne Grund passiert recht wenig in dieser Welt"
+2015-10-11 18:24:26,darklink,warum klappt das nicht.
+2015-10-11 19:02:53,iksnagreb,moin
+2015-10-11 20:03:40,Sur3,is das der 2-transistor-kernel oder der z80 kernel? :D
+2015-10-11 20:03:46,Sur3,@darklink
+2015-10-11 20:10:48,Sur3,"krass ich hab 2010 nur eine woche gebraucht um meinen kernel von hw- auf sw-multitasking umzustellen, irgendwie hab ich jetzt das gefühl ich bin langsamer geworden seitdem.. xD"
+2015-10-11 20:11:02,Paddy,Kommt mir bekannt vor
+2015-10-11 20:11:14,Sur3,^^
+2015-10-11 20:24:15,Sur3,"so ich muß mal los meiner sis bei ihrer steuererklärung helfen, cya"
+2015-10-11 20:24:25,darklink,Wisst ihr was ich mehr hasse als kein karton mit doppeltem boden?
+2015-10-11 20:24:40,Sur3,ein cartoon mit doppeltem boden`?
+2015-10-11 20:25:08,darklink,"Ein Karton mit PC, wo die mainboardanleitung und der garantieschein unterm ersten boden ist"
+2015-10-11 20:25:18,Sur3,xD
+2015-10-11 20:25:22,darklink,ja
+2015-10-11 20:25:35,darklink,ich habe 3 monate gebraucht das zu finden
+2015-10-11 20:33:08,darklink,ich hab da übrigens auch zwei wlan antennen gefunden
+2015-10-11 20:33:23,darklink,jetzt habe ich drei wlan antennen für 2 slots
+2015-10-11 20:35:35,Sur3,nice ich brauch noch ne neue wlan antenne für meine handy ^^
+2015-10-11 20:35:45,Sur3,ich hab die interne ausversehn abgebrochen ^^
+2015-10-11 20:35:57,darklink,hab eine hiet
+2015-10-11 20:36:23,Sur3,ob die klein genug ist um komfortabel an ein händi zu passen? :D
+2015-10-11 20:37:38,darklink,die ist 3/4 die größe vom Motorola Moto E
+2015-10-11 20:38:16,Sur3,ok das müßte dann ja theoretisch sogar gehen
+2015-10-11 20:39:52,Sur3,ich frag dich morgen mal ob du in NRW wohnst muß jetzt los meine sis bringt mich sonst um wenn ich nicht bei ihrer steuererklärung helfe :D
+2015-10-11 20:39:55,darklink,aber die ist 10 Jahre alt

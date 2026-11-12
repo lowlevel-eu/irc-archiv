@@ -1,0 +1,506 @@
+date/time,nick,message
+2015-10-14 11:26:07,darklink,kevin: mein týndur-image ist weg
+2015-10-14 11:26:24,kevin,Hm?
+2015-10-14 11:27:01,darklink,es ist getýndurt!
+2015-10-14 11:28:15,kevin,"Du meinst, ""imageinn er týndur""?"
+2015-10-14 11:29:29,kevin,"Mein tyndur-Image ist ja dauernd weg, aber dann bau ich halt ein neues ;-)"
+2015-10-14 11:32:06,darklink,Solange nicht lost týndur geht
+2015-10-14 14:02:34,Sur3,bin ich blind oder gibts in LL-Wiki echt keinen artikel wie man sich ne eigene libc bastelt und benutzt?
+2015-10-14 14:03:25,SHyx0rmZ,imho gibt es da nicht so viel zu erklaeren
+2015-10-14 14:04:00,kevin,Ist im Wesentlichen eine statische Bibliothek wie jede andere auch
+2015-10-14 14:04:34,SHyx0rmZ,^
+2015-10-14 14:04:36,kevin,"Außer crt0.o (das Ding, das _start definiert), das darf nicht im Archiv drin sein"
+2015-10-14 14:06:17,Sur3,"o.O also ich hab jetzt den parameter -I gefunden, damit kann ich wohl meine header endlich in <> statt in """" einbinden, aber eine übersicht wie so eine libc aufgebaut sein muß wäre halt schon schön, also muß man printf und sowas auch selbst schreiben oder reicht es puts zu schreiben und man kann das printf dann irgendwie daraus generieren lassen?"
+2015-10-14 14:10:22,yayachiken,kannste machen wie du lustig bist
+2015-10-14 14:10:30,yayachiken,das ding muss halt den c standard erfüllen
+2015-10-14 14:10:41,kevin,"Faustregel: Was du nicht selber geschrieben hast, gibt es nicht"
+2015-10-14 14:11:19,kevin,"Du kannst natürlich auch eine fertige libc portieren, da musst du dann nur ein paar grundlegende Funktionen bereitstellen und der Rest baut darauf auf"
+2015-10-14 14:11:48,kevin,"Aber für den Anfang mach es selber, dass du weißt, wie das geht"
+2015-10-14 14:14:07,Sur3,"hm naja beim portieren muß man ja auch jede menge selber machen, lernt man wirklich so viel durch jede einzelne darauf aufbauende funktion selber zu schreiben, da scheint mir portieren dann doch sinniger?"
+2015-10-14 14:19:22,kevin,Musst du wissen
+2015-10-14 14:19:37,kevin,"Ich persönlich kenne die libc einigermaßen, weil ich einen guten Teil davon implementiert habe"
+2015-10-14 14:20:15,kevin,Stringfunktionen und sowas sind mir aber auch zu blöd
+2015-10-14 14:24:04,Sur3,joa stringfkt an sich sind ja nciht das problem aber fmt-string-funktionen haben ja beliebig viele argumente und so das find ich immer etwas verwirrend wie man die dann erkennen soll dafür muß man vermutlich den fmt-string selbst parsen etc und das scheint mir recht umständlich
+2015-10-14 14:48:52,kevin,"printf() und scanf() selber zu implementieren lohnt sich, finde ich"
+2015-10-14 14:49:03,kevin,Die sind definitiv nicht langweilig
+2015-10-14 14:49:09,kevin,Höchstens komisch oder kaputt oder sowas
+2015-10-14 14:53:59,Sur3,"ich hab grad schon probleme mit puts, weil ich stdout erst erstellen muß bevor ich was ausgeben kann, ist das dann so legitim nen char global zu definieren als zustandsvariable?.."
+2015-10-14 14:54:19,Sur3,char stdout=0;
+2015-10-14 14:54:19,Sur3,int puts(char*){
+2015-10-14 14:54:19,Sur3, if(stdout==0){
+2015-10-14 14:54:19,Sur3,  erstelle_stdout();
+2015-10-14 14:54:19,Sur3,  stdout=1;
+2015-10-14 14:54:20,Sur3, }
+2015-10-14 14:54:22,Sur3, write_stdout(char*);
+2015-10-14 14:54:24,Sur3,}
+2015-10-14 14:55:15,Sur3,"ok das argument brauch noch nen namen, aber mir gehts grad um die technik mit dem erstellen eines fensters bevor ich was ausgeben kann in meinem os"
+2015-10-14 15:03:45,kevin,"Ich würde stdin/out/err nicht erst erstellen, wenn eine Funktion aufgerufen wird, sondern beim Initialisieren der libc"
+2015-10-14 15:04:11,kevin,"Also als eins der Sachen, die _start() macht bevor es main() aufruft"
+2015-10-14 15:05:35,kevin,"Und du kannst einen char global definieren, aber ihn nicht stdout nennen, weil du nämlich schon ein FILE* stdout brauchst"
+2015-10-14 15:10:57,Sur3,"aso ok, ich hab ihn mal in stdlib_stdout umbenannt ^^"
+2015-10-14 15:12:43,Sur3,"beim start wollt ich es ncith initialisieren, weil ja vllt nicht jedes programm eine textausgabe braucht und dann wäre es unnötig dafür ein fenster zu erstellen, manche programme arbeiten ja vllt nur auf dateien oder sonstiges, gibt zwar selten ein programm was komplett ohne text auskommt aber möglich ist es ja immerhin ^^"
+2015-10-14 15:16:07,Sur3,"es könnte höchstens ein problem mit multithreading geben weil die operationen zum erstellen von stdout ja nciht atomar sind, da muß ich eventuell noch jeder ausgabefunktion nen weiteren mutex geben"
+2015-10-14 16:12:00,Sur3,"gibt es eine standardfkt die ein programm beim beenden auslößt, wie heißt die?"
+2015-10-14 16:12:19,Sur3,also bei gcc
+2015-10-14 16:12:47,XanClic,atexit() heißt die Funktion zum Registrieren
+2015-10-14 16:15:53,kevin,"Und nicht bei gcc, sondern bei libc"
+2015-10-14 16:17:10,Sur3,"hm nee nicht registrieren sondern einfach nur beenden, also es geht mir darum daß das program beim beendem meinem OS sagen soll daß es sich beendet, damit mein OS dann aufräumen und den task aus der queue schmeissen kann.."
+2015-10-14 16:18:34,XanClic,Das heißt exit()
+2015-10-14 16:18:41,XanClic,Oder _Exit()
+2015-10-14 16:19:04,kevin,War das nicht _exit() mit kleinem e?
+2015-10-14 16:19:16,XanClic,"Die Manpage sagt, es gibt beides und es ist äquivalent"
+2015-10-14 16:19:20,kevin,"Ah, na dann"
+2015-10-14 16:19:21,XanClic,"Aber ich glaube, laut C-Standard ist es _Exit"
+2015-10-14 16:19:24,Sur3,wo ist denn der unterscheid ob mit oder ohne unterstrich?
+2015-10-14 16:19:40,XanClic,> The  _Exit()  and  _exit()  functions  shall not call functions registered with atexit() nor any registered signal handlers.
+2015-10-14 16:19:53,Sur3,ahh
+2015-10-14 16:20:34,Sur3,cool und _exit wird automatisch aufgerufen wenn main am ende ankommt?
+2015-10-14 16:20:37,kevin,Im Prinzip geht _exit direkt zum Kernel und beendet während exit vorher aufräumt
+2015-10-14 16:20:49,kevin,"Nein, darum muss sich der Aufrufer von main() kümmern"
+2015-10-14 16:21:31,kevin,"Der Entrypoint ist ja nicht main, sondern _start, was Teil der libc ist"
+2015-10-14 16:21:57,Sur3,"also ich compilier mit gcc hallostdworld.c -o hellostd.x -m32 -mno-mmx -mno-sse -nostdlib -I./ -O2 -emain -Wl,-Ttext,0 -Wl,--oformat,binary"
+2015-10-14 16:22:16,kevin,"""--oformat,binary"" -- urgs..."
+2015-10-14 16:22:21,XanClic,"tja, und dein -emain sollte -e_start sein"
+2015-10-14 16:22:29,Sur3,aso
+2015-10-14 16:22:33,XanClic,"Oder gar nicht angegeben, weil ld wimre _start als Default nimmt"
+2015-10-14 16:22:39,kevin,Jo
+2015-10-14 16:23:12,kevin,"Eigentlich will man ja eh ein Linkerskript, aber vielleicht ist das dann schon fortgeschritten"
+2015-10-14 16:24:40,Sur3,dann pack ich also einfach ein _start in eine crt0.h und pack da main() und _exit() rein?
+2015-10-14 16:26:58,kevin,"crt0.c, wenn schon"
+2015-10-14 16:27:13,Sur3,"ok, danke"
+2015-10-14 16:27:21,kevin,"Möglicherweise auch crt0.S, das bleibt dir überlassen"
+2015-10-14 16:27:49,kevin,"tyndur hat eine crt0.c, die _start in einem Inlineassemblerblock definiert"
+2015-10-14 16:28:29,Sur3,ok
+2015-10-14 16:29:46,kevin,Falls du mal einen Blick darauf werfen willst: http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/modules/lib/crt0.c
+2015-10-14 16:30:25,Sur3,ah danke
+2015-10-14 16:33:18,Sur3,länger als erwartet und ganz schön viele #includes
+2015-10-14 16:33:43,darknet,ich habe ein kleines problem mit g++
+2015-10-14 16:34:41,Sur3,wo finde ich in dem tyndur-git die header also zB die stdio.h ich finde gerade nur stdio.c
+2015-10-14 16:35:57,darknet,"wenn ich ihn anweise an addresse 0x100000 zu linken, tut er das zwar auch, aber es ist auch physisch in der datei an addresse 0x100000"
+2015-10-14 16:37:20,Jonathan,Moin
+2015-10-14 16:38:04,darknet,hi
+2015-10-14 16:38:16,kevin,Moin
+2015-10-14 16:38:34,kevin,Sur3: src/modules/include
+2015-10-14 16:39:01,kevin,"Bzw. src/include für die Header, die sowohl von Kernel als auch Userspace benutzt werden, aber dazu gehört stdio.h nicht"
+2015-10-14 16:39:02,Sur3,thx
+2015-10-14 16:40:14,Sur3,hab schon gefunden was ich gesucht hatte #ifndef _STDIO_H_ das werd ich bei mir auch reinpacken ^^
+2015-10-14 16:45:49,Sur3,hm er scheint die crt0.c nicht standardmäßig aus dem -I zu includen
+2015-10-14 16:47:17,kevin,Die musst du einzeln dazulinken
+2015-10-14 16:47:28,Sur3,ok
+2015-10-14 16:47:51,kevin,"Oder du baust einen richtigen Crosscompiler für dein OS und patchst/konfigurierst den entsprechend, dass er die Datei selber findet"
+2015-10-14 16:48:52,Sur3,crt0.c:5:1: Warnung: »noreturn«-Funktion kehrt zurück [standardmäßig aktiviert]
+2015-10-14 16:48:52,Sur3, }
+2015-10-14 16:49:38,Sur3,"die kehrt nicht zurück die verschwindet in einem interrupt, kann ich die fehelrmeldung einfach ignorieren oder wie kann ich dem sagen daß die ncith zurückkehrt?"
+2015-10-14 16:50:07,kevin,tyndur hat ein while(1); am Ende
+2015-10-14 16:50:29,kevin,"Mit geschickt platzierten Attributen sollte es auch ohne das gehen, aber ist gut genug"
+2015-10-14 16:50:42,Sur3,ah verstehe
+2015-10-14 16:50:49,iksnagreb,moin
+2015-10-14 16:53:54,Sur3,"ok jetzt hat es mein hello world compiliert, dann bin ich mal gespannt ob er das ausführen kann.. ^^"
+2015-10-14 16:55:45,darknet,Ich würde für betriebsysteme -Werror als compilerflag nehmen
+2015-10-14 16:58:48,Sur3,"hm ok irgendwo scheint noch ein fehelr zu sein, das werd ich ein andermal debuggen"
+2015-10-14 16:59:37,darknet,irgendwo scheint ein fehler zu sein. das kann ich aber nicht debuggen
+2015-10-14 17:00:05,Sur3,warum nicht?
+2015-10-14 17:00:36,darknet,"es ist äußerst schwer etwas zu debuggen, was nicht startet"
+2015-10-14 17:01:11,darknet,(der kernel lädt nicht weil der von g++ in das 2. MB der datei verschoben wird - mit dem multiboot header)
+2015-10-14 17:02:19,Sur3,"aso, naja bei mir schmiert das programm ab und reißt den kernel mit sich, deswegen muß ich erstmal den kernel absichern oder das programm disassmeblieren um zu sehen was schief geht"
+2015-10-14 17:02:50,darknet,^^
+2015-10-14 17:03:06,darknet,ich kompilier wohl erstmal gcc für mein OS
+2015-10-14 17:05:19,Sur3,"ahh wenn ich nen while(1) for das puts(); packe stürtzt der kernel nciht ab, also scheint was mit dem puts in meiner libc nciht zu stimmen, das werd ich dann ein andermal debuggen"
+2015-10-14 17:06:22,darknet,^^
+2015-10-14 17:07:03,Sur3,denne
+2015-10-14 18:54:10,darknet,hey master
+2015-10-14 18:54:18,masterq32,heyhey
+2015-10-14 18:54:33,darknet,ich habe es teilweise gefixt
+2015-10-14 18:54:35,masterq32,nice
+2015-10-14 18:54:38,masterq32,was genau war denn los?
+2015-10-14 18:54:51,darknet,g++ von kaputtubuntu ist kaputt
+2015-10-14 18:54:55,masterq32,haha okay :D
+2015-10-14 18:55:01,masterq32,"use arch, be free :D"
+2015-10-14 18:55:02,darknet,jetzt ist es nurnoch die vtable
+2015-10-14 18:55:52,darknet,"aber du solltest mal ausprobieren ob du ne ca. 1,5 MB binary kriegt, wenn du make laufen lässt"
+2015-10-14 18:56:02,masterq32,bei dir?
+2015-10-14 18:56:19,darknet,bei dir natürlich
+2015-10-14 18:56:29,masterq32,also im projekt meine ich :D
+2015-10-14 18:56:31,masterq32,also dein projekt :P
+2015-10-14 18:56:32,darklink,ja
+2015-10-14 18:57:05,masterq32,"1,1 M"
+2015-10-14 18:57:41,darklink,dann ist mein system g++ nicht kaputt
+2015-10-14 18:58:10,darklink,"die lösung war, dass ich einfach das mithilfe eines crosscompilers für i686-elf kompiliere"
+2015-10-14 18:59:06,masterq32,hm
+2015-10-14 18:59:12,masterq32,ich frag mich aber was da bei dir schief geht
+2015-10-14 18:59:20,darklink,keine ahnung
+2015-10-14 18:59:27,darklink,aber die vtable ist immernoch kaputt :P
+2015-10-14 19:00:21,masterq32,das is echt weird :D
+2015-10-14 19:01:27,darklink,ja.
+2015-10-14 19:03:09,darklink,"Und was falsches tu ich ja eigentlich, oder?"
+2015-10-14 19:03:19,masterq32,scheint so :D
+2015-10-14 19:03:29,masterq32,ich wäre mittlerweile so pissed dass ich einfach mal alle makefiles neu geschrieben hätte :D
+2015-10-14 19:06:05,darklink,^^
+2015-10-14 19:06:14,masterq32,manchmal ist das ne ganz gute lösung :D
+2015-10-14 19:06:23,darklink,aber die makefiles sind eigendlich gut
+2015-10-14 19:09:17,darklink,Das einzige was nicht funktionieren könnte sind die flags
+2015-10-14 19:09:21,darklink,was sind denn deine?
+2015-10-14 19:09:32,masterq32,https://github.com/MasterQ32/trainOS/blob/master/Depfile
+2015-10-14 19:11:25,darklink,-Wall [...] -Wall
+2015-10-14 19:11:28,darklink,lol
+2015-10-14 19:11:29,masterq32,:D
+2015-10-14 19:11:32,masterq32,ups :P
+2015-10-14 19:11:57,darklink,"noch ein zweites mal, damit der compiler wirklich alle warnungen ausspuckt"
+2015-10-14 19:12:11,masterq32,jap :D
+2015-10-14 19:13:21,masterq32,-g ist auch überall drin
+2015-10-14 19:14:00,darklink,qemu: fatal: Trying to execute code outside RAM or ROM at 0x00000000f000ff53
+2015-10-14 19:14:01,darklink,ne
+2015-10-14 19:14:21,XanClic,NULL zu dereferenzieren ist immer doof
+2015-10-14 19:14:30,darklink,ja
+2015-10-14 19:14:43,darklink,noch blöder ist wenn eine kaputte vtable das macht
+2015-10-14 19:14:56,darklink,die sichn nicht fixen lässt
+2015-10-14 19:17:16,masterq32,ja
+2015-10-14 19:19:59,darklink,"ich mache jetzt ein bisschen was von dem code kaputt, in der hoffnung die vtable funktioniert dadurch besser"
+2015-10-14 19:20:07,masterq32,haha :D
+2015-10-14 19:20:10,masterq32,break it
+2015-10-14 19:20:10,masterq32,!
+2015-10-14 19:20:23,darklink,ich fixe es auch wieder :P
+2015-10-14 19:21:31,darklink,und einen bug in clrscr() gefixt
+2015-10-14 19:25:59,darklink,WAT?
+2015-10-14 19:27:39,darklink,äh ja
+2015-10-14 19:28:24,masterq32,:D
+2015-10-14 19:33:23,masterq32,"mal gucken wie viel aufwand es ist, ein ""elseif"" zu implementieren"
+2015-10-14 19:34:17,darklink,ok
+2015-10-14 19:35:06,masterq32,joar :D
+2015-10-14 19:35:14,masterq32,http://mq32.de/?x785
+2015-10-14 19:35:17,masterq32,das rückt halt einfach zu weit ein
+2015-10-14 19:35:50,darklink,oh
+2015-10-14 19:36:05,masterq32,japp :D
+2015-10-14 19:36:07,masterq32,aber hey
+2015-10-14 19:36:14,masterq32,das ist der scancode irq ausm forum
+2015-10-14 19:36:18,masterq32,in meiner programmiersprache :)
+2015-10-14 19:36:18,masterq32,<3
+2015-10-14 19:36:21,darklink,^^
+2015-10-14 19:36:24,darklink,congrats
+2015-10-14 19:36:26,masterq32,und es tut ohne probleme
+2015-10-14 19:36:41,darklink,ich muss jetzt code ausm forum klauen
+2015-10-14 19:36:43,masterq32,:D
+2015-10-14 19:36:50,masterq32,"bin mal afk, kochen und so"
+2015-10-14 19:36:54,darklink,für globale konstruktoren und destuktoren
+2015-10-14 19:36:56,darklink,bg
+2015-10-14 19:37:26,masterq32,https://github.com/MasterQ32/trainOS/blob/master/kernel.ld#L29
+2015-10-14 19:37:30,darklink,s/forum/wiki/
+2015-10-14 19:37:33,masterq32,https://github.com/MasterQ32/trainOS/blob/master/src/cplusplus.cpp#L55
+2015-10-14 19:38:16,masterq32,here you go
+2015-10-14 19:39:21,darklink,danke
+2015-10-14 19:39:42,darklink,danke für alles :)
+2015-10-14 19:42:44,masterq32,kein ding
+2015-10-14 19:43:16,masterq32,für was steht mtgos eigentlich?
+2015-10-14 19:43:21,masterq32,mtg = magic the gathering? :D
+2015-10-14 19:44:59,masterq32,"problem ist grade bei mir noch, dass ich Electronics erst in eine legale Form bringen muss, bevor ich das publishe"
+2015-10-14 19:45:10,masterq32,da sind noch teile nicht bzw. falsch lizensiert
+2015-10-14 19:46:00,darklink,ne
+2015-10-14 19:46:07,masterq32,schade!
+2015-10-14 19:46:35,darklink,"die abkürzung benutz ich seit jahren, weiß aber nurnoch die bedeutung des ersten buchstabens"
+2015-10-14 19:46:53,masterq32,haha :D
+2015-10-14 19:46:56,masterq32,erzähl
+2015-10-14 19:47:53,darklink,morten
+2015-10-14 19:47:57,darklink,mein vorname
+2015-10-14 19:48:02,masterq32,ah
+2015-10-14 19:48:09,masterq32,wie heißt du mit nachnamen? :D
+2015-10-14 19:48:14,masterq32,so viele mortens gibts nicht
+2015-10-14 19:48:21,masterq32,aber der name ist total geil
+2015-10-14 19:48:35,darklink,D.
+2015-10-14 19:48:56,darklink,Der nachname ist nämlich NOCH seltener
+2015-10-14 19:49:00,masterq32,aha? :D
+2015-10-14 19:49:30,darklink,wenn ich dir ihn sage kannst du ganz leicht herausfinden wo ich wohne
+2015-10-14 19:49:38,masterq32,ohje :D
+2015-10-14 19:50:26,darklink,passiert nichts.
+2015-10-14 19:50:39,darklink,die konstruktorliste ist leer
+2015-10-14 19:50:46,masterq32,globale objekte vorhanden?
+2015-10-14 19:50:57,darklink,in namespaces
+2015-10-14 19:51:03,masterq32,hm
+2015-10-14 19:51:05,masterq32,sollte tun
+2015-10-14 19:51:06,masterq32,rwxrwxrwx@synnergy.net
+2015-10-14 19:51:11,masterq32,epische email
+2015-10-14 19:51:24,darklink,laut handy hab ich ne epische telefonnummer
+2015-10-14 19:51:30,darklink,aber die stimmt leider nicht
+2015-10-14 19:52:09,masterq32,:D
+2015-10-14 19:52:20,darklink,+4917600000000
+2015-10-14 19:52:33,masterq32,yay :D
+2015-10-14 19:52:35,masterq32,das wäre sehr geil
+2015-10-14 19:52:39,darklink,ja
+2015-10-14 19:52:47,masterq32,n kumpel von mir hat ne virtuelle schießbude programmiert
+2015-10-14 19:52:55,masterq32,sein leveldesign hieß auch morten :D
+2015-10-14 19:53:12,darklink,^^
+2015-10-14 19:53:22,darklink,ich bin der einzige programmierer der klasse
+2015-10-14 19:53:28,masterq32,ist bei mir nicht mehr so
+2015-10-14 19:53:30,masterq32,war aber so
+2015-10-14 19:53:32,masterq32,in der schule
+2015-10-14 19:53:50,darklink,ich glaube sogar im jahrgang
+2015-10-14 19:54:00,masterq32,bei mir war: an der schule
+2015-10-14 19:54:07,darklink,oh
+2015-10-14 19:54:16,masterq32,gefühlt: in der stadt :D
+2015-10-14 19:54:20,darklink,^^
+2015-10-14 19:54:25,masterq32,ich war relativ aktiv in der tanzschule
+2015-10-14 19:54:35,darklink,ich mochte tanzen noch nie
+2015-10-14 19:54:37,masterq32,kannte also quasi 60% aller jugendlichen im umkreis
+2015-10-14 19:54:53,masterq32,"und war halt schon bitter, ich war bis auf einen weiteren der einzige technikbegeisterte mensch"
+2015-10-14 19:55:59,darklink,die einzige sonstige technikbegeisterung in unserer klasse geht um WOT und Minecraft
+2015-10-14 19:56:35,darklink,beides läuft relativ flüssig auf ~10 Jahre alten systemen
+2015-10-14 19:56:51,masterq32,:D
+2015-10-14 19:57:36,darklink,"global in nem namespace - heißt das, dass der konstuktor in *ctors ist?"
+2015-10-14 19:58:15,masterq32,ja
+2015-10-14 19:58:43,darklink,mit welchem flag?
+2015-10-14 19:59:00,masterq32,ähm sekunde
+2015-10-14 20:02:05,masterq32,brauchst keines
+2015-10-14 20:02:20,darklink,hm. dann mach ich sonstewas falsch
+2015-10-14 20:03:49,masterq32,http://www.bright-shadows.net/tutorials/dtors.txt
+2015-10-14 20:03:53,masterq32,ich eigne mir jetzt mal das an
+2015-10-14 20:03:55,masterq32,hey Sur3
+2015-10-14 20:04:03,Sur3,hey masterq32
+2015-10-14 20:04:04,darklink,hey sur3
+2015-10-14 20:04:16,Sur3,hey darklink
+2015-10-14 20:05:38,Sur3,irgendwie erinnert mit der name darklink an den dunkelelf aud die letzte schlacht der elfen :D weil link is ja dieser elf aus zelda ^^
+2015-10-14 20:05:48,darklink,ja
+2015-10-14 20:06:39,Sur3,so jetzt hab ich erstmal bis freitag/samstag programmierpause an meinem OS weil das auf meinem anderen rechner liegt wo ich erst am we wieder bin ^^
+2015-10-14 20:07:07,Sur3,bin so hastig aufgebrochen daß ich den code nichtmehr kopieren konnte ^^
+2015-10-14 20:07:42,Sur3,war svenska heut schon hier?
+2015-10-14 20:08:41,masterq32,"ohje, die letzte schlacht der elfen "
+2015-10-14 20:08:42,masterq32,:D
+2015-10-14 20:09:15,darklink,fragen wir den log
+2015-10-14 20:09:27,Sur3,joa ich such grad den befehl xD
+2015-10-14 20:09:41,darklink,ja ca. um 17 uhr
+2015-10-14 20:09:50,Sur3,aso thx
+2015-10-14 20:09:51,darklink,ähm warte
+2015-10-14 20:09:53,darklink,ne
+2015-10-14 20:11:32,darklink,[00:01:14] *** Quits: Svenska (~Svenska@euirc-807a59d4.hh.se) (Quit: Hej då... dags att gå hem!)
+2015-10-14 20:11:52,Sur3,"er hatte sich nämlich gestern empört daß ich meinen kernel in den reservierten bereich der FAT kopieren wollte, aber meines wissens ist der Bereich genau für solche Zwecke gedacht"
+2015-10-14 20:12:04,darklink,eben
+2015-10-14 20:12:15,darklink,glaube ich auch
+2015-10-14 20:13:31,darklink,Ich kriege triple-faults!
+2015-10-14 20:13:46,masterq32,@darklink
+2015-10-14 20:13:49,darklink,ja?
+2015-10-14 20:13:50,Sur3,dann reparier deinen double fault handler ;)
+2015-10-14 20:13:57,masterq32,https://gcc.gnu.org/bugzilla/show_bug.cgi?id=46770
+2015-10-14 20:14:08,darklink,das ist ein fortschritt
+2015-10-14 20:14:08,masterq32,Using .init_array/.fini_array instead of .ctors/.dtors removes the need for the 
+2015-10-14 20:14:31,darklink,eben gerade noch sprang er nach [0]
+2015-10-14 20:15:06,masterq32,kaum macht mans richtig gehts :D
+2015-10-14 20:15:10,masterq32,.fini_array
+2015-10-14 20:15:12,masterq32,nicht .dtors
+2015-10-14 20:15:42,darklink,"ich hab noch *(.ctors) hinzugefügt, was in deinem linkerscript nicht drinne war"
+2015-10-14 20:15:58,darklink,^^
+2015-10-14 20:16:08,masterq32,gibts nich mehr :P
+2015-10-14 20:16:13,masterq32,wie mach ich nen account im wiki? :D
+2015-10-14 20:17:22,Sur3,was machen denn diese finiarrays brauch man das auch für gcc oder nur für g++?
+2015-10-14 20:17:30,masterq32,sowohl als auch
+2015-10-14 20:17:35,masterq32,das ist eine liste von destruktoren
+2015-10-14 20:17:59,masterq32,"man kann auch in c destruktoren erstellen, welche am ende des programms aufgerufen werden"
+2015-10-14 20:18:02,Sur3,aso  und das ist platzsparender als die alte variante mit dtors?
+2015-10-14 20:18:50,darklink,"masterq32, xanClick oder derhartmut  fragen"
+2015-10-14 20:18:57,masterq32,ah :D
+2015-10-14 20:19:17,XanClic,derhartmut wird vermutlich eine mittlere Antwortzeit von einem Jahr haben
+2015-10-14 20:19:21,XanClic,Und ich hab keinen Adminzugriff
+2015-10-14 20:19:26,XanClic,Also äh ja…
+2015-10-14 20:19:29,masterq32,ouha :D
+2015-10-14 20:19:30,XanClic,Spannende Frage!
+2015-10-14 20:19:32,Sur3,ups
+2015-10-14 20:19:36,XanClic,"bluecode war noch Admin, aber äh…"
+2015-10-14 20:19:55,XanClic,Vielleicht kann uns Antoine ja helfen ;-)
+2015-10-14 20:20:13,Antoine,Huch
+2015-10-14 20:20:16,Sur3,also ist das wiki queasi tod weil es keinen admin mehr gibt? dann sollte ich meine seite lieber speichern falls der server offline geht XD
+2015-10-14 20:20:18,masterq32,"is scheiße, wenn ne community einschläft :D"
+2015-10-14 20:20:20,darklink,mist ich hab dich mit desl verwechselt
+2015-10-14 20:20:39,XanClic,"Antoine, wie sieht das mit Wikiaccounts anlegen aus?"
+2015-10-14 20:20:44,masterq32,einfach mal alle idler anpingen ^^
+2015-10-14 20:20:48,darklink,ja
+2015-10-14 20:20:58,darklink,komm wir wecken tyndur auf
+2015-10-14 20:21:07,darklink,"(ich weiß, dass tyndur ein bot ist)"
+2015-10-14 20:21:15,masterq32,:D
+2015-10-14 20:21:29,masterq32,"tyndur ist ein bot, der auf tyndur läuft, oder?"
+2015-10-14 20:21:40,XanClic,Eins davon stimmt
+2015-10-14 20:21:41,darklink,nein
+2015-10-14 20:21:45,Sur3,tyndur läuft bestimt auf dem selbern server wie das wiki und kann sich da reinhacken :D
+2015-10-14 20:21:51,masterq32,ah :D
+2015-10-14 20:21:55,darklink,tyndur ist ein bot der verloren gegangen ist
+2015-10-14 20:22:11,XanClic,Ohhhh DesL ist ja auch Admin
+2015-10-14 20:22:12,darklink,was kann denn tyndur?
+2015-10-14 20:22:17,XanClic,Hoho!
+2015-10-14 20:22:26,Sur3,!help
+2015-10-14 20:22:28,darklink,Böse user kicken
+2015-10-14 20:22:34,darklink,@help
+2015-10-14 20:22:36,darklink,%help
+2015-10-14 20:22:52,Antoine,XanClic: Das kann ich wohl machen wenn sonst niemand kann
+2015-10-14 20:23:20,XanClic,"Antoine, vielleicht kann DesL noch, aber die anderen Admins scheinen eher unabkömmlich"
+2015-10-14 20:23:34,darklink,endlich!
+2015-10-14 20:23:35,XanClic,"Also geb ich das dann mal weiter, DesL, Antoine, [20:16:13] <masterq32> wie mach ich nen account im wiki? :D"
+2015-10-14 20:23:36,XanClic,:-)
+2015-10-14 20:23:40,darklink,yaaay
+2015-10-14 20:23:43,XanClic,"So, nicht mehr mein Problem *duck*"
+2015-10-14 20:24:11,Antoine,Ich kann das schon mal schnell machen wenn mir jemand Benutzername und Emailadresse zukommen lässt.
+2015-10-14 20:24:22,XanClic,thx
+2015-10-14 20:24:49,XanClic,"masterq32, ^"
+2015-10-14 20:25:09,masterq32,"MasterQ32, lowlevel@mq32.de"
+2015-10-14 20:25:11,darklink,wie kann man im wiki sein passwort ändern?
+2015-10-14 20:25:43,darklink,ah da so versteckt
+2015-10-14 20:25:44,darklink,egal
+2015-10-14 20:26:55,Antoine,masterq32: Erledigt. Du solltest eine email mit einem zufälligen Passwort erhalten.
+2015-10-14 20:26:59,masterq32,"voll geil, danke"
+2015-10-14 20:27:00,masterq32,:D
+2015-10-14 20:27:06,masterq32,passwort ist schon geändert
+2015-10-14 20:27:20,masterq32,dann füg ich mal noch infos zu .init_array und .fini_array zum wiki dazu
+2015-10-14 20:27:48,masterq32,:D
+2015-10-14 20:28:27,Sur3,"@masterq32 cool, werd ich dann nacher lesen, wenn der artikel fertig ist"
+2015-10-14 20:28:32,masterq32,:D
+2015-10-14 20:28:39,masterq32,ja n paar sachen sind da
+2015-10-14 20:28:43,Paddy,Moin Antoine ;-)
+2015-10-14 20:28:52,Antoine,Moin Paddy ;-)
+2015-10-14 20:29:36,XanClic,"^ darklink, das kann tyndur"
+2015-10-14 20:29:43,darklink,nic
+2015-10-14 20:29:45,darklink,nix*
+2015-10-14 20:29:53,XanClic,"Beantworten, was hier so angestellt wird"
+2015-10-14 20:29:56,Sur3,"warum eigentlcih array, müßte das nicht ne dynamische liste sein, man weiß ja vorher nciht wie viele destruktoren man braucht"
+2015-10-14 20:29:58,darklink,Ich kann jetzt meine homepage über bild.de aufrufen
+2015-10-14 20:30:06,masterq32,doch klar
+2015-10-14 20:30:15,darklink,jetzt eignen sich die seiten des Springer Verlages als meine TLD's
+2015-10-14 20:30:17,masterq32,der compiler tut das ja zu linkzeit in ein array packen
+2015-10-14 20:30:32,Sur3,aso
+2015-10-14 20:34:10,masterq32,hau rein
+2015-10-14 20:34:39,Sur3,^^
+2015-10-14 20:36:28,masterq32,http://www.lowlevel.eu/wiki/C%2B%2B#globale.2Fstatische_Objekte
+2015-10-14 20:36:39,masterq32,"so, jetzt hat man hier mal die anmerkung zu den arrays"
+2015-10-14 20:36:51,masterq32,"und ich fragte mich schon, warum bei mir auch keine ctors/dtors aufgerufen werden"
+2015-10-14 20:38:30,darklink,http://n24.de/anchor/index.php/posts/mtgos-v00r01
+2015-10-14 20:38:34,darklink,uups
+2015-10-14 20:38:39,Paddy,"Immer wieder erstaunlich, wie schnell es hilft, wenn man es richtig macht"
+2015-10-14 20:38:43,darklink,http://morten-raspi.ddns.net/anchor/index.php/posts/mtgos-v00r01
+2015-10-14 20:39:21,masterq32,"hey, es scheint ja zu gehen :)"
+2015-10-14 20:39:28,darklink,jetzt schon
+2015-10-14 20:39:32,darklink,danke^^
+2015-10-14 20:39:58,darklink,Ich sollte vieleicht auch das image hochladen
+2015-10-14 20:40:29,masterq32,irgendwelche ziele wo du mit dem OS hin willst?
+2015-10-14 20:41:32,darklink,Ja
+2015-10-14 20:43:29,darklink,Usermode programme rufen methoden in kernelobjekten auf anstatt/zusätzlich zu den normalen syscalls
+2015-10-14 20:45:52,darklink,in der 5./6. klasse hab ich c gelernt
+2015-10-14 20:46:07,masterq32,nice :D
+2015-10-14 20:46:08,masterq32,wo??? :D
+2015-10-14 20:46:31,Paddy,"Hm, da hab ich noch mit QBasic rumhantiert *g*"
+2015-10-14 20:46:39,darklink,keine ahnung
+2015-10-14 20:47:01,masterq32,ich hatte in der schule ab der 11ten klasse VBA
+2015-10-14 20:47:08,masterq32,und sonst nur SCHROTT
+2015-10-14 20:47:45,darklink,wir hatten in der 7. klasse als __erste__ programmiersprache scratch
+2015-10-14 20:47:56,darklink,ich hatte mich so gelangweilt
+2015-10-14 20:48:04,masterq32,haha :D
+2015-10-14 20:48:18,Paddy,Immerhin habt ihr in der 7. überhaupt sowas gehabt
+2015-10-14 20:48:20,masterq32,ich hab irgendwann in der fünften mit C (AVR) und C# PC angefangen
+2015-10-14 20:48:29,masterq32,"wir hatten quasi nix, ich hab den unterricht gemacht bei uns"
+2015-10-14 20:48:50,Paddy,Programmieren gab es bei uns erst in der Oberstufe als man Informatik wählen konnte
+2015-10-14 20:49:12,darklink,wir hatten einen schnupperkurs in der 7.
+2015-10-14 20:49:43,darklink,"wir haben zwar ne note gekriegt, aber sie hat nicht zum zeugnis hinzugezählt"
+2015-10-14 20:50:30,darklink,ich hör mal auf für heute
+2015-10-14 20:50:46,masterq32,mach das
+2015-10-14 20:50:50,darklink,Notiz an mich: Morgen an keyboardtreiber weitermachen
+2015-10-14 20:51:57,masterq32,"mist, ich hab in $dtor nen invalid block free"
+2015-10-14 20:52:01,masterq32,irgendwo geht nen pointer kaputt
+2015-10-14 20:52:32,darklink,:/
+2015-10-14 20:52:36,masterq32,ja
+2015-10-14 20:52:36,darklink,ist das null?
+2015-10-14 20:52:46,masterq32,"nein, das würde ich mitbekommen :D"
+2015-10-14 20:52:56,darklink,hmmm
+2015-10-14 20:53:05,darklink,der wievielte isses denn?
+2015-10-14 20:53:41,masterq32,6te :D
+2015-10-14 20:53:49,masterq32,ich weiß aber die addresse vom dtor :D
+2015-10-14 20:53:52,darklink,ich hab nur einen
+2015-10-14 20:53:54,masterq32,mal objdumpen
+2015-10-14 20:53:59,darklink,bei .dtor?
+2015-10-14 20:54:00,masterq32,mein system ist auch n bissi größer als deines :D
+2015-10-14 20:54:04,darklink,ah
+2015-10-14 20:54:10,darklink,ich hab .dtor nicht
+2015-10-14 20:54:24,darklink,weil mein kernel eh ein for(;;); am ende hat
+2015-10-14 20:54:26,darklink,kommt noch
+2015-10-14 20:54:31,masterq32,00110a6b <_GLOBAL__sub_D_vmvalue.cpp>:
+2015-10-14 20:54:31,masterq32,  110a6b:	55                   	push   %ebp
+2015-10-14 20:54:32,masterq32,ha :D
+2015-10-14 20:54:35,masterq32,da ist der bösewicht
+2015-10-14 20:54:48,masterq32,"ja, ich will aber alles sauber machen"
+2015-10-14 20:54:53,masterq32,"klar, dtors braucht man praktisch gesehen ""nicht"
+2015-10-14 20:55:02,masterq32,aber sonst machen die meine ganze kernelstatistik kaputt
+2015-10-14 20:55:14,darklink,ich auch. deswegen hab ich ja -Werror drinne
+2015-10-14 20:55:32,darklink,da komme ich garnicht erst auf die idee falsche sachen zu machen
+2015-10-14 20:55:38,masterq32,doch :D
+2015-10-14 20:55:45,masterq32,das problem hier ist ja weitaus höherlevelig
+2015-10-14 20:55:50,darklink,ja
+2015-10-14 20:56:24,darklink,ich hab bisher nur eine ausnahme bei -Wall -Wextra - -Wno-unused
+2015-10-14 20:57:33,XanClic,Bei mir warnt gcc neulich bei ungenutzem Rückgabewert von fread()
+2015-10-14 20:57:38,XanClic,"Da war ich wieder froh, dass ich kein -Werror benutze"
+2015-10-14 20:57:47,masterq32,:D
+2015-10-14 20:57:57,XanClic,"Gut, eigentlich ist es auch egal, weil den Code außer mir keiner kompiliert"
+2015-10-14 20:57:58,XanClic,Aber na ja
+2015-10-14 20:58:37,darklink,^^
+2015-10-14 20:58:55,darklink,-Werror hab ich nur drinne um einen grund zu haben die warnungen irgendwie zu fixen
+2015-10-14 20:59:10,darklink,weil 10000 warnungen zu haben ist blöd
+2015-10-14 20:59:21,masterq32,ich hab generell nur wenig warnungen
+2015-10-14 20:59:24,masterq32,die meisten fix ich instant
+2015-10-14 20:59:34,XanClic,"Ich bin froh, wenn ich Warnungen bekomme"
+2015-10-14 20:59:45,darklink,dann gibts keine fehler?
+2015-10-14 20:59:57,XanClic,"Wenn ich Code geschrieben habe, den der Compiler ohne mit der Wimper zu zucken akzeptiert, kann was nicht stimmen"
+2015-10-14 21:00:07,darklink,oh
+2015-10-14 21:00:13,XanClic,"Ich hab das Gefühl, in meinem Code sind immer eine feste Anzahl von Fehlern drin"
+2015-10-14 21:00:33,XanClic,"Wenn ich viele Syntaxfehler und Warnungen vom Compiler bekomme, dann sind keine tiefergehenden drin"
+2015-10-14 21:00:42,XanClic,"Wenn ich keine Meldungen vom Compiler bekomme, heißt das, dass alles kaputt ist"
+2015-10-14 21:01:01,masterq32,:D
+2015-10-14 21:01:04,masterq32,irgendwie schon
+2015-10-14 21:01:08,darklink,oh
+2015-10-14 21:01:25,masterq32,"aber ihr wisst ja auch, dass man induktiv beweisen kann, dass es ein programm gibt, welches aus einer zeile code besteht"
+2015-10-14 21:01:27,masterq32,und die zeile ist falsch
+2015-10-14 21:01:27,masterq32,:D
+2015-10-14 21:01:45,darklink,start() {}
+2015-10-14 21:01:50,darklink,sollte garnichts tun
+2015-10-14 21:01:55,masterq32,weißt du nicht :D
+2015-10-14 21:02:09,masterq32,aber ich mein
+2015-10-14 21:02:15,masterq32,man kann jedes programm eine zeile kürzer schreiben
+2015-10-14 21:02:18,darklink,"macht einen linkerfehler, weil main fehlt"
+2015-10-14 21:02:25,masterq32,und jedes programm hat mindestens einen fehler
+2015-10-14 21:02:33,masterq32,"also gibt es ein programm, welches eine zeile hat und die ist falsch :D"
+2015-10-14 21:02:55,darklink,ok
+2015-10-14 21:03:07,masterq32,:d
+2015-10-14 21:03:18,masterq32,"  p, li { white-space: pre-wrap; }  VMValue VMValue::Void { &VMType::Void, nullptr };"
+2015-10-14 21:03:21,masterq32,das hier crashed :D
+2015-10-14 21:04:47,darklink,"sobald meine HAL funktionierendes multitasking hat, scheibe ich den kernel"
+2015-10-14 21:05:01,masterq32,:)
+2015-10-14 21:10:28,Paddy,"Hm, das .init_device vom USB-Treiber ist ja lustig."
+2015-10-14 21:11:51,Paddy,"Gibt immer einen Fehler zurück, aber registriert den HC trotzdem."
+2015-10-14 21:14:46,darklink,^^
+2015-10-14 21:15:00,Sur3,reh
+2015-10-14 21:15:48,darklink,mein kernel hat zwei displayausgabestreams (MTGosHAL::out und MTGosHAL::err)
+2015-10-14 21:16:11,Sur3,"dieses scratch sieht garnicht schlecht aus, ich meine ich hab mit 7 mit amigabasic angefangen und hätte denen dieses scratch in der 7. klasse um die ohren gehauen aber für normale kinder als als einstieg sicher nicht schlecht so ne klickibunti-programmierung"
+2015-10-14 21:19:07,darklink,Ja
+2015-10-14 21:19:25,Sur3,ich hab auch mal überlegt die konsole in qemu als ausgabestream zu nutzen hab gehört die kann man dann extern irgendwo speichern oder so
+2015-10-14 21:19:35,darklink,Ich hätte es dem lehrer am liebsten auch um die ohren gehauen
+2015-10-14 21:19:49,Sur3,s/konsole/terminal/
+2015-10-14 21:20:33,darklink,Ich nutze den seriellen anschluss für ne zukünftige debug shell
+2015-10-14 21:20:59,Sur3,nice joa sowas in der art schwebt mir auch vor
+2015-10-14 21:21:04,darklink,Ich bin immernoch am überlegen welche kommandos reinkommen könnten
+2015-10-14 21:21:31,darklink,Dwim kommt auf alle fälle rein
+2015-10-14 21:21:34,Sur3,"muß man da irgendwie die transferrate oder sowas einstellen, also man programmiert das sol alswenn es nen echter com1-port wäre?"
+2015-10-14 21:21:57,darklink,Ja
+2015-10-14 21:22:09,darklink,Ich nehme einfach das maximum
+2015-10-14 21:22:13,Sur3,ah ok
+2015-10-14 21:22:18,Sur3,was macht denn dwim?
+2015-10-14 21:22:28,darklink,Do What I Mean
+2015-10-14 21:22:48,Sur3,aso verstehe ja ein telepathisches interface wär nicht schlecht stimmt :D
+2015-10-14 21:24:34,darklink,"Antwort würde sowas sein wie ""no mind-reader detected. Buy one for $1,000,000 and connect it to your pc."""
+2015-10-14 21:25:18,Sur3,:D
+2015-10-14 21:26:08,Sur3,ich hab wirklich mal überlegt mir so ne eeg-kappe zu holen damit kann man zwar nur sehr siple kommandos ausführen aber wenn man abends im bett liegt kann man den computer dann bedienen ohne sich zu bewegen ^^
+2015-10-14 21:26:21,Sur3,*simple
+2015-10-14 21:28:56,Sur3,"grad mal geguckt gibt nen interface für 400$ das geht ja und glaub ich hab sogar mal ne noch günstigere version gesehn, aber das problem wird vermutlich sien daß cih mir dann meine langen haare abschneiden muß damit das teil ordentlich funktioniert xD"
+2015-10-14 21:31:06,Sur3,"aber mein os soll auf jedenfall irgendwann ne ki bekommen, ich hab die mal provisorisch SurVirus genannt, aber denke inzwischen der name wär keine gute marketingstrategie xD"
+2015-10-14 21:35:58,DesL,masterq32:  ping
+2015-10-14 21:36:03,masterq32,pong
+2015-10-14 21:36:14,DesL,du wolle kaufe rose?
+2015-10-14 21:36:22,masterq32,öööhm
+2015-10-14 21:37:12,DesL,rose kosten ein  addresse von email
+2015-10-14 21:38:47,masterq32,"hat sich schon erledigt, habe account ;)"
+2015-10-14 21:39:04,DesL,auch gut
+2015-10-14 21:40:25,masterq32,si
+2015-10-14 21:41:43,Sur3,xD
+2015-10-14 21:57:33,darklink,Ich wolle kaufe weiß rose
+2015-10-14 23:43:31,masterq32,sooo
+2015-10-14 23:56:56,Sur3,tatsächlich?
+2015-10-14 23:59:27,Sur3,ist dein 16farb-Floyd-Steinberg-dither bildbetrachter mit Lanczos-Vergrrößerungsfilter fertig?

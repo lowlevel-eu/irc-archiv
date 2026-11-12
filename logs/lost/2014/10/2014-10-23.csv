@@ -1,0 +1,376 @@
+date/time,nick,message
+2014-10-23 00:04:57,Svenska,"hmm, ich könnte timeout-begrenzte sockets und select kombinieren... ob das funktioniert..."
+2014-10-23 00:10:16,Svenska,""" Perl is the Quasimodo of programming languages: ugly as hell, but you want him on your team. """
+2014-10-23 00:16:41,Jonathan,*g*
+2014-10-23 00:19:45,Svenska,https://www.xkcd.com/
+2014-10-23 00:19:52,Svenska,und damit verabscheue ich mich in die nachtruhe :-)
+2014-10-23 09:13:27,max,"Hm, Eric erinnert mich an meine eigenen Patches"
+2014-10-23 09:13:35,max,"Da weiß ich auch nicht, was ich davon halten soll"
+2014-10-23 10:22:19,Jonathan,Moin
+2014-10-23 12:16:31,kevin,"max: Wir müssen mal unseren eigenen Blocklayer schreiben. Ich hab das Gefühl, dass wir uns gegenseitig beschäftigt genug halten, ohne dass noch jemand mitmischt..."
+2014-10-23 13:10:48,max,Au ja
+2014-10-23 13:10:56,max,Tun wir das nicht eh schon? :-P
+2014-10-23 13:13:26,kevin,Irgendwie schon
+2014-10-23 13:13:28,kevin,Hm...
+2014-10-23 13:13:38,kevin,qcow2: Marking image as corrupt: Preventing invalid write on metadata (overlaps with active L1 table); further corruption events will be suppressed
+2014-10-23 13:13:44,kevin,"Ich glaube, du hast irgendwo noch einen Bug ;-)"
+2014-10-23 13:13:48,max,Ich doch nicht
+2014-10-23 13:17:35,kevin,"Irgendeine Idee, warum commit schiefgeht, wenn ich es durch blkdebug laufen lasse?"
+2014-10-23 13:17:52,max,Ich kanns ja selber mal ausprobieren
+2014-10-23 13:18:51,kevin,Also ganz ohne Config war das bei mir
+2014-10-23 13:18:55,kevin,qemu-img commit blkdebug::/tmp/test.qcow2
+2014-10-23 13:18:56,kevin,qemu-img: Could not empty blkdebug::/tmp/test.qcow2: Operation not supported
+2014-10-23 13:19:06,max,"Ach so, ich dachte schon, die Corruption"
+2014-10-23 13:19:14,kevin,"Danach ist das Image auch kaputt, ja"
+2014-10-23 13:19:15,max,truncate vielleicht?
+2014-10-23 13:19:46,max,"Also, mein blkdebug scheint kein truncate zu können"
+2014-10-23 13:19:53,kevin,"Das könnte es sein, ja"
+2014-10-23 13:20:14,kevin,"Hm, aber wieso hilft das Dirty-Flag nicht?"
+2014-10-23 13:21:16,kevin,"Oder anders gefragt, wieso ist es nicht gesetzt? ;-)"
+2014-10-23 13:24:50,max,qemu-img: Could not open 'blkdebug::top.qcow2': Could not open backing file: Invalid JSON object given
+2014-10-23 13:24:54,max,Das klingt auch sehr nach ups
+2014-10-23 13:25:07,max,backing file: base.qcow2
+2014-10-23 13:25:09,max,Hmmm...
+2014-10-23 13:25:23,max,Und ohne blkdebug tuts
+2014-10-23 13:26:18,max,"filename=0x555555da4cd0 ""json:base.qcow2"""
+2014-10-23 13:26:20,max,… aha
+2014-10-23 13:30:00,max,"Ah, nett"
+2014-10-23 13:30:18,max,path_combine() tut halt nicht so gut mit JSON-Dateinamen
+2014-10-23 13:41:24,max,"Ich bin mir aber gar nicht so sicher, ob man das überhaupt fixen kann und will"
+2014-10-23 13:41:35,max,Das ist ja wie qcow2 oberhalb von quorum
+2014-10-23 13:53:47,kevin,max: Wär eigentlich schon schön. Du hast ja sicher nicht ohne Grund die blkdebug-Events eingebaut
+2014-10-23 13:54:01,kevin,"Aber wenn schon, dann soll es doch bitte nicht das Image zerlegen, sondern gleich fehlschlagen"
+2014-10-23 13:54:23,max,"Na ja, ich geh grad alle Aufrufer von path_combine() durch und lass da Fehler werfen"
+2014-10-23 13:54:47,max,"Ansonsten hab ich ja noch zwei blkdebug-Patches auf der Liste, die zumindest diesen Fall fixen würden :-P"
+2014-10-23 13:59:45,kevin,"Aber hast du rausgefunden, warum das Dirty-Flag nicht gesetzt ist?"
+2014-10-23 14:00:08,max,Erstmal blkdebug mit relativen Pfaden Fehler werfen lassen
+2014-10-23 14:00:08,kevin,Normalerweise würde qemu-io das Image ja beim Start reparieren und nicht die Corruption-Detection abwarten
+2014-10-23 14:00:11,max,Eins nach dem anderen
+2014-10-23 14:00:21,kevin,"Okay, okay ;-)"
+2014-10-23 14:07:46,max,./qemu-img check -r all top.qcow2 
+2014-10-23 14:07:48,max,No errors were found on the image.
+2014-10-23 14:07:49,max,das ist auch nett
+2014-10-23 14:07:58,max,Setzt aber corrupt nicht zurück
+2014-10-23 14:09:43,max,"Ach, schön, qemu-img check ignoriert den Rückgabewert"
+2014-10-23 14:09:45,max,Bis auf ENOTSUP
+2014-10-23 14:11:00,max,"Wobei, nicht mal"
+2014-10-23 14:11:03,max,Aber er gibt keinen Fehler aus
+2014-10-23 14:11:04,max,Sehr schön
+2014-10-23 14:11:10,max,Aber gibt 1 zurück
+2014-10-23 14:13:23,kevin,"Hm, hört sich an als ob das Review erfolgreich gewesen wäre *g*"
+2014-10-23 14:14:05,max,qemu-img: Check failed: Cannot allocate memory
+2014-10-23 14:14:08,max,So ist doch schon besser
+2014-10-23 14:14:42,kevin,Klingt immer noch ziemlich kaputt
+2014-10-23 14:14:48,max,jo *g*
+2014-10-23 14:15:34,kevin,Gibt vermutlich viele neue Testcases? ;-)
+2014-10-23 14:17:27,max,http://pastebin.com/QR0BSdT0 das ist definitiv eine interessante qcow2-Datei
+2014-10-23 14:19:03,Svenska,ist die valide?
+2014-10-23 14:19:15,max,"Das sind nach einem String aus, der in Big Endian umgewandelt wurde"
+2014-10-23 14:19:22,max,aka nein
+2014-10-23 14:19:38,max,Nämlich die Backingdatei ist das
+2014-10-23 14:19:41,max,In 64-Bit-Big-Endian
+2014-10-23 14:21:35,Svenska,*schulterzuck* mir zu hoch
+2014-10-23 14:21:43,kevin,*lol* Wie hast du denn das geschafft?
+2014-10-23 14:22:01,max,"kevin, natürlich weiß ich, wieso Dirty gelöscht ist"
+2014-10-23 14:22:09,max,Weil qcow2 beim Schließen jeder qcow2-Datei Dirty löscht
+2014-10-23 14:22:20,kevin,...
+2014-10-23 14:22:43,max,"Aber zum Glück, weiß ich, wie wir das Problem lösen"
+2014-10-23 14:22:47,max,*(volatile int *)0 = 42;
+2014-10-23 14:22:51,max,Dann ist alles gut
+2014-10-23 14:23:08,kevin,"bs->drv = NULL wolltest du doch eh machen. Das fixt das auch, durch Leak."
+2014-10-23 14:23:13,max,"Jo, vermutlich"
+2014-10-23 14:23:40,kevin,Proffesionele Softwareentwicklung
+2014-10-23 14:23:51,max,"Ich hab da noch eine Variante, die hat einfach funktioniert :-p"
+2014-10-23 14:24:15,kevin,"Du meinst, wir haben die Fälle noch nicht gefunden, in denen sie kaputt ist :-P"
+2014-10-23 14:26:48,kevin,Haben wir auch schon kaputtgekrieg
+2014-10-23 14:27:28,Svenska,"sicher, aber die gefahr ist geringer"
+2014-10-23 14:27:59,kevin,"Jo, wenn Commit gleich abbricht, weil raw das nicht kann, dann macht es vermutlich nichts kaputt"
+2014-10-23 14:28:29,kevin,"Aber wenn man Features entwickelt, hat man halt mal kaputten Code"
+2014-10-23 14:28:34,kevin,Worüber wir reden ist ja noch nichtmal in master
+2014-10-23 14:29:06,max,Und seit April für jedermann sichtbar auf der Mailingliste!!!!elf
+2014-10-23 14:29:08,Svenska,"wenn es das wäre, wuerde ich mir leicht sorgen machen."
+2014-10-23 14:29:31,Svenska,"aber qemu tut ja (oft), deswegen bin ich da zuversichtlich :-)"
+2014-10-23 14:29:32,max,bs->drv = NULL ist durchaus drin
+2014-10-23 14:30:02,Svenska,"wobei ich mich frage, wo ihr big-endian support braucht"
+2014-10-23 14:30:44,Svenska,"ppc, arm und mips können beides, aber nur bei ppc wirds getan"
+2014-10-23 14:30:49,kevin,qcow2 ist als Big Endian definiert
+2014-10-23 14:30:50,Svenska,s/390 oder so'n obskuren kram?
+2014-10-23 14:31:02,Svenska,"hmm, okay das erklärt das. warum? :-D"
+2014-10-23 14:31:11,max,Weil sonst jeder die Endiankonvertierungen vergisst
+2014-10-23 14:31:12,kevin,Weil Fabrice es damals so gebaut hat ;-)
+2014-10-23 14:31:22,kevin,"Und siehe max, so ungeschickt ist das gar nicht"
+2014-10-23 14:31:23,Svenska,ok ;-)
+2014-10-23 14:31:35,Svenska,point taken
+2014-10-23 14:32:00,kevin,"Andere Formate, die LE sind, haben wir fixen müssen, nachdem sie mal jemand auf BE-Hosts probiert hat"
+2014-10-23 14:32:07,kevin,Weil's halt normal nicht auffällt
+2014-10-23 14:32:34,Svenska,wobei es ja kaum noch be-hosts gibt :-)
+2014-10-23 14:32:49,Svenska,(zumindest kenne ich keine. vielleicht bin ich aber auch nur zu unwissend.)
+2014-10-23 14:34:49,kevin,PPC wäre allein schon relevant genug
+2014-10-23 14:35:48,Svenska,hab mich halt nur gewundert
+2014-10-23 15:31:17,kevin,"max: Toll, jetzt bin ich ganz verwirrt, was ich mit VDI machen soll"
+2014-10-23 15:31:21,max,*g*
+2014-10-23 15:31:39,max,"Der Patch machts ja nicht schlimmer, aber die Commitmessage stimmt halt nicht"
+2014-10-23 15:31:50,kevin,"Jo, aber besser macht er auch nichts, oder?"
+2014-10-23 15:32:01,max,"Hm, doch, ich glaube schon"
+2014-10-23 15:32:10,max,Es gibt jetzt ein EINVAL statt eines Overflows ;-)
+2014-10-23 15:33:13,kevin,Ich werf ihn raus und du appliest ihn mit besserer Commitmessage bei dir? ;-)
+2014-10-23 15:33:27,max,Na ja
+2014-10-23 15:33:36,max,"Wenn ich die Imagegröße begrenze, gibt es weder Overflow noch EINVAL"
+2014-10-23 15:33:43,kevin,Also ganz raus
+2014-10-23 15:33:45,max,Jo
+2014-10-23 15:34:06,kevin,Weg isser
+2014-10-23 15:34:16,max,Und ich hatte ihn gerade liebgewonnen
+2014-10-23 15:34:58,kevin,Dein Verhalten ist nicht widerspruchsfrei *g*
+2014-10-23 15:35:13,max,Ich habe auch eine sentimentale Bindung zu meiner commit-Serie
+2014-10-23 15:35:15,Svenska,"sie besagt nur ""die schöne arbeit..."""
+2014-10-23 15:35:16,max,Auch wenn ich sie nicht mag
+2014-10-23 15:36:04,kevin,"Du meinst, so wie ich zu komprimierten Images? ;-)"
+2014-10-23 15:36:20,Svenska,komprimierte images? das geht? ;-)
+2014-10-23 15:36:29,max,"Ja, mit raw natürlich nicht"
+2014-10-23 15:36:35,Svenska,.raw.gz
+2014-10-23 15:36:37,max,Das geht nur in der wundervollen Regenbogenwelt von kuhkuh2
+2014-10-23 15:36:44,max,Dafür hat qemu noch keinen Blocktreiber
+2014-10-23 15:36:48,max,"Aber ich sag ja, ich hätte gerne einen"
+2014-10-23 15:36:58,kevin,Das wäre nicht mehr arg blockig
+2014-10-23 15:37:05,max,Muss man nur richtig machen
+2014-10-23 15:37:10,max,Sodass am Ende wieder qcow2 rauskommt
+2014-10-23 15:37:17,kevin,Super
+2014-10-23 15:37:27,max,"Klar, für qcow2-over-qcow2 bin ich doch auch der Spezialist"
+2014-10-23 15:37:34,Svenska,*g*
+2014-10-23 15:37:53,Svenska,raw hat ein paar handfeste vorteile
+2014-10-23 15:38:05,Svenska,"die immer dann zum tragen kommen, wenn die VM nicht primär als VM dienen soll"
+2014-10-23 15:40:39,kevin,Und zwar?
+2014-10-23 15:40:48,Svenska,fdisk und mount auf den images
+2014-10-23 15:40:50,kevin,"Also, was auch immer das bedeuten soll ;-)"
+2014-10-23 15:40:55,Svenska,und im zweifelsfall auch dd :-)
+2014-10-23 15:41:00,max,qemu-nbd *hust*
+2014-10-23 15:41:42,kevin,Oder Rich würde guestfish sagen
+2014-10-23 15:41:48,Svenska,hm
+2014-10-23 15:41:53,max,Oder Stefan „Wir brauchen einen Kerneltreiber für qcow2“
+2014-10-23 15:42:07,Svenska,"ich bau halt gelegentlich images mit qemu, wo qemu nur dafuer da ist um zu testen, ob das ergebnis auch bootet"
+2014-10-23 15:42:38,max,"Aber ist ja auch klar, wenn týndur nicht als qcow2 ausgeliefert wird, dann kann sich das nicht durchsetzen"
+2014-10-23 15:42:46,max,Da muss man eigentlich schon eine Vorreiterrolle übernehmen
+2014-10-23 15:42:52,Svenska,:-D
+2014-10-23 15:43:10,Svenska,loop-mounts fuer qcow2 wären schon cool
+2014-10-23 15:43:14,max,qemu-nbd?
+2014-10-23 15:43:19,Svenska,aber kann man trotzdem nicht so einfach fdisken ;)
+2014-10-23 15:43:46,Svenska,"mh ja, da muss man ja aufpassen :D"
+2014-10-23 15:43:50,Svenska,man qemu-nbd
+2014-10-23 15:43:58,max,http://www.netzkompetenz.ch/ubuntu/qcow2-disk-image-mounten/
+2014-10-23 15:44:07,max,"""qemu-nbd mount qcow2 to /dev"""
+2014-10-23 15:44:11,kevin,"Das einzige Problem mit qemu-nbd ist, dass RHEL das Kernelmodul nicht dabeihat"
+2014-10-23 15:44:15,max,"(ja, ich weiß, das nennt man nicht mounten)"
+2014-10-23 15:44:20,Svenska,die manpage ist irgendwie komisch
+2014-10-23 15:44:29,Svenska,"""port to listen on (default B<10809>)"""
+2014-10-23 15:44:43,max,NBD ist ja auch eigentlich ein Netzwerkprotokoll
+2014-10-23 15:44:48,max,Aber der Kernel kann das halt
+2014-10-23 15:44:56,Svenska,außer bei rhel ^^
+2014-10-23 15:45:04,max,Wenn man das Modul woanders herbekommt…
+2014-10-23 15:45:13,Svenska,"dkms tut auf rhel bestimmt nicht, oder?"
+2014-10-23 15:59:07,kevin,"max: Ich werde heute gegen später oder spätestens morgen früh pullen. Falls du also noch was reinnehmen willst, jetzt ist der richtige Zeitpunkt."
+2014-10-23 15:59:23,max,Du pullst von allein? Das klingt gut *g*
+2014-10-23 15:59:50,kevin,Mit einem Pull-Request würdest du nur Peter durcheinanderbringen ;-)
+2014-10-23 16:00:18,max,"Bevor du pullst, solltest du mir aber Bescheid sagen"
+2014-10-23 16:00:24,max,Damit ich rebasen und force-pushen kann
+2014-10-23 16:01:43,kevin,Ok
+2014-10-23 16:01:48,max,"Ich könnte Peters max_transfer_length-Sache reinnehmen, aber da schuldet er mir noch einen Kommentar"
+2014-10-23 16:01:55,max,Ansonsten hab ich nix
+2014-10-23 16:03:37,kevin,"Hm, musst du wissen, ob du den Kommentar brauchst"
+2014-10-23 16:03:56,max,Ich überlegs mir
+2014-10-23 16:03:58,kevin,"Die parallels-Serie hat ein R-b von Paolo, ich bin aber nicht dazugekommen, mir das anzuschauen"
+2014-10-23 16:04:18,max,"Hm, doch, will ich schon"
+2014-10-23 16:04:37,kevin,"Und jetzt bin ich gleich erstmal weg, bevor ich den Pull Request dann heute abend fertigmache"
+2014-10-23 16:04:42,Svenska,was ist R-b?
+2014-10-23 16:04:44,max,gut
+2014-10-23 16:04:46,max,Reviewed-by
+2014-10-23 16:04:48,Svenska,aso
+2014-10-23 16:05:11,kevin,Und irgendjemand hat schon wieder den Build auf RHEL 6 kaputtgemacht :-/
+2014-10-23 16:05:38,max,"Ein Glück, dass wenigstens einer im Team RHEL benutzt *g*"
+2014-10-23 16:09:43,kevin,Du testest deine RHEL-Bugs auf Arch? ;-)
+2014-10-23 16:09:52,max,Fedora
+2014-10-23 16:10:01,max,Auf Arch baut RHEL 6 ja nicht
+2014-10-23 16:10:27,max,"Wenn es irgendwann auch auf Fedora nicht baut, kann ich mich immerhin beschweren ;-)"
+2014-10-23 16:11:05,Svenska,ihr baut redhat linux auf fedora? oder ist das ne spezielle qemu-version?
+2014-10-23 16:11:17,max,nur das qemu
+2014-10-23 16:11:20,kevin,"Ich hab halt irgendwann auf die virtlab-Kiste ein RHEL gepackt, damit ich mal testen kann, wenn mein lokales Fedora nicht reicht"
+2014-10-23 16:11:32,kevin,Und auf der mache ich auch meine Testbuilds vor dem Pull Request
+2014-10-23 16:11:46,max,"Ich hab CentOS 7 auf meinem VServer, das muss reichen :-P"
+2014-10-23 16:12:01,kevin,"Und inzwischen habe ich lokal auch ein RHEL, weil mir das ständige Updaten zu blöd war. Aber das ist dafür auf andere Weise ungeschickt."
+2014-10-23 16:12:39,Svenska,<max> Auf Arch baut RHEL 6 ja nicht
+2014-10-23 16:12:46,max,Irgendwo müsste ich hier auch noch meine RHEL-7-VM rumfliegen haben
+2014-10-23 16:12:55,max,"Svenska, ja, ich meinte qemu-kvm-foo.el6 :-P"
+2014-10-23 16:13:06,Svenska,aaah
+2014-10-23 16:13:32,Svenska,"ich wusste garnicht, dass man cross-distro-compiles machen kann"
+2014-10-23 16:13:37,max,qemu-kvm-0.12.1.2-2.447.el6
+2014-10-23 16:13:47,max,Wieso cross
+2014-10-23 16:13:52,max,Ich bau das einfach mit den Fedoratools
+2014-10-23 16:14:03,max,Mit cross würde es ja auch auf Arch tun
+2014-10-23 16:14:24,Svenska,ist dein fedora auf rhel6 dann aufgebaut?
+2014-10-23 16:14:36,max,"Nö, aber wen interessierts, solange es kompiliert? :3"
+2014-10-23 16:14:46,max,"Eher umgekehrt, soweit ich verstanden hab"
+2014-10-23 16:14:46,Svenska,"dachte, das gibt immer stunk mit den libs, wenn man programm X auf distro Y baut und auf distro (Y-1) laufenlassen will"
+2014-10-23 16:14:48,max,RHEL auf Fedora
+2014-10-23 16:14:57,max,Ich lass es ja nicht auf RHEL laufen
+2014-10-23 16:15:00,max,Sondern auf Fedora
+2014-10-23 16:18:06,Svenska,hm
+2014-10-23 16:20:41,Jonathan,Svenska: ...fliegende Trollfaces... *g*
+2014-10-23 16:21:20,Svenska,lol
+2014-10-23 16:22:16,Jonathan,Hab jetzt mal den I/O-Multiplexer eingebaut
+2014-10-23 16:22:30,Jonathan,Der fasst alle Shader zu einem linearen I/O-Adressraum zusammen.
+2014-10-23 16:22:49,Jonathan,Durch den durch konnte ich jetzt schonmal ein paar Trollfaces fliegen lassen. :)
+2014-10-23 16:23:01,Jonathan,"Oh, und die Sprite-Shader sind auch fertig. *g*"
+2014-10-23 16:23:46,Svenska,"ich hab gestern nur festgestellt, dass SO_RCVTIMEO nicht mit select() zusammenarbeitet"
+2014-10-23 16:24:46,Jonathan,Hm
+2014-10-23 16:25:01,Jonathan,"Ich frage mich, was XST eigentlich aus dieser Zeile zusammensynthetisiert:"
+2014-10-23 16:25:01,Jonathan,iointf_busy <= '0' when (iobusy_arr = (iobusy_arr'length-1 downto 0 => '0')) else '1';
+2014-10-23 16:25:26,Jonathan,Müsste ja eigentlich ein riesiges Oder-Gatter sein...?
+2014-10-23 16:25:37,Svenska,"ich tippe ja auf, äh, eine LUT :)"
+2014-10-23 16:25:44,Svenska,oder auch vier
+2014-10-23 16:25:56,Jonathan,*Eine* LUT geht bei 256 Elementen in dem Array schlecht *g*
+2014-10-23 16:26:10,Svenska,meinetwegen auch 64 =)
+2014-10-23 16:26:13,Jonathan,:D
+2014-10-23 16:28:37,kevin,max: Mit zwei R-bs kannst du ruhig auch deinen eigenen Fix noch reinnehmen. Aber jetzt bin ich wirklich weg. ;-)
+2014-10-23 18:43:14,kevin,Ein Reh!
+2014-10-23 18:43:30,XanClic,Ein Hirsch!
+2014-10-23 18:43:36,Svenska,Ein Elch!
+2014-10-23 18:44:20,kevin,Ein Zoo!
+2014-10-23 18:44:29,XanClic,so ging das aber nicht weiter
+2014-10-23 18:44:38,XanClic,"wobei ich jetzt auch nicht auswendig weiß, wie es weiter ging"
+2014-10-23 18:44:41,XanClic,und das Buch hab ich nicht hier
+2014-10-23 18:49:31,Svenska,"hmm, gibt's nen geschickten englischen begriff fuer ""herausfinden, ob etwas ... ist oder nicht""?"
+2014-10-23 18:54:23,Tufel,"mmh vielleicht ""check"""
+2014-10-23 18:55:01,Svenska,"mhm, das ist mehr so kurz nachpruefen..."
+2014-10-23 18:55:10,XanClic,find out :-P
+2014-10-23 18:55:17,XanClic,"inquire, sense, test"
+2014-10-23 18:55:22,XanClic,discover
+2014-10-23 18:55:41,Svenska,discover klingt ganz gut
+2014-10-23 18:55:58,Svenska,identify
+2014-10-23 18:56:08,Svenska,danke
+2014-10-23 19:11:27,Jonathan,Svenska: http://j-strobl.dyndns-free.com/sovielepixel.jpg
+2014-10-23 19:11:49,Jonathan,Hintergrund: VRAM-Matsch
+2014-10-23 19:12:04,Jonathan,Links oben: 31 über einander liegende weiße Sprites
+2014-10-23 19:12:22,Jonathan,"Links mittig: 1 weiße Sprite, die sich von oben nach unten bewegt (zu Testzwecken)"
+2014-10-23 19:12:27,Jonathan,Vordergrund: AAAAAAAAAAAAAAAAAAAAAAAA :D
+2014-10-23 19:12:59,Svenska,nich uebel der duebel
+2014-10-23 19:13:02,Jonathan,:D
+2014-10-23 19:13:41,Svenska,aber ganz schön groß die sprites :)
+2014-10-23 19:13:43,Jonathan,Der Text ist jetzt aber doch nur mit normaler 320x240-Auflösung :P
+2014-10-23 19:13:50,Jonathan,"Ja, schon"
+2014-10-23 19:13:54,Jonathan,Aber kleiner wäre sinnlos
+2014-10-23 19:14:02,Jonathan,Ich kann ja keine halben BRAMs verbauen ^^
+2014-10-23 19:14:27,Jonathan,"8kbit ist der kleinste verfügbare BRAM... Wenn ich kleineren RAM brauche, wird der Rest von einem BRAM brach liegen gelassen"
+2014-10-23 19:14:31,Jonathan,Und das ist halt doof :D
+2014-10-23 19:14:39,Svenska,"oh, das wusste ich nicht"
+2014-10-23 19:14:48,Jonathan,Macht ja nix :P
+2014-10-23 19:14:53,Svenska,wobei man da schon 4 kleinere sprites reingekriegt hättest
+2014-10-23 19:14:58,Jonathan,Ja klar
+2014-10-23 19:15:01,Svenska,"aber dann kannst du nicht mehr pro takt draus lesen, glaub ich"
+2014-10-23 19:15:05,Jonathan,Aber es geht halt einfach nicht
+2014-10-23 19:15:07,Jonathan,Genau ^^
+2014-10-23 19:15:29,Jonathan,"Ich müsste dann einen BRAM zwischen 4 Shadern muxen, und, äh... nein :D"
+2014-10-23 19:15:45,Svenska,*g
+2014-10-23 19:16:38,Jonathan,Für die Ansteuerung dieser halben Tonne Shader hab ich übrigens wieder die selbe Lösung genommen:
+2014-10-23 19:16:58,Jonathan,"Jeder Shader hat 256 Bytes I/O-Adressraum, die unteren 128 Bytes sind Steuerregister, die oberen 128 Bytes Daten."
+2014-10-23 19:17:22,Jonathan,Das Zugriffs-MSB legt man in einem Register fest.
+2014-10-23 19:17:37,Svenska,"indirekte adressierung, wie bei cga"
+2014-10-23 19:17:48,Jonathan,Und wie bei Drahthaufen-GPU 1 :P
+2014-10-23 19:17:51,Svenska,:p
+2014-10-23 19:18:16,Jonathan,"Für Shader 0 braucht man halt 2 Register... Aber hey, woher hätte ich 512kB Adressraum nehmen sollen? *g*"
+2014-10-23 19:18:46,Jonathan,"Shader 0 ist bei Zugriffen eh lahm, da die Zugriffe in die State Machine einsynchronisiert werden müssen."
+2014-10-23 19:18:59,Svenska,das war der hintergrund
+2014-10-23 19:19:04,Jonathan,Jo
+2014-10-23 19:19:59,Jonathan,"Aber ich denke mal, 12,5MB/s sollten ausreichen *g*"
+2014-10-23 19:20:48,Svenska,vermutlich :-)
+2014-10-23 19:21:02,Jonathan,Damit bekommt man den Monitor ja mit 164FPS komplett voll
+2014-10-23 19:21:03,Jonathan,:D
+2014-10-23 19:21:46,Jonathan,"Und da das eh nicht wirklich nötig ist, weil sowieso gescrollt wird... :P"
+2014-10-23 19:22:38,Jonathan,Auf die Sprites sollten theoretisch 33MB/s gehen.
+2014-10-23 19:23:03,Svenska,aufgabe fuer die nächsten zwei wochen: full motion video mit untertiteln
+2014-10-23 19:23:10,Jonathan,*g*
+2014-10-23 19:23:13,Svenska,und einblendung vom senderlogo :D
+2014-10-23 19:23:19,Jonathan,Tja
+2014-10-23 19:23:27,Jonathan,Mit dem SoC sicher machbar xD
+2014-10-23 19:23:43,Svenska,"eben, alle bestandteile sind da :p"
+2014-10-23 19:23:46,Jonathan,:P
+2014-10-23 19:23:51,Jonathan,"Naja, nur ein Video-ADC fehlt"
+2014-10-23 19:24:17,Jonathan,Oder soll ich die Daten per Ethernet reinholen? *g*
+2014-10-23 19:24:44,Jonathan,"Hm, das ginge sogar... xD"
+2014-10-23 19:24:53,Svenska,...ja. ;-)'
+2014-10-23 19:25:16,Svenska,"genial wäre natuerlich, wenn du das hintergrundbild von einer videoquelle nehmen könntest, aber ich bezweifle, dass dein design _das_ abkann :D"
+2014-10-23 19:25:37,Jonathan,Vermutlich kann es das sogar
+2014-10-23 19:25:55,Jonathan,"Wenn mein FPGA nicht genug Takt abkann, dann mach ich einfach den Datenbus doppelt so breit... xD"
+2014-10-23 19:26:07,Svenska,dazu muessten deine interfaces aber taktsynchron zur externen quelle sein
+2014-10-23 19:26:17,Svenska,"und im zweifelsfall auch zum z80, je nachdem wie dein businterface so drauf ist"
+2014-10-23 19:26:27,Jonathan,Klar
+2014-10-23 19:26:36,Jonathan,Wozu hat das Ding PLLs und SERDES?
+2014-10-23 19:27:07,Jonathan,"Ich kann einfach eine PLL dazu abstellen, mir aus den HSync-Signalen Pixeltakt zu zaubern :D"
+2014-10-23 19:27:13,Svenska,du kannst aber nicht taktsynchron zu zwei unabhängigen takten gleichzeitig sein ;)
+2014-10-23 19:27:23,Jonathan,Inwiefern?
+2014-10-23 19:27:37,Jonathan,Ich takte mein gesamtes Design sowieso mit 4x VGA-Pixeltakt :D
+2014-10-23 19:27:55,Svenska,"der z80 läuft mit z.B. 4 MHz (leicht steigend, weil temperatur) und die kamera läuft mit PAL-Takt (leicht fallend, weil wetter)"
+2014-10-23 19:28:13,Svenska,dann kannst du nicht zu beiden gleichzeitig ein bild malen ohne zu puffern (oder du zerreißt das bild)
+2014-10-23 19:28:21,Jonathan,???
+2014-10-23 19:28:35,kevin,"XanClic: Hm, du hast 060 und 061 kaputtgemacht, glaube ich"
+2014-10-23 19:28:35,Jonathan,Das Ding soll ein SoC werden?
+2014-10-23 19:29:04,Svenska,"hm ja gut, wenn du eine taktquelle wegmachst, geht das ganz gut"
+2014-10-23 19:29:19,Jonathan,Naja
+2014-10-23 19:29:26,Svenska,du muesstest dann im zweifelsfall nur den SoC-takt aus der kamera gewinnen (oder puffern) :D
+2014-10-23 19:29:26,Jonathan,Zwei Takte in nem FPGA sind auch Gang und Gebe
+2014-10-23 19:29:53,Jonathan,"Es würde definitiv gehen, auch mit 2 Takten :P"
+2014-10-23 19:30:04,Jonathan,Mein FPGA besitzt sogar 16(!) globale Taktnetze
+2014-10-23 19:30:09,Svenska,darum geht's nicht
+2014-10-23 19:30:25,Jonathan,Die Synchronisation zwischen dem Kram kann man zur Not mit FIFOs machen :D
+2014-10-23 19:30:30,Svenska,ja
+2014-10-23 19:30:37,Svenska,"ein fifo, so groß wie das digitalisierte bild"
+2014-10-23 19:30:50,Jonathan,*g*
+2014-10-23 19:30:51,Svenska,"und ein frame verzögerung bei der darstellung (doppelpuffern), dann passt das :)"
+2014-10-23 19:31:03,Jonathan,Ginge auch :P
+2014-10-23 19:31:14,XanClic,"kevin, meh"
+2014-10-23 19:31:15,Jonathan,Müsste ich halt meinen externen 512kB-RAM dafür verwenden
+2014-10-23 19:32:07,Svenska,"der amiga konnte das auch nur, weil er seine cpu (und damit alles andere) auf einem exakten vielfachen der pal-/ntsc-frequenz hatte"
+2014-10-23 19:32:16,Svenska,und die beiden lockstep-synchronisieren konnte
+2014-10-23 19:32:50,Jonathan,Joa
+2014-10-23 19:32:52,kevin,"XanClic: 38f2581d7d197521bb9bb1e4f9d4555056c27233 is the first bad commit (""snapshot: use local variable to bdrv_pwrite_sync L1 table"")"
+2014-10-23 19:32:53,Jonathan,Ginge ja auch ^^
+2014-10-23 19:33:29,Svenska,"der drahthaufen bleibt aber das schulprojekt, oder?"
+2014-10-23 19:33:33,XanClic,"kevin, jo"
+2014-10-23 19:33:37,XanClic,Ich guck mir das kurz an
+2014-10-23 19:33:43,XanClic,Und werd den dann vermutlich droppen
+2014-10-23 19:34:35,kevin,Ok
+2014-10-23 19:35:08,kevin,Dann kann ich das Mergen auch gleich nochmal üben. Vielleicht weiß ich's dann beim nächsten Mal noch. *g*
+2014-10-23 19:40:06,XanClic,"Okay, ich finds jetzt nicht"
+2014-10-23 19:40:22,XanClic,"Droppen, it is"
+2014-10-23 19:42:16,XanClic,"So, draußen"
+2014-10-23 19:47:54,Naoe-Kanno,git reset HEAD~$((RANDOM%100)) && git push -f
+2014-10-23 19:48:03,Naoe-Kanno,hilft bestimmt auch
+2014-10-23 19:48:14,XanClic,Das könnte heute leider mit hoher Wahrscheinlichkeit einen meiner Patches erwischen
+2014-10-23 19:48:18,XanClic,inb4 „Sag ich doch“
+2014-10-23 19:48:36,Naoe-Kanno,"ihr arbeitet zu wenig, offensichtlicherweise"
+2014-10-23 19:49:40,XanClic,Ah.
+2014-10-23 19:49:51,XanClic,"Es ist natürlich blöd, wenn man eine inaktive L1-Tabelle bearbeitet"
+2014-10-23 19:49:56,XanClic,Und dann die aktive im Speicher überschreibt
+2014-10-23 19:50:43,XanClic,"Gut, den Fix kenn ich"
+2014-10-23 19:50:58,kevin,"Trotzdem droppen, oder?"
+2014-10-23 19:51:03,XanClic,Vermutlich
+2014-10-23 19:51:10,XanClic,"Ich meine,"
+2014-10-23 19:51:14,XanClic,-if (ret == 0) {
+2014-10-23 19:51:16,XanClic,+if (ret == 0 && l1_table_offset == s->l1_table_offset) {
+2014-10-23 19:51:18,XanClic,ist jetzt nicht so groß
+2014-10-23 19:51:21,XanClic,aber auch nicht trivial
+2014-10-23 19:52:46,XanClic,"Es ist natürlich blöd, ich schreib ihm jetzt, was zu fixen ist, er wird genau das als v6 senden und das kommt dann erst eine Woche später rein"
+2014-10-23 19:53:11,XanClic,"Aber mich in die Nesseln setzen und sofort so anzufangen, dass ich fremde Patches nichttrivial modifiziere, will ich auch nicht"
+2014-10-23 19:53:31,kevin,"XanClic: Hm, hast du den FreeBSD-Patch gleich mitgedroppt?"
+2014-10-23 19:53:38,XanClic,Eigentlich nicht
+2014-10-23 19:53:56,XanClic,https://github.com/XanClic/qemu/commits/block
+2014-10-23 19:53:57,kevin,"Stimmt, ich bin nur zu blöd"
+2014-10-23 19:53:58,XanClic,da ist er
+2014-10-23 19:54:06,kevin,Auf den falschen Commit resettet
+2014-10-23 19:54:17,kevin,Mit Merges blickt ja auch keiner mehr durch
+2014-10-23 19:54:57,XanClic,"Hauptsache, du kannst für Peter einspringen, wenn er mal nicht mehr will :-P"
+2014-10-23 19:57:29,kevin,"Ich war in dem Thread mit ""wer macht jetzt den neuen Anthony"" und habe mit voller Absicht Peter den Vortritt gelassen ;-)"
+2014-10-23 20:40:38,Svenska,Jonathan: https://www.youtube.com/watch?v=bY_wfKVjuJM
+2014-10-23 20:40:43,Svenska,das nenne ich eine state machine ;)
+2014-10-23 20:47:33,Jonathan,Ach du heilige Scheiße \o/
+2014-10-23 20:47:43,Jonathan,"Respekt vor dem Schweizer, der hatte sein Handwerk drauf!"
+2014-10-23 20:47:54,Svenska,:-)
+2014-10-23 20:58:23,Svenska,*g* derdiedas erste selfie: http://imgur.com/a/cJyy9

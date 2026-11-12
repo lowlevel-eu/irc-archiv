@@ -1,0 +1,104 @@
+date/time,nick,message
+2015-03-26 18:38:42,MasterQ32,"gibts ne option, wie man qemu dazu bringt, anzuhalten, nachdem die CPU sich resettet hat?"
+2015-03-26 18:42:57,Jidder,ja
+2015-03-26 18:43:01,Jidder,weiß aber nicht wie die heißt
+2015-03-26 18:43:10,MasterQ32,"okay, dann kann ich weiter suchen :D"
+2015-03-26 18:44:13,Jidder,-no-reboot -no-shutdown
+2015-03-26 18:44:19,Jidder,zusammen angeben
+2015-03-26 18:44:39,MasterQ32,dankeschön :)
+2015-03-26 19:24:39,MasterQ32,muss bei Paging auch im page directory PRESENT (0x01) angegeben sein?
+2015-03-26 19:24:45,MasterQ32,"wenn ja, hab ich meinen fehler :P"
+2015-03-26 19:25:56,Jidder,ja muss
+2015-03-26 19:26:01,MasterQ32,"okay, danke"
+2015-03-26 19:26:06,MasterQ32,mal gucken obs danach immer noch abschmiert
+2015-03-26 19:43:08,Tufel,Huhu
+2015-03-26 19:51:27,Tufel,"Nun man kann ja, wenn man eine 32bit-Architektur mit einem schnellen Multiplizierer für Ganzzahlen hat relativ schnell fließkommabefehle emulieren, oder? Wäre es dann noch sinnvoll eine FPU in diese 32bit-Architektur einzubauen?"
+2015-03-26 19:54:58,Jidder,zu der ersten frage ohne weiteres wissen zu haben: kann man das?
+2015-03-26 19:55:54,Tufel,Mhh meist du jetzt das emulieren der Fließkommabefehle oder das einbauen der FPU?
+2015-03-26 19:56:13,Jidder,das emulieren
+2015-03-26 19:57:05,Tufel,Naja so sicher bin ich da nicht :D
+2015-03-26 20:44:39,MasterQ32,"Jidder, hättest du eventuell mal kurz Zeit und Lust, auf meinen Paging-Code nen Blick zu werfen?"
+2015-03-26 20:44:39,MasterQ32,http://pastebin.com/xFXv5zNh
+2015-03-26 20:44:54,MasterQ32,"es schmiert mit dem triple fault ab, also kein mapped paging"
+2015-03-26 20:45:16,MasterQ32,obwohl ich eigentlich alles nach tutorial(+code) geprüft habe
+2015-03-26 20:45:19,MasterQ32,vielleicht überseh ich was
+2015-03-26 20:47:33,Jidder,"das erste was dann immer interessant ist, ist die virtuelle adresse"
+2015-03-26 20:47:45,Jidder,"weißt du, wie du die rausbekommen kannst?"
+2015-03-26 20:48:21,MasterQ32,die virtuelle mit der er wegknallt?
+2015-03-26 20:48:49,Jidder,ja
+2015-03-26 20:50:32,MasterQ32,ich denke mal CR2 im Interrupt?
+2015-03-26 20:50:41,Jidder,ja
+2015-03-26 20:51:09,MasterQ32,ksleep(10);
+2015-03-26 20:51:09,MasterQ32,"10020e:       83 ec 0c                sub    $0xc,%esp"
+2015-03-26 20:51:31,Jidder,also cr2 = 0x10020e?
+2015-03-26 20:51:37,MasterQ32,also die zeile nach dem setzen von Cr0
+2015-03-26 20:51:39,MasterQ32,genau
+2015-03-26 20:52:20,Jidder,pages die von pmm_alloc zurückgegeben werden sind mit nullen initialisiert?
+2015-03-26 20:52:32,MasterQ32,nein :D
+2015-03-26 20:52:51,MasterQ32,aber ich füll das page dir und tables mit 0
+2015-03-26 20:52:54,Jidder,hm
+2015-03-26 20:53:15,Jidder,"es wird also vorher ""Page Table 0 does not exist, create "" ausgegeben?"
+2015-03-26 20:53:20,MasterQ32,jep
+2015-03-26 20:53:48,MasterQ32,http://s.mq32.de/?x599
+2015-03-26 20:54:06,Jidder,hält dein qemu bei dem triple fault an und du kommst in den qemu-monitor?
+2015-03-26 20:54:09,MasterQ32,ja
+2015-03-26 20:54:16,MasterQ32,ähm qemu-monitor? :D
+2015-03-26 20:54:22,Jidder,hält dein qemu an?
+2015-03-26 20:54:29,MasterQ32,ja
+2015-03-26 20:54:46,Jidder,"wobei ich gar nicht weiß, ob man dieses problem damit debuggen kann ..."
+2015-03-26 20:54:58,Jidder,mit ctrl-alt-f1 solltest du dann in den qemu-monitor kommen
+2015-03-26 20:55:02,Jidder,das ist eine konsole
+2015-03-26 20:55:02,MasterQ32,http://s.mq32.de/?x59a
+2015-03-26 20:55:14,Jidder,ach der beendet sich?
+2015-03-26 20:55:29,MasterQ32,"nein, das war ich jetzt"
+2015-03-26 20:56:40,Jidder,ah mit ctrl-alt-2 kommt man in den monitor
+2015-03-26 20:56:57,MasterQ32,"okay, check"
+2015-03-26 20:57:35,Jidder,dann gib da mal info mem ein
+2015-03-26 20:57:49,Jidder,das sollte den tatsächlichen inhalt der pagetables anzeigen
+2015-03-26 20:57:53,MasterQ32,okay
+2015-03-26 20:58:07,MasterQ32,http://s.mq32.de/?x59b
+2015-03-26 20:58:22,Jidder,"das heißt, dass du eine page gemappt ist"
+2015-03-26 20:58:33,Jidder,funktioniert dein pmm_alloc richtig?
+2015-03-26 20:58:37,MasterQ32,"okay, das ist vielleicht ein bisschen wenig :D"
+2015-03-26 20:58:45,Jidder,z.b. liefert es unterschiedliche seiten zurück bei mehrmaligem aufrufen?
+2015-03-26 20:58:53,MasterQ32,"ich gehe davon aus, ich bekomme aufsteigend in 4096iger abständen zeug"
+2015-03-26 20:59:33,Jidder,bei table = (uintptr_t*)context->directory[dirIdx]; solltest du die flags rausfiltern
+2015-03-26 20:59:55,Jidder,also table = (uintptr_t*)(context->directory[dirIdx] & 0xfffff000); in deiner bevorzugten geschmacksrichtung
+2015-03-26 20:59:56,MasterQ32,oh :D
+2015-03-26 21:00:37,MasterQ32,party hard!
+2015-03-26 21:00:39,MasterQ32,man dankt!
+2015-03-26 21:00:40,Jidder,yay
+2015-03-26 21:00:45,Jidder,gerne
+2015-03-26 21:01:05,MasterQ32,"dämlicher fehler, aber klar, sowas verpeilt man schnell"
+2015-03-26 21:01:37,MasterQ32,http://s.mq32.de/?x59c
+2015-03-26 21:03:12,MasterQ32,"schön, dann hab ich jetzt die für mich bisher schwerste stelle gemeistert"
+2015-03-26 21:04:09,Jidder,viel spaß mit der nächsten^^
+2015-03-26 21:04:31,MasterQ32,werd ich haben
+2015-03-26 21:05:01,MasterQ32,"aktueller plan: ""allen restlichen verfügbaren"" speicher einfach mal ab 4 MB aufwärts linear hinmappen :D"
+2015-03-26 21:05:59,MasterQ32,scheint als würde mich das tutorial jetzt verlassen :D
+2015-03-26 21:22:45,Jidder,jop
+2015-03-26 21:23:05,Jidder,"das haben wir uns wieder einfach gemacht, oder?"
+2015-03-26 21:23:32,MasterQ32,haha :D
+2015-03-26 21:23:35,MasterQ32,"ne, find ich gut"
+2015-03-26 21:23:53,MasterQ32,"ich denke bis paging braucht man auf jeden Fall hilfestellungen, weil komplett neues thema, neue welt"
+2015-03-26 21:24:18,MasterQ32,"ich hab ja auch das meiste ohne weitere hilfe hinbekommen, nur n paar kleine fehler"
+2015-03-26 21:57:14,MasterQ32,Bester Sortieralgorithmus für Listen mit bis zu einem Element: Array Sort(Array a) return a;
+2015-03-26 22:03:24,Jidder,bei so neuartigen algorithmen wäre ich ja immer vorsichtig. ich will erstmal einen formalen beweis für die korrektheit sehen ^^
+2015-03-26 22:04:02,MasterQ32,muss ich mich mal hinsetzen
+2015-03-26 22:04:06,MasterQ32,gib mir nen wochenende
+2015-03-26 22:04:54,Jidder,okay
+2015-03-26 22:05:00,MasterQ32,ÖD
+2015-03-26 22:05:01,MasterQ32,:D
+2015-03-26 23:19:20,Jidder,"es gibt nichts, das mich dazu bewegen könnte, mich freiwillig mit ssl auseinander zu setzen"
+2015-03-26 23:19:50,Jidder,oder ssh
+2015-03-26 23:20:33,MasterQ32,:D
+2015-03-26 23:20:40,MasterQ32,ssh an sich ist echt nützlich
+2015-03-26 23:23:07,Jidder,bist der lügenpresse auch auf den leim gegangen
+2015-03-26 23:23:22,Jidder,telnet 
+2015-03-26 23:23:24,Jidder,+ rot13
+2015-03-26 23:23:30,MasterQ32,:D
+2015-03-26 23:23:34,Jidder,"kein gefummel mit keys, zertifikaten und dergleichen"
+2015-03-26 23:23:51,MasterQ32,"geht eigentlich eher um die zusatzfeatures wie X11 Forwarding, HTTP-Proxy, ... :D"
+2015-03-26 23:28:54,Jidder,trotzdem kann man so wie ich passwörter vergessen
+2015-03-26 23:28:56,Jidder,finde das nicht gut
+2015-03-26 23:29:02,MasterQ32,:D

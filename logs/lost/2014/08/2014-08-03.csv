@@ -1,0 +1,97 @@
+date/time,nick,message
+2014-08-03 00:38:39,Jonathan,Gute Nacht
+2014-08-03 00:38:45,th3falc0n,gn8
+2014-08-03 00:42:32,th3falc0n,ich geh dann auch mal
+2014-08-03 00:42:34,th3falc0n,gn8
+2014-08-03 01:00:46,iksnagreb," oh man, da lass ich doch ernsthaft thread dur nachrichten verarbeitung im kernel space laufen und wunder mich dann, dass das system auf die schnautze fliegt, weil die nachrichten im kernel-space stack liegen... ich sollte penn gehen"
+2014-08-03 01:01:19,iksnagreb,gn8
+2014-08-03 01:01:29,Jidder,gn8
+2014-08-03 11:52:49,Jonathan,Moin
+2014-08-03 13:12:27,Svenska,"hm, mein vhost ist noch nicht angekommen. hab ich wohl ne schlechte idee angegeben ^^"
+2014-08-03 13:28:43,Jonathan,"Svenska: Man bekommt auch ne Memo, wenn der VHost abgelehnt wurde ^^"
+2014-08-03 13:51:13,th3falc0n,"hmm ich glaub mein ramfs funktioniert prima (write(""Das hier wird geschrieben"") ergibt beim read() ""Ç"""
+2014-08-03 13:54:21,Svenska,"hmm, kriegt man ne nachricht, wenn man ein memo hat? ^^"
+2014-08-03 13:55:31,Svenska,"naja, ""You have no memos."" ist hinreichend"
+2014-08-03 14:12:07,iksnagreb,moin
+2014-08-03 14:12:39,th3falc0n,moin iksnagreb
+2014-08-03 14:46:42,th3falc0n,irgendwer  ne idee was da passiert? http://pastebin.com/vPEtnhtU
+2014-08-03 14:48:21,Svenska,nö. gib pointer aus und analysiere den ram.
+2014-08-03 14:48:52,Svenska,"könnte sein, dass du da irgendwelche dinge überschreibst, weil z.B. der stack mitten im puffer liegt oder sonstwas."
+2014-08-03 14:51:43,th3falc0n,"ähm also feststellung: bei ""/dev/nix"" kommt alles da an wo es soll"
+2014-08-03 14:51:53,th3falc0n,"bei ""/dev/ktty"" kommt nurnoch ""/dev"" and"
+2014-08-03 14:52:15,Svenska,"prüfst du ab, ob ""ktty"" ein gültiger name ist?"
+2014-08-03 14:52:34,th3falc0n,nein ich kprintf einfach nur den übergebenen string
+2014-08-03 14:52:39,th3falc0n,bzw char*
+2014-08-03 14:52:59,Svenska,"dann liegt der fehler vermutlich in dem code, den du nicht gezeigt hast."
+2014-08-03 14:53:55,th3falc0n,so ich hab jetzt ein return 0; dahinter gemacht
+2014-08-03 14:54:20,th3falc0n,"die ganze vfs_open funktion ist jetzt nurnoch das was im pastebin steht, mit nem return 0;"
+2014-08-03 14:55:20,th3falc0n,"ist es möglich, dass der C-Compiler mir nen streich spielt und ""/dev/ktty"" irgendwie merhmals mit der gleichen adresse benutzt?"
+2014-08-03 14:55:28,Svenska,ja.
+2014-08-03 14:55:34,th3falc0n,und wie verhinder ich das?
+2014-08-03 14:55:50,Svenska,"wenn du 4 identische statische strings hast, dann werden die auf die gleiche adresse gelinkt, wäre ja verschwendung sonst."
+2014-08-03 14:56:08,Svenska,verhindern tust du das mit statisch alloziieren und strncpy.
+2014-08-03 14:56:47,Svenska,"besser wäre, statische strings nicht zu verändern. die sind nämlich normalerweise nicht schreibbar..."
+2014-08-03 14:57:25,th3falc0n,ich hab da so ne implementation von strtok
+2014-08-03 14:57:48,Svenska,"ja, das hab ich schon vermutet. strtok verändert die quelle."
+2014-08-03 14:58:17,Svenska,nimm lieber strstr() oder so.
+2014-08-03 14:59:16,th3falc0n,oder ich fix die aufrufe von strtok mit nem strclone
+2014-08-03 14:59:17,XanClic,"[Samstag, 2. August 2014] [20:37:10] <XanClic>  > ""conversion from string literal to 'char*' is deprecated"""
+2014-08-03 14:59:18,XanClic,"[Samstag, 2. August 2014] [20:37:14] <XanClic>  vielleicht sollte man das fixen"
+2014-08-03 14:59:24,XanClic,"Zum Glück hab ich das gestern nicht gesagt, oder so"
+2014-08-03 14:59:56,Svenska,"ach was, einer hat doch spaß daran, krankheiten zu machen. :-)"
+2014-08-03 15:04:56,Svenska,"ich vermute, du orientierst dich an POSIX?"
+2014-08-03 15:06:11,Svenska,"dort spielt der dateiname für treiber nämlich keine wirkliche rolle, weil das dateisystem selbst major/minor-nummern speichern kann und diese den richtigen treiber auswählen."
+2014-08-03 15:07:13,th3falc0n,also ich speicher für jede datei nen treiber und ne 32bit ID#
+2014-08-03 15:07:31,Svenska,"auch für ""meine_lieblingsnamen.txt"" ?"
+2014-08-03 15:09:38,th3falc0n,ja
+2014-08-03 15:09:38,Svenska,"dateien haben in posix einen typ (verzeichnis, datei, symlink, blockdev, chardev und was ich noch so vergaß), und der inhalt ist je nach dateityp verschieden. für devices halt major/minor-nummer, aber wenn du da eine ID benutzen willst, ist das deine sache"
+2014-08-03 15:10:05,Svenska,welcher treiber wäre denn für die liebesbriefe angemessen? ^^
+2014-08-03 15:11:03,th3falc0n,"ich hab 2 ""übertypen"" : kdrv und udrv, kdrv verweist mit ner ID auf nen kernel driver struct und udrv verweist auf ne ID in nem treiber task"
+2014-08-03 15:11:44,th3falc0n,"also für liebesbriefe wäre ein kdrv nämlich der ""null-treiber"" angemessen (/dev/null)"
+2014-08-03 15:12:06,Svenska,"also die sind immer leer, egal was man damit macht?"
+2014-08-03 15:14:38,th3falc0n,ja liebesbriefe sind immer leer
+2014-08-03 15:14:46,th3falc0n,und lesen kann man sie auch nicht
+2014-08-03 15:14:55,th3falc0n,aber da verweise ich einfach mal auf /dev/urandom
+2014-08-03 15:17:02,Svenska,"ok, ich schließe daraus: jede datei auf deinem system muss mit einem kerneltreiber verbunden sein. ^^"
+2014-08-03 15:17:53,th3falc0n,nein
+2014-08-03 15:18:05,th3falc0n,es gibt kernel treiber und userspace treiber
+2014-08-03 15:19:11,th3falc0n,userspace treiber auf 2 weisen: per mount-point (alle anfragen werden an den treiber weitergeleitet in nem bestimmten dir) oder per link (datei kennt ihren treiber)
+2014-08-03 15:20:11,Svenska,"letzteres empfinde ich als etwas unschön, weil ein programm im userspace eine datei mit einem beliebigen treiber verbinden kann und dann direkt auf den kernel zugreifen"
+2014-08-03 15:20:53,th3falc0n,ne das geht nicht
+2014-08-03 15:24:01,th3falc0n,meine linux vm ist abgestürzt und th3falc0n ist angeblich nicht mehr in der sudoers file -.-
+2014-08-03 15:41:23,th3falc0n,"jetzt brauch ich sudo um grub davon zu überzeugen, wieder ein timeout zu haben, damit ich in die root shell kann um wieder sudoen zu können"
+2014-08-03 15:41:44,Svenska,"das passiert, wenn man kein root-passwort hat :D"
+2014-08-03 15:41:58,Svenska,du kannst mal shift gedrückt halten beim start. probieren geht über studieren.
+2014-08-03 15:42:46,th3falc0n,danke
+2014-08-03 15:42:59,Svenska,bei syslinux gehts ^^
+2014-08-03 15:47:50,th3falc0n,ja hab jetzt wieder sudo rechte
+2014-08-03 19:31:45,Svenska,Jonathan: wieviel strom darf man eigentlich durch so einen mikrotaster dauerhaft schicken? :)
+2014-08-03 19:32:27,Svenska,"bin grad dabei, mein system soweit umzulöten, dass man reset-taster und hauptschalter extern anschließen kann (also stiftleiste)"
+2014-08-03 19:33:31,Svenska,"im augenblick hab ich grad passende taster/schalter vom display eines at-gehäuses da, aber kein netzteil"
+2014-08-03 19:33:56,Svenska,(also turbo und reset. das gehäuse war leider kaputt.)
+2014-08-03 20:35:51,iksnagreb,nabend
+2014-08-03 22:02:44,th3falc0n_,"alsso kurze frage: wenn ich ausm kernel einfach ein .tar archiv (vom grub in den speicher geladen) entpacke und dadrin /bin/init ausführe, sofern es existiert, mach ich alles richtig oder?"
+2014-08-03 22:03:11,Svenska,"vielleicht nicht alles, aber wirklich falsch ist das sicherlich nicht."
+2014-08-03 22:05:36,th3falc0n_,aber wenn der ramfs treiber im kernel liegt ist das doch im prinzip alles was ich machen muss oder?
+2014-08-03 22:17:50,Svenska,ja
+2014-08-03 22:18:21,Svenska,"der linux-kernel hat übrigens cpio benutzt, weil ihm die ganzen komischen tar-formate, die sich in den letzten jahrzehnten entwickelt haben, zu komplex geworden sind"
+2014-08-03 22:20:00,th3falc0n_,sollte ich cpio oder tar nehmen ist dann die frage
+2014-08-03 22:20:07,th3falc0n_,oder gibts noch was besseres / einfaches
+2014-08-03 22:20:38,Svenska,"naja, die leute, die sich damit auskennen, haben cpio genommen"
+2014-08-03 22:20:38,Svenska,aber das programm stinkt gewaltig :-)
+2014-08-03 22:20:38,XanClic,Man kann auch einfach tar nehmen
+2014-08-03 22:20:38,XanClic,"Und wissen, wie man die initrd erstellt"
+2014-08-03 22:20:41,Svenska,und sich auf eine version beschränken
+2014-08-03 22:20:43,XanClic,"Und wenn man was kaputtmacht, ist man selber schuld"
+2014-08-03 22:20:56,XanClic,Man nimmt einfach tar und macht keinen Scheiß
+2014-08-03 22:20:59,XanClic,Damit bin ich bisher gut gefahren
+2014-08-03 22:21:11,th3falc0n_,wo finde ich am besten die tar format doku?
+2014-08-03 22:21:16,XanClic,Wikipedia
+2014-08-03 22:21:21,Svenska,"read the source, luke? :D"
+2014-08-03 22:21:32,th3falc0n_,Svenska: jajajaja
+2014-08-03 23:51:04,th3falc0n_,iksnagreb: woher hast du die format spezifikation die du zum tar enpacken nimmst?
+2014-08-03 23:56:27,iksnagreb,th3falc0n_: http://wiki.osdev.org/Tar
+2014-08-03 23:56:40,th3falc0n_,dankö
+2014-08-03 23:57:52,th3falc0n_,hmm tar kann nicht mehr als 100 zeichen im path
+2014-08-03 23:57:54,th3falc0n_,seltsam
+2014-08-03 23:58:08,th3falc0n_,*99 zeichen

@@ -1,0 +1,465 @@
+date/time,nick,message
+2015-02-08 08:47:00,Jonathan,Moin
+2015-02-08 08:52:58,XanClic,gn8
+2015-02-08 14:36:20,Arakis,Greetings
+2015-02-08 14:36:27,Arakis,"Oh, hier darf man ja deutsh schreiben :-D"
+2015-02-08 14:36:32,Arakis,+c
+2015-02-08 14:37:19,Arakis,Hey livinskull
+2015-02-08 14:37:54,livinskull,kann man hier nichtmal mehr in Ruhe idlen? :P
+2015-02-08 14:38:13,Arakis,"Wohl noch nicht ganz wach, wa?"
+2015-02-08 14:38:32,Arakis,Ich hätte da mal 1-2 kleine Fragen
+2015-02-08 14:39:45,Arakis,"Jedes mal, wenn ich in der GDT die base adress / limit minimal ändere, klappt das nicht. Ich möchte gerne, dass ich das code segment für den kernel zu verkleinere, dass es sich mit dem code bereich im speicher deckt."
+2015-02-08 14:40:25,Arakis,"Die weitere Frage ist, jedesmal wenn ich die Position des Page Directory verändere (natürlich 4K aligned), crasht mein kernel ebenfalls."
+2015-02-08 14:41:46,Arakis,"bzw. manchmal ja, manchmal nein."
+2015-02-08 14:44:26,Paddy,Klingt auf jeden Fall nach zwei separaten Problemen
+2015-02-08 14:45:41,Arakis,"Normalerweise hat man ja 3 standart descriptoren (ring 0), code/data(base0-max limit) und null descriptor"
+2015-02-08 14:45:42,Paddy,"Sicher, dass das PD nicht zufällig an der neuen Stelle aus Versehen überschrieben wird?"
+2015-02-08 14:45:48,Paddy,"Okay, machen wir erst die GDT"
+2015-02-08 14:46:25,Paddy,"Ja, drei Deskriptoren für Flat Memory klingt richtig, wenn du nur Ring 0 hast"
+2015-02-08 14:46:32,Arakis,"sobald ich ach nur minimal das base limit um ein MB erhöhe (oder 4 KB) (und natürlich das vom limit hinten abziehe), crash es"
+2015-02-08 14:46:56,Arakis,"Und ich weiß zu 100%, dass im ersten MB kein ausführbarer code ist (oder in den ersten 4 KB)"
+2015-02-08 14:47:34,livinskull,der bootsektor ist da^^
+2015-02-08 14:47:42,Arakis,Mein kernel ist bei baseaddress 0x00400000
+2015-02-08 14:47:48,livinskull,wenn du vorm kernel ausführen die gdt baust ist da also ausführbarer code 
+2015-02-08 14:48:00,Jidder,du kannst nicht einfach so basis und limit verändern
+2015-02-08 14:48:02,livinskull,je nach bootloader
+2015-02-08 14:48:05,Jidder,egal ob 1 megabyte oder 1 byte
+2015-02-08 14:48:15,Jidder,der computer ist ein digitales gerät keine mofa
+2015-02-08 14:48:29,Jidder,"es gibt keine ""kleinen änderungen"""
+2015-02-08 14:49:17,Jidder,"wenn du willst, dass die segmente genau auf den kernel zugeschnitten sind, musst du den kernel an die adresse 0 linken und die basis des deskriptors genau auf die ladeadresse des kernels setzen"
+2015-02-08 14:49:37,Arakis,"Schon klar. Ich verstehe halt nur nicht, warum ich das code segment absout nicht anpassen darf. Als ob für ring 0 der gesamte speicher freigegeben sein ""muss"", und ich den kernel nicht auf ein bestimmtes code gebiet beschränken darf"
+2015-02-08 14:49:42,Arakis,(selbstschutz)
+2015-02-08 14:49:52,Jidder,du darfst es schon anpassen
+2015-02-08 14:49:55,Jidder,du musst es nur richtig machen
+2015-02-08 14:49:58,Jidder,was sehr aufwändig ist
+2015-02-08 14:50:34,Arakis,"Hm, ich fand leider keine Dokumentation dazu. Weil in sämtlichen Dokumentationen mit base=0, limit=max gearbeitet wird, für kernel ring 0"
+2015-02-08 14:50:40,Arakis,code=data
+2015-02-08 14:51:01,Jidder,es ist in der regel auch die mühe nicht wert
+2015-02-08 14:51:05,Jidder,-in der regel
+2015-02-08 14:51:24,Jidder,"das problem ist halt, dass dein compiler und dein linker annahmen über die umgebung machen"
+2015-02-08 14:51:44,Jidder,"zum beispiel die, dass das flat memory model vorliegt"
+2015-02-08 14:51:51,Jidder,also basis=0 limit=4gb
+2015-02-08 14:52:19,Jidder,"der grund dafür ist, dass es aufwändig und unperformant ist mit segmenten zu hantieren"
+2015-02-08 14:55:03,Jidder,"paging ist ein guter mechanismus, um unbelegte speicherbereiche zu schützen"
+2015-02-08 14:55:16,Jidder,"weil du da weiterhin das flat memory model hast, mit dem der compiler umgehen kann"
+2015-02-08 14:57:39,Arakis,Kann man denn mit Paging ein execute bit setzen?
+2015-02-08 14:57:43,Arakis,ich finde nur ein Writable flag
+2015-02-08 14:57:56,Jidder,gute frage
+2015-02-08 14:58:09,Jidder,ich glaube ab irgendeiner prozessorgeneration gibt es das
+2015-02-08 14:58:20,Jidder,das berühmte NX-Bit
+2015-02-08 14:58:27,Arakis,ich bin auf x86 beschränkt (derzeit)
+2015-02-08 14:59:23,Jidder,http://de.wikipedia.org/wiki/NX-Bit#CPUs_mit_NX-Bit
+2015-02-08 14:59:50,Jidder,also scheinbar doch schon eine ganze weile
+2015-02-08 15:00:08,Arakis,"jupp, gerade gelelesen, und ist nur für x64"
+2015-02-08 15:01:13,Jidder,laut artikel auch im 32-Bit-Modus mit aktivierter Physical Address Extension
+2015-02-08 15:04:33,Arakis,"ok, ich versuche das problem mit der GDT erstmal nach hinten zu verschieben."
+2015-02-08 15:04:44,Arakis,Weil es scheinbar völlig unnötig ist
+2015-02-08 15:04:53,Arakis,Und auch meine Lebenszeit wertvoll ist :D
+2015-02-08 15:05:53,Arakis,"Wie ist das mit dem PageDirectory. Gibt es restriktionen, wo die liegen muss? Jedesmal, wenn ich mal ne andere adress angebe (4k aligned), crash es oder es crash nicht."
+2015-02-08 15:06:01,Arakis,die verlinkung zur page table ist natürlich korrekt
+2015-02-08 15:06:20,Jidder,gibt keine restriktionen
+2015-02-08 15:06:34,Jidder,"außer, dass es les und schreibbarer ram sein muss"
+2015-02-08 15:06:37,Arakis,Ich beachte natürlich die größe des page directory (4*1024)
+2015-02-08 15:07:07,Arakis,"Hrm, dann ist es ein tieferes Problem, dass ich selber finden muss (vermutlich im compiler oder sonst wo)"
+2015-02-08 15:07:31,Jidder,"wenn du den compiler nicht selbstgeschrieben hast, vermute ich das problem im code ;)"
+2015-02-08 15:07:32,_sivizius,was war nochmal das problem mit deinem paging?
+2015-02-08 15:08:30,Arakis,"Ich mit (ganz frisch) Mitentwickler eines Projektes, was es ermöglicht das OS in C# zu entwickeln (nicht cosmos, sondern mosa)"
+2015-02-08 15:08:50,livinskull,ah da ist das problem
+2015-02-08 15:08:52,livinskull,xD
+2015-02-08 15:08:59,Arakis,"Den Compiler hab ich noch nicht angerührt, sondern ich mach mich gerade an die speicherverwaltung ran"
+2015-02-08 15:09:25,livinskull,c# to native compiler?
+2015-02-08 15:09:31,Arakis,jupp
+2015-02-08 15:09:49,Arakis,klappt erstaunlich gut. Hätte ich als alter c# hase nicht gedacht
+2015-02-08 15:10:27,Arakis,"Nervig ist nur, dass ich keinen speicher allocieren dynamisch darf, so lange der heap nicht aufgesetzt ist."
+2015-02-08 15:10:49,livinskull,naja das is aber nicht nur mit C# so :P
+2015-02-08 15:10:55,Arakis,;)
+2015-02-08 15:12:11,Arakis,"Gut, ich versuche mal auszuschließen, dass das Problem an der Position des PageDirectory liegt. Ich versuche mal zu deuggen, ob nachfolgender Code Mist baut"
+2015-02-08 15:12:24,Arakis,"apropo, eine IDee wie man mit qemu einen memory dump machen kann?"
+2015-02-08 15:13:06,Arakis,"ich finds nervig meine OS jedesmal neu zu starten, wenn ich nen anderen speicherbereich ausgeben will (integrieter memroy dump to screen vom kernel)"
+2015-02-08 15:13:34,Arakis,"Es gibt zwar die qemu console, aber die gibt nur eine einzelne zelle aus"
+2015-02-08 15:13:39,Arakis,(word)
+2015-02-08 15:13:58,Arakis,und keine richtige hex ansicht
+2015-02-08 15:14:08,Arakis,nen dump wäre cool
+2015-02-08 15:14:35,Jidder,mit welchem befehl machst du das?
+2015-02-08 15:14:47,Jidder,das word ausgeben
+2015-02-08 15:15:31,_sivizius,"also das internet sagt mir, dass das gehen sollte mit »dump-guest-memory«"
+2015-02-08 15:15:43,Arakis,"Ich nutze den befehl ""x"""
+2015-02-08 15:15:56,Jidder,der hat ja auch ein paar parameter http://en.wikibooks.org/wiki/QEMU/Monitor#x
+2015-02-08 15:15:59,Paddy,Probier mal x /40 oder so
+2015-02-08 15:16:51,Arakis,"sivizius, dump-guest-memory gibt es nicht (zumindest nicht für den monitor)"
+2015-02-08 15:16:55,Paddy,"Und wenn es wirklich größere Mengen Speicher sind, gibt es noch memsave"
+2015-02-08 15:17:30,Paddy,Falls Jidders Link den Namen richtig weiß. Der Befehl existiert auf jeden Fall. ;-)
+2015-02-08 15:18:37,Arakis,"ah, ein python script"
+2015-02-08 15:19:32,Arakis,"Ich hab noch nicht versucht, mit einem echten debugger zu debuggen. Dafür bin ich auch ncoh zu neu in dem thema"
+2015-02-08 15:19:54,Arakis,außerdem werden die symbole ja wohl auch kaum verständlich angezeigt werden (assembler) ;)
+2015-02-08 15:20:18,Arakis,Es gibt ja schließelich keein source code zu asm position mapper
+2015-02-08 15:23:24,Arakis,"wenn mein compiler crasht, ist es fast immer so, dass qemu wie wild neu startet. Was muss denn generell passieren, dass qemu neu startet? "
+2015-02-08 15:25:23,Jidder,"ein triple fault in der vm macht das zum beispiel. die ursachen dafür sind vielfältig, aber zusammenfassbar als ""code kaputt"""
+2015-02-08 15:26:29,Arakis,kann man den nicht per interrupt catchen? Ich hab auf jedenfall nen abfrage für double fault
+2015-02-08 15:26:40,livinskull,triple fault rebootet immer
+2015-02-08 15:26:52,Arakis,"Ok, nachlesen was nen tripple fault ist..."
+2015-02-08 15:27:03,Jidder,"ja der double fault soll das abfangen. triple fault heißt, dass der double fault nicht abfangbar war"
+2015-02-08 15:27:05,livinskull,aber wenn der double fault handler richtig funktioneirt gibts keinen triple fault
+2015-02-08 15:27:05,livinskull,:P
+2015-02-08 15:27:22,Arakis,da ist was dran...
+2015-02-08 15:28:28,Arakis,"hm, wobei ich den interrupt handler noch noch ""vor"" der GDT/page directory krams schon initialisiere..."
+2015-02-08 15:29:05,Jidder,"also wenn dein compiler abstürzt, aber du dessen ausgabe trotzdem von qemu starten lässt, würde ich nicht erwarten, dass das funktioniert"
+2015-02-08 15:33:44,Arakis,Man lerne: Starte kein VMWare player innerhalb von KVM (Linux virtual machine).
+2015-02-08 15:34:10,Arakis,"ich entwickel nämlich unter windows (visual studio), aber innerhalb einer KVM"
+2015-02-08 15:34:27,Arakis,innerhalb der virtual maschine ist es kein problem qemu oder BOCHS zu starten
+2015-02-08 15:34:36,Arakis,nur vmware hta nen problem damit ^^
+2015-02-08 15:35:52,Jidder,windows in einer vm unter linux. die nachteile von linux kombiniert mit den nachteilen von windows. brilliant!
+2015-02-08 15:36:21,Arakis,auf so eine IDee muss man erstmal kommen ;)
+2015-02-08 15:37:10,Arakis,"Scherzbeiseite, ich nutze nur linux, für dieses projekt bin ich halt auf windows angewiesen. Und da ich es nicht einsehe mir windows auf meine paltte zu installieren (also richtig), läufts halt in ner VM"
+2015-02-08 15:37:16,Jidder,"man merkt, dass du c# entwickler bist. ein interface namens IDee"
+2015-02-08 15:43:36,iksnagreb,moin
+2015-02-08 15:43:53,Arakis,moin
+2015-02-08 15:47:59,Arakis,"Gibt es irgendwo eine vollständige liste aller CPU inerrupts, also was sie bedeuten? Hab zwei listen gefunden, aber bedie sind nicht ganz vollständig. Z.b. was ist mit interrupt 2?"
+2015-02-08 15:48:12,livinskull,itnel manuals :)
+2015-02-08 15:48:15,livinskull,*intel
+2015-02-08 15:48:55,Jidder,volume 3 um genau zu sein
+2015-02-08 16:08:06,Arakis,"Also ich hab mal geschaut, wenn ich das PageDirectory bei 0x4001900 anlege, crasht es ""exakt"" nach dem setzten des bit31 von CR0. Also set bit31, while(true) HLT um mal zu schauen ob der kernel einfach nur einfriert .... fehlanzeige, es führt nach dem setzten des bits sofort zu einem neustart von qemu"
+2015-02-08 16:10:46,Arakis,"Ich kann also ausschließen, dass in zwischenzeit das page directory kaputt gemacht wurde"
+2015-02-08 16:18:02,Arakis,"was macht die ""8"" bei mov 8(%esp), %eax?"
+2015-02-08 16:19:19,Jonathan,esp+8
+2015-02-08 16:19:41,Jonathan,Oder minus? Ich vermute aber eher plus *g*
+2015-02-08 16:21:48,Arakis,besten dank
+2015-02-08 16:29:29,livinskull,überflüssig sein.. at & t syntax stinkt :P
+2015-02-08 16:44:55,Arakis,Kennt einer nen guten hex viewer/editor für windows?
+2015-02-08 16:45:11,Arakis,"free, ich bin nicht so für kommerzielle apps"
+2015-02-08 16:46:38,SHyx0rmZ,kostenlos ist mein Favorit immer noch HxD
+2015-02-08 16:46:42,SHyx0rmZ,minimal aber tut
+2015-02-08 16:47:12,Arakis,danke dir. Notfalls pack ich den dump einfach per freigabe auf meine linux maschine und such mit für linux nen hexer...
+2015-02-08 16:48:02,SHyx0rmZ,"http://www.softcircuits.com/cygnus/ wenn ich wieder Geld hab, muss ich mir den nochmal anschauen"
+2015-02-08 16:52:51,livinskull,auch minimal: hexplorer
+2015-02-08 17:09:40,Jidder,0x4001900 ist nicht auf 4kb ausgerichtet
+2015-02-08 17:10:19,Arakis,Nicht? Ich dachte alles was am ende mit 00 endet ist automatisch 4k aligned
+2015-02-08 17:10:38,Jidder,000
+2015-02-08 17:10:48,Jidder,0x1000 ist 4 kb
+2015-02-08 17:10:51,Jidder,4096
+2015-02-08 17:10:53,Arakis,ach stimmt..... FF ist ja nur bis 256
+2015-02-08 17:10:59,Arakis,"mensch, ich idiot"
+2015-02-08 17:12:43,Arakis,"und klappt sofort. So, mehrere Stunden meiner Lebenszeit wegen so nen blöden Überseher vergeuted :D"
+2015-02-08 17:13:06,Arakis,Besten Dank jidder
+2015-02-08 17:14:08,SHyx0rmZ,immer positiv sehen:
+2015-02-08 17:14:37,SHyx0rmZ,"Je länger du brauchst, um das Problem zu behoben, desto unwahrscheinlicher wirst du den selben Fehler noch einmal machen"
+2015-02-08 17:14:50,Arakis,"äh, ja, darauf kannst du Gift nehmen..."
+2015-02-08 17:59:13,Arakis,"Okay, jetzt nachdem Paging so klappt wie ich es gern hätte noch mal zurück zur GDT: Welche Ursachen kann es denn haben, wenn ich, sobald ich das Limit des code segments verändere, ich ne ""General Protection Exception"" erhalte?"
+2015-02-08 17:59:37,Arakis,"codesegemt, base=0, limit=0x2000000 anstatt 0xFFFFFFFF"
+2015-02-08 18:00:09,Arakis,"ich weiß zu 100%, dass im bereich über 32MB kein ausführbarer code ist"
+2015-02-08 18:03:52,Arakis,"ist limit eigentlich die ""size"" oder die absolute endposition?"
+2015-02-08 18:07:07,Jidder,es ist die größe
+2015-02-08 18:07:19,Jidder,wobei die einheit 4 kb ist
+2015-02-08 18:07:52,Jidder,"ich nehme an der gpf kommt, weil etwas beim ändern in der gdt schief gegangen ist"
+2015-02-08 18:08:20,Jidder,bei dem rumgefummel mit den bits kann schnell was an der falschen stelle landen
+2015-02-08 18:09:14,Arakis,"ja, die gdt entries sind ziemlich kompakt definiert"
+2015-02-08 18:11:33,Arakis,"was meinst du, dass die einzeit 4 KB ist? doch nur, dass man nicht exakt jede beliebige größe wählen kann, aber dennoch wäre beispielweise 0x2000000 = 32MB, richtig?"
+2015-02-08 18:11:53,Jidder,"es sind nur 20 bits in einem deskriptor vorgesehen, um das limit anzugeben"
+2015-02-08 18:12:03,Arakis,ich weiß
+2015-02-08 18:12:14,Jidder,"also wenn du in diese bits 0x12345 reinschreibst, ist das segment 0x12345 * 4096 bytes groß"
+2015-02-08 18:12:23,Arakis,ach so...
+2015-02-08 18:12:56,SHyx0rmZ,konnte man das nicht auch umschalten?
+2015-02-08 18:13:07,Arakis,"ah ja, in die bits selbst. Meine funktion schneidet die anderen bits eh schon ab"
+2015-02-08 18:13:22,Jidder,"im limit steht natürlich die endposition, nicht die größe"
+2015-02-08 18:13:28,Jidder,weiß gar nicht warum ich das eben gedacht habe
+2015-02-08 18:15:51,Jidder,ja man kann die einheit (granularity) mit einem flag umschalten
+2015-02-08 18:17:09,Arakis,"Wenn ich base=0, limit=0xFFFFFFFF (ich schneide die unteren bits ab), habe ich diesen funktionierenden CODE descriptor:"
+2015-02-08 18:17:11,Arakis,00 00 FF FF   00 CF 9A 00
+2015-02-08 18:17:27,Arakis,sorry
+2015-02-08 18:17:27,Arakis,00 C0 9A 00   00 00 FF FF
+2015-02-08 18:17:58,Arakis,"und wenn ich limit = 0x2000000 setzte, dann hab ich den hier:"
+2015-02-08 18:18:09,Arakis,00 00 FF FF   00 CF 9A 00
+2015-02-08 18:18:10,Jidder,ff ff 00 00 00 9a cf 00
+2015-02-08 18:18:15,Jidder,ist ein korrekter deskriptor
+2015-02-08 18:18:38,Jidder,in byte reihenfolge
+2015-02-08 18:19:00,Arakis,ich habs in word reihenfolge
+2015-02-08 18:19:21,Jidder,0000ffff 009acf00 wäre dann ein 4gb deskriptor
+2015-02-08 18:19:27,Jidder,das f in cf ist teil des limits
+2015-02-08 18:19:48,Arakis,"genau, meine erster oben ist ja genau wie deiner (andere byte reihenfolge)"
+2015-02-08 18:21:11,Arakis,"momen, ich hab mcih beim abtippen von meinem memory dump vertan"
+2015-02-08 18:22:37,Arakis,"das bekomm ich raus, wenn ich limit = 0x2000000 einsetze: 00 00 00 00   00 C0 9A 00"
+2015-02-08 18:22:55,Jidder,sieht nicht richtig aus
+2015-02-08 18:22:58,Jidder,das hat limit 0
+2015-02-08 18:23:28,Arakis,byte order beachtet?
+2015-02-08 18:23:36,Arakis,"04, 03, 02, 01"
+2015-02-08 18:24:25,Jidder,"9A heißt code, C heißt 32-bit"
+2015-02-08 18:24:30,Jidder,die restlichen bytes sind 0
+2015-02-08 18:25:31,Arakis,verstehe. Also wieder mal ein bit shifting proble. Ich check mal meine bit-funktionen
+2015-02-08 18:25:46,Arakis,(ich hab das alles objektorientiert gekapselt)
+2015-02-08 18:26:03,Arakis,Code sieht bei mir z.b. so aus:
+2015-02-08 18:26:25,Arakis,"var codeEntry = DescriptorTableEntry.CreateCode(0, 0x2000000);"
+2015-02-08 18:26:32,Arakis,			codeEntry.CodeSegment_Readable = true;
+2015-02-08 18:26:38,Arakis,codeEntry.PriviligeRing = 0;
+2015-02-08 18:26:43,Arakis,codeEntry.Present = true;
+2015-02-08 18:26:49,Arakis,codeEntry.AddressMode = DescriptorTableEntry.EAddressMode.Bits32;
+2015-02-08 18:26:54,Arakis,codeEntry.Granularity = true;
+2015-02-08 18:27:01,Arakis,table->AddEntry(codeEntry);
+2015-02-08 18:27:02,Arakis,;)
+2015-02-08 18:27:21,Jidder,bei so viel code ist pastebin o.ä. besser
+2015-02-08 18:27:39,Jidder,ist das c# mit dem ->?
+2015-02-08 18:27:52,Arakis,oder der direkte link:
+2015-02-08 18:27:53,Arakis,https://github.com/mosa/MOSA-Project/blob/master/Source/Mosa.Kernel.x86/GDT.cs
+2015-02-08 18:27:56,Arakis,ja
+2015-02-08 18:28:11,Arakis,"mit dem ""unsafe"" keyword"
+2015-02-08 18:33:40,Jidder,"du musst 0x1fff übergeben, wenn das limit 32 mb sein soll"
+2015-02-08 18:33:53,Jidder,bzw. 0x20000000 / 4096 - 1
+2015-02-08 18:34:00,Jidder,das macht der code nämlich nicht
+2015-02-08 18:34:13,Jidder,dass da 0xFFFFFFFF übergeben wird ist auch nicht korrekt.
+2015-02-08 18:34:17,Jidder,0xFFFFF hätte gereicht
+2015-02-08 18:38:18,Arakis,"tatsächlich, das klappt. Sieht nun so aus: 00 00 20 00   00 C0 9A 00"
+2015-02-08 18:38:50,Jidder,da ist das limit jetzt 32 MB und 4 KB
+2015-02-08 18:38:54,Jidder,bzw die größe
+2015-02-08 18:39:00,Arakis,"ach ja, -1"
+2015-02-08 18:39:17,Arakis,warum eigentlich -1?
+2015-02-08 18:39:39,Jidder,das limit gibt die maximale adresse an
+2015-02-08 18:39:48,Jidder,außerdem könntest du da sonst nicht 4 GB ausdrücken
+2015-02-08 18:39:52,Jidder,weil das ja eine 33 bit zahl ist
+2015-02-08 18:40:35,Arakis,00 00 19 99 ... wäre also korrekt um exakt 32 MB anzusprechen. klappt alles. Besten dank! Ich hab schon stunden nach den fehler gesucht!
+2015-02-08 18:40:42,Jidder,1F FF
+2015-02-08 18:40:49,Arakis,Dabei hab ich die doks ruaf und runter gelesen
+2015-02-08 18:47:40,Arakis,muss base address auch 4k aligned sein?
+2015-02-08 18:48:03,Jidder,weiß nicht. würde ich annehmen
+2015-02-08 18:50:13,Arakis,"also wenn mein binary bei 0x400000 anfängt, und bei 32 MB absolute adresse aufhöhrt (nur als beispiel), wäre dass dann der richtige descriptor? 00 00 1F FF   00 C0 9A 40 ?"
+2015-02-08 18:50:30,Arakis,ich blick bei den ganzen bitschiebereien hier manchmal nicht ganz durch ^ ^
+2015-02-08 18:50:38,Jidder,das würde dann bei 36 MB aufhören
+2015-02-08 18:50:48,Jidder,das limit wird auf die basis addiert um die adresse zu bestimmen
+2015-02-08 18:51:05,Arakis,"ok, das limit ist mir gerade nicht so wichtig, ist eh viel zu groß gewählt"
+2015-02-08 18:51:12,Arakis,mir gehts gerade um die base address
+2015-02-08 18:51:20,Jidder,die ist wohl richtig
+2015-02-08 18:51:54,Arakis,die größe des echten code segments des binaries kann ich mir ja aus der multiboot structure rausholen
+2015-02-08 18:52:03,Arakis,(klappt wunderbar)
+2015-02-08 18:58:57,Arakis,"okay, hab jetzt mal zum testen nur ein base address von 0x1 gesetzt, ich erhalte sofort eine general protection exception. GDT entry: 00 01 1F FF   00 C0 9A 00, mein binary wird von multiboot bei 0x00400000 geladen."
+2015-02-08 19:24:23,Arakis,"ich geh mal davon aus, dass der stack, sobald man gerade in verwendung hat im aktuellen call, nicht mehr umkopieren kann? Muss mal prüfen, wo multiboot den setzt, damit meine speicherverwaltung nicht automatisch den bereich überschreibt"
+2015-02-08 19:48:04,Jidder,stacks sind generell nicht kopierbar
+2015-02-08 19:48:59,Jidder,den stack solltest du einfach vor dem ersten aufruf an eine bekannte stelle setzen
+2015-02-08 19:49:49,Arakis,"oder notfalls neu setzten, wipt aber die komplette aufrufkette"
+2015-02-08 19:49:53,Arakis,wiped
+2015-02-08 20:50:56,Manello,Abend
+2015-02-08 20:57:07,Jidder,nabend
+2015-02-08 20:57:34,Arakis,nabend
+2015-02-08 20:59:37,Arakis,"wie kann man ne Invalid Opcode exception bekommen, wenn man die Base address des Codesegments auf 0x1 setzt? (anstatt 0x0)"
+2015-02-08 21:02:59,Paddy,"Dadurch, dass man seinen Code nicht angepasst hat und deswegen alle Instruktionen um ein Byte versetzt liest, wodurch nur noch Unsinn dasteht"
+2015-02-08 21:03:33,Arakis,"Ich meine das Codesegment in der global descriptor table, dessen base adress"
+2015-02-08 21:04:29,Arakis,"Base address von code segement in der GDT: 0x1 --> GDT entry: 00 01 1F FF   00 C0 9A 00, mein binary wird von multiboot bei 0x00400000 geladen."
+2015-02-08 21:06:31,Jidder,Paddy hat dich schon verstanden
+2015-02-08 21:08:32,Arakis,"Aber ich dachte, das der code descriptor setzt nur die protection region fest, es verschiebt doch keine befehls offsets, die befehle bleiben doch an der gleichen stelle (>0x00400000)"
+2015-02-08 21:09:58,Jidder,die basis des segments hat schon ganz entscheidenen einfluss auf die adressberechnung in der cpu
+2015-02-08 21:10:38,Jidder,"die wird zu jeder adresse, die den dazugehörigen selektor referenziert, dazu addiert"
+2015-02-08 21:12:31,Arakis,"okay, das ist mir neu. Aber ich habe mal gelesen, mann kann ein und das gleiche segment als descriptor mehrfach definieren (mit unterschiedlichen werten), welche base address wird denn dann zugrunde gelegt (vom descriptor)"
+2015-02-08 21:13:55,Jidder,"der deskriptor, der von dem jeweils relevanten segmentregister referenziert wird"
+2015-02-08 21:14:26,Jidder,"wenn beispielsweise in CS 0x08 steht, wird bei der codeausführung der erste deskriptor (nach dem null-deskriptor) verwendet"
+2015-02-08 21:14:40,Jidder,"wenn in DS 0x10 steht, wird bei datenzugriffen der zweite verwendet"
+2015-02-08 21:15:26,Jidder,wert im segmentregister / 8 = deskriptornummer
+2015-02-08 21:15:31,Arakis,"hm, ich setzte die table im speicher und mach dann nur den befehl LGDT"
+2015-02-08 21:18:14,Jidder,eigentlich müsstest du dann noch die segmentregister neulanden
+2015-02-08 21:18:17,Jidder,neuladen
+2015-02-08 22:02:59,Arakis,"Eine Frage zum Verständnis, ich kenne mich mit Segmenten noch nciht gut aus, weil bisher alles ""flat"" ist: Wenn das Datasegement (DS register / data descriptor) nicht bei 0x0 anfängt, verschieben sich ja alle daten. Wie wirkt sich das aus, wenn man per pointer auf speicher inhalte zugreift? wie weden die ""magisch"" verschoben....und wie kann ich denn dannn wieder auf eine absolute speicheradresse zugreifen?"
+2015-02-08 22:03:31,Arakis,"also als beispiel: Ich data descritpro base adress nicht 0, sondern 1 MB, kann ich dann etwa nicht mehr auf den video speicher zugreifen?"
+2015-02-08 22:03:51,Arakis,der liegt ja unterhalb von 1 MB
+2015-02-08 22:04:48,Arakis,"oder hat man bei Assembler zwei verschiedene befehle um ""anwendungsdaten"" abzurufen, und einen für absolut adressierte daten?"
+2015-02-08 22:07:21,XanClic,"Die werden verschoben, indem der Prozessor auf jede Adresse die Segmentbasis addiert, bevor er die Adresse an den RAM rausgibt"
+2015-02-08 22:08:21,XanClic,"Physische (absolute) Adressen wandelt man dann in… Oh Gott, lineare? um, indem man halt die Basis abzieht"
+2015-02-08 22:08:36,Paddy,"Ja, lineare"
+2015-02-08 22:08:40,XanClic,"Und wenn die Adresse außerhalb des Segments liegt, hat man halt Pech gehabt"
+2015-02-08 22:08:49,XanClic,"Paddy, ich weiß halt nie, wie rum Paging und Segmentierung funktionieren…"
+2015-02-08 22:08:54,Paddy,"Halt, wart..."
+2015-02-08 22:09:00,Paddy,Du gehst von physischer Adresse aus?
+2015-02-08 22:09:05,XanClic,Weiß ich nicht? *g*
+2015-02-08 22:09:10,XanClic,Vielleicht geh ich auch von der linearen aus *g*
+2015-02-08 22:09:26,Paddy,Also die CPU macht das andersrum und kommt am Ende bei der physischen raus ;-)
+2015-02-08 22:09:30,XanClic,Genau ;-)
+2015-02-08 22:09:55,Paddy,"Virtuelle Adresse hat Segment und Offset, wird durch Segmentierung in eine lineare Adresse umgewandelt, und die wiederum durch Paging in eine physische"
+2015-02-08 22:10:14,XanClic,Dann wandelt man wohl lineare Adressen in virtuelle um
+2015-02-08 22:11:05,Paddy,"Was allerdings nicht eindeutig sein muss, weil es mit mehreren Segmenten funktionieren könnte"
+2015-02-08 22:11:27,Paddy,"Oder auch mit keinem, wenn die Limits blöd gesetzt sind"
+2015-02-08 22:14:33,Paddy,"Ich glaube, jetzt ist Arakis verwirrt *g*"
+2015-02-08 22:14:44,XanClic,"Richtig so, deshalb benutzt man auch Paging und keine Segmentierung :-P"
+2015-02-08 22:15:52,Paddy,Segmentierung ist aber toll
+2015-02-08 22:16:03,Paddy,Wie soll man die Leute denn sonst verwirren?
+2015-02-08 22:16:12,XanClic,Da findet sich bei OS-Dev schon was *g*
+2015-02-08 22:17:04,Arakis,"naja, der kernel steckt in entwicklung, nur ich will auch den kernel selbst ""so weit wie möglich / nötig"" protecten, damit wenn was schief geht, man das nicht erste ""einige instruktionen später"" als nebeneffekt erst sieht, und dann den fehler an einer völlig falschen stelle sucht und so stunden mit debugging verschwendet ;)"
+2015-02-08 22:17:30,Arakis,"ich möchte halt, den ausführbaren bereich schützen"
+2015-02-08 22:17:38,Arakis,damit nix überschrieben wird
+2015-02-08 22:17:42,XanClic,"Oh, du wirst auch so Stunden mit Debugging verschwenden, mach dir keine Sorge *g*"
+2015-02-08 22:18:00,Paddy,"XanClic: Hm, gut, auch ein Argument. Ich finde es zum Beispiel verwirrend, dass ich keine lbuilds benutzen kann bevor ich den Host nicht repariert kriege. *g*"
+2015-02-08 22:18:11,Arakis,"genau, wie ich den zugriff nicht verwendete speicherbereiche des kernels unterbinden möchte"
+2015-02-08 22:19:11,Arakis,"im übrigen hab ich es sogar heute merhfach geschaft, qemu zum absturz zu bekommen ^ ^ "
+2015-02-08 22:19:19,Paddy,Den Kernelcode readonly machen kannst du auch ohne Segmentierung
+2015-02-08 22:19:22,Arakis,dank invalid opcodes ;)
+2015-02-08 22:19:57,Paddy,"Eine echter qemu-Absturz oder nur, dass er die Ausführung abbricht, weil der Gast Mist baut?"
+2015-02-08 22:20:04,Arakis,"Ja, hab ich schon mitbekommen. Aber ich bin erst seit zwei wochen exessiv dabei. Die lerne kurve ist verdammt steil"
+2015-02-08 22:20:38,Arakis,"die, tatsächlich das qemu sich selbst terminiert (also den ganzen emulator, nicht das OS)"
+2015-02-08 22:21:07,Paddy,"Es gilt nur, wenn es auch ein Segmentation Fault ist, nicht wenn qemu das absichtlich macht ;-)"
+2015-02-08 22:21:52,Arakis,"soweit ich weiß, kann ich man mit paging bereiche readonly machen. Aber nicht ""nicht ausführbar"". Zumindest nicht ohne x64"
+2015-02-08 22:22:01,Arakis,"aber da war irgendwas mit ner ""extension"""
+2015-02-08 22:22:30,Jidder,physical address extension
+2015-02-08 22:22:30,XanClic,"Na ja, wenn es um Debugging geht…"
+2015-02-08 22:22:32,Paddy,"Jo, ein 386er kann das nur mit Segmentierung"
+2015-02-08 22:22:44,XanClic,"Aus meiner Erfahrung heraus passiert es selten, dass Code ausgeführt wird, den man nicht ausführen wollte"
+2015-02-08 22:22:47,Paddy,Aber baust du dein OS wirklich für einen 386er?
+2015-02-08 22:23:04,Paddy,Das auch
+2015-02-08 22:23:09,XanClic,"Das einzige ist, dass eip plötzlich 0 ist oder 0xf000ff53 oder so"
+2015-02-08 22:23:15,XanClic,Aber das bekommt man auch so mit…
+2015-02-08 22:23:15,Paddy,Oder 0xd00fc0de
+2015-02-08 22:23:23,XanClic,Hm *g*
+2015-02-08 22:23:29,Arakis,"ne, schon, aber 32 bit muss schon erstmal bleiben. Sonst wird vieles noch komplizierter (zitat projektleiter)"
+2015-02-08 22:23:40,Jidder,"386er muss man unterstützen, wenn man in dritte welt länder exportieren will"
+2015-02-08 22:23:46,Arakis,schließlich steckt der compiler etc. noch in den kinderschuhen
+2015-02-08 22:24:07,Arakis,"Naja, ist nen open source project (MIT license)"
+2015-02-08 22:25:20,Arakis,bzw. BSD
+2015-02-08 22:25:21,Jidder,mein beileid
+2015-02-08 22:25:26,Arakis,warum?
+2015-02-08 22:25:56,Jidder,weil ich so lustig bin
+2015-02-08 22:26:03,Jidder,offensichtlich!
+2015-02-08 22:26:29,Arakis,"pfff, bin ich auch, trinke mir gerade nebenbei nen bier...das gönne ich mir jetzt einfach mal ^^"
+2015-02-08 22:27:09,Paddy,Wie weit noch bis zum Ballmer Peak? ;-)
+2015-02-08 22:27:12,Jidder,ah karriere osdever. erstmal alles ein bisschen anders machen und dann direkt alkoholismus ^^
+2015-02-08 22:27:22,XanClic,*lol*
+2015-02-08 22:27:26,Arakis,hrhr
+2015-02-08 22:30:01,Arakis,"bis her habe ich immer inplace debuggt, old school via kernel outputs, kernel memroy dumps, alles aus dem kernel selbst heraus. wie kann ich gescheit ""von außen""das OS anhalten / debuggen? Ich nutze ja keinne offiziellen linker/breakpoint definition database file, also hab nur das generierte binary (was in ein iso gepackt wird und dann von qemu geladen wird)"
+2015-02-08 22:30:34,Paddy,Ohne Debuginfos? Viel Spaß...
+2015-02-08 22:31:03,Paddy,"Am besten erstmal den Compiler erweitern, dass er in die Binary Debugsymbole einbau"
+2015-02-08 22:31:39,XanClic,Richtig proffesionel wird es natürlich erst mit gdb-Stub im Kernel
+2015-02-08 22:31:47,Arakis,"Ich gebs mal dem Projektleiter weiter...wobei, hab ich schon. Zitat: ""Possible? yes. Easy to archive? no"""
+2015-02-08 22:31:55,Paddy,Du kannst natürlich trotzdem einen gdb an qemu ranhängen und auf Assemblerebene debuggen. Aber spaßig ist was anderes.
+2015-02-08 22:32:18,Jidder,ich hab einfach nie debuggt
+2015-02-08 22:32:24,Paddy,"Also ""an qemu ranhängen"" heißt an den gdbstub von qemu, nicht an den qemu-Prozess selber"
+2015-02-08 22:32:26,Jidder,deswegen steigen bei mir die major-versionsnummer so schnell
+2015-02-08 22:33:54,Jidder,baut der compiler eigentlich auf roslyn auf oder bzw. ich finde den parser nicht ^^
+2015-02-08 22:34:09,Arakis,der parst den IL code
+2015-02-08 22:34:23,Arakis,der von MONO oder microsfot .net framework generiert wird
+2015-02-08 22:34:29,Arakis,ist plattform unabhängig
+2015-02-08 22:34:39,Jidder,ah
+2015-02-08 22:35:00,Arakis,"aber seit irgend einer compiler änderung und/oder mono änderung klappt es nicht mehr unter linux, weil der compielr nen IL sequenz falsch übersetzt"
+2015-02-08 22:35:14,Jidder,tests werden ja auch überbewertet
+2015-02-08 22:35:23,Arakis,"habs dem projektleiter schon mitgeteilt (der compiler ist mir nen tick zu abstrakt, den fass ich net an)"
+2015-02-08 22:36:04,Arakis,"tests gibt es, xunit tests und nen test kernel mit live tests methods. wurde nur versäumt auch regelmäßig auf linux zu testen bzw. mit MONO"
+2015-02-08 22:36:46,Jidder,wenigstens vermeidet man so false positives
+2015-02-08 22:38:19,Arakis,https://github.com/mosa/MOSA-Project/tree/master/Source/Mosa.Kernel.x86 <--- das ist meine baustelle
+2015-02-08 22:38:42,Arakis,"aber nur ein winziger teil ist bisher von mir angefasst worden, bin erst seit zwei wochen bei dem projekt dabei"
+2015-02-08 22:39:25,Arakis,"aber der compiler ist schon recht gut. Vor zwei wochen gabs noch probleme mit pointer und structs, nu geht das auch (fast) fehlerfrei"
+2015-02-08 22:39:46,Arakis,"sämtliche lezten github issues stammen von mir, ich überschwemme die mti bug meldungen ^^"
+2015-02-08 22:42:19,Arakis,"hab bisher schon mehrfach kritik erhalten, wei ich vieles zu sehr abstrahiere...^^"
+2015-02-08 22:42:33,Jidder,ihr nutzt ja nirgends MarshalByRefObject
+2015-02-08 22:42:45,Jidder,WCF im kernel wär mal was
+2015-02-08 22:43:00,Arakis,"äh, warum sollten wir MarshalByRefObject nutzen?"
+2015-02-08 22:43:35,Jidder,um über appdomänen hinweg kommunizieren zu können natürlich
+2015-02-08 22:43:45,Jidder,bzw zwischen
+2015-02-08 22:44:04,Arakis,"schon klar. Gibt aber noch keine notwendigkeit, ist ja noch im aufbau. Der kernel selbst brauch sowas nicht. Naja, was sich halt so kernel schimpft."
+2015-02-08 22:44:13,Jidder,es ist doch ein mikrokernel
+2015-02-08 22:44:25,Jidder,die treiber sollten auf jeden fall in separate appdomains
+2015-02-08 22:45:10,Jidder,kein widerspruch?
+2015-02-08 22:45:13,Jidder,gut kommt auf die roadmap
+2015-02-08 22:45:16,Arakis,"Die sind sich noch nicht 100% einig, wie die das regeln. Erst wollten sie alles im gleichen pool, nur hals ""secure"" über den IL code einbinden / on the fly compilieren mit verbotenem ""unsafe"" keyword."
+2015-02-08 22:45:30,Paddy,"Antrag abgelehnt, Jidder. Roadmaps sind Homix' Zuständigkeit."
+2015-02-08 22:45:42,Arakis,"Nu kommen se doch mal allmählig auf die idee, eigenen virtuelle adressbereiche anlegen zu wollen"
+2015-02-08 22:45:43,Jidder,ich forke!
+2015-02-08 22:46:39,Jidder,die nachteile von managed code kombiniert mit dem overhead von virtual memory
+2015-02-08 22:46:41,Jidder,brilliant!
+2015-02-08 22:46:47,Arakis,"Aber die noch bessre idee, die lehnen se ja sowas von ab: als treiber  / apps nicht nru c# zu zu lassen, sondern auch binary asm/c aps. Aslo nen binäres interface zusätzlich zum OOP basiertem c# interface"
+2015-02-08 22:47:00,Jidder,ooooh
+2015-02-08 22:47:07,Jidder,darf ich eine schnittstelle für diesen zweck vorschlagen?
+2015-02-08 22:47:16,Jidder,fängt mit C an und hört mit OM auf
+2015-02-08 22:47:23,Arakis,"zitat: ""We are writing a MANAGED operating system, we do not allow native code"""
+2015-02-08 22:47:39,Paddy,Sonst ist die Übung ja irgendwie zwecklos
+2015-02-08 22:48:40,Arakis,"ich bin dabei, die auch von native code zu überzeugen. ne (partielle) libc interface implementierung wäre toll, dann könnte man (teilweise) linux apps mit (realtiv) überschaubarem aufwand portieren"
+2015-02-08 22:48:53,Jidder,manager ... heutzutage heißt ja jeder manager. der postbote ist jetzt auch der regional communication logistics manager
+2015-02-08 22:49:23,Arakis,"Hast wohl nen CLown heute morgen gefrühstückt, wa? ^^"
+2015-02-08 22:49:33,Jidder,heute morgen? bin doch erst mittags aufgestanden
+2015-02-08 22:49:43,Arakis,typisch progger :D
+2015-02-08 22:49:46,Arakis,ich ja auch
+2015-02-08 22:50:23,Paddy,"Arakis: Wozu dann aber überhaupt noch C#? Ist die Idee hinter einem Managed OS nicht, dass der Compiler den Speicherschutz sicherstellt und man deswegegn auf teure Kontextswitches usw. verzichten kann?"
+2015-02-08 22:50:50,Paddy,Native Anwendungen machen das ja komplett kaputt
+2015-02-08 22:51:18,Arakis,"Ich merkge schon, alle sind gegen meide Idee ^^"
+2015-02-08 22:51:31,Arakis,Es macht ein OS aber attraktiver.
+2015-02-08 22:51:43,Paddy,"Naja, wenn du C-Programme portieren willst, dann bau ein Betriebssystem, das auf C aufbaut"
+2015-02-08 22:51:51,Paddy,So wie das die meisten anderen auch machen
+2015-02-08 22:52:10,Paddy,"Das macht dein OS natürlich gewöhnlicher, aber anders sein, ohne die Vorteile auszunutzen, bringt ja auch nichts"
+2015-02-08 22:53:24,Arakis,"naja, da ja eh angedacht ist, dass jeder task seine eigene garbage collection bekommt bzw. nen eigenen virtuellen adressraum, ist ja eh schon die ""vorteile"" hinfällig"
+2015-02-08 22:56:24,Paddy,Macht was ihr wollt
+2015-02-08 22:56:50,Paddy,"Kaputtheit ist sowieso Grundvoraussetzung, um hier anerkannt zu werden"
+2015-02-08 22:58:25,Arakis,"das glaub ich auch....wer kommt sonst auf so nen kranke idee, seine lebenszeit so zu verbringen. wenn ich mal überlege, ich habe die letzten 2 wochen ""jeden"" tag daran mitgearbeitet, von morggens bis abends (bzw. nachts). Ich kann mir das auch nur erlauben, weil meine Versorung gesichert ist (nein, ich habe meine eigene wohnung und bin nicht arbeitslos)"
+2015-02-08 22:58:57,Jidder,baust du gras auf dem dachboden an?
+2015-02-08 22:59:05,Arakis,:D
+2015-02-08 22:59:16,Arakis,"Ne, ich bin Entwickler von....ne, ich mach hier jetzt keine WErbung"
+2015-02-08 22:59:32,Jidder,der wer wird millionär app
+2015-02-08 22:59:39,Arakis,www.loncar.de
+2015-02-08 22:59:51,Jidder,"die ganzen gewinne lässt du dir bestimmt auszahlen anstatt sie mir, dem rechtmäßigen gewinner, zu geben"
+2015-02-08 22:59:58,Jidder,schweinerei
+2015-02-08 23:00:24,Jidder,ach ne eigene homepage. da hätte ich dich auch selbst ergoogeln können
+2015-02-08 23:05:18,Arakis,mal etwas low level zu entwickeln ist mal nen gelungener kontrast zu den ganzen komplexen high-level applications
+2015-02-08 23:06:45,Arakis,das blöde ist nur: Ich übertrage die ganze objektorientierte technik / die abstrahierung( kapselung) nun auf auf die lowlevel programmierung. macht die sache nicht unbedingt performanter....
+2015-02-08 23:06:58,Arakis,wenn halt auch besser anpassbar / lesbarer
+2015-02-08 23:11:27,Jidder,"problem ist nur, dass so eine designentscheidung vom ganzen team getragen werden muss"
+2015-02-08 23:11:29,Paddy,"Wo hast du die Zeit her, von morgens bis abends OS-Dev zu machen? Ich will auch."
+2015-02-08 23:11:34,Jidder,aber dafür gibt es eine gute lösung: forken
+2015-02-08 23:14:44,Arakis,hab ich auch schon drüber nachtedacht. wird nur schwierig bei grundlegenden umbauten.
+2015-02-08 23:16:04,Arakis,"außerdem gibt es ja auch genügend gemeinsamkeiten. Ich hab mir als aufgabe vorgenommen, die speicher und prozessverwaltung zu machen, und später ggf. die interfaces"
+2015-02-08 23:16:31,Arakis,"mir ginges nämlich auf den wecker, dass bisher ständig speicherbereiche constant zur compile time fetsgelegt waren"
+2015-02-08 23:16:50,Arakis,"und es nicht mal ne liste gibt, was für was verwendet wird"
+2015-02-08 23:17:07,Arakis,"hab den allocator jetzt so weit, dass fast alles dynamsich zugewiesen wird"
+2015-02-08 23:17:22,Arakis,"daher auch vorhin meine ""komische"" frage, ob man den stack verschieben kann"
+2015-02-08 23:17:53,Arakis,"damit der auch in nem klar definiertem bereich ist. Macht aber nix, ich protekte die region einfach, damit mein memory allocator da nix an ""freien"" ram zurück gibt (überschreiben)"
+2015-02-08 23:18:31,Arakis,Muss nur noch ruasfinden wo der stack liegt bzw. wer  bzw. was die stack position festlegt
+2015-02-08 23:18:52,Jidder,"ein fast fertiger allocator ist immer gut. den darf man, sobald man virtual memory implementiert hat, nochmal neuschreiben. da kann man dann bereits gelerntes wieder einsetzen und merken, dass das trotzdem nicht funktioniert"
+2015-02-08 23:19:29,Arakis,"nene, ich habs mir einfch gemacht, virtual memory adress = physical address ;)"
+2015-02-08 23:19:34,Arakis,zumindest für kernel memory
+2015-02-08 23:19:49,Arakis,bei Tasks sind wir ja ncoh lange nicht angekommen
+2015-02-08 23:19:54,Paddy,Der Stack sollte vom Kernel (also von dir) angelegt werden
+2015-02-08 23:22:58,Arakis,https://github.com/Arakis/MOSA-Project/blob/dev1/Source/Mosa.Kernel.x86/MemoryManager/MemoryManager.cs
+2015-02-08 23:23:02,Jidder,ihr habt keine einzige zeile assembler im kernel?
+2015-02-08 23:23:03,Arakis,ganz simple technik
+2015-02-08 23:23:20,Arakis,"assembler? doch, aber über die Native-class gewrappt"
+2015-02-08 23:25:02,Arakis,"als nächtes werde ich mit mit nem heap beschäftigen...ne, vorher das paging"
+2015-02-08 23:25:12,Jidder,jetzt weiß ich warum du den stack nicht verschieben kannst
+2015-02-08 23:25:17,Arakis,also dass ich dort auch die zugriff restriktiere
+2015-02-08 23:25:28,Jidder,der code für den multiboot entry wird hier generiert: https://github.com/mosa/MOSA-Project/blob/b9168c350f37b53c7b3a949d67cc1b77fe7c5abe/Source/Mosa.Platform.x86/Stages/Multiboot0695Stage.cs
+2015-02-08 23:25:32,Jidder,und das ist im falschen namespace ^^
+2015-02-08 23:26:17,Arakis,kannst du mir die zeile nennen?
+2015-02-08 23:26:39,Jidder,ist ja nicht drin
+2015-02-08 23:26:45,Jidder,deswegen weißt du es nicht
+2015-02-08 23:26:46,Paddy,"Okay, das mit der Kaputtheit habt ihr wirklich erfüllt"
+2015-02-08 23:26:53,Paddy,Dann kann ich mich ja jetzt guten Gewissens verabschieden
+2015-02-08 23:26:55,Paddy,gn8
+2015-02-08 23:26:57,Jidder,gn8
+2015-02-08 23:26:59,Arakis,:D
+2015-02-08 23:27:03,Arakis,n8
+2015-02-08 23:27:36,Jidder,"da muss halt noch code generiert werden, der den stack an einen brauchbaren ort verschiebt"
+2015-02-08 23:27:48,Jidder,aber eigentlich solltet ihr eine bessere methode finden assemblercode einzubinden
+2015-02-08 23:28:21,Arakis,"ja, cosmos macht es z.b. über separate assembler dateien, ist aber auch nicht das gelbe vom ei"
+2015-02-08 23:28:27,Jidder,warum?
+2015-02-08 23:28:45,Arakis,"Okok, ich zitiere gerade nur den projektleiter"
+2015-02-08 23:29:03,Arakis,"aber klar, dass er sein projekt als das bessere ansieht"
+2015-02-08 23:29:25,Jidder,"ob jetzt der compiler superumständlich erstmal c# code kompilieren muss, der dann assemblercode generiert, der mit dem restlichen code gelinkt wird, oder ob man gleich assemblercode verwendet ..."
+2015-02-08 23:29:29,Arakis,"aber der hauptgrund warum ich mich für mosa entschieden habe anstatt für cosmos (beides c# basierte kernels), ist dass ich den eindruck habe, dass mosa professioneller ist"
+2015-02-08 23:29:45,Jidder,ist cosmos nicht tot?
+2015-02-08 23:30:06,Arakis,"Keine ahnung. Ich habe nur viele build fehler entdeckt, beim antesten"
+2015-02-08 23:30:21,Arakis,"und vor allem läuft es ""gar nicht"" unter linux/mono"
+2015-02-08 23:30:23,Jidder,ganz klar ein problem mit cosmos ^^
+2015-02-08 23:30:30,mgottschlag,haben letztenendes nicht beide später einen GC im Kernel? Macht die Professionalität da noch einen Unterschied? :p
+2015-02-08 23:30:46,Arakis,auf jedenfall haben war unzählige unit tests
+2015-02-08 23:30:59,Arakis,es wurde sogar ne virtuelle CPU programmiert für die unit tests!
+2015-02-08 23:31:14,Arakis,tinySim projekt
+2015-02-08 23:31:47,mgottschlag,"naja, bin auch schon wieder weg, gn8"
+2015-02-08 23:31:52,Jidder,gn8
+2015-02-08 23:31:59,Arakis,"extra nur für das mosa projekt entwickelt worden, abe aber nicht allgemein genug, ob es als separates projekt zu publishen"
+2015-02-08 23:32:00,Arakis,n8
+2015-02-08 23:32:38,Jidder,sind die tests für den compiler oder den kernel?
+2015-02-08 23:32:48,Jidder,den kernel könnte man doch auch in jeder anderen .net umgebung testen
+2015-02-08 23:33:08,Arakis,hautsächlich compiler. Ob der generierte code funktioniert. (der generiete assembler code)
+2015-02-08 23:33:17,Arakis,"und ob die ""höheren"" laufzeit funktionen klappen"
+2015-02-08 23:33:24,Arakis,wie z.b. exception handling etc.
+2015-02-08 23:33:33,Arakis,"objekte instanzieren, casten ec."
+2015-02-08 23:33:47,Arakis,nen garbage collector gibts noch net
+2015-02-08 23:33:51,Arakis,objekte werden nicht freigegeben
+2015-02-08 23:33:57,Arakis,ist in planung
+2015-02-08 23:34:02,Arakis,und wird bald implementiert werden
+2015-02-08 23:34:07,Jidder,könnt euch ja als realtime os verkaufen
+2015-02-08 23:34:08,Arakis,(jedenfalls nicht von mir)
+2015-02-08 23:34:12,Jidder,und das feature streichen
+2015-02-08 23:35:15,Arakis,"also bei mosa mitzuentwickeln macht echt spáß. Nur die Bezahlung ist mieß. Ist nämlich open source. Man macht es halt, weils bock macht"
+2015-02-08 23:35:23,Arakis,vielleicht hast du ja auch irgendwann bock drauf
+2015-02-08 23:36:07,Jidder,nur wenn meine aufgabe trollen sein wird
+2015-02-08 23:36:12,Jidder,auf programmieren hab ich nämlich keine lust
+2015-02-08 23:36:34,Jidder,dann streng ich mich auch mal ein wenig an
+2015-02-08 23:38:29,Jidder,"bezahlung mies heißt keine bezahlung, oder?"

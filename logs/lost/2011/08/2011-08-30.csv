@@ -1,0 +1,562 @@
+date/time,nick,message
+2011-08-30 00:01:06,Jidder,"hm also du musst ja im linkerskript eine existente adresse angeben. wenn du da 3 GB oder so angibst und der PC nur 2 GB speicher hat, klappt das nicht"
+2011-08-30 00:01:14,Jidder,du kannst da eine physische ladeadresse angeben
+2011-08-30 00:01:32,Jidder,in einem alten kernel hab ich das so gemacht. https://github.com/janding/incos/blob/master/kernel/arch/i386/kernel.ld
+2011-08-30 00:02:25,Svenska,also das _VTOP ganz oben?
+2011-08-30 00:02:45,Jidder,ne eigentlich alles bis zeile 20
+2011-08-30 00:02:53,Jidder,also das funktioniert so:
+2011-08-30 00:03:07,Jidder,"in der .boot sektion (12-16) ist der code, der das paging aufsetzt"
+2011-08-30 00:03:29,Jidder,"die landet noch an der adresse 1 MB physisch und virtuell, weil . = 0x100000 + ...; davor steht"
+2011-08-30 00:04:06,Jidder,"dann wird die virtuelle adresse geändert (zeile  18). da sich dabei die ladeadresse mitändert, wird das in zeile 20 für die ladeadresse mit dem AT(...) wieder rückgängig gemacht"
+2011-08-30 00:04:29,Jidder,dadurch landet die .text-sektion im speicher hinter der .boot-sektion
+2011-08-30 00:04:32,Jidder,also in der nähe von 1 MB
+2011-08-30 00:04:36,Jidder,aber ist nach 0xfff
+2011-08-30 00:04:40,Jidder,aber ist nach 0xf0000000 gelinkt
+2011-08-30 00:05:20,Svenska,achso geht das
+2011-08-30 00:05:35,Jidder,"das ist alles ziemlich kompliziert, und funktioniert nicht wenn du mit qemu -kernel foo bootest (zumindest nicht ungepatcht)"
+2011-08-30 00:05:44,Svenska,"hm, warum das?"
+2011-08-30 00:06:00,Jidder,"weil dieses verhalten, das ich da ausnutze, nicht im multibootstandard steht"
+2011-08-30 00:06:22,Jidder,zumindest nicht explizit
+2011-08-30 00:06:35,Jidder,elf-dateien können durchaus zwischen lade- und link-addresse unterscheiden
+2011-08-30 00:06:44,Jidder,"nur steht nicht im standard, dass der bootloader das beachten soll^^"
+2011-08-30 00:07:05,Svenska,"und wie macht man das, wenn qemu -kernel das auch können soll? ;)"
+2011-08-30 00:07:30,Jidder,"dann muss der kernel an eine adresse gelinkt sein, die physisch existiert"
+2011-08-30 00:07:40,Jidder,oder du schiebst einen zwischenloader ein
+2011-08-30 00:07:52,Jidder,so mache ich das jetzt auch
+2011-08-30 00:08:10,Svenska,also ist der kernel nur ein zwischenloader und der eigentliche kernel dann ein multiboot-modul?
+2011-08-30 00:08:13,Jidder,"der loader ist nach 1 MB gelinkt und macht nicht viel mehr als page directories aufzusetzen, paging zu aktivieren und in den kernel zu springen"
+2011-08-30 00:08:17,Jidder,jep
+2011-08-30 00:08:24,Svenska,"hm schade, ich dachte, da käme ich rum…"
+2011-08-30 00:08:51,Jidder,"hab ich auch gehofft. aber da ich auch 64-bit unterstützen will, ist das noch die eleganteste lösung"
+2011-08-30 00:09:04,Jidder,(auch wenn meine implementierung vermutlich nur in meinen augen elegant ist^^)
+2011-08-30 00:09:26,Svenska,für mich wäre der ganze bootcode unter $ARCH/$PLAT am ehesten aufgehoben
+2011-08-30 00:09:41,Svenska,"also eh immer nen anderer, ohne zwischenloader ^^"
+2011-08-30 00:10:57,Svenska,"naja, meine hoffnung war: _kernel_entry auf 3.5G zu setzen, grub aber einfach an die ladeadresse springen zu lassen und den bootcode positionsabhängig zu haben ^^"
+2011-08-30 00:11:25,Jidder,"wie gesagt: grub kann das, aber qemu nicht"
+2011-08-30 00:11:30,Svenska,schade
+2011-08-30 00:11:42,Jidder,"du musst das glaube ich nicht so umständlich machen, wie ich das in incos gemacht habe"
+2011-08-30 00:11:58,Jidder,"die extra-sektion in der .boot-sektion ist dafür da, dass ich das in C machen kann und globale variablen benutzen kann"
+2011-08-30 00:12:01,Jidder,wenn ich mich richtig erinnere
+2011-08-30 00:12:22,Jidder,vielleicht gibts ja auch inzwischen ein update für qemu^^
+2011-08-30 00:12:31,Jidder,gitweb ist leider nicht aktuell :/
+2011-08-30 00:12:33,Svenska,morgen mal kevin fragen? ;)
+2011-08-30 00:13:30,Svenska,"auf mips muss man das paging immer mit assembler einschalten, weil einem sonst der cache das genick bricht ^^"
+2011-08-30 00:13:47,Jidder,tjo ^^
+2011-08-30 00:13:58,Jidder,ein aout kludge könnte eventuell auch die lösung sein
+2011-08-30 00:14:06,Svenska,d.h.?
+2011-08-30 00:14:09,Jidder,da kann man die ladeadresse ja explizit angeben
+2011-08-30 00:14:44,Jidder,hm ist in unserem wiki ja gar nicht dokumentiert^^
+2011-08-30 00:14:55,Svenska,ja ^^
+2011-08-30 00:14:57,Jidder,damit umgehst du den elf header
+2011-08-30 00:15:41,Jidder,3.1.1  http://www.gnu.org/software/grub/manual/multiboot/multiboot.html#OS-image-format
+2011-08-30 00:15:50,Jidder,äh 3.1.3 um genau zu sein
+2011-08-30 00:16:11,Jidder,"wenn du in den flags bit 16 setzt, nimmt er die anstelle des elf headers"
+2011-08-30 00:16:17,Svenska,aah danke
+2011-08-30 00:16:57,Svenska,ich strukturier erstmal zuende um
+2011-08-30 00:17:09,Svenska,"bin mir noch nicht sicher, wie ich das mit den aufrufen machen werde, mal schaun"
+2011-08-30 00:17:10,Jidder,"bei header_addr musst du dann virtuelle_header_addr - 3,5 GB eintragen"
+2011-08-30 00:17:47,Jidder,hm vermutlich überall einfach virtuell in physisch umrechnen
+2011-08-30 00:18:17,Jidder,grub kann übrigens kein MIPS laden xD
+2011-08-30 00:18:29,Svenska,gibt auch kein multiboot für mips xD
+2011-08-30 00:19:25,Jidder,"toffifee, touché, eh-tee-zeh"
+2011-08-30 00:19:46,Jidder,beim porn surfen vergessen privaten modus anzumachen
+2011-08-30 00:19:49,Jidder,gesamte history löschen
+2011-08-30 00:20:01,Jidder,ich habs auch nicht leicht
+2011-08-30 00:20:17,Jidder,muss ich meiner adressleiste die ganzen lustigen seiten von neuem beibringen
+2011-08-30 00:20:28,Jidder,^^
+2011-08-30 00:20:32,Svenska,hmm
+2011-08-30 00:21:16,Jidder,auch erstmal kontrollieren?
+2011-08-30 00:21:18,Jidder,^^
+2011-08-30 00:22:20,Svenska,nö
+2011-08-30 00:22:28,Svenska,ich hab ein passwort und keine mitbewohner xD
+2011-08-30 00:22:34,Jidder,wie stehe ich denn jetzt da?^^
+2011-08-30 00:22:40,Jidder,ich bin auch nur paranoid
+2011-08-30 00:22:51,cero,^^
+2011-08-30 00:29:28,Jidder,mir fällt nicht ein wieso ich DOS auf .Net portieren sollte
+2011-08-30 00:29:36,Svenska,:-)
+2011-08-30 00:30:19,Svenska,wieviele interrupts trägt man normalerweise in die idt ein - alle 255?
+2011-08-30 00:30:28,Svenska,das macht die eintragefunktion ziemlich lang ;)
+2011-08-30 00:30:55,Jidder,ich hab stattdessen eine schleife
+2011-08-30 00:31:09,Svenska,"hm, geht doch nicht?"
+2011-08-30 00:31:26,Svenska,ich muss doch für jeden eintrag die adresse des handlers angeben?
+2011-08-30 00:31:39,Jidder,so http://ideone.com/ZAdKZ
+2011-08-30 00:31:56,Jidder,und dann kann hab ich ein array exception_stubs auf das ich zugreifen kann
+2011-08-30 00:32:07,Jidder,weil ich immer abwechselnd in die .text und die .data-sektion schreibe
+2011-08-30 00:32:47,Svenska,hmm
+2011-08-30 00:33:05,Svenska,"ich hab die stubs im augenblick untereinander in einem assemblerfile zu stehen, jeder stub nen eigenen namen"
+2011-08-30 00:33:39,Jidder,du musst ja nicht alle 256 einträge befüllen
+2011-08-30 00:33:52,Svenska,"darum die frage, wieviele man da üblicherweise so nimmt"
+2011-08-30 00:34:07,Jidder,32+16+1 = exceptions + IRQs+ syscall
+2011-08-30 00:34:20,Jidder,aber das is nur für PIC. ich weiß nicht wie es mit mehr IRQs aussieht
+2011-08-30 00:34:40,Svenska,hm
+2011-08-30 00:35:09,Jidder,ich glaube es gibt interrupts in der nähe von 255 für APIC oder APCI ... kann ich nicht auseinanderhalten^^
+2011-08-30 00:35:38,Jidder,"weiß deswegen auch nicht, ob die fest verdrahtet sind"
+2011-08-30 00:35:52,Jidder,ACPI
+2011-08-30 00:35:58,Jidder,PICA?
+2011-08-30 00:35:58,Svenska,also am liebsten doch alle 255 interrupts in die IDT und dann ist gut?
+2011-08-30 00:36:13,Jidder,jo
+2011-08-30 00:36:29,Jidder,"wirst du eh nicht wieder angucken, wenn er erstmal funktioniert"
+2011-08-30 00:47:56,Svenska,"muss ich die GDT korrekt initialisiert haben, bevor ich paging aktiviere?"
+2011-08-30 00:48:05,Svenska,fällt mir grad so spontan ein ^^
+2011-08-30 00:50:15,Jidder,grub macht das nötigste für dich
+2011-08-30 00:50:25,Svenska,ok
+2011-08-30 00:50:31,Svenska,dann kann ich das später im c-kernel machen
+2011-08-30 00:50:39,Jidder,"du solltest dann nur entweder ein speicher mapping haben, dass die GDT da lässt wo sie ist, oder aber keine interrupts bekommenn"
+2011-08-30 00:50:58,Svenska,das kann ich soweit garantieren :)
+2011-08-30 00:51:33,Svenska,"plan ist: paging aktivieren und kernel in higher half remappen, anschließend dort gdt und idt und irq-handler registrieren"
+2011-08-30 00:51:42,Svenska,"wär doof, wenn das die falsche reihenfolge ist ;)"
+2011-08-30 00:53:47,Jidder,ne kann so funktionieren
+2011-08-30 00:56:35,Svenska,kann man mit compiler-makros eine schleife bauen? ;)
+2011-08-30 00:56:52,Jidder,nö
+2011-08-30 00:57:08,Svenska,"also in der form: ""mach mal folgenden text hier 255 mal hin, laufende nummer hier einsetzen"""
+2011-08-30 00:57:24,Jidder,rekursiv mit 8 makros vielleicht
+2011-08-30 00:58:02,Svenska,"und wenn ich ""makro"" durch ""präprozessor"" ersetze?"
+2011-08-30 00:58:06,Jidder,#define A B(0) B(128) #define B(x) C(x + 0) C(x + 64) #define C(x) D(x + 0) C(x + 32) usw bis #define H(x) blah
+2011-08-30 00:58:17,Jidder,wobei du in H dann eine zahl von 0 bis 255 hast
+2011-08-30 00:58:23,Jidder,aber ob du das willst ...
+2011-08-30 00:58:29,Svenska,"hm ne, das ist hässlich"
+2011-08-30 00:58:34,Jidder,die pr0s nehmen python oder ruby und lassen sich code generieren
+2011-08-30 00:58:45,Svenska,das mag ich nicht :)
+2011-08-30 00:59:19,Jidder,die interrupt handler von 50 bis 255 sind doch eh die selben
+2011-08-30 00:59:21,Jidder,oder nich?
+2011-08-30 00:59:26,Svenska,ne
+2011-08-30 00:59:33,Jidder,nich?
+2011-08-30 00:59:38,Svenska,sind alle verschieden (pushen verschiedene nummern auf den stack)
+2011-08-30 00:59:46,Jidder,die nummer ist mal total banane
+2011-08-30 01:00:00,Jidder,weil jeder von diesen interrupts einen system halt verursachen sollte
+2011-08-30 01:00:07,Jidder,außer du weißt mehr über diese interrupts als ich^^
+2011-08-30 01:01:20,Svenska,hm
+2011-08-30 01:01:33,Svenska,"naja, ich wollte treibern die möglichkeit geben, ""ressourcen"" zu alloziieren"
+2011-08-30 01:01:46,Svenska,"bevorzugt natürlich hardware-interrupts, aber auch software-interrupts wären so möglich"
+2011-08-30 01:01:58,Svenska,(plus: andere architekturen haben teilweise verdammt viele hardware-interrupts)
+2011-08-30 01:02:01,Jidder,brauchen die nich
+2011-08-30 01:02:31,Jidder,wie gesagt: stubs und schleife
+2011-08-30 01:02:38,Jidder,ich kann auch gerne den kompletten code posten
+2011-08-30 01:02:54,Svenska,"naja wenn alle stubs identisch sind, spielt das keine rolle :)"
+2011-08-30 01:02:57,Jidder,wenn du dir das genauer angucken willst
+2011-08-30 01:03:03,Svenska,dann kann ich problemlos ne schleife nehmen
+2011-08-30 01:03:09,Jidder,jo
+2011-08-30 01:05:15,Jidder,http://www.youtube.com/watch?v=VbExKv587jk
+2011-08-30 01:06:04,Svenska,wtf
+2011-08-30 01:10:38,Svenska,ich könnte den offset zwischen zwei handlern ausrechnen und benutzen…
+2011-08-30 01:12:35,Jidder,kannste machen
+2011-08-30 01:13:51,Jidder,"kannst auch in jeden handler gleich am anfang ""call common_handler"" machen, und dann die interrupt nummer aus rücksprungadresse ausrechnen^^"
+2011-08-30 01:14:40,Jidder,"hm wäre die frage um wieviel ein ""push $nummer; jmp common_handler"" länger ist"
+2011-08-30 01:15:01,Jidder,"wenn man wissen wollen würde, welche methode platzsparender ist"
+2011-08-30 01:15:05,Svenska,die ersten 32 kann ich ja zu fuß setzen
+2011-08-30 01:15:16,Jidder,"wenn wer wissen wollen würde, welche variante weniger verbraucht"
+2011-08-30 01:45:05,Svenska,funktioniert tatsächlich mit der schleife
+2011-08-30 01:45:30,Jidder,na sichi
+2011-08-30 01:45:42,Jidder,"nur ob du dich jetzt noch im spiegel anschauen kannst, weiß ich nicht^^"
+2011-08-30 01:45:55,Jidder,"aber es gilt wie immer [00:35:51] <Jidder> wirst du eh nicht wieder angucken, wenn er erstmal funktioniert"
+2011-08-30 01:45:59,Jidder,^^
+2011-08-30 01:46:15,Jidder,hm das war jetzt doppeldeutig
+2011-08-30 01:46:27,Jidder,"also du darfst dich noch angucken, aber den code nicht mehr ^^"
+2011-08-30 01:46:31,Svenska,(uint32_t)intr_stub_49 - (uint32_t)intr_stub_48 * i + (uint32_t)intr_stub_48
+2011-08-30 01:46:32,Svenska,:-D
+2011-08-30 01:46:51,Svenska,i = 0 .. (255-32-16) :D
+2011-08-30 01:47:08,Svenska,und das minus steht in klammern
+2011-08-30 01:47:31,Svenska,den code muss ich mir noch öfter angucken - ich brauch noch TSS und dadrunter steht das c-init ^^
+2011-08-30 01:47:49,Jidder,au weia
+2011-08-30 01:48:21,Svenska,"naja, so schlimm ist es nun auch wieder nicht :-D"
+2011-08-30 01:54:05,Svenska,kann der präprozessor eigentlich sizeof() ermitteln?
+2011-08-30 01:55:01,Svenska,so ungefähr: #if sizeof(uint8_t) != 1 \ #error \ #endif ?
+2011-08-30 01:57:46,cero,kannst du doch mit MAX_INT aus der header abfragen...
+2011-08-30 01:58:11,cero,sizeof im pp ist mir sonst nicht bekannt
+2011-08-30 01:58:20,Svenska,"hm, google sagt das gleiche"
+2011-08-30 01:58:25,Svenska,ich hab nur (bisher) keine header
+2011-08-30 01:58:32,Svenska,wollte nur meine typedefs zur compilezeit absichern…
+2011-08-30 01:58:53,cero,limits.h
+2011-08-30 01:58:57,cero,^^
+2011-08-30 01:59:28,Svenska,"ja, hab ich nicht :)"
+2011-08-30 01:59:29,cero,"musst du wohl doch anlegen, wenn du das mit pp abfragen willstr"
+2011-08-30 01:59:45,Svenska,"hm, ja, ne, darum gehts mir nicht..."
+2011-08-30 02:00:07,Svenska,"wenn einer mit dem build-environment rumspielt und am ende mein ""uint32_t"" nicht mehr 32 bit groß ist, soll das build-environment auf die nase fliegen"
+2011-08-30 02:00:34,cero,aso
+2011-08-30 02:02:29,cero,aber wenn er das eh dran rumspielt dann ändert er doch ehr auch deine überprüfung ;P
+2011-08-30 02:02:44,Svenska,ne
+2011-08-30 02:03:05,Svenska,"meine ""types.h"" enthält zeilen wie ""typedef unsigned long int uint32_t"""
+2011-08-30 02:03:17,Svenska,"und die soll genau dann nicht kompilieren, wenn uint32_t != 4 :D"
+2011-08-30 02:03:26,Svenska,also sizeof(uint32_t) != 4
+2011-08-30 02:03:57,cero,hm... das ist vorm kompilieren schwer zu sagen... verstanden
+2011-08-30 02:04:36,cero,aber du kannst da ne minifiel compilieren lassen und ausführen und mit sizeof prüfen ob es 4 ist
+2011-08-30 02:04:55,cero,geht aber ziemlich auf zeit
+2011-08-30 02:06:02,cero,die überprüfung schreibst du in einen header und kannst dann mit dem pp deine überprüfung machen
+2011-08-30 02:06:24,cero,^^ ziemlich umständlich
+2011-08-30 02:06:30,Svenska,"der zeitfaktor ist gering... sizeof(typ) ist konstant, ne konstante mit ner konstanten zu vergleichen kostet nichts"
+2011-08-30 02:07:52,Jidder,der compiler liefert header für die standardtypen mit
+2011-08-30 02:08:01,Jidder,-ffreestanding im zweifelsfall
+2011-08-30 02:08:05,Jidder,und dann hast du stdint.h
+2011-08-30 02:08:05,Svenska,zur laufzeit jedesmal ausrechnen lassen ist doof und zur laufzeit vom build-system ausrechnen lassen macht crosscompiling kaputt
+2011-08-30 02:08:15,Svenska,"hmm, das geht?"
+2011-08-30 02:08:31,Jidder,ich weiß nicht ob die entsprechenden konstanten drinne stehen
+2011-08-30 02:08:42,Jidder,die limits bestimmt schon
+2011-08-30 02:09:48,Jidder,in meinem cross compiler ist alles unter lib\gcc\i586-elf\4.6.0\include zu finden
+2011-08-30 02:10:11,Svenska,ich benutze den debian-standard-gcc für x86_64 mit -m32
+2011-08-30 02:10:37,Jidder,aber dann musst du wohl mit UINT8_MAX etc leben
+2011-08-30 02:10:51,Svenska,"hmm naja gut, danke"
+2011-08-30 02:11:05,Jidder,mein normaler mingw hat das auch
+2011-08-30 02:12:20,cero,/usr/lib/gcc/i486-linux-gnu/4.4/include-fixed/
+2011-08-30 02:12:24,Svenska,"naja, mein kernel kann jetzt wieder das, was er vorher konnte"
+2011-08-30 02:12:28,cero,bei mir liegts da
+2011-08-30 02:12:47,Svenska,"starten, sich in einer endlosschleife aufhängen und auf tastendruck ""irq 33"" ausgeben :D"
+2011-08-30 02:13:36,cero,reicht doch für den anfang... wenn derr computer nicht kaput geht hast du auch noch nichts falsch gemacht ^^
+2011-08-30 02:13:54,Svenska,habs nur mit qemu getestet - ist ungefähr ein halbes tutorial ;)
+2011-08-30 02:14:19,Svenska,als nächstes kommt erstmal relocation in die höhere hälfte und multitasking
+2011-08-30 02:15:34,Svenska,gute nacht
+2011-08-30 02:15:46,Jidder,gn8
+2011-08-30 02:15:50,cero,gn8
+2011-08-30 08:25:57,akluth,Morgen
+2011-08-30 08:26:02,akluth,"Ui, leer hier"
+2011-08-30 09:18:45,kevin,Moin
+2011-08-30 09:24:49,akluth,Morgen kevin 
+2011-08-30 09:44:04,akluth,"Argh, Weisheitszahn >.<"
+2011-08-30 09:45:47,kevin,akluth: Hm?
+2011-08-30 09:46:10,akluth,"Ich habe links unten einen Weisheitszahn der Probleme macht...hat er schon einmal vor zwei Monaten, jetzt aber fängt's an zu Eitern und weh zu tun ohne ENde..."
+2011-08-30 09:46:19,akluth,"Alle anderen sind ohne Probleme durchgekommen, nur der macht Zicken"
+2011-08-30 09:46:27,akluth,Aber ich habe keine Lust zum Zahnarzt o.O
+2011-08-30 09:47:21,kevin,Na dann kann's ja noch nicht so schlimm sein *g*
+2011-08-30 09:47:51,kevin,Aber irgendwie würde ich dann vielleicht doch mal...
+2011-08-30 09:48:01,akluth,"Jo, heute Abend muss es sein"
+2011-08-30 09:48:11,akluth,Weil's tut weh und ich fühl mich wie ausgekotzt
+2011-08-30 10:28:59,kevin,"Hat irgendjemand grad einen Kernel zur Hand, der baut und an eine andere physische als virtuelle Adresse gelinkt ist?"
+2011-08-30 10:51:04,akluth,Ich habe über Nacht Debian in einer VM unter qemu installiert
+2011-08-30 10:51:14,akluth,Ich bin mit dem Installer eingeschlafen und aufgewacht o.O
+2011-08-30 10:51:28,akluth,"Gut, waren auch nur drie Stunden und hilft dir nicht annähernd bei deiner Frage"
+2011-08-30 10:58:43,kevin,Ich hab mir jetzt selbst einen gebastelt und der tut einfach
+2011-08-30 10:58:51,kevin,"Muss ich später Jidder fragen, was bei ihm schiefgeht"
+2011-08-30 11:38:40,kevin,"Jetzt weiß ich wieder, warum ich Windowsinstallationen so selten teste. Das mit den Keys nervt..."
+2011-08-30 11:41:59,akluth,Ohja
+2011-08-30 11:42:07,akluth,"Besonders, wenn kein C&P in einer Vm funzt -.-"
+2011-08-30 11:43:28,kevin,Über fünf Textfelder verteilt würde das eh nicht so gut tun...
+2011-08-30 11:46:20,akluth,"Jo, stimmt auch wieder"
+2011-08-30 12:04:13,akluth,"Hm, mal eben auf Linux..."
+2011-08-30 12:07:33,DerHartmut,"Hm, vielleicht kann ich ja heute mal schummeln und auf Linux bleiben *g*"
+2011-08-30 12:12:43,kevin,Wie schummeln?
+2011-08-30 12:13:37,DerHartmut,"Nunja, produktiv arbeiten aber halt unter Linux und nicht wie gewohnt unter Windows 7 auf der Arbeit ;-)"
+2011-08-30 12:13:51,DerHartmut,Solange ich auch nirgends per RDP drauf muss könnte das auch klappen
+2011-08-30 12:14:44,DerHartmut,"kevin: Kann ich qemu irgendwie sagen, dass ich einen Monitor mit 1280x800 habe?"
+2011-08-30 12:14:46,DerHartmut,+Auflösung
+2011-08-30 12:14:55,kevin,Wozu sollte qemu das wissen wollen?
+2011-08-30 12:15:10,kevin,"Du musst nur irgendwie dem Gast-OS klar machen, dass du diese Auflösung willst"
+2011-08-30 12:15:32,kevin,Und was ist das Problem mit RDP?
+2011-08-30 12:17:23,DerHartmut,Afaik gibt es das Windows-eigene Remote DEsktop Protocol für Linux nicht?
+2011-08-30 12:17:52,kevin,"Also ich hab das schon lang nicht mehr gebraucht, aber früher hat krdp wunderbar funktioniert"
+2011-08-30 12:18:02,kevin,"früher = Win2k3, glaube ich"
+2011-08-30 12:18:18,DerHartmut,brb
+2011-08-30 12:22:12,kevin,"Oh, krdc heißt es."
+2011-08-30 12:22:23,kevin,Und ich hab es angeblich letztes Jahr benutzt. ;-)
+2011-08-30 12:22:30,DerHartmut,*g*
+2011-08-30 12:23:34,DerHartmut,freerdp - win 7 und win 2008
+2011-08-30 12:24:05,kevin,"Also hast du jetzt sogar Auswahl, oder wie? ;-)"
+2011-08-30 12:24:53,kevin,"gnome-rdp gibt es auch noch, falls das irgendjemand wollen sollte"
+2011-08-30 12:26:05,DerHartmut,xfreerdp worksforme :D
+2011-08-30 12:26:07,DerHartmut,Und sogar gut
+2011-08-30 12:27:01,DerHartmut,"Ist schon ein Unterschied...Windows 7 im Leerlauf 50% RAM, Lubuntu im Leerlauf: 5% RAM..."
+2011-08-30 12:32:10,kevin,hehe
+2011-08-30 12:32:28,kevin,tyndur im Leerlauf: NullPointerException
+2011-08-30 12:33:15,kevin,"Das wäre übrigens auch was für euren Häkkatönen. Mal alles soweit fixen, dass tyndur tatsächlich in den Leerlauf kommt"
+2011-08-30 12:33:42,DerHartmut,Aufgeschrieben
+2011-08-30 12:35:11,DerHartmut,Ich habe mich auch mal wieder im Wiki ausgetobt
+2011-08-30 12:36:03,kevin,Ich hab's gesehen
+2011-08-30 12:36:11,kevin,Du willst Noos' OS löschen :-/
+2011-08-30 12:36:23,DerHartmut,"Nah, nicht direkt"
+2011-08-30 12:37:01,DerHartmut,"Ich denke es braucht halt verfeinerte Unterkategorien, alá ""Aktuell Entwickelte"", ""Alte, aber nicht mehr entwickelte aber dennoch interessante"" und so"
+2011-08-30 12:38:02,kevin,"Hm, vielleicht"
+2011-08-30 12:38:21,DerHartmut,"Weil ich mir selber dachte hm, das zu LÖschen wäre zu schade, aber man muss halt auch mal aufräumen"
+2011-08-30 12:38:27,kevin,"Man könnte Noos auch einfach fragen, ob er nicht ein Image zur Verfügung stellt, dann fällt er nicht mehr unter die Kriterien ;-)"
+2011-08-30 12:38:38,DerHartmut,"Weil sich sein OS schon von den ganzen ""mein os ist in ein 7z datei und man kann das downloaden"" abhebt"
+2011-08-30 12:38:56,DerHartmut,Könnte man auch :)
+2011-08-30 12:39:28,kevin,Wann war der denn das letzte Mal hier? Kennst du ihn noch?
+2011-08-30 12:39:43,DerHartmut,"Nope, bin daher auch vom letzten WIkiedit ausgegangen"
+2011-08-30 12:40:03,DerHartmut,"Ich bin seit Mitte 2009 hier, also muss das schon länger gewesen sein, wo er das letzte mal hier wa"
+2011-08-30 12:40:04,DerHartmut,r
+2011-08-30 12:40:36,DerHartmut,http://pastebin.com/HAbDmQSx könnte vielleicht interessant sein
+2011-08-30 12:40:49,DerHartmut,"Ich hab in der Such eim Wiki aus versehen tyńdur eingegeben, da kam der Feler"
+2011-08-30 12:40:49,DerHartmut,+h
+2011-08-30 12:41:19,kevin,[Fr Aug 21 2009] [17:30:42] Betreten    Nooooooooos hat den Kanal betreten
+2011-08-30 12:41:39,kevin,Und direkt davor:
+2011-08-30 12:41:41,kevin,[Fr Aug 21 2009] [17:21:50] Spitzname   oO|DerHartmut|Oo nennt sich jetzt DerHartmut.
+2011-08-30 12:42:41,kevin,"Und was Wiki-Probleme angeht, FreakyPenguin oder bluecode ;-)"
+2011-08-30 12:43:22,DerHartmut,"Och, okay...dann kannte ich ihn wohl doch noch ^^"
+2011-08-30 12:46:03,kevin,"Ui, es gibt jetzt -std=c1x? Gut, dass es die Wiki-News gibt :-)"
+2011-08-30 12:47:31,DerHartmut,:-)
+2011-08-30 12:51:07,DesL,moin
+2011-08-30 13:29:17,Jidder,willkommen
+2011-08-30 13:37:59,DerHartmut,Sie haben Post
+2011-08-30 14:04:46,kevin,Reh
+2011-08-30 14:05:22,kevin,"Jidder: Was für Probleme hattest du denn genau mit qemu und phys != virt? Ich wollte das vorhin mal probieren, aber das hat so getan wie ich es erwartet hatte."
+2011-08-30 14:05:37,DerHartmut,Hirsch
+2011-08-30 14:18:21,bluecode,moin
+2011-08-30 14:35:56,kevin,Moin Svenska
+2011-08-30 14:36:00,Svenska,moin
+2011-08-30 14:36:24,kevin,Ich hab das mit virt != phys und -kernel in qemu vorhin mal ausprobiert und bei mir hat es getan
+2011-08-30 14:36:38,Jidder,"kevin: hm da muss ich wohl nochmal genau nachgucken, ob ich rauskriege, was ich da probiert habe"
+2011-08-30 14:37:19,kevin,"Jidder: Ich wollte erst dein OS nehmen, aber -combine gibt es in gcc 4.6 nicht mehr, deswegen hat's nicht gebaut. Und das zu fixen war's mir nicht wert. ;-)"
+2011-08-30 14:37:21,Svenska,"wenn ich wieder gebrauchbar lesen kann (hab grad augentropfen vom augenarzt drin), dann guck ich mir das vllt heut abend mal an"
+2011-08-30 14:37:34,kevin,Ok
+2011-08-30 14:37:55,kevin,"Und sizeof zur Compiletime prüfen kannst du übrigens auch, aber halt mit dem Compiler, nicht mit dem Präprozessor"
+2011-08-30 14:38:15,Svenska,"hm, wie? :-)"
+2011-08-30 14:38:38,kevin,Das ging irgendwie so: int foo[size(int) == 4 ? 1 : -1];
+2011-08-30 14:39:01,Svenska,"das ist aber zur laufzeit, oder?"
+2011-08-30 14:39:10,Svenska,achso
+2011-08-30 14:39:25,Svenska,"entweder, er legt eine variable an oder er wirft nen fehler"
+2011-08-30 14:40:02,kevin,Genau
+2011-08-30 14:41:22,Svenska,"hm, dann hab ich ne menge variablen rumliegen ;)"
+2011-08-30 14:42:04,kevin,Und? ;-)
+2011-08-30 14:42:31,Svenska,ich seh das argument ;)
+2011-08-30 14:42:33,kevin,"Wenn du den Speicher nicht verschwenden willst, müsste als extern deklarieren funktionieren"
+2011-08-30 14:43:03,Svenska,klingt gut
+2011-08-30 14:44:02,kevin,"Und wenn du es dann noch in ein Makro BUILD_BUG_ON verschiebst, das automatisch umständliche Namen generiert, die garantiert mit nichts im Konflikt stehen, dürfte es dich nicht mehr großartig stören"
+2011-08-30 14:44:07,bluecode,"falls du C++11 nutzt, dann geht das besser mit static_assert"
+2011-08-30 14:44:35,Svenska,"bluecode: nee, ""leider"" nur C :)"
+2011-08-30 14:45:28,kevin,"Hm, C1x hat das wohl auch"
+2011-08-30 14:45:36,kevin,"Aber ob gcc es schon hat, ist natürlich eine andere Frage"
+2011-08-30 14:45:51,Svenska,"und es wäre ziemlich gcc-spezifisch, wenn"
+2011-08-30 14:46:09,bluecode,klar hat gcc das schon
+2011-08-30 14:46:24,bluecode,war eine der ersten sachen
+2011-08-30 14:46:32,kevin,Na dann
+2011-08-30 14:46:43,kevin,Ich hab -std=c1x noch nie benutzt
+2011-08-30 14:47:00,bluecode,*0x ;-)
+2011-08-30 14:47:10,bluecode,du hast schonmal C++ benutzt? Oo
+2011-08-30 14:47:35,Svenska,"hmm, ich hab ""-std"" noch nie benutzt ^^"
+2011-08-30 14:47:40,DesL,+1
+2011-08-30 14:48:48,kevin,Svenska: Noch mehr Varianten: http://www.pixelbeat.org/programming/gcc/static_assert.html
+2011-08-30 14:48:54,kevin,bluecode: C1x != C++0x
+2011-08-30 14:49:45,bluecode,"ah, jetzt seh ichs erst"
+2011-08-30 14:50:07,bluecode,dann nehm ich die aussage von oben erstmal zurück
+2011-08-30 14:50:50,Svenska,"das sieht gut aus, danke kevin"
+2011-08-30 14:52:30,Svenska,gcc kann es seit 4.6 … ich hab 4.4.3
+2011-08-30 14:52:54,bluecode,omg... type generic expressions... wat ein krampf
+2011-08-30 14:53:11,kevin,"Wofür das gut sein soll, hab ich auch noch nicht verstanden"
+2011-08-30 14:53:26,kevin,Bzw. warum man dann nicht einfach Funktionen überladbar macht
+2011-08-30 14:54:57,kevin,"Aber vermutlich kann man da noch tolle andere Sachen damit machen, die man lieber gar nicht wissen will ;-)"
+2011-08-30 14:55:03,bluecode,"naja, ansonsten ist wohl wirklich nicht viel neues in c1x"
+2011-08-30 14:55:37,bluecode,"interessant ist, das auf wikipedia sogar ""Removal of the gets function, deprecated in the current C language standard revision, ISO/IEC 9899:1999/Cor.3:2007(E), in favor of a new safe alternative, gets_s."" sowas gelistet wird *g*"
+2011-08-30 14:56:35,kevin,"Naja, für Featuritis ist wohl auch C++ die passendere Spielwiese ;-)"
+2011-08-30 14:57:17,kevin,"Dass anonyme Unions endlich offiziell werden, ist nett. Und Sachen wie asprintf."
+2011-08-30 14:57:34,bluecode,jo
+2011-08-30 15:01:10,DesL,asprintf?
+2011-08-30 15:02:37,bluecode,alloziert ausreichend speicher und schreibt den käse darein
+2011-08-30 15:04:11,DesL,nett
+2011-08-30 15:08:53,Jidder,kevin: stimmt mein kernel funktioniert auch in qemu
+2011-08-30 15:10:18,kevin,"Hm, gut, dann brauch ich das schonmal nicht zu fixen ;-)"
+2011-08-30 15:12:25,Jidder,gibt es eigentlich ein aktuelles und funktionierendes gitweb?
+2011-08-30 15:12:28,Jidder,für qemu
+2011-08-30 15:18:17,kevin,"Für das offizielle Repo nicht, glaube ich"
+2011-08-30 15:18:44,kevin,"Du kannst aber http://repo.or.cz/w/qemu/kevin.git nehmen, da pushe ich mindestens alle paar Tage rein"
+2011-08-30 15:21:42,Svenska,"""If you understand something, it is probably already obsolete"""
+2011-08-30 15:22:22,bluecode,*g*
+2011-08-30 15:29:08,cero,hi
+2011-08-30 15:29:23,Svenska,hi
+2011-08-30 15:29:49,cero,"wo ist denn der unterschied zwischen: movl eax, ebx und mov eax, ebx?"
+2011-08-30 15:30:04,cero,bzw. was ist der unterschied?
+2011-08-30 15:31:02,Jidder,"das zweite funktioniert, und das erste hast du dir ausgedacht"
+2011-08-30 15:31:10,Jidder,"meinst du evtl movl %eax, %ebx?"
+2011-08-30 15:31:40,Svenska,mov ist intel-syntax und nimmt die größe der register aus den argumenten (in deinem fall: 32 bit)
+2011-08-30 15:32:05,cero,movl ist at&t syn?
+2011-08-30 15:32:07,Svenska,"movl ist at&t-syntax, da steht die menge der zu kopierenden bits/bytes drin (long = 32 bit)"
+2011-08-30 15:32:21,cero,ok
+2011-08-30 15:32:35,cero,dann hab ich dass hier nur durcheinander gemischt ^^
+2011-08-30 15:32:43,cero,danke
+2011-08-30 16:12:34,DesL,bb
+2011-08-30 16:23:41,SD,Ich habe ne frage zu dem Lowlevel Artikel http://www.lowlevel.eu/wiki/ATA
+2011-08-30 16:25:09,SD,Ich checke das überprüfen nicht
+2011-08-30 16:25:32,SD,kann mir das jemand kurtz erklären?
+2011-08-30 16:27:21,kevin,Was genau willst du überprüfen?
+2011-08-30 16:27:53,kevin,Meinst du die Geräteerkennung?
+2011-08-30 16:30:26,SD,ja
+2011-08-30 16:31:18,SD,nochmal: Ich soll irgend etwas in den LSB (low) schreiben und überprüfen?
+2011-08-30 16:33:05,kevin,Wo steht das?
+2011-08-30 16:34:19,SD,oh sorry
+2011-08-30 16:34:21,kevin,"Ah, beim zweiten Schritt. Ja, einfach irgendwas reinschreiben, wieder auslesen und schauen, ob du das gleiche zurückbekommst, was du reingeschrieben hast"
+2011-08-30 16:34:59,SD,zuerst die Hobbits auf allen channeln löschen
+2011-08-30 16:35:05,SD,oder?
+2011-08-30 16:35:29,kevin,So steht's da
+2011-08-30 16:35:46,SD,ist channel 2 der slave von 1?
+2011-08-30 16:36:26,kevin,"Nein, das ist der zweite Kanal"
+2011-08-30 16:36:31,kevin,Jeder Kanal hat Master und Slave
+2011-08-30 16:36:32,SD,ok
+2011-08-30 16:36:50,SD,wie teste ich dann den slave des ersten kanals?
+2011-08-30 16:36:57,SD,Drive bit?
+2011-08-30 16:37:48,kevin,"Ja, du musst das passende Bit setzen und dann halt das IDENTIFY dorthin schicken"
+2011-08-30 16:39:07,SD,identify ist ein befehl. Aber im Artikel iatst nirgeds erklärt auf welchen port ich das schicken muss und erlchen wer der hat
+2011-08-30 16:43:55,kevin,Ins Command-Register
+2011-08-30 16:44:02,SD,welchen wet
+2011-08-30 16:44:16,kevin,"Steht in der ATA-Spec, auswendig weiß ich das auch nicht"
+2011-08-30 17:10:25,SD,ok
+2011-08-30 17:10:31,SD,von vorne
+2011-08-30 17:12:05,SD,ich lösche die Hob bits der Channel 1-4 schalte das Drive bit auf Slave und schicke den IDENTYFY befehl auf alle channels und lösche wieder die Hob bits. Stimmt das?
+2011-08-30 17:13:03,kevin,IDENTIFY musst du sowohl an den Master als auch an den Slave schicken
+2011-08-30 17:13:21,kevin,Nur Slave ist nicht genug
+2011-08-30 17:13:30,SD,ok.
+2011-08-30 17:14:27,SD,Habe nich gecheckt was identify so macht. War irgendwie komisch beschrieben...
+2011-08-30 17:14:47,kevin,Gibt einfach Informationen über das Laufwerk zurück
+2011-08-30 17:15:02,kevin,Und jedes Laufwerk muss den Befehl unterstützen (außer CD-Laufwerken)
+2011-08-30 17:15:20,kevin,"Wenn dabei also ein Fehler zurückkommt, hast du dort keine Platte hängen"
+2011-08-30 17:15:47,SD,gibts ne tabelle mit den Rückgabe werten?
+2011-08-30 17:19:59,kevin,Es gibt ein Fehlerregister
+2011-08-30 17:20:04,kevin,Und das Statusregister hat auch ein Fehlerflag
+2011-08-30 17:53:41,ehenkes,hi
+2011-08-30 17:54:13,Svenska,hi
+2011-08-30 17:54:30,stultus,hi
+2011-08-30 18:00:24,SD,hi
+2011-08-30 18:10:39,DesL,moin
+2011-08-30 18:10:56,Naoe-Kanno,Moin
+2011-08-30 18:43:24,SD,"Nochmal zu ATA: Wenn ich jetzt noch das error bit überprüfe und das dann 1 ist, heißt das dann das der Master von C1 nicht existiert?  http://mibpaste.com/aL1cbz "
+2011-08-30 18:45:11,SD,"enabelCommand ist in ASM definiert, und macht eine AND verknüpfung mit 11000000b"
+2011-08-30 18:48:57,SD,Hallo?
+2011-08-30 18:49:31,stultus,hm
+2011-08-30 18:49:44,stultus,"im Sinne von guten Englisch, enable, nicht enabel"
+2011-08-30 18:49:51,stultus,letzteres ist nur die Aussprache ;)
+2011-08-30 18:50:05,stultus,"was heißt ""in asm definiert und macht ne verknüpfung""?"
+2011-08-30 18:50:12,SD,ok. :) sry
+2011-08-30 18:50:51,stultus,im dem C-Code da definierst du ne Variable mit dem Namen und versuchst die uninitialisiert zu verwenden.
+2011-08-30 18:51:01,stultus,Das dürfte dir eigentlich so nur ne ziemlich fette Compilerwarnung liefern.
+2011-08-30 18:51:12,SD,welche?
+2011-08-30 18:52:14,SD,"""State"" ist ein unsigned char"
+2011-08-30 18:52:21,SD,der typ ist von mir
+2011-08-30 18:53:03,stultus,??
+2011-08-30 18:53:14,SD,"mittlerweile steht da übrigens anderes: enabelCommand=ASM_AND(State,0b11000000); "
+2011-08-30 18:53:24,stultus,...?!
+2011-08-30 18:53:30,stultus,was bitte macht ASM_AND?
+2011-08-30 18:53:40,stultus,Und jetzt sag bitte nicht dass das nur nen bitweises and in inlineasm macht :/
+2011-08-30 18:54:21,Paprikachu,:D
+2011-08-30 18:54:26,SD,"nicht im inline, da das ding mit der datei ATA.asm sowiso zusammen gelinkt wird"
+2011-08-30 18:54:37,stultus,m(
+2011-08-30 18:54:39,Paprikachu,lol :x
+2011-08-30 18:54:41,stultus,das ist immernoch kaputt.
+2011-08-30 18:54:47,SD,warum?
+2011-08-30 18:54:53,stultus,"C hat den Operator doch, und der Compiler kümmert sich drum dass das sinnvoll gemacht wird."
+2011-08-30 18:55:40,SD,es funktionier einfach. Basta.
+2011-08-30 18:55:59,Paprikachu,warum sollte man ein and in inline asm machen? das kann nur langsamer werden als die C-variante
+2011-08-30 18:56:07,Paprikachu,gleich schnell/langsamer
+2011-08-30 18:56:17,SD,egal
+2011-08-30 18:56:20,stultus,"eher langsamer, je nach Compiler."
+2011-08-30 18:56:23,Paprikachu,jop
+2011-08-30 18:56:30,stultus,Halt einfach dadurch das geschaut werden muss was für annahmen danach gelten.
+2011-08-30 18:56:31,SD,ich wusste es gerade nicht besser
+2011-08-30 18:56:35,stultus,& ;)
+2011-08-30 18:56:49,SD,ist doch egal
+2011-08-30 18:57:03,SD,Stimmt jetzt die sache mit ATA?
+2011-08-30 18:57:35,stultus,"von ATA hab ich keine Ahnung, aber das steht bestimmt im Wiki"
+2011-08-30 18:58:21,SD,habe ich gekukt. Der Artikel ist ein bisschen ****. Der treibt mich zum Wahnsinn!
+2011-08-30 18:58:38,SD,Deshalb Frage ich.
+2011-08-30 18:59:10,stultus,Referenzcode würde auch helfen ;)
+2011-08-30 18:59:25,stultus,"der tyndur-treiber müsste ja halbwegs funktionieren, jedenfalls was das angeht"
+2011-08-30 18:59:48,stultus,http://git.tyndur.org/?p=tyndur.git;a=tree;f=src/modules/cdi/ata;h=521e4e9a15c3a3f9238763c688fdc64d2ca1da8d;hb=HEAD
+2011-08-30 19:00:55,SD,Bahnhof...
+2011-08-30 19:01:38,stultus,Tjo
+2011-08-30 19:02:02,SD,ist es euch so lieber (wegen vorhin): enabelCommand=State & 0b11000000;
+2011-08-30 19:02:14,stultus,besser *g*
+2011-08-30 19:02:36,stultus,"Dann wäre da noch das 0b, die meisten leute schreiben doch lieber hex, aber das ist wohl geschmackssache."
+2011-08-30 19:03:24,stultus,"was du auch noch möchtest (jedenfalls im Sinne von lesbarkeit, wartbarkeit und standardähnlichkeit zu empfehlen), nen funktionierendes <stdint.h>"
+2011-08-30 19:03:34,stultus,da gibts dann uint8_t und ähnliche
+2011-08-30 19:03:51,stultus,"definitiv 1 byte, als zahl verwendbar, und mit definiertem Vorzeichen."
+2011-08-30 19:04:04,SD,habe ich selber eine.
+2011-08-30 19:04:14,SD,Blos mei mir heißt das Anderst
+2011-08-30 19:04:44,SD,zb: byte State;  = unsigned char State;
+2011-08-30 19:04:57,stultus,;)
+2011-08-30 19:05:00,stultus,Ich sag nur wie der Standard das vorsieht
+2011-08-30 19:05:09,stultus,"ist halt vorteilhaft, wenn das zum debuggen jemand lesen soll"
+2011-08-30 19:05:40,Paprikachu,C kann binärzahlen?
+2011-08-30 19:05:44,SD,ich habe den Standart müll auch definiert. Aber ich machs lieber
+2011-08-30 19:05:46,SD,so!
+2011-08-30 19:06:03,SD,Also keiner ne ahnung?
+2011-08-30 19:06:13,Paprikachu,das ist ja mal cool. wobei man mit c++11 ja auch eigene iterale definieren kann. trotzdem.
+2011-08-30 19:06:33,stultus,"0bXY geht schon immer, ja ;)"
+2011-08-30 19:06:39,stultus,du kannst auch 077 schreiben.
+2011-08-30 19:06:53,stultus,"Würd ich bloß nicht empfehlen, weil das nicht 77 sondern 63 ist"
+2011-08-30 19:06:59,Paprikachu,hehe
+2011-08-30 19:07:08,Paprikachu,oktalzahlen kenn ich.
+2011-08-30 19:07:14,Paprikachu,"aber dass C binärzahlen kann, ist mir neu."
+2011-08-30 19:07:27,stultus,^^
+2011-08-30 19:07:40,stultus,c++11 hat eh nen paar tolle Sachen.
+2011-08-30 19:07:49,stultus,shared_ptr hats mir definitiv angetan *g*
+2011-08-30 19:07:50,Paprikachu,jo
+2011-08-30 19:08:01,Paprikachu,c++11 ist nice. will ohne nicht mehr arbeiten.
+2011-08-30 19:08:12,Paprikachu,shared_ptr gabs doch in boost auch schon vorher.
+2011-08-30 19:08:31,Paprikachu,"boost sollte man sowieso haben, wenn man ernsthaft c++ programmieren will."
+2011-08-30 19:08:33,stultus,klar *g* aber ob boost immer so da ist
+2011-08-30 19:08:58,stultus,aber wenn man mit arbeiten kann...
+2011-08-30 19:09:10,stultus,"asio, threads, bjam , brilliant"
+2011-08-30 19:09:50,Paprikachu,threads gibts auch mit c++11 und asio kommt mit dem TR2 afaik :)
+2011-08-30 19:10:42,stultus,"threads implementiert bloß noch keiner, afaik."
+2011-08-30 19:10:54,stultus,asio integriert? das hätte doch mal was.
+2011-08-30 19:11:28,Paprikachu,zumindest gabs nen proposal dazu.
+2011-08-30 19:11:31,Paprikachu,für den TR2.
+2011-08-30 19:11:58,stultus,"njo, im 11'er isses jedenfalls nicht drin, oder?"
+2011-08-30 19:12:04,Paprikachu,das nicht.
+2011-08-30 19:12:07,stultus,wäre also dann wenndann eh nen neuer standard für dens gemacht wird
+2011-08-30 19:12:19,Paprikachu,aber der TR2 soll kurz nach C++11 kommen.
+2011-08-30 19:12:37,Paprikachu,"ne, TR2 ist kein standard."
+2011-08-30 19:12:58,Paprikachu,"ist nur ne erweiterung, die der compiler hersteller aber nicht implementieren muss"
+2011-08-30 19:13:15,Paprikachu,macht aber jeder gute hersteller.
+2011-08-30 19:28:12,Darkchaos,Hey Leute :]
+2011-08-30 19:28:22,stultus,nabend
+2011-08-30 19:43:15,Darkchaos,"Sagt mal das mit dem ""Kernel in jeden Task mappen"" und dem updaten irgendwie, wie war das nochmal? kann ich nicht überall 0x0 bis 0x1000 physikal in jeden task mappen?"
+2011-08-30 19:45:59,stultus,0x0 willst du garantiert _nicht_ mappen.
+2011-08-30 19:46:20,stultus,Sonst fliegt dir ne ganze Menge um die Ohren ;)
+2011-08-30 19:46:37,stultus,Ansonsten kannst du das prinzipiell machen wie du willst
+2011-08-30 19:46:56,stultus,"(wobei ich mich grad frage, 0x1000, ist das nicht 1mB?)"
+2011-08-30 19:51:54,Darkchaos,geht ja nur ums prinzip
+2011-08-30 19:51:59,Darkchaos,aber
+2011-08-30 19:52:41,Darkchaos,"Im Wiki stand was von wegen mehrere Kernel PD's anlegen, und wenn sich eines geändert hat, alle vergleichen und so, das muss ich deshalb nochmal nachgucken, das verwirrt mich etwas"
+2011-08-30 19:54:39,stultus,"ok, davon hab ich keine ahnung"
+2011-08-30 19:54:54,stultus,"Wozu ich halt nur raten würde, nicht einfach unterhalb von 1M in alle mappen"
+2011-08-30 19:55:24,stultus,"wie gesagt, 0x0 muss als ungültige adresse bleiben, da wär nen mapping schlecht, und das bios sollte sowieso intakt sein, aber gehört imho nicht in einen usertask rein."
+2011-08-30 19:55:58,stultus,"(letzteres kann ohne vm86 natürlich entfallen, aber wer will das schon?)"
+2011-08-30 19:58:17,Jidder,"Darkchaos: die idee ist ja, dass du im kernel das page directory wechselst, wenn du den task wechselst."
+2011-08-30 19:58:37,Jidder,"und damit der kernel weiterhin funktioniert, muss der kernel speicher korrekt gemappt sein"
+2011-08-30 19:58:57,Jidder,teile des alten page directories in das neue zu kopieren ist nur eine möglichkeit
+2011-08-30 19:59:03,Jidder,aber vermutlich die einfachste
+2011-08-30 20:00:31,Darkchaos,"naja, aber wenn der kernel immer an der gleichen gestelle gemappt ist ist das doch auch unnötig oder?"
+2011-08-30 20:01:42,Jidder,"damit der kernel an die gleiche stelle gemappt ist, musst du was kopieren"
+2011-08-30 20:01:53,Jidder,stell dir mal vor du erstellst einen neuen komplett leeren tasks
+2011-08-30 20:01:57,Jidder,*task
+2011-08-30 20:02:03,Darkchaos,dann bekommtm der am anfang gleich den kernel
+2011-08-30 20:02:08,Darkchaos,d.h. ich habe quasi eine art vorlage
+2011-08-30 20:02:13,Jidder,gut
+2011-08-30 20:02:13,Darkchaos,welche kernel_context entspricht
+2011-08-30 20:02:15,Jidder,und wenn sich was im kernel ändert?
+2011-08-30 20:02:28,Jidder,zum beispiel wenn du im kernel speicher anforderst oder freigibst?
+2011-08-30 20:03:42,Jidder,dann ändert sich ja möglicherweise das mapping
+2011-08-30 20:03:50,Darkchaos,"dann ja, stimmt"
+2011-08-30 20:04:37,Darkchaos,"d.h. jede ""context-struct"" braucht noch einen uint32_t der Hochzählt? dann muss ich alle structs durchgehen und das neueste kopieren, aber das stell ich mir grad schwer vor"
+2011-08-30 20:05:47,Jidder,keine ahnung wie man das konkret implementieren würde. du kannst ansonsten auch einfach erstmal bei jedem task wechsel kopieren
+2011-08-30 20:07:45,stultus,Ne Tabelle mit allen PD halten und bei nem alloc einfach mal direkt alle aktualisieren ist keine Option?
+2011-08-30 20:08:28,Darkchaos,"Jidder: Dann muss ich aber ja auch wissen, was Kernel ist und was nicht mehr"
+2011-08-30 20:08:59,Jidder,solltest du sowieso
+2011-08-30 20:09:03,stultus,Hast du außer Kernel was in Ring0?
+2011-08-30 20:09:18,Darkchaos,"stultus: hmm, ok das wäre eine Möglichkeit, allerdings müssen die pd's dann gemappt sein im kernel"
+2011-08-30 20:09:27,Darkchaos,später mal vllt Treiber
+2011-08-30 20:36:29,ErikV,Guten Abend
+2011-08-30 20:49:59,bluecode,moin bijatsches
+2011-08-30 20:56:30,Jidder,da is man mal 5 minuten weg
+2011-08-30 20:56:58,ErikV,und schon muss der quatsch labern
+2011-08-30 21:03:17,DesL,re
+2011-08-30 21:28:10,taljeth,Moin
+2011-08-30 21:28:14,Svenska,moin
+2011-08-30 21:29:19,ErikV,hi
+2011-08-30 22:24:00,Jidder,hm ein microsoft header verweist auf wikipedia
+2011-08-30 22:24:02,Jidder,lol
+2011-08-30 22:24:18,Jidder,corhdr.h
+2011-08-30 22:24:28,taljeth,Kann man das essen?
+2011-08-30 22:24:42,taljeth,Besonders gesund sieht es ja nicht aus
+2011-08-30 22:25:26,Jidder,.net ^^
+2011-08-30 22:25:59,Jidder,lol und anscheinend hat den niemand bisher verwendet :(
+2011-08-30 22:26:03,Jidder,es fehlt ein komma
+2011-08-30 22:26:08,Jidder,compiler error
+2011-08-30 22:27:56,taljeth,Kann man das irgendwie per Präprozessor fixen? ;-)
+2011-08-30 22:28:25,Jidder,"per #define 0x08 0x08, vielleicht ^^"
+2011-08-30 22:28:35,taljeth,"Ungefähr sowas meinte ich, ja"
+2011-08-30 22:28:35,Jidder,hm obwohl ...
+2011-08-30 22:29:28,Jidder,"aber das hier geht #define COR_VTABLE_CALL_MOST_DERIVED ,COR_VTABLE_CALL_MOST_DERIVED"
+2011-08-30 22:29:30,Jidder,gute idee. danke ^^
+2011-08-30 22:29:51,Jidder,hab keinen schreibzugriff auf den header lol
+2011-08-30 22:30:33,taljeth,Man muss sich nur zu helfen wissen *g*
+2011-08-30 23:40:15,taljeth,"stultus: Können wir das Buntzeug bei Gelegenheit mal mergen? Meinetwegen auch so wie es ist, aber sowohl LIOv2 als auch Buntzeug haben wollen ist im Moment eine nervige Angelegenheit, solange beides nicht in master ist. ;-)"
+2011-08-30 23:55:48,DerHartmut,Nabend
+2011-08-30 23:55:55,Naoe-Kanno,Moin
+2011-08-30 23:55:55,Svenska,namd
+2011-08-30 23:57:14,taljeth,Moin DerHartmut

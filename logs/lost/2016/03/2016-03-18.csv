@@ -1,0 +1,150 @@
+date/time,nick,message
+2016-03-18 10:54:37,LittleFox,hi
+2016-03-18 10:55:37,LittleFox,vielleicht kann mir von euch ja jemand helfen: ich habe eine pipe von der ich in einem prozess immer lese und ich hab mehrere prozesse die auf diese pipe schreiben. es ist eine unbenannte pipe. wie lock ich das am besten? flock geht scheinbar nicht :/
+2016-03-18 10:55:59,LittleFox,oh und meine einzelnen pakete die ich da drauf schreibe sind auch öfter mal > PIPE_BUF
+2016-03-18 10:58:24,kevin,Hm. Das klingt irgendwie kaputt. Was versuchst du zu erreichen?
+2016-03-18 10:58:47,kevin,"Mein erster Gedanke wäre, dass du dann wohl n Pipes statt nur einer haben solltest"
+2016-03-18 10:59:28,LittleFox,"ich habe einen http server der für jede anfrage nen fork macht, die daten entgegen nimmt, in mein protokoll packt und in eine pipe schreibt. am anderen ende der pipe ist ne queue die das gebündelt per tcp an einen anderen server gibt "
+2016-03-18 11:00:42,kevin,"Ja, und warum kannst du da nicht für jeden geforkten Prozess eine separate Pipe nehmen?"
+2016-03-18 11:01:03,LittleFox,"muss ja das andere ende irgendwie in die queue bekommen, die als eigener prozess läuft^^"
+2016-03-18 11:01:16,LittleFox,und für jeden request entsteht ja ein neuer prozess
+2016-03-18 11:01:37,kevin,"Die Queue ist wieder ein anderer Prozess als der, der die ganzen Handler forkt?"
+2016-03-18 11:01:42,LittleFox,ja
+2016-03-18 11:02:07,LittleFox,besser noch: sind 2 queues die verschiedene daten bekommen^^
+2016-03-18 11:02:20,kevin,"Was gibt das alles, wenn's fertig ist? ;-)"
+2016-03-18 11:02:54,LittleFox,"ein proxy zwischen dem alten doofen protokoll und dem coolen neuen protokoll ;) mit prioritätsqueues, die eine puffert ne weile und die andere gibt sofort weiter^^"
+2016-03-18 11:03:05,LittleFox,"ich glaub genauer darf ichs nicht beschreiben, arbeit und so"
+2016-03-18 11:03:08,kevin,Und wieso brauchst du dazu eine Armee von Prozessen? ;-)
+2016-03-18 11:03:44,LittleFox,"naja, einen pro request, das klassische fork-on-accept modell halt :D"
+2016-03-18 11:03:53,LittleFox,und threads und forks mixen soll man ja nicht
+2016-03-18 11:04:12,LittleFox,"ok, im hauptprozess hätte ich auch select machen können, das war mir aber zu viel aufwand^^"
+2016-03-18 11:04:21,kevin,"Ach ja, Closed-Source-Entwickler zu sein muss doof sein, wenn man nicht über seine Probleme reden darf *g*"
+2016-03-18 11:04:31,kevin,Mach halt alles auf Threads?
+2016-03-18 11:04:47,kevin,"Und ja, select() wär eh das einfachste"
+2016-03-18 11:05:03,kevin,Wenn du nicht tatsächlich parallel Daten verarbeiten musst
+2016-03-18 11:05:18,LittleFox,"naja, zumidnest die requests müssen schon parallel"
+2016-03-18 11:05:20,LittleFox,sind viele
+2016-03-18 11:05:23,LittleFox,und große
+2016-03-18 11:05:28,LittleFox,"und ja, das ist doof xD"
+2016-03-18 11:06:08,kevin,Also eine einzige Pipe scheint dann erst recht ein Problem zu sein
+2016-03-18 11:06:17,kevin,"Weil wenn du die lockst, dann hast wieder nichts parallel"
+2016-03-18 11:06:42,LittleFox,die daten aber zumindest parallel vorverarbeitet
+2016-03-18 11:06:53,LittleFox,und da dort megabytes an JSON *sigh* ankommen
+2016-03-18 11:06:55,kevin,Das klingt einfach alles nur kaputt
+2016-03-18 11:07:25,LittleFox,mhmm
+2016-03-18 11:07:29,kevin,Eigentlich sollten das Threads sein und dann schiebst du einen einzigen Pointer durch die Gegend statt Megabytes von Daten
+2016-03-18 11:07:53,LittleFox,"naja, nach dem umwandeln ins neue protokoll sind es meist nur noch kilobytes :D"
+2016-03-18 11:08:47,kevin,"Ich könnte natürlich auch erwähnen, dass du den Pipe-FD schon in den anderen Prozess bekommen würdest, SCM_RIGHTS und so. Aber ich glaube irgendwie, es wäre besser, wenn du diesen Weg nicht verfolgst. *g*"
+2016-03-18 11:09:49,LittleFox,ich glaub ich versuch jetzt was mit pthread mutex in shared memory
+2016-03-18 11:10:17,kevin,Dann wird es bestimmt weniger kaputt
+2016-03-18 11:10:32,kevin,Oder du kannst es dir zumindest einreden
+2016-03-18 11:10:44,LittleFox,muss am ende nur funktionieren ;)
+2016-03-18 11:10:53,kevin,...
+2016-03-18 11:11:03,LittleFox,closed-source ;)
+2016-03-18 11:11:13,kevin,Ich wollte es nicht schreiben *g*
+2016-03-18 11:11:34,LittleFox,^^
+2016-03-18 15:21:17,darklink,"Ich weiß nicht, aber ich glaube ich kriege bei ATA das timing nicht ganz hin"
+2016-03-18 15:21:27,Svenska,timing?
+2016-03-18 15:21:59,Svenska,"das hardware-interface ist ein simpler buffer, d.h. du darfst beliebig langsam lesen und schreiben -- nur nicht zu schnell"
+2016-03-18 15:22:08,Svenska,und zu schnell duerfte im emulator ohnehin schwierig sein
+2016-03-18 15:23:00,darklink,Ich mache einen ATA polling PIO treiber
+2016-03-18 15:25:14,Svenska,"ja, d.h. du liest nacheinander das register aus"
+2016-03-18 15:26:16,darklink,https://github.com/Mtgxyz/MTGos/blob/master/kernel/hal/x86/blk/BlockDevice.cpp
+2016-03-18 15:27:37,darklink,"Da kommt nichts zum thema ""Not a single device was found!"" raus"
+2016-03-18 15:28:06,kevin,Womit testest du denn? qemu oder echte Hardware?
+2016-03-18 15:28:29,darklink,qemu und echte harware
+2016-03-18 15:28:54,darklink,also ich habe die änderungen die ich eben gerade gemacht habe noch nicht auf hardware getestet
+2016-03-18 15:29:00,kevin,Also in qemu wird es ziemlich sicher kein Timingproblem sein
+2016-03-18 15:29:20,kevin,"Der Code ist aber auch grausam zu lesen, muss den erstmal entziffern"
+2016-03-18 15:29:35,Svenska,stimme ich zu
+2016-03-18 15:29:37,kevin,Ich schenk dir bei Gelegenheit mal einen Satz Leerzeilen
+2016-03-18 15:29:44,Svenska,und kommentare
+2016-03-18 15:30:01,kevin,Und Leerzeicehn
+2016-03-18 15:30:21,kevin,Und einen C-Compiler *g*
+2016-03-18 15:31:29,darklink,:(
+2016-03-18 15:31:34,darklink,C++ ist doch gut.
+2016-03-18 15:31:36,kevin,bufw[i]=inb(ataports[drv>>1]);
+2016-03-18 15:31:39,Svenska,"ich wuerde ja nicht gucken, ob ""Not a single device was found!"" rauskommt, sondern mir anzeigen lassen, WAS er da gefunden hat"
+2016-03-18 15:31:40,kevin,Meinst du zufällig inw?
+2016-03-18 15:32:04,darklink,"das könnte der fehler sein, warum da bloß ein leerzeichen rauskommt unter qemu"
+2016-03-18 15:33:05,darklink,jetzt liest er sektor eins
+2016-03-18 15:33:08,kevin,"Falls du mehr als schnarchlangsam willst, würde ich dir übrigens rep insw empfehlen (oder natürlich DMA, aber das ist nochmal eine ganz eigene Geschichte)"
+2016-03-18 15:33:08,darklink,danke!
+2016-03-18 15:34:49,Svenska,ich finde das ataports[4] irgendwie ... nuja
+2016-03-18 15:35:18,darklink,redundant?
+2016-03-18 15:35:44,Svenska,"wenn du schon abstrahierst, dann hätte ich eher ein IDE-Interface abstrahiert mit einer basisadresse"
+2016-03-18 15:36:05,Svenska,"also, ATA1 = HAL::IDE(0x1F0) ; ATA2 = HAL::IDE(0x170) ; ..."
+2016-03-18 15:36:26,Svenska,aber das ist ne geschmackssache
+2016-03-18 15:37:39,darklink,auf BlockDevice wird direkt vom kernel zugegriffen
+2016-03-18 15:37:50,Svenska,und?
+2016-03-18 15:37:57,darklink,egal ob es IDE festplatten gibt oder magnetband
+2016-03-18 15:38:01,Svenska,"du wirst irgendwann blockdevices haben, die kein IDE sind"
+2016-03-18 15:38:41,Svenska,"wie gesagt, ist egal"
+2016-03-18 16:30:44,Svenska,"hmm. bin grad bei videos von cppcon 2014 steckengeblieben und stelle fest, dass c++11 irgendwie nichts mit c-with-classes zu tun hat. krasses zeug was die da tun."
+2016-03-18 16:37:17,kevin,Ist das gut oder schlecht?
+2016-03-18 16:37:41,Svenska,"wenn man denen zuhört, scheint es gut. also so dinge wie smart pointer und so kram"
+2016-03-18 16:38:02,Svenska,"bin da reingelatscht durch memory consistency models, und dann die C++11 atomic<>"
+2016-03-18 16:38:29,kevin,"Ich frage mich halt immer, ob man die Sache besser macht, indem man immer mehr Zeug obendraufklatscht"
+2016-03-18 16:38:58,Svenska,"das ist richtig, aber sie können nicht altes zeug wegmachen und behaupten, es sei c++"
+2016-03-18 16:39:11,kevin,Irgendwann sollte ich mich vielleicht mal näher mit Rust beschäftigen
+2016-03-18 16:39:40,Svenska,"hm, hatte ich letzten sommer nen praktikanten hier, der da sein steckenpferd hatte"
+2016-03-18 16:39:46,Svenska,...ist das effizient? ;-)
+2016-03-18 16:40:04,kevin,Wieso sollte es nicht?
+2016-03-18 16:40:12,Svenska,weiß nicht
+2016-03-18 16:40:36,Svenska,"gefuehlt hat es ne große stdlib (bedenke, ich hantiere mit mikrocontrollern), aber die hat c++ auch"
+2016-03-18 16:40:39,kevin,"Theoretisch sehe ich kein Problem, aber praktisch habe ich keine Erfahrung damit"
+2016-03-18 16:41:17,kevin,"Naja, C hat auch eine Standardbibliothek, und wenn du einen Kernel schreibst, verzichtest du halt auf die ;-)"
+2016-03-18 16:41:53,Svenska,"auf epiphany haben wir newlib, die kann man schon benutzen"
+2016-03-18 16:42:07,Svenska,"...printf() gibt's trotzdem nicht, weil das nur im simulator tut"
+2016-03-18 16:42:54,Svenska,"aber der grund, warum meine/unsere tools c++ nicht unterstuetzen ist, dass du keinen einzigen stdlib header #includen kannst, weil es dann nicht mehr linkt. :-)"
+2016-03-18 16:47:59,darklink,OK mein PC unterstützt jetzt urplötzlich kein ATA PIO mehr?
+2016-03-18 16:48:03,darklink,weird
+2016-03-18 16:48:07,Svenska,?
+2016-03-18 16:48:32,darklink,vor dem fix hat der auch ein leerzeichen ausgegeben
+2016-03-18 16:48:43,kevin,Und jetzt?
+2016-03-18 16:48:46,darklink,j
+2016-03-18 16:48:55,darklink,"kommt 4x ""ATA not found!"""
+2016-03-18 16:49:07,Svenska,ich wuerde nicht allzuviel in garbage reininterpretieren. :-)
+2016-03-18 16:49:40,darklink,aber das status-byte war 0xFF!
+2016-03-18 16:50:01,Svenska,ist das ein gueltiges status-byte? :)
+2016-03-18 16:50:22,darklink,oh?
+2016-03-18 16:50:38,darklink,eigentlich nicht
+2016-03-18 16:51:09,Svenska,immerhin was. :-)
+2016-03-18 16:51:19,Svenska,"(nein, ich kann IDE nicht aus dem kopf.)"
+2016-03-18 16:52:09,darklink,"Angefangen wird mit einem kleinen Test auf eine Erscheinung, die als floating bus bezeichnet wird. Damit kann festgestellt werden, ob der Bus sicher leer ist. Das Ganze hängt damit zusammen, dass der ATA-Bus mit sogenannten Pullup-Widerständen auf einem hohen Pegel gehalten wird, wenn die einzelnen Leitungen nicht von den Geräten gegen Masse gezogen werden."
+2016-03-18 16:52:40,darklink,[…]Statusregisters ein und vergleicht ihn danach mit 0xFF (ist ein ungültiger Status-Wert). 
+2016-03-18 16:52:53,Svenska,ok
+2016-03-18 16:53:07,Svenska,"aber wenn du einmal ein nicht-0xFF bekommen hast, dann ist es kein floating bus mehr"
+2016-03-18 16:55:41,Svenska,"und das gilt auch nur dann, wenn der bus ueberhaupt existiert"
+2016-03-18 16:55:57,Svenska,"d.h. wenn da nix ist, dann kriegst du nicht garantiert 0xFF"
+2016-03-18 16:59:57,darklink,aber wenn da was ist kriege ich garantiert ein 0xFF
+2016-03-18 17:00:01,darklink,kein*
+2016-03-18 17:00:49,darklink,"da ich aber zwei SATA controller auf dem mainboard habe müsste da nur zweimal die nachricht ""ATA not found!"" erscheinen"
+2016-03-18 17:02:36,kevin,Und die sind auch im IDE-Modus?
+2016-03-18 17:03:42,darklink,Keine ahnung
+2016-03-18 17:03:53,darklink,"aber das sollte bei ATAPIO egal sein, oder?"
+2016-03-18 17:04:38,Svenska,AHCI != IDE
+2016-03-18 17:04:43,darklink,naja ich guck mal ins UEFI BIOS um zu gucken was ich machen kann
+2016-03-18 17:04:46,Svenska,im AHCI-modus sind die nicht per IDE ansprechbar
+2016-03-18 17:33:59,darklink,"also: Meine festplatten mögen endweder kein IDE, oder mein OS mag das IDE meines PCs nicht"
+2016-03-18 17:34:22,Svenska,sind deine sata-platten denn wenigstens per ide ansprechbar (aka ide modus)?
+2016-03-18 17:38:02,darklink,Keine Ahnung
+2016-03-18 17:38:52,darklink,also auf jeden fall kann ich von den festplatten im IDE modus starten
+2016-03-18 17:38:53,Svenska,check das. kannst du im geräte-manager oder im dmesg oder in /dev/disk/by-path/ machen
+2016-03-18 17:39:57,darklink,"linux startet nicht im IDE modus, weil er festplatten /dev/hd[ab][1-9] statt /dev/sd[ab][1-9] benennt"
+2016-03-18 17:40:09,Svenska,äh
+2016-03-18 17:40:23,Svenska,"linux benutzt seit einigen jahren libata, d.h. es gibt kein ATA mehr"
+2016-03-18 17:40:38,Svenska,sondern ATA wird intern auf SCSI umgemappt und als SCSI-device gehändelt (daher /dev/sdX)
+2016-03-18 17:40:56,Svenska,"wenn du noch ein /dev/hdX hast, dann ist das höchstwahrscheinlich eine udev-regel"
+2016-03-18 17:41:11,darklink,oh
+2016-03-18 17:41:48,darklink,"naja auf jedenfall friert der ein nach ""Starting version 229"
+2016-03-18 17:42:15,Svenska,?
+2016-03-18 17:44:03,darklink,"kommt keine fehlermeldung, friert nur nach der ersten meldung ein"
+2016-03-18 17:44:11,Svenska,wer friert ein?
+2016-03-18 17:44:15,Svenska,und warum?
+2016-03-18 17:45:39,darklink,systemd
+2016-03-18 17:45:42,darklink,weil keine ahnung
+2016-03-18 17:46:42,Svenska,ok.
+2016-03-18 20:47:25,yayachiken,seit wann braucht reboot kein root oder sudo mehr :x
+2016-03-18 20:47:41,yayachiken,und wieder molly-guard fail
+2016-03-18 20:48:02,XanClic,seit es policykit gibt

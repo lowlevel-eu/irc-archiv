@@ -1,0 +1,576 @@
+date/time,nick,message
+2010-01-18 00:08:05,Programm_Noob,gn8
+2010-01-18 11:03:18,FreakyPenguin,"Hm was hat denn Ubuntu da für Magie zum kernel-Module bauen? Ist ja unverschämt sowas, beim Installieren der Header baut der mir die schon, dabei wollte ich doch selbst. ;-)"
+2010-01-18 11:03:35,kwolf,*g*
+2010-01-18 11:14:44,JanDing,moin moin
+2010-01-18 11:15:36,FreakyPenguin,Moin JanDing
+2010-01-18 12:51:08,JanDing,http://www.youtube.com/watch?v=iG-CLFPU6RY
+2010-01-18 14:10:34,kwolf,Moin Clici
+2010-01-18 14:10:46,kwolf,"Ah, ist gar nicht der echte"
+2010-01-18 14:11:02,XanCIic,"Ne, nur ein CIici"
+2010-01-18 14:12:53,XanClic,"So, moin, moin"
+2010-01-18 14:14:01,Tobiking,Huhu
+2010-01-18 14:15:29,kwolf,Moin Tobiking
+2010-01-18 14:15:58,kwolf,"Was macht euer OS eigentlich, Tobiking? Von dir hört man nie was."
+2010-01-18 14:17:06,Tobiking,Seitdem wir mehrere Ausführungsebenen haben und Threads ist das ne echte Fummelei geworden
+2010-01-18 14:17:49,kwolf,"""Ausführungsebenen""?"
+2010-01-18 14:17:50,Tobiking,Mehr als die Aufgaben bearbeiten werd ich damit wohl nicht machen
+2010-01-18 14:18:18,kwolf,Und es dann in deinem eigenen OS richtig machen? ;-)
+2010-01-18 14:18:29,Tobiking,Wir haben so ne Zwischenschicht zwischen Interrupts und der Behandlung
+2010-01-18 14:18:49,Tobiking,Bzw. läuft auf dieser Zwischenschicht die Interruptbehandlung
+2010-01-18 14:19:31,kwolf,"Sinn ist, die Interrupts in einem anderen Thread zu behandeln und nicht zu lang zu blockieren?"
+2010-01-18 14:19:48,kwolf,"Wobei das ja ""nur"" Threading wäre, nicht irgendwas ganz neues"
+2010-01-18 14:21:35,Tobiking,"Das fummelige ist das ""Programme"" (die laufen bei uns in Ring 0) auch in diese Zwischenschicht dürfen"
+2010-01-18 14:22:39,kwolf,wtf?
+2010-01-18 14:22:41,Tobiking,"Also wenn ein Interrupt auftritt und die Zwischenschicht frei ist, wird direkt die Behandlung ausgeführt. Ist diese Schicht nicht frei, weil ein Programm drin ist etc. wird eine Information in eine Liste gehangen. Sobald die Schicht verlassen wird, wird diese Liste durchgearbeitet."
+2010-01-18 14:23:06,kwolf,"Hm, geht das nur mir so oder klingt das ziemlich komisch?"
+2010-01-18 14:23:36,Homix,v.a. was bringt das?
+2010-01-18 14:23:46,Tobiking,Für die Funktionalität die wir haben geht das ganz gut. Aber ob das so weiter durchführbar ist bezweifel ich
+2010-01-18 14:24:05,kwolf,"Ich glaube ich habe noch nicht ganz verstanden, was diese ""Zwischenschicht"" eigentlich ist"
+2010-01-18 14:24:14,Tobiking,Wir können Text und eingetippte Buchstaben ohne Synchronisationsprobleme ausgeben ^^
+2010-01-18 14:24:22,kwolf,Und warum man Programme in Ring 0 laufen lässt
+2010-01-18 14:24:28,kwolf,Tobiking: Immerhin *g*
+2010-01-18 14:25:13,Tobiking,Die Textausgabe springt halt in diese Zwischenschicht (Sperrt diese also für sich) das die erweiterte Interruptbehandlung (in dem Fall Zeichenausgabe) verzögert wird
+2010-01-18 14:25:41,XanClic,"Hm, für sowas hab ich einen Spinlock in meiner console_print()-Funktion *g*"
+2010-01-18 14:26:10,kwolf,"Ich hoffe einfach, dass es gutgeht *g*"
+2010-01-18 14:26:21,kwolf,Bzw. ich hab IRQs ja sowieso noch aus im Kernel
+2010-01-18 14:26:42,Homix,"stimmt, die stören nur ;)"
+2010-01-18 14:27:22,kwolf,Das eh ;-)
+2010-01-18 14:27:36,JanDing,und IRQs nur im kernel erlauben?
+2010-01-18 14:27:47,Tobiking,Ich seh auch keinen Vorteil gegenüber Spinlocks. Wenn man in die Zwischenschicht springt und die nicht verlässt bleibt auch alles stehen.
+2010-01-18 14:28:09,XanClic,"Och, irgendwann muss man aus dem print schon rauskommen *g*"
+2010-01-18 14:28:22,XanClic,"Spätestens beim PF, wenn man in ungemappte Bereiche kommt"
+2010-01-18 14:28:32,XanClic,"Hm, kein Unlock, kritikel"
+2010-01-18 14:29:40,kwolf,Tobiking: Was ist denn die Zwischenschicht technisch genau? Bisher klingt das halt nach irgendeiner Art von Locking
+2010-01-18 14:30:02,Tobiking,"Ja, mehr ist das nicht"
+2010-01-18 14:30:53,Tobiking,Das ist bei uns halt recht begrenzt ich glaub nicht das man das groß ausweiten kann
+2010-01-18 14:31:39,kwolf,"Hm, und wieso lasst ihr Programme in Ring 0 laufen?"
+2010-01-18 14:32:10,Tobiking,Ich denke weil das OS nicht so technisch sein soll für die Vorlesung
+2010-01-18 14:32:55,Tobiking,Das einzige was wir bisher Maschinenabhängig geschrieben habe ist das Register sichern und wiederherstellen
+2010-01-18 14:33:02,Tobiking,Alles andere ist nur neutraler C++ Code
+2010-01-18 14:33:05,kwolf,Ihr habt keine Interrupts? ;-)
+2010-01-18 14:33:30,kwolf,Also eine IDT hätte ich für sehr x86-spezifisch gehalten
+2010-01-18 14:33:33,Tobiking,Na gut pic und pit haben wir was zu geschrieben
+2010-01-18 14:33:42,Tobiking,"GDT, IDT ist vorgegeben"
+2010-01-18 14:33:54,kwolf,"Ah. Und Paging vermutlich aus, oder? ;-)"
+2010-01-18 14:33:57,Tobiking,jo
+2010-01-18 14:35:24,JanDing,ich hatte glaub ich so ein ähnliches OS ... die klassenhierarchie ist länger als der code
+2010-01-18 14:35:42,JanDing,kaum eine funktion länger als 10 zeilen. die meisten waren 5-zeiler
+2010-01-18 14:38:05,Tobiking,So sieht das bei uns auch aus
+2010-01-18 14:38:06,JanDing,"hauptziel war wohl, interrupthandler und programmabschnitte durch kritische abschnitte voneinander fern zu halten^^"
+2010-01-18 14:38:26,kwolf,cli. Aufgabe erledigt. *g*
+2010-01-18 14:39:37,kwolf,"Jetzt weiß ich auch, warum JanDing kein OS mehr schreibt. Dem ist es gründlich vergangen. ;-)"
+2010-01-18 14:39:53,Tobiking,Wir haben 4 Wochen daran verbracht das was nach 4 Wochen mit cli ging ohne hinzukriegen ^^
+2010-01-18 14:40:03,JanDing,"ja das war im prinzip auch meine interpretation, aber ich hab bis heute nicht genau verstanden wie das funktioniert hat"
+2010-01-18 14:40:12,kwolf,Tobiking: *hehe*
+2010-01-18 14:40:46,Tobiking,Das ist 1/3 der ganzen Vorlesung
+2010-01-18 14:41:03,kwolf,"Tobiking: Wenn es dir dann noch nicht zu blöd geworden ist, kernel2 könnte ordentliches Locking brauchen ;-)"
+2010-01-18 15:09:15,Homix,gibt es in der c-lib bzw. in der posix lib funktionen zum locken?
+2010-01-18 15:09:29,XanClic,Für Dateien ja *g*
+2010-01-18 15:09:40,XanClic,Also legt man eine Datei in /tmp an und die lockt man dann D:
+2010-01-18 15:09:43,XanClic,-D: +:D
+2010-01-18 15:10:39,Homix,ich suche etwas performanteres ;)
+2010-01-18 15:11:07,XanClic,Nicht dein Ernst ;-)
+2010-01-18 15:11:24,Homix,muss es doch geben? sowas wie normale spinlocks?
+2010-01-18 15:12:19,XanClic,"*lol*, ""man lock"" sagt mir, dass die Syscalls ""afs_syscall,  break,  ftime,  getpmsg,  gtty, lock, madvise1, mpx, prof, profil, putpmsg, security, stty, tuxcall, ulimit, vserver"" nicht implementirt sind - tuxcall xD"
+2010-01-18 15:12:36,XanClic,Aber kein security klingt auch gut
+2010-01-18 15:13:57,kwolf,"Homix: Die brauchst du wohl eher nur mit Threads, oder?"
+2010-01-18 15:14:13,kwolf,"Insofern würde ich dir empfehlen, pthreads ganz anzuschauen, wenn du es benutzt ;-)"
+2010-01-18 15:14:18,Homix,"genau, wegen mehrere threads"
+2010-01-18 15:14:41,kwolf,Ich sehe da zum Beispiel auf den ersten Blick pthread_mutex_*
+2010-01-18 15:14:42,Homix,pthreads ... schon mal gehört :)
+2010-01-18 15:14:50,kwolf,Ohne das kriegst du keine Threads ;-)
+2010-01-18 15:17:54,Homix,stimmt das musste ich mal in so ein makefile reinschreiben
+2010-01-18 15:23:27,Homix,was ist eig der unterschied zw. einem mutex und so einem semaphore?
+2010-01-18 15:25:58,kwolf,http://lmgtfy.com/?q=semaphore+mutex
+2010-01-18 15:26:57,Homix,danke :)
+2010-01-18 15:44:15,XanClic,"Meh, ich hasse ""TIMES value -20 is negative"""
+2010-01-18 15:45:07,kwolf,"Ach, 20 Bytes müsste doch zu machen sein ;-)"
+2010-01-18 15:45:18,XanClic,Langsam bin ich da nicht mehr so sicher :-/
+2010-01-18 15:45:20,kwolf,"Du sollst halt nicht ständig neue Features dazunehmen, wenn es passt ;-)"
+2010-01-18 15:45:26,XanClic,Es passt ja nicht
+2010-01-18 15:45:33,kwolf,Aber es hat doch mal gepasst?
+2010-01-18 15:45:35,XanClic,Weil echte Rechner mein CHS-System nicht mögen
+2010-01-18 15:45:39,XanClic,"Jo, auf qemu"
+2010-01-18 15:45:53,XanClic,Inzwischen liegt sogar mein GDTR zum Teil in der GDT xD
+2010-01-18 15:46:18,kwolf,"Das Problem ist nur, dass auch die GDT nicht unendlich groß ist *g*"
+2010-01-18 15:46:39,XanClic,"Es sind exakt 20 Bytes, die die und das GDTR verbrauchen *g*"
+2010-01-18 15:47:03,XanClic,"Hm, zwei Bytes kann man abziehen, die nutzt ja der Dateiname mit"
+2010-01-18 15:47:10,kwolf,*g*
+2010-01-18 15:47:26,kwolf,"Bleibt noch, Code und Daten zusammenzulegen"
+2010-01-18 15:47:31,XanClic,Autsch
+2010-01-18 15:47:59,XanClic,"""OSLOADER "" enthält nur leider nicht so viel sinnvollen Code, da hab ich schon nachgeguckt *g*"
+2010-01-18 15:48:06,XanClic,"Also, sinnvoll schon, nur bringt der mir nichts"
+2010-01-18 15:48:42,XanClic,"Und das ganze zu komprimieren und einen kleinen Dekompressionsalgorithmus zu benutzen, bringts wohl auch nicht *g*"
+2010-01-18 15:49:40,XanClic,"Ah, ich korrigiere mich, 23 Bytes sinds :-P"
+2010-01-18 15:50:07,kwolf,Das mit dem komprimieren schon probiert? ;-)
+2010-01-18 15:50:42,XanClic,"Wenn, dann geht ja nur LZ77 und sowas und... Hm... Also, wenn man das mit gzip komprimiert, wirds ja größer als vorher und ich glaube nicht, dass das nur am Header liegt ;-)"
+2010-01-18 15:51:34,kwolf,"Du musst nur einen schlauen Algorithmus finden, der deinen Code erzeugt und kleiner als 512 Bytes ist ;-)"
+2010-01-18 15:51:53,XanClic,Ich könnte alternativ auch mal /dev/urandom ausprobieren ;-)
+2010-01-18 15:52:10,kwolf,"Hm, Bootloader per guess&check implementieren...? *g*"
+2010-01-18 15:52:47,kwolf,"Du brauchst halt einen Zufallsgenerator und eine Methode zu prüfen, ob er den richtigen Code generiert hat. Ein paar Checksummen oder so."
+2010-01-18 15:52:51,Homix,per brute-force und einem guten bootloader-testverfahren
+2010-01-18 15:52:52,XanClic,"Hm, das wären doch nur 2⁴⁰⁹⁶ Möglichkeiten, oder? xD"
+2010-01-18 15:53:01,kwolf,"Mit einer gewissen Wahrscheinlichkeit kannst du dann per Brute Force booten, jo *g*"
+2010-01-18 15:53:11,XanClic,"Ah, der BPB ist ja vorgegeben"
+2010-01-18 15:53:30,XanClic,Das sind 59 Bytes
+2010-01-18 15:53:33,XanClic,Und 0xAA55 auch
+2010-01-18 15:53:42,Homix,XanClic: bis wann geht der wettbewerb denn?
+2010-01-18 15:53:46,XanClic,Bis Mai
+2010-01-18 15:53:52,XanClic,Aber am 30. Januar muss es raus ;-)
+2010-01-18 15:53:53,kwolf,Und er fängt am 31. Januar an
+2010-01-18 15:53:58,XanClic,bzw. am 31. um 1:00 GMT+1
+2010-01-18 15:54:27,Homix,wieso dann bis mai wenn abgabe am 31.1 ist?
+2010-01-18 15:54:27,XanClic,"So, dann nehm ich noch ein CLD als erstes Byte und danach einen Short-JMP"
+2010-01-18 15:54:32,kwolf,"XanClic: Nein, 0:59"
+2010-01-18 15:54:41,XanClic,"Ui, danke für den Hinweis xD"
+2010-01-18 15:54:44,kwolf,"""not before"" hieß es"
+2010-01-18 15:55:16,kwolf,"XanClic: Hm, der BPB enthält keinen brauchbaren Code? ;-)"
+2010-01-18 15:55:23,XanClic,Ich kenn ihn ja leider nicht ;-)
+2010-01-18 15:55:31,XanClic,"Ich hab schon drüber nachgedacht, keine Sorge *g*"
+2010-01-18 15:55:39,Homix,in einem Bootsektor FAT12/16 handeln und eine ELF Datei laden? wow ...
+2010-01-18 15:55:41,XanClic,"Nur darf beim Formatieren ja so ziemlich reingeschrieben werden, was man will"
+2010-01-18 15:55:48,XanClic,"Und natürlich muss danach ein xor ax,ax; mov ds,ax; mov es,ax; mov ss,ax; mov sp,ax; jmp word 0x0000:cs_zero; cs_zero: rein"
+2010-01-18 15:56:00,XanClic,Das schränkt die Anzahl der Möglichkeiten _erheblich_ ein xD
+2010-01-18 15:56:27,Homix,hat er selber denn das geschafft?
+2010-01-18 15:56:41,XanClic,"Er hat zumindest so einen BL in der Art, aber ich glaube eher nicht"
+2010-01-18 15:56:45,Homix,also sowas in einem 512 byte bootsektor zu implementieren
+2010-01-18 15:56:47,XanClic,Der Wettbewerb soll ja praktisch sein
+2010-01-18 15:56:54,XanClic,Dass man den BL danach auch benutzen kann
+2010-01-18 15:57:02,XanClic,"Und wenn er so einen schon hat, wäre das ziemlich sinnlos"
+2010-01-18 15:57:19,kwolf,"Naja, irgendwie bevorzuge ich zum benutzen was, wofür ich kein FAT brauche ;-)"
+2010-01-18 15:57:26,XanClic,*g*
+2010-01-18 15:57:49,XanClic,Vor allem bevorzuge ich was mit gunzip-Support ;-)
+2010-01-18 15:58:02,kwolf,*g*
+2010-01-18 15:58:11,kwolf,Damit wird's doch aber nur größer ;-)
+2010-01-18 15:58:16,XanClic,*g*
+2010-01-18 15:58:30,XanClic,Zum Glück hat quok keinen 1024B-Contest draus gemacht
+2010-01-18 15:58:39,XanClic,"Er hat ja in #tyndur verraten, was dann alles reingekommen wäre ;-"
+2010-01-18 15:58:41,XanClic,+)
+2010-01-18 15:59:14,kwolf,"Ich glaube, ich mach mal einen Contest für CDI-Treiber oder so, vielleicht kannst du dich dann auch mal wieder dazu aufraffen :-P"
+2010-01-18 15:59:21,XanClic,*g*
+2010-01-18 15:59:26,XanClic,Wenns Geld gibt ;-)
+2010-01-18 15:59:31,XanClic,1 ct ftw
+2010-01-18 15:59:35,kwolf,Ich hab leider keine Ostmark mehr
+2010-01-18 15:59:40,XanClic,*g*
+2010-01-18 15:59:43,Programm_Noob,Moin
+2010-01-18 15:59:44,XanClic,Devisen sind auch gut ;-)
+2010-01-18 15:59:47,kwolf,"Keine Ahnung, wo die hin ist ;-)"
+2010-01-18 15:59:47,XanClic,"moin, Programm_Noob"
+2010-01-18 15:59:52,kwolf,"Ich glaube, ich hatte mal genau eine"
+2010-01-18 16:00:01,XanClic,So wie wir einen Dollar haben? *g*
+2010-01-18 16:00:02,kwolf,"Und zehn Reichspfennig, die sind auch verschwunden"
+2010-01-18 16:00:03,Homix,was wär denn dann alles reingekommen?
+2010-01-18 16:00:20,XanClic,"Oh, Reichsmark, da haben wir jede Menge von... Lass mich überlegen..."
+2010-01-18 16:00:24,XanClic,Also es waren 1000 oder so
+2010-01-18 16:00:28,XanClic,1923 wars glaub ich :D
+2010-01-18 16:00:30,kwolf,*g*
+2010-01-18 16:00:41,kwolf,"Nein, mein Pfennig war von später, mit Hakenkreuz drauf"
+2010-01-18 16:00:58,XanClic,"Aber nicht nach 1945 und in Sachsen geprägt, oder?"
+2010-01-18 16:01:11,kwolf,Das weiß ich doch nicht ;-)
+2010-01-18 16:01:35,kwolf,"Ne, ich glaube, es war 1938 oder sowas"
+2010-01-18 16:06:07,kwolf,"XanClic: Aber ein Dollar ist doch total doof, das ist doch schon ein Schein?"
+2010-01-18 16:06:20,XanClic,Jo
+2010-01-18 16:06:53,JanDing,ne ein schein sind 1000 dollar
+2010-01-18 16:06:57,JanDing,bzw. euro
+2010-01-18 16:13:26,Homix,"wow, in #tyndur ist ja inzwischen echt bisschen was los ... aber gut ist das nicht, wenn es zwei große channels gibt ;)"
+2010-01-18 16:14:58,FreakyPenguin,Deshalb ist #tyndur ja klein ;-)
+2010-01-18 16:15:36,XanClic,"Es gibt drei, bitte #niwohlos nicht vergessen :D"
+2010-01-18 16:16:44,kwolf,Homix: #tyndur ist ja auch für was anderes da als #lost
+2010-01-18 16:17:33,Homix,für was ist #tyndur dann da? für Tyndur? und #lost für lowlevel? aber hier wird ja eig über beides geredet ;)
+2010-01-18 16:17:51,XanClic,"#tyndur ist eher für CDI, #lost für OS-Dev im Allgemeinen und týndur im speziellen"
+2010-01-18 16:18:12,Homix,"also #lost für tyndur, und #tyndur für cdi *g*"
+2010-01-18 16:18:54,kwolf,#tyndur ist in erster Linie die internationale Außenstelle ;-)
+2010-01-18 16:19:12,XanClic,"Hm, OK ;-)"
+2010-01-18 16:19:15,Homix,:)
+2010-01-18 16:31:33,XanClic,"Moin, moin, DerHartmut"
+2010-01-18 16:31:43,DerHartmut,Moin moin zusammen
+2010-01-18 16:33:54,kwolf,"Bis bald, DerHartmut"
+2010-01-18 16:35:08,XanClic,"Hm, lustig, ""push word 0x0000"" verbraucht ein Byte weniger als ""push word 0x1234"""
+2010-01-18 16:36:49,kwolf,Wie optimiert er das?
+2010-01-18 16:36:50,JanDing,die zahl ist ja auch kleiner
+2010-01-18 16:37:40,JanDing,push gibts mit sign-extension
+2010-01-18 16:38:00,XanClic,kwolf: Bei 0x0000 wird offensichtlich ein Byte gepusht
+2010-01-18 16:38:13,XanClic,"Also ndisasm sagt dort ""push byte +0x0"""
+2010-01-18 16:38:32,XanClic,Also wohl die gleiche Optimierung wie beim add
+2010-01-18 16:39:32,kwolf,"Hm, stimmt, es gibt ja gar kein Byte-Push"
+2010-01-18 16:39:56,kwolf,Also im Sinn von Stackpointer wird nur um ein Byte bewegt
+2010-01-18 16:40:05,XanClic,Jup
+2010-01-18 17:14:08,Programm_Noob,Moin DickHuuhn
+2010-01-18 18:22:23,DerHartmut,"Rehe, Hirsche, Kühe, Schweine"
+2010-01-18 18:35:14,FreakyPenguin,Signifanten!
+2010-01-18 18:37:13,DerHartmut,Die sowieso
+2010-01-18 18:37:20,DerHartmut,Die sind im Preis mit einbegriffen
+2010-01-18 18:37:29,XanClic,Die passen in ein paar Bytes
+2010-01-18 18:37:29,FreakyPenguin,Oha
+2010-01-18 18:38:28,XanClic,"19 Bytes, ohne Ausgabe"
+2010-01-18 18:38:44,FreakyPenguin,Eine ganze Herde davon?
+2010-01-18 18:39:01,XanClic,"Nein, nur eine miniaturisierte Wiedergabe"
+2010-01-18 18:39:06,XanClic,Der echte ist ja mehrere TB schwer
+2010-01-18 18:39:25,XanClic,Wobei das Geburtsgewicht eher einige MB beträgt
+2010-01-18 18:55:48,DerHartmut,gt#+#
+2010-01-18 18:55:59,DerHartmut,Bis demnächst sollte das heien!
+2010-01-18 18:56:02,DerHartmut,ACh man
+2010-01-18 18:56:04,DerHartmut,Cu xD
+2010-01-18 18:56:06,XanClic,bd ;-)
+2010-01-18 19:00:59,DickHuuhn,"Ich denk die sind so schwer dass nur CowboyNeal sie hochheben kann, wie gestern auf slashdot stand"
+2010-01-18 19:26:05,Programm_Noob,Moin Tobiking
+2010-01-18 19:26:20,Tobiking,Huhu
+2010-01-18 19:26:24,XanClic,"moin, Tobiking"
+2010-01-18 19:31:47,JanDing,lol brotröster bei galileo
+2010-01-18 19:31:56,bluecode,SRSLY?
+2010-01-18 19:32:02,JanDing,y4
+2010-01-18 19:32:20,XanClic,Wie viele Toasts willst du heute zum Kakao?
+2010-01-18 19:32:27,JanDing,2
+2010-01-18 19:32:34,XanClic,+40
+2010-01-18 19:33:11,JanDing,*1/6
+2010-01-18 19:33:14,bluecode,"hm, mein brot hat auch seine besten tage hinter sich"
+2010-01-18 19:33:19,bluecode,"wobei, so lebendig war es noch nie"
+2010-01-18 19:33:25,JanDing,^^
+2010-01-18 19:33:34,XanClic,*g*
+2010-01-18 19:35:12,DickHuuhn,Öhm
+2010-01-18 19:35:17,JanDing,ja?
+2010-01-18 19:35:19,DickHuuhn,War zufällig eben Toaster bei Galileo?
+2010-01-18 19:35:28,JanDing,jo
+2010-01-18 19:35:28,DickHuuhn,Les ich grad @Twitter
+2010-01-18 19:35:32,DickHuuhn,sweet
+2010-01-18 19:35:34,JanDing,ich les es hier im chatlog
+2010-01-18 19:35:45,DickHuuhn,achso
+2010-01-18 19:35:58,XanClic,Flying toasters ftw
+2010-01-18 19:36:00,DickHuuhn,Ich dachte schon Galileo macht ohen Scheiß ein Brotrösterexperiment und ich hbs net geschnallt
+2010-01-18 19:36:16,JanDing,^^
+2010-01-18 19:36:49,DickHuuhn,http://twitter.com/eisteephilBTF
+2010-01-18 19:36:56,DickHuuhn,ich glaube die machen sich ein bisschen lustig
+2010-01-18 19:38:33,JanDing,tjo wie gemein^
+2010-01-18 19:38:34,JanDing,^^
+2010-01-18 19:39:03,XanClic,http://twitpic.com/wss1d
+2010-01-18 19:39:10,XanClic,Wo man hier mal bei Twitter ist
+2010-01-18 19:40:36,JanDing,hm sowas kann man doch sicherlich mittels google automatisch generieren
+2010-01-18 19:44:12,bluecode,gibts videos?
+2010-01-18 20:09:13,X-Mind,hi
+2010-01-18 20:14:28,JanDing,moin X-Mind
+2010-01-18 20:16:04,X-Mind,Was ist der unterschied zwischen Long- und Farjump?
+2010-01-18 20:17:56,bluecode,da ist wahrscheinlich keiner
+2010-01-18 20:18:43,X-Mind,und wieso dann 2 Namen?
+2010-01-18 20:18:53,X-Mind,nur aus Interesse
+2010-01-18 20:18:55,JanDing,was genau meinst du mit long jump?
+2010-01-18 20:19:32,JanDing,das ist nämlich keine intel terminologie
+2010-01-18 20:19:37,X-Mind,Im Multitasking-Tutorial steht das Die TSS mit nem Longjump angesprungen wird
+2010-01-18 20:19:47,bluecode,damit ist ein Farjump gemeint
+2010-01-18 20:20:00,X-Mind,Aha.
+2010-01-18 20:20:17,bluecode,"am besten du besserst das aus, siehe JanDing"
+2010-01-18 20:20:40,X-Mind,Ok
+2010-01-18 20:20:54,bluecode,zumindest halte ich far jump auch für geläufiger
+2010-01-18 20:24:24,X-Mind,also Ich finde den Abschnitt nicht mehr. Hat wohl schon jemand gefixt. :-)
+2010-01-18 20:25:09,JanDing,jo ich seh ich auch nur noch in den google ergebnissen^^
+2010-01-18 20:25:15,JanDing,ein ich = den
+2010-01-18 20:25:15,JanDing,^^
+2010-01-18 20:25:24,X-Mind,?
+2010-01-18 20:25:31,Tobiking,Im C Standard gibts ne longjmp Funktion
+2010-01-18 20:26:00,bluecode,die hat aber nichts damit zu tun
+2010-01-18 20:28:08,bluecode,"taljeth: schön, dass wenigstens einer mir zur irrelevanz im wiki zustimmt :-)"
+2010-01-18 20:28:40,XanClic,In diesem Fall sogar mal zwei
+2010-01-18 20:28:52,bluecode,wer denn noch?
+2010-01-18 20:29:27,XanClic,"Ich kann schlecht in anderer Leute Köpfe reingucken, bin da leider nicht so gut ;-)"
+2010-01-18 20:29:54,bluecode,?
+2010-01-18 20:30:10,XanClic,"Na, wenn ich es von anderen nicht weiß, kann ich es nur von mir wissen, oder? ;-)"
+2010-01-18 20:32:48,JanDing,!
+2010-01-18 20:34:03,X-Mind,Was ist ein deutsches Fragewört mit 2 Buchstaben?
+2010-01-18 20:34:11,XanClic,42
+2010-01-18 20:34:12,JanDing,hä?
+2010-01-18 20:34:13,bluecode,hä?
+2010-01-18 20:34:25,X-Mind,mist :-DD
+2010-01-18 20:34:31,JanDing,das hat 4
+2010-01-18 20:35:00,X-Mind,"die antwort war ""ha"" ;-)"
+2010-01-18 20:35:13,X-Mind,"                 ^""hä"
+2010-01-18 20:35:14,XanClic,Klingt sehr nach Frage
+2010-01-18 20:35:17,XanClic,Aso ;-)
+2010-01-18 20:35:31,X-Mind,??
+2010-01-18 20:35:39,bluecode,!!
+2010-01-18 20:35:44,JanDing,::
+2010-01-18 20:35:48,DickHuuhn,??!
+2010-01-18 20:35:50,X-Mind,^^
+2010-01-18 20:35:53,JanDing,-.-
+2010-01-18 20:35:54,bluecode,!!?
+2010-01-18 20:35:56,XanClic,‽‽
+2010-01-18 20:36:05,JanDing, 
+2010-01-18 20:36:07,X-Mind,O_O
+2010-01-18 20:36:22,FreakyPenguin,Kästchen kästchen ;-)
+2010-01-18 20:36:30,X-Mind,[][]
+2010-01-18 20:36:36,X-Mind,:-DDD
+2010-01-18 20:36:39,JanDing,laz0rslaz0rs laz0rs laz0rs
+2010-01-18 20:36:41,XanClic,(.)(.)
+2010-01-18 20:36:47,X-Mind,",,"
+2010-01-18 20:37:07,FreakyPenguin,XanClic: ECHAN ;-)
+2010-01-18 20:37:07,bluecode,XanClic: yea!
+2010-01-18 20:37:14,XanClic,*g*
+2010-01-18 20:37:22,X-Mind,hä?
+2010-01-18 20:37:40,X-Mind,o_O
+2010-01-18 20:37:40,bluecode,genau1
+2010-01-18 20:37:47,JanDing,jetzt hat er es endlich^^
+2010-01-18 20:37:53,X-Mind,????
+2010-01-18 20:37:54,bluecode,"ne, haben tut er es nicht"
+2010-01-18 20:37:59,bluecode,OMFG
+2010-01-18 20:38:03,bluecode,-F
+2010-01-18 20:38:11,X-Mind,F??
+2010-01-18 20:38:17,Jidder,double penetration!
+2010-01-18 20:38:25,Jidder,ach minus f ...
+2010-01-18 20:38:26,bluecode,"X-Mind: jo, das kennste nicht, war klar"
+2010-01-18 20:38:28,Jidder,hab ich schon gefreut^^
+2010-01-18 20:38:40,bluecode,"ich muss dich doch angemessen begrüßen, Jidder"
+2010-01-18 20:38:54,Jidder,ja fein haste das gemacht
+2010-01-18 20:38:59,Jidder,"bist ein feiner, ne?"
+2010-01-18 20:39:05,Jidder,jaaah bist ein feiner
+2010-01-18 20:39:12,X-Mind,X-D
+2010-01-18 20:39:28,bluecode,*wuff* *wuff*
+2010-01-18 20:39:36,X-Mind,so genial.
+2010-01-18 20:40:22,X-Mind,ein bischen Lyrik?
+2010-01-18 20:40:36,Jidder,lieber rohes fleisch
+2010-01-18 20:40:45,Jidder,dann beruhigt er sich wieder
+2010-01-18 20:41:00,X-Mind,:-D
+2010-01-18 20:41:28,Tobiking,Der will doch nur spielen
+2010-01-18 20:41:57,XanClic,"Hm, erinnert mich an Pedigree"
+2010-01-18 20:42:13,X-Mind,meint ihr mich?
+2010-01-18 20:42:20,XanClic,"Jetzt weiß ich wenigstens, woher der Name kommt *g*"
+2010-01-18 20:42:31,X-Mind,??
+2010-01-18 20:42:31,XanClic,"Nein, ich meine http://lowlevel.brainsware.org/wiki/index.php/Pedigree"
+2010-01-18 20:43:21,X-Mind,Gut.
+2010-01-18 20:47:02,X-Mind,Kennt einer ein Gutes Lied?
+2010-01-18 20:47:21,mgottschlag,definiere gut.
+2010-01-18 20:47:39,JanDing,ich kenn jede menge
+2010-01-18 20:47:46,XanClic,Cherry cherry lady...
+2010-01-18 20:48:37,X-Mind,"Ich habe keine hohen ansprüche, aber nach ner halben stunde sowas (http://www.youtube.com/watch?v=osspc11TRTg) wirds langweilig"
+2010-01-18 20:49:01,DickHuuhn,Kickban für XanClic 
+2010-01-18 20:49:04,XanClic,*g*
+2010-01-18 20:49:10,X-Mind,oder nach sowas http://www.youtube.com/watch?v=E8Ilr_YtEjs
+2010-01-18 20:49:21,DickHuuhn,yay
+2010-01-18 20:49:29,XanClic,Standardkickmessages von Konversation sind langweilig
+2010-01-18 20:49:51,XanClic,Ah :-)
+2010-01-18 20:50:00,X-Mind,X-D
+2010-01-18 20:50:25,X-Mind,und wie findet ihr die?
+2010-01-18 20:50:53,X-Mind,Lieder?
+2010-01-18 20:52:18,taljeth,XanClic: Wieso sollte man Zusammenfassungen ändern wollen? ;-)
+2010-01-18 20:52:34,XanClic,"Bei meiner letzten falschen Form von ""korrigieren"" hast du gemeckert ;-)"
+2010-01-18 20:53:08,XanClic,"Ah, ""Korrektion"" hatte ich da ;-)"
+2010-01-18 20:53:24,taljeth,Das ist ja auch doof
+2010-01-18 20:53:33,taljeth,Aber korrektionieren ist doch ein tolles Wort :-)
+2010-01-18 20:53:34,XanClic,Aber korrektioniert ist gewollt und deshalb besser? *g*
+2010-01-18 20:53:46,taljeth,"Natürlich, das würde ich jederzeit auch verwenden *g*"
+2010-01-18 20:53:54,bluecode,XanClic: vor den und deren geschwafel schütz ich mich mit ner Tafel schade Schokolade
+2010-01-18 20:53:59,bluecode,- XanClic + X-Mind
+2010-01-18 20:54:22,taljeth,"Allerdings könnte das durch Analogiebildung aus dem Chemieunterricht kommen, wo bei unserem Lehrer Wasserstöffer reaktioniert haben und so ;-)"
+2010-01-18 20:54:31,XanClic,*g*
+2010-01-18 20:55:29,DickHuuhn,Unser Chemielehrer würde uns massakrieren
+2010-01-18 20:55:44,DickHuuhn,Wasserstöffer reaktionieren wtf
+2010-01-18 20:55:49,X-Mind,"und wie sind die Lieder? Lustich, oder? das ist auch lustig http://www.youtube.com/watch?v=M8Nn_p_y1zs (keksrezept)."
+2010-01-18 20:56:08,DickHuuhn,"och nein, da hat einer wise guys entdeckt"
+2010-01-18 20:56:14,taljeth,DickHuuhn: Wie sollte man denn sonst sagen?
+2010-01-18 20:56:16,DickHuuhn,"Okay, durch die Phase muss wohl jeder mal durch :/"
+2010-01-18 20:56:41,DickHuuhn,"Wasserstoffatome/-moleküle/-ionen gehen eine Reaktion mit xyz ein, sonst gibts haue"
+2010-01-18 20:56:41,XanClic,"Das klingt wie die Aussage unseres Infolehrers, dass jeder mal Photoshop raubkopiert hat ;-)"
+2010-01-18 20:57:07,DickHuuhn,"Ja, nach deren Ansicht bin ich sogar sicher ein Raubkopierer wenn ich mir statt PS Gimp ziehe"
+2010-01-18 20:57:17,DickHuuhn,Dann machen die ja kein Geld mit Photoshop -> RAUBKOPIERER
+2010-01-18 20:57:21,taljeth,DickHuuhn: Deine Formulierung ist aber mindestens so overkillig wie git
+2010-01-18 20:57:37,DickHuuhn,Willst du lieber Haue vom lehrer haben? :O
+2010-01-18 20:58:12,XanClic,GIT FTW
+2010-01-18 20:58:17,DickHuuhn,das auch
+2010-01-18 20:58:21,XanClic,NiwohloserBot muss wieder her
+2010-01-18 20:58:33,Tobiking,"Also wenn git overkill ist, dann guck dir mal Bazaar an"
+2010-01-18 20:58:46,XanClic,s. osdev.org ;-)
+2010-01-18 20:59:30,taljeth,Tobiking: Das war ja nicht meine Aussage ;-)
+2010-01-18 21:00:00,taljeth,"Sondern der eines SVN-Nutzers, der noch nie ein ordentliches VCS benutzt hat, aber alles besser weiß"
+2010-01-18 21:00:19,X-Mind,also bei mir haben schon die ersten 5 sekunden mir git gereicht um es niewieder benutzen zu müssen *hust* wollen *hust*
+2010-01-18 21:00:24,Tobiking,Wenn svn ausreicht ist git schon overkill
+2010-01-18 21:00:36,XanClic,"Dann hättest du mal weitere 5 Sekunden damit verbringen sollen, X-Mind"
+2010-01-18 21:00:47,XanClic,"Ich weiß wirklich nicht, wo git Overkill ist"
+2010-01-18 21:00:51,XanClic,Ich brauche drei Befehle und gut ist
+2010-01-18 21:00:53,DickHuuhn,auch nicht
+2010-01-18 21:00:59,XanClic,"Ne, zwei"
+2010-01-18 21:01:02,XanClic,git init und git commit -a
+2010-01-18 21:01:07,taljeth,"Tobiking: Ich hab ja gestern ein paar Minuten drauf verschwendet, mir was von wegen ""Wenn du nur xyz brauchst, dann reicht SVN"", aber mir ist kein passendes xyz eingefallen :-/"
+2010-01-18 21:01:09,XanClic,Nichtmal zwingend ein push
+2010-01-18 21:01:22,taljeth,+zu überlegen
+2010-01-18 21:05:15,Tobiking,SVN bietet ja nicht so viele Möglichkeiten. Das stumpfe 1 zentraler Server + mehrere Clients find ich bei svn einfacher als wenn jeder lokal comitted und dann pusht
+2010-01-18 21:06:09,Tobiking,Aber viel nimmt sich das auch nicht
+2010-01-18 21:07:56,X-Mind,Was macht SSE eigentlich?
+2010-01-18 21:10:34,Tobiking,Das bietet Befehle mit denen bestimmte Berechnungen auf mehrere Werte gleichzeitig ausgeführt werden.
+2010-01-18 21:12:56,cjuner,"SSE macht aber gar nichts, solange die Befehle nicht genutzt werden."
+2010-01-18 21:17:23,X-Mind,Wie Groß Ist CS eigentlich?
+2010-01-18 21:17:34,X-Mind,Also wieviel geht rein?
+2010-01-18 21:17:47,DickHuuhn,"1.6 oder Source? ;P (ja, ich weiß codesegmentregister :P)"
+2010-01-18 21:18:24,X-Mind,Was Ist 1.6?
+2010-01-18 21:18:43,taljeth,1.6 als Antwort ist aber gar nicht so verkehrt *g*
+2010-01-18 21:19:10,FreakyPenguin,*lol*
+2010-01-18 21:19:11,X-Mind,Und was Bedeutet 1.6?
+2010-01-18 21:19:56,JanDing,1.6E1
+2010-01-18 21:21:24,JanDing,0000000000003040 
+2010-01-18 21:21:34,JanDing,X-Mind: google mal nach CS und 1.6 ^^
+2010-01-18 21:22:20,X-Mind,Und wieviel geht jetzt ins Codesegment rein (KBytes)?
+2010-01-18 21:22:33,JanDing,da geht soviel rein wie du einstellst
+2010-01-18 21:22:41,JanDing,zwischen 0 und 4GB auf 32 bit systemen
+2010-01-18 21:22:51,JanDing,und auf 64 bit systemen siehe handbuch
+2010-01-18 21:23:54,JanDing,"nicht dass das code segment etwas ist, wo man etwas reintun kann wie ein java.util.Array ..."
+2010-01-18 21:31:21,DickHuuhn,"Hab ich schonmal erwähnt, dass Counter-Strike ein tolles Spiel ist"
+2010-01-18 21:31:33,JanDing,ne
+2010-01-18 21:31:37,JanDing,wasn so gut daran?
+2010-01-18 21:31:44,DickHuuhn,http://www.youtube.com/watch?v=k92CRJpPmLA << Ist hier sogar auf Platz 1 gekommen
+2010-01-18 21:31:56,DickHuuhn,Das Gameplay ist doch einfach klassisch
+2010-01-18 21:31:57,Jidder,beachtlich
+2010-01-18 21:32:27,JanDing,c3?
+2010-01-18 21:32:34,DickHuuhn,Jo
+2010-01-18 21:32:43,DickHuuhn,Vor Doom und sogar Schach
+2010-01-18 21:33:00,XanClic,*g*
+2010-01-18 21:33:11,XanClic,"Das war zu geil... ""Schach."" xD"
+2010-01-18 21:33:29,JanDing,schadööö
+2010-01-18 21:33:37,DickHuuhn,wär noch besser gewesen wenn das keinem eigefallen wäre
+2010-01-18 21:34:07,XanClic,Ich fand das so viel geiler
+2010-01-18 21:34:26,DickHuuhn,dann wäre das aufdecken viel lusticher :D
+2010-01-18 21:34:58,X-Mind,DickHuuhn wo wohnst du?
+2010-01-18 21:35:15,DickHuuhn,In der Nähe von Düsseldorf
+2010-01-18 21:35:21,DickHuuhn,:D
+2010-01-18 21:35:33,JanDing,lol der kölner^^
+2010-01-18 21:35:39,X-Mind,Freiburg
+2010-01-18 21:35:52,X-Mind,zu wit weg.
+2010-01-18 21:36:03,X-Mind,    ^Weit
+2010-01-18 21:37:05,X-Mind,Wohnt auch einer in Berlin?
+2010-01-18 21:37:40,DickHuuhn,Bist du hier der Schäuble oder warum willst du das wissen
+2010-01-18 21:37:51,JanDing,ick gloob nüsch
+2010-01-18 21:38:00,X-Mind,Was?
+2010-01-18 21:38:11,XanClic,Hia wohnt keener in Berlin
+2010-01-18 21:38:18,JanDing,ick gloob hier wohnt keener in berlin
+2010-01-18 21:38:33,JanDing,wat ha ich jesacht?
+2010-01-18 21:40:22,X-Mind,@DickHuuhn: wil die ein lide gegen euch düsseldorfer haben http://www.youtube.com/watch?v=VfyBIpg6tAw
+2010-01-18 21:40:51,JanDing,Ähnliche Videos: Guru Josh Project - Infinity 2008 (Official Video - Klaas Vocal Edit)
+2010-01-18 21:41:09,XanClic,"Ui, Vocals"
+2010-01-18 21:41:17,JanDing,ne vowels
+2010-01-18 21:41:26,JanDing,hamwa jetze jelernt
+2010-01-18 21:41:34,XanClic,"Hm, wlln wr wdr s nfngn?"
+2010-01-18 21:41:41,XanClic,Ds ht mmr Spß gmcht
+2010-01-18 21:41:55,JanDing,in ß ist ein vokal drin!
+2010-01-18 21:41:59,JanDing,esszett
+2010-01-18 21:41:59,XanClic,Mst
+2010-01-18 21:42:02,JanDing,^   ^
+2010-01-18 21:42:12,XanClic,"In Emm, Ess und Tee aber auch"
+2010-01-18 21:42:12,JanDing, ___
+2010-01-18 21:42:18,XanClic,"Ha, I broke your face"
+2010-01-18 21:42:33,XanClic,"Mist, nur hier"
+2010-01-18 21:42:40,XanClic,tyndur ist parteiisch
+2010-01-18 21:42:47,JanDing,bei mir auch :(
+2010-01-18 21:43:18,JanDing,wo issn der ickschmeind hin?
+2010-01-18 21:43:24,JanDing,habn link für den http://www.youtube.com/watch?v=5tdum1I6Bes
+2010-01-18 21:44:38,XanClic,Ich hab auch einen Link für den: http://tinyurl.com/d37w28
+2010-01-18 21:44:54,JanDing,hey
+2010-01-18 21:45:04,JanDing,zelda wollte ich dieses wochenende mal spielen
+2010-01-18 21:45:12,JanDing,"mein bruder hat das für n64, aber ich habs nie gespielt"
+2010-01-18 21:45:25,DickHuuhn,emus ruln
+2010-01-18 21:46:00,JanDing,ist hier der tierkanal?
+2010-01-18 21:46:08,XanClic,"Dromaius, das könnte ein Name für mein nächstes OS werden"
+2010-01-18 21:46:19,XanClic,"Oder Dromaxius, ein X muss ja drin sein"
+2010-01-18 21:46:21,JanDing,und was wird dein nächstes OS?
+2010-01-18 21:46:25,XanClic,Kaputt
+2010-01-18 21:46:35,XanClic,Sonst wärs ja nicht meins
+2010-01-18 21:46:52,JanDing,"ich meinte eher, wo der code herkommt und so"
+2010-01-18 21:46:56,XanClic,Ach so
+2010-01-18 21:47:07,XanClic,"Von paloxena2 und MyXomycota, wild zusammengewürfelt"
+2010-01-18 21:47:10,XanClic,Und alles gegittet
+2010-01-18 21:47:15,XanClic,"Ähm, *gekittet"
+2010-01-18 21:48:52,XanClic,"Oder ich leg mir einen Emu an, leg eine Kamera in den Mist, den er produziert und verwandele das Rauschen in Code"
+2010-01-18 21:49:05,JanDing,gibts eigentlich eine OSDev-Hotline?
+2010-01-18 21:49:14,JanDing,weil das wär mal ein service
+2010-01-18 21:49:20,JanDing,0800-PAGEFAULT
+2010-01-18 21:49:23,XanClic,*g*
+2010-01-18 21:49:41,XanClic,"Und TRIPLEFAULT oder GPFGPFGPF für die, die weiter am Anfang sind"
+2010-01-18 21:49:43,JanDing,und dann musste # drücken und danach den wert von cr3
+2010-01-18 21:49:46,JanDing,jo
+2010-01-18 21:50:14,XanClic,"Hm, Wert von cr3, dazu wären Hex-Telefone ganz gut"
+2010-01-18 21:50:24,XanClic,Oder man drückt nur 0 und 1
+2010-01-18 21:50:31,XanClic,"Oder 4 und 2, was einem lieber ist"
+2010-01-18 21:50:41,JanDing,DCHD
+2010-01-18 21:50:42,JanDing,decimal coded hexadecimal
+2010-01-18 21:50:50,XanClic,Sounds awesome
+2010-01-18 21:50:54,JanDing,ick wees
+2010-01-18 21:51:04,XanClic,Ei vrbibbsch
+2010-01-18 21:51:22,JanDing,sprechen die bei euch so
+2010-01-18 21:51:23,JanDing,?
+2010-01-18 21:51:24,XanClic,"Ah, das Internet schreibt das als ""verbibbsch"""
+2010-01-18 21:51:25,XanClic,Nö
+2010-01-18 21:51:28,XanClic,Nur im Radio
+2010-01-18 21:51:32,JanDing,werbung?
+2010-01-18 21:51:55,JanDing,bei mir im radio kündigen se immer scheiss wetter an
+2010-01-18 21:51:55,XanClic,"Nö, aber die im Radio wollen uns gutes Sächsisch beibringen"
+2010-01-18 21:52:04,JanDing,uääääh
+2010-01-18 21:52:14,JanDing,da bin ich mit meinem wetter wohl gut dran^^
+2010-01-18 21:52:16,XanClic,*g*
+2010-01-18 21:52:33,XanClic,"Das gute ist ja, dass wir eher lernfaul sind"
+2010-01-18 21:52:38,XanClic,Da zahlt sich das mal aus
+2010-01-18 21:53:10,JanDing,optimal^^
+2010-01-18 21:53:15,JanDing,hm sowohl windows als auch linux haben ne api um eine LDT zu laden
+2010-01-18 21:53:34,JanDing,ich denke mal JanDingOS sollte das auch können
+2010-01-18 21:53:44,XanClic,"Hm, wann kam der Compiler noch mal?"
+2010-01-18 21:53:47,XanClic,Der jdcc?
+2010-01-18 21:53:54,JanDing,nach jdcb
+2010-01-18 21:54:00,JanDing,ich mach das alles alphabetisch
+2010-01-18 21:54:05,JanDing,jdaa mach ich jeden morgen
+2010-01-18 21:54:11,XanClic,"Aufstehen, anziehen?"
+2010-01-18 21:54:33,JanDing,weiß nicht wofür aa steht
+2010-01-18 21:54:41,XanClic,"Hm, könnte ja sein, dass du manchmal durchschläfst"
+2010-01-18 21:54:44,XanClic,Also nicht jeden Morgen
+2010-01-18 21:55:04,JanDing,nene ich werde immer zu früh geweckt
+2010-01-18 21:55:14,JanDing,"mal um 8, mal um 14 uhr, aber immer zu früh"
+2010-01-18 21:55:27,XanClic,Kenn ich
+2010-01-18 21:56:00,XanClic,Nur bei mir ist es manchmal sogar um 5:40
+2010-01-18 21:56:04,XanClic,Aber einen Radiowecker hab ich nicht
+2010-01-18 21:56:11,XanClic,Mit Sächsisch aufwachen wäre noch unschöner
+2010-01-18 21:56:21,XanClic,"Also, ich hab schon einen Radiowecker"
+2010-01-18 21:56:25,XanClic,Aber der zwitschert nur
+2010-01-18 21:56:29,XanClic,Wie ein Chiken auf Drogen
+2010-01-18 21:57:02,FreakyPenguin,Das ist JanDing!
+2010-01-18 21:57:20,Oja, 
+2010-01-18 21:57:54,HmSoKannManDoch, 
+2010-01-18 21:58:03,GutKommunizieren, 
+2010-01-18 21:58:32,XanClic,"Schade, dass ich mich jetzt nicht selbst kicken kann"
+2010-01-18 21:58:38,XanClic,bzw. in den Channels bekommt es keiner mit
+2010-01-18 22:02:59,JanDing,strg-shift-t
+2010-01-18 22:03:03,JanDing,beste tastenkombination
+2010-01-18 22:03:16,XanClic,"omg, amazing"
+2010-01-18 22:03:22,JanDing,ich weiß
+2010-01-18 22:03:28,JanDing,ich kann sie schon fast auswendig
+2010-01-18 22:03:38,JanDing,leider nicht mit einer hand greifbar
+2010-01-18 22:03:44,XanClic,Für den geübten Emacs-User kein Proble
+2010-01-18 22:03:45,JanDing,zumindest vernünftig^^
+2010-01-18 22:03:46,XanClic,+m
+2010-01-18 22:05:05,FreakyPenguin,Die emacs-User können bestimmt auch kombinationen aus 6 Tasten mit der linken Hand ;-)
+2010-01-18 22:05:21,XanClic,"Och, Alt+Meta gleichzeitig ist ja langweilig ;-)"
+2010-01-18 22:05:42,XanClic,"Hm, wenn man dann noch Strg+Shift hat..."
+2010-01-18 22:05:50,XanClic,Da bekommt man doch auch 7 hin ;-)
+2010-01-18 22:07:55,JanDing,das muss ins topic http://dagobah.biz/flash/com-pyuu-tah.swf ^^
+2010-01-18 22:09:41,XanClic,lmao xD
+2010-01-18 22:10:18,DickHuuhn,hört sich schonmal gut an ^^
+2010-01-18 22:10:58,DickHuuhn,das ist aber mehr kom-pyu-tooor
+2010-01-18 22:11:53,JanDing,vermutlich ...
+2010-01-18 22:12:01,JanDing,look book
+2010-01-18 22:40:58,XanClic,gn8
+2010-01-18 22:53:08,Programm_Noob,gn8
+2010-01-18 23:00:14,Programm_Noob,eine frage hab ich noch bevor ich schlafen gehe. ich will einen software interrupt 0x20 auslösen. was muss ich tun.
+2010-01-18 23:00:14,Programm_Noob,"mein besheriger versuch scheiterte: asm volatile (""INT 0x20""); "
+2010-01-18 23:02:17,Tobiking,Was ist denn das Problem dabei?
+2010-01-18 23:02:32,Tobiking,Also Compiler Fehler oder sonst was?
+2010-01-18 23:02:38,Programm_Noob,der Compiler
+2010-01-18 23:02:46,Tobiking,Was sagt der?
+2010-01-18 23:02:56,Programm_Noob,"mecker, bzw der assembler danac"
+2010-01-18 23:03:11,Programm_Noob,Der Assembler meint er würde den befel int nicht kennen!
+2010-01-18 23:03:34,Tobiking,hast du es mal mit int klein geschrieben versucht? Weiß nicht ob den das stört
+2010-01-18 23:04:23,Programm_Noob,ja habe ich schon
+2010-01-18 23:04:28,Tobiking,Oder der will nen \n am Ende. Kann aber auch sein das es bei 1 Befehl nicht nötig ist
+2010-01-18 23:04:49,mastamind,Progamm_Noob: was sagt der assembler genau?
+2010-01-18 23:05:02,Programm_Noob,Error: suffix or operands invalid for `int'
+2010-01-18 23:05:12,mastamind,du musst $0x20 verwenden.
+2010-01-18 23:05:30,Tobiking,Achso die at&t syntax
+2010-01-18 23:06:17,Programm_Noob,Danke jetzt meckert gcc bzw gas nicht mehr
+2010-01-18 23:06:29,Programm_Noob,jetzt aber gn8
+2010-01-18 23:06:38,mastamind,gute nacht
+2010-01-18 23:14:34,DickHuuhn,"http://tech.slashdot.org/story/10/01/18/1924201/ReactOS-Being-Rewritten-Gets-Wine-Infusion << Hey, vielleicht interessant für ein paar von euch"
+2010-01-18 23:14:40,DickHuuhn,Jetzt kann man sich reinbuddeln
+2010-01-18 23:23:47,DickHuuhn,wtf
+2010-01-18 23:23:52,DickHuuhn,Da läuft ja schon richtig was
+2010-01-18 23:23:55,DickHuuhn,Und es läuft gut :O

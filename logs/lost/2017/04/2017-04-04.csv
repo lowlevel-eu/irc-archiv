@@ -1,0 +1,306 @@
+date/time,nick,message
+2017-04-04 18:12:56,MasterQ32,huhu
+2017-04-04 19:42:53,dietzi,Guten abend an alle :) Und speziellen guten Abend an dich Paddy ;)
+2017-04-04 19:45:17,Paddy,Das klingt ja gefährlich ;-)
+2017-04-04 19:45:24,Paddy,Guten Abend dietzi
+2017-04-04 19:45:55,MasterQ32,heyhey
+2017-04-04 19:47:14,dietzi,"Du wirst schon vermuten dass ich dich wieder mal ""nerven"" will..... ;) Ich hänge an dem LAN-Treiber fest. Ich habe mir die Doku gefühlt 20 mal ""durchgelesen"". Ich habe mir quasi die einzelnen Register angeschaut. Nun habe ich für einen einfachen Test alles was mit Interrupt zu tun hat aktiviert und den Bit für ""start NIC"" gesetzt. Ich habe gehofft, dass dann das erste mal ein IRQ ausgelöst wird."
+2017-04-04 19:47:43,dietzi,"Aber nichts.... Leider steht auch nicht wirklich geschrieben was alles als ""Init"" gesetzt werden musst. Wie fängt man sowas am Besten an?"
+2017-04-04 19:49:49,Paddy,Wieso sollte die Karte auch einfach so einen IRQ auslösen?
+2017-04-04 19:50:34,dietzi,"Sorry. Ich wollte schreiben: wenn ich das LAN-Kabel ziehe habe ich gehofft dass ein IRQ ausgelöst wird. Quasi ein ""Link-Changed-Event"""
+2017-04-04 19:50:54,Paddy,Ah
+2017-04-04 19:50:59,Paddy,"Naja, dass ich es für schwierig halte, direkt mit einem leicht unterdokumentierten Chip anzufangen, habe ich dir ja schon gesagt"
+2017-04-04 19:52:11,dietzi,"Ich weiß. Nur wie soll ich sonst mit diesem Treiber anfangen? Ich glaube nicht, dass es mir viel bringt wenn ich zuerst einen Realtek-Treiber umsetze (unabhängig davon, dass ich diesen sowieso nicht benötige)"
+2017-04-04 19:52:37,Paddy,"Es würde dir insofern was bringen als du dann wüsstest, was du von einer Netzwerkkarte so grob zu erwarten hast"
+2017-04-04 19:53:33,dietzi,"Kann ich mir von dem Realtek-Treiber erhoffen, dass ich da genügend Grundlagen sammle um den VIA-Chip zu initialisieren?"
+2017-04-04 19:56:35,Paddy,Keine Ahnung
+2017-04-04 19:56:41,Paddy,Ich bin bei deinem VIA-Chip auch leicht überfordert
+2017-04-04 19:56:55,Paddy,"Was den Link Change angeht, das scheint Bit 6 in ISR1 zu sein"
+2017-04-04 19:57:12,Paddy,"Wenn du das entsprechende Bit in IMR1 setzt, dann sollte da ein Interrupt kommen"
+2017-04-04 19:57:31,Paddy,"Ich vermute, dass letzteres das ist, was dir noch fehlt"
+2017-04-04 19:57:53,dietzi,Hmm. Da wird mir nur übrig bleiben zu experimentieren und evtl diesen Treiber zur Hilfe zu nehmen: http://lxr.free-electrons.com/source/drivers/net/ethernet/via/via-rhine.c
+2017-04-04 20:00:09,dietzi,Das war mein letzter Stand: https://pastebin.com/kxKdEu3F
+2017-04-04 20:01:32,Paddy,Schreib mal noch 0xff nach 0x0e und 0x0f
+2017-04-04 20:03:07,dietzi,Habs auch grad gelesen. Rechner startet grad
+2017-04-04 20:03:38,dietzi,IRQ wird nicht ausgelöst...
+2017-04-04 20:12:17,dietzi,Auch ein WOL-Paket löst keinen IRQ aus
+2017-04-04 20:13:11,Paddy,"Hm, blöde Frage, aber du hast den entsprechenden IRQ nicht im PIC maskiert? Oder mal vergessen, irgendwo einen EOI zu senden?"
+2017-04-04 20:13:39,dietzi,EOI's werden grundsätzlich gesendet sobald ein IRQ abgearbeitet wurde
+2017-04-04 20:13:53,dietzi,Alle IRQ's sind demaskiert.
+2017-04-04 20:14:40,dietzi,https://pastebin.com/bsduzmYz
+2017-04-04 20:16:44,Paddy,"Hm, ja, dann halt was anderes"
+2017-04-04 20:17:23,dietzi,Nur was.... Die Doku ist halt wirklich sehr mager.....
+2017-04-04 20:17:45,dietzi,Die hätten ja wenigstens die Default-Bits fürs init hin schreiben können
+2017-04-04 20:24:36,dietzi,Nachdem alle Bits gesetzt wurden lese ich das Register 0x6D. Dieses gibt mir 00010010 zurück. Bit 1 bedeutet Link unsuccessful (no connection). Nur warum erklärt mir der Chip dass keine Verbindung besteht... Die Verbind steht definitiv da mein Kernel per PXE geladen wird
+2017-04-04 20:25:23,dietzi,"Das kann ja eigentlich nur bedeuten, dass der NIC nicht initialisiert ist...."
+2017-04-04 20:26:37,Paddy,Möglich?
+2017-04-04 20:28:00,dietzi,"Register 0x08 bestätigt mir aber dass das Bit bei ""Start NIC"" gesetzt ist...."
+2017-04-04 20:28:07,dietzi,Katastrophe....
+2017-04-04 21:30:12,Svenska,"Bist du sicher, dass du auf die richtigen Register schreibst?"
+2017-04-04 21:42:20,dietzi,Eigentlich bin ich mir da sicher....
+2017-04-04 21:42:25,dietzi,http://www.yuiop.co.uk/epia/stuff/South%20%20Bridge/VT8235.pdf
+2017-04-04 21:42:34,dietzi,Laut Revision ect. ist es dieser Chip
+2017-04-04 21:42:57,dietzi,"Das Auslesen der Register macht es auch plausibel, dass alles passt"
+2017-04-04 21:42:57,Svenska,"Naja, nicht, dass du irgendwelche Register passend setzen musst, dass deine Schreibzugriffe auch angenommen werden..."
+2017-04-04 21:43:02,Svenska,...okay.
+2017-04-04 21:43:27,dietzi,"Wenn ich erst lese, dann schreibe und dann wieder lese haben sich die Werte entsprechend geädert"
+2017-04-04 21:43:29,Svenska,"Ich hatte öfter mit Hardware zu tun, wo ein ""Trigger"" nicht rücklesbar war, bzw. immer 0 zurückgegeben hat."
+2017-04-04 21:43:51,Svenska,"Und ein ""Trigger ist immernoch 1"" meist bedeutet, dass das Teil nicht aktiv ist oder so."
+2017-04-04 21:44:12,dietzi,Ich kann leider nicht auf die South-Birdge schauen da da ein Kühlkörper aufgeklebt ist
+2017-04-04 21:44:21,dietzi,Ich kann also nur vermuten
+2017-04-04 21:44:52,Svenska,"Was deine Realtek-Frage angeht... einen Treiber dafür kannst du debuggen, und du hast auch Zugriff auf ""known-good"" Hardware bzw. Emulation."
+2017-04-04 21:45:23,Svenska,...und einen rtl8139 hat man eher mal als PCI-Variante rumliegen und kann den in einen PC einbauen (wenn es kein Laptop ist).
+2017-04-04 21:46:17,dietzi,Ich habe einen Igel der aktuell als Testrechner dient und später auch als Produktivrechner eingesetzt wird. Eine rtl habe ich aktuell nicht zur freien Verfügung (die ist als Zweitkarte in meinem Server9
+2017-04-04 21:47:04,Svenska,"...ich hatte auch mal einen Igel, aber das war ein zu komisches System. Bisher der einzige Rechner, den ich irgendwann aus Wut zerstört und erst danach entsorgt habe. ;-)"
+2017-04-04 21:47:52,dietzi,Vendor- und Device-ID bestätigen dass es sich um den VT8235 handelt. Das System funktioniert soweit. Der Prozessor hat laut Wikipedia den Intel-x86-Befehlssatz
+2017-04-04 21:48:12,dietzi,Ich scheitere einzig und allein am Initialisieren des LAN-Controller
+2017-04-04 21:48:14,Svenska,"War 'ne Cyrix-Maschine, mit ner komischen S3-Emulation für Grafik, ner komischen SB-Emulation für Sound, AMD PCnet für Netz, Netboot nur mit RPL und Windows 95 lief instabil. :-)"
+2017-04-04 21:49:07,Svenska,Ich les mal kurz das Log der letzten Tage nach.
+2017-04-04 21:49:27,dietzi,Ich habe den 5/3. Der ist nicht verkehrt.... Habe sogar WinXP auf ner 8GB CF-Card zum Laufen gebracht (flüssig)
+2017-04-04 21:50:35,dietzi,"Installation von WinXP hab ich per PXE gemacht. Frage aber nicht wie aufwändig das war.... Habe da 2 Tage dran gesessen bis es komplett funktioniert hat. Windows mag es eigentlich nicht auf nem ""Wechseldatenträger"" installiert zu werden...."
+2017-04-04 21:51:08,Svenska,joa... ich hab ne zeitlang xp von nem usb stick aus betrieben fuer mein netbook
+2017-04-04 21:51:27,Svenska,"ist auch ein via-monster... inzwischen hab ich xp auf der internen ""ssd"" (2 GB) und linux auf sd-karte"
+2017-04-04 21:52:08,dietzi,Aber wir driften grad iwie ab.... Mein OS soll ja auf den Igel.... ;)
+2017-04-04 21:52:26,dietzi,Für mein Ziel brauche ich aber unbedingt den LAN-Treiber.....
+2017-04-04 21:52:45,Svenska,...weil? ;)
+2017-04-04 21:53:06,Svenska,Du kannst notfalls auch einen IP-Stack über eine serielle Schnittstelle oder so fahren (SLIP)
+2017-04-04 21:53:08,dietzi,Moment
+2017-04-04 21:55:52,dietzi,In den Logs kannst du meine Konversation über mein OS nachlesen. 01.04.2017 23:00:34
+2017-04-04 21:56:12,Svenska,jaja bin dabei
+2017-04-04 21:56:19,dietzi,;)
+2017-04-04 21:56:21,Svenska,war die letzten tage-wochen-monate bissl beschäftigt
+2017-04-04 21:56:27,dietzi,Kein Problem
+2017-04-04 21:57:39,Svenska,hmm
+2017-04-04 21:57:47,Svenska,ich stimme paddy zu ...
+2017-04-04 21:57:57,Svenska,... fuer ein produkt hast du dir da ziemlich was vorgenommen
+2017-04-04 21:58:13,Svenska,an deiner stelle wuerde ich mich erstmal an qemu halten
+2017-04-04 21:58:27,Svenska,bzw tatsächlich ein existierendes os benutzen
+2017-04-04 21:58:44,Svenska,muss ja an sich nix bekanntes sein
+2017-04-04 21:59:36,Svenska,"es gibt zB einen FreeRTOS-Port auf x86 (das wird zwar von DOS aus gestartet, aber da kann man tricksen)"
+2017-04-04 21:59:52,dietzi,Ich verstehe da eure Meinung voll und ganz. Aber wie ich bereits geschrieben habe: irgendwann in 10 Jahren oder so.... Dieses OS soll ausschließlich die Alarmierung und eine entsprechende grafische Übersicht auf Monitor bereit stellen. So aufendig wird dieses OS also gar nicht.
+2017-04-04 21:59:53,Svenska,"damit hättest du schonmal einen primitiven, echtzeitfähigen und ziemlich durchdebuggten kernel"
+2017-04-04 22:00:06,Svenska,darum geht's nicht...
+2017-04-04 22:00:15,Svenska,du machst extrem viele baustellen auf einmal auf.
+2017-04-04 22:00:42,Svenska,kernel + multitasking + treiber + gui + ip-stack + mehr treiber
+2017-04-04 22:01:00,Svenska,"das kriegst du nicht alles auf einmal stabil, und zumindest nicht ohne echt viel arbeit benutzbar."
+2017-04-04 22:01:13,dietzi,Die Software an sich läuft stabil auf Windows. Mir war langweilig und da hab ich mir mal ein langwieriges Ziel gesetzt.
+2017-04-04 22:01:27,Svenska,...davon abgesehen wuerde ich dir fuer solche projekte ja einen klassischen mikrocontroller empfehlen ;)
+2017-04-04 22:01:27,dietzi,Es soll ja icht alles auf einmal und auch nicht auf Anhieb stabil
+2017-04-04 22:01:44,dietzi,Ob da ein Mikroprozessor ausreicht.....
+2017-04-04 22:01:46,Svenska,"da ist die hardware einfach, gut dokumentiert, und es gibt genug hilfe"
+2017-04-04 22:01:52,Svenska,"naja, was willst du denn alles machen?"
+2017-04-04 22:01:54,Svenska,erklär mal :D
+2017-04-04 22:03:20,dietzi,"Alarmierung wird entweder per Ton oder seriell auf dem Rechner signalisiert, dann ausgewertet (wer wird alarmiert) und danach wird mittels der Software (bzw dem OS) eine entsprechende Gruppe oder auch mehrere per Google Push Service auf dem Smartphone alarmiert."
+2017-04-04 22:03:48,dietzi,"Dort geht dann eine App auf mit der Alarmierung und der Nutzer kann wählen ""Komme"", ""Komme nicht"" oder ""Nachricht senden"""
+2017-04-04 22:04:04,dietzi,Das wird wiederum auf dem Rechner ausgewertet und graphisch dargestellt
+2017-04-04 22:04:22,dietzi,Das ist das gekürzte Prinzip
+2017-04-04 22:04:45,Svenska,"d.h. dein dingens hat ne serielle schnittstelle und ein mikrofon, lässt darauf ein programm laufen, schiebt ein bisschen IP ins internet, zeigt ein bisschen status an und hat ein paar knöpfe?"
+2017-04-04 22:05:55,dietzi,Habe noch vergessen: das Alarmstichwort und die Übersichtskarte (Google Maps oder Openstreetmap) sollen ausgedruckt werden
+2017-04-04 22:06:09,Svenska,...
+2017-04-04 22:06:12,dietzi,Ansonsten hast du es vereinfacht gut ausgedrückt
+2017-04-04 22:06:16,Svenska,nimm Linux. :-D
+2017-04-04 22:06:37,dietzi,Da bin ich aber wieder in 4 Wochen fertig und mir wird in der Freizeit langweilig.....
+2017-04-04 22:07:04,Svenska,"allein so dinge wie ""google maps ausdrucken"" kannst du mit der basis schon relativ knicken..."
+2017-04-04 22:07:06,Paddy,"Du kannst ja trotzdem ein OS schreiben, ohne es dafür zu benutzen"
+2017-04-04 22:07:06,dietzi,Es soll mehr oder weniger mein Lebenswerk werden
+2017-04-04 22:07:15,Svenska,"...und wie gesagt, verkaufen wirst du es nie können. löse dich von dem gedanken."
+2017-04-04 22:07:42,MasterQ32,also google maps darstellen+drucken klingt echt spaßig :)
+2017-04-04 22:07:50,dietzi,"Dann verkaufe ich es eben nicht. Aber ich habe was eigenes wo ich selbst drauf stolz sein kann, dass ich es überhaupt ssoweit geschafft habe...."
+2017-04-04 22:08:02,Svenska,naja
+2017-04-04 22:08:09,Godwine,nabend
+2017-04-04 22:08:12,Svenska,willst du ein produkt haben?
+2017-04-04 22:08:17,Svenska,oder willst du einfach deine zeit versenken?
+2017-04-04 22:08:31,dietzi,"Letztendlich besteht Google Maps ""nur"" aus Bitmaps die auf dem Monitor ausgegeben werden"
+2017-04-04 22:08:40,dietzi,Ich möchte irgendwie beides ;)
+2017-04-04 22:08:40,Svenska,nein
+2017-04-04 22:08:44,dietzi,Abend Godwine
+2017-04-04 22:08:45,MasterQ32,hey Godwine
+2017-04-04 22:08:47,Svenska,namd
+2017-04-04 22:08:56,Svenska,"um an google maps ranzukommen, wirst du https brauchen"
+2017-04-04 22:08:59,MasterQ32,nimm lieber openstreetmaps
+2017-04-04 22:09:05,MasterQ32,dann haste vektorgrafik
+2017-04-04 22:09:07,Svenska,und damit brauchst du schonmal direkt nen crypto-stack
+2017-04-04 22:09:20,Svenska,tls ist *weit* weg von nem os-kernel
+2017-04-04 22:09:21,MasterQ32,Svenska: http-bouncer :P
+2017-04-04 22:09:38,MasterQ32,ich sollte demnächst mal an Lunar-Ker weiterbastlen
+2017-04-04 22:09:39,Paddy,"Das ist doch nur Zeug, das man portieren muss"
+2017-04-04 22:09:47,dietzi,"Es wird vermutlich auf Openstreetmaps hinauslaufen da es bereits Dienste gibt, die Hydranten darauf zeichnen"
+2017-04-04 22:09:48,Svenska,"d.h. spätestens da, wenn nicht sogar ein dutzend schritte vorher, wirst du fertige libs nutzen muessen"
+2017-04-04 22:10:09,dietzi,Man kann ja aber auch Google Maps per PHP auf nem Server parsen
+2017-04-04 22:10:13,Svenska,"und dann kannst du dich auch gleich damit befassen, wie man komplexe systeme baut..."
+2017-04-04 22:10:31,Svenska,"... dann kriegst du eher ein produkt raus, lernst trotzdem unmengen, und brauchst trotzdem dafuer zeit ;)"
+2017-04-04 22:10:44,Svenska,"ich sag ja nicht ""nimm ubuntu, firefox und ein kleines shellscript"""
+2017-04-04 22:10:53,MasterQ32,:D
+2017-04-04 22:11:13,Svenska,...ich hab mal auf nem STM32F107 (einer der dicken) einen usb-host fuer eine HID-Wetterstation gemacht
+2017-04-04 22:11:30,Svenska,"das war schon hinreichend viel arbeit, obwohl das protokoll pillepalle war :D"
+2017-04-04 22:11:51,Svenska,so nen drucker kriegt man damit sicherlich auch nett angesteuert
+2017-04-04 22:12:05,Svenska,"...aber um was zu drucken, musst du nebenher auch noch postscript bauen *g*"
+2017-04-04 22:12:32,dietzi,Drucker sollte aber eigentlich nicht das Problem werden da ein IP-Drucker zum Einsatz kommen wird -> LAN-Treiber
+2017-04-04 22:12:35,Svenska,und ghostscript in so eine standalone-umgebung zu pfuschen stell ich mir jetzt nicht so ganz einfach vor (von cups als ganzem mal zu schweigen)
+2017-04-04 22:12:50,Svenska,ändert nix daran :D
+2017-04-04 22:13:18,dietzi,Aber auch da kann man vorerst zwischenwege über den Zentralserver gehen
+2017-04-04 22:13:31,dietzi,"Da könnte man beispielsweise ein ""Parser-Skript"" basteln"
+2017-04-04 22:13:35,Svenska,"""vorerst"": nix hält länger als ein provisorium :D"
+2017-04-04 22:13:52,dietzi,Aber das ist alles noch weit entfernte Zukunft
+2017-04-04 22:14:02,dietzi,Jetzt hänge ich beim LAN-Treiber
+2017-04-04 22:14:21,dietzi,Ich hab halt einfach Spaß und freu mich dabei :D
+2017-04-04 22:14:27,Svenska,joa
+2017-04-04 22:14:48,Svenska,"was du da vorhast, klingt fuer mich halt weniger nach einem sinnvollen grund fuer einen kernel mit treibern, sondern eher nach ""sehr viel userspace"" ;)"
+2017-04-04 22:15:02,Svenska,quasi ein linux-from-scratch oder so
+2017-04-04 22:15:45,dietzi,"Wenn man so will kann man es nicht unbedingt als Kernel bezeichnen..... Ich würde evtl den Begriff ""Standalone-App"" wählen oder so...."
+2017-04-04 22:16:30,Svenska,"naja, multitasking, ip und darauf aufbauende protokolle wirst du so oder so brauchen"
+2017-04-04 22:17:14,Svenska,kannst du die MAC vom LAN-Adapter auslesen und ist sie korrekt?
+2017-04-04 22:17:47,dietzi,Ja das passt
+2017-04-04 22:26:19,Svenska,hast du mal den timer getestet?
+2017-04-04 22:26:32,dietzi,Noch nicht
+2017-04-04 22:26:33,Svenska,"reg 80[1:0], reg81[0]"
+2017-04-04 22:26:55,Svenska,"das klingt nach etwas, was man relativ einfach probieren können sollte"
+2017-04-04 22:28:18,Svenska,s/den timer/die timer/
+2017-04-04 22:28:43,dietzi,Rechner startet.....
+2017-04-04 22:28:58,MasterQ32,dietzi: wie startest du dein programm auf dem rechner?
+2017-04-04 22:29:11,dietzi,per PXE (Boot over LAN)
+2017-04-04 22:29:17,MasterQ32,"okay, cool"
+2017-04-04 22:29:21,MasterQ32,"mach ich auch, ist praktisch"
+2017-04-04 22:29:34,dietzi,Es wird wieder kein IRQ ausgelöst. Weder bei WOL noch bei Link change
+2017-04-04 22:29:54,Svenska,die timer sind ja unabhängig von all dem kram
+2017-04-04 22:30:20,dietzi,"Ich kompiliere auf meinem Root-Server (bei Hetzner - der hat genug Power), pushe die Binary auf meinen Home-Server und lade die Binary per PXE"
+2017-04-04 22:30:29,dietzi,Moment. Ich schaue mal die Counter an
+2017-04-04 22:30:31,Svenska,"bedenke, dass du ein PCI-Interface zu einer hardware hast, die dann ein MII-Interface zu einem Transceiver hat, und wo du (a) dieses interface evtl programmieren musst, und (b) auch noch daten manuell darueber schicken musst"
+2017-04-04 22:30:59,Svenska,"d.h. es kann gut sein, dass dein chip garkeine verbindung zum PHY hat und du darum keinen link siehst"
+2017-04-04 22:32:18,Svenska,"hmm, irgendwie finde ich keine register fuer die timer-werte"
+2017-04-04 22:32:20,dietzi,PHY-Address ist standard auf 0x0001
+2017-04-04 22:32:34,Svenska,"ich hätte erstmal einfach T0 resettet und gewartet, ob er irgendwann overflow meldet"
+2017-04-04 22:32:44,dietzi,Jetzt mal kurz zum Verständis: was genau ist PHY?
+2017-04-04 22:32:46,Svenska,"im nächsten schritt das gleiche, aber schauen, ob er einen IRQ feuert"
+2017-04-04 22:32:53,Svenska,PHY ist das physische interface zum kabel
+2017-04-04 22:33:09,dietzi,Zuletzt ist der Rechner ca. 20 min gelaufen ohne IRQ
+2017-04-04 22:33:10,Svenska,ich hab irgendwo noch chips einer antiken ne2000 rumliegen (leider nicht alle)
+2017-04-04 22:33:22,Svenska,da hattest du drei zentrale chips:
+2017-04-04 22:33:32,Svenska,"Host-Interface, MAC und PHY"
+2017-04-04 22:34:20,Svenska,"das host-if ist in die mac gewandert, und viele uCs haben das integriert"
+2017-04-04 22:34:29,dietzi,"Du meinst quasi, dass es sein könnte, dass ich die PHY-Adresse zuerst auf einen bestimmten Wert festlegen muss?"
+2017-04-04 22:34:34,Svenska,nein
+2017-04-04 22:34:48,Svenska,"einfach, dass du irgendwie mit dem phy kommunizieren können musst"
+2017-04-04 22:35:08,Svenska,"es bringt dir ja nix, an den IRQs rumzudoktern, wenn du nicht sicher bist, ob dein ""Habe ich Link?"" garnicht funktioniert"
+2017-04-04 22:35:31,Svenska,"darum kannst du die timer benutzen, um rauszukriegen, ob (a) die karte ueberhaupt sinnvoll reagiert, und (b) das IRQ-system hinzuflicken"
+2017-04-04 22:35:50,Svenska,"du musst schließlich IRQs von der karte ins PCI, vom PCI ins system, und vom system in deinen kernel kriegen"
+2017-04-04 22:35:58,Svenska,...da gibt's ziemlich viele ausschalter unterwegs.
+2017-04-04 22:36:56,Svenska,"und zu allem ueberfluss kannst du dir ja noch nichtmal sicher sein, dass dein PCI-treiber zuverlässig tut..."
+2017-04-04 22:36:57,dietzi,"Ich hatte eigentlich gedacht, dass es reicht wenn ich IRQ's in dem Chip aktiviere und die dann automatisch in meinem IRQ-handler ankommen.."
+2017-04-04 22:37:02,Svenska,"öh, nein?"
+2017-04-04 22:37:19,dietzi,http://www.yuiop.co.uk/epia/stuff/South%20%20Bridge/VT8235.pdf Seite 11 ist ein Schaltbild
+2017-04-04 22:37:28,Svenska,boote mal ein linux und gucke dir das bootlog genau an
+2017-04-04 22:37:46,Svenska,"und zwar einmal von oben nach unten, was da auf ACPI- und PCI-Ebene stattfindet... da ist auch IRQ-Routing mit drin *g*"
+2017-04-04 22:38:08,Svenska,"du spielst da mit etwas rum, was ein kleines bisschen komplexer ist als ein ISA-PC mit 286er"
+2017-04-04 22:38:57,dietzi,Du redest von PCI-Treiber. Da gibt es bei mir keinen.....
+2017-04-04 22:39:09,dietzi,Ich habe die Funktionen zum Lesen und Schreiben und das wars
+2017-04-04 22:39:16,Svenska,"naja, doch, aber der besteht vermutlich nur aus I/O-zugriffen..."
+2017-04-04 22:39:17,Svenska,*g*
+2017-04-04 22:40:41,Svenska,"ich wuerde dir eine funktion empfehlen, mit der du einen wert in ein register schreiben kannst und wieder lesen ;)"
+2017-04-04 22:40:44,dietzi,Entweder IO oder MMIO
+2017-04-04 22:40:56,dietzi,Habe ich
+2017-04-04 22:41:25,dietzi,https://pastebin.com/HYjCDF28
+2017-04-04 22:41:28,Svenska,"WRITE(84, ~0x1); //T0 timeout clear"
+2017-04-04 22:42:03,dietzi,https://pastebin.com/EfumU46U
+2017-04-04 22:42:06,Svenska,"WRITE(86, 0x1); //T0 interrupt unmask"
+2017-04-04 22:43:07,Svenska,"WRITE(0D, 0x80); //GP IRQ enable"
+2017-04-04 22:43:32,Svenska,"halt, das letzte weglassen"
+2017-04-04 22:43:58,Svenska,"WRITE(0F, 0x80); // GP IRQ enable"
+2017-04-04 22:44:26,dietzi,Die habe ich alle schon gesetzt.....
+2017-04-04 22:44:45,dietzi,https://pastebin.com/LA86AYDP
+2017-04-04 22:44:46,MasterQ32,"ich fang bald an, hexcode zu vergessen und denke oktal ^^"
+2017-04-04 22:44:52,dietzi,LOL
+2017-04-04 22:44:59,Paddy,So viele Dateiberechtigungen gesetzt? ;-)
+2017-04-04 22:45:04,dietzi,Ich bevorzuge binär
+2017-04-04 22:45:10,Svenska,"WRITE(80, 0x1); //enable T0"
+2017-04-04 22:45:18,MasterQ32,Paddy: Nicht-8-Bittige-hardware
+2017-04-04 22:45:22,MasterQ32,eher so 12 bit :D
+2017-04-04 22:45:23,dietzi,habe ich auch
+2017-04-04 22:45:24,Svenska,"wenn du das getan hast, sollte"
+2017-04-04 22:45:33,Paddy,"Svenska: Ist komplexer als ISA, wenn man es näher anfasst, aber per Default sind PCs doch ziemlich kompatibel"
+2017-04-04 22:46:06,Svenska,if(READ(0D) & 0x80) { ... } irgendwann anschlagen
+2017-04-04 22:46:09,Paddy,"MasterQ32: Da hat sich wohl damals jemand gedacht ""weil ich kann""? *g*"
+2017-04-04 22:46:35,MasterQ32,"ja, irgendwann kam IBM und dachte sich: 12 bit sind doof, 8 bit sind viel besser"
+2017-04-04 22:47:20,Svenska,"naja, in der fruehzeit waren 18- und 36-bittige maschinen noch ueblich"
+2017-04-04 22:47:33,MasterQ32,"joar, die aktuelle hier hat grade nur 12 :P"
+2017-04-04 22:48:24,MasterQ32,"Paddy: es handelt sich um eine PDP8/E, die Lab-Variante"
+2017-04-04 22:48:48,Svenska,dietzi: getestet?
+2017-04-04 22:49:18,dietzi,Will grad testen und da ist plötzlich mein Root-Server nicht mehr erreichbar....
+2017-04-04 22:49:21,Svenska,außerdem sollte irgendwann auch ein if(READ(80) & 0x2) { ... } anschlagen
+2017-04-04 22:49:52,Svenska,"letzteres testet T0 unabhängig vom interruptsystem, ersteres testet das interruptflag im hauptregister"
+2017-04-04 22:49:57,dietzi,Ich schau mal eben bei Hetzner was da los ist.....
+2017-04-04 22:49:59,Svenska,pollt also den interrupt.
+2017-04-04 22:50:39,Svenska,"wenn das polling vom interrupt funktioniert, aber der irq nicht ausgeliefert wird, ist evtl dein interrupt-routing nicht tauglich, interrupts sind in PIC/CPU deaktiviert oder dein handler kaputt"
+2017-04-04 22:50:53,Svenska,oder irgendein globales interrupt-flag im pci ist nicht gesetzt
+2017-04-04 22:52:12,dietzi,Hetzner zieht grad meinen Server um. Es hätte wohl einen E-Mail bei mir ankommen sollen aber es kam keine. Mein Server ist bis spätestens morgen 06:00 Uhr off
+2017-04-04 22:52:31,dietzi,Somit kann ich nicht mehr kompilieren und auch nicht trstetn
+2017-04-04 22:52:33,Svenska,"alternativ ist ein WRITE(81, 0x40); // force reset hilfreich"
+2017-04-04 22:52:41,Svenska,"sollte dir eine lehre sein, deine dinge ins internet zu tun *g*"
+2017-04-04 22:52:47,dietzi,Force reset mache ich als erstes im Init
+2017-04-04 22:52:47,Paddy,Ging die Mail zufällig an den Server? ;-)
+2017-04-04 22:53:03,Svenska,"okay, dann lass das force reset testweise weg"
+2017-04-04 22:53:16,dietzi,LOL. Die Mail ging natürlich an den Server hätte aber schon die letzten Tage kommen sollen
+2017-04-04 22:53:26,Svenska,"so wie ich die doku parse, sollte der timer funktionieren, wenn das MII interface tut, aber unabhängig davon, ob der PHY funktioniert"
+2017-04-04 22:54:01,Svenska,"achso, und alle registeroffsets sind natuerlich hexadezimal -.-"
+2017-04-04 22:54:10,Svenska,"also WRITE(0x80, ...) statt WRITE(80)"
+2017-04-04 22:54:38,dietzi,Mein Server hat eben genug Power um schnell zu kompilieren. Mein Home-Server hat mit seinen Aufgaben genug zu tun.....
+2017-04-04 22:54:49,dietzi,Hexadezimal ist mir klar. Habe ich auch so
+2017-04-04 22:54:55,Svenska,lol?
+2017-04-04 22:54:58,Svenska,also ...
+2017-04-04 22:55:25,Svenska,"... ich glaub, bei dauert das ""copy via internet"" länger als das kompilieren auf meinem inzwischen relativ antiquiertem rechner..."
+2017-04-04 22:55:38,MasterQ32,"so, fertig für heute"
+2017-04-04 22:55:39,MasterQ32,laters!
+2017-04-04 22:55:41,Svenska,...der kommt ja nun doch schon in die 3. klasse. *g*
+2017-04-04 22:56:01,Svenska,tschø master der 32 quits ;)
+2017-04-04 22:56:13,dietzi,"Von speichern bis ""Rechner gestartet"" vergehen ca 10 Sekunden"
+2017-04-04 22:56:33,dietzi,Bye Master
+2017-04-04 22:57:18,dietzi,Ich teste morgen abend wieder. Da gehe ich jetzt auch ins Bett. Der Wecker klingelt um 5..... Bis morgen und vielen Dank für die Hilfe
+2017-04-04 22:57:28,Svenska,"ich werd sehen, ob ich morgen da bin..."
+2017-04-04 22:57:38,Svenska,...life sucks currently und all that shit
+2017-04-04 22:58:00,dietzi,Alles wird gut ;)
+2017-04-04 22:58:22,Svenska,seufz
+2017-04-04 22:58:28,Svenska,weiß ned
+2017-04-04 22:59:55,dietzi,"Bestimmt. Wenn nicht, dann schreib ich VIA ne Mail mit der Bitte um Auflistung der INIT-Befehle...."
+2017-04-04 23:04:15,Svenska,haha da werden die bestimmt beeindruckt sein
+2017-04-04 23:04:28,Svenska,"...deren x86-sparte ist doch schon tot, oder?"
+2017-04-04 23:04:57,dietzi,Keine Ahnung. Zumindest existiert noch eine Info-Seite über diesen Chip
+2017-04-04 23:05:08,Svenska,"naja gut, alte doku wegnehmen ist immer doof"
+2017-04-04 23:05:13,dietzi,http://www.viatech.com/en/silicon/legacy/chipsets/vt8235/
+2017-04-04 23:05:30,Svenska,"aber ich glaube, dass via schon länger nix neues mehr mit x86 macht..."
+2017-04-04 23:05:50,dietzi,Keine Ahnung. Hab das Ding aus nem Betrieb bekommen
+2017-04-04 23:06:03,Svenska,"joa, so ein C3 ist schon was älter"
+2017-04-04 23:06:10,dietzi,Dort wurde es als Thin-Client verwendet. Als was auch sonst....
+2017-04-04 23:06:17,Svenska,"aber ich glaube, dass vias x86-team schlicht nicht mehr existiert"
+2017-04-04 23:06:40,dietzi,Aber evtl haben die noch irgendwelche PDF's im Archiv oder so
+2017-04-04 23:07:03,Svenska,"ich glaub, da solltest du dich lieber an die treiber von linux oder - besser - BSD halten"
+2017-04-04 23:07:39,dietzi,Dies zu portieren wird genau so komplex wie die Doku zu analysieren....
+2017-04-04 23:07:59,Paddy,"Nciht portieren, aber lesen"
+2017-04-04 23:08:02,Svenska,du sollst die ja nicht portieren
+2017-04-04 23:08:09,Svenska,"aber da steht drin, was du wie wann tun musst"
+2017-04-04 23:08:17,Paddy,"Also halt die Information aus dem Treiber raussuchen, die in der Doku fehlt"
+2017-04-04 23:08:17,Svenska,"und manchmal stehen auch nette kommentare dabei, was du genau nicht tun solltest..."
+2017-04-04 23:08:37,dietzi,http://lxr.free-electrons.com/source/drivers/net/ethernet/via/via-rhine.c
+2017-04-04 23:08:43,dietzi,2654 Zeilen.......
+2017-04-04 23:08:59,Svenska,lies mal den treiber hier:
+2017-04-04 23:09:00,Svenska,http://lxr.free-electrons.com/source/drivers/net/3c501.c?v=2.0.40
+2017-04-04 23:09:05,Svenska,ist sehr unterhaltenswert :D
+2017-04-04 23:09:27,Paddy,Unterhaltenswert? Gibt es das Wort?
+2017-04-04 23:09:32,Svenska,entertaining?
+2017-04-04 23:09:40,Svenska,"kA, mein deutsch leidet seit einiger zeit"
+2017-04-04 23:09:48,Svenska,unterhaltend?
+2017-04-04 23:09:51,Svenska,unterhaltsam!
+2017-04-04 23:09:53,Svenska,*g*
+2017-04-04 23:09:58,Paddy,"Jo, das klingt besser"
+2017-04-04 23:10:00,dietzi,;)
+2017-04-04 23:10:06,Paddy,Unterhaltenswert klingt halt als ob man das Ding unterhalten müsste ;-)
+2017-04-04 23:10:14,Paddy,Statt andersrum
+2017-04-04 23:10:23,Svenska,"...lies den treiber und dir fällt auf: ja, ist auch so ;)"
+2017-04-04 23:10:30,dietzi,Ich habe die letzten Tage einige Treibe gelesen und keiner scheinz so komplex wie der von VIA
+2017-04-04 23:10:56,Svenska,"dietzi: guck dich mal bei den BSDs um (FreeBSD, NetBSD). die sind normalerweise deutlich schöner/lesbarer geschrieben als linux"
+2017-04-04 23:11:04,Svenska,da gibt's deutlich härtere regeln
+2017-04-04 23:12:17,dietzi,Ich mache morgen weiter. Jetzt gehts ins Bett. Gute Nacht euch allen
+2017-04-04 23:12:32,Svenska,gn8
+2017-04-04 23:25:56,Svenska,solche kommentare meinte ich: /* Turn interrupts back on while we spend a pleasant afternoon loading bytes into the board */
+2017-04-04 23:26:16,Svenska,"oder: printk(""%s: burped during tx load.\n"", dev->name);"
+2017-04-04 23:26:40,Svenska,oder: /* Poor little chip can't reset its own start pointer */
+2017-04-04 23:27:00,Svenska,"oder: /* We have a good packet. Well, not really ""good"", just mostly not broken. */"

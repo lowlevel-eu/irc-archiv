@@ -1,0 +1,428 @@
+date/time,nick,message
+2016-05-29 00:00:01,MasterQ32,zudem gibts noch was viel wichtigeres als arrays was zuerst implementiert werden muss
+2016-05-29 00:00:04,MasterQ32,lokale variablen
+2016-05-29 00:01:27,MasterQ32,die frage ist jetzt erst mal:
+2016-05-29 00:01:31,MasterQ32,wie mach ich die denn syntaktisch?
+2016-05-29 00:02:46,Godwine,hast du das nicht mit var := 6 gemacht?
+2016-05-29 00:03:01,Paddy,"Ich glaube, erstmal muss man deklarieren"
+2016-05-29 00:03:31,MasterQ32,genau :D
+2016-05-29 00:03:35,Godwine,naja in ner vm hast du ja die freiheit variablen zur laufzeit umwandeln zu lassen
+2016-05-29 00:03:45,MasterQ32,nicht in meiner ;)
+2016-05-29 00:03:56,MasterQ32,meine VM ist extrem lowlevel und eher eine emulierte CPU
+2016-05-29 00:04:09,MasterQ32,ich kenne nur 32-bit werte
+2016-05-29 00:04:21,Godwine,die llvm die z.B unter clang läuft kann das
+2016-05-29 00:04:35,Paddy,Grundlegende Frage: Willst du Variablen mitten im Block deklarieren können oder nur oben?
+2016-05-29 00:04:55,MasterQ32,"zudem frage ich mich: was heißt ""variablen zur laufzeit umwandeln?"" ich kann globale variablen nicht einfach zu lokalen machen und vice versa"
+2016-05-29 00:05:07,MasterQ32,paddy: überleg ich grade
+2016-05-29 00:05:19,MasterQ32,im block ist zwar für den programmierer meistens bequemer
+2016-05-29 00:05:42,MasterQ32,"aber ich finde irgendwie, ein bisschen verbosität ist nie schlecht, von daher: warum nicht nur oben?"
+2016-05-29 00:05:46,MasterQ32,sieht gar nicht SO scheiße aus :D
+2016-05-29 00:06:14,Paddy,Ich mag halt im Moment dieses ständig wiederholte var nicht
+2016-05-29 00:06:22,MasterQ32,http://pastebin.com/cndTwfvj
+2016-05-29 00:06:25,Paddy,"Und wenn man alles zusammen oben hat, kriegt man vielleicht eine andere Syntax hin"
+2016-05-29 00:06:31,MasterQ32,ich mags :D
+2016-05-29 00:06:44,Godwine,nein aber in Julia (läuft auf llvm) kann man z.B eine variable deklarieren mit x = 1 und es wird ein Int sein und wenn man später im code einen anderen wert zuweist der nicht reinpasst z.B x = 1.4 dann wird aus x ein Float
+2016-05-29 00:06:55,Paddy,Sieht nach K&R aus *g*
+2016-05-29 00:07:06,MasterQ32,jap :D
+2016-05-29 00:07:21,Paddy,"Da brauchst du jetzt das ""var"" aber wirklich nicht mehr"
+2016-05-29 00:07:24,MasterQ32,"@godwine: das ist ""dynamische"" typisierung, das könnte ich theoretisch auch"
+2016-05-29 00:07:40,MasterQ32,sieht aber ohne komisch aus
+2016-05-29 00:07:40,Paddy,"Mögliches Problem ist nur, dass du Variablen jetzt nicht nur am Blockanfang, sondern am Funktionsanfang hast"
+2016-05-29 00:07:43,Paddy,Das ist strenger als C
+2016-05-29 00:07:47,MasterQ32,"ja, ich weiß"
+2016-05-29 00:07:52,Paddy,Aber Pascal macht es auch so
+2016-05-29 00:08:05,MasterQ32,ich bekomm halt in den block oben eh noch nen berg anderen kram rein ;)
+2016-05-29 00:08:18,MasterQ32,"wenn ich mal bock dazu habe, kommen da noch constraints rein"
+2016-05-29 00:08:48,Paddy,"Die beziehen sich aber auf Variablen bzw. Parameter, oder?"
+2016-05-29 00:08:57,MasterQ32,genau
+2016-05-29 00:09:01,MasterQ32,oder auf den rückgabewert
+2016-05-29 00:09:07,MasterQ32,oder das verhalten generell
+2016-05-29 00:09:27,MasterQ32,fn endless() constraint noreturn; { while(1) { } }
+2016-05-29 00:13:25,Paddy,(Lokale) Variablenblöcke könnte man z.B. auch so machen: http://pastebin.com/6K7Yh4bF
+2016-05-29 00:13:36,Paddy,Sieht irgendwie lustig aus
+2016-05-29 00:13:45,MasterQ32,und ist heftig kacke zu parsen :D
+2016-05-29 00:13:54,MasterQ32,also so wirklich heftigst
+2016-05-29 00:14:04,Paddy,"Hm, stimmt, optional sind die doof"
+2016-05-29 00:14:19,XanClic,"versteh jetzt nicht wirklich, wieso"
+2016-05-29 00:14:20,MasterQ32,ich hab bisher nur einen look-ahead von 1 und darauf bin ich stolz :D
+2016-05-29 00:14:25,Paddy,Und nicht optional sind sie doof zu benutzen
+2016-05-29 00:14:35,XanClic,block = (variable_declarations '--' main_block) | main_block
+2016-05-29 00:14:54,MasterQ32,ich nutze keinen parser generator
+2016-05-29 00:14:58,XanClic,Deine Schuld :-p
+2016-05-29 00:15:03,MasterQ32,bewusst
+2016-05-29 00:15:14,MasterQ32,ich will die sprache nacher mit sich selbst compilieren
+2016-05-29 00:15:24,MasterQ32,"und ich hab keinen lust, einen parser generator für meine sprache zu bauen :D"
+2016-05-29 00:15:52,XanClic,"Versteh ich jetzt nicht wirklich, warum das schwerer sein soll, als den Compiler an sich zu portieren, der ad-hoc parst, aber gut"
+2016-05-29 00:16:17,XanClic,"Nach /\n *-- *\n/ suchen sollte auch reichen, um das zu trennen"
+2016-05-29 00:16:46,XanClic,"Ansonsten wär ich persönlich eh für das Rustmodell let x = foo;, wobei der Compiler rausfindet, was das für ein Typ ist"
+2016-05-29 00:16:53,XanClic,Oder auto x = foo; in C++
+2016-05-29 00:17:29,Paddy,Oder typeof(foo) x = foo; in gcc-C
+2016-05-29 00:17:34,Paddy,Find ich aber doof
+2016-05-29 00:17:48,Paddy,"Ich gebe den Typ ja gerade deswegen an, weil er wichtig ist"
+2016-05-29 00:17:56,XanClic,"Kann man ja jeweils machen, wenn man will"
+2016-05-29 00:18:02,MasterQ32,joar
+2016-05-29 00:18:03,Paddy,"Und ich will, dass der Compiler prüft, ob das zusammenpasst, was ich haben will und was ich produziere"
+2016-05-29 00:18:09,MasterQ32,type deduction muss ich halt gucken
+2016-05-29 00:18:20,XanClic,"Paddy, ich glaube, da muss man sich zumindest bei Rust eher keine Sorgen machen…"
+2016-05-29 00:18:36,MasterQ32,"denk ich auch, rust ist relativ cool"
+2016-05-29 00:18:38,Paddy,Rust hat dwim?
+2016-05-29 00:18:46,MasterQ32,kann man die sprache eigentlich schon für OS-Dev missbrauchen ?:D
+2016-05-29 00:18:50,XanClic,Rust hat it-doesn't-compile-if-it-doesn't-do-what-you-mean
+2016-05-29 00:18:50,Paddy,Jo
+2016-05-29 00:19:28,XanClic,Ich persönlich find den Overhead von let oder var jedenfalls jetzt eher gar nicht schlimm oder nervend
+2016-05-29 00:19:43,MasterQ32,ist auch meine meinung
+2016-05-29 00:19:47,Paddy,"MasterQ32 hat ja nicht nur var, sondern var und den Typen"
+2016-05-29 00:19:48,MasterQ32,n bisschen verbosität schadet nie
+2016-05-29 00:19:53,XanClic,"Paddy, deshalb sage ich Overhead"
+2016-05-29 00:20:42,XanClic,"Ich find das schon sinnlos, aber wenn du keinen ordentlichen Parser für eine ordentliche kontextfreie Sprache schreiben willst… ;-)"
+2016-05-29 00:20:46,MasterQ32,"ich kann mit meiner aktuellen syntax aber irgendwann dem compiler ohne großen aufwand beibringen, dass man bei ""var x : int= 10"" auch ""var x : 10;"" schreiben kann"
+2016-05-29 00:25:26,Paddy,Wäre var x = 10 nicht sinnvoller?
+2016-05-29 00:26:20,MasterQ32,ähm
+2016-05-29 00:26:21,MasterQ32,meinte ich
+2016-05-29 00:26:24,MasterQ32,*facepalm*
+2016-05-29 00:26:26,MasterQ32,ist schon spät .D
+2016-05-29 00:27:20,Paddy,Wenn nicht sogar schon früh
+2016-05-29 00:58:23,MasterQ32,"okay, lokale variablen tun"
+2016-05-29 00:58:49,MasterQ32,"bin sehr zufrieden, jetzt ist erst mal schluss :D"
+2016-05-29 01:05:59,MasterQ32,"so jungs, ich geh pennen"
+2016-05-29 01:06:04,MasterQ32,genug für heute
+2016-05-29 08:36:13,darklink,Cool
+2016-05-29 08:36:59,darklink,manchmal erkennt linux  meine SATA festplatten als sdf/sdg
+2016-05-29 08:37:06,darklink,und nicht als sda/sdb
+2016-05-29 08:37:22,darklink,und meinen USB erkennt er als sda
+2016-05-29 10:39:02,MasterQ32,morgen
+2016-05-29 10:41:58,darklink,hey masterq
+2016-05-29 10:42:08,darklink,ich bin master of dreambugging
+2016-05-29 10:42:20,MasterQ32,aha?
+2016-05-29 10:42:21,darklink,schon wieder ein bug während des schlafens gefixt
+2016-05-29 10:42:33,MasterQ32,du meinst wohl eher  dreamdebugging :D
+2016-05-29 10:42:40,darklink,ja
+2016-05-29 10:44:18,darklink,und der bug war einfach zwei debugzeilen auskommentieren
+2016-05-29 10:44:30,MasterQ32,aha?
+2016-05-29 10:44:31,darklink,-auskommentieren
+2016-05-29 10:45:06,darklink,"der versuchte 4x ""ATA device could not be found"" und ""No devices were found!"" auszugeben"
+2016-05-29 10:45:21,darklink,in einen uninitialisierten LFB
+2016-05-29 10:45:27,darklink,überschrieb den kernel
+2016-05-29 10:45:36,MasterQ32,ohje
+2016-05-29 10:45:39,darklink,"und ich glaube du weißt, wie sowas endet"
+2016-05-29 10:45:48,MasterQ32,"ja, aber mir passiert sowas eher selten :D"
+2016-05-29 10:45:55,MasterQ32,mir sit das einmal passiert
+2016-05-29 10:46:14,MasterQ32,dann hab ich den aufruf von konstruktoren der globalen objekte hinzugefügt
+2016-05-29 10:46:15,MasterQ32,dann gings :D
+2016-05-29 10:46:17,darklink,gestern 2x
+2016-05-29 10:46:32,darklink,1x wegen eines clrscr();
+2016-05-29 10:46:45,darklink,"und 1x wegen eines err << ""Text"";"
+2016-05-29 10:47:08,MasterQ32,"uffpasse, min jung"
+2016-05-29 10:47:09,MasterQ32,:D
+2016-05-29 10:48:46,darklink,jetzt mach is es farbig
+2016-05-29 10:48:47,darklink,:)
+2016-05-29 10:49:46,MasterQ32,ähm
+2016-05-29 10:49:52,MasterQ32,ich muss grade sehr grinsen :D
+2016-05-29 10:49:57,MasterQ32,ich wollte meine sprache ja E nennen :D
+2016-05-29 10:50:05,MasterQ32,https://en.wikipedia.org/wiki/E_(programming_language)#Syntax_and_examples
+2016-05-29 10:50:10,MasterQ32,das sieht der orginal E echt ähnlich :D
+2016-05-29 10:50:18,darklink,lol
+2016-05-29 10:50:27,darklink,Nenn es DieSprache
+2016-05-29 10:50:36,MasterQ32,file.ds ? :D
+2016-05-29 10:50:46,darklink,:)
+2016-05-29 10:50:48,darklink,passt
+2016-05-29 10:50:58,MasterQ32,file.es (EineSprache) wäre natürlich auch lustig
+2016-05-29 10:50:58,darklink,DS ROMS sind ja zum glück .nds
+2016-05-29 10:51:57,darklink,Farbe funktioniert
+2016-05-29 10:52:02,MasterQ32,"aber scheinbar gibt es mehr als ein ""E"" als sprache :D"
+2016-05-29 10:53:05,MasterQ32,es gibt zu viele programmiersprachen :D
+2016-05-29 10:53:05,MasterQ32,http://tibleiz.net/copper/
+2016-05-29 10:53:20,darklink,war deine andere nicht TrainScript?
+2016-05-29 10:53:33,MasterQ32,das war der ursprüngliche name
+2016-05-29 10:53:35,darklink,"(Ach ne, das war dein OS (trainOS)"
+2016-05-29 10:53:36,MasterQ32,hieß dann ebenfalls copper :P
+2016-05-29 10:54:06,darklink,ok
+2016-05-29 10:54:16,MasterQ32,https://github.com/seelprojects/copper
+2016-05-29 10:54:17,MasterQ32,boah
+2016-05-29 10:54:28,MasterQ32,"sobald du in den bereich experimenteller sprachen gehst, wird das ganze echt wirr :D"
+2016-05-29 10:54:34,MasterQ32,und viele viele doppelbelegungen :D
+2016-05-29 11:00:16,Paddy,"darklink: Wieso zeigt dein LFB-Pointer auf den Kernel und nicht auf NULL, bevor der LFB initialisiert ist, dass du bei sowas einen #PF kriegst?"
+2016-05-29 11:00:59,MasterQ32,was ist LFB? :D
+2016-05-29 11:01:29,Paddy,Linear Framebuffer
+2016-05-29 11:01:55,darklink,Weil paging noch nicht initialisiert ist
+2016-05-29 11:02:19,Paddy,"Wenn dein ATA-Treiber sich initialisiert, solange du noch kein Paging an hast, machst du was falsch"
+2016-05-29 11:02:36,MasterQ32,"wollt grade sagen, das klingt irgendwie falsch"
+2016-05-29 11:02:40,Paddy,Und dein Problem von gestern ist der Beweis dafür
+2016-05-29 11:02:59,darklink,"und es besser ist, wenn der kernel abschmiert anstatt dass möglicherweise wichtige strukturen im ersten MB überschrieben werden"
+2016-05-29 11:03:09,Paddy,"Speicherverwaltung initialisieren ist das allererste, was ein Kernel machen sollte"
+2016-05-29 11:03:26,Paddy,"Ja, das ist wesentlich besser"
+2016-05-29 11:03:29,darklink,der ATA treiber braucht keine speicherverwaltung
+2016-05-29 11:03:35,Paddy,Dann ist das nämlich innerhalb von zwei Minuten gedebuggt
+2016-05-29 11:03:54,Paddy,Du hast einen kompletten Tag damit verschwendet
+2016-05-29 11:04:08,darklink,nacht*
+2016-05-29 11:04:23,Paddy,Macht es nicht wesentlich besser ;-)
+2016-05-29 11:06:08,Paddy,"Du könntest NULL-Pointer auch mit Segmentierung abfangen, glaube ich, aber vielleicht sollte ich solche Ideen lieber für mich behalten *g*"
+2016-05-29 11:06:19,darklink,Igitt
+2016-05-29 11:06:22,darklink,segmentierung
+2016-05-29 11:06:24,MasterQ32,"ja, solltest du :D"
+2016-05-29 11:08:00,Paddy,Ihr seid Langweiler ;-)
+2016-05-29 11:09:20,darklink,Deine Smiley haben Nasen :(
+2016-05-29 11:09:25,darklink,Smileys*
+2016-05-29 11:09:55,Paddy,Ja :-)
+2016-05-29 11:11:57,darklink,:(
+2016-05-29 11:13:23,darklink,"Das ist ein byte, das ich mehr runterladen muss"
+2016-05-29 11:13:36,MasterQ32,:P
+2016-05-29 11:13:42,MasterQ32,* :-P
+2016-05-29 11:15:40,Paddy,"Wer Bandbreite hat um ständig Screenshots hochzuladen, der hat auch Bandbreite, um ein Byte Nase runterzuladen"
+2016-05-29 11:19:00,darklink,nö
+2016-05-29 11:19:10,darklink,"die screenshots sind nur 0,4 bit groß"
+2016-05-29 11:21:12,Godwine,hoi
+2016-05-29 11:22:11,darklink,hey
+2016-05-29 11:22:18,MasterQ32,morgen
+2016-05-29 11:22:26,MasterQ32,darklink verwendet gruselige kompressionsverfahren
+2016-05-29 11:22:33,darklink,ja
+2016-05-29 11:22:43,darklink,ich verwende lolz
+2016-05-29 11:22:55,darklink,"komprimiert alles zu 0,4 bits"
+2016-05-29 11:24:21,Paddy,"Aber das ist doch doof. Wenn du nur noch Bruchteile von Bits hast, kannst du gar keine Vollbitverschlüsselung mehr machen."
+2016-05-29 11:24:33,darklink,ja und?
+2016-05-29 11:24:44,darklink,die sind vorher verschlüsselt
+2016-05-29 11:25:20,Godwine,"0,4 bit? das kann entweder 0 oder 0,4 sein? xD"
+2016-05-29 11:25:44,darklink,nö
+2016-05-29 11:25:52,darklink,gehen nur ganzzahlige werte bis 1.3195079107728942
+2016-05-29 11:26:39,darklink,(ich meinte 0.319...)
+2016-05-29 11:30:59,darklink,ATA0s0
+2016-05-29 11:32:08,darklink,klingt gut für ATA port 0 slave partition 0
+2016-05-29 11:32:40,darklink,(Partition 0 ist natürlich das ganze drive)
+2016-05-29 11:33:20,Paddy,Warum nicht einfach ATA0s für die komplette Platte?
+2016-05-29 11:34:36,Godwine,ouh mein netzwerk spinnt heute
+2016-05-29 11:34:49,MasterQ32,hmm
+2016-05-29 11:35:18,MasterQ32,"eine arraygröße bei statischen arrays ist die eigenschaft des types, nicht der variable, oder?"
+2016-05-29 11:36:07,darklink,"bei c++ ja, bei c weder noch"
+2016-05-29 11:36:39,MasterQ32,bei c# ist die arraygröße eigenschaft des arrays
+2016-05-29 11:37:01,darklink,bei c++ ist ein int arr[512] ein int[512]; in c ist es ein int*
+2016-05-29 11:37:37,MasterQ32,hmm
+2016-05-29 11:37:57,MasterQ32,ich denke ich kleb die arraygröße erst mal an den typen ran
+2016-05-29 11:39:29,Godwine,du kannst ein array doch auch als typisierten pointer betrachten mit einem maximalen zähler
+2016-05-29 11:39:53,Godwine,in c spricht man beides ja auch ähnlich an
+2016-05-29 11:39:55,MasterQ32,ja
+2016-05-29 11:40:03,Paddy,Aber sie sind trotzdem unterschiedlich
+2016-05-29 11:40:04,MasterQ32,aber ich hab einfach keinen pointer-typen ;)
+2016-05-29 11:40:38,MasterQ32,"also ich hab nen typ ""ptr"" aber das ist nen integer"
+2016-05-29 11:40:49,Paddy,darklink: Das stimmt nicht. Mal sizeof(arr) probiert?
+2016-05-29 11:40:57,darklink,äh
+2016-05-29 11:41:00,darklink,compile time
+2016-05-29 11:41:28,Godwine,sizeof(arr) wäre eh nur sizeof(element)*MAX_ARRAY_COUNT oder so
+2016-05-29 11:41:48,Godwine,insofern doch ein pointer eines typs mit einem maximalen zähler
+2016-05-29 11:43:25,Godwine,die umgebung muss nur dafür sorgen dass beim deklarieren genug platz frei gemacht wird damit das array da platz hat
+2016-05-29 12:16:48,darklink,MTGos on qemu: Keyboard didn't pass self-test!
+2016-05-29 12:16:48,darklink,Deactivating IRQ1.
+2016-05-29 12:17:22,MasterQ32,wut? :D
+2016-05-29 12:20:10,darklink,dependency order: interrupts vor IRQ1
+2016-05-29 12:42:02,MasterQ32,:D
+2016-05-29 12:42:17,MasterQ32,var array : int[10];
+2016-05-29 12:42:22,MasterQ32,ich denke das sieht doch ganz gut aus
+2016-05-29 12:42:35,darklink,OK
+2016-05-29 12:42:43,darklink,ich habe jetzt 4 objekte die überlappen
+2016-05-29 12:42:45,darklink,verdammt
+2016-05-29 12:42:50,MasterQ32,wtf?
+2016-05-29 12:42:51,MasterQ32,was machst du?
+2016-05-29 12:44:57,darklink,"4 76-byte objekte, die an den positionen 0x10fa24, 0x10fa30, 0x10FA3C und 0x10FA48"
+2016-05-29 12:45:27,MasterQ32,why?
+2016-05-29 12:45:31,MasterQ32,wie kann sowas passieren? :D
+2016-05-29 12:45:51,darklink,Keine ahnung
+2016-05-29 12:46:03,darklink,aber die deklaration von IDE und BlockDevice sieht so aus: http://pastebin.com/JsrLVBym
+2016-05-29 12:46:21,MasterQ32,und was überlappt?
+2016-05-29 12:46:30,darklink,ata[0-3]
+2016-05-29 12:46:52,MasterQ32,kann eigentlich nicht sein
+2016-05-29 12:47:39,darklink,lol? Warum ignoriert make änderungen an headern
+2016-05-29 12:48:17,darklink,na egal
+2016-05-29 12:49:09,Paddy,Weil du die Dependencies in der Makefile falsch angegeben hast
+2016-05-29 12:50:55,darklink,https://twitter.com/nixcraft/status/736685990916411392
+2016-05-29 12:50:57,darklink,wuut
+2016-05-29 12:51:46,darklink,"""Our stuff is broken, so please fix your software to make it work again"""
+2016-05-29 12:51:54,darklink,systemd in a nutshell
+2016-05-29 12:53:02,darklink,"""Our stuff is broken, so please force all mb creators to create conformant HW)"
+2016-05-29 13:06:08,MasterQ32,https://github.com/tmux/tmux/issues/428
+2016-05-29 13:06:09,MasterQ32,oh man
+2016-05-29 13:29:13,darklink,OK
+2016-05-29 13:29:20,darklink,Ich bau mir jetzt nen fat treiber
+2016-05-29 13:29:31,MasterQ32,mach das
+2016-05-29 13:29:36,MasterQ32,ich bastel weiter an array-support
+2016-05-29 13:29:40,MasterQ32,der parser kanns jetzt schon mal :D
+2016-05-29 13:30:18,darklink,HW Array support?
+2016-05-29 13:30:19,darklink,lol
+2016-05-29 13:30:26,MasterQ32,hm?
+2016-05-29 13:30:30,MasterQ32,"ne, compiler-support :D"
+2016-05-29 13:31:20,MasterQ32,"zudem nen refactoring, damit ich später auch noch passende token-fehler werfen kann"
+2016-05-29 13:31:26,MasterQ32,"und nicht nur sagen ""variable 'a' existiert nicht"""
+2016-05-29 13:31:45,MasterQ32,"sondern ""variable 'a' in datei bla in zeile X und spalte Y existiert nicht"""
+2016-05-29 13:42:56,darklink,ich brauch langsam mal nen nativen stringtypen
+2016-05-29 13:43:12,MasterQ32,schau dir den von TrainOS an
+2016-05-29 13:43:21,CarpeNoctem,"darklink, was versuchst du eigentlich?"
+2016-05-29 13:43:28,darklink,FAT treiber bauen
+2016-05-29 13:43:41,MasterQ32,https://github.com/MasterQ32/ker/blob/master/include/ker/string.hpp
+2016-05-29 13:43:41,CarpeNoctem,"Ah, na dann viel glück :D"
+2016-05-29 13:44:31,MasterQ32,die stringklasse ist relativ ressourcenschonend
+2016-05-29 13:52:48,darklink,placement new und placement delete ist perfekt für meinen init
+2016-05-29 14:05:10,darklink,ok neue init() funktioniert
+2016-05-29 14:07:32,darklink,Jetzt wird alles in korrekter reihenfolge initialisiert
+2016-05-29 14:09:53,MasterQ32,:)
+2016-05-29 14:16:32,Godwine,wäre es beim scheduler eigentlich nicht schlauer den timer auf einen countdown von n ticks zu stellen anstatt den scheduler mit einer festen frequenz aufzurufen?
+2016-05-29 14:21:00,MasterQ32,was hätte man davon mehrwert?
+2016-05-29 14:21:50,darklink,der timer ist ein countdown von n ticks
+2016-05-29 14:22:05,darklink,immer
+2016-05-29 14:22:14,Godwine,das ist mir klar
+2016-05-29 14:22:40,Godwine,ich meine wenn pro timeslice mehrmals der scheduler aufgerufen wird ist das doch ein performanceverlust
+2016-05-29 14:23:08,MasterQ32,naja
+2016-05-29 14:23:29,MasterQ32,wenn es dir um eine solche performance geht:
+2016-05-29 14:23:31,Godwine,besser wäre doch anstatt periodische interrupts stellt man den timer auf countdown von der anzahl ticks die der prozess zur verfügung hat
+2016-05-29 14:23:36,MasterQ32,gibt kooperative scheduler ;)
+2016-05-29 14:23:41,MasterQ32,naja
+2016-05-29 14:23:51,MasterQ32,dein timer ist ja immer der kleinstmögliche timeslice
+2016-05-29 14:23:59,Godwine,ja der task kann ja trotzdem vor ende seiner zeit die kontrolle über die cpu abgeben
+2016-05-29 14:24:00,MasterQ32,"immer wenn der timer kommt, WIRD prozess gewechselt"
+2016-05-29 14:25:27,Godwine,hm stimmt ich ging gerade schon davon aus dass tasks je nach priorität und auslastung unterschiedlich viel prozessorzeit bekommen
+2016-05-29 14:25:36,Godwine,aber das ist ja schon designspezifisch
+2016-05-29 14:30:10,darklink,jetzt habe ich new (&loc) Type;
+2016-05-29 14:30:17,darklink,und  str=new (strlen(arr)+1) char;
+2016-05-29 14:30:17,MasterQ32,aha?
+2016-05-29 14:31:00,darklink,"das letztere ist wie new char[strlen(arr)+1], aber nur mit einem alloc() aufruf"
+2016-05-29 14:31:24,MasterQ32,hä?
+2016-05-29 14:31:25,MasterQ32,nein
+2016-05-29 14:31:31,darklink,doch
+2016-05-29 14:31:35,MasterQ32,"das letzte ist ein ""ich überschreibe random memory"" :D"
+2016-05-29 14:31:35,darklink,habe ich so festgelegt
+2016-05-29 14:31:38,MasterQ32,und zwar mit ß
+2016-05-29 14:31:39,MasterQ32,* 0
+2016-05-29 14:31:54,darklink,int != void *
+2016-05-29 14:32:08,MasterQ32,"strlen(arr) != ""void*"""
+2016-05-29 14:32:12,darklink,ja
+2016-05-29 14:32:25,MasterQ32,"du erstellst einen neuen char an der addresse ""strlen(arr)+1"""
+2016-05-29 14:32:35,MasterQ32,also wahrscheinlich irgendwo in den ersten 20 byte
+2016-05-29 14:33:53,darklink,nein
+2016-05-29 14:34:00,MasterQ32,doch :D
+2016-05-29 14:34:08,darklink,ich erstelle einen neuen char* mit strlen(arr)+1 platz
+2016-05-29 14:34:20,MasterQ32,nein
+2016-05-29 14:34:28,MasterQ32,new (address) Type (ctor-args)
+2016-05-29 14:34:31,darklink,"da ich ein operator new(size_t, int) UND ein operator new(size_t void*) habe"
+2016-05-29 14:34:48,MasterQ32,du willst eher
+2016-05-29 14:34:53,MasterQ32,new char [ strlen(arr)+1 ] machen
+2016-05-29 14:35:04,MasterQ32,das andere ist placement new eines char mit der addresse (strlen)
+2016-05-29 14:35:18,darklink,das wird strlen(arr)+1 mal 1 byte allozieren
+2016-05-29 14:35:48,MasterQ32,ich wette das knallt :D
+2016-05-29 14:38:43,MasterQ32,warum genau hast du den new-operator so implementiert?
+2016-05-29 14:38:48,MasterQ32,das macht wenig sinn
+2016-05-29 14:39:10,MasterQ32,"vorallem weil damit dein ""new"" kaputt geht im sinne von du allozierst für einen ""char"" den 20-fachen speicher"
+2016-05-29 14:39:18,MasterQ32,20 = strlen(arr) + 1
+2016-05-29 14:40:11,darklink,du hast recht
+2016-05-29 14:40:12,darklink,"include/nativeString.hpp:8:31: error: no matching function for call to 'operator new(sizetype, uint32_t)'"
+2016-05-29 14:40:12,darklink,       str=new (strlen(arr)+1) char;
+2016-05-29 14:40:24,MasterQ32,sag ich doch
+2016-05-29 14:40:27,MasterQ32,http://en.cppreference.com/w/cpp/language/new
+2016-05-29 14:40:28,MasterQ32,RTFM
+2016-05-29 14:40:36,darklink,IRTFM
+2016-05-29 14:40:50,darklink,Aber ich dachte das mit dem 2. argument könnte alles sein
+2016-05-29 14:40:58,MasterQ32,du möchtest eh array-allokation und keinen weirden missbrauch und zerstörung deines placement news ;)
+2016-05-29 14:42:00,MasterQ32,"weil placement new wirst du noch brauchen, das versprech ich dir ;)"
+2016-05-29 14:42:08,MasterQ32,"und wenn dein placement new allokation macht, ist das kacke :D"
+2016-05-29 14:43:34,MasterQ32,"so, zeit für mittag"
+2016-05-29 14:45:03,darklink,String funktioniert
+2016-05-29 14:45:31,MasterQ32,"darf ich daraus ein ' ""funktioniert"" ' machen?"
+2016-05-29 14:53:12,darklink,"also konstruktor, dekunstruktor usw funktionieren alle"
+2016-05-29 14:53:23,darklink,und auch die paar konvertierungsfunktionen
+2016-05-29 14:55:18,darklink,"jeden tag, wo ich c++ benutze lerne ich ein neues feature"
+2016-05-29 14:56:17,MasterQ32,das wird NIE enden
+2016-05-29 14:59:04,darklink,include/nativeString.hpp:30:16: error: literal operator suffixes not preceded by '_' are reserved for future standardization [-Werror]
+2016-05-29 14:59:41,darklink,ich möchte aber einen literal operator suffix mit ohne unterstrich nutzen!
+2016-05-29 15:17:07,Godwine,Seh ich das richtig dass es nicht ausreicht wenn prozesse von ner pipe wissen sondern dass die pipe auch speichern muss in welchen prozessen sie geöffnet wurde damit sie gelöscht werden kann wenn sie überall geschlossen wurde?
+2016-05-29 15:20:30,MasterQ32,ja klingt sinnvoll
+2016-05-29 15:22:50,Godwine,mir fällt immernoch keine methode ein wie man einen prozess blocken kann wenn er in ne pipe schreibt und da nicht genug platz ist so dass er erst wieder geweckt wird wenn der platz ausreicht
+2016-05-29 15:23:05,MasterQ32,scheduler fragen? 
+2016-05-29 15:23:10,MasterQ32,du schreibst in ne pipe
+2016-05-29 15:23:13,MasterQ32,hast nicht genug platz
+2016-05-29 15:23:19,MasterQ32,sagst dem scheduler: schedule
+2016-05-29 15:23:30,Godwine,einfach beim nächsten lesen aus der pipe wieder entblocken ist unschön weil dann kommt der prozess wieder dran der schreiben wollte und falls nicht genug platz ist blockt der sich wieder
+2016-05-29 15:23:59,MasterQ32,"darum sorgt der scheduler dafür, dass er den task erst wieder aufnimmt, wenn die pipe frei ist"
+2016-05-29 15:24:50,Godwine,das heißt aber ich müsste irgendwo speichern wie viel platz der schreibende prozess in der pipe braucht um wieder aktiviert zu werden
+2016-05-29 15:25:38,MasterQ32,joar
+2016-05-29 15:26:12,MasterQ32,"kannst ja sowas machen wie ""blocke mit closure solange closure true zurückliefert"""
+2016-05-29 15:28:57,Godwine,ja stimmt das macht sinn hm
+2016-05-29 15:29:14,MasterQ32,damit kannst du vorallem alle arten an blocking kram definieren
+2016-05-29 15:30:53,Godwine,hm im moment hab flags die angeben aus welchem grund der task geblockt ist
+2016-05-29 15:31:15,Godwine,ich könnte ja dazu ein array aus funktionspointern machen
+2016-05-29 15:31:37,Godwine,falls ein flag gesetzt ist wird der zugehörige pointer aufgerufen und befragt ob entblockt werden darf
+2016-05-29 15:32:12,MasterQ32,"joar, closure in C wäre ja ne struct mit function pointer und zugehörigem datenstruct"
+2016-05-29 15:32:14,Godwine,ein timer würde dann jedes mal dekrementieren bis er 0 ist und dann true zurückgeben
+2016-05-29 15:33:06,MasterQ32,yep
+2016-05-29 15:34:54,Godwine,jap so mach ich das ^^
+2016-05-29 15:34:57,Godwine,gute idee
+2016-05-29 16:33:41,darklink,Meine Lautsprechen können nichts unter 20Hz
+2016-05-29 16:36:54,Godwine,unter 20Hz solltest du auch nix hören können
+2016-05-29 16:37:12,darklink,ok doch
+2016-05-29 16:37:18,darklink,ich kann aber 18 Hz hören
+2016-05-29 16:37:52,Godwine,das ist schön für dich aber normalsterbliche eigentlich nicht :P
+2016-05-29 16:38:50,darklink,oder warte
+2016-05-29 16:39:23,darklink,das sind bloß die geräusche von dem bewegen des lautsprechers
+2016-05-29 16:39:36,darklink,also der kriegt doch alles von 2 Hz hin
+2016-05-29 16:40:21,Godwine,ja man gibt den frequenzbereich von lautsprechern meist mit max. 20Hz - 20kHz an weil mehr kört der Mensch eh nicht
+2016-05-29 16:41:27,Godwine,*hört
+2016-05-29 16:43:30,Godwine,"aber den magneten in der box interessiert die frequenz normalerweise eh nicht der bekommt bei zu hohen frequenzen nur meist probleme mit der massenträgheit der membran, desshalb sind hochtöner auch kleiner als bassboxen"
+2016-05-29 16:44:46,darklink,20kHz kriegt er nicht ausgegeben
+2016-05-29 16:45:47,Godwine,kann auch sein dass du das nicht hörst ;D
+2016-05-29 16:46:07,MasterQ32,film das einfach mal und spiel das video in zeitlupe ab ;)
+2016-05-29 16:46:25,MasterQ32,"ab 40 FPS kannst du die bewegung rekonstruieren, unter 40 FPS siehst du ne bewegung"
+2016-05-29 16:46:53,Godwine,"ne soundaufnahme mit 0,5x wiedergabe reicht"
+2016-05-29 16:46:56,darklink,also ich fühle keine bewegung
+2016-05-29 16:47:28,Godwine,naj 20kHz wäre auch schwer zu fühlen zumal der magnet bei der frequenz eh nicht besonders stark vibrieren würde
+2016-05-29 16:47:39,MasterQ32,oh wait da war ein k :D
+2016-05-29 16:47:58,MasterQ32,sweepe einfach mal von 10kHz auf 20 kHz hoch
+2016-05-29 16:49:16,darklink,"lautstärke auf 11, keine bewegung am lautsprecher spürbar, ich guck mal was mein Handy aufgenommen hat"
+2016-05-29 16:49:35,MasterQ32,warum willst du eig. 20 kHz abspielen?
+2016-05-29 16:49:37,MasterQ32,das will doch eh keiner hören
+2016-05-29 16:49:49,darklink,KA
+2016-05-29 16:50:48,darklink,Für die wiedergabe ist adobe flash player erforderlich
+2016-05-29 16:50:51,darklink,ernsthaft?
+2016-05-29 16:51:14,Godwine,also sofern das ne analoge box ist und du ein sinus signal produzierst kannst du davon ausgehen dass die box das wiedergibt auch wenn du es nicht hören kannst
+2016-05-29 16:51:24,MasterQ32,joar
+2016-05-29 16:51:40,darklink,Ich habe auf einen lautsprecher meinen finger gehalten
+2016-05-29 16:51:45,darklink,hat sich nichts bewegt
+2016-05-29 16:52:07,Godwine,bei 20kHz?
+2016-05-29 16:52:09,MasterQ32,20 kHz nimmst du auch nicht wahr
+2016-05-29 16:54:26,darklink,erstmal ffmpeg holen
+2016-05-29 16:54:37,darklink,(holen=bauen)
+2016-05-29 16:56:06,darklink,Ich liebe sourceforge
+2016-05-29 16:56:21,darklink,Da krieg ich immer so schön 80KB/s downlink
+2016-05-29 17:35:05,MasterQ32,"ich glaube, ich belasse es erst mal mit array-allokation"
+2016-05-29 17:35:10,MasterQ32,*bei
+2016-05-29 18:03:17,MasterQ32,ich hab meinen ersten compiler-hackl gemacht
+2016-05-29 18:03:21,MasterQ32,naked fn arrayToInt(a : int[10]) -> int [[ ]]
+2016-05-29 18:03:38,MasterQ32,das hier ist ein reinterpret_cast<int>(array) :D
+2016-05-29 18:45:30,Godwine,und hast du mit deinen boxen geschafft was du wollstest?
+2016-05-29 19:21:50,Jonathan,Moin
+2016-05-29 19:37:23,Paddy,Reh
+2016-05-29 19:41:48,darklink,Hirsch
+2016-05-29 19:41:57,MasterQ32,om nom nom
+2016-05-29 20:30:01,darklink,Jetzt kommt arch linux aufs handy
+2016-05-29 20:30:19,Jonathan,"darklink, auweia ;)"
+2016-05-29 20:30:28,darklink,(Welches ich dann durch linux from scratch ersetze)
+2016-05-29 20:30:46,darklink,Jonathan: was ist denn daran so schlimm?
+2016-05-29 20:31:11,Jonathan,Handy finde ich immer so ein bisschen unangenehm ;)
+2016-05-29 20:31:49,Jonathan,"Aber gut, solange du den Bootloader nicht versehentlich tötest und das OS zurückflashen kannst, geht das schon"
+2016-05-29 20:32:09,darklink,Ich meine als chroot
+2016-05-29 20:32:29,Jonathan,Achso ;)
+2016-05-29 20:32:33,darklink,"bin schon froh, dass cyanogenmod für mein phone geported ist"
+2016-05-29 20:37:31,MasterQ32,:P
+2016-05-29 21:24:14,darklink,arch linux updaten!
+2016-05-29 21:24:25,darklink,Natürlich
+2016-05-29 21:24:55,darklink,warum ist KDE auf dem teil? Lol Ich will doch nur xfce
+2016-05-29 21:25:14,darklink,Kde ist eh schlimm auf mobilen geräten
+2016-05-29 21:26:26,XanClic,Abgesehen von spezialisierten Umgebungen stell ich mir KDE persönlich ja eher als die einzig nutzbare DE auf Tablets und Smartphones vor
+2016-05-29 21:26:34,XanClic,"Nicht, dass ich es ausprobiert hätte"
+2016-05-29 21:27:01,Paddy,Läuft es denn auf irgendwas erhältlichem?
+2016-05-29 21:27:10,darklink,kubuntu
+2016-05-29 21:27:23,XanClic,"Ich weiß zumindest, dass sie gut Arbeit in die entsprechende Oberfläche stecken"
+2016-05-29 21:27:43,XanClic,Irgendwo müssen sie das ja dann auch ausprobieren ;-)
+2016-05-29 21:27:47,Paddy,"Aber das einzige angekündigte Tablet damit ist doch schon lang wieder eingestellt, oder?"
+2016-05-29 21:27:48,darklink,"ja, aber KDE ist vergleichsweise resourcenintensiv"
+2016-05-29 21:28:00,Paddy,Ist es?
+2016-05-29 21:28:04,darklink,ja
+2016-05-29 21:28:48,darklink,Außerdem ist es bei mir immer kaputt :(
+2016-05-29 21:29:01,Paddy,"Ich kenn die aktuellen Zahlen nicht, aber als vor ein paar Jahren mal jemand nachgemessen hat, was die ressourcenintensivste Variante ein ""schlanker"" Desktop mit entsprechend lauter nichtnativen Programmen, die massig eigene Libs reinziehen"
+2016-05-29 21:29:42,darklink,"also ich habe mal für über ein jahr KDE genutzt, allerdings beim upgrade auf plasma 5 ging alles kaputt und es geht immer noch nicht"
+2016-05-29 21:30:38,darklink,Und seitdem nutze ich xfce4
+2016-05-29 21:31:28,darklink,"oh cool, ffmpeg ist vorinstalliert"

@@ -1,0 +1,346 @@
+date/time,nick,message
+2017-05-15 00:14:38,condret,"wtf, wieso startet mein kernel nicht, wenn ich ihn ohne -g baue"
+2017-05-15 00:14:49,condret,"bzw, wenn ich ihn strippe"
+2017-05-15 00:15:08,condret,wer braucht debugging-symbole im kernel
+2017-05-15 01:37:10,condret,"das ist schon so ein bischen kacke, ich fange an mit kernel-entwicklung und finde lauter bugs"
+2017-05-15 01:37:46,condret,"bugs in GAS, bugs in grub2"
+2017-05-15 01:38:24,condret,"der grundlegende bug in GAS ist ja, dass der überhaupt AT&T-Syntax kann. Die komplette Syntax ist ein bug"
+2017-05-15 01:40:41,XanClic,du könntest ja einfach Intelsyntax benutzen
+2017-05-15 02:02:56,condret,mach ich ja
+2017-05-15 02:03:12,condret,und dann muss ich für einen bug in GAS nach ATT wechseln
+2017-05-15 02:04:54,condret,"in intelsyntax macht GAS aus ""push init"" ""push dword ptr[init]"", aber in ATT macht er aus ""push $init"" ""push init"""
+2017-05-15 02:05:04,condret,"und nein, ich will nicht lea verwenden"
+2017-05-15 02:06:57,condret,"ich soll crackmes für den Lehrstuhl entwickeln. jedes vernünftige RE tool sagt bei ner autoanalyse dass da ne Datenreferenz ist, wenn du lea verwendest"
+2017-05-15 02:07:49,condret,"außerdem ist ""lea eax, [init];push eax; ret"" länger als notwendig"
+2017-05-15 13:13:49,Jonathan,Moin
+2017-05-15 13:14:01,MasterQ32,huhu
+2017-05-15 13:16:34,MasterQ32,kennst du die Variante in C für strings:
+2017-05-15 13:16:34,MasterQ32,"char const * foo = ""\"
+2017-05-15 13:16:34,MasterQ32,bar
+2017-05-15 13:16:34,MasterQ32,"baz"";"
+2017-05-15 13:16:35,MasterQ32,?
+2017-05-15 13:53:51,Jonathan,"MasterQ32: Hab ich bisher noch nicht gesehen, aber Multi-Zeilen-Strings gibt's in vielen Sprachen"
+2017-05-15 13:54:01,MasterQ32,joar
+2017-05-15 13:54:06,MasterQ32,GCC mags auf jeden Fall nicht
+2017-05-15 13:54:12,MasterQ32,aber der code ist auch von '96
+2017-05-15 13:54:22,Jonathan,... *g*
+2017-05-15 13:54:40,Jonathan,"Das hier sollte eigentlich gehen, denke ich:"
+2017-05-15 13:54:55,Jonathan,"char* foo = ""bar"""
+2017-05-15 13:54:57,Jonathan,"""baz"";"
+2017-05-15 13:55:17,Jonathan,Wird natürlich keine Zeilenumbrüche reinmachen
+2017-05-15 13:55:47,MasterQ32,ja klar
+2017-05-15 13:56:47,Jonathan,"Hm, jetzt ist die schöne Uptime von meinem Server weg, hab mal den Kernel aktualisiert :("
+2017-05-15 14:04:22,MasterQ32,"oh nein, wie tragisch"
+2017-05-15 14:05:22,Jonathan,"Ja echt, zwei Monate hart erarbeitete Uptime einfach weg"
+2017-05-15 14:11:49,kevin,"MasterQ32: Wenn man in jeder Zeile den Backslash am Ende reinpackt, tut das bei mir. Sind aber auch keine Zeilenumbrüche drin dann."
+2017-05-15 14:12:16,kevin,"Ich glaube, das wird schon von cpp interpretiert"
+2017-05-15 14:12:55,MasterQ32,hm
+2017-05-15 14:32:11,MasterQ32,ein Wayland-Compositor im Browser
+2017-05-15 14:32:22,MasterQ32,irgendwie ist das für mich irgendwie am ziel vorbei
+2017-05-15 14:43:00,kevin,"Irgendwie ist für mich so ziemlich alles, was in den letzten Jahren im Browser passiert, am Ziel vorbei..."
+2017-05-15 14:43:44,MasterQ32,jap
+2017-05-15 14:43:46,MasterQ32,definitiv
+2017-05-15 14:43:49,MasterQ32,lynx MUSS reichen
+2017-05-15 14:44:04,kevin,"Naja, das auch nicht gerade"
+2017-05-15 14:44:42,kevin,"Aber was heutzutage mit JS angestellt wird, ist jenseits von gut und böse"
+2017-05-15 14:45:32,MasterQ32,jup
+2017-05-15 14:46:09,MasterQ32,"meine Site läuft in links, stellt informationen sauber dar, hat ein ordentliches layout und nutzt keine zeile JS"
+2017-05-15 14:46:46,kevin,Und lädt dann komischerweise auch irgendwie viel schneller
+2017-05-15 14:46:53,MasterQ32,ja!
+2017-05-15 14:47:01,MasterQ32,obwohl ich nicht mal beschleuniger-frameworks nutze!
+2017-05-15 14:50:41,MasterQ32,"kevin, kurz zum verständnis von multitasking:"
+2017-05-15 14:50:50,MasterQ32,ich bastel da grade den kram ausm tutorial nach
+2017-05-15 14:51:01,MasterQ32,"für Ring 3 brauch ich ja die TSS, right?"
+2017-05-15 14:52:32,kevin,Die Korinthenkackerantwort wäre nein
+2017-05-15 14:52:45,kevin,"Das TSS brauchst du erst, wenn du von Ring 3 wieder nach Ring 0 zurückwillst ;-)"
+2017-05-15 14:54:13,MasterQ32,"okay, ja"
+2017-05-15 14:54:17,MasterQ32,dann hab ich den teil richtig verstanden
+2017-05-15 14:54:24,MasterQ32,auf ring 3 kann ich erst mal verzichten :D
+2017-05-15 14:55:13,MasterQ32,ich muss ja das Page Directory für jeden Task beim Task switch laden/wiederherstellen
+2017-05-15 14:56:11,MasterQ32,grob so: void task_switch() { loadKernelDirectory(); task = task->next; loadDirectory(task->directory); iret; }
+2017-05-15 14:58:25,MasterQ32,hab ich das so richtig verstanden bzw. kann man das so machen?
+2017-05-15 15:00:37,MasterQ32,"mist, muss los. melde mich in 45 minuten wieder (hab grade keinen bouncer mehr)"
+2017-05-15 15:06:21,kevin,loadKernelDirectory(); // Ein eigenes PD für den Kernel klingt nach einer schlechten Idee
+2017-05-15 15:18:36,Jonathan,Hmm
+2017-05-15 15:18:52,Jonathan,Unser neuer Mathe-Prof kann einfache Sachverhalte erstaunlich unverständlich und kompliziert darstellen *g*
+2017-05-15 15:18:58,Jonathan,(Numerische Verfahren)
+2017-05-15 15:20:26,Jonathan,"Hauptgrund: ""Also ja, wie das hier zustande kommt erklären wir in der Veranstaltung nicht, akzeptieren Sie es einfach"" - zeig eine ganze Folie voll mit Gleichungen in Schriftgröße 10"
+2017-05-15 15:21:00,Jonathan,Der macht null Beweise in Mathe IV...
+2017-05-15 15:21:25,kevin,Ist das nicht die Jobbeschreibung für einen Mathe-Prof?
+2017-05-15 15:21:43,kevin,"Also das ""einfache Sachverhalte erstaunlich unverständlich und kompliziert darstellen"""
+2017-05-15 15:22:53,Jonathan,Dann hab ich bisher 3 Semester im Paradies gelebt *g*
+2017-05-15 15:38:53,Svenska,scheint so
+2017-05-15 15:39:04,Svenska,ich hatte in 3 semestern mathe zwei lichtblicke
+2017-05-15 15:39:25,XanClic,Ich kann mich ja nicht beschweren
+2017-05-15 15:39:28,Svenska,"einmal die erste vorlesung, wo grundlegende definitionen vom abi unverständlich neu (und konsistent) aufgelegt wurden"
+2017-05-15 15:39:35,XanClic,"Außer über einen Prof im Nebenfach Mathe, aber da bin ich ja selber schuld"
+2017-05-15 15:39:57,Svenska,"und dann einmal im dritten semester, wo der prof mit kreisintegralen irgendwie ne normal-halbkugel in 3D berechnet hat und ich das begriffen hab, bevor er fertig war"
+2017-05-15 15:40:15,Svenska,"der rest war mitschreiben, klausuren ueben und hoffen (hat auch geklappt) ^^"
+2017-05-15 15:51:47,MasterQ32,re
+2017-05-15 15:52:05,Svenska,kommentar von kevin vorhin: ein eigenes kernel-pd ist eher doof :)
+2017-05-15 15:53:14,MasterQ32,"jap, hab ich grade nachgelesen"
+2017-05-15 15:53:26,MasterQ32,application hotpools sind definitiv langweiliger als os-dev
+2017-05-15 15:53:37,MasterQ32,kevin: wieso ist das ne schlechte idee?
+2017-05-15 15:53:56,kevin,MasterQ32: Warum sollte es eine gute Idee sein?
+2017-05-15 15:54:01,Svenska,"naja, du kannst ja den kernel in jeder anwendung mappen?"
+2017-05-15 15:54:11,kevin,"Wenn es keine gute Idee ist, ist es eine schlechte, weil zusätzliche Kontextwechsel"
+2017-05-15 15:54:20,MasterQ32,hmmm
+2017-05-15 15:54:42,MasterQ32,"sagen wir mal, mein userspace beginnt bei 0x10000000"
+2017-05-15 15:55:24,MasterQ32,jetzt allokiere ich eine physical page bei 0x2000000 und möchte darauf schreiben (weil da zum bleistift eine page table liegt)
+2017-05-15 15:55:38,MasterQ32,wie mach ich das dann? weil im moment ist an der stelle ja user data gemappt
+2017-05-15 15:55:45,Svenska,andersrum... jede anwendung hat ihre eigene sicht auf den adressraum
+2017-05-15 15:55:53,MasterQ32,soweit klar
+2017-05-15 15:55:59,Svenska,"z.B. von 0 bis 1G kernel, von 1G bis 4G userspace"
+2017-05-15 15:56:06,MasterQ32,genau
+2017-05-15 15:56:08,Svenska,jetzt kannst du das erste G aber in jeder anwendung gleich mappen
+2017-05-15 15:56:21,MasterQ32,auch klar
+2017-05-15 15:56:32,Svenska,"wo das physisch liegt, ist doch egal"
+2017-05-15 15:56:41,XanClic,Wie wärs mit “Du mappst die physische Seite einfach nicht virtuell an die gleiche Adresse“?
+2017-05-15 15:56:55,MasterQ32,hmm
+2017-05-15 15:56:57,XanClic,Um es mal kurz zu machen
+2017-05-15 15:57:23,MasterQ32,"also ich reservier mir quasi eine virtual page, in die ich meine zu bearbeitende page table reinmappe?"
+2017-05-15 15:57:51,Svenska,"kannst du machen, oder du mappst die page garnicht als tabelle, sondern einfach als normale daten"
+2017-05-15 15:57:56,XanClic,"Na ja, wieso reservieren; du sagst einfach pt = vmm_map(paddr)"
+2017-05-15 15:58:13,MasterQ32,"okay, was macht vmm_map jetzt?"
+2017-05-15 15:58:24,MasterQ32,"genau das ist der punkt, an dem mein hirn grade aussteigt"
+2017-05-15 15:58:41,XanClic,Ja Zeug mappen?
+2017-05-15 15:58:42,MasterQ32,"wie organisier ich das sauber, sodass ich mein page directory+table ordentlich bearbeiten kann"
+2017-05-15 15:58:49,MasterQ32,aber was wohin?
+2017-05-15 15:58:53,kevin,Rekursives Mapping
+2017-05-15 15:58:56,XanClic,"Es gibt diese Idee, die ich gar nicht ab kann, und das ist rekursives Mapping…"
+2017-05-15 15:58:58,XanClic,Ja.
+2017-05-15 15:59:10,XanClic,"Oder man hat halt einfach immer alle PTs des Kernels gemappt, so hab ich das immer gemacht"
+2017-05-15 15:59:11,kevin,"Naja, du kannst es auch irgendwie umständlich machen"
+2017-05-15 15:59:13,Svenska,"rekursives mapping macht aber nur fuer das aktuelle pd spaß, oder?"
+2017-05-15 15:59:22,XanClic,Vor allem macht rekursives Mapping nur auf x86 Spaß
+2017-05-15 15:59:29,kevin,"Jo, rekursives Mapping ist nur für das aktive PD, alles andere ist eh trivial"
+2017-05-15 15:59:51,kevin,"Weil es ja nur drum geht, PTs in das aktive PD mappen zu können"
+2017-05-15 16:00:17,Svenska,"MasterQ32: wenn du ein PD als PT einträgst, dann hast du alle PTs des PDs als ein 4 MB-block im adressraum :D"
+2017-05-15 16:00:43,MasterQ32,hä? -vv
+2017-05-15 16:00:44,Svenska,weil die struktur fuer PTs und PDs gleich aussieht (auf x86)
+2017-05-15 16:00:48,MasterQ32,"ja, soweit klar"
+2017-05-15 16:00:55,Svenska,"also, ein PD beschreibt 4 GB adressraum mit tabellen"
+2017-05-15 16:01:03,Svenska,ein PT beschreibt 4 MB adressraum mit pages
+2017-05-15 16:01:48,Svenska,"wenn du jetzt das PD selbst als PT in sich einträgst, dann hast du einen 4 MB großen speicherblock"
+2017-05-15 16:02:01,Svenska,"in dem aber keine daten stehen, sondern die PTs, die im PD drin sind ;)"
+2017-05-15 16:02:14,Svenska,"ich glaub, die beiden anderen hier können's besser erklären xD"
+2017-05-15 16:02:39,MasterQ32,"okay, das heißt in dem 4 MB-Block liegen dann alle 1024 Einträge des Page Directory ""linear hintereinander"""
+2017-05-15 16:02:45,Svenska,richtig
+2017-05-15 16:02:50,MasterQ32,ah
+2017-05-15 16:03:03,MasterQ32,"und den platz kann ich mir ja dann raussuchen, wo das liegt"
+2017-05-15 16:03:09,Svenska,"eben, irgendwo im kernel"
+2017-05-15 16:03:28,MasterQ32,"okay, das hilft mir grade gewaltet"
+2017-05-15 16:03:50,MasterQ32,*gewaltig
+2017-05-15 16:04:12,MasterQ32,der speicher muss ja noch nicht vollständig allokiert sein
+2017-05-15 16:04:21,MasterQ32,"das passiert ja dann, wenn ich darauf zugreife"
+2017-05-15 16:04:23,Svenska,"welcher ""speicher""?"
+2017-05-15 16:04:38,MasterQ32,der inhalt in den 4 MB
+2017-05-15 16:04:46,MasterQ32,der ist ja in 1024 tables fragmentiert
+2017-05-15 16:04:46,Svenska,der existiert nicht
+2017-05-15 16:04:55,Svenska,das PD hat nur 4 KB
+2017-05-15 16:06:30,MasterQ32,"ja, aber wenn ich das PD als PT mappe, hab ich ja nen 4MB-Raum, der mir alle gemappten(oder nicht gemappten) Page Tables ""anzeigt"""
+2017-05-15 16:06:37,MasterQ32,auch wenn der speicher nicht allokiert bzw. gemappt ist
+2017-05-15 16:06:38,Svenska,ja
+2017-05-15 16:06:55,Svenska,"ja, du kannst damit aber nicht auf den speicher zugreifen"
+2017-05-15 16:07:02,Svenska,"du siehst nur die datenstruktur, die ihn beschreibt"
+2017-05-15 16:07:15,Svenska,also die PTs
+2017-05-15 16:07:29,MasterQ32,"naja, wenn ich eine PT mappe, kann ich ja damit auch darauf zugreifen"
+2017-05-15 16:07:42,MasterQ32,oder hab ich da wieder was falsch verstanden?
+2017-05-15 16:07:44,Svenska,"also um einen neuen 4 MB block speicher zu mappen, besorgst du dir 4 KB speicher und trägst deren adresse in diesen ""4 MB Block"" ein"
+2017-05-15 16:08:11,MasterQ32,genau
+2017-05-15 16:10:02,MasterQ32,"also es ist empfehlenswert das komplette page directory schon mal zu mappen, oder?"
+2017-05-15 16:10:14,MasterQ32,"bis zu dem zeitpunkt, an dem ich weniger als 8 MB Ram habe :P"
+2017-05-15 16:11:08,MasterQ32,"> ""Ja, und dann Föhnen sie unter der Dusche. Und dann geht plötzlich der Strom aus, weil das Wasser in den Strom gelaufen ist. Und dann denken sie sich: Mensch, was für ein blöder Föhn!"""
+2017-05-15 16:11:10,MasterQ32,beste VL ever :D
+2017-05-15 16:11:18,XanClic,"Man kann auch einfach nicht rekursiv mappen und 4 kB für eine ordentliche Page Table ausgeben, was dann auch auf jeder anderen Architektur funktionieren würde"
+2017-05-15 16:11:31,XanClic,"Aber ich bin der einzige, der hier seit Anbeginn der Zeiten vor dem Abgrund warnt, vor dem wir stehen"
+2017-05-15 16:11:43,XanClic,"Das Ende ist nah, ich sag es euch"
+2017-05-15 16:11:54,XanClic,Und Sternchen am Typen und rekursives Mapping werden schuld sein
+2017-05-15 16:12:27,Svenska,ich weise ja leise auf IoT und Schmattfons hin
+2017-05-15 16:13:20,MasterQ32,"diese sternchen sind doch toll, wir brauchen MEHR davon!"
+2017-05-15 16:14:21,Svenska,void __attribute__((noreturn)) func(void) { *(uint16_t*)0x0800 = 0x7777; wdt_enable(WDTO_15MS); while(1); }
+2017-05-15 16:14:35,MasterQ32,oh yeah :D
+2017-05-15 16:14:37,Svenska,"sieht doch gut aus, so eine funktion?"
+2017-05-15 16:14:41,MasterQ32,sowas von!
+2017-05-15 16:14:45,XanClic,Das heißt doch jetzt _Noreturn
+2017-05-15 16:14:53,XanClic,oder #include <stdnoreturn.h> und noreturn
+2017-05-15 16:15:04,MasterQ32,was liegt denn an 0x0800?
+2017-05-15 16:15:19,Svenska,MasterQ32: die funktion hat noch 2 kommentare ;)
+2017-05-15 16:15:26,Svenska,der eine ist /* magic key */
+2017-05-15 16:15:36,Svenska,der andere ist /* return back to Arduino Caterina boot loader */ :D
+2017-05-15 16:15:53,MasterQ32,via watchdog?
+2017-05-15 16:15:56,MasterQ32,:P
+2017-05-15 16:16:01,MasterQ32,dat hack :D
+2017-05-15 16:16:07,Svenska,warum?
+2017-05-15 16:16:34,MasterQ32,"ich weiß nicht, aber solange es tut :D"
+2017-05-15 16:16:42,Svenska,wie willst du sonst das system resetten?
+2017-05-15 16:16:52,MasterQ32,reset mit pin verbinden :P
+2017-05-15 16:16:56,Svenska,in software?
+2017-05-15 16:16:58,MasterQ32,und pullup :D
+2017-05-15 16:16:59,XanClic,„Sie können den Computer jetzt ausschalten.“
+2017-05-15 16:17:03,MasterQ32,XanClic: +1
+2017-05-15 16:18:09,Svenska,der bootloader prueft die reset-quelle (mit key: bootloader; reset-pin: bootloader; alles andere: direkt anwendung)
+2017-05-15 16:18:42,Svenska,"aber arduino-code lesen macht keinen spaß, diese eine zeile war ueber 3 dateien und 15 #defines verteilt"
+2017-05-15 16:18:52,MasterQ32,wow
+2017-05-15 16:19:03,MasterQ32,"ja, ich hab bisher auch keine gute meinung von dem arduino-code"
+2017-05-15 16:19:05,Svenska,"und dann lies mal usb-treiber, wenn du von usb keine ahnung hast"
+2017-05-15 16:19:10,MasterQ32,der macht sehr viel
+2017-05-15 16:20:08,Svenska,"der arduino pro micro, den ich habe, hat keinen reset-button"
+2017-05-15 16:20:20,Svenska,"meine testplatine, die ich gestern gezimmert hab, hat jetzt zwar einen, aber ich bin genial"
+2017-05-15 16:20:25,MasterQ32,:D
+2017-05-15 16:20:27,Svenska,...hab den auf die falsche seite der platine gelötet ^^
+2017-05-15 16:20:35,MasterQ32,praktisch!
+2017-05-15 16:20:37,Svenska,"d.h. wenn die platine auf dem tape steckt, kommt man nicht mehr ran"
+2017-05-15 16:20:59,MasterQ32,XanClic: aber back to topic: wie würdest du das ganze lösen?
+2017-05-15 16:21:01,MasterQ32,mit dem paging
+2017-05-15 16:21:15,XanClic,"Wie gesagt, einfach alle Page Tables des Kernels gemappt halten"
+2017-05-15 16:21:32,XanClic,Wie schon gesagt braucht man dazu maximal eine eigene Page Table
+2017-05-15 16:22:04,MasterQ32,"also ich brauch einmal das PD und eine PT, die alle einträge des PD enthält?"
+2017-05-15 16:22:13,XanClic,Ja
+2017-05-15 16:22:23,Svenska,wenn du den kernel unter 4 MB hältst
+2017-05-15 16:22:33,XanClic,"Man kann da das PD selbst nehmen, wenn man unbedingt will, aber ich finde das seit jeher irgendwie abstoßend"
+2017-05-15 16:22:48,MasterQ32,ich versteh dich da schon :D
+2017-05-15 16:23:07,Svenska,"hmm, kann man auf arm nicht rekursiv mappen?"
+2017-05-15 16:23:14,Svenska,zumindest arm-cortex a?
+2017-05-15 16:24:28,MasterQ32,"was spricht (außer einem zusätzlichen context switch) gegen ""kernel hat eigenes PD""?"
+2017-05-15 16:25:00,XanClic,"Svenska, soweit ich mich erinnere, gab ein 16-kB-… Wie heißt das? Translation… Irgendwas"
+2017-05-15 16:25:06,XanClic,Und die Translation Tables waren 1 kB groß
+2017-05-15 16:25:16,XanClic,"Aber das hängt wiederum auch davon ab, welches Paging das genau ist…"
+2017-05-15 16:25:22,Svenska,"hmm, meine systeme haben keine mmu, daher hab ich keine ahnung davon"
+2017-05-15 16:25:45,Svenska,MasterQ32: daten gemeinsam zwischen userspace und kernel teilen wird schwierig
+2017-05-15 16:26:00,XanClic,"Ach nein, Translation Table war das PD und die PTs heißen da auch PTs"
+2017-05-15 16:26:12,XanClic,zum Glück hab ich das ARM-Tutorial für mich geschrieben
+2017-05-15 16:26:18,Svenska,:D
+2017-05-15 16:26:24,Svenska,"ist aber arm9 oder arm11, oder?"
+2017-05-15 16:26:42,MasterQ32,Svenska: das war ja meine Idee dahinter: Anwendung sieht NIX vom Kernel
+2017-05-15 16:26:45,XanClic,Vermutlich
+2017-05-15 16:27:01,XanClic,"VMSAv6, ich rate mal, das ist ARMv6, also… ARM9?"
+2017-05-15 16:27:11,Svenska,MasterQ32: du kannst ja den kernel-adressraum verbieten
+2017-05-15 16:27:15,XanClic,"Was ARM64 macht, keine Ahnung"
+2017-05-15 16:27:26,Svenska,"also kernel ist 0..1G, aber nicht userspace-accessible"
+2017-05-15 16:27:29,MasterQ32,"ich bin aber grade zu faul, ringwechsel zu basteln :D"
+2017-05-15 16:28:32,MasterQ32,"damit hätte ich dann auch für den user process fast den kompletten addressraum zur verfügung, bis auf die interrupt handler"
+2017-05-15 16:28:58,XanClic,"Wenn der Userspace in Ring 0 läuft, ist das alles egal :-P"
+2017-05-15 16:29:22,MasterQ32,"ja, weil er den kram ummappen darf"
+2017-05-15 16:29:26,MasterQ32,das is schon klar
+2017-05-15 16:30:26,Svenska,"sagen wir mal so, wenn du den kernel nicht gemappt haben möchtest, musst du dir saubere, kleine interfaces zwischen userspace und kernel basteln und genau im blick behalten, was ständig gemappt sein muss und was fehlen darf"
+2017-05-15 16:30:41,MasterQ32,klar
+2017-05-15 16:31:22,Svenska,"ist halt auch mehr arbeit, plus weniger performance xD"
+2017-05-15 16:31:25,MasterQ32,:D
+2017-05-15 16:31:34,XanClic,Und am Ende gehts in KVM nicht
+2017-05-15 16:31:48,Svenska,hm?
+2017-05-15 16:31:56,XanClic,"Och, ich hab da so Gerüchte von kevin gehört…"
+2017-05-15 16:32:13,XanClic,"…dass die vm86-Implementierung von týndur, die ja auch nix vom Kernel gemappt hatte, in KVM nie tat…"
+2017-05-15 16:32:21,XanClic,…und dass das ewige Fixen irgendwann langweilig wurde…
+2017-05-15 16:32:31,MasterQ32,"""not featured in KVM"""
+2017-05-15 16:33:57,MasterQ32,"Svenska: vielleicht liegt meine Denkweise grade daran, dass ich mich nebenher wieder mit TI-OS für z80 auseinander setze"
+2017-05-15 16:34:07,MasterQ32,und da denke ich mit banking :D
+2017-05-15 16:34:15,Svenska,"ja, aber auf x86 hast du 32 bit adressraum xD"
+2017-05-15 16:34:22,MasterQ32,ach neee :D
+2017-05-15 16:34:22,Svenska,dat reicht fuern hobby os ^^
+2017-05-15 16:34:29,MasterQ32,stimmt
+2017-05-15 16:34:39,MasterQ32,"aber ich will ja grade nur mal ""paging"" lernen"
+2017-05-15 16:34:43,MasterQ32,bevor ich damit weiter bastel
+2017-05-15 16:37:17,kevin,"XanClic: Doch, die hat nach meinen KVM-Fixes prinzipiell schon getan. Nur auf meiner CPU nicht, weil die buggy ist."
+2017-05-15 16:37:53,Svenska,magst du elaborieren?
+2017-05-15 16:41:19,kevin,So genau weiß ich das selber nicht mehr
+2017-05-15 16:41:52,Svenska,schade ^^
+2017-05-15 16:42:31,kevin,"Falscher Exit Reason, wenn man aus dem VM86 ein Task Gate in der IDT anspringt, oder irgendwie sowas komisches"
+2017-05-15 16:42:51,kevin,"Mal schauen, vielleicht liegt die Mail noch irgendwo rum"
+2017-05-15 16:42:56,Svenska,"achso, tyndur's vm86 war ja ein richtiger task, im gegensatz zum rest der welt, oder?"
+2017-05-15 16:44:05,XanClic,"Na ja, wie willst du denn sonst das PD wechseln, wenn man zurück zum Kernel will?"
+2017-05-15 16:44:08,kevin,Svenska: https://www.spinics.net/lists/kvm/msg71289.html
+2017-05-15 16:46:16,kevin,"Oder der hier, da geht es von vorne los: http://www.spinics.net/lists/kvm/msg66593.html"
+2017-05-15 16:50:34,kevin,Oder der: http://www.mail-archive.com/kvm@vger.kernel.org/msg66914.html
+2017-05-15 16:50:42,kevin,"Aber ich glaube, jetzt habe ich genug in alten Mails gewühlt ;-)"
+2017-05-15 16:52:56,MasterQ32,"hm, ich glaub ich versuche nach der VL mal, meinen user space prototypen zu basteln"
+2017-05-15 16:53:05,MasterQ32,"also, task switch OHNE userspace :D"
+2017-05-15 16:53:08,Svenska,kevin: danke
+2017-05-15 16:58:54,MasterQ32,"was hab ich denn eigentlich alles an möglichkeiten, RPC zu tun?"
+2017-05-15 16:59:13,Svenska,meinst du syscalls?
+2017-05-15 16:59:23,Svenska,oder tatsächliche rpcs?
+2017-05-15 16:59:25,MasterQ32,Task A möchte mit Task B reden
+2017-05-15 16:59:37,MasterQ32,"syscalls sind ja ""Task A möchte mit Kernel reden"""
+2017-05-15 17:01:24,XanClic,in manchen Systemen ist auch der Kernel nur ein RPC-Partner
+2017-05-15 17:02:36,Svenska,"naja, rpc läuft teilweise immer durch den kernel, entweder fuer die verbindungsherstellung oder sogar fuer die gesamtkommunikation"
+2017-05-15 17:02:37,MasterQ32,"okay, also syscall via RPC?"
+2017-05-15 17:02:47,Svenska,"zB syscall fuer ""will mem sharen"""
+2017-05-15 17:02:53,XanClic,"Na ja, RPC ist halt ein Syscall, und zwar der einzige, den es gibt"
+2017-05-15 17:03:04,MasterQ32,hm
+2017-05-15 17:03:44,MasterQ32,"theoretisch kann ich ja RPC asynchron machen, im sinne von ""sendMessage($type target, void * data, size_t message);"""
+2017-05-15 17:03:57,MasterQ32,ist jetzt nicht der geilste RPC ^^
+2017-05-15 17:05:40,Svenska,hm?
+2017-05-15 17:05:43,Svenska,inwiefern?
+2017-05-15 17:05:55,Svenska,asynchron ist mächtiger als synchron
+2017-05-15 17:05:58,MasterQ32,korrekt
+2017-05-15 17:06:04,Svenska,d.h. nur synchron is doof
+2017-05-15 17:06:07,MasterQ32,"aber ist halt erst mal headerlos, rohdaten verschicken"
+2017-05-15 17:06:31,MasterQ32,"im bestfall möchte ich ja anfragen können, was ein prozess als RPcalls anbietet"
+2017-05-15 17:06:38,MasterQ32,"um zu verifizieren, ob ich den überhaupt aufrufen kann"
+2017-05-15 17:07:03,Svenska,"naja, wenn beim empfänger ein ""receiveMessage($type sender, void* data, size_t len)"" ankommt, kann er doch selbst entscheiden, wie er reagiert"
+2017-05-15 17:07:12,MasterQ32,joar
+2017-05-15 17:07:22,Svenska,machst du mit briefen (also denen aus papier) auch nicht anders xD
+2017-05-15 17:07:28,MasterQ32,haha :D
+2017-05-15 17:07:31,MasterQ32,stimmt
+2017-05-15 17:07:46,MasterQ32,"wenn ich nen brief in kyrillischer schrift habe, kann ich den zwar angucken, aber nicht verstehen"
+2017-05-15 17:08:09,Svenska,naja
+2017-05-15 17:08:23,Svenska,"du guckst dir erst den absender an, dann den inhalt"
+2017-05-15 17:08:26,MasterQ32,stimmt
+2017-05-15 17:08:27,Svenska,werbung wandert bei mir ungelesen in die tonne
+2017-05-15 17:08:31,MasterQ32,+1
+2017-05-15 17:09:35,MasterQ32,"ich frage mich, ob es sinnvoll ist, eine architektur ähnlich der von webservices zu basteln"
+2017-05-15 17:10:04,Svenska,?
+2017-05-15 17:10:17,Svenska,du kannst auch einfach sockets implementieren und tcp drueber fahren xD
+2017-05-15 17:10:20,MasterQ32,:D
+2017-05-15 17:10:22,MasterQ32,stimmt
+2017-05-15 17:10:23,Svenska,"betonung auf ""einfach"""
+2017-05-15 17:10:30,MasterQ32,:D
+2017-05-15 17:10:37,MasterQ32,und dann hab ich XML-RPC
+2017-05-15 17:11:45,MasterQ32,"ich grübel halt grade darüber nach, wie ich beispielsweise präsentationslogik mache"
+2017-05-15 17:11:57,MasterQ32,also den grafiktreiber
+2017-05-15 17:12:09,MasterQ32,ich kann den natürlich als kernelkomponente machen
+2017-05-15 17:12:37,Svenska,ich empfehle ja shared memory fuer einige dinge
+2017-05-15 17:12:41,Svenska,und streams fuer andere
+2017-05-15 17:12:46,MasterQ32,"oder ich lass den grafiktreiber als prozess laufen, welcher mir funktionen zum zeichnen anbietet"
+2017-05-15 17:12:53,MasterQ32,"ja, shared memory ist halt nicht verteilbar :D"
+2017-05-15 17:13:00,Svenska,"inwiefern ""verteilbar""?"
+2017-05-15 17:13:00,MasterQ32,aber das ist ne andere geschichte :P
+2017-05-15 17:13:04,MasterQ32,mehrere maschinen
+2017-05-15 17:13:21,Svenska,"ist es, nur nicht unbedingt effizient"
+2017-05-15 17:13:27,Svenska,...muss es das sein?
+2017-05-15 17:13:31,MasterQ32,nö :D
+2017-05-15 17:13:38,MasterQ32,das ist erst mal nicht das ziel
+2017-05-15 17:13:45,MasterQ32,darum kann man sich später kümmern
+2017-05-15 17:14:46,MasterQ32,brb
+2017-05-15 17:20:26,MasterQ32,re
+2017-05-15 17:20:33,MasterQ32,hatte ich nen conreset oder nicht?
+2017-05-15 17:20:57,kevin,Bis jetzt nicht
+2017-05-15 17:21:03,Svenska,nö
+2017-05-15 17:21:21,kevin,TCP ist toll ;-)
+2017-05-15 17:21:23,MasterQ32,geil :D
+2017-05-15 17:21:25,MasterQ32,dat timeout
+2017-05-15 17:21:48,MasterQ32,ich bin halt 300 meter vom letzten standort weg und der laptop war in hibernation
+2017-05-15 18:15:03,MasterQ32,http://pr0gramm.com/top/1934684
+2017-05-15 18:15:48,Svenska,...
+2017-05-15 18:15:50,Svenska,aua.
+2017-05-15 18:16:07,MasterQ32,:D
+2017-05-15 18:16:15,MasterQ32,so böse
+2017-05-15 18:16:43,XanClic,> Webcomics über andere Verteiler verlinken
+2017-05-15 18:16:47,XanClic,solche Leute kann ich ja leiden
+2017-05-15 18:16:55,Svenska,"ich fands gut, wieder was gelernt"
+2017-05-15 18:17:06,Svenska,aber ich treib mich ja nicht auf den ueblichen verdächtigen rum
+2017-05-15 18:18:53,MasterQ32,"XanClic: ja, ich hätte nach sauce suchen müssen, ich weiß ;)"
+2017-05-15 18:18:58,MasterQ32,mach ich normalerweise auch
+2017-05-15 18:19:02,XanClic,"Nein, du sollst einfach täglich auf explosm gehen"
+2017-05-15 18:19:06,MasterQ32,:D
+2017-05-15 18:19:10,XanClic,"Und SMBC auch, wenn wir schon dabei sind"
+2017-05-15 18:19:13,MasterQ32,ich les so schon genug webcomics
+2017-05-15 18:19:17,MasterQ32,"aber ja, die beiden sind schon gut"
+2017-05-15 18:19:55,XanClic,"Ich fang ja gar nicht damit an, dass Mittermeier den Witz schon vor ~15 Jahren gemacht hat"
+2017-05-15 18:20:12,XanClic,„Ein Arschlochkind – scheiße. Kann mans nicht noch mal ein bisschen zurückschieben? Vielleicht ists ja noch nicht ganz durch…“
+2017-05-15 18:20:39,Svenska,"hmm, ist auch lange her, dass ich den gehört hab"
+2017-05-15 18:20:42,Svenska,also den namen
+2017-05-15 18:20:42,XanClic,Und grundlegende Witzquellkenntnisse sind ja wohl zu erwarten
+2017-05-15 18:20:52,Svenska,öh
+2017-05-15 18:26:01,MasterQ32,http://www.smbc-comics.com/comic/greedy-pathfinding LOL :D
+2017-05-15 18:26:44,Svenska,···

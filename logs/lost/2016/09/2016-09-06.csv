@@ -1,0 +1,158 @@
+date/time,nick,message
+2016-09-06 08:29:42,darklink,falscher befehl
+2016-09-06 08:29:44,darklink,damn it
+2016-09-06 10:47:30,feliwir,morgen
+2016-09-06 10:48:02,MasterQ32,moin
+2016-09-06 11:50:05,kevin,Moin
+2016-09-06 13:11:05,feliwir,"was ist denn das Equivalent dazu im AT&T Syntax? mov dword [0xb8000], 0x4f524f45"
+2016-09-06 13:11:50,feliwir,aber das darf man anscheinend nicht
+2016-09-06 13:16:31,darklink,Keine ahnung
+2016-09-06 13:17:01,darklink,"movl $0x4f524f45, ($0xB8000)?"
+2016-09-06 13:17:14,darklink,ich würde es in ein register tun
+2016-09-06 13:17:54,darklink,"also mov $0x4f524f45, %eax"
+2016-09-06 13:18:11,darklink,"Mov $0xB8000, %rdi"
+2016-09-06 13:18:17,darklink,stosl
+2016-09-06 13:18:28,feliwir,"das scheint zu funktionieren:  movl $0x4f524f45, 0xb8000"
+2016-09-06 13:18:33,feliwir,zumindest kompiliert es :D
+2016-09-06 13:19:02,MasterQ32,was liegt eigentlich so alles im Speicher rum?
+2016-09-06 13:19:10,darklink,Allles
+2016-09-06 13:19:18,darklink,außer IO-ports
+2016-09-06 13:19:29,MasterQ32,"naja, was heißt das?"
+2016-09-06 13:19:41,darklink,"RAM, rom, vram"
+2016-09-06 13:19:47,darklink,pci-strukturen
+2016-09-06 13:19:54,darklink,MMIO
+2016-09-06 13:20:59,MasterQ32,hmm
+2016-09-06 13:21:10,feliwir,Ich hab auch noch ne Frage. Wenn man einen Microkernel schreiben will macht man ja das meiste über Userspace oder. Wie genauo funktioniert dann I/O? Lässt man die userspace prozesse dann einfach auf die ports direkt schreiben?
+2016-09-06 13:21:55,darklink,Ne
+2016-09-06 13:22:15,darklink,bei nem mikrokernel laufen module im kernelmodus
+2016-09-06 13:23:17,feliwir,"darklink, heißt sie haufen volle Rechte?"
+2016-09-06 13:23:34,MasterQ32,"ich versuch grade zu verstehen, wie ich PCI-geräte anspreche"
+2016-09-06 13:23:34,feliwir,dachte der microkernel versucht eben das zu verhindern
+2016-09-06 13:23:50,MasterQ32,"""Two 32-bit I/O locations are used, the first location (0xCF8) is named CONFIG_ADDRESS, and the second (0xCFC) is called CONFIG_DATA. CONFIG_ADDRESS specifies the configuration address that is required to be accesses, while accesses to CONFIG_DATA will actually generate the configuration access and will transfer the data to or from the CONFIG_DATA register."" → SIeht für mich nach Port-IO aus, oder?"
+2016-09-06 13:24:00,darklink,der mikrokernel versucht den kernel zu verkleinern
+2016-09-06 13:24:10,darklink,nicht alle haben ide festplatten
+2016-09-06 13:24:30,darklink,das heißt man muss das nicht statisch in den kernel reinlinken
+2016-09-06 13:26:22,darklink,MasterQ32: scheint so
+2016-09-06 13:26:31,darklink,habe keinen pci treiber
+2016-09-06 13:26:45,MasterQ32,okay
+2016-09-06 13:26:51,MasterQ32,weil ich hatte den durchgeknallten gedanken:
+2016-09-06 13:26:58,MasterQ32,warum überhaupt paging? :D
+2016-09-06 13:27:05,darklink,lol
+2016-09-06 13:27:09,MasterQ32,geht doch sicher auch ohne
+2016-09-06 13:27:37,darklink,"memcpy(0, 10, -1);"
+2016-09-06 13:27:45,darklink,da hast du den grund
+2016-09-06 13:28:43,MasterQ32,^
+2016-09-06 13:28:44,MasterQ32,^^
+2016-09-06 13:28:54,MasterQ32,joar und dann tut der PC was?
+2016-09-06 13:29:02,darklink,"memcpy(10,0,-1)*"
+2016-09-06 13:29:18,darklink,Den ganzen ram kopieren
+2016-09-06 13:29:25,darklink,10 bytes nach links
+2016-09-06 13:29:28,MasterQ32,^^
+2016-09-06 13:31:53,kevin,darklink: Das ist Quatsch. Ein Mikrokernel lässt die Treiber in Ring 3 laufen. Sonst wär's ein Monolith.
+2016-09-06 13:32:35,kevin,darklink: Was du beschreibst ist ein modularer Monolith wie Linux. Das ist ganz bestimmt kein Mikrokernel.
+2016-09-06 13:33:25,feliwir,und was läuft dann noch in ring 1 & 2?
+2016-09-06 13:33:30,kevin,Nix ;-)
+2016-09-06 13:33:52,kevin,"feliwir: Ja, bei einem Mikrokernel gibt man dem Userspace I/O-Privilegien. Dafür gibt es im TSS die I/O-Permission-Bitmap, die sagt, auf welche Ports der aktuelle Prozess zugreifen darf und auf welche nicht."
+2016-09-06 13:34:25,feliwir,okay :)
+2016-09-06 13:34:48,kevin,"Ring 1 und 2 werden nur von ein paar Exoten benutzt. Ich glaube OS/2 hat das mal benutzt, damals als der Protected Mode neu und toll war. ;-)"
+2016-09-06 13:40:37,feliwir,ich hab meinen multiboot check jetzt in der boot assembly drinnen. Der check scheint aber zu failen: https://gist.github.com/feliwir/4b6999e594d13ce59a21c402e54922b1
+2016-09-06 13:42:59,kevin,Wie kommst du auf 0x36d76289?
+2016-09-06 13:43:29,feliwir,https://github.com/phil-opp/blog_os/blob/entering_longmode/src/arch/x86_64/boot.asm
+2016-09-06 13:43:53,feliwir,"habs aber auch schon mit ""cmp $MAGIC, %eax"" versucht"
+2016-09-06 13:44:51,kevin,0x2BADBOO2 ist der richtige Wert für Multiboot 1 (was du benutzt)
+2016-09-06 13:44:59,kevin,Der andere Code ist Multiboot 2
+2016-09-06 13:45:32,feliwir,ja der richtige Wert steht also in MAGIC
+2016-09-06 13:45:48,kevin,"Nein, schau die erste Ziffer an"
+2016-09-06 13:49:22,MasterQ32,"weis jemand, wo ich das Tool ""srec"" bekomme? :D"
+2016-09-06 13:49:32,feliwir,"kevin, hä das wird aber überall auf osdev.org benutzt"
+2016-09-06 13:49:53,kevin,"0x1BADB002 kommt in den Header, 0x2BADB002 ist was der Bootloader in eax übergibt"
+2016-09-06 13:50:22,feliwir,ah
+2016-09-06 13:50:31,MasterQ32,"okay, habs"
+2016-09-06 13:52:11,feliwir,ja mit  0x2BADB002 klappts :)
+2016-09-06 17:52:14,MasterQ32,"es ist schon bequem, aus der uni das heimnetz zu aktualisieren :D"
+2016-09-06 17:52:34,Svenska,hä?
+2016-09-06 17:52:48,MasterQ32,"ich guck grade nach, ob archlinux für ARM avrdude hat ^^"
+2016-09-06 17:53:02,Svenska,sicherlich
+2016-09-06 17:53:05,MasterQ32,und hab endlich meinen PI durch meinen Router forwarded
+2016-09-06 17:53:06,MasterQ32,hoffentlich
+2016-09-06 17:53:16,MasterQ32,dann wird AVR-Basteleien wieder super-bequem
+2016-09-06 17:53:27,MasterQ32,muss mir nur noch ein ssh-flash-script basteln
+2016-09-06 17:55:27,MasterQ32,was richtig geil wäre: wenns die propeller-tools auch für archlinux gäbe oder sie compilier bar sind
+2016-09-06 17:55:40,MasterQ32,dann könnte ich meine werkbank richtig gut ausrüsten
+2016-09-06 17:56:11,Svenska,ich mach jetzt nen kurs zu fpga ;)
+2016-09-06 17:56:29,MasterQ32,"cool, gib ab und zu mal rückmeldung"
+2016-09-06 17:56:39,MasterQ32,ich muss auch mal an meiner CPU weiter basteln
+2016-09-06 17:56:53,Svenska,lab 1: fsm (sequenzdetektor)
+2016-09-06 17:57:00,MasterQ32,hm?
+2016-09-06 17:57:01,Svenska,lab 2: ps/2-tastaturcontroller *g*
+2016-09-06 17:57:05,MasterQ32,klingt cool
+2016-09-06 17:57:12,MasterQ32,machste deinen eigenen KBC :D
+2016-09-06 17:57:14,Svenska,lab 4 ist vga
+2016-09-06 17:57:20,MasterQ32,fancy
+2016-09-06 17:57:22,Svenska,joa
+2016-09-06 17:57:29,MasterQ32,ich find die fortschrittsgeschwindigkeit immer so krass
+2016-09-06 17:57:37,Svenska,"der andere kurs sind optimierende compiler, das wird heftig"
+2016-09-06 17:58:51,MasterQ32,"http://opencores.org/project,wf3d"
+2016-09-06 17:59:01,MasterQ32,"ich muss mal das hier für das board, dass ich daheim habe, synthetisieren"
+2016-09-06 17:59:05,MasterQ32,das sieht schon verdammt awesome aus
+2016-09-06 17:59:13,Svenska,naja
+2016-09-06 17:59:22,Svenska,ich hab erstmal nur ghdl hinbekommen
+2016-09-06 17:59:30,MasterQ32,ghdl?
+2016-09-06 17:59:32,Svenska,mit vivado komm ich noch nicht klar
+2016-09-06 17:59:38,Svenska,ist ein open source vhdl simulator *g*
+2016-09-06 17:59:54,Svenska,"das ist ein gcc driver :D vorne vhdl rein, hinten simulator als binary raus"
+2016-09-06 18:00:08,MasterQ32,ah :D
+2016-09-06 18:00:11,MasterQ32,lustige Idee
+2016-09-06 18:00:33,Svenska,v.a. kompiliert das in unter einer sekunde fuer die fsm-testbench
+2016-09-06 18:00:41,Svenska,vivado nuckelt da fast zwei minuten dran rum -.-
+2016-09-06 18:01:27,MasterQ32,hui
+2016-09-06 18:01:33,MasterQ32,muss ich mir mal angucken
+2016-09-06 18:01:38,MasterQ32,ich wollte das board eh mal von linux aus bearbeiten
+2016-09-06 18:01:43,Svenska,"ich hab auch freehdl probiert, aber das stinkt"
+2016-09-06 18:01:55,Svenska,"gibt leider nur eine einzige open-source fpga-toolchain, und die nur fuer lattice"
+2016-09-06 18:01:57,MasterQ32,xilinx studio synthetisiert halt bei mir locker mal 2 minuten pro durchlaucf
+2016-09-06 18:02:48,Svenska,"synthese ist auch arg langsam, aber das ist glaub ich normal"
+2016-09-06 18:03:05,Svenska,"nur wenn der erst nach ein paar minuten mitkriegt, dass du ein semikolon falsch gesetzt hast..."
+2016-09-06 18:03:52,MasterQ32,:D
+2016-09-06 18:13:28,darklink,Oh cool
+2016-09-06 18:13:40,darklink,der 3ds hat noch 3 weitere cpus
+2016-09-06 18:15:24,MasterQ32,hm?
+2016-09-06 18:16:58,darklink,Der mikrocontroller enthält min. 1
+2016-09-06 18:17:29,Svenska,nicht jede cpu in einem system ist sinnvoll programmierbar
+2016-09-06 18:17:59,MasterQ32,:D
+2016-09-06 18:19:48,darklink,Wieso? Ich möchte in zukunft auch code auf dem arm7 des emmc chips und meiner sd karte code ausführen :D
+2016-09-06 18:20:16,MasterQ32,soso
+2016-09-06 18:20:26,MasterQ32,"wenn dann, schon richtig und die SD karte fancy machen"
+2016-09-06 18:21:09,darklink,und das wi-fi chipset
+2016-09-06 18:21:14,darklink,und den dsp
+2016-09-06 18:21:22,Svenska,"mach, wenn du das fuer richtig hältst."
+2016-09-06 18:21:48,darklink,ich scherze doch gerade nur rum
+2016-09-06 18:22:08,Svenska,das bezweifle ich.
+2016-09-06 18:22:39,darklink,tja
+2016-09-06 19:24:11,feliwir,von nasm syntax auf at&t zu übersetzen ist echt eine Qual -.-
+2016-09-06 19:24:32,Svenska,-masm=intel?
+2016-09-06 19:26:48,feliwir,"ja, aber der inline assembler ist ja at&t und ich will das gleich halten"
+2016-09-06 19:27:40,Svenska,"den kann man aber auch umstellen, oder?"
+2016-09-06 19:27:44,Svenska,zumindest teilweise ging das *g*
+2016-09-06 19:27:55,Svenska,"(aber ja, das wird dann ein uebler hack mit der zeit)"
+2016-09-06 19:28:21,MasterQ32,"ja, soweit ich weiß, konnte man das auch"
+2016-09-06 19:29:10,feliwir,hm. Jetzt bring ich es wohl mit AT&T zuende
+2016-09-06 20:00:10,darklink,damn
+2016-09-06 20:00:22,darklink,hab meine 2fa sim verloren
+2016-09-06 20:11:13,feliwir,2fa sim?
+2016-09-06 20:22:31,darklink,"ne sim karte, die ich nur fuer 2-factor-authentification nehme"
+2016-09-06 20:23:06,Svenska,blech
+2016-09-06 20:24:26,darklink,"wie gesagt, Svenska, wenn es dir nicht passt, was ich denke, kannst du mich gerne ignorieren"
+2016-09-06 20:28:00,MasterQ32,irgendwo verdreh ich bits
+2016-09-06 20:29:03,darklink,"Das heisst natuerlich nicht, dass du gleich ragequitten musst, wenn ich recht habe"
+2016-09-06 21:42:05,feliwir,ich spühre eine angespannte Atmosphäre
+2016-09-06 21:42:10,feliwir,*spüre :D
+2016-09-06 22:48:08,Jonathan,Moin
+2016-09-06 22:52:47,Paddy,Moin
+2016-09-06 22:57:18,feliwir,hi
+2016-09-06 23:00:57,max,moin
+2016-09-06 23:32:25,Jonathan,Hmmm
+2016-09-06 23:32:53,Jonathan,"Kann man von Firmen eigentlich erwarten, dass sie die Lizenzen von Open-Source-Projekten lesen, die sie in ihr Produkt einbauen? :D"
+2016-09-06 23:33:33,max,"Ja, die Frage ist nur, inwiefern die Anwälte sagen, dass man sie einfach ignorieren soll"
+2016-09-06 23:33:43,Jonathan,Auweia *g*
+2016-09-06 23:39:04,Paddy,"Ach, ich glaube, manche fragen die Anwälte auch gar nicht erst"

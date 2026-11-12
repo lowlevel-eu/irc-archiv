@@ -1,0 +1,331 @@
+date/time,nick,message
+2010-07-20 12:28:02,pcmattman,"Hmm, I'm seriously wondering now how this e1000 driver even began to work"
+2010-07-20 12:28:31,kwolf,"Heh, is it that bad?"
+2010-07-20 12:28:59,pcmattman,Depends
+2010-07-20 12:29:06,kwolf,I guess it is what happens when you write for emulators
+2010-07-20 12:29:09,pcmattman,"Do you judge quality by ""WTFs/minute""?"
+2010-07-20 12:29:16,kwolf,lol
+2010-07-20 12:29:44,kwolf,We all know that WTFs/minute is the only valid metric ;-)
+2010-07-20 12:43:39,pcmattman,"Did I write this code, or was it contributed from someone else? :P"
+2010-07-20 12:45:27,kwolf,"Well, there's git blame, but I'd rather not use it... ;-)"
+2010-07-20 13:12:27,pcmattman,"Heh, the 8254xx spec explains the TCP/IP stack concept, as well as packet formats"
+2010-07-20 13:12:47,pcmattman,Apparently programming the hardware isn't important
+2010-07-20 13:13:56,kwolf,"The hardware only makes trouble, so better leave it alone"
+2010-07-20 13:15:44,kwolf,"Ah, right, that was the spec where you had to scroll down almost to the end to get to the interesting information"
+2010-07-20 13:16:13,eddyb,lol
+2010-07-20 13:19:12,pcmattman,Hmm... I do believe this driver (on Pedigree) actually maps in the MMIO region... to a virtual address
+2010-07-20 13:19:59,pcmattman,"Hello, XanClic :)"
+2010-07-20 13:20:02,kwolf,"It probably should, otherwise you couldn't access it, right?"
+2010-07-20 13:20:32,XanClic,Moin
+2010-07-20 13:20:34,eddyb,pcmattman: you could ask him of our USB problems.... but I'm not doing it :P
+2010-07-20 13:20:36,eddyb,(anymore)
+2010-07-20 13:20:51,pcmattman,"kwolf: I mean, the resource list may actually be virtual addresses... so when it does cdi_mem_map, it tries to map in a virtual address instead of a physical one"
+2010-07-20 13:21:16,pcmattman,"XanClic: if you have a moment, we wouldn't mind another set of eyes on a problem: http://stackoverflow.com/questions/3285363/usb-ehci-help-with-transaction-errors"
+2010-07-20 13:21:35,pcmattman,"kwolf: but it's very easy to find out if I'm right or not, and if I am right... well, now I know why pcnet fails on Pedigree as well"
+2010-07-20 13:21:40,kwolf,"pcmattman: Oh, this way round. Not good."
+2010-07-20 13:21:59,pcmattman,v -> v mappings aren't valid :)
+2010-07-20 13:23:03,kwolf,They generally produce funny effects
+2010-07-20 13:23:44,eddyb,they have a name...
+2010-07-20 13:24:03,pcmattman,Not necessarily faults
+2010-07-20 13:24:18,kwolf,Depends on what data you hit
+2010-07-20 13:24:28,eddyb,"too bad I can't remember it :P. I think something like ""forward mapping"" or ""direct mapping""..."
+2010-07-20 13:24:29,pcmattman,"It'd be nice if they did fault, but usually they just ""somehow"" work... especially if you're writing to reserved memory which flips back to zero after you write to it"
+2010-07-20 13:24:38,pcmattman,Means stuff like resets appear to work even
+2010-07-20 13:24:43,eddyb,lol
+2010-07-20 13:25:23,kwolf,"Anyway, it's time for lunch."
+2010-07-20 13:25:41,kwolf,I'll be back later
+2010-07-20 13:25:41,XanClic,"Breakfast, you mean"
+2010-07-20 13:26:10,XanClic,"eddyb: I'd be glad if my own EHCI driver would even disable the EHCI, so I can't help you (because there's nothing obviously wrong) :-/"
+2010-07-20 13:26:21,kwolf,XanClic: It's not weekend ;-)
+2010-07-20 13:26:24,XanClic,Maybe you should try disabling all ports before enumerating them
+2010-07-20 13:26:43,eddyb,"lol, was thinking on that... took a look at your driver, nothing special you do there :|"
+2010-07-20 13:26:46,XanClic,"kwolf: Well, holidays for me, that's nearly the same ;-)"
+2010-07-20 13:26:59,eddyb,disabling?
+2010-07-20 13:27:06,eddyb,what good would do that?
+2010-07-20 13:27:27,XanClic,"Maybe all ports are reset and activated before you take control, I don't know"
+2010-07-20 13:27:34,pcmattman,Simple - no interference from other ports
+2010-07-20 13:27:42,eddyb,they aren't enabled when the driver takes control
+2010-07-20 13:27:51,XanClic,"It can't hurt, too *g*"
+2010-07-20 13:27:57,eddyb,"for matt, not even powered..."
+2010-07-20 13:28:03,pcmattman,"It'd be a perfect explanation... except that on the beagleboard there's only one port, and my Stack Overflow post is mainly the outcome from that test"
+2010-07-20 13:28:12,XanClic,"No, it wouldn't be"
+2010-07-20 13:28:20,XanClic,The SETUP packet would receive more than one ACK
+2010-07-20 13:28:39,XanClic,I don't know if the EHC wouldn't consider that an error
+2010-07-20 13:31:04,pcmattman,kwolf: turns out it is a physical address... so more debugging for me :)
+2010-07-20 13:31:34,pcmattman,"XanClic: out of interest, does your EHCI driver work on real hardware?"
+2010-07-20 13:31:44,XanClic,"[13:26:10] <XanClic> eddyb: I'd be glad if my own EHCI driver would even disable the EHCI, so I can't help you (because there's nothing obviously wrong) :-/"
+2010-07-20 13:31:47,XanClic,No ;-)
+2010-07-20 13:32:03,pcmattman,Just clarifying :)
+2010-07-20 13:32:25,pcmattman,"I think I understand why everyone says USB is so hard now... you get it working in an emulator, and that's hard enough"
+2010-07-20 13:32:33,pcmattman,And then you find out that's the first 10% of the job :(
+2010-07-20 13:33:57,eddyb,"at some point it'd be easier to hack into intel's database, take the silicon layer of ICH7 and understand it than trying to find out how to do it..."
+2010-07-20 13:35:04,pcmattman,At least I know we're not alone now :)
+2010-07-20 13:35:12,XanClic,"Well, PrettyOS has working EHCI support (afaik): http://prettyos.svn.sourceforge.net/viewvc/prettyos/trunk/Source/kernel/"
+2010-07-20 13:35:27,pcmattman,"And as for the e1000 driver... I'm gonna look at doing a rewrite kind of thing, see how that goes"
+2010-07-20 13:35:29,XanClic,Though it's not a very nice interface…
+2010-07-20 13:35:32,eddyb,"""working"" as in ""in qemu"""
+2010-07-20 13:35:35,XanClic,Nope
+2010-07-20 13:35:40,pcmattman,"Hmm, so that's where PrettyOS code is"
+2010-07-20 13:35:41,XanClic,"They say it works on real hardware, too"
+2010-07-20 13:36:07,pcmattman,"I read the forum discussions for implementing EHCI into PrettyOS... at least, the first 4 pages"
+2010-07-20 13:36:18,pcmattman,"You've been working on it too, I believe?"
+2010-07-20 13:36:28,eddyb,they lie or their realHW is one o f the easy ones...
+2010-07-20 13:36:39,XanClic,"No, I helped them a bit about USB in general"
+2010-07-20 13:36:48,pcmattman,"eddyb: download it and try it out, prove that it works or doesn't"
+2010-07-20 13:37:03,pcmattman,"XanClic: ah, makes sense"
+2010-07-20 13:37:16,eddyb,how do I prove it doesn't work :P ?
+2010-07-20 13:37:26,pcmattman,By trying the OS out with USB devices :)
+2010-07-20 13:37:33,pcmattman,"I saw a USB/CDI patch come in the other day for tyndur, but I think that was just LS/FS stuff"
+2010-07-20 13:37:37,pcmattman,Not ehci
+2010-07-20 13:37:45,pcmattman,"And holy crap, this is fugly code"
+2010-07-20 13:37:57,eddyb,noticed that :P
+2010-07-20 13:39:29,XanClic,"Well, I guess I'm the only one writing USB CDI patches for týndur, so is it my code which is that ugly? ^^"
+2010-07-20 13:39:40,pcmattman,I was talking about PrettyOS :P
+2010-07-20 13:39:49,XanClic,Ah :-)
+2010-07-20 13:39:59,pcmattman,"Also, I just connected ""Max"" with you, heh, oops :)"
+2010-07-20 13:43:07,eddyb,******* textColor
+2010-07-20 13:43:32,eddyb,"oh, and they copied more than half of the specs into the comments"
+2010-07-20 13:43:42,pcmattman,I don't complain about the comments
+2010-07-20 13:45:36,pcmattman,"Either way, he's got it working on real hardware... and we don't"
+2010-07-20 13:45:58,eddyb,I doubt that very much
+2010-07-20 13:46:08,eddyb,what does it have...?
+2010-07-20 13:46:19,eddyb,a 250ms reset time
+2010-07-20 13:46:20,eddyb,?
+2010-07-20 13:46:54,pcmattman,I'm still trying to figure it out
+2010-07-20 13:47:06,pcmattman,"Also, ehenkes is on the forums, we might get lucky and he might respond"
+2010-07-20 13:47:18,pcmattman,XanClic can benefit too :)
+2010-07-20 13:47:19,eddyb,what forum?
+2010-07-20 13:47:24,pcmattman,osdev.org
+2010-07-20 13:47:53,XanClic,"Well, I once asked how to disable the EHCI and nobody answered ;-)"
+2010-07-20 13:48:31,pcmattman,I honestly think maybe 3 or 4 users on the forum actually know these answers
+2010-07-20 13:48:36,pcmattman,And they rarely come around
+2010-07-20 13:48:46,eddyb,"XanClic: wait, do you want to know how to forward every port to companion host controllers?"
+2010-07-20 13:48:50,XanClic,Yes
+2010-07-20 13:48:57,XanClic,I know theoretically how to do that…
+2010-07-20 13:49:09,eddyb,and I know practically
+2010-07-20 13:49:16,XanClic,Sounds nice :-)
+2010-07-20 13:49:46,eddyb,too bad my UHCI driver is as working on realHW as the EHCI one :(
+2010-07-20 13:50:16,XanClic,"Well, afair it did somehow work…"
+2010-07-20 13:50:19,XanClic,The disabling
+2010-07-20 13:50:25,eddyb,I get same behavior with forwarding all ports as with disabling EHCI from BIOS
+2010-07-20 13:50:27,XanClic,But all transactions failed
+2010-07-20 13:50:44,pcmattman,eddyb: the only thing he does differently is chain the qTDs
+2010-07-20 13:50:45,eddyb,"which is ""FAIL"", btw"
+2010-07-20 13:50:58,eddyb,that's funny
+2010-07-20 13:51:00,pcmattman,So the SETUP qTD's pNext == the handshake IN's qTD
+2010-07-20 13:51:15,eddyb,I wonder what difference would that make...
+2010-07-20 13:51:39,eddyb,"btw, don't try anything yet, I have to figure how to get a kernel and an initrd for this thing..."
+2010-07-20 13:52:07,pcmattman,"I think that may be the answer, to be honest"
+2010-07-20 13:52:47,eddyb,"ah, bash script build system"
+2010-07-20 13:52:53,XanClic,"“But all my high speed devices obviously refuse to work when they're connected to a root hub. If I disable the legacy support on my computer, I get a CRC/time out error together with a stall (maybe STALL or NAK in response to my SETUP packet), if I enable it, I had the same problem at the beginning but now there are page faults (though I don't know the exact reason). So, in general: My high speed devices work behind a full speed hub. Fine. But "
+2010-07-20 13:52:54,XanClic,they refuse to work on a root port.”
+2010-07-20 13:52:58,XanClic,That was my problem ;-)
+2010-07-20 13:57:09,kwolf,Back
+2010-07-20 13:57:14,XanClic,wb
+2010-07-20 13:57:24,eddyb,does this ehkens guy know how chmod +x works?
+2010-07-20 13:57:33,XanClic,"No, he uses Windows"
+2010-07-20 14:00:10,eddyb,"oh, how nice, he claims to have an OS in an advanced state but he has a binary kernel..."
+2010-07-20 14:00:34,eddyb,I'll have to use some floppy emulators for usb flash drives...
+2010-07-20 14:01:24,eddyb,"hmm, I don't suppose I can chainload a floppy file from grub, can I?"
+2010-07-20 14:01:40,kwolf,"PrettyOS is a ""GUI without memory management"" type OS, just with s/GUI/USB/"
+2010-07-20 14:02:03,kwolf,"But GUI is the next thing they started, so..."
+2010-07-20 14:02:24,eddyb,"bbs, food"
+2010-07-20 14:02:37,eddyb,"I'll have a look at this ""OS"" when I come back"
+2010-07-20 14:02:38,kwolf,"Anyway, ehenkes is frequently on this IRC server, so I think we may /invite him as soon as he arrives"
+2010-07-20 14:02:53,eddyb,warn me to change nick
+2010-07-20 14:03:04,pcmattman,"I must say, his code certainly makes a lot of sense"
+2010-07-20 14:10:29,eddyb,you ran it to an AI parser :P ?
+2010-07-20 14:10:35,eddyb,*thru
+2010-07-20 14:10:44,pcmattman,"No, I traced the code path"
+2010-07-20 14:10:54,eddyb,it's hard
+2010-07-20 14:11:18,pcmattman,"Taking what I know from the spec and applying it to what I see in his code, I see a lot of stuff that makes heaps of sense"
+2010-07-20 14:11:19,eddyb,"no stable naming conventions, there's more empty spaces and comments that code..."
+2010-07-20 14:11:31,eddyb,*than
+2010-07-20 14:11:33,pcmattman,"If all you see is the problems, you'll never understand it"
+2010-07-20 14:12:02,eddyb,"anyway, what about that chainload thing"
+2010-07-20 14:12:03,eddyb,?
+2010-07-20 14:12:38,pcmattman,"Combines the two operations into one micro-frame, I believe"
+2010-07-20 14:12:52,eddyb,"[15:01] <eddyb> hmm, I don't suppose I can chainload a floppy file from grub, can I?"
+2010-07-20 14:13:03,pcmattman,"Oh right, that chainload"
+2010-07-20 14:13:15,pcmattman,Dunno
+2010-07-20 14:13:28,kwolf,"You mean, a floppy image?"
+2010-07-20 14:13:34,kwolf,Don't think that's possible
+2010-07-20 14:17:16,kwolf,"ehenkes just joined #lost, btw. So if you'd like to talk to him, I can invite him."
+2010-07-20 14:17:42,kwolf,*lol*
+2010-07-20 14:17:55,pcmattman,Does eddyb know something I don't? :)
+2010-07-20 14:18:06,Love4Boobies,dammit
+2010-07-20 14:18:24,Love4Boobies,"I don't think I can change name with a live connection, can I?"
+2010-07-20 14:18:36,pcmattman,Nope
+2010-07-20 14:18:36,XanClic,No
+2010-07-20 14:18:43,Love4Boobies,ok
+2010-07-20 14:19:19,pcmattman,"Well, I know I'm going to be having some fun rewriting parts of our USB stack over the next couple of days"
+2010-07-20 14:19:55,pcmattman,"May as well invite ehenkes though, can't hurt - it benefits both tyndur, CDI and Pedigree at the same time"
+2010-07-20 14:20:31,Love4Boobies,what's up?
+2010-07-20 14:20:43,kwolf,pcmattman: It's your choice. I can always talk to him in German-speaking channels.
+2010-07-20 14:20:57,Love4Boobies,where are those channel logs?
+2010-07-20 14:21:34,kwolf,irc.tyndur.org
+2010-07-20 14:21:53,kwolf,"Did you have some trouble with him, or what's your problem?"
+2010-07-20 14:22:11,pcmattman,"Yeah, I'm trying to figure out the problem here before I make a decision"
+2010-07-20 14:22:27,Love4Boobies,kwolf: grep your logs for boo
+2010-07-20 14:22:40,kwolf,He didn't like that? ;-)
+2010-07-20 14:23:00,kwolf,pcmattman: The only problem I have with him is that he always thinks he's right when he definitely isn't
+2010-07-20 14:23:25,pcmattman,"Mm, I know too many people like that"
+2010-07-20 14:23:44,Love4Boobies,pcmattman: what do you intend on rewriting?
+2010-07-20 14:23:51,kwolf,"I mean, he started to tell me how things work right when he had a Hello World kernel running..."
+2010-07-20 14:24:03,pcmattman,"QH/qTD creation and integration to the async list, mainly"
+2010-07-20 14:24:13,Love4Boobies,ah
+2010-07-20 14:24:17,Love4Boobies,may not need that
+2010-07-20 14:24:22,pcmattman,Mainly as a result of reading Linux's driver and now having a look at PrettyOS
+2010-07-20 14:24:30,Love4Boobies,I soon as I can run this crap on realHW
+2010-07-20 14:24:35,pcmattman,If nothing else cleaning up QH and qTD creation
+2010-07-20 14:24:48,pcmattman,"My point is, ""as soon as"" may not happen if this doesn't get redone"
+2010-07-20 14:24:56,Love4Boobies,so better not touch/do anything unless I can't prove him wrong
+2010-07-20 14:25:47,pcmattman,"Nah, I'll still make the changes, they'll need to be done eventually and are one step towards a solution"
+2010-07-20 14:26:10,Love4Boobies,"ok, it has an exe for pendrive install"
+2010-07-20 14:26:15,Love4Boobies,please
+2010-07-20 14:26:36,pcmattman,"Throw that discussion onto #pedigree, and let's get ehenkes in here and start talking about his experience"
+2010-07-20 14:26:50,pcmattman,"If y'all don't mind, of course"
+2010-07-20 14:26:56,Love4Boobies,not at all
+2010-07-20 14:27:06,kwolf,"Ok, I'll ask him"
+2010-07-20 14:27:30,pcmattman,Hopefully he can identify the problem and knows a solution
+2010-07-20 14:29:17,kwolf,"Heh, I shouldn't have asked publicly, I guess ;-)"
+2010-07-20 14:29:30,pcmattman,Heh.
+2010-07-20 14:32:53,Love4Boobies,found it: http://menuet.2.forumer.com/index.php?showtopic=231 :)
+2010-07-20 14:33:04,Love4Boobies,so it is possible :P
+2010-07-20 14:33:49,ehenkes,hallo
+2010-07-20 14:34:19,pcmattman,Evening
+2010-07-20 14:34:24,kwolf,Hi ehenkes
+2010-07-20 14:34:37,Programm_Noob,hi
+2010-07-20 14:35:10,ehenkes,hie rgehts um EHCI?
+2010-07-20 14:35:33,kwolf,"Yes, but the Pedigree people don't speak German ;-)"
+2010-07-20 14:35:40,ehenkes,"ok, no problem"
+2010-07-20 14:35:45,pcmattman,We're kind of stupid like that
+2010-07-20 14:35:46,pcmattman,;)
+2010-07-20 14:35:58,kwolf,You definitely need to change that some time ;-)
+2010-07-20 14:36:26,ehenkes,first: we decided to develop a driver for EHCI w/o having one for UHCI and OHCI
+2010-07-20 14:37:08,ehenkes,"this is possible, the only device nedding UHCI is the ubs-mouse"
+2010-07-20 14:37:36,ehenkes,our base for development was the EHCI spec 1.0
+2010-07-20 14:38:06,ehenkes,we went thru it step-by-step and developed our own code.
+2010-07-20 14:39:11,ehenkes,please have a look at this forum thread: http://www.c-plusplus.de/forum/viewtopic-var-t-is-253016-and-postdays-is-0-and-postorder-is-asc-and-start-is-81.html
+2010-07-20 14:39:33,ehenkes,I am going to refer to it
+2010-07-20 14:40:09,pcmattman,Right
+2010-07-20 14:40:41,ehenkes,the code for EHCI you'll find there: https://prettyos.svn.sourceforge.net/svnroot/prettyos/trunk/Source/kernel/ehci.c
+2010-07-20 14:40:42,ehenkes,and ...
+2010-07-20 14:40:52,ehenkes,https://prettyos.svn.sourceforge.net/svnroot/prettyos/trunk/Source/kernel/ehciQHqTD.c
+2010-07-20 14:41:50,ehenkes,a little bit tricky is the interrupt handling
+2010-07-20 14:42:03,ehenkes,the DeactivateLegacySupport
+2010-07-20 14:45:04,pcmattman,"Okay, got the code up"
+2010-07-20 14:45:29,pcmattman,"Out of interest, does all this work on real hardware, or just in emulators?"
+2010-07-20 14:45:59,ehenkes,real hardware
+2010-07-20 14:46:16,Love4Boobies,may I ask what boxes?
+2010-07-20 14:46:50,ehenkes,"The qH/qTD-transfer is not optimized, we are doing start 'n' stop"
+2010-07-20 14:47:02,ehenkes,boxes?
+2010-07-20 14:47:15,Love4Boobies,"as in, what machines"
+2010-07-20 14:47:22,Love4Boobies,* did you test on
+2010-07-20 14:47:29,Tobiking,It's working on my laptop with an ich7 chipset
+2010-07-20 14:47:37,ehenkes,"ok, you need an EHCI, see that during pci-scan"
+2010-07-20 14:48:54,Love4Boobies,"oh, thanks, good to know"
+2010-07-20 14:49:14,ehenkes,"if you are also interested in our USB2.0 part, may I refer to https://prettyos.svn.sourceforge.net/svnroot/prettyos/trunk/Source/kernel/usb2.c and https://prettyos.svn.sourceforge.net/svnroot/prettyos/trunk/Source/kernel/usb2_msd.c and https://prettyos.svn.sourceforge.net/svnroot/prettyos/trunk/Source/kernel/usb_hc.c"
+2010-07-20 14:49:38,ehenkes,the EHCI is the base for high speed usb
+2010-07-20 14:50:08,ehenkes,"At the time being, in our OS we address only root ports nor hubs"
+2010-07-20 14:50:26,pcmattman,Simplifies things a fair bit
+2010-07-20 14:51:05,ehenkes,at real PC you have to be careful with pci configuration to avoid host errors
+2010-07-20 14:52:29,ehenkes,initEHCIHostController() <--- bus mastering
+2010-07-20 14:52:59,ehenkes,http://forum.osdev.org/viewtopic.php?f=1&t=20255&start=0
+2010-07-20 14:53:12,pcmattman,"Right, and on our PC and non-PC targets we've made sure the equivalent is configured correctly"
+2010-07-20 14:53:29,ehenkes,and you need this extended buffers in qTD
+2010-07-20 14:54:38,ehenkes,cf. allocQTDbuffer in ehciQHqTD.c
+2010-07-20 14:55:23,ehenkes,our weakest point is: performAsyncScheduler at ehciQHqTD.c
+2010-07-20 14:56:08,ehenkes,"I'd appreciate if you could help us there to improve, i.e. to find the best path forward"
+2010-07-20 14:56:32,ehenkes,but it is working reliably
+2010-07-20 14:57:55,pcmattman,Chances are we can help out with perhaps even removing the stop/start when doing queue operations in the async schedule
+2010-07-20 14:59:02,pcmattman,Our current issue is that our driver works in VMware (and other emulators) but completely fails on any real hardware - tested on several PCs and my beagleboard with transaction errors
+2010-07-20 15:00:14,pcmattman,"Specifically, when setting a device address, the first SETUP transaction completes without error, and then the handshake IN transaction returns a transaction error"
+2010-07-20 15:00:29,pcmattman,You wouldn't happen to have run into a similar problem before?
+2010-07-20 15:01:29,ehenkes,"no, control transfers are easy"
+2010-07-20 15:02:03,Tobiking,There was something not really specified if there needs to be an handshake qtd.
+2010-07-20 15:02:05,ehenkes,please have a look at usbTransferEnumerate in usb2.c
+2010-07-20 15:02:54,pcmattman,I have it open now
+2010-07-20 15:03:23,ehenkes,"as you can see, we start with virtualAsyncList"
+2010-07-20 15:04:20,ehenkes,"then we implement the qTD sequence, fix it to the QH"
+2010-07-20 15:04:56,ehenkes,we use setup amd handshake
+2010-07-20 15:05:31,ehenkes,but I have to admit that I never understodd why we have to send ourselves a handshake ^^
+2010-07-20 15:06:27,Love4Boobies,check out the USB 2.0 docs
+2010-07-20 15:06:29,ehenkes,then we performAsyncScheduler and free all the malloc'd memory space
+2010-07-20 15:07:05,Love4Boobies,the function usually send an error of the control request failed
+2010-07-20 15:07:08,ehenkes,More complicated are the bulk transfers with scsi commands
+2010-07-20 15:07:25,pcmattman,"And performAsyncScheduler takes that QH and executes it, handling completion and error states... I see now"
+2010-07-20 15:07:36,ehenkes,yes
+2010-07-20 15:07:59,ehenkes,time is important
+2010-07-20 15:08:11,Love4Boobies,"there is a table in the USB 2.0 docs, showing the corelations between errors reported by host controllers and the actual problem with the function"
+2010-07-20 15:08:14,ehenkes,but the control transfers are fast
+2010-07-20 15:08:25,Love4Boobies,"NAK means device is busy, for example"
+2010-07-20 15:08:39,pcmattman,ehenkes: Is there any reason you tie the SETUP to the handshake packet (IN) within one QH (two linked qTDs) rather than do two distinct QH+qTD pairs?
+2010-07-20 15:08:40,ehenkes,"yes, we set the NAK counter to 15"
+2010-07-20 15:08:53,ehenkes,"but if you set it to 0, it does not matter"
+2010-07-20 15:14:07,Tobiking,"The QH descriptes an endpoint, and the setup and handshake packet are send to the same endpoint. So I think they should be together"
+2010-07-20 15:17:08,ehenkes,for usb msd with scsi we use two separate QHs: QH_In and QH_Out because we fix it to the endpoints
+2010-07-20 15:17:41,ehenkes,but with control transfers you send it to the default endpoint0
+2010-07-20 15:18:21,pcmattman,"Okay, that makes sense"
+2010-07-20 15:19:56,ehenkes,"migrating from emulators to real hardware, the pci bus master (bit 2) was important, and the IO and MMIO bits (0 and 1)"
+2010-07-20 15:20:50,ehenkes,"bit 9 (0x0200) ""Fast Back-to-Back Enable"" was not necessary"
+2010-07-20 15:20:56,Tobiking,"And the legacy support, with deactivation of the Interrupts for the BIOS"
+2010-07-20 15:21:10,Love4Boobies,you guys may want stopping a bit
+2010-07-20 15:21:14,ehenkes,this was hard at Tobikings notebook
+2010-07-20 15:21:14,pcmattman,"Right, we've got the bus master stuff set up"
+2010-07-20 15:21:26,ehenkes,because the BIOS did not like to leave the EHCI ^^
+2010-07-20 15:21:33,Love4Boobies,ICH7 does have 64-bit structures...
+2010-07-20 15:22:04,Love4Boobies,so we'd be able to fix this one
+2010-07-20 15:22:29,ehenkes,"and, very important, you need some sleepMilliseconds(...) at real HW"
+2010-07-20 15:22:37,Love4Boobies,"however, matt's problem on the beagleboard is different"
+2010-07-20 15:23:15,Love4Boobies,and I've got similar results on a PC with a VIA chipset
+2010-07-20 15:23:32,ehenkes,what's the problem?
+2010-07-20 15:23:36,Love4Boobies,"SETUP works, IN fails"
+2010-07-20 15:23:50,Love4Boobies,"except I don't get the port disabled, as matt does"
+2010-07-20 15:23:56,ehenkes,you use two separate QHs?
+2010-07-20 15:24:05,pcmattman,"We do, and that's what I think the problem is"
+2010-07-20 15:24:26,ehenkes,toggling is important
+2010-07-20 15:24:45,Love4Boobies,we do that
+2010-07-20 15:25:47,ehenkes,do you have the extended buffers at qTD?
+2010-07-20 15:26:11,Love4Boobies,you mean the ones with 64-bit addresses?
+2010-07-20 15:26:51,pcmattman,The beagleboard doesn't use the 64-bit data structures (checked the capabilities register)
+2010-07-20 15:27:14,ehenkes,here: http://codepad.org/IgzSHvFc
+2010-07-20 15:27:20,ehenkes,you need that for 32-bit-HW
+2010-07-20 15:27:25,pcmattman,"The code however doesn't handle 64-bit data structures if they are enabled, which is probably part of the problem on x86"
+2010-07-20 15:28:32,Love4Boobies,"I assume the VIA would also give a Host System Error or something similar, but it doesn't"
+2010-07-20 15:29:32,ehenkes,Tobiking: can you remember why you introduced these extended buffers into the qTD strutures?
+2010-07-20 15:31:05,Tobiking,The extended buffers are part of the 64 Bit Structures
+2010-07-20 15:34:38,ehenkes,If you have further questions and need clarification about our source code you are always welcome at #PrettyOS
+2010-07-20 15:35:11,pcmattman,Thanks
+2010-07-20 15:35:51,pcmattman,"And thanks for your time, been very beneficial... once we have it figured out we'll be sorting out the asynchronous schedule live queue/dequeue as well, see what we can do to help out :)"
+2010-07-20 15:46:26,ehenkes,"thank you, I am very interested in discussing EHCI/USB2.0 because at the well-known forums you get nearly no answers."
+2010-07-20 15:54:33,eddyb,"ehenkes: thanks, using structures with 64bit addressed solved part of the problem"
+2010-07-20 15:55:06,eddyb,the rest of the problem is the same as for the beagleboard and VIA
+2010-07-20 15:55:16,eddyb,"oh, ffs"
+2010-07-20 15:59:47,ehenkes,I'd be glad to support you a little bit by mastering your challenges
+2010-07-20 16:07:40,kwolf,pcmattman: Back to e1000.... What's so broken about it that it needs a rewrite?
+2010-07-20 16:08:07,pcmattman,I'm not sure about any of the logic
+2010-07-20 16:08:20,pcmattman,But I'll read through the spec first and then come back to the code and see if it makes more sense
+2010-07-20 16:08:32,eddyb,an equivalent to my rtl8139 driver :P ?
+2010-07-20 16:09:01,eddyb,"(@""not sure about any of the logic"")"
+2010-07-20 16:09:19,pcmattman,I'd say after refreshing myself on the spec things'll make a lot more sense
+2010-07-20 16:09:37,pcmattman,Usually means less rewrite :)
+2010-07-20 16:09:46,kwolf,You mean the initialisation part or sending/receiving packets?
+2010-07-20 16:09:51,kwolf,Or probably both
+2010-07-20 16:10:39,pcmattman,"I think init is right, mainly send/recv"
+2010-07-20 16:11:40,kwolf,"Well, your last patch was about the init (getting the MAC) and it's not in yet. So that's certainly an issue, too."
+2010-07-20 16:12:04,pcmattman,It seems to get a MAC fine on VMware (82545 chip)
+2010-07-20 16:12:27,kwolf,"Hm, so why did you work on it? Was it VBox?"
+2010-07-20 16:12:35,pcmattman,I believe it was vbox
+2010-07-20 16:12:57,kwolf,And of course nobody ever has really tried on real hardware.
+2010-07-20 16:12:58,pcmattman,"Note that it doesn't send or receive packets on vmware, just gets a MA"
+2010-07-20 16:13:22,kwolf,That kind of supports the theory of broken send/receive ;-)
+2010-07-20 16:13:41,pcmattman,*MAC
+2010-07-20 16:17:22,kwolf,"Ok, so I'll try to get the patch for VBox cleaned up and applied, and you take care for VMware."
+2010-07-20 16:17:33,pcmattman,Sounds good
+2010-07-20 16:18:00,kwolf,"Hm, no replies on the mailing list. Seems I need to check out IRC logs to find what the problem with the patch was..."
+2010-07-20 16:18:06,pcmattman,Heh
+2010-07-20 16:18:31,kwolf,I should stop discussing patches in IRC
+2010-07-20 16:29:34,pcmattman,"I'm off, night all"
+2010-07-20 16:31:25,XanClic,night
+2010-07-20 16:32:43,kwolf,Night

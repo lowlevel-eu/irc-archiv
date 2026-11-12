@@ -1,0 +1,483 @@
+date/time,nick,message
+2007-11-29 11:51:22,janosch,hi
+2007-11-29 13:04:59,janosch,cu
+2007-11-29 13:34:42,bluecode,moin
+2007-11-29 13:35:29,kwolf,Moin bluecode
+2007-11-29 14:06:38,Noooooooooos,hiho
+2007-11-29 14:12:59,bluecode,tach Noooooooooos & janosch
+2007-11-29 14:34:18,janosch,hi
+2007-11-29 15:11:12,janosch,hat LOST/kernel1 auch SMP?
+2007-11-29 15:12:59,kwolf,Nein
+2007-11-29 15:14:56,janosch,"ich will paralell auf mehreren prozessoren prozesse ausführen, aber dann brauch ich ja auch mehrere Paging-Tabellen"
+2007-11-29 15:15:20,Noooooooooos,nee
+2007-11-29 15:16:12,janosch,ich muss doch für jeden Prozessor einen anderen Speicher geladen haben. Hat eigentlich jeder Prozessor eine eigene MMU?
+2007-11-29 15:16:35,kwolf,Die Tables hast du doch eh?
+2007-11-29 15:17:01,janosch,"ja schon, aber damit kann ich ja immer nur den speicher eines prozesses mappen"
+2007-11-29 15:17:14,Noooooooooos,dann ist es nicht smp
+2007-11-29 15:17:43,janosch,hä?
+2007-11-29 15:19:32,bluecode0,janosch: du brauchst keine paging-tabellen pro Prozess
+2007-11-29 15:19:41,bluecode0,-Prozess +Prozessor
+2007-11-29 15:19:52,janosch,und wie mach ich das dann sonst?
+2007-11-29 15:19:59,Noooooooooos,mit den gleichen?
+2007-11-29 15:19:59,bluecode,was?
+2007-11-29 15:20:05,bluecode,"jo, genau"
+2007-11-29 15:20:12,bluecode,wer sollte dich daran auch hindern ;-)
+2007-11-29 15:20:14,Noooooooooos,der speicher ist immer der gleiche deshalb == symmetric mp
+2007-11-29 15:20:36,janosch,"ja deswegen ja, dann kann ich ja nur immer für einen prozess den kram drinstehen haben"
+2007-11-29 15:21:03,bluecode,du brauchst auch beim normalen Multitasking ein pagedir pro prozess
+2007-11-29 15:21:15,bluecode,das hat aber mit smp nichts zu tun
+2007-11-29 15:21:32,kwolf,"Mit ""brauchen"" lehnst du dich imho weit aus dem Fenster. ;-)"
+2007-11-29 15:21:41,janosch,"ich hab nur ein pagedir, ich habe eine extra tabelle für die speicherzuordnung"
+2007-11-29 15:22:04,bluecode,"kwolf: ""brauchen"" im Sinne von ""jeder macht es so weil es sinnvoll ist"""
+2007-11-29 15:22:05,kwolf,Welche Vorteile hast du dadurch?
+2007-11-29 15:22:11,Noooooooooos,jo dann ist es etwas kompilzierter janosch
+2007-11-29 15:22:11,kwolf,"bluecode: Jo, schon klar."
+2007-11-29 15:22:27,bluecode,kwolf: warum zur Hölle korinthenkackst du dann? ;-)
+2007-11-29 15:22:47,Noooooooooos,dann muss dein scheduler immer prüfen auf welchem porzessor er aufgerufen ist und dann dementsprechend das pagedir wechseln
+2007-11-29 15:22:48,janosch,"wenn jeder prozess ein pagedir hat, dann kann ich ja max nur 1024 prozesse haben und jeder nur 4MB speicher"
+2007-11-29 15:23:19,bluecode,interessante Rechnung ;-)
+2007-11-29 15:23:20,kwolf,bluecode: Um seiner selbst willen. ;-)
+2007-11-29 15:23:23,Noooooooooos,brauchst du denn mehr als 1000 prozesse?
+2007-11-29 15:23:34,janosch,es geht um die 4MB
+2007-11-29 15:23:42,bluecode,wie kommst du denn auf 4MB überhaupt ;-)
+2007-11-29 15:23:46,kwolf,Ein PD ist genau 4k groß.
+2007-11-29 15:24:24,kwolf,"Macht eine Million Prozesse. Das sollte vorerst reichen, bei der Zahl hast du dann andere Probleme. ;-)"
+2007-11-29 15:24:25,janosch,"kann sein dass ich mich verrechnet habe, aber jeder prozess brauch ja dann seine eigenen pagelists"
+2007-11-29 15:24:53,Noooooooooos,joo man kann die dann sonst auch auslagern
+2007-11-29 15:25:01,bluecode,janosch: du hast in einem pagedir logischerweise nur die pagetables drin die man wirklich braucht
+2007-11-29 15:25:10,bluecode,und nicht einfach mal auf vorrat das ganze pagedir voll machen
+2007-11-29 15:25:29,Noooooooooos,(4 gb - 4k)/(2*4KB) wäre wennschon die rechnung 
+2007-11-29 15:25:44,bluecode,ist aber auch blödsinn
+2007-11-29 15:26:14,janosch,mal überlegen...
+2007-11-29 15:26:47,kwolf,Noooooooooos: Und was rechnet die aus?
+2007-11-29 15:27:05,Noooooooooos,die anzahl prozesse
+2007-11-29 15:27:17,Noooooooooos,wobei allerdings alle den code auf den selben 4kb haben
+2007-11-29 15:27:37,kwolf,Und wieso 2*4k?
+2007-11-29 15:27:44,Noooooooooos,page dir und table
+2007-11-29 15:27:55,kwolf,"4M-Pages, sie Tables sparen wir ein."
+2007-11-29 15:28:36,kwolf,"Und weil ich großzügig abgerundet habe, ist die Million damit immer noch voll. ;-)"
+2007-11-29 15:28:48,bluecode,was ist das für eine blöde rechnung kwolf?
+2007-11-29 15:29:04,bluecode,ich mein wenn du eine 4MB page hast dann hast du auch 4MB verbraucht ;-)
+2007-11-29 15:29:07,janosch,dann muss ich mein memorymanagement schon wieder neumachen
+2007-11-29 15:29:17,bluecode,janosch: Das kommt vor ;-)
+2007-11-29 15:29:20,kwolf,bluecode: Hä?
+2007-11-29 15:29:40,bluecode,kwolf: versteh dich nicht... mit deinen 4MB pages
+2007-11-29 15:30:17,kwolf,"Wenn ich 4MB-Pages nehme, brauche ich keine PT. Alles andere wird dadurch nicht verändert."
+2007-11-29 15:30:29,Noooooooooos,jo vorallem die pagegrösse
+2007-11-29 15:30:38,bluecode,"wenn du dann aber eine mapst, dann hast du auch 4MB verbraucht ;-)"
+2007-11-29 15:30:43,kwolf,"Ja, aber die ist ja unwesentlich, weil unsere Tasks alle nur auf 4k arbeiten. ;-)"
+2007-11-29 15:30:46,janosch,also dann hab ich eine pagelist mit 1024 pageentries und 1024 pagedirs (bei 1024 prozessen)
+2007-11-29 15:30:58,kwolf,"bluecode: ""Verbraucht""? Ich kann dort doch wunderbar PDs reinlegen."
+2007-11-29 15:31:22,bluecode,whatever... die rechnung ist sowas von sinnlos -> lineare Algebra
+2007-11-29 15:31:22,kwolf,Und mehr als PDs und 4k Code haben wir ja nicht.
+2007-11-29 15:31:44,kwolf,bluecode: Du bist nur nicht Theoretiker genug. Insofern kannst du das mit Mathe auch bleiben lassen. ;-)
+2007-11-29 15:31:47,janosch,ne ich brauch ja 1024*1024 pageentries in 1024 pagelists
+2007-11-29 15:32:11,janosch,"wenn jeder prozess ein eigenes pagedir hat, kann ich ja immer nur 4MB mappen"
+2007-11-29 15:32:15,janosch,also minimal
+2007-11-29 15:32:55,kwolf,Mit Pagelist meinst du Pagetable?
+2007-11-29 15:33:04,janosch,ja stimmt
+2007-11-29 15:34:32,kwolf,Und die brauchst du ja nicht alle.
+2007-11-29 15:34:41,kwolf,Sondern kannst sie nach Bedarf anlegen.
+2007-11-29 15:35:09,kwolf,Also im allgemeinen am Anfang einmal 4k PD + 4k PT.
+2007-11-29 15:35:40,janosch,für jeden prozess oder was?
+2007-11-29 15:36:26,kwolf,Jo.
+2007-11-29 15:36:32,bluecode,"für jeden erstellten Prozess, jo. Evtl auch nochmal 4k für den Stack"
+2007-11-29 15:36:59,kwolf,"Code und Stack natürlich nicht mitgerechnet, das ist klar, daß der dazukommt."
+2007-11-29 15:37:21,janosch,ich raffs nicht...
+2007-11-29 15:37:25,bluecode,kwolf: Ich hab nicht immer Lust meine Zeit mit sinnlosem theorethischen Foobar zu verschwenden.
+2007-11-29 15:37:50,bluecode,kwolf: ich meinte auch PT für Stack
+2007-11-29 15:37:59,bluecode,(nicht den wirklichen Stack)
+2007-11-29 15:38:09,kwolf,"Ah, okay, sorry. Dann hast du natürlich recht, den habe ich vergessen."
+2007-11-29 15:38:33,kwolf,Außer in theoretischen Konstellationen natürlich. ;-)
+2007-11-29 15:39:22,janosch,"aber dann muss ich ja für jeden prozess 4MB+4KB reservieren, da er sie in anspruch nehmen könnte"
+2007-11-29 15:39:47,kwolf,"Reserviert wird immer erst, wenn er es tatsächlich braucht"
+2007-11-29 15:40:16,janosch,"nicht im dem sinne reservieren, es könnte ja sein, dass ein prozess (nahezu) 4GB haben will"
+2007-11-29 15:40:32,Noooooooooos,dann gibst du ihm das halt nicht
+2007-11-29 15:40:36,janosch,"und da dies jeder seim kann, braucht jeder prozess 4MB platz für pagetable"
+2007-11-29 15:41:01,bluecode,"du allozierst doch die Pagetables nur, wenn der Prozess sie wirklich braucht"
+2007-11-29 15:41:11,bluecode,und nicht im vorhinein schon
+2007-11-29 15:41:35,janosch,"nö, aber er könnte sie brauchen, also muss platz da sein"
+2007-11-29 15:41:52,bluecode,"Es ist doch genug Platz im PageDirectory, wo ist das Problem?"
+2007-11-29 15:42:05,Noooooooooos,wenn kein platz da ist musst du sowieso etwas auf festplatte auslagern
+2007-11-29 15:42:15,janosch,ich meine platz für pagetables
+2007-11-29 15:42:24,bluecode,Noooooooooos: ich glaub er ist ein paar ecken vorher ausgestiegen ;-)
+2007-11-29 15:42:47,Noooooooooos,ob jetzt das bei den pagetables geschieht oder biem laden einer grossen datei....du musst dann einfach auf die platte weichen
+2007-11-29 15:43:04,bluecode,janosch: Warum willst du gleich von vorneherein für jeden Prozess 4MB Pagetables reservieren?
+2007-11-29 15:43:41,janosch,"ich muss ja dem prozess gleich viel platz für pagetables geben, soll ich etwas sagen ""bei mir bekommt jeder nur 4MB"""
+2007-11-29 15:44:05,bluecode,"janosch: Ein Prozess meldet sich über syscalls beim Kernel, wenn er während der Laufzeit Platz haben will."
+2007-11-29 15:44:26,janosch,und dann muss ich etwas in eine pagetable schreiben
+2007-11-29 15:44:34,janosch,und die muss ja irgendwo liegen
+2007-11-29 15:44:40,bluecode,Und der Kernel kann dann wenn sich der Prozess meldet doch locker eine pagetabel allozieren und ins PD mappen
+2007-11-29 15:45:18,janosch,"nö, ich brauch ja speicher für die PT"
+2007-11-29 15:45:30,bluecode,*lol*
+2007-11-29 15:45:35,bluecode,wir bewegen uns im Kreis ;-)
+2007-11-29 15:46:03,janosch,"jeder prozess darf 1024 pagetables haben, das wären ja 1024*1024*4kB"
+2007-11-29 15:46:15,janosch,1024*1024*4B
+2007-11-29 15:47:04,janosch,"es kann zwar nur maximal 1024 PTs geben, aber jeder prozess darf diese ja haben"
+2007-11-29 15:47:34,bluecode,"jo klar, und wenn er sie braucht, dann kann er sie doch anfordern, oder?"
+2007-11-29 15:48:00,bluecode,"und dann kann der Kernel die pagetables doch erst aus dem page-allocator allozieren und in das PD einfügen, oder?"
+2007-11-29 15:48:23,janosch,ja aber mein prozess braucht ja nicht immer ein ganzes PT
+2007-11-29 15:48:51,bluecode,und?
+2007-11-29 15:48:53,Noooooooooos,nein aber wenn er ein neues braucht holt ers sich
+2007-11-29 15:48:59,janosch,"es kann ja auch sein dass sich 2 prozesse ein PT teilen wollen, wie mach ich dass dann im PD?"
+2007-11-29 15:49:16,bluecode,janosch: Darüber denkst du am besten noch nicht nach ;-)
+2007-11-29 15:49:47,janosch,"mach ich aber, bevor ich mein memorymanagement dann nochmal neuprogrammieren muss"
+2007-11-29 15:50:23,kwolf,Wieso sollten sich zwei Prozesse eine PT teilen?
+2007-11-29 15:50:38,janosch,weil ja ein Prozess nicht das ganze PT brauch
+2007-11-29 15:50:43,bluecode,shared-memory
+2007-11-29 15:50:47,bluecode,WTF
+2007-11-29 15:50:55,bluecode,DAS ist der falsche Ansatz janosch O_o
+2007-11-29 15:50:57,kwolf,bluecode: Üblicherweise mappt man da eher auf denselben physischen Speicher. ;-)
+2007-11-29 15:51:06,kwolf,janosch: Damit machst du den Speicherschutz kaputt
+2007-11-29 15:51:36,bluecode,kwolf: meine shms sind min 4MB (im virtuellen speicher) und ich kopier nur die PT
+2007-11-29 15:51:44,bluecode,tach Coffee
+2007-11-29 15:51:56,Coffee,tachsche
+2007-11-29 15:51:59,janosch,was is mit shared memory?
+2007-11-29 15:52:04,kwolf,"Hm, gut. Aber zwingend nötig ist das Teilen in keinem Fall, Kopieren geht immer auch"
+2007-11-29 15:52:34,bluecode,"kwolf: klar, man findet immer eine performancelastigere Implementation ;-)"
+2007-11-29 15:53:33,janosch,wenn ich keine pagetables teile hat jeder prozess min 4MB. wenn jeder prozess dann min. 4kB haben soll braucht jeder prozess seinen eigenen pagetables
+2007-11-29 15:54:13,bluecode,"janosch: Kapier doch endlich, dass nicht jeder Prozess alle Pagetables braucht und das man die bei bedarf dann mappen kann."
+2007-11-29 15:55:03,janosch,"doch theoretisch kann jeder prozess alle pagetables brauchen, das ist es ja grad (sry wenn ich euch aufrege, verzeiht mir ;) )"
+2007-11-29 15:55:43,janosch,ich glaub ich mach mal 5min pause und denk drüber nach
+2007-11-29 15:56:19,bluecode,"das ist natürlich richtig. Aber das ist genau der ""bedarfsfall"" bei dem ich dann eine Page aus dem Pageallocator nehme sie ins PD als PT eintrage, etc..."
+2007-11-29 15:57:29,kwolf,"bluecode: Stimmt, in dem Fall wären einfach 4M-Pages das Mittel der Wahl, wenn man darauf achten will. ;-)"
+2007-11-29 15:58:04,bluecode,hä?
+2007-11-29 15:58:25,bluecode,du meinst wenn der prozess wirklich 4MB braucht?
+2007-11-29 15:59:05,kwolf,"Die PT wiederverwenden geht nur, wenn du deinen 4MB-SHM hast. Und dann kann ich gleich eine große Page nehmen."
+2007-11-29 15:59:20,bluecode,nein?
+2007-11-29 15:59:26,janosch,"also bei einem prozessor ist das einfacher: ich hab 4kB PD, 4MB PT und 8MB ""Pagelist"", darin wird gespeichert welche virt. page auf phys page gemappt wird (phys page ist das offset in der tabelle) und was der nächste eintrag ist. in der Prozesstabelle steht dann immer dem Prozess sein 1. Eintrag"
+2007-11-29 15:59:30,kwolf,bluecode: Sondern?
+2007-11-29 16:00:30,kwolf,"janosch: Was macht diese Pagelist, was die PT nicht auch schon macht?"
+2007-11-29 16:00:37,bluecode,"kwolf: 4MB pages haben die doofe eigenschaft 4MB zu verbrauchen (auch wenn ich keine 4MB braucht, wie oben gesagt: virtuell sind es 4MB). Abgesehen davon müssen 4MB pages an einem 4MB align sein. Nicht unbedingt überzeugende Eigenschaften ;-)"
+2007-11-29 16:01:10,bluecode,das 4MB align ist für einen pageallocator nicht unbedingt einfach zum handhaben
+2007-11-29 16:01:47,janosch,"kwolf, sie speichert welche phys page welchen prozess gehört und wo hin gemappt werden muss. außerdem kann so jeder prozess volle 4GB nutzen (abgesehen vom kernel-speicher) oder auch nur 4kB"
+2007-11-29 16:02:11,kwolf,"bluecode: Aber wenn dein SHM sowieso immer 4 MB groß ist, wie du sagst?"
+2007-11-29 16:02:26,bluecode,"janosch: Du weiß das ein PD und ein PT ein Present-Bit haben, ja?"
+2007-11-29 16:02:39,janosch,mhh
+2007-11-29 16:02:50,kwolf,"bluecode: Ah, dein SHM ist nur teilweise gemappt?"
+2007-11-29 16:02:51,bluecode,kwolf: Ich betone nochmals: Im virtuellen Adressraum.
+2007-11-29 16:02:56,bluecode,jo exakt
+2007-11-29 16:03:39,janosch,"bluecode, dann kann ich aber immer nur ein PT unpresent/present machen"
+2007-11-29 16:03:47,janosch,und das sind wieder 4MB
+2007-11-29 16:04:11,bluecode,janosch: sry ich versteh einfach nicht was du nicht verstanden hast....
+2007-11-29 16:04:30,kwolf,"janosch: Hä? Du setzt im PD einfach für jede nicht vorhandene PT eine Null. Fertig. Wenn der Prozeß trotzdem drauf zugreifen will, fliegt ein PF."
+2007-11-29 16:05:37,kwolf,"Hm, kennt sich hier einer mit LaTeX aus?"
+2007-11-29 16:07:36,janosch,das ist ja nicht mein problem
+2007-11-29 16:08:04,stultus,moin
+2007-11-29 16:08:11,kwolf,Moin stultus
+2007-11-29 16:08:13,stultus,kwolf: besser als du? unwahrscheinlich. *g*
+2007-11-29 16:08:26,kwolf,janosch: Dann hast du irgendein anderes grundsätzliches Verständnisproblem. ;-)
+2007-11-29 16:08:41,janosch,so wie ich es verstanden habe habe ich 2 möglichkeiten: jeder prozess bekommt seine eigenen 1024 PTs oder es gibt nur 1024PTs und jeder Prozess bekommt seine eigene PD
+2007-11-29 16:08:47,stultus,"ganz allgemein, was brauchst denn, google hilft doch, wenn schon das KiLe Manual oder man nicht."
+2007-11-29 16:08:59,kwolf,stultus: Ich will ja nur eine \multirow-Tabellezelle einfärben.
+2007-11-29 16:09:10,stultus,oO
+2007-11-29 16:09:12,kwolf,Aber das scheint schwierig genug sein...
+2007-11-29 16:09:14,stultus,LaTeX kann Farbe?!
+2007-11-29 16:09:21,kwolf,*g*
+2007-11-29 16:09:39,kwolf,"Keine Sorge, ich will sie grau einfärben. ;-)"
+2007-11-29 16:09:46,stultus,phew
+2007-11-29 16:10:07,stultus,btw
+2007-11-29 16:10:14,stultus,weißt du womit opensuse 10.2 optimiert wurde?
+2007-11-29 16:10:58,stultus,"ich war vorhin verdammt deprimiert... als dieser athlon xp 1700 (1,4 ghz), mit 256 mb ram und ner ati rage 128, sich unter 10.2 performanter anfühlt als mein rechner hier :/"
+2007-11-29 16:10:59,kwolf,Wie optimiert? gcc-Optionen oder was?
+2007-11-29 16:11:27,stultus,könnten auch ganz allgemeine konfigurationssachen sein :/
+2007-11-29 16:12:23,kwolf,Was ist denn der Rechner hier?
+2007-11-29 16:13:39,stultus,"Sempron64 3000+, 1 GB Ram, 8600 GTS."
+2007-11-29 16:14:37,stultus,"(okay, atm mal wieder 960 MB, 64 für die onboard-grafik für den 2. Monitor. *g*)"
+2007-11-29 16:15:51,bluecode,janosch: hä? Ich versteh die Aussage nun wirklich nicht...
+2007-11-29 16:16:22,stultus,janosch: die erste variante klingt korrekter.
+2007-11-29 16:16:31,janosch,"egal, ich will euch damit nicht weiter belästigen ;) ich les mir mal alle artikel dazu durch, die ich in die finger krieg"
+2007-11-29 16:16:55,stultus,ehem. auf den monitor. oder hältst du deinen monitor beim lesen hoch? Ausdrucken is zu unnerdig. *g*
+2007-11-29 16:16:55,bluecode,"janosch: jo, erstmal informieren ist eine gute Idee ;-)"
+2007-11-29 16:17:39,janosch,"bluecode, ich würde euch nicht so volllabern wenn ich das nicht schon gemacht hätte. Ich hab ja ein funktionierendes MemoryManagement-System, nur geht das nicht mit mehreren CPUs"
+2007-11-29 16:18:11,stultus,hm. jede CPU hat wieder eigene PD's und PT's. die musst du halt korrekt eintragen.
+2007-11-29 16:18:20,kwolf,janosch: Aber es ist auch auf einer CPU kaputt.
+2007-11-29 16:18:25,bluecode,"janosch: Wenn es mit mehreren Prozessen (jeder sein eigenes PD und  PTs) zurechtkommt, dann geht es auch mit mehreren CPUs"
+2007-11-29 16:18:35,kwolf,"Kaputt im Sinn von völliger Blödsinn, nicht von funktioniert nicht irgendwie"
+2007-11-29 16:18:48,bluecode,kwolf: ich wollt schon was einwerfen *g*
+2007-11-29 16:19:08,janosch,"kwolf, ja schon klar, mein system funzt zwar ist aber langsam und speicherraubend"
+2007-11-29 16:19:45,bluecode0,wtf... was soll dieses reconnecten -_-
+2007-11-29 16:32:24,schnippi,re
+2007-11-29 16:34:16,bluecode0,schnippi: Gibt es irgendeinen Grund warum Wurzel(6) irrational ist?
+2007-11-29 16:35:28,bluecode0,wobei... lässt sich beweisen.
+2007-11-29 16:37:46,schnippi,dann frag mich doch nicht ;)
+2007-11-29 16:38:28,bluecode0,:-)
+2007-11-29 16:38:38,bluecode0,ich mag dich auch. :-)
+2007-11-29 16:38:57,schnippi,dann ist ja gut :)
+2007-11-29 16:43:48,schnippi,und wieder fast 5 tage frei :)
+2007-11-29 16:44:06,schnippi,der dienstag wird nur durch ne klausur gestört :/
+2007-11-29 17:15:43,Homix,hi
+2007-11-29 17:21:40,janosch,"ui ich glaub ich hab gerafft, wie man MemoryManagement richtig macht"
+2007-11-29 17:24:03,janosch,kein applaus?
+2007-11-29 17:24:22,bluecode0,"nein, erleichterung"
+2007-11-29 17:25:16,Homix,lol
+2007-11-29 17:25:52,janosch,"bluecodeNULL (:p) ihr könntet ja wenigstens so machen, als würdet ihr euch für _mich_ freuen und nicht weil ihr es mir nicht mehr erklären müsst ;)"
+2007-11-29 17:26:19,schnippi\lernen,janosch: erklär :)
+2007-11-29 17:26:29,janosch,muss ich?
+2007-11-29 17:26:34,stultus,ja.
+2007-11-29 17:26:49,stultus,"wenn du noch lange wartest, in veröffentlichbarer buchform, geschrieben in latex."
+2007-11-29 17:27:28,janosch,"ich programmier lieber schnell, bevor ich es wieder vergessen hab ;)"
+2007-11-29 17:28:22,stultus,dann kommentier gut. *g*
+2007-11-29 18:12:08,kwolf,stultus: // Internal use only
+2007-11-29 18:14:19,stultus,:(
+2007-11-29 18:14:25,stultus,worauf bezog sich der? ^^
+2007-11-29 18:14:38,kwolf,[17:36] <stultus> dann kommentier gut. *g*
+2007-11-29 18:14:47,kwolf,Auf die letzte Zeile davor. ;-)
+2007-11-29 18:15:56,kwolf,"So richtig Spaß macht so eine Kommentierung natürlich nur, wenn man sie in der Abteilung SE als Kopfkommentar eine 2-KLOC-Klasse findet."
+2007-11-29 18:16:11,kwolf,Also als einziger Kommentar in der Datei.
+2007-11-29 18:20:13,bluecode,"kwolf: gibt es mittlerweile eigentlich public domain in D? iirc wollten die das Urheberrecht doch in die Richtung anpassen, oder?"
+2007-11-29 18:21:05,kwolf,Wäre mir neu.
+2007-11-29 18:21:53,kwolf,Also Public Domain gibt es schon. Du mußt dazu nur erstmal 70 Jahre lang tot sein.
+2007-11-29 18:22:25,bluecode,"joa klar, aber das ist nicht die Lösung ;-)"
+2007-11-29 18:23:20,kwolf,Nicht so wirklich. ;-)
+2007-11-29 18:23:52,bluecode,Hast du irgendeinen Lizenzvorschlag für die Texte im wiki?
+2007-11-29 18:24:06,bluecode,(ich mein jetzt noch nicht den Code)
+2007-11-29 18:24:41,janosch,GPL?
+2007-11-29 18:24:52,bluecode,DAS ist viel zu restriktiv ;-)
+2007-11-29 18:24:59,bluecode,und va. nicht auf Text zugeschnitten
+2007-11-29 18:25:18,janosch,ja da gibst doch diese GNU lizenz für texte
+2007-11-29 18:25:24,janosch,die auch wikipedia benutzt
+2007-11-29 18:25:32,bluecode,Ich würd nämlich gern eine Kategorie erstellen in die alle Artikel ungeklärten Urheberrechts drin sind... sodass man nach und nach mal anfangen kann bei den Urhebern nachzufragen
+2007-11-29 18:26:25,bluecode,"janosch: jo, GFDL"
+2007-11-29 18:26:43,stultus,Hm. CC-BY-NoSale wäre doch ne Maßnahme. imho
+2007-11-29 18:26:55,bluecode,stultus: ?
+2007-11-29 18:27:25,stultus,"Creative Commons, Freie Verwendung, Autor muss genannt werden, keine Kommerzielle Verwendung."
+2007-11-29 18:27:31,stultus,Ändern etc. aber erlaubt.
+2007-11-29 18:27:54,bluecode,autor ist schwierig...
+2007-11-29 18:28:19,stultus,http://de.wikipedia.org/wiki/Creative_Commons
+2007-11-29 18:28:27,stultus,gibt ja auch andere abarten. *g*
+2007-11-29 18:28:35,kwolf,"Das mit dem Autor kann man sicher wegkonfigurieren, oder? ;-)"
+2007-11-29 18:30:38,bluecode,ich wär ja für nc-sa
+2007-11-29 18:30:41,kwolf,Die da vielleicht? ;-) http://en.wikipedia.org/wiki/WTFPL
+2007-11-29 18:30:54,kwolf,Wollen wir wirklich sa?
+2007-11-29 18:31:06,bluecode,mir egal :-)
+2007-11-29 18:31:44,janosch,bei der Creative Commons kann man doch alles einstellen
+2007-11-29 18:31:48,bluecode,ich sags mal so: sa wäre akzeptabel
+2007-11-29 18:32:01,stultus,"nc ja, sa muss nich sein, wäre aber definitiv noch akzeptabel"
+2007-11-29 18:33:06,kwolf,"Naja, angenommen, jemand will ein Stück Text in die Wikipedia übernehmen (weil wir ja so tolle Texte schreiben *g*)"
+2007-11-29 18:33:07,bluecode,wobei ich für sourcecode sa nicht akzeptabel finde (aber das steht ja momentan nicht zur debatte)
+2007-11-29 18:33:12,kwolf,Das dürfte dann schonmal nicht gehen
+2007-11-29 18:33:34,stultus,kwolf: kann man bei wikipedia bei neuen artikeln zumindenst nicht angeben?
+2007-11-29 18:33:50,kwolf,Ist die nicht komplett GFDL?
+2007-11-29 18:34:16,stultus,"ah, doch"
+2007-11-29 18:34:23,stultus,"ich meine früher gings, naja, aktuell nur gfdl, stimmt."
+2007-11-29 18:34:33,stultus,aber wtf.
+2007-11-29 18:34:41,stultus,"die wp hatte mal nen artikel über ""noobismus"" ?!"
+2007-11-29 18:35:26,schnippi\lernen,lol?
+2007-11-29 18:37:43,stultus,"so, bin weg, abendessen"
+2007-11-29 19:15:59,schnippi\lernen,lol
+2007-11-29 19:16:03,schnippi\lernen,klined :)
+2007-11-29 19:16:14,taljeth,Tja...
+2007-11-29 19:16:17,taljeth,Kommt vor. ;-)
+2007-11-29 20:07:08,stultus2,re
+2007-11-29 20:07:24,taljeth,wz
+2007-11-29 20:07:33,stultus2,jetzt mit neuem Hilfsspezialersatzswitch ^^
+2007-11-29 20:07:40,stultus2,(d.h. Router ohne angeschlossenes Modem. *g*)
+2007-11-29 20:08:40,bluecode,"würdet ihr im wiki lieber eine Grafik oder eine Tabelle für so Sachen wie PCI ConfigSpace, oä sehen?"
+2007-11-29 20:09:07,stultus2,"ne Tabelle, lässt sich leichter draus kopieren"
+2007-11-29 20:09:21,stultus2,"oder kannst du in nem Schaubild irgendwas besser darstellen, was absolut elementar ist?"
+2007-11-29 20:09:48,stultus2,grah
+2007-11-29 20:09:52,stultus2,Closing Link: (This server is full. Please try irc.euirc.net)
+2007-11-29 20:09:59,stultus2,auf welchen server verbind ich da wohl... ?!
+2007-11-29 20:10:04,bluecode,"naja, die Offsets (rechts) und die bitwerte (oben) finde ich bei einer grafik besser"
+2007-11-29 20:10:15,bluecode,Meinungen anderer? taljeth? Homix? janosch?
+2007-11-29 20:10:20,stultus2,hm
+2007-11-29 20:10:25,stultus2,im zweifel für beides. ;)
+2007-11-29 20:11:04,janosch,ich finde tabelle besser tabelle
+2007-11-29 20:11:06,taljeth,Ich mag Tabellen
+2007-11-29 20:11:10,janosch,besser skalierbar usw.
+2007-11-29 20:11:22,bluecode,ok
+2007-11-29 20:11:30,janosch,und vorallendingen leichter zu korrigieren
+2007-11-29 20:11:32,stultus2,janosch: svg-grafiken? :D
+2007-11-29 20:11:49,janosch,"strultus2, nicht umbedingt so gemein"
+2007-11-29 20:11:50,janosch,t
+2007-11-29 20:12:06,janosch,jeder browser stellt seinen inhalt anderst da
+2007-11-29 20:12:24,taljeth,*g* Das Diff von Benutzer:RedEagle ist auch nett. ;-)
+2007-11-29 20:12:47,janosch,außerdem kann man in die wiki eh keine bilder hochladen
+2007-11-29 20:13:01,bluecode,janosch: Ich kann machen was ich will ;-)
+2007-11-29 20:13:18,taljeth,_Das_ Wiki
+2007-11-29 20:13:30,stultus2,"den wiki. -,-"
+2007-11-29 20:13:37,janosch,also das mit der editierbarkeit ist ja eigentlich schon ein starkes argument
+2007-11-29 20:13:40,janosch,die wiki
+2007-11-29 20:13:45,bluecode,[20:11:57] <taljeth> _Das_ Wiki
+2007-11-29 20:13:46,taljeth,"stultus2: Wenn schon, de"
+2007-11-29 20:13:50,taljeth,dem Wiki
+2007-11-29 20:15:23,taljeth,"Aber nur in der Kombination ""dem krasse Wiki"""
+2007-11-29 20:16:56,taljeth,"Ah, mal wieder News? Wieso springen eigentlich in letzter Zeit alle von 0.x nach 2.0?"
+2007-11-29 20:18:03,schnippi\lernen,weil 2.0 jetzt modern ist :)
+2007-11-29 20:18:20,schnippi\lernen,(0.2 bis 1.9 kommt später)
+2007-11-29 20:18:32,taljeth,"Die sind doch alle hinterher, wir sind bei 10.3 ;-)"
+2007-11-29 20:18:38,schnippi\lernen,lol
+2007-11-29 20:18:54,stultus2,ach was.
+2007-11-29 20:19:03,stultus2,gib mal nen downloadlink für 10.4 alpha 0.5 ^^
+2007-11-29 20:19:24,taljeth,Es gibt eine 10.4? Dann weißt du mehr als ich. ;-)
+2007-11-29 20:20:21,taljeth,Aber die Alpha 0 ist entweder schon da oder kommt demnächst. So genau habe ich die Mail nicht gelesen. ;-)
+2007-11-29 20:31:40,bluecode,vergesst es leute... die tabellen werden doch total kaputt -_-
+2007-11-29 20:34:42,stultus2,"btw, ne idee warum die 10.3 bei mir komplett das booten verweigert?"
+2007-11-29 20:34:42,stultus2,taljeth
+2007-11-29 20:35:08,taljeth,An welcher Stelle verweigert sie denn?
+2007-11-29 20:35:39,stultus2,"gute Frage, is paar tage her dass ich das ausprobiert hatte."
+2007-11-29 20:35:47,taljeth,Ich für meinen Teil komme mit der 10.3 hier ganz gut zurecht. Solange ich keine Software installieren will. ;-)
+2007-11-29 20:35:51,stultus2,"Uhm, Okay, war eh nich das booten... war das erkennen vom dvd-laufwerk."
+2007-11-29 20:36:16,taljeth,"Öhm? Ein DVD-Laufwerk, das von Linux nicht erkannt wird?"
+2007-11-29 20:36:21,stultus2,"was ne installation natürlich auch nicht grade einfach macht, die ip's oder url's von den netinst-servern kenn ich alle auswendig. *g*"
+2007-11-29 20:36:29,stultus2,"respektive, er erkennt die eingelegte dvd nicht an."
+2007-11-29 20:36:54,taljeth,Also meine DVD hat funktioniert. *g*
+2007-11-29 20:36:58,stultus2,"ich tippe ganz stark darauf dass das mit dieser zwanghaften dma-verwendung zusammenhängt, die mein Laufwerk nich mehr mag."
+2007-11-29 20:37:14,stultus2,"Ubuntu verweigert auch das starten, aber da wirklich das starten...."
+2007-11-29 20:37:15,taljeth,Dagegen gibt es doch sicher einen Bootparameter
+2007-11-29 20:37:22,bluecode,evtl. falsches DVD-Format für dein Laufwerk?
+2007-11-29 20:37:27,stultus2, /sbin/modprobe abnormal exit. nachdem ide crasht...
+2007-11-29 20:38:01,taljeth,Autsch..
+2007-11-29 20:38:09,taljeth,dmesg?
+2007-11-29 20:38:09,stultus2,"bluecode: brenner, +-rwram"
+2007-11-29 20:38:34,stultus2,"gute idee. wenn du mir erklären möchtest, wie ich bis zu dmesg kommen soll, wenn init dannach stoppt... ^^"
+2007-11-29 20:38:57,taljeth,"Wie, das modprobe führt zu einem Panic?"
+2007-11-29 20:39:07,stultus2,ich bekomm nen stacktrace vom treiber.
+2007-11-29 20:39:36,taljeth,Und anschließend steht die Maschine?
+2007-11-29 20:40:03,stultus2,jup.
+2007-11-29 20:40:21,stultus2,"d.h. magic-sysrq geht noch, und auf ctrl-alt-del reagiert er auch noch. das war aber alles was noch hingehauen hat."
+2007-11-29 20:40:23,taljeth,Also ein Oops beim Laden von ide. Klingt ungesund.
+2007-11-29 20:40:50,taljeth,"Öh, Ctrl-Alt-Del sollte bei einem Oops aber nicht mehr gehen, afaik."
+2007-11-29 20:41:18,stultus2,wäre auch meine meinung.
+2007-11-29 20:41:25,stultus2,aber init steht dannach halt zumindenst inner normalen ausführung.
+2007-11-29 20:41:31,stultus2,nimmt das aber noch an.
+2007-11-29 20:41:41,taljeth,Aber einen Stacktrace kriegt man normal nur bei einem Oops.
+2007-11-29 20:41:49,stultus2,:/
+2007-11-29 20:41:56,stultus2,"der stacktrace ist fakt, und ctrlaltdel ist fakt."
+2007-11-29 20:42:33,stultus2,"und da der stacktrace einige verweise auf ide enthält, und von nem /sbin/modprobe abnormal exit verfolgt wird... kein prog was da crasht."
+2007-11-29 20:42:55,stultus2,viel interessanter is imho auch die ursache dafür dass das gerät kein DMA mehr annimmt.
+2007-11-29 20:43:16,stultus2,"solang ich das teil via PIO betreib, funzt der brenner nämlich einwandfrei o_O"
+2007-11-29 20:43:32,taljeth,Ich würde einfach mal einen Bug aufmachen.
+2007-11-29 20:43:58,taljeth,Vermutlich wollen sie dann aber serielle Konsole oder netconsole haben
+2007-11-29 20:44:00,stultus2,"hm. gegen wen? ubuntu (debian-generic bootet), linux (neue version is schuld), gott (mag mich nich), ... ?"
+2007-11-29 20:44:45,taljeth,"Hm, neue Version ist schuld? Selbstgebackener Kernel?"
+2007-11-29 20:45:09,stultus2,"nein, aber Ubuntu 7.10 verwender afaik nen neueren als den 2.6.18 den mir etch liefert."
+2007-11-29 20:45:29,stultus2,und 10.3 ist ebenso 2.6.22 (oder wars sogar .23?)
+2007-11-29 20:46:32,taljeth,"Wenns der Standardkernel ist, jeweils gegen den Kernel im entsprechenden Bugzilla"
+2007-11-29 20:47:00,stultus2,hm.
+2007-11-29 20:47:06,stultus2,vorher experimentier ich da aber nochmal rum.
+2007-11-29 20:48:00,stultus2,kurz afk
+2007-11-29 20:48:10,stultus2,"Pentium 1 aufbauen, dass ich nebenbei ircen kann *g*"
+2007-11-29 20:49:54,taljeth,*g*
+2007-11-29 20:50:09,taljeth,"Vorher noch kurz rtl8139 fixen, dann kannst du kirc nehmen. ;-)"
+2007-11-29 20:50:10,Jidder,moin moin
+2007-11-29 20:50:13,taljeth,Moin Jidder
+2007-11-29 20:50:51,stultus2,das war einer von denen bei denen floppy noch streikt. *g*
+2007-11-29 20:51:16,taljeth,Bugnummer?
+2007-11-29 20:51:30,stultus2,KA
+2007-11-29 20:51:34,stultus2,war vor bugzilla. *g*
+2007-11-29 20:52:09,Jidder,bugzilla? ist das der film mit jean reno?
+2007-11-29 20:52:09,taljeth,"Du hast einen Rechner, der Probleme macht und wir suchen wie die blöden nach Testmaschinen, auf denen was schiefgeht? ;-)"
+2007-11-29 20:52:33,stultus2,:D
+2007-11-29 20:52:44,stultus2,if theres a bug... i'll find it. for sure.
+2007-11-29 20:52:52,stultus2,hm. neuer signaturspruch ^^
+2007-11-29 20:53:22,taljeth,"Okay, du organisierst in Zukunft die QS. ;-)"
+2007-11-29 20:53:30,Jidder,if theres a bug... jidder ist schuld letztendlich
+2007-11-29 20:53:54,stultus2,hm.
+2007-11-29 20:53:59,stultus2,das gibt es doch wirklich nicht.
+2007-11-29 20:54:06,stultus2,ich habe 20.000 von diesen verdammten Netzkabeln.
+2007-11-29 20:54:12,stultus2,UND AUSGERECHNET JETZT FIND ICH KEINS?
+2007-11-29 20:54:32,taljeth,"Ich hab ein paar in der Schublade liegen, komm einfach kurz vorbei."
+2007-11-29 20:54:40,taljeth,Allerdings mit abgebrochener Nase. ;-)
+2007-11-29 20:55:00,taljeth,"Also die Kabel, nicht du wenn du kommst."
+2007-11-29 20:55:00,stultus2,mehr rl als zimmer <-> keller ertrag ich nicht. *g*
+2007-11-29 20:55:29,taljeth,"Hm, Zimmer => Keller wäre mal überfällig, oder? ;-)"
+2007-11-29 20:56:03,stultus2,Hm.
+2007-11-29 20:56:27,stultus2,Hier hab ich auch nur Kunstbeleuchtung. und die ist sehr spärlich.
+2007-11-29 20:56:46,stultus2,"Luft is auch relativ scheiße (fenster aufmachen, afk)"
+2007-11-29 20:57:13,stultus2,und mir ist eingefallen wo nen kabel sein müsste. afk keller
+2007-11-29 20:57:17,taljeth,*g*
+2007-11-29 21:00:21,stultus2,hm
+2007-11-29 21:00:24,stultus2,nicht ganz da wo erwartet
+2007-11-29 21:00:52,stultus2,"aber inmitten unzähliger mehrfachsteckdosen, 20m cat5-kabel, 10m bnc-kabel.... war eines."
+2007-11-29 21:01:57,stultus2,wtf. win 98 drauf auf der kiste.
+2007-11-29 21:02:10,stultus2,aber das waren noch zeiten... keine 60 min für nen scandiskdurchlauf. ^_^
+2007-11-29 21:02:52,taljeth,Wer läßt schon scandisk laufen? ;-)
+2007-11-29 21:03:06,stultus2,"win 98, wenn nicht sauber runtergefahren."
+2007-11-29 21:03:06,stultus2,also immer. *g*
+2007-11-29 21:05:54,stultus2,hat grad jemand nen streifen bleck?
+2007-11-29 21:05:58,stultus2,*blech
+2007-11-29 21:06:06,stultus2,"die Monitore beeinflussen sich mal wieder -,-"
+2007-11-29 21:13:27,stultus2,grml. das netzwerk streikt mal wieder :(
+2007-11-29 21:15:18,stultus2,hm. niedlich
+2007-11-29 21:15:24,stultus2,windows live search in IE 5.5 auf 16 Farben.
+2007-11-29 21:15:34,stultus2,oder doch cshon 256?
+2007-11-29 21:18:30,janosch,wie groß sollte eigentlich der kernel stack sein?
+2007-11-29 21:19:44,janosch,"ich hab hier 62kB, da hatte ich irgendwann mal eine lücke zwischen meinen tabellen. aber ich denke es kann weniger sein"
+2007-11-29 21:19:52,stultus|p1,test test.
+2007-11-29 21:19:55,stultus|p1,es geht. ^^
+2007-11-29 21:22:24,Jidder,du bist im P1? ^^
+2007-11-29 21:23:14,stultus|p1,ehm....
+2007-11-29 21:23:17,stultus|p1,*g*
+2007-11-29 21:23:43,janosch,wie groß ist denn der kernel-stack von LOST?
+2007-11-29 21:23:51,Jidder,ich kenn atb ^^
+2007-11-29 21:23:59,taljeth,janosch: 16k?
+2007-11-29 21:24:04,stultus2,cat * | grep stack
+2007-11-29 21:24:06,Jidder,16 kb
+2007-11-29 21:24:25,janosch,dann mach ich meinen auch mal 16kB groß ;)
+2007-11-29 21:24:42,Jidder,"och mensch, ich war doch noch am zählen, und taljeth kommt mit einer auswendig gelernten antwort ^^"
+2007-11-29 21:24:45,Jidder,musst du ja nicht ^^
+2007-11-29 21:24:57,taljeth,stultus2: Überflüssiges cat. ;-)
+2007-11-29 21:25:06,Jidder,miau
+2007-11-29 21:25:22,stultus2,Jidder: masochist?
+2007-11-29 21:25:52,stultus2,"(wem dieser verweis nichts sagt, möge bitte bei bash.org nach miau suchen)"
+2007-11-29 21:27:15,Jidder,es gibt nicht mal einen wikipedia-artikel zu miau
+2007-11-29 21:27:56,stultus|atp1,"so, afk. für musik sorgen, und kurz die kabelage erneuern."
+2007-11-29 21:48:08,stultus|atp1,wtf
+2007-11-29 21:48:11,stultus|atp1,ich werd alt.
+2007-11-29 21:48:20,stultus|atp1,20 min um 2 laufwerke umzujumpern :(
+2007-11-29 21:55:37,bluecode,gn leute :-)
+2007-11-29 21:55:40,bluecode,+8
+2007-11-29 21:56:35,taljeth,gn8 bl
+2007-11-29 22:00:23,VerrueckterPinguin,*autsch* Wie komme ich eigentlich auf die Idee ein readelf -h ta.exe zu machen? *g*
+2007-11-29 22:00:41,stultus|atp1,hehehe :D
+2007-11-29 22:00:41,stultus|atp1,gute idee
+2007-11-29 22:01:11,janosch,gn8
+2007-11-29 22:01:53,VerrueckterPinguin,gn8 janosch
+2007-11-29 22:01:57,Jidder,gn8
+2007-11-29 22:02:34,taljeth,Moin VerrueckterPinguin ;-)
+2007-11-29 22:02:54,VerrueckterPinguin,Moin auch ;-)
+2007-11-29 22:03:11,stultus|atp1,:D
+2007-11-29 22:03:21,VerrueckterPinguin,"Hm kann es sein, dass die nvidia-Module für debian lenny nicht existieren, oder bin ich einfach nur blind? ;-)"
+2007-11-29 22:03:41,taljeth,non-free hast du aber schon drin?
+2007-11-29 22:03:45,VerrueckterPinguin,Jo
+2007-11-29 22:04:32,VerrueckterPinguin,"Ich habe halt eifnach nur die von 2.6.18 drin, aber die sind vermutlich von vor dem upgrade von stable nach testing noch da."
+2007-11-29 22:05:23,taljeth,"Jo, sieht so aus: nvidia-kernel - Package not available"
+2007-11-29 22:05:41,taljeth,"Sagt packages.debian.org als Abhängigkeit für die nvidia-Pakete, die es gibt"
+2007-11-29 22:05:50,VerrueckterPinguin,Sowas aber auch.
+2007-11-29 22:07:15,VerrueckterPinguin,"Ich habe mich vorhin rund eine halbe Stunde damit rumgeärgert, weil das selbst kompilierte Modul dafür nach einem Neustart nicht funktionierte, bis ich gesehen habe, dass da noch irgend ein d00fes Init-Skript drin ist, das irgendwelche nvidia-Dinge gelöscht hat. :/"
+2007-11-29 22:13:58,taljeth,"Wieso erinnert mich eigentlich niemand, daß ich noch fertigspülen sollte? ;-)"
+2007-11-29 22:18:53,stultus|atp1,KA
+2007-11-29 22:18:59,stultus|atp1,btw... hab jetzt nen dmesg|tail
+2007-11-29 22:19:44,stultus|atp1,hdd: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
+2007-11-29 22:19:59,stultus|atp1,hdd: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
+2007-11-29 22:20:03,stultus|atp1,ide: failed opcode was: unknown
+2007-11-29 22:20:10,stultus|atp1,hdd: DMA disabled
+2007-11-29 22:20:19,stultus|atp1,hdd: ide_intr: huh? expected NULL handler on exit
+2007-11-29 22:20:23,stultus|atp1,hdd: ATAPI reset complete
+2007-11-29 22:20:48,stultus|atp1,"den block bis inkl. failed opcode unknown kommt mehrmals vor, bevor er DMA abschaltet."
+2007-11-29 22:21:25,taljeth,"VerrueckterPinguin hat ide geschrieben, der kann dir sicher sagen, was das heißt. ;-)"
+2007-11-29 22:21:56,stultus|atp1,fallback auf generic_ide ändert btw nix
+2007-11-29 22:37:56,VerrueckterPinguin,Also da kann ich dir auch nicht weiterhelfen.
+2007-11-29 22:38:22,VerrueckterPinguin,"Und ich gehe jetzt auch schlafen, damit ich morgen Abend schön fit bin. *g*"
+2007-11-29 22:38:55,taljeth,*g*
+2007-11-29 22:39:14,stultus|atp1,:/
+2007-11-29 22:39:54,taljeth,VerrueckterPinguin: Ungefähr so? http://xkcd.com/320/
+2007-11-29 22:40:50,VerrueckterPinguin,Genau *g*
+2007-11-29 22:41:32,VerrueckterPinguin,Also Gute Nacht. ;-)
+2007-11-29 22:42:04,taljeth,GN8
+2007-11-29 22:42:10,taljeth,"Ups, Caps..."
+2007-11-29 22:44:29,VerrueckterPinguin,Och jetzt hast du mich wieder ganz wach gemacht *g*
+2007-11-29 22:47:20,stultus|atp1,uhm.
+2007-11-29 22:47:32,stultus|atp1,hab grad bissel mit hdparm experimentiert...
+2007-11-29 22:47:56,stultus|atp1,gibts irgendwas besonderes an udma ab mode 3?
+2007-11-29 22:48:12,stultus|atp1,bis inkl. 2 (dem maximum vom cd-laufwerk) gehts auch mitm dvdbrenner. alles darüber resultiert im reset.
+2007-11-29 22:52:47,schnippi,re
+2007-11-29 23:10:47,Noooooooooos,bin weg cu
+2007-11-29 23:15:23,schnippi,bye nooos
+2007-11-29 23:20:47,taljeth,gn8
+2007-11-29 23:23:01,schnippi,n8 weichei :)
+2007-11-29 23:26:17,stultus|atp1, ebenso....
+2007-11-29 23:26:23,stultus|atp1,gute nacht
+2007-11-29 23:27:20,schnippi,lol

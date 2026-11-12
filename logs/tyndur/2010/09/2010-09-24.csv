@@ -1,0 +1,168 @@
+date/time,nick,message
+2010-09-24 14:06:58,FreakyPenguin,"taljeth: Hm wir sollten unsere tyndur-Diskusionen hierher verlegen, hier ist es irgendwie angenehmer. ;-)"
+2010-09-24 14:09:12,DerHartmut,*g*
+2010-09-24 14:24:10,taljeth,"FreakyPenguin: Hm, +m oder großzügiges +b würde es auch tun ;-)"
+2010-09-24 14:24:28,FreakyPenguin,Das sowieso ;-)
+2010-09-24 14:24:55,FreakyPenguin,"Aber man braucht ja nicht immer die Holzhammer-Methode zu nehmen, nur meistens ;-)"
+2010-09-24 14:25:36,taljeth,Okay ;-)
+2010-09-24 14:26:16,taljeth,"Hast du eine Idee für die Schnittstelle, die du nicht komplett doof findest?"
+2010-09-24 14:26:21,FreakyPenguin,Hm ich wollte schon immer mal transparent union benutzen *g*
+2010-09-24 14:26:57,taljeth,"Sag nicht, du hast dafür einen Einsatzzweck gefunden?"
+2010-09-24 14:28:16,FreakyPenguin,Naja da das nur mit pointiern geht wohl nicht
+2010-09-24 14:28:49,FreakyPenguin,"Im momentan bin ich bei sowas: int syscall_wait_events(wait_event_t events[], uint64_t timeout);"
+2010-09-24 14:29:50,FreakyPenguin,"Und die events könnten dann jeweils diverse typen haben, also entweder rpc, lio_server oder lio_client"
+2010-09-24 14:30:25,taljeth,Also ein ganzes Array übergeben?
+2010-09-24 14:30:30,FreakyPenguin,Jo
+2010-09-24 14:30:33,FreakyPenguin,Alles andere ist irgendwie doof
+2010-09-24 14:30:41,taljeth,"Ja, aber das auch ;-)"
+2010-09-24 14:30:54,taljeth,Dir fehlt übrigens noch ein size_t num
+2010-09-24 14:31:12,FreakyPenguin,Naja wir können auch eine Ellipse nehmen
+2010-09-24 14:31:32,taljeth,"Mir geht's grad erstmal um das Syscallinterface, libc ist eine andere Geschichte"
+2010-09-24 14:32:40,FreakyPenguin,Naja zumindest lio_client muss ich ja mehrere deskriptoren angeben können
+2010-09-24 14:33:02,FreakyPenguin,"Und wenn man das rpc-Ding noch etwas ausbaut, könnte man da noch sowas wie pid reinnehmen oder so"
+2010-09-24 14:33:14,FreakyPenguin,Von daher bin ich auf das Array gekommen
+2010-09-24 14:33:20,taljeth,"Das ist die Frage, ob man das beim wait angeben muss, oder ob das schon vorher durch irgendwas festgelegt ist"
+2010-09-24 14:34:20,taljeth,"Wie stellt der Aufrufer nachher fest, welcher von den Deskriptoren schuld war?"
+2010-09-24 14:35:22,FreakyPenguin,Der Rückgabewert wäre halt der index ins array oder irgend ein fehlercode für beispielsweise timeout
+2010-09-24 14:35:35,taljeth,"Okay, das gibt also immer nur einen Deskriptor zurück?"
+2010-09-24 14:35:55,taljeth,"Könnte es passieren, dass dann immer nur von einem gelesen wird und der Rest hat halt Pech?"
+2010-09-24 14:37:25,FreakyPenguin,Hm wir könnten natürlich auch die Events im array markieren oder so
+2010-09-24 14:37:51,taljeth,"Dann sind wir bei poll(), glaube ich"
+2010-09-24 14:39:08,FreakyPenguin,Hm
+2010-09-24 14:40:04,FreakyPenguin,Naja das Problem ist auch irgendwie dass lio_server und rpc irgendwie nicht wirklich mit dem lio_client kram zusammenpassen
+2010-09-24 14:40:15,taljeth,"Was mir halt irgendwie missfällt, ist dass der Kernel auf größeren Userspacestrukturen arbeiten soll"
+2010-09-24 14:40:58,taljeth,Inwiefern zusammenpassen?
+2010-09-24 14:50:12,taljeth,FreakyPenguin?
+2010-09-24 14:51:19,FreakyPenguin,"Naja für RPC und lio server warten darauf dass ein request reinkommt, während lio client eher darauf wartet dass  sich etwas verändert"
+2010-09-24 14:52:09,taljeth,Ist das nicht sehr ähnlich?
+2010-09-24 14:52:44,taljeth,Zumindest bei lio_server heißt dass ein Request reinkommt ja auch nicht mehr als dass sich was ändert
+2010-09-24 14:52:54,taljeth,Es ist halt was neues im Ring
+2010-09-24 14:56:23,FreakyPenguin,Hm jo
+2010-09-24 15:15:34,FreakyPenguin,"taljeth: Aber es ist doch irgendwie auch doof, wenn dann für jeden wait-aufruf x syscalls notwendig sind"
+2010-09-24 15:16:28,taljeth,Hm?
+2010-09-24 15:16:38,taljeth,Wie kommst du auf x Syscalls pro wait?
+2010-09-24 15:18:06,FreakyPenguin,"Naja wenn wir die liste vom kernel verwalten lassen, und der userspace dann den kram angeben muss, den er gerne drin haben möchte"
+2010-09-24 15:18:48,taljeth,"Wäre es nicht eher so, dass der Userspace den Deskriptor in eine Liste steckt und die immer wiederverwendet?"
+2010-09-24 15:20:09,taljeth,"Wobei das Problem bleibt, dass man irgendwie zurückgeben muss, welche Events vorliegen"
+2010-09-24 15:20:32,FreakyPenguin,Dann werden aber die rpcs lustig
+2010-09-24 15:20:46,FreakyPenguin,Wenn die auch auf irgendwas warten wollen
+2010-09-24 15:22:02,taljeth,Hm. Machen wir halt poll. ;-)
+2010-09-24 15:35:45,FreakyPenguin,Wir können den kernel natürlich mehrere Listen als Stack verwalten lassen
+2010-09-24 15:43:42,taljeth,Als Stack?
+2010-09-24 15:43:59,taljeth,"Aber wie gesagt, das Problem mit der Rückgabe bleibt"
+2010-09-24 15:45:50,FreakyPenguin,"Jo im rpc mache ich dann halt erst ein new_list, und dann wieder ein destroy_list, und das nächste Wait benutzt wieder die ursprüngliche liste"
+2010-09-24 15:49:27,taljeth,"Hm. Ich hätte die Listen eher komplett unabhängig verwaltet, wenn es mehrere sein sollen"
+2010-09-24 15:52:18,FreakyPenguin,"Hm stimmt, das tuts ja eigentlich auch"
+2010-09-24 15:52:35,FreakyPenguin,Aber jo die Rückgabe ist eine gute Frage
+2010-09-24 16:00:28,taljeth,"Wir könnten natürlich einfach immer nur ein Event zurückgeben und den Kernel sicherstellen lassen, dass eins nach dem anderen zurückgegeben wird. Das wird aber wahrscheinlich ein bisschen komplexer als einfach alles auf einmal zu machen."
+2010-09-24 16:01:30,DerHartmut,Oder wenn alles auf einmal gemacht wird müssen die Events gefiltert werden
+2010-09-24 16:03:09,taljeth,Was willst du denn filtern?
+2010-09-24 16:03:40,DerHartmut,"Das wollte ich eigentlich nicht abschicken weil ich mir dachte: ""Nein, du gibt's jetzt keinen unqualifizierten Müll von dir"""
+2010-09-24 16:03:41,taljeth,"Im Prinzip ist doch die Liste schon der Filter, der alles enthält, das dich interessiert, oder?"
+2010-09-24 16:04:06,taljeth,"Ich möchte nicht ausschließen, dass du recht hast, ich hab es nur nicht auf Anhieb verstanden ;-)"
+2010-09-24 16:09:47,taljeth,"DerHartmut: Komm, sag schon, was du damit meintest"
+2010-09-24 16:18:19,DerHartmut,"Im Prinzip ist die Liste schon der Filter, jo"
+2010-09-24 16:19:27,taljeth,"Hm, was passiert eigentlich, wenn zwei Threads auf dasselbe Ereignis warten?"
+2010-09-24 16:19:38,taljeth,"Und das Ereignis auch wirklich eintritt, natürlich"
+2010-09-24 16:19:45,DerHartmut,Priorisieren?
+2010-09-24 16:20:27,taljeth,"Dass man beim Warten noch eine Priorität mitgibt, meinst du?"
+2010-09-24 16:20:49,DerHartmut,Genau
+2010-09-24 16:21:19,DerHartmut,"Entweder nach dem Prinzip: ""Wer zuerst kommt, mahlt zuerst"" oder ""Ich bin wichtig weil ich bin zeitkritisch, also setze ich das Prio-1-Flag"""
+2010-09-24 16:21:24,taljeth,"Ist die Frage, ob es dafür sinnvolle Einsatzzwecke gibt"
+2010-09-24 16:21:36,DerHartmut,"Wobei der Thread auch sagen könnte: ""ich bin Prio-1"""
+2010-09-24 16:21:54,taljeth,"Vermutlich ist es das einfachste, zu sagen, der Benutzer ist selber schuld"
+2010-09-24 16:22:08,taljeth,"Die Frage wäre dann nur, ob man einfach den erstbesten aufweckt oder alle"
+2010-09-24 16:22:37,DerHartmut,Hm
+2010-09-24 16:23:07,taljeth,Ich tendiere zu alle
+2010-09-24 16:23:27,DerHartmut,Dito
+2010-09-24 16:23:35,taljeth,Dann klappen nämlich Timeout noch mit timer_add und danach wait_for_rpc
+2010-09-24 16:24:30,DerHartmut,Ergibt Sinn
+2010-09-24 16:24:31,taljeth,"Hm, ich glaube, Multithreading wird noch lustig..."
+2010-09-24 16:33:47,taljeth,FreakyPenguin: Baust du das dann mal kurz? ;-)
+2010-09-24 16:48:19,taljeth,FreakyPenguin: Ist gto-toni/lostio2 aktuell oder musst du erst noch pushen?
+2010-09-24 16:49:54,FreakyPenguin,Jetzt ist es aktuell ;-)
+2010-09-24 17:00:14,taljeth,"Hm, trau ich mich ein rebase oder lieber gleich reset --hard? ;-)"
+2010-09-24 17:00:48,taljeth,"Hm, okay, das war einfach. ""Nothing to do"""
+2010-09-24 17:01:51,FreakyPenguin,"Ich habe ja auch von dir gepullt, bevor ich angefangen habe mit dem kernel-Zeug ;-)"
+2010-09-24 17:02:28,taljeth,"Jo, aber video-lio2 rebasen wird sicher trotzdem lustig"
+2010-09-24 17:02:38,taljeth,Deswegen mache ich das auch erstmal nicht ;-)
+2010-09-24 17:03:32,FreakyPenguin,Ah *g*
+2010-09-24 17:05:46,FreakyPenguin,Auch eine Variante ;-)
+2010-09-24 17:08:54,taljeth,"Hm, bei dup() teilen sich beide Deskriptoren eine Position, oder?"
+2010-09-24 17:10:15,FreakyPenguin,Jo ich glaube schon
+2010-09-24 17:11:17,taljeth,"Das würde bei uns heißen, mehrere usp_streams für denselben lio_stream, oder?"
+2010-09-24 17:12:26,FreakyPenguin,Jo
+2010-09-24 17:13:14,taljeth,"Dürfte sogar für Pipes klappen, wenn ich das grad recht sehe"
+2010-09-24 17:13:25,taljeth,Dann müsste man den lio_stream also refcounten und gut
+2010-09-24 17:15:00,taljeth,"Nur von Userspaceseite ist es ein bisschen doof, weil init und nicht der Aufrufer das eigentliche Starten des Prozesses macht"
+2010-09-24 17:15:25,FreakyPenguin,Genau
+2010-09-24 17:16:13,taljeth,init könnte natürlich ein paar Informationen einfach durchreichen
+2010-09-24 17:16:43,taljeth,Irgendwann brauchen wir sowas auch für die Umgebungsvariablen
+2010-09-24 17:57:33,taljeth,"Hm, das wird schonmal allein ein längerer Patch, um das im Kernel alles sauber zu trennen"
+2010-09-24 18:02:39,taljeth,"Yay, rot! :-)"
+2010-09-24 18:06:29,taljeth,"FreakyPenguin: Das Rot gibt es schon mit deinem aktuellen Code, ich brauch meinen Patch gar nicht"
+2010-09-24 18:15:08,FreakyPenguin,Hm habe ich den falschen Brach gepusht?
+2010-09-24 18:15:27,taljeth,"Nein, ich glaube, ich bin zu blöd, auch das Image zu aktualisieren"
+2010-09-24 18:16:17,taljeth,"Warum auch immer der in lio_sync abschmiert, daran hab ich doch gar nichts geändert..."
+2010-09-24 20:47:54,taljeth,Hmpf. Wir brauchen mal typsichere Bäume. :-/
+2010-09-24 20:51:35,taljeth,"Hm, sowas wie ein unmount haben wir nicht, oder? ;-)"
+2010-09-24 22:12:54,FreakyPenguin,Wer braucht sowas schon. *g*
+2010-09-24 22:13:33,taljeth,"Ich hab da jetzt einfach mal ein FIXME hin, dass man eigentlich was freigeben müsste ;-)"
+2010-09-24 22:13:43,FreakyPenguin,Klingt gut ;-)
+2010-09-24 22:15:20,taljeth,"Jetzt müsste ich mir langsam klar werden, wie das mit dem Vererben funktionieren soll"
+2010-09-24 22:17:21,taljeth,"Ein Syscall, um einen Deskriptor an den neuen Prozess zu ""verschenken"", ähnlich wie mit den Pages?"
+2010-09-24 22:18:27,FreakyPenguin,"Wäre wohl momentan das konsequenteste, jo"
+2010-09-24 22:18:50,taljeth,"Und der Aufrufer verschenkt erstmal an init, das dann weiterschenkt?"
+2010-09-24 22:18:54,taljeth,"Hm, nein, das klappt nicht"
+2010-09-24 22:19:12,FreakyPenguin,Stellt sich halt die Frage wie das mit der Nummer geht
+2010-09-24 22:19:34,FreakyPenguin,Wenn sich die ändern kann geht das
+2010-09-24 22:19:38,taljeth,"Man gibt halt die Zielnummer an, wie die virtuelle Adresse bei den Pages, oder?"
+2010-09-24 22:20:00,FreakyPenguin,"Hm momentan sind die nummern aber systemweit, oder?"
+2010-09-24 22:20:01,taljeth,"Hm, nein, sie kann sich natürlich nicht ändern. Sind ja keine Dateideskriptoren"
+2010-09-24 22:20:06,taljeth,Genau
+2010-09-24 22:20:27,FreakyPenguin,Man müsste dem task die nummer halt mitteilen
+2010-09-24 22:20:46,FreakyPenguin,"Dann könnte man es so machen, dass der Syscall die neue Nummer zurückgibt"
+2010-09-24 22:21:12,taljeth,"Ich dachte, die ändert sich nicht?"
+2010-09-24 22:21:29,taljeth,Oder willst du dup()en statt verschenken?
+2010-09-24 22:22:00,FreakyPenguin,Ah bei verschenken brauchen wir aber auch noch ein dup
+2010-09-24 22:22:08,taljeth,"Jo, das brauchen wir auf jeden Fall"
+2010-09-24 22:22:22,FreakyPenguin,Stimmt eigentlich
+2010-09-24 22:22:23,taljeth,Spätestens wenn wir fork implementieren wollen ;-)
+2010-09-24 22:22:29,FreakyPenguin,Jo
+2010-09-24 22:24:38,taljeth,"Und was teilen wir dem neuen Task dann genau mit? Bei stdin/out/err geht es ja noch, aber wir müssen alle Deskriptoren rüberretten"
+2010-09-24 22:26:29,FreakyPenguin,Du stellst Fragen.. ;-)
+2010-09-24 22:26:37,taljeth,"Hm, und wie machen wir mit den globalen IDs eigentlich ein fork? ;-)"
+2010-09-24 22:27:29,FreakyPenguin,Jo der task muss halt irgendwie ein mapping von FD nach stream_id erhalten ;-)
+2010-09-24 22:27:40,FreakyPenguin,Oder wir machen richtige Dateideskriptoren ;-)
+2010-09-24 22:27:49,taljeth,"Ja, aber dieses Mapping geht beim fork ja kaputt"
+2010-09-24 22:28:05,taljeth,Weil sich die stream_ids ändern
+2010-09-24 22:28:36,FreakyPenguin,Deshalb muss man ihm ja das neue sagen ;-)
+2010-09-24 22:28:57,FreakyPenguin,Das einfachste wäre wohl das fd-konzept zu übernehmen
+2010-09-24 22:29:22,taljeth,"Du meinst, erstmal wird geforkt und hinterher muss die libc versuchen, rauszukriegen, wie sich das Mapping geändert hat?"
+2010-09-24 22:30:00,FreakyPenguin,Irgend sowas
+2010-09-24 22:30:19,FreakyPenguin,Was natürlich wieder irgendwie hässlich wird ;-)
+2010-09-24 22:30:33,taljeth,"Ich hasse es ja, dass einem POSIX dieses ganze Zeug aufzwingt, aber das wäre wirklich kaputt ;-)"
+2010-09-24 22:31:56,taljeth,"Hm, wenn beim fork nicht der Kernel, sondern die libc dupt, könnte das es doch halbwegs gehen"
+2010-09-24 22:33:30,FreakyPenguin,"Hm stimmt, bei fork muss ja das nicht unbedingt init machen"
+2010-09-24 22:34:41,taljeth,"Die nächste Frage wäre natürlich, wie exec geht, aber daran möchte ich lieber nicht denken *g*"
+2010-09-24 22:35:03,FreakyPenguin,*g*
+2010-09-24 22:35:32,FreakyPenguin,Hm ich glaube das wird wirklich schwer ohne native FDs :-/
+2010-09-24 22:35:55,taljeth,Nur wegen POSIX-Kompatibilität oder allgemein?
+2010-09-24 22:37:04,FreakyPenguin,Ich meinte jetzt exec
+2010-09-24 22:37:41,taljeth,"Hm, wo ist der Unterschied zum normalen Starten eines Programms?"
+2010-09-24 22:38:16,taljeth,"Es sollte kein größeres Problem sein, ein paar Pages zusätzliche Informationen mit solchem Zeug zu mappen, und das brauchen wir wohl in beiden Fällen"
+2010-09-24 22:38:38,taljeth,"Schöner wäre es natürlich ohne, aber ich sehe im Moment nicht, wie das gehen sollte"
+2010-09-24 22:38:56,FreakyPenguin,Hm stimmt die umgebungsvariablen müssen da ja auch erhalten bleiben
+2010-09-24 22:39:42,FreakyPenguin,Ist halt die Frage ob die globalen deskriptoren nicht eh eine 0xd00fe Idee sind
+2010-09-24 22:39:50,taljeth,"exec müsste sich im Prinzip nur wieder in einen Zustand bringen, dass es von init blockiert ist, damit init das neue Image drüberkopieren kann"
+2010-09-24 22:40:26,taljeth,"Jo, das ist Frage"
+2010-09-24 22:40:40,taljeth,Ich sehe aber im Moment nicht mehr Argumente für ein Ja als für ein Nein ;-)
+2010-09-24 22:40:52,FreakyPenguin,"Das sorgt ja nur dafür dass wir den grösseren Baum durchsuchen müssen, bei jedem Zugriff"
+2010-09-24 22:41:07,taljeth,"Hm, stimmt"
+2010-09-24 22:41:10,FreakyPenguin,Ist da sonst noch was? ;-)
+2010-09-24 22:41:43,FreakyPenguin,"Also ich habe das ja primär so gemacht, weil das halt die einfachste Möglichkeit war, aber sonst sehe ich kein Argument dafür"
+2010-09-24 22:42:12,taljeth,Es ist nicht POSIX *g*
+2010-09-24 22:42:30,FreakyPenguin,Das ist natürlich ein gutes Argument. *g*
+2010-09-24 23:43:38,taljeth,"FreakyPenguin: mount macht ein lio_usp_add_stream für die Pipequelle. Ist das nötig? Das ID, die dabei rauskommt, wird anscheinend nicht verwendet..."
+2010-09-24 23:49:57,taljeth,"Also zum Booten wird es nicht gebraucht, ich committe das mal so *g*"
+2010-09-24 23:57:17,taljeth,Und damit ist es dann auch gut für heute

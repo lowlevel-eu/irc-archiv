@@ -1,0 +1,50 @@
+date/time,nick,message
+2013-07-05 09:55:49,alexander,moinrn
+2013-07-05 10:13:11,kevin,Moin
+2013-07-05 13:55:47,iksnagreb,hallo
+2013-07-05 17:18:25,DerHartmut,Nabend
+2013-07-05 20:23:08,PascalJ,Hi.
+2013-07-05 20:29:51,iksnagreb,guten abend
+2013-07-05 20:43:05,mroman,guter abend
+2013-07-05 20:58:22,iksnagreb,"ich hab immer noch das Problem, das mein Paging in Qemu funktioniert, in VirtualBox aber nicht, ganz, und dann vermutlich auch nicht auf echter Hardware, woran kann das liegen?"
+2013-07-05 21:01:59,Jidder,ganz viele sachen
+2013-07-05 21:02:12,iksnagreb,"achja, hier ist der code http://iksnagreb.patov.com/index.php?do=browse&user=iksnagreb&path=./public/tertius"
+2013-07-05 21:02:18,Jidder,"bei mir lags mal daran, dass meine physische speicherverwaltung die memory map nicht richtig verarbeitet hat, und nur zufällig in qemu funktioniert hat"
+2013-07-05 21:02:27,Jidder,aber das ist nur einer 1000 gründen
+2013-07-05 21:02:45,iksnagreb,"bin mir aber sicher, das diesmal, 3. oder 4. versuch alles passen sollte"
+2013-07-05 21:03:29,Jidder,"wenn du das nicht formal beweisen kannst, dann ist sicher sein egal ^^"
+2013-07-05 21:03:52,iksnagreb,"das mappen funktioniert, nur nicht, wenn in einem nicht aktiven kontext eine adresse über 0x400000 gemappt wird und er dann aktiviert wird"
+2013-07-05 21:04:57,iksnagreb,"wenn ich das gleiche mapping mach, wenn der kontext grad läuft, dann gehts"
+2013-07-05 21:05:19,Jidder,"das ist doch mal ein ansatz, dem man hinterherdebuggen kann"
+2013-07-05 21:05:53,Jidder,"du könntest zum beispiel versuchen rauszufinden, was genau die unterschiede zwischen den beiden fällen sind"
+2013-07-05 21:06:15,iksnagreb,"ich weiß aber nicht, wie, laut dem VBox log ist die letzte adresse, der vm die direct nach dem laden des PD nach cr3"
+2013-07-05 21:07:21,iksnagreb,"ich kann nur in qemu an informationen über das aktuelle mapping und den tlb, aber da ist alles so, wie es soll"
+2013-07-05 21:07:26,Jidder,als erstes würde ich versuchen die vm manuell direkt vor dem fehler anzuhalten
+2013-07-05 21:07:39,iksnagreb,wie?
+2013-07-05 21:07:45,Jidder,also notfalls mit einem if (...) { while (1) { } }
+2013-07-05 21:07:52,Jidder,"und die if-bedingung halt so stricken, dass es passt"
+2013-07-05 21:08:17,Jidder,dazu vielleicht erstmal den testfall reduzieren
+2013-07-05 21:08:23,Jidder,also vielleicht nur 2 contexts haben
+2013-07-05 21:08:33,iksnagreb,hab ich nur
+2013-07-05 21:08:34,Jidder,"die nur das notwendige machen, damit der fehler auftritt"
+2013-07-05 21:08:44,Jidder,und zwar so wenig wie möglichk
+2013-07-05 21:09:01,Jidder,"und dann weißt du vielleicht shcon im voraus, dass es das erste mapping ist, das das problem verursacht"
+2013-07-05 21:09:21,iksnagreb,"die machen auch nichts, außer die notwendigen mappings zu enthalten(kernel) und ein mapping zum testen"
+2013-07-05 21:10:10,Jidder,"dann machst du da einfach eine endlosschleife rein, bevor cr3 geladen wird"
+2013-07-05 21:10:36,Jidder,und danach gehste ganz einfühlsam vor und gibst mittels printf virtuelle und physische adressen aus
+2013-07-05 21:10:50,Jidder,und am besten gibst du dir die auch beim kontext-erstellen oder speicherverwaltung aus
+2013-07-05 21:10:54,Jidder,und schreibst dir schön alles auf
+2013-07-05 21:11:03,Jidder,"und vergleichst das und guckst, dass alles wirklich so ist, wie es soll"
+2013-07-05 21:16:49,iksnagreb,"es scheint alles zu passen, er schreibt 0x5000 nach cr3 und genau da liegt auch das PD des kontext, der aktiviert werden soll"
+2013-07-05 21:17:21,Jidder,dann solltest du in das page directory und die page tables reinschauen
+2013-07-05 21:17:30,iksnagreb,"ok, mach ich mal"
+2013-07-05 21:35:06,iksnagreb,"ah, in VBox ist asu irgend einem Grund der Kernel nicht gemappt"
+2013-07-05 21:57:45,iksnagreb,"er wird aber anfangs richtig gemappt, irgendwas scheit aber das mapping wieder zu löschen, wenn iene adresse über  0x400000 gemappt wird"
+2013-07-05 22:04:05,Jidder,"wenn es nur wenige funktionen gibt, die in der page table rumpfuschen, könntest du in allen direkt bevor sie fertig sind ein if (!kernel_noch_gemappt) { printf(""kernel nicht mehr gemappt ""); und alle parameter ausgeben } machen"
+2013-07-05 22:04:43,Jidder,wobei du die if-bedingung vielleicht aus deinen bisherigen debug-sachen ableiten kannst (möglicherweise sowas einfaches wie if (pagedir[0] & 1 == 0) ...)
+2013-07-05 22:06:24,iksnagreb,"leider scheit das nicht die einzige ursache des problems zu sein, ich mappe den kernel jetzt einfach wieder neu, aber es funktioniert immer nocht nicht"
+2013-07-05 22:06:47,iksnagreb,ich gehe jetzt mal die 1. pagetable eintrag für eintrag durch
+2013-07-05 23:57:21,iksnagreb,"ich versteh es nicht, ich hab jetzt den ganzen abend gesucht, aber kann den fehler einfach nicht finden"
+2013-07-05 23:58:37,livinskull,höhö
+2013-07-05 23:58:42,livinskull,*nabend
+2013-07-05 23:58:46,livinskull,;)

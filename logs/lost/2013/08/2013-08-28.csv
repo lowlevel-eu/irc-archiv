@@ -1,0 +1,154 @@
+date/time,nick,message
+2013-08-28 00:35:13,iksnagreb,"es muss an meinem system liegen, das der zeilenaufbau im testmodus auf echter hardware so langsam läuft, tyndur lief nämlich super"
+2013-08-28 00:35:28,iksnagreb,*testmodus
+2013-08-28 00:35:38,iksnagreb,*textmodus
+2013-08-28 00:36:08,iksnagreb,"oh man ist echt schon spät, kann kaum noch richtig tipppen"
+2013-08-28 00:44:15,iksnagreb,"naja, dann bis morgen, oder nachher"
+2013-08-28 09:27:58,ehenkes,hi
+2013-08-28 09:49:04,alexander,Moin
+2013-08-28 10:15:03,kevin,Moin
+2013-08-28 10:32:02,ehenkes,"wir haben bei PrettyOS an echter Harware noch ein merkwürdiges problem beobachtet, dass wir bisher nur per HACK lösen konnten."
+2013-08-28 10:32:21,ehenkes,"und zwar bei Highspeed usb devices, also sticks"
+2013-08-28 10:33:02,ehenkes,"nach dem reset des Ports gibt der stick an uhci ab, dort wird sofort wieder detached, und ehci holt sich das dann wieder"
+2013-08-28 10:34:43,ehenkes,die kette ist:
+2013-08-28 10:35:00,ehenkes,if (val & STS_PORT_CHANGE) <== also einstecken des sticks
+2013-08-28 10:35:11,ehenkes,"task_t* thread = create_cthread((void(*)())&ehci_portCheck, ""EHCI Ports"");"
+2013-08-28 10:35:51,ehenkes,das klappt dort: if (e->OpRegs->PORTSC[j] & PSTS_CONNECTED_CHANGE)
+2013-08-28 10:36:17,ehenkes,hier gibts offenbar bei einiger Hardware probleme: if (e->OpRegs->PORTSC[j] & PSTS_CONNECTED)
+2013-08-28 10:36:31,ehenkes,dann läufts in den else-zweig
+2013-08-28 10:38:05,ehenkes,"wir haben das dauerprellen zwischen EHCI und UHCI beseitigen können, aber einmal passiert es noch, auch wenn wir länger warten am ende von port reset als 20 ms"
+2013-08-28 10:38:36,max,"hast du aber ein Glück; meine EHCIs wollten High-Speed-Geräte nie abgeben, so lieb ich auch gebeten hab"
+2013-08-28 10:39:07,ehenkes,wir machen das so:
+2013-08-28 10:39:20,ehenkes,"ehci_checkPortLineStatus(ehci_t* e, uint8_t j)"
+2013-08-28 10:39:30,ehenkes,switch ((e->OpRegs->PORTSC[j]>>10)&3) // bits 11:10
+2013-08-28 10:39:44,ehenkes,"case 1: // K-state, release ownership of port, because a low speed device is attached"
+2013-08-28 10:39:44,ehenkes,            e->OpRegs->PORTSC[j] |= PSTS_COMPANION_HC_OWNED; // release it to the cHC
+2013-08-28 10:39:44,ehenkes,            break;
+2013-08-28 10:40:05,max,Ich rede ja auch von High-Speed-Geräten
+2013-08-28 10:40:16,ehenkes,offensichtlich passiert das bei uns mit den sticks
+2013-08-28 10:40:37,ehenkes,"die werden offenbar ab und zu nicht gleich als J-State erkannt, sondern erstmal als K-State"
+2013-08-28 10:40:47,ehenkes,dann abgabe an cHC
+2013-08-28 10:40:51,ehenkes,der wirft hzurück
+2013-08-28 10:41:04,ehenkes,und EHCI erkennt es dann als J-State und spielt selbst weiter
+2013-08-28 10:41:34,ehenkes,das läuft dort als:
+2013-08-28 10:41:35,ehenkes,        case 0: // SE0
+2013-08-28 10:41:35,ehenkes,        case 2: // J-state
+2013-08-28 10:41:35,ehenkes,        case 3: // undefined
+2013-08-28 10:41:35,ehenkes,"            ehci_detectDevice(e, j);"
+2013-08-28 10:41:35,ehenkes,            break;
+2013-08-28 10:42:23,ehenkes,also nochmal die frage:
+2013-08-28 10:42:55,bluecode,"ah cool, Code"
+2013-08-28 10:43:01,ehenkes,"kennt ihr solche vorgänge, dass ein highspeed-gerät sich erstmal als K-State, dann später als J_State zu erkennen gibt?"
+2013-08-28 10:44:07,ehenkes,"bei blödem zeitverhalten führte das zum überlaufen unserer Konsolen, da wir einen neuen Thread mit einer neuen Konsole verknüpften wegen asugaben"
+2013-08-28 13:08:05,iksnagreb,moin
+2013-08-28 13:15:12,iksnagreb,"hat jemand ne idee, wieo die textausgabe bei mir auf echter hardware trotz optimierung noch so langsam ist?"
+2013-08-28 13:20:18,iksnagreb,"mit optimierung meine ich, auch nur den teil des terminal in den video speicher zu kopieren, der sich geändert hat"
+2013-08-28 13:25:26,kevin,"iksnagreb: Wie stellst du denn fest, dass es langsam ist?"
+2013-08-28 13:38:21,iksnagreb,"naja, ich mache ausgaben, und wenn ich dabei zusehen kann, wie die zeichen und einzeilnen zeilen auf dem bildschirm erscheinen ist das für mich langsam"
+2013-08-28 13:38:53,iksnagreb,"in qemu und vbox erscheint die ausgabe als gesamtes sofort, ohne den nervigen langsamen aufbau"
+2013-08-28 13:49:44,kevin,"iksnagreb: Macht deine Ausgabefunktion noch irgendwas, z.B. auf die serielle Konsole schreiben?"
+2013-08-28 13:58:03,iksnagreb,sie setzt noch den cursor und die tastatur LEDs
+2013-08-28 13:58:21,max,Dann setz den Curser mal nicht
+2013-08-28 13:59:02,iksnagreb,dann kommt irgendwie gar keine ausgabe bei tatatur eingabe mehr
+2013-08-28 13:59:13,max,"das klingt, als wäre was kaputt, das du fixen solltest :3"
+2013-08-28 13:59:48,kevin,"Ach richtig, _die_ Analyse fehlt noch: Du machst was falsch"
+2013-08-28 14:00:33,kevin,"Cursor nach jedem einzelnen Zeichen neu setzen ist zwar d00f, aber sollte es auch wieder nicht so furchtbar langsam machen, oder?"
+2013-08-28 14:00:52,max,"Weiß nicht; es wird schon einen Grund haben, dass ich das erst nach jeder Zeile oder so mache"
+2013-08-28 14:00:59,max,Dazu müsste ich aber jetzt in meinen Code gucken
+2013-08-28 14:01:06,kevin,"Hm, was macht tyndur eigentlich?"
+2013-08-28 14:01:06,max,"Weiß nicht, ob mein Vorgesetzter mir das hier auf Arbeit erlaubt"
+2013-08-28 14:01:38,kevin,"Nein, ich glaube, du musst dringend deine Patches fertigkriegen :-P"
+2013-08-28 14:01:51,max,"Die sind doch fertig, funktionieren wunderbar!"
+2013-08-28 14:01:55,max,Wenn die Testcases kaputt genug sind
+2013-08-28 14:01:58,iksnagreb,"tyndur machts auf jeden fall richtig, habs als vergleich getestet, da is der bildausfbau normal"
+2013-08-28 14:02:18,kevin,Ist das vterm? Mal schauen.
+2013-08-28 14:03:10,kevin,"Ich glaube, das macht immer einen kompletten Write-Request auf einmal"
+2013-08-28 14:04:29,kevin,"Und normal ist stdout ja eh gepuffert, also sind die Requests auch nicht so klein"
+2013-08-28 14:05:13,iksnagreb,ich meld mich gleich nochmal muss jetzt erst kurz weg
+2013-08-28 14:07:22,max,"Sooo, und damit hab ich mir ja auch erstmal genug Zeit mit drei der acht Patches verschafft"
+2013-08-28 14:07:33,max,„Die anderen sollens fixen“ find ich gut
+2013-08-28 14:14:07,kevin,max: Welche anderen?
+2013-08-28 14:14:27,max,Du hast den Optionscode geschrieben
+2013-08-28 14:14:34,max,Zur Not file ich einen Bugreport gegen dich D:
+2013-08-28 14:16:16,max,"Tut mir leid, ich identifiziere mich so mit meinem Code"
+2013-08-28 14:16:24,max,"Da dachte ich, wäre bei anderen vielleicht auch so"
+2013-08-28 14:17:15,kevin,Das tut mir leid für dich
+2013-08-28 14:17:22,max,Was soll das denn heißen *g*
+2013-08-28 14:17:24,max,So schlimm? *g*
+2013-08-28 14:17:26,kevin,Och nix *g*
+2013-08-28 14:17:45,kevin,"Obwohl es natürlich sicher auch geschickt ist, wenn man selber ein CDI-Storage-Interface hat."
+2013-08-28 14:17:47,max,"Na, solange du das nicht irgendwo schreibst, wo mein Arbeitgebener das erfahren könnte"
+2013-08-28 14:17:50,max,"Ach verdammt, die Logs"
+2013-08-28 14:17:53,kevin,"Ich weiß zwar nicht, wofür, aber toll ist das sicher"
+2013-08-28 14:17:54,max,*Arbeitgebern
+2013-08-28 14:17:59,max,Menno *Arbeitgeber
+2013-08-28 14:18:09,max,"Jetzt erfahren auch noch alle, dass ich nicht mal schreiben kann"
+2013-08-28 14:18:37,kevin,Die lesen sicher den ganzen Tag alle nur #lost-Logs
+2013-08-28 14:18:42,max,"Ein CDI.storage-Interface zu haben ist erst sinnvoll, wenn alle das haben"
+2013-08-28 14:18:51,max,"Klar, in letzter Zeit gibt es da ja nicht mehr so viel zu lesen :("
+2013-08-28 14:20:00,kevin,Muss man wohl mal ändern
+2013-08-28 14:20:08,kevin,alexander: Was macht der vHäkkatönen?
+2013-08-28 14:20:35,max,wieso v
+2013-08-28 14:20:35,max,Kaum beweg ich mal meinen Hintern
+2013-08-28 14:20:35,max,"Wollen die anderen nicht mehr, oder was"
+2013-08-28 14:20:35,kevin,Du lädst uns alle ein?
+2013-08-28 14:20:35,max,Das ist ja wohl mal nicht fair
+2013-08-28 14:20:55,alexander,Fände ich total fair
+2013-08-28 14:21:01,max,Das denk ich mir
+2013-08-28 14:21:04,alexander,"kevin: Steht weiterhin würde ich sagen, oder?"
+2013-08-28 14:21:17,kevin,"alexander: Das ist dieses Wochenende, oder?"
+2013-08-28 14:21:38,alexander,"Ne, nächstes wimre"
+2013-08-28 14:22:28,kevin,Unsere Organisationsfähigkeit ist offenbar genauso kaputt wie der Code
+2013-08-28 14:22:34,max,Welcher Code?
+2013-08-28 14:22:42,max,inb4 „Welche Organisationsfähigkeit?“
+2013-08-28 14:22:46,kevin,Guter Punkt...
+2013-08-28 14:23:49,max,Wie hieße das denn auf Urdeutsch?
+2013-08-28 14:24:03,max,"Gutes Argument, vermutlich"
+2013-08-28 14:24:07,max,Aber das ist doch viel zu lang
+2013-08-28 14:24:14,max,Wir sollten Deutsch mal xz-packen
+2013-08-28 14:24:19,max,Dann kann es endlich auch mit Englisch mithalten
+2013-08-28 14:24:45,alexander,Wir hatten doch letztens schon die Vokale ausgelassen
+2013-08-28 14:26:12,max,Vielleicht sollten wir mal die Zischlaute weglassen
+2013-08-28 14:26:34,max,Dann könnten wir a. 50 % Pla paren _und_ Deut würde endli mal ön klingen
+2013-08-28 14:28:22,kevin,"Wir lassen hier doch ständig schon die Aktivität weg, das spart noch viel mehr"
+2013-08-28 14:29:04,max,Guter Punkt
+2013-08-28 14:29:32,kevin,*Gutes Argument
+2013-08-28 14:29:40,max,*Gute Argument
+2013-08-28 14:30:00,kevin,Ich unterstütze deine Parmanahmen aber gar nicht
+2013-08-28 14:30:50,max,"Mir egal, wenn i Diktator von Deutland werde, brau i keine Untertütung mehr"
+2013-08-28 14:30:58,max,Untertütung it aber auch ein tolle Wort
+2013-08-28 15:17:29,iksnagreb,es sind anscheinen wirklich die outb() die es so langsam machen
+2013-08-28 15:18:02,kevin,"Na sowas, dann ist I/O ja tatsächlich so langsam wie es klingt"
+2013-08-28 15:18:56,iksnagreb,"jetzt bruach ich nur noch nen weg, wie ich den cursor verwenden kann, ohne bei jedem zeichen langsam neu setzten zu müssen"
+2013-08-28 15:42:47,kevin,"Ach übrigens, alexander:"
+2013-08-28 15:42:51,kevin,"[Donnerstag, 15. August 2013] [20:31:17] <kevin>        Sozusagen das  Wochenende vom 1. September?"
+2013-08-28 15:42:53,kevin,"[Donnerstag, 15. August 2013] [20:33:16] <DerHartmut>   Äh...ja, genau *g*"
+2013-08-28 15:43:16,alexander,"Och, doch schon so lange her?"
+2013-08-28 15:43:22,alexander,Gar kein korrektes Zeitgefühl hier 
+2013-08-28 15:43:24,alexander,Ja jut
+2013-08-28 15:43:27,alexander,Ist ein freies WE ^^
+2013-08-28 15:43:47,kevin,Na dann ;-)
+2013-08-28 15:44:05,kevin,"Du bist für die Infrastruktur zuständig, leg ich einfach mal fest"
+2013-08-28 15:50:46,max,Infrastruktur?
+2013-08-28 15:50:51,max,"Teleporter zum Kakaoversand, oder wie?"
+2013-08-28 15:53:11,kevin,Dafür!
+2013-08-28 15:53:25,max,"alexander, !"
+2013-08-28 15:54:32,alexander,Ja hier
+2013-08-28 15:54:33,alexander,Machbar
+2013-08-28 15:56:14,kevin,"Eher eine Kakaobar, dachte ich?"
+2013-08-28 15:57:49,max,"Mit gutaussehenden Bardamen, bitte"
+2013-08-28 15:58:08,max,Signifanten gehen zur Not aber auch
+2013-08-28 18:41:40,iksnagreb,"ohne den cursor ist die ausgabe jetzt schön schnell, aber ich find keinen weg, wie ich cursor + schnelle ausgabe bekommen kann"
+2013-08-28 18:42:24,XanClic,"ach, Moment"
+2013-08-28 18:42:29,XanClic,Jetzt kann ich ja mal nachgucken
+2013-08-28 18:43:14,XanClic,"Also, ich setze den Cursor halt nach jeder Ausgabe"
+2013-08-28 18:43:29,XanClic,Funktioniert ziemlich gut
+2013-08-28 18:43:35,XanClic,"Also, nicht nach jedem Zeichen"
+2013-08-28 18:43:48,XanClic,Sondern für jeden Schreibzugriff aufs Terminal halt einmal
+2013-08-28 18:46:53,iksnagreb,meine schreibzugriffe sind zeichen
+2013-08-28 18:46:59,XanClic,Dann solltest du das ändern
+2013-08-28 18:47:31,XanClic,"Im Prinzip kannst du einmal pro Newline machen, aber das geht halt kaputt, sobald man eine Prompt aufmacht bzw. allgemein der Benutzer irgendwas eingeben soll"
+2013-08-28 18:47:38,XanClic,Wofür der Cursor ja eigentlich überhaupt da ist
+2013-08-28 18:48:05,iksnagreb,"ja, ne shell läuft schon drauf, das geht alles"
+2013-08-28 18:49:07,XanClic,Du kannst den Cursor ja in Software machen :-P
+2013-08-28 21:37:38,iksnagreb,nabend

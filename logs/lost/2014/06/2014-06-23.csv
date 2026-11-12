@@ -1,0 +1,384 @@
+date/time,nick,message
+2014-06-23 00:21:48,yayachiken__,https://www.technovelty.org/linux/what-actually-happens-when-you-plug-in-a-usb-device.html
+2014-06-23 17:49:39,Th3Falc0n,huhu
+2014-06-23 17:50:08,Th3Falc0n,"was genau kann falsch sein, wenn ich das gesamte memory beim paging 1 zu 1 page (virtuelle adresse = physische adresse) und es trotzdem einen page-fault gibt?"
+2014-06-23 17:55:54,kevin,"Vermutlich, dass du nur meinst, dass du alles 1:1 mappst und es in Wirklichkeit nicht tust"
+2014-06-23 17:56:14,kevin,"Du weißt, wie man einen PF debuggt?"
+2014-06-23 17:56:24,kevin,"eip, cr2 und Error Code anschauen und so?"
+2014-06-23 17:56:24,Th3Falc0n,"nein. ich hab keinen plan, das ist das problem"
+2014-06-23 17:56:54,kevin,"Okay, das cr2-Register ist das wichtigste"
+2014-06-23 17:56:57,Th3Falc0n,CR2 = EIP
+2014-06-23 17:57:03,Th3Falc0n,soweit war ich dank des tutorials
+2014-06-23 17:57:27,kevin,"Und das ist irgend wo in der Gegend von 0x100xxx, oder?"
+2014-06-23 17:57:33,Th3Falc0n,jap
+2014-06-23 17:57:40,Th3Falc0n,es ist genau da wo es sein sollte laut dump
+2014-06-23 17:57:43,kevin,Du benutzt qemu?
+2014-06-23 17:57:49,Th3Falc0n,ich nutze qemu
+2014-06-23 17:58:23,DerAlex,Gibt es da einen Unterschied?
+2014-06-23 17:58:41,kevin,"Gut, dann bring ihn mal an die Stelle, wo es kracht und sorg dafür, dass es keinen Triple Fault gibt, sondern er stehenbleibt"
+2014-06-23 17:58:50,kevin,-no-reboot -no-shutdown oder sowas war das
+2014-06-23 17:59:41,Th3Falc0n,mit doppelstrich am anfang ^^ ok
+2014-06-23 17:59:53,kevin,Anschließend kannst du dann im Monitor manuell PD und PT untersuchen
+2014-06-23 18:00:11,kevin,"Ah, qemu akzeptiert inzwischen auch --? Wusste ich gar nicht ;-)"
+2014-06-23 18:01:34,kevin,"Also bei info registers anfangen und schauen, ob cr3 stimmt"
+2014-06-23 18:02:07,kevin,"Und dann mit xp schauen, was an dieser Adresse steht"
+2014-06-23 18:05:18,Th3Falc0n,CR3 muss eigentlich stimmen da es das erste alloc im ganzen code ist und dabei die Adresse 0x1000 raus kommt
+2014-06-23 18:06:57,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS/tree/master/kernel/os da gibts den code
+2014-06-23 18:07:02,Th3Falc0n,falls du lust hast
+2014-06-23 18:07:59,kevin,"Mach lieber selber, da lernst du mehr dabei"
+2014-06-23 18:08:30,Th3Falc0n,"wenns offensichtlich ist und du es mir sagst, dann weiss ich es danach auch *liebguck*"
+2014-06-23 18:08:32,kevin,"Und ""muss eigentlich"" gilt nicht, weil eigentlich sollte der Code auch keine Bugs haben"
+2014-06-23 18:08:46,kevin,"Deswegen sollst du nachschauen, was da wirklich drinsteht"
+2014-06-23 18:09:33,kevin,"Das Problem, wenn ich dir das jetzt debugge, ist, dass du beim nächsten Bug wieder dastehst und dir nicht selber helfen kannst"
+2014-06-23 18:13:34,Th3Falc0n,"ich bin nicht ungewillt bugs zu finden, nur ich denke ich habe ein verständnisproblem welches sich in den code übertragen hat ^^"
+2014-06-23 18:14:20,Th3Falc0n,oder ich hab memset vergessen
+2014-06-23 18:15:35,kevin,"Warum machst du nicht einfach, was ich dir gesagt habe?"
+2014-06-23 18:15:52,Th3Falc0n,hab ich doch vor :(
+2014-06-23 18:16:03,kevin,Wo hängt es?
+2014-06-23 18:16:16,kevin,Du brauchst doch für ein 'info registers' keine Viertelstunde?
+2014-06-23 18:16:46,Th3Falc0n,weil ich gerade noch nen server repariern muss *g*
+2014-06-23 18:24:57,Th3Falc0n,"OK cr2 leigt bei 0x104080... das müsste ne page_table sein?... frage ist jetzt, was ist der error code und was sagt er mir? also wo finde ich den error code?"
+2014-06-23 18:28:41,kevin,Lass den Error Code vorläufig mal weg
+2014-06-23 18:29:03,kevin,"Du würdest ihn in einer Exceptionmeldung hoffentlich finden, -d int loggt ihn auch mit"
+2014-06-23 18:29:36,kevin,"Der würde dir sagen, ob der Fehler beim Lesen oder Schreiben war, ob es User oder Kernel war und ob die Page nicht gemappt ist oder die Berechtigung fehlt"
+2014-06-23 18:29:44,kevin,Du hast vermutlich Kernel/Lesen/Nicht gemappt
+2014-06-23 18:30:27,kevin,"Was ich dir jetzt empfehlen würde, ist die 0x104080 manuell aufzulösen. Dann müsstest du den Fehler eigentlich finden."
+2014-06-23 18:30:33,kevin,Was ist cr3?
+2014-06-23 18:30:47,Th3Falc0n,cr3 ist 0x100
+2014-06-23 18:30:49,Th3Falc0n,+0
+2014-06-23 18:30:52,Th3Falc0n,also 0x1000
+2014-06-23 18:30:56,kevin,Ok
+2014-06-23 18:32:06,kevin,Dann mach mal xp 0x1000
+2014-06-23 18:33:42,Th3Falc0n,0x00002027... adresse vonner pagetable bei 0x2000 + FLAGS... 
+2014-06-23 18:34:17,kevin,"Ja, das sieht auch noch gut aus"
+2014-06-23 18:35:33,Th3Falc0n,xp 0x2000 sagt 0x72545b2f also müll
+2014-06-23 18:35:34,kevin,xp 0x2410 müsste der PTE sein
+2014-06-23 18:35:54,kevin,"Aber wenn 0x2000 schon Müll ist, dann weißt du wohl schon, wo das Problem sitzt :-)"
+2014-06-23 18:35:59,Th3Falc0n,jap die ganze page table ist müll
+2014-06-23 18:36:14,Th3Falc0n,da fehlt for(int i = 0; i < 1024; i++) pt[i] = 0; glaub ich
+2014-06-23 18:36:23,kevin,Wär ein Ansatz
+2014-06-23 18:36:30,kevin,"Oder memset(), falls du sowas hast"
+2014-06-23 18:38:05,kevin,"Allerdings ist das dann auch kein 1:1-Mapping, sondern nicht gemappte Pages. Das ist auch nicht dein endgültiges Ziel, oder?"
+2014-06-23 18:39:40,Th3Falc0n,ja bei der initalisierung setze ich = 0
+2014-06-23 18:39:45,Th3Falc0n,danach müsste eigentlich funktionieren
+2014-06-23 18:40:07,Th3Falc0n,moment
+2014-06-23 18:40:12,Th3Falc0n,eigentlich dürfte da kein müll drin stehen
+2014-06-23 18:40:17,Th3Falc0n,  context->pagedir[pd_entry][pt_entry] = (paddr & 0xFFFFF000) | PT_EXIST | PT_WRITE | PT_PUBLIC;
+2014-06-23 18:41:54,Th3Falc0n,wo kommt dann der müll her?
+2014-06-23 18:42:22,Th3Falc0n,obwohl
+2014-06-23 18:42:30,kevin,Die Zeile ist falsch
+2014-06-23 18:42:46,Th3Falc0n,"ok, und warum? :D"
+2014-06-23 18:42:51,kevin,"context->pagedir[pd_entry] ist keine Adresse, sondern hat noch Flags drin"
+2014-06-23 18:43:01,Th3Falc0n,:(
+2014-06-23 18:43:05,Th3Falc0n,kill me
+2014-06-23 18:43:43,kevin,"Und ansonsten funktioniert sie natürlich auch nur bevor Paging angeschaltet ist bzw. solange du ein 1:1-Mapping hast, weil du eine physische Adresse dereferenzierst"
+2014-06-23 18:44:13,Th3Falc0n,jap
+2014-06-23 18:44:17,Th3Falc0n,aber es funktioniert jetzt
+2014-06-23 18:45:57,Th3Falc0n,wo mappt man normalerweise die pagetables hin in sich selbst?
+2014-06-23 18:46:10,kevin,Wo man Platz hat ;-)
+2014-06-23 18:46:29,Th3Falc0n,also ans ende wäre eine lösung?
+2014-06-23 18:46:37,kevin,"Ja, warum nicht"
+2014-06-23 18:46:58,kevin,tyndur hat z.B. bis 1 GB Kernelspace und darüber Userspace. Die letzten 4 MB vom Kernelspace werden für die Page Tables genommen.
+2014-06-23 18:47:16,kevin,Aber letztendlich hast du da freie Wahl
+2014-06-23 18:48:09,Th3Falc0n,also sagen wir ich überschreite mit meinem kernel keine größe von 0x100000 überschreitet geht auch einfach 0x200000 find ich gut
+2014-06-23 18:49:24,mgottschlag,"nein, das muss an eine Pagetable-Grenze, also durch 4MB teilbar"
+2014-06-23 18:50:00,mgottschlag,"da jeder Eintrag des Pagedirs für 4MB steht, und du die Page Directory-Adresse ja in einen solchen Entrag schreibst"
+2014-06-23 18:50:26,mgottschlag,"hm, Page Directory-Adresse, oder Page-Directory-Adresse?"
+2014-06-23 18:50:35,Th3Falc0n,PD-Adresse?
+2014-06-23 18:50:43,Th3Falc0n,xD
+2014-06-23 18:52:00,Th3Falc0n,ich frag mich nur wieso das durch 4MB teilbar sein muss?
+2014-06-23 18:52:41,mgottschlag,"eine Seite ist 4kB groß, eine Seitentabelle enthält 1024 Seiten, also enthält sie 4MB"
+2014-06-23 18:52:50,mgottschlag,"achso, moment"
+2014-06-23 18:52:56,mgottschlag,ich hab das evtl falsch verstanden
+2014-06-23 18:53:07,mgottschlag,"du willst ein rekursives Mapping für die Seitentabellen, oder nicht?"
+2014-06-23 18:53:37,mgottschlag,"bei rekursivem Mapping trägt man einfach die Adresse vom PD in das PD ein, und jeder PD-Eintrag entspricht halt einer Seitentabelle, da kommen die 4MB her"
+2014-06-23 18:54:03,mgottschlag,"wenn du kein rekursives Mapping möchtest, ist das egal"
+2014-06-23 18:54:16,mgottschlag,dann kannst du Seitentabellen wirklich beliebig im Adressraum verteilen
+2014-06-23 18:54:28,Th3Falc0n,ich wollte nicht rekursiv mappen eigentlich
+2014-06-23 18:54:38,mgottschlag,"ja, dann ist es egal"
+2014-06-23 18:54:44,Th3Falc0n,ich wollte die PD und PT in jedem paging an ne feste adresse mappen
+2014-06-23 18:54:46,Th3Falc0n,mehr nicht
+2014-06-23 18:55:26,kevin,mgottschlag: Page-Directory-Adresse ;-)
+2014-06-23 18:55:29,Th3Falc0n,"oder gibt es irgendeinen so gravierenden vorteil beim rekursiven, dass man es unbedingt machen sollte?"
+2014-06-23 18:55:36,mgottschlag,"es gibt halt mehr als eine PT, und zwar je nach Füllgrad deines Adressraums zwischen 1 und 1024"
+2014-06-23 18:56:02,mgottschlag,"d.h. du musst irgendwie wissen, wo welche PT in deinem Adressraum gemappt ist"
+2014-06-23 18:56:13,kevin,"Oh, ich bin auch von rekursiv ausgegangen"
+2014-06-23 18:56:37,mgottschlag,"rekursives Mapping erspart dir das, weil sich da die PT-Adressen direkt aus der Adresse, für die die PT zuständig ist, ableiten lässt"
+2014-06-23 18:56:59,mgottschlag,"du kannst auch so 4MB für PTs reservieren, aber rekursives Mapping macht das alles sehr viel einfacher"
+2014-06-23 18:57:03,Jidder,letztendlich spart man damit aber nur 4 KByte physischen speicher
+2014-06-23 18:57:35,Th3Falc0n,"ich wollte eigentlich immer die kompletten PT's reservieren, dass PD füllen und dann nurnoch auf die PT's zugreifen (Addr  0x200000 bis 0x300000)"
+2014-06-23 18:57:42,kevin,"Jidder: Und eine zusätzliche Kopie, die aktuell gehalten werden muss"
+2014-06-23 18:57:52,Jidder,jo
+2014-06-23 18:58:09,mgottschlag,Th3Falc0n: das wäre dann aber eher 0x200000 bis 0x600000
+2014-06-23 18:58:25,mgottschlag,1MB Seitentabellen pro 1GB Adressraum
+2014-06-23 18:58:38,Th3Falc0n,"jaja ok, ich kann kein mathe"
+2014-06-23 18:59:03,mgottschlag,"aber ja, kann man so machen"
+2014-06-23 19:02:40,Jonathan,Moin
+2014-06-23 19:11:56,Th3Falc0n,ok wird nur ein richtiges problem dann nochmal sobald ich im virtuellen mode nen neuen kontext erstellen muss
+2014-06-23 19:12:14,Th3Falc0n,oder ist es ok zum erstellen paging zu disablen?
+2014-06-23 19:14:26,Jonathan,Ist wohl etwas unschön ^^
+2014-06-23 19:14:50,Th3Falc0n,ist es ein problem? oder einfach nur etwas unschön (und vllt etwas performance lastig?)
+2014-06-23 19:15:09,Jonathan,Befindest du dich im PM oder im Virtual x86 mode?
+2014-06-23 19:15:23,Th3Falc0n,ich hab keinen plan
+2014-06-23 19:15:44,Jonathan,"Baust du eigenen Code auf, oder hast du von irgendwo eine ""Basis""?"
+2014-06-23 19:15:54,Th3Falc0n,die basis ist der tutorial code von lowlevel
+2014-06-23 19:16:20,Th3Falc0n,und das ich das durchgearbeitet hab ist 2 jahre her
+2014-06-23 19:16:28,Jonathan,Ah okay
+2014-06-23 19:16:53,Jonathan,"Dann würde ich dir empfehlen, nochmal ganz genau nachzuschlagen, wie die x86-CPU funktioniert."
+2014-06-23 19:17:25,Jonathan,"(Du bist im PM, um das schonmal zu sagen - zumindest, solange ich mich nicht irre, habe nämlich nie ein x86-OS geschrieben)"
+2014-06-23 19:17:44,Jonathan,Paging zu deaktivieren ist übrigens eine sehr schlechte Idee.
+2014-06-23 19:18:30,Th3Falc0n,und warum?
+2014-06-23 19:18:46,Jonathan,"Es könnte ja sein, dass die Strukturen, die du schreiben willst, nicht auf physisch zusammenhängendem Speicher liegen... Sondern über mehrere Pages verstreut, die physisch ""irgendwo"" im RAM liegen (also durchaus an verschiedenen Stellen), und nur virtuell neben einander liegen."
+2014-06-23 19:19:52,Jonathan,"Du müsstest also, wenn du Pages so beschreiben willst, das Paging im Grunde genommen per Software nachbilden, wenn du das Hardware-Paging abschaltest."
+2014-06-23 19:20:09,Jonathan,"Und das ist ja noch komplizierter, als diesen Job einfach automatisch erledigen lassen."
+2014-06-23 19:21:12,Th3Falc0n,ich habe ja nicht vor während ausgeschaltetem paging was spannendes zu machen
+2014-06-23 19:21:37,Th3Falc0n,nur den neuen context allozieren (das heisst pd und die 1024 pt's allozieren) und dann die nach 0x200000 mappen
+2014-06-23 19:21:44,kevin,Das ist potentiell spannend genug
+2014-06-23 19:22:19,Th3Falc0n,in der zeit würde ich ja keine dynamisch allozierten speicher benutzen und somit auch kein paging brauchen!
+2014-06-23 19:22:26,Th3Falc0n,oder nicht?
+2014-06-23 19:22:28,Jonathan,"Naja, damit du deine Pages dann auch wiederfindest, müsstest du die Adressen dann manuell übersetzen... Entweder Virtuell ---> Physisch, oder Physisch ---> Virtuell"
+2014-06-23 19:22:38,Jonathan,Du musst das Paging ja hinterher auch wieder anschalten.
+2014-06-23 19:22:58,Jonathan,"Und da ändern sich dann alle Adressen, die du dann alle konvertieren müsstest."
+2014-06-23 19:23:09,Th3Falc0n,ich muss doch aus einem kontext niemals in einen anderen kontext schreiben
+2014-06-23 19:23:20,kevin,Denkst du
+2014-06-23 19:23:21,Th3Falc0n,und ein kontext ist in sich selber immer nach 0x200000 gemappt
+2014-06-23 19:23:39,Jonathan,"Ja, schon"
+2014-06-23 19:23:54,Jonathan,Aber können denn zwei Kontexte gleichzeitig *physisch* im RAM bei 0x200000 liegen?
+2014-06-23 19:23:57,Jonathan,Nö.
+2014-06-23 19:24:07,Th3Falc0n,nein
+2014-06-23 19:24:28,Th3Falc0n,das brauchen sie aber doch auch nicht?
+2014-06-23 19:24:46,Jonathan,"Also ist wieder Adressübersetzung nötig. kevin: So ein Kontext kann über mehrere Pages gehen, oder?"
+2014-06-23 19:24:57,Jonathan,"(Doofe Frage, aber bin halt x86-Noob)"
+2014-06-23 19:25:03,kevin,"Was ist ein ""Kontext""?"
+2014-06-23 19:25:19,kevin,Meinst du das PD?
+2014-06-23 19:25:27,kevin,Ein PD ist genau eine Page groß
+2014-06-23 19:25:28,Th3Falc0n,ja ein komplettes gefülltest PD
+2014-06-23 19:25:32,Th3Falc0n,mit allen PT's
+2014-06-23 19:25:36,Th3Falc0n,das ist für mich ein kontext
+2014-06-23 19:25:48,Th3Falc0n,"ich schalte paging aus, mappe kernel und alle pt's und schalte paging wieder ein"
+2014-06-23 19:26:06,Jonathan,"Also... Ich bin ja immernoch der Meinung, dass das ein komischer Hack ist"
+2014-06-23 19:26:23,kevin,Ich auch
+2014-06-23 19:26:36,Jonathan,Moment mal
+2014-06-23 19:26:44,Th3Falc0n,aber eigentlich sollte mir das ersparen beim allozieren für neue pd's sowohl physische PD adresse als auch virtuelle PD adresse zu benutzen
+2014-06-23 19:26:48,Th3Falc0n,da ich nurnoch die physische hab
+2014-06-23 19:26:53,kevin,"Im Moment kann ich zwar nicht genau sagen, wo dir alles zusammenbricht, aber das kann nur Ärger machen"
+2014-06-23 19:27:34,Jonathan,"Ich tippe darauf, dass es alles dann am Memory Allocator scheitert"
+2014-06-23 19:27:48,Th3Falc0n,?
+2014-06-23 19:27:58,Jonathan,"Immerhin muss der dann auf Pages Rücksicht nehmen, die ohne ihn einfach ""gekrallt"" wurden"
+2014-06-23 19:28:37,Jonathan,"Th3Falc0n: Erzähl mir doch mal ganz genau das Problem, wieso du Paging ausschalten willst."
+2014-06-23 19:28:40,kevin,"Naja, theoretisch kann man sie vorher anständig allozieren, zu physischen Adressen auflösen, dann Paging ausschalten und weiter"
+2014-06-23 19:29:02,kevin,"Hm... Wenn du das Tutorial benutzt, ist dein Kernelstack übrigens dynamisch alloziert und vermutlich nicht 1:1 gemappt"
+2014-06-23 19:29:02,Jonathan,"...sie dann beschreiben, Paging wieder aktivieren und dann nach 0x200000 mappen"
+2014-06-23 19:29:14,Th3Falc0n,"Jonathan: Ich möchte Paging ausschalten, damit ich mich beim erstellen eines neues PD's nicht mit dem Mapping desselben im aktuellen PD rumschlagen muss"
+2014-06-23 19:29:26,Jonathan,Achso
+2014-06-23 19:29:33,Jonathan,Sowas dachte ich mir schon
+2014-06-23 19:29:35,Jonathan,Also:
+2014-06-23 19:29:55,Jonathan,"Nimm den Memory Allocator, lass dir eine Page geben, beschreibe sie, und mappe sie *dann* an die richtige Stelle."
+2014-06-23 19:30:50,Th3Falc0n,"Das sollte ja kein problem sein, aber wenn ich Paging aktiv habe habe ich ja schon 2 adressen die ich beachten muss, nämlich physische und virtuelle im aktuellen Kontext"
+2014-06-23 19:31:02,Th3Falc0n,das zieht meiner meinung nach viel zu viele probleme nach sich:
+2014-06-23 19:31:03,kevin,Und?
+2014-06-23 19:31:53,Th3Falc0n,der allocator für die virtuellen adressen braucht ne funktion um sowohl vaddr als auch paddr zurückzugeben. man kann also niemals einfach nur ne adresse zurückgeben
+2014-06-23 19:32:20,Th3Falc0n,"da darf man dann entweder nen 64bit datentyp benutzen, oder ein wiederrum dynamisch alloziertes struc"
+2014-06-23 19:32:24,Th3Falc0n,+t
+2014-06-23 19:32:57,Th3Falc0n,beim 64 bit datentyp muss man dann  rumhantieren um virtuelle oder physische adresse zu allozieren
+2014-06-23 19:33:05,Jonathan,Seufz
+2014-06-23 19:33:06,Th3Falc0n,*extrahieren
+2014-06-23 19:33:13,Th3Falc0n,was los Jonathan ?
+2014-06-23 19:33:14,Jonathan,Mach doch einfach *zwei* Funktionen.
+2014-06-23 19:33:26,Jonathan,Eine alloziiert und gibt 64 Bit zurück.
+2014-06-23 19:33:54,Jonathan,"Die andere ruft die erste Alloziierungs-Funktion (mit 64 Bit) auf, und gibt davon dann die gewünschten 32 Bit zurück."
+2014-06-23 19:34:08,XanClic,Es soll übrigens auch Pointer in C geben
+2014-06-23 19:34:10,kevin,"Gibt nicht 64 Bit zurück, sondern nimmt einen void** und einen uint32_t*"
+2014-06-23 19:34:11,XanClic,Hab ich mir sagen lassen
+2014-06-23 19:34:13,XanClic,Ganz verrückte Sache
+2014-06-23 19:34:56,Th3Falc0n,"wie lösen pointer mein problem, dass ich 2 verschiedene adressen zurückgeben muss?"
+2014-06-23 19:35:03,XanClic,s. kevin
+2014-06-23 19:35:22,Jonathan,"Außerdem, wie kevin schon sagte: Wenn du Paging abschaltest, wird dein Kernel speichermäßig quasi ""zerrissen"" und seine einzelen Teile sind an den verschiedesten Stellen im RAM. Zumindest beim Stack ist das im Tutorial-Kernel so..."
+2014-06-23 19:35:23,Jidder,call by reference
+2014-06-23 19:35:35,Th3Falc0n,ja ok...
+2014-06-23 19:35:36,Jonathan,"Und ohne Stack macht's einfach nur kurz ""bumm"" und der Kernel ist tot."
+2014-06-23 19:35:53,Th3Falc0n,der stack ist bei meinem code übrigens nicht dynamisch alloziert
+2014-06-23 19:36:04,kevin,Noch nicht.
+2014-06-23 19:36:12,Jonathan,"Ja, das muss noch kommen..."
+2014-06-23 19:36:31,kevin,"Muss nicht zwingend, aber wenn man's nach dem Tut macht, kommt es"
+2014-06-23 19:36:48,kevin,Ein Kernelstack pro CPU reicht ja theoretisch und wenn man nur eine CPU unterstützt...
+2014-06-23 19:36:53,Jonathan,Joa
+2014-06-23 19:36:56,Jonathan,Theoretisch
+2014-06-23 19:37:33,Jonathan,"Trotzdem klingt das für mich nach ner ganz, ganz, ganz schlechten Idee, einfach mal Paging abzuschalten"
+2014-06-23 19:37:35,kevin,"Ich glaube, bei richtigen OSen auch praktisch"
+2014-06-23 19:37:49,kevin,"Jo, Paging abschalten würde ich bleiben lassen. Jedenfalls auf x86."
+2014-06-23 19:38:08,kevin,"Gibt ja andere Architekturen, die machen das automatisch bei Interrupts oder solche Scherze."
+2014-06-23 19:38:13,Jonathan,:D
+2014-06-23 19:38:19,Jonathan,Bestimmt lustig zu programmieren
+2014-06-23 19:38:34,kevin,"Naja, mit Soft-MMU macht das schon Sinn ;-)"
+2014-06-23 19:38:51,Th3Falc0n,hmm dann werds ich machen ohne paging abzuschalten meine lieben freunde :(
+2014-06-23 19:38:52,kevin,Sonst wird ein Pagefault irgendwie schwer zu behandeln
+2014-06-23 19:40:03,Jonathan,Stimmt *g*
+2014-06-23 19:40:19,Jonathan,"Ach übrigens, kevin: Es gibt jetzt auch eine Drahthaufen-Grafikkarte *g*"
+2014-06-23 19:40:42,kevin,Ich hab die Logs gelegentlich überflogen und Angst bekommen *g*
+2014-06-23 19:40:51,Jonathan,*g*
+2014-06-23 19:41:16,Jonathan,Ich darf da drin tatsächlich ein EPROM verbauen...
+2014-06-23 19:41:39,Jonathan,So als Character ROM
+2014-06-23 19:43:19,Jonathan,"Oh! Oh! Oh! Ich weiß jetzt auch, wie ich mehrere Codepages implementieren kann! :D"
+2014-06-23 19:43:25,Jonathan,Ich hab ja 64kB EPROM
+2014-06-23 19:43:38,Jonathan,Und brauche 2kB pro Codepage
+2014-06-23 19:43:57,Jonathan,Also kann ich einfach die oberen 5 Adressleitungen an ein Hardwareregister führen
+2014-06-23 19:44:11,Jonathan,...und schon kann die CPU sich eine von 32 Codepages aussuchen! :D
+2014-06-23 19:44:24,Jonathan,^.^
+2014-06-23 19:45:37,Jonathan,Jetzt aber erstmal aus 20 UV-LEDs ein EPROM-Löschgerät bauen... xD
+2014-06-23 19:46:49,kevin,Na dann *g*
+2014-06-23 19:47:24,Jonathan,Hoffentlich brenn ich mir nicht die Augen raus :D
+2014-06-23 19:48:14,Th3Falc0n,interrupt 0x20 ist timer interrupt oder? (also in qemu v=20)
+2014-06-23 19:48:45,Jidder,jo
+2014-06-23 19:48:53,Th3Falc0n,Jonathan: gehts um einen selbstbau computer?
+2014-06-23 19:49:39,Th3Falc0n,und schaff ich es bei qemu irgendwie dass er nurnoch bei faults monitored? die ganze zeit mit 0x20 zugespammt zu werden ist irgendwie schäbig
+2014-06-23 19:50:35,kevin,"Der Fault ist das letzte, was vor dem Crash geloggt wird ;-)"
+2014-06-23 19:50:54,Jonathan,"Th3Falc0n: Ja, Eigenbau mit Z80 und Paging-fähiger MMU (wobei man das Paging nichtmal abschalten kann *g*)... Atm bau ich ne Grafikkarte für das Ding, 80x60 Textmodus sollten drin sein"
+2014-06-23 19:50:57,Th3Falc0n,"ja, aber während das läuft will ich trotzdem nicht das timer interrupt sehen"
+2014-06-23 19:51:02,Jidder,"grep ""check_exception"" -A 20 oder wie auch immer das geht"
+2014-06-23 19:51:17,Th3Falc0n,Jonathan: coole sache
+2014-06-23 19:52:51,Th3Falc0n,grep tut übrigens rein garnichts bei der qemu ausgabe :(
+2014-06-23 19:53:03,Jidder,"bist du dir denn sicher, dass eine exception auftritt?"
+2014-06-23 19:53:17,Th3Falc0n,"ich bin mir sicher, dass er den müll bzw v=20 noch anzeigt :D"
+2014-06-23 19:54:13,Jidder,die interrupts werden auf der konsole ausgegeben?
+2014-06-23 19:54:26,Th3Falc0n,je -monitor stdio
+2014-06-23 19:54:28,Th3Falc0n,+p
+2014-06-23 19:55:10,Jidder,"und du machst qemu ... | grep ""check_exception"" -A 20 ?"
+2014-06-23 19:55:25,Th3Falc0n,"qemu -fda boot.img -d int -monitor stdio --no-reboot --no-shutdown | grep ""check_exception"" -A 20"
+2014-06-23 19:55:27,Jidder,sollte grep nicht so funktionieren?
+2014-06-23 19:55:49,Jidder,ah eventuell landets in stderr
+2014-06-23 19:56:17,Jidder,qemu ... 2>&1 | grep ...
+2014-06-23 19:56:33,Th3Falc0n,jep
+2014-06-23 19:56:35,Th3Falc0n,allright
+2014-06-23 19:56:47,Th3Falc0n,aber warum landet es mit --monitor stdio in stderr?
+2014-06-23 19:56:53,Jidder,weil logik
+2014-06-23 19:56:58,Th3Falc0n,verstehe
+2014-06-23 19:57:01,Jidder,^^
+2014-06-23 19:58:28,Th3Falc0n,"so jetzt muss ich irgendwie meinem makefile beibringen, dass gcc nen error machen soll wenn mein kernel großer ist als 1MB"
+2014-06-23 19:59:28,Jidder,ich vermute da musst du auf die shell zurückgreifen
+2014-06-23 19:59:41,Th3Falc0n,^^
+2014-06-23 20:06:10,iksnagreb,moin
+2014-06-23 20:06:13,Jidder,moin
+2014-06-23 20:08:25,Th3Falc0n,"mgottschlag: ""das wäre dann aber eher 0x200000 bis 0x600000"" ich muss meine zustimmung zu deinem einwand widerrufen. es ist nur bís 0x300000 da ich 0x100000 mal eine 4KB page mappe für 4GB "
+2014-06-23 20:09:14,mgottschlag,"ja, 0x100000 sind eine Million Enträge, und ein Entrag sind 4 Bytes, das macht insgesamt damit 4MB"
+2014-06-23 20:09:37,Th3Falc0n,ähm ja ok
+2014-06-23 20:09:38,Th3Falc0n,vergiss es
+2014-06-23 20:09:40,mgottschlag,"und wenn du bei 0x200000 anfängst, gehen diese 4MB bis 0x600000"
+2014-06-23 20:09:43,mgottschlag,^^
+2014-06-23 20:10:00,Th3Falc0n,ich sollte es lieber lassen mit mathe
+2014-06-23 20:10:55,Th3Falc0n,und ich sollte auch nicht manuell die addresse berechnen sondern lieber ((uint32_t**)(0x200000))[i][i2] benutzen xD
+2014-06-23 20:26:22,mgottschlag,"nein, das wird explodieren :D"
+2014-06-23 20:28:47,Th3Falc0n,wird es?
+2014-06-23 20:29:00,Th3Falc0n,glaub ich nicht
+2014-06-23 20:29:15,Th3Falc0n,das einzige problem was ich gerade hab ist dass jetzt irgendwie äh NICHTS mehr passiert
+2014-06-23 20:29:18,Th3Falc0n,kein fault kein garnichts
+2014-06-23 20:29:26,Th3Falc0n,es passiert einfach garnichts mehr
+2014-06-23 20:29:59,mgottschlag,((uint32_t**)(0x200000))[i] gibt dir die physische Adresse der i-ten Seite
+2014-06-23 20:30:07,mgottschlag,und ein paar Flagbits
+2014-06-23 20:30:13,Th3Falc0n,ne
+2014-06-23 20:30:36,Th3Falc0n,sollte nicht
+2014-06-23 20:30:37,mgottschlag,"1. das funktioniert nur, wenn du die Flagbits wegmaskierst, 2. das funktioniert nur, wenn du noch kein Paging aktiviert hast, denn sonst müsstest du über die *virtuelle* Adresse zugreifen"
+2014-06-23 20:30:43,mgottschlag,und die ist (i * 4096)
+2014-06-23 20:30:50,Th3Falc0n,moment warte 
+2014-06-23 20:30:52,Th3Falc0n,moment
+2014-06-23 20:31:20,Th3Falc0n,((uint32_t*)(0x200000))[pd_entry * 1024 + pt_entry]
+2014-06-23 20:31:22,Th3Falc0n,so besser?
+2014-06-23 20:31:52,mgottschlag,klingt besser
+2014-06-23 20:32:03,Th3Falc0n,achja mein problem gerade war eine endlosschleife |for(i2 = 0; i2 < 1024; i++) {|
+2014-06-23 20:32:22,Jonathan,"So, 4,5W UV-LED-Funzel ist fertig *g*"
+2014-06-23 20:32:23,mgottschlag,"ich würd aber einfach ((uint32_t*)(0x200000))[vaddr / 4096] machen, weil deine übliche Operation da ja ist, aus einer virtuellen eine physische Adresse zu machen"
+2014-06-23 20:32:26,Jonathan,"Mal schauen, wie sie so brennt"
+2014-06-23 20:32:51,Th3Falc0n,mgottschlag: ja ich glaub das wäre einfacher ^^
+2014-06-23 20:33:08,mgottschlag,"denk, wenn sie brennt, an den Atemschutz, da entstehen giftige Dämpfe"
+2014-06-23 20:33:22,Th3Falc0n,ack
+2014-06-23 20:33:46,mgottschlag,bzw vaddr >> 12 statt vaddr / 4096
+2014-06-23 20:34:15,Th3Falc0n,  ((uint32_t*)(0x200000))[vaddr >> 12] = (paddr & 0xFFFFF000) | PT_EXIST | PT_WRITE | PT_PUBLIC; gefällts so?
+2014-06-23 20:34:16,mgottschlag,"sollte ein moderner Compiler zwar hinbekommen, aber die Frage ist bei sowas immer, ob man sich auf solche Optimierungen verlassen sollte"
+2014-06-23 20:34:26,mgottschlag,und vor allem sollte man sowas zumindest mal gesehen haben :)
+2014-06-23 20:36:26,Jonathan,"mgottschlag: Naja, soooo groß ist die Leistung nun auch wieder nicht"
+2014-06-23 20:36:48,Jonathan,"Und wenn, ist es nur Ozon, davon hab ich auf anderen Wegen auch schon ne Menge produziert (Teslaspule) *g*"
+2014-06-23 20:36:52,mgottschlag,"ach, ich dachte, du wolltest gucken, wie sie so brennt :)"
+2014-06-23 20:36:56,Jonathan,Achso *g*
+2014-06-23 20:37:01,Th3Falc0n,Jonathan: ich glaub er meinte das brennen wörtlich...
+2014-06-23 20:37:11,Jonathan,"Also ja, brennen tut sie, und zwar ganz gut in den Augen"
+2014-06-23 20:37:23,Jonathan,Ich sollte eine Sonnenbrille aufsetzen
+2014-06-23 20:37:41,Th3Falc0n,Noch mehr wortspiele mit brennen und ich quitte xD
+2014-06-23 20:39:18,Th3Falc0n,mal ne kurze frage zu c pointern
+2014-06-23 20:39:24,Th3Falc0n,uint32_t* vptr
+2014-06-23 20:39:26,mgottschlag,"da hast du ja glück gehabt, dass mir grad Wortspiel einfällt"
+2014-06-23 20:39:38,mgottschlag,für sowas ist hier normalerweise doch eher Jidder zuständig? :)
+2014-06-23 20:40:00,mgottschlag,"ich bin ja der Meinung, dass es uint32_t *vptr sein müsste."
+2014-06-23 20:40:02,mgottschlag,Flamewar? :)
+2014-06-23 20:40:15,Th3Falc0n,"wenn ich (vptr) = Adresse auf die der Pointer zeigt (*vptr) = Wert der Pointer adresse und (&vptr) = Adresse des Pointers, oder?"
+2014-06-23 20:40:21,mgottschlag,ja
+2014-06-23 20:40:24,Th3Falc0n,ok
+2014-06-23 20:41:27,Th3Falc0n,WOHOOO
+2014-06-23 20:41:40,Th3Falc0n,ein pagefault wird kein double fault mehr
+2014-06-23 20:41:57,Th3Falc0n,party
+2014-06-23 20:43:45,Th3Falc0n,er mappt automatisch von 0x1000 bis &kernel_end
+2014-06-23 20:43:50,Th3Falc0n,ich werde immer glücklicher
+2014-06-23 21:18:28,Th3Falc0n,wurde schonmal nachgedacht die lowlevel wiki software zu upgraden? ich suche die suche immer oben rechts
+2014-06-23 21:19:57,XanClic,Einfach das Vectortheme benutzen
+2014-06-23 21:20:08,XanClic,"Könnte man nur drüber diskutieren, das zum Standard zu machen"
+2014-06-23 21:20:12,XanClic,Aber Wiki ist nicht meine Aufgabe :3
+2014-06-23 21:20:26,Jonathan,Hmmmm
+2014-06-23 21:20:43,Jonathan,Hab jetzt einen Kupferkasten um die LEDs gelötet
+2014-06-23 21:20:54,Jonathan,"So als Reflektor, damit nicht 90% des Lichtes irgendwo hin gehen"
+2014-06-23 21:21:17,Jonathan,"Wie mein Fußboden wohl darauf reagiert, wenn man ihn ein paar Stunden lang mit 4W UV-Licht bestrahlt? :D"
+2014-06-23 21:24:01,Th3Falc0n,schlecht
+2014-06-23 21:33:51,Jidder,kommt es nicht auch auf die größe der bestrahlten fläche an?
+2014-06-23 21:34:20,Th3Falc0n,es kommt wohl auf absorbierte W/cm² an :D
+2014-06-23 21:34:37,Th3Falc0n,und auf katalysierte reaktionen innerhalb des teppichs durch uv
+2014-06-23 21:34:54,Th3Falc0n,und ja ich bin ein klugscheisser :P
+2014-06-23 21:36:27,Jidder,dann bist du hier ganz richtig ^^
+2014-06-23 21:36:35,Th3Falc0n,yay
+2014-06-23 21:37:09,Th3Falc0n,vllt sollte ich doch mal einen IRC regelmäßiger besuchen
+2014-06-23 22:04:06,Th3Falc0n,kann mir jemand verraten wo ich memset definiert habe?
+2014-06-23 22:13:01,Th3Falc0n,korrektur: kann mir jemand verraten warum memset standardmäßig in <string.h> liegt?
+2014-06-23 22:23:23,Jidder,70er jahre technologie
+2014-06-23 22:23:35,Jidder,1970er jahre
+2014-06-23 22:25:26,Th3Falc0n,xD
+2014-06-23 22:25:43,Th3Falc0n,ich besitze auf jeden fall jetzt malloc :D
+2014-06-23 22:26:00,Jidder,"also ich bin mir jetzt schon gar nicht so sicher, dass memset so alt ist"
+2014-06-23 22:26:44,Th3Falc0n,weiß nur noch nicht wie ich free im vmm_context implementieren soll ohne dabei tonnen an speicher zu verschwenden
+2014-06-23 22:27:20,Jidder,kommt das nicht auf das malloc an?
+2014-06-23 22:27:23,Jidder,bzw. die arbeiten doch zusammen
+2014-06-23 22:27:29,Jidder,im team
+2014-06-23 22:27:33,Jidder,brüderlich
+2014-06-23 22:27:40,Jidder,mit herz und hand
+2014-06-23 22:29:40,Th3Falc0n,ja aber wie soll ich auf den byte genau speichern wo was vergeben ist und wo nicht? dann verschwende ich ja pro prozess 512MB an daten was schon gemalloct ist
+2014-06-23 22:29:57,Th3Falc0n,also maximal 7 prozesse xD
+2014-06-23 22:31:10,Jidder,eine mögliche datenstruktur ist einfach eine liste
+2014-06-23 22:31:25,Jidder,die startadresse und größe der speicherblöcke enthält
+2014-06-23 22:31:36,Th3Falc0n,ja darauf wirds hinauslaufen
+2014-06-23 23:38:10,DesL,"meeh, seit bestimmt 3+ jahren kein kernel dev gemacht und jetzt soll ich beim paging verstehen helfen :D"
+2014-06-23 23:38:31,Th3Falc0n,?
+2014-06-23 23:39:05,Th3Falc0n,"also wenn du mich damit meinst, kann ich nur sagen, ich habs verstanden :D"
+2014-06-23 23:39:58,DesL,"nein, ich meine mimoja :D"
+2014-06-23 23:40:04,Th3Falc0n,ah gut
+2014-06-23 23:40:09,Th3Falc0n,ich bin mal nicht das problem :D
+2014-06-23 23:51:49,Th3Falc0n,"DesL: wo du gerade dabei bist, was ist e=0002 bei v=0e ?"
+2014-06-23 23:52:03,DesL,alter :D
+2014-06-23 23:52:26,DesL,frag wen der ahnung hat :D
+2014-06-23 23:52:31,Th3Falc0n,0e ist pagefault :D das weiss ich
+2014-06-23 23:52:32,DesL,hallo Mimoja 
+2014-06-23 23:52:33,DesL,:D
+2014-06-23 23:52:39,Mimoja,moin
+2014-06-23 23:52:40,Paddy,DesL: Gibt es hier sowas?
+2014-06-23 23:52:59,Paddy,"Ich dachte immer, hier gibt es nur unterschiedliche Levels von keine Ahnung"
+2014-06-23 23:53:04,Th3Falc0n,"Mimoja: ich hab gehört, du bist gerade beim paging? xD "
+2014-06-23 23:53:09,Mimoja,ja
+2014-06-23 23:53:11,Mimoja,so etwas
+2014-06-23 23:53:12,DesL,"Paddy:  okay, mehr ahnung als ich, ich habe grade schon Mimoja verwirrt :D"
+2014-06-23 23:53:28,Paddy,"Ja dann, da mach ich doch gern weiter *g*"
+2014-06-23 23:53:29,Th3Falc0n,ich hab das paging heute hinter mich gebracht *freu*
+2014-06-23 23:53:41,Mimoja,yay :D
+2014-06-23 23:53:41,Paddy,Th3Falc0n: Das glaubst auch nur du ;-)
+2014-06-23 23:54:14,Th3Falc0n,Paddy: noch ne halbe stunde und ich kann in einem bei aktivem paging ne neue pagetable erstellen. ich muss nurnoch meine kernel halts beseitigen
+2014-06-23 23:54:51,DesL,lol
+2014-06-23 23:54:57,Paddy,"Genau, und dann kommst du langsam zu den ganzen gemeinen Bugs"
+2014-06-23 23:55:12,Th3Falc0n,"ja das sind bugs, aber mein paging funktioniert dann :P"
+2014-06-23 23:55:18,Paddy,Mimoja: Womit kann man dir denn helfen?
+2014-06-23 23:56:04,Mimoja,Verständnissfrage zum Kernelmapping
+2014-06-23 23:57:27,Mimoja,"Die Frage nach dem Warum ist mir soweit klar. aber eher: ""Wie?"". Vielleicht ist das auch der falsche Schritt. bin mir nicht sicher. Bin relativ am Anfang. Hab es geschafft die ersten MB zu mappen, damit der Kernel weiterhin funktioniert."
+2014-06-23 23:58:40,Mimoja,"Wie kann ich weiterhin sicher stellen, dass Interrupts funktionieren, wenn sie an einer anderen Stelle Liegen, als vorher?"

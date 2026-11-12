@@ -1,0 +1,480 @@
+date/time,nick,message
+2011-08-24 01:37:35,DerHartmut,Nabend
+2011-08-24 10:09:14,akluth,Morgen
+2011-08-24 11:26:49,bluecode,moin
+2011-08-24 11:29:42,akluth,Min
+2011-08-24 11:29:45,akluth,+o
+2011-08-24 11:30:49,Naoe-Kanno,Moin
+2011-08-24 12:07:57,GreenPepper,heyho!
+2011-08-24 12:09:23,GreenPepper,"hm. ich frage mich gerade für was eine GDT genau gut ist. in der Wiki steht nur etwas wage, dass es die Speichersegmente beschreibt "
+2011-08-24 12:09:53,GreenPepper,ich vermute mal der RAM speicher
+2011-08-24 12:12:35,GreenPepper,und was genau hat diese gdt mit interrupts zu tun?
+2011-08-24 12:14:11,GreenPepper,ah
+2011-08-24 12:14:19,bluecode,"mit der GDT gibt es ein Rechtesystem (Ring 0 bis 3) bei einem Interrupt möchte man normalerweise aus den Beschränkungen des Userspace (Ring 3) ausbrechen und in Ring 0 springen, dazu muss man die Selektoren wechseln (die in die GDT ""zeigen"")"
+2011-08-24 12:16:00,GreenPepper,hmm. ich implementiere einfach mal dieses modul und versuche es im verlauf zu verstehen
+2011-08-24 12:16:02,GreenPepper,:-)
+2011-08-24 12:28:02,GreenPepper,wie viele einträge gibt es denn?
+2011-08-24 12:28:25,bluecode,so viele wie du einträgst
+2011-08-24 12:28:41,bluecode,aber eigentlich brauchst du erstmal nur 2
+2011-08-24 12:28:50,bluecode,ein Datensegment und ein Codesegment für Ring 0
+2011-08-24 12:29:41,GreenPepper,was sind denn eigl. immer diese Ringe?
+2011-08-24 12:30:10,akluth,Berechtigungsstufen
+2011-08-24 12:30:15,GreenPepper,hm
+2011-08-24 12:30:19,GreenPepper,ah okay
+2011-08-24 12:30:29,akluth,"Userlandprogramme sollten z.B.im Ring 3 laufen, dann sind etwaige Befehle wie lgdt etc. nicht erlaubt"
+2011-08-24 12:30:35,akluth,(Wieso sollte die ein Userprogramm auch nutzen dürfen)
+2011-08-24 12:30:53,GreenPepper,jetzt wird mir das langsam auch klar :-)
+2011-08-24 12:44:21,GreenPepper,"warum gibt der compiler hier immer noch ne warnung aus, dass der linke operant zu klein ist"
+2011-08-24 12:44:23,GreenPepper,static_cast<uint64>(flags & 0xffL) << 40;
+2011-08-24 12:44:57,bluecode,wie ist denn uint64 definiert?
+2011-08-24 12:45:13,GreenPepper,unsigned long
+2011-08-24 12:45:21,bluecode,könnte nur 32bit sein
+2011-08-24 12:45:28,GreenPepper,oh
+2011-08-24 12:45:29,GreenPepper,warte
+2011-08-24 12:45:37,bluecode,kannst dir ja mal sizeof(unsigned long) ausgeben lassen
+2011-08-24 12:45:42,GreenPepper,damit gehts doch:
+2011-08-24 12:45:43,GreenPepper,#define PACKED __attribute__((packed))
+2011-08-24 12:45:55,GreenPepper,hab ich irgendwo gelesen
+2011-08-24 12:45:58,GreenPepper,ich teste es mal
+2011-08-24 12:46:02,bluecode,"nö, das hat damit nichts zu tun"
+2011-08-24 12:46:24,GreenPepper,hmm
+2011-08-24 12:46:36,bluecode,PACKED ist für Strukturen
+2011-08-24 12:49:03,GreenPepper,4 byte :(
+2011-08-24 12:49:14,bluecode,ist natürlich schade :-)
+2011-08-24 12:49:14,GreenPepper,also ein integer so zu sagen
+2011-08-24 12:50:03,GreenPepper,was kann man da jetzt machen :)
+2011-08-24 12:50:15,Naoe-Kanno,unsigned long long
+2011-08-24 12:50:16,bluecode,halt als unsigned long long definieren
+2011-08-24 12:51:13,GreenPepper,das ist aber kein iso  c++ 98
+2011-08-24 12:51:20,bluecode,tjo
+2011-08-24 12:51:23,GreenPepper,das muss ich gleich mal ändern
+2011-08-24 12:51:48,GreenPepper,jetzt is es c++0x B-)
+2011-08-24 12:52:05,stultus,heißt das nicht mittlerweile offiziell c++11?
+2011-08-24 12:52:11,bluecode,doch
+2011-08-24 12:52:18,bluecode,aber das ist natürlich noch nicht in gcc ;-)
+2011-08-24 12:52:34,GreenPepper,...
+2011-08-24 12:52:52,stultus,"Naja, wird ja mit dem nächsten Major reinkommen, ziemlich vollständig wars eh schon implementiert, oder?"
+2011-08-24 12:53:02,bluecode,naja
+2011-08-24 12:53:03,GreenPepper,naja
+2011-08-24 12:53:10,Naoe-Kanno,naja
+2011-08-24 12:53:12,GreenPepper,viele doinge gingen noch icht
+2011-08-24 12:53:14,GreenPepper,nicht
+2011-08-24 12:53:15,GreenPepper,:-(
+2011-08-24 12:53:23,GreenPepper,zum bsp. lambda expressions
+2011-08-24 12:53:25,bluecode,aber es gehen auch viele Dinge ;-)
+2011-08-24 12:53:28,bluecode,doch
+2011-08-24 12:53:30,bluecode,ist in 4.6
+2011-08-24 12:53:35,GreenPepper,okay
+2011-08-24 12:53:36,Naoe-Kanno,\o/
+2011-08-24 12:53:40,GreenPepper,hab 4.4.1 glaub ichi
+2011-08-24 12:53:45,GreenPepper,schau grad ma nach
+2011-08-24 12:53:55,bluecode,"naja, das ist auch schon ewig alt"
+2011-08-24 12:54:09,bluecode,die haben ja erst mit 4.3 angefangen sachen aus c++0x einzubauen
+2011-08-24 12:54:26,GreenPepper,jep diese version hab ich auch
+2011-08-24 12:54:34,GreenPepper,hab mich gerade verschätzt 
+2011-08-24 12:54:42,bluecode,stultus: http://gcc.gnu.org/projects/cxx0x.html hier steht was alles wann tut
+2011-08-24 12:54:44,GreenPepper,ne sogar 4.4.3
+2011-08-24 12:55:09,bluecode,"stultus: in der lib fehlen halt noch einige interessante sachen, im speziellen viel vom threadzeuch"
+2011-08-24 12:57:40,GreenPepper,die namespaces sollen endlich mal erweitert werden :-(. private zones oder static inits wären zB. sehr praktisch 
+2011-08-24 12:58:52,Naoe-Kanno,gibt es das nicht längst?
+2011-08-24 12:58:58,bluecode,"sagt mir jetzt ehrlich gesagt nichts, aber mir ist auch noch nicht aufgefallen, dass bei namespaces was fehlen würde *g*"
+2011-08-24 12:58:59,ASM4ever,hi
+2011-08-24 12:59:22,Naoe-Kanno,Moin ASM4ever
+2011-08-24 12:59:33,GreenPepper,na dann kennst du noch nicht D :P
+2011-08-24 12:59:51,bluecode,"ich weiß, dass es existiert"
+2011-08-24 13:00:18,bluecode,die toolchain schien mir aber nicht gut genug für osdev zu sein
+2011-08-24 13:00:18,GreenPepper,okay. du kennst nichts genauers über D.
+2011-08-24 13:00:19,ASM4ever,Ich will in ASM eine DLL schreiben und in C++ verwenden. Aber irgendwie gibts einen fehler bein einbinden der DLL
+2011-08-24 13:00:38,bluecode,sonst hätte ich mein os in d neu geschrieben
+2011-08-24 13:00:50,Naoe-Kanno,DerHartmut hat mal nen POC gemacht ^^
+2011-08-24 13:01:07,Naoe-Kanno,"also, zu D"
+2011-08-24 13:01:18,Naoe-Kanno,"ASM4ever, genauere Fehlerbeschreibung?"
+2011-08-24 13:01:22,bluecode,POC?
+2011-08-24 13:01:28,ASM4ever,http://mibpaste.com/DgVPCd 
+2011-08-24 13:01:32,stultus,Proof-of-Concept
+2011-08-24 13:01:34,stultus,nehm ich mal an
+2011-08-24 13:01:37,ASM4ever,ist der code und der Fehler
+2011-08-24 13:01:39,Naoe-Kanno,ja
+2011-08-24 13:02:17,ASM4ever,mom
+2011-08-24 13:02:25,Naoe-Kanno,wo steht da jetzt der Fehler?
+2011-08-24 13:02:36,stultus,nirgends.
+2011-08-24 13:02:42,stultus,im C/C++-Teil ist der _ zuviel.
+2011-08-24 13:02:47,stultus,Wär mal so meine Verutung.
+2011-08-24 13:03:11,Naoe-Kanno,klingt gut
+2011-08-24 13:03:15,ASM4ever,irgendiwie macht gerade visual c++ nicht mit
+2011-08-24 13:03:27,akluth,Früher zumindest war D für OSDev nicht so das Wahre.
+2011-08-24 13:03:30,akluth,Wie das heute aussieht kp
+2011-08-24 13:03:37,akluth,Visual C++ ist auch dreck
+2011-08-24 13:03:40,akluth,Gestern runtergeworfen den Mist
+2011-08-24 13:03:54,bluecode,für osdev oder für anwendungsentwicklung?
+2011-08-24 13:04:00,bluecode,(visualc++)
+2011-08-24 13:04:11,stultus,imho. beides.
+2011-08-24 13:04:18,ASM4ever,schon. Ich nehme normalerweise auch Mingw
+2011-08-24 13:04:20,bluecode,wtf? die ide ist geil
+2011-08-24 13:04:25,GreenPepper,jep
+2011-08-24 13:04:37,GreenPepper,nur der compiler hiknt etwas hinter her
+2011-08-24 13:04:38,akluth,Für OSDev
+2011-08-24 13:04:41,stultus,"die IDE ist ganz nett, aber der Code der erzeugt wird hat durchaus seine Macken wenns crossplatform laufen soll, afaik."
+2011-08-24 13:04:45,akluth,Für Anwendungsentwicklung wirklich gut
+2011-08-24 13:04:50,akluth,stultus: Jop
+2011-08-24 13:04:51,GreenPepper,vor allem bei meta programmierung
+2011-08-24 13:04:54,bluecode,akluth: ack
+2011-08-24 13:05:07,bluecode,GreenPepper: das war mal vielleicht mit vc6
+2011-08-24 13:05:13,ASM4ever,aber ich brauche ne exe. Deshalb Visual c++. Hat mir jemand einen Besseren c++ compiler der mir ne exe erzeugt?
+2011-08-24 13:05:15,GreenPepper,naja
+2011-08-24 13:05:37,GreenPepper,beim ausrollen von ner schleife zB.
+2011-08-24 13:05:38,bluecode,ASM4ever: dann musst du dir das name mangling von vc++ anschauen
+2011-08-24 13:06:01,stultus,ASM4ever: MinGW?
+2011-08-24 13:06:21,AGGROStar1991,GCC?
+2011-08-24 13:06:25,stultus,"Etwas Arbeit den sauber ans laufen zu bekommen, aber letztendlich ist das dann nen brauchbarer gcc-port auf Win."
+2011-08-24 13:06:26,bluecode,das macht unter windows bestimmt das gleiche name mangling
+2011-08-24 13:06:32,AGGROStar1991,der intelcompiler?
+2011-08-24 13:06:41,stultus,mingw und vc++? Sicher nicht.
+2011-08-24 13:06:54,AGGROStar1991,ich denk er meinte das gleiche wie bei gcc unter linux
+2011-08-24 13:06:57,stultus,Jedenfalls kann man z.b. beim KDE4-Win-Installer aussuchen wovon mans gerne kompiliert hätte ;)
+2011-08-24 13:07:18,bluecode,stultus: und wie ruft man dann funktionen aus einer mit vc kompilierten dll auf?
+2011-08-24 13:07:23,ASM4ever,moment. Ich brauce was um eine testbare win software zu erzeugen. Welchen C++ compiler soll ich nehmen? 
+2011-08-24 13:07:35,AGGROStar1991,ASM4ever : Mingw
+2011-08-24 13:07:39,bluecode,"achso, jedesmal DLLEXPORT"
+2011-08-24 13:07:43,AGGROStar1991,oder den Intelcompiler^^
+2011-08-24 13:07:43,bluecode,was das mangling wohl ändert
+2011-08-24 13:07:44,stultus,"Gute Frage, ich war bislang davon ausgegangen dasses nicht trivial geht"
+2011-08-24 13:08:20,bluecode,"stultus: wie gesagt, ich nehme DLLEXPORT macht das richtige (tm)"
+2011-08-24 13:08:36,bluecode,an
+2011-08-24 13:08:48,Naoe-Kanno,"naja, bei extern ""C"" sollte eh nicht gemanglet werden"
+2011-08-24 13:09:09,AGGROStar1991,"ja aber das ist glaub ich nur bei gcc so, oder?"
+2011-08-24 13:09:10,bluecode,"achso, jo das ist wohl wahr"
+2011-08-24 13:09:18,AGGROStar1991,bin mir nicht sicher ob das visual c++ etc genauso machen
+2011-08-24 13:09:46,ASM4ever,egal
+2011-08-24 13:09:46,AGGROStar1991,ich weiß es nur von OpenCC und gcc
+2011-08-24 13:09:48,Naoe-Kanno,"naja, der C Standard lässt da glaub ich nicht SO viel zu"
+2011-08-24 13:10:01,bluecode,der sagt garnichts zu mangling
+2011-08-24 13:10:05,bluecode,insofern lässt er alles zu
+2011-08-24 13:10:38,AGGROStar1991,bluecode hast du den im kopf? :D
+2011-08-24 13:10:49,ASM4ever,"ok.ok. War nur ne frage. Was Wichtigeres: Muss ich beim erzeugen eines Tasks , auch für den Task gleich ein neues DS erzeugen?"
+2011-08-24 13:11:08,bluecode,"AGGROStar1991: nope, nur ein Computer-Brain-Interface und die Suchfunktion ;-P"
+2011-08-24 13:11:16,AGGROStar1991,:P
+2011-08-24 13:11:39,AGGROStar1991,"usb port im arsch, oder wie? xD"
+2011-08-24 13:12:30,bluecode,aus deinem Mund kommend klingt so eine erfindung irgendwie weniger glorreich als in meiner Vorstellung *g*
+2011-08-24 13:12:43,AGGROStar1991,*gg*
+2011-08-24 13:13:15,bluecode,ASM4ever: du musst garnichts
+2011-08-24 13:13:57,bluecode,ASM4ever: hat sich jetzt der andere Fehler in Luft aufgelöst oder was ist die genaue Fehlerbeschreibung?
+2011-08-24 13:14:04,bluecode,bzw. Fehlermeldung
+2011-08-24 13:14:28,bluecode,"ich mein da steht ja drin welche Funktion er gerne haben würde (wenn es am Linker scheitert), dann kann man ihm ja die einfach geben"
+2011-08-24 13:15:07,bluecode,"oh und natürlich noch die Metafrage, ASM4ever, glaubst du du bist besser als der Compiler bei der Codeerzeugung? ;-)"
+2011-08-24 13:15:12,ASM4ever,"Das vorhin war nur ein versuch. Das ist nicht so wichtig. Und ja, der Fehler liegt beim linker beim imoprt der DLL"
+2011-08-24 13:15:59,AGGROStar1991,bluecode man kann compiler schlagen^^
+2011-08-24 13:16:36,bluecode,"aber nur, wenn du dir ein Gnu-Maskottchen machst und darauf einschlägst"
+2011-08-24 13:16:46,AGGROStar1991,:D
+2011-08-24 13:16:50,bluecode,+ ein bisschen Vodoo
+2011-08-24 13:17:07,bluecode,dann spürt der bärtige bestimmt die schmerzen
+2011-08-24 13:17:19,AGGROStar1991,ich habs erst diesen sommer geschafft
+2011-08-24 13:17:29,AGGROStar1991,für ein programm etwas größer als hello world :D
+2011-08-24 13:17:36,AGGROStar1991,in nur 8 stunden oder so
+2011-08-24 13:17:55,bluecode,"aber wohl dadurch, dass du den ganzen init-kram weglässt"
+2011-08-24 13:18:02,AGGROStar1991,naja das auch xD
+2011-08-24 13:18:02,bluecode,(wäre jetzt meine vermutung)
+2011-08-24 13:18:24,bluecode,"was überhaupt nicht mit ""einige Funktionen in asm"" vergleichbar ist"
+2011-08-24 13:18:28,AGGROStar1991,aber bei was größerem ist das echt unsinnig
+2011-08-24 13:18:37,bluecode,abgesehen davon war das sicher kein interessantes Programm :-)
+2011-08-24 13:18:46,AGGROStar1991,doch klar total interessant :D
+2011-08-24 13:19:00,AGGROStar1991,fibonacci folge bis 100 in nen array tun xD
+2011-08-24 13:19:27,bluecode,äh ja... das ist effektiv messen der initialisierungszeit...
+2011-08-24 13:19:40,AGGROStar1991,:P
+2011-08-24 13:19:41,bluecode,und der zeit zum laden des progs
+2011-08-24 13:20:01,AGGROStar1991,lass mir meinen glauben das ich besser bin als gcc :D
+2011-08-24 13:20:54,Naoe-Kanno,"hm, kann man das auf dem Perso als Religion angeben?"
+2011-08-24 13:20:58,bluecode,"bist du doch auch, du bist besser darin länger zum ""kompilieren"" des Codes zu brauchen"
+2011-08-24 13:21:05,AGGROStar1991,:D
+2011-08-24 13:21:13,AGGROStar1991,aber ich verbrauch keinen strom :P
+2011-08-24 13:21:16,Naoe-Kanno,*g*
+2011-08-24 13:21:16,AGGROStar1991,nur kaffee
+2011-08-24 13:21:38,stultus,hm
+2011-08-24 13:21:45,stultus,Und der wird bei dir mit Solarkollektoren gekocht? ;)
+2011-08-24 13:22:12,bluecode,*g*
+2011-08-24 13:22:16,AGGROStar1991,wie siehts bei GCC eig mit SSE aus? nutzt der das schon richtig gut? 
+2011-08-24 13:22:19,bluecode,moin cjuner
+2011-08-24 13:22:28,AGGROStar1991,stultus : nö aber ausserhalb des bezugssystems *gg*
+2011-08-24 13:22:38,cjuner,moin
+2011-08-24 13:22:39,bluecode,"ich hab keine ahnung was ""richtig gut"" ist, aber er nutzt es"
+2011-08-24 13:22:48,stultus,_das_ geht natürlich auch.
+2011-08-24 13:22:54,AGGROStar1991,ok
+2011-08-24 13:22:57,stultus,Aber verletzt der Kaffee dann nicht die Energieerhaltung?
+2011-08-24 13:23:01,bluecode,"aber ich würde vermuten, dass es schlechter als ne handgebaute matrixmult ist"
+2011-08-24 13:23:12,AGGROStar1991,ja das war auch mein kenntnisstand
+2011-08-24 13:23:52,AGGROStar1991,"stultus nö, mein bezugssystem ist nur eben nicht abgeschlossen :D"
+2011-08-24 13:24:24,AGGROStar1991,also gibts doch noch nen sinn für assembler :D
+2011-08-24 13:25:36,bluecode,"irgendwie lustig, das hat was von BWL vs. VWL"
+2011-08-24 13:25:54,AGGROStar1991,:D
+2011-08-24 13:26:41,AGGROStar1991,"sagt mal, kann man mit #error auch was ausgeben ohne das der die komplette zeile ausgibt?"
+2011-08-24 13:27:00,AGGROStar1991,oder wenigstens so das man macht : #error MACRO und der MACRO vorher ersetzt?
+2011-08-24 13:27:43,bluecode,probiers aus
+2011-08-24 13:27:59,AGGROStar1991,ja das ausprobieren verlief eher nicht so positiv :D
+2011-08-24 13:28:11,AGGROStar1991,deswegen frag ich obs da noch was anderes gibt^^
+2011-08-24 13:28:15,AGGROStar1991,hab probiert :
+2011-08-24 13:28:20,AGGROStar1991,#error __LINE__
+2011-08-24 13:28:54,AGGROStar1991,"und gekommen ist dann eben als  fehlermeldung ""fehler in zeile.... : #error __LINE__"""
+2011-08-24 13:29:08,bluecode,"tjo, dann gehts wohl nicht"
+2011-08-24 13:29:15,AGGROStar1991,wirklich? :D
+2011-08-24 13:29:21,AGGROStar1991,ich will aber wissen wie es geht^^
+2011-08-24 13:29:43,bluecode,dann kauf dir \infinity Affen und setze sie auf den gcc sourcecode an
+2011-08-24 13:30:04,AGGROStar1991,:D
+2011-08-24 13:30:23,stultus,"Oder sperr Politiker in einen Raum, halt nen Mikrofon rein und fütter damit nen RNG ;)"
+2011-08-24 13:30:23,bluecode,dann leben wir am tag nach morgen auf einem planet der affen
+2011-08-24 13:30:43,AGGROStar1991,"""am tag nach morgen"" :D"
+2011-08-24 13:30:45,AGGROStar1991,epic
+2011-08-24 13:31:11,bluecode,anspielung auf einen katastrophenfilm ;-)
+2011-08-24 13:31:14,stultus,Definitiv. Den Trick zum Strecken der durchschnittlichen Zeilenlänge muss ich mir unbedingt merken *g*
+2011-08-24 13:35:16,bluecode,"als ob man das noch müsste im Studium, stultus :-)"
+2011-08-24 13:43:16,GreenPepper,da muss was im lowlevel tutorial gefixxt werden
+2011-08-24 13:43:21,GreenPepper,c++
+2011-08-24 13:43:32,GreenPepper,wegen der runtime funktion für thread sicherheit
+2011-08-24 13:43:40,GreenPepper,entweder selbst implementieren oder
+2011-08-24 13:43:44,GreenPepper,aber diesen flag einfügen
+2011-08-24 13:43:44,GreenPepper,-fno-threadsafe-statics
+2011-08-24 13:44:31,akluth,"Anmelden, fixen."
+2011-08-24 13:44:49,GreenPepper,dann muss ich mich aber erst registrieren
+2011-08-24 13:45:12,akluth,"Registrieren, anmelden, fixen."
+2011-08-24 13:45:20,GreenPepper,hm okay
+2011-08-24 13:45:44,akluth,;)
+2011-08-24 13:46:59,GreenPepper,verstehe ich nicht: so müssen doch die elemente der IDT gesetzt werden:
+2011-08-24 13:47:00,GreenPepper,idt[1] = {(uint64)&handle_interrupt};
+2011-08-24 13:47:54,GreenPepper,in dem fall habe ich nur einen eintrag:
+2011-08-24 13:47:55,GreenPepper,static uint64 idt[1] = {(uint64)&handle_interrupt};
+2011-08-24 13:48:44,GreenPepper,http://pastebin.com/uymS1XPA
+2011-08-24 13:49:41,GreenPepper,"aufruf dann mit: asm volatile(""int $0x0"");"
+2011-08-24 13:49:58,GreenPepper,es erscheint aber nichts :-(
+2011-08-24 13:50:25,GreenPepper,nur starting SeaBios(...)
+2011-08-24 13:51:36,Naoe-Kanno,da gehört halt nicht nur die Adresse rein
+2011-08-24 13:52:05,Naoe-Kanno,"sondern auch ein paar schöne Flags, die das als IDT-Eintrag identifizieren"
+2011-08-24 13:52:14,GreenPepper,:-(
+2011-08-24 13:52:21,Naoe-Kanno,außerdem fangen Arrays bei 0 an
+2011-08-24 13:52:36,GreenPepper,i know
+2011-08-24 13:53:01,GreenPepper,ist ja nur der initializer ;-)
+2011-08-24 13:53:10,GreenPepper,da muss die anzahl der elemente definiert werden
+2011-08-24 13:53:35,GreenPepper,schau dir mal den pastebin eintrag an
+2011-08-24 13:54:03,Naoe-Kanno,"ahja, mein Fehler"
+2011-08-24 13:54:12,Naoe-Kanno,da hab ich jetzt grad nicht drauf geachtet ^^
+2011-08-24 13:56:06,Naoe-Kanno,https://gitorious.org/nuke/kernel5/blobs/master/src/kernel/arch/i386/idt.c <- um sowas wirst du nicht drum rum kommen
+2011-08-24 14:01:33,kevin,Moin
+2011-08-24 14:01:58,AGGROStar1991,moin
+2011-08-24 14:02:15,Naoe-Kanno,Moin
+2011-08-24 14:03:40,akluth,Man man man
+2011-08-24 14:03:45,akluth,14:02 andere arbeite schon seit 1000 Stunden
+2011-08-24 14:06:26,kevin,Und? ;-)
+2011-08-24 14:25:16,GreenPepper,so bin wieder da
+2011-08-24 14:25:30,GreenPepper,schaue mir gerade die funktion idt_seT_entry an
+2011-08-24 14:25:39,Svenska,moin
+2011-08-24 14:25:51,bluecode,moin Svenska
+2011-08-24 14:25:53,GreenPepper,hi
+2011-08-24 14:26:15,akluth,Moin Svenska 
+2011-08-24 14:27:06,bluecode,"Svenska: nur so interessehalber, aber wenn alle nicht als ungültig markierten Cachelines immer den aktuellen Status haben, dann könnte man ja theoretisch sequentielle konsistenz haben (wenn man kein reordering von Loads/Stores machen würde), oder?"
+2011-08-24 14:27:25,bluecode,"bzw. andersrum, man hat nur keine sequentielle konsistenz weil man eben dieses reordering macht"
+2011-08-24 14:27:58,Svenska,"so sehe ich das, ja"
+2011-08-24 14:29:10,bluecode,"hm was ja efffektiv heißt, dass der ganze performancegain vom reordering kommt, was eigentlich ziemlich interessant ist"
+2011-08-24 14:29:34,bluecode,"aber ergibt schon sinn, da man damit im prinzip die latenz zum speicher bzw zum erhalten einer cacheline überbrücken kann"
+2011-08-24 14:29:37,kevin,Was reordert ihr denn?
+2011-08-24 14:29:41,kevin,Muss ich Logs lesen?
+2011-08-24 14:29:44,Svenska,lese- und schreibzugriffe auf den speicher
+2011-08-24 14:29:45,bluecode,loads/stores
+2011-08-24 14:29:47,Svenska,das machen moderne cpus so
+2011-08-24 14:30:05,Naoe-Kanno,"kevin, nicht, wenn du mental einigermaßen gesund bleiben willst *g*"
+2011-08-24 14:30:16,kevin,x86 nur sehr eingeschränkt
+2011-08-24 14:30:32,bluecode,"""sehr""? Ausreichend um die Welt gesunder menschen zu zerstören ;-)"
+2011-08-24 14:31:03,kevin,War ein Store auf x86 nicht in den meisten Fällen automatisch eine Barrier?
+2011-08-24 14:31:18,bluecode,kA
+2011-08-24 14:31:43,kevin,"Also ich meine, dass Linux die entsprechenden Makros für x86 einfach wegdefiniert"
+2011-08-24 14:31:50,bluecode,ich werd mich aber jetzt ganz sicher auf keine Diskussion einlassen :-D
+2011-08-24 14:32:08,bluecode,das hat sonst bestimmt wieder eriksche Ausmaße :-D
+2011-08-24 14:32:15,Svenska,"also wenn ein store auf x86 immer MFENCE aufruft, dann fress ich nen besen"
+2011-08-24 14:32:19,Svenska,und verhau erik :-)
+2011-08-24 14:33:01,bluecode,"wer lust hat kann ja in dem von erik gelinkten paper nachschauen, da wurde genau sowas erklärt"
+2011-08-24 14:34:33,kevin,"Also ich weiß, dass das Manual ein Kapitel dazu hat"
+2011-08-24 14:34:51,XanClic,Moin
+2011-08-24 14:34:51,kevin,"Und die Quintessenz daraus war, dass es für alle Fälle, die mich interessieren, genau das tut, was man will"
+2011-08-24 14:34:58,kevin,Moin XanClic
+2011-08-24 14:35:07,Svenska,"erik hatte die amd64-architektur verlinkt und da stand halt drin, dass sequentielle konsistenz nicht immer gegeben ist"
+2011-08-24 14:35:16,Svenska,"und wenn man sie braucht, muss man ein MFENCE ausführen"
+2011-08-24 14:36:04,Naoe-Kanno,"uh, er hat eine ganze Architektur verlinkt"
+2011-08-24 14:36:09,Naoe-Kanno,ein Meisterwerk der Technik
+2011-08-24 14:37:15,Svenska,naja die dokumentation von amd halt
+2011-08-24 14:39:32,Naoe-Kanno,welche? :3
+2011-08-24 14:39:44,Svenska,frag mich nicht
+2011-08-24 14:39:46,Naoe-Kanno,afaik bin ich eigentlich kevins Meinung
+2011-08-24 14:39:51,Svenska,ich hab in sowas zum ersten mal reingeguckt :)
+2011-08-24 14:39:53,Naoe-Kanno,"eigentlich steht da das drin, was man will"
+2011-08-24 14:40:07,kevin,"Also zwei Stores müssten ordered sein, wmnat"
+2011-08-24 14:40:10,Svenska,sonst les ich datenblätter nur von anderen dingern
+2011-08-24 14:40:12,kevin,Mit Loads kann es anders sein
+2011-08-24 14:40:39,Svenska,"da gab es halt randfälle, wenn zwei prozessoren gleichzeitig stores und loads machen, dann kann jeder prozessor was anderes sehen"
+2011-08-24 14:40:50,Svenska,"und da war halt beschrieben, welche garantien es gibt (und welche nicht)"
+2011-08-24 14:42:24,bluecode,"kevin: jo, ich glaub das mit der ordnung der stores stimmt"
+2011-08-24 14:43:08,kevin,"Ich weiß aber dummerweise nicht mehr, wo das steht"
+2011-08-24 14:44:33,Naoe-Kanno,"ich hab da ne Vermutung, aber ich hab die Docs auf Arbeit nicht da :/"
+2011-08-24 14:44:59,Naoe-Kanno,"oh, ich merke grad, ich bin Nerd genug, dass ich die sogar auf Arbeit hab"
+2011-08-24 14:45:41,kevin,8.2.2 in meiner Intel-Doku scheint das richtige zu sein
+2011-08-24 14:45:57,kevin,"""Memory Ordering in P6 and More Recent Processor Families"""
+2011-08-24 14:47:24,kevin,"""Reads are not reordered with other reads.; Writes are not reordered with older reads."""
+2011-08-24 14:47:43,kevin,"Was also übrig bleibt, sind ein paar bestimmte Fälle, in denen ein Read vor ein Write vorgezogen werden kann"
+2011-08-24 14:48:00,kevin,Das läuft für mich schon unter eingeschränkt ;-)
+2011-08-24 14:48:05,Naoe-Kanno,das MOESI-Diagramm ist auch sehr schön
+2011-08-24 14:48:19,kevin,Was für ein Ding?
+2011-08-24 14:48:28,Svenska,"amd's doku meinte nur, dass unter gewissen umständen ein store unendlich lange verzögert werden kann"
+2011-08-24 14:48:36,Svenska,moesi ist das cache-kohärenzprotokoll :-)
+2011-08-24 14:49:08,kevin,"Gewisse Umstände heißt, es kommt nie wieder ein anderes Write? ;-)"
+2011-08-24 14:49:33,Naoe-Kanno,"""Stores to different locations in memory observed from two (or more) processors may be"
+2011-08-24 14:49:33,Naoe-Kanno,"interleaved in different ways for different observers."""
+2011-08-24 14:50:17,Naoe-Kanno,"AMD, Vol. 2, 7.1"
+2011-08-24 14:50:46,Svenska,"oh, das ist richtig übel. eriks dokument meinte nur, dass alle observer (außer die betroffenen) wenigstens das gleiche sehen"
+2011-08-24 14:51:46,Naoe-Kanno,so verwunderlich find ich das gar nicht
+2011-08-24 14:54:26,kevin,"Hm, ich hätte auch erwartet, dass alle das gleiche sehen"
+2011-08-24 15:09:02,bluecode,dann hätte ich doch sequentielle konsistenz?
+2011-08-24 15:09:15,bluecode,"wobei w8, das spricht ja nur über stores"
+2011-08-24 15:09:17,bluecode,hm
+2011-08-24 15:09:38,bluecode,"aber jo, das ist eigentlich genau das was ich dachte"
+2011-08-24 15:09:47,Svenska,du hast nicht unbedingt sequentielle konsistenz
+2011-08-24 15:10:32,Svenska,"wenn CPU A einen wert schreibt, CPU B auch einen wert schreibt und CPU A noch einen anderen wert schreibt, dann findet CPU B unter umständen noch ihren alten wert, CPU A findet ihren aktuellen und alle anderen prozessoren unter umständen noch den alten wert von A"
+2011-08-24 15:10:58,Svenska,wobei mich diese herangehensweise komplett irritiert
+2011-08-24 15:11:32,bluecode,du arbeitest grad wieder auf einer speicherstelle
+2011-08-24 15:11:41,Svenska,ja
+2011-08-24 15:11:46,bluecode,das ist aber genau das worüber das obige zitat nichts aussagt
+2011-08-24 15:12:00,bluecode,innerhalb einer cacheline hast du sequentielle konsistenz
+2011-08-24 15:12:22,bluecode,"zwischen mehreren weißt du weniger, wegen reordering der load/stores"
+2011-08-24 15:12:32,Svenska,aso
+2011-08-24 15:12:39,Svenska,dann wird einiges klarer :)
+2011-08-24 15:15:42,GreenPepper,hm. wsa genu ist eigl ein unsigned short int? einfach 6 byte?
+2011-08-24 15:16:28,Svenska,unsigned short müsste 16 bit = 2 byte sein
+2011-08-24 15:16:57,GreenPepper,also einfach short?!
+2011-08-24 15:17:05,Svenska,ich glaube ja
+2011-08-24 15:17:23,GreenPepper,ist ja dämlich :-)
+2011-08-24 15:17:32,bluecode,short int ist genau der gleiche typ wie short
+2011-08-24 15:17:39,bluecode,das int dahinter ist einfach optional
+2011-08-24 15:18:13,kevin,"Und 16 Bit ist es auf x86, das dürfte nicht allgemein sicher sein"
+2011-08-24 15:18:37,kevin,"Okay, in der Praxis schon, aber das macht ja nichts ;-)"
+2011-08-24 15:18:42,bluecode,"das einzig sichere ist wohl sizeof(char) = 1, ansonsten sind konkrete Größen implementation defined"
+2011-08-24 15:20:59,GreenPepper,hmm. mein interrupt handler wird immer noch net aufgerufen :-( ich poste mal den code: http://pastebin.com/uUAnGkgn
+2011-08-24 15:23:02,GreenPepper,die gdt ist für die idt fürs erste ja nicht relevant?
+2011-08-24 15:23:57,kevin,Wie gibst du ohne GDT im IUDT-Eintragen den cs-Selektor an?
+2011-08-24 15:24:09,kevin,*IDT-Eintrag
+2011-08-24 15:24:47,GreenPepper,?? idt[i] |= (selector & 0xffffLL) << 16;
+2011-08-24 15:25:36,kevin,Und der Aufrufer nimmt ihn woher?
+2011-08-24 15:25:44,Svenska,kann der präprozessor eigentlich sizeof(int) ausrechnen?
+2011-08-24 15:25:48,kevin,"Du schreibst da einfach mal 0 hin, aber dass das nicht tut, ist ja wohl irgendwie klar"
+2011-08-24 15:26:01,GreenPepper,:-)
+2011-08-24 15:26:02,GreenPepper,hm
+2011-08-24 15:26:16,GreenPepper,was genau macht der selector?
+2011-08-24 15:26:25,kevin,Er selektiert
+2011-08-24 15:26:32,GreenPepper,schon klar..
+2011-08-24 15:26:33,GreenPepper,aber was?
+2011-08-24 15:26:34,kevin,Und zwar ein Segment
+2011-08-24 15:26:55,kevin,"Das Codesegment, das aktiviert werden soll, wenn der entsprechende Interrupt behandelt wird"
+2011-08-24 15:28:21,GreenPepper,hm. ich habe momentan sowieso nur 4 segemente
+2011-08-24 15:28:47,kevin,Dann hast du mit Raten eine Chance von 25%
+2011-08-24 15:29:03,kevin,Mit dem 50:50-Joker könntest du sie noch verbessern
+2011-08-24 15:29:29,kevin,0 ist jedenfalls nicht in den Antwortmöglichkeiten drin
+2011-08-24 15:29:44,GreenPepper,habe alle probiert.
+2011-08-24 15:30:03,GreenPepper,von 1 -4
+2011-08-24 15:30:23,XanClic,Das dürfte alles eine andere Ausdrucksweise für 0 sein
+2011-08-24 15:31:11,XanClic,Weil der Selektor nicht gleich dem Index ist: http://lowlevel.eu/wiki/GDT#Selektoren
+2011-08-24 15:44:25,GreenPepper,okay
+2011-08-24 15:44:27,GreenPepper,jetzt geht
+2011-08-24 15:44:28,GreenPepper,es
+2011-08-24 15:44:44,GreenPepper,"setIDTEntry(0, &handle_interrupt, 0x8, 0x80 | 0xe);"
+2011-08-24 15:52:00,kevin,"Tja, kaum macht man es richtig..."
+2011-08-24 15:52:08,GreenPepper,hehe
+2011-08-24 15:56:24,GreenPepper,aber ein 0xA reich wohl für den interrupt
+2011-08-24 15:56:46,GreenPepper,dann wird das programm auch fortgesetzt 
+2011-08-24 15:57:14,GreenPepper,fail
+2011-08-24 15:57:25,GreenPepper,"das wird immer fortgesetzt, wenns nicht abgefangen wird"
+2011-08-24 15:59:31,GreenPepper,kann man eigl auch binäre zahlen in c verwenden?
+2011-08-24 15:59:41,GreenPepper,dann würde ich mir diese doofe umrechnung sparen
+2011-08-24 16:00:51,Svenska,nicht laut standard
+2011-08-24 16:00:53,GreenPepper,hmm. das könnte ich gleich mal iplementieren
+2011-08-24 16:00:59,GreenPepper,implementieren
+2011-08-24 16:01:05,Svenska,"eventuell kann gcc sowas wie 0b...., aber das ist halt nicht c-standard"
+2011-08-24 16:01:15,Svenska,nimm nen taschenrechner xD
+2011-08-24 16:01:26,GreenPepper,toBinary<const char* c>() :P
+2011-08-24 16:01:32,GreenPepper,geht halt nur mit c++
+2011-08-24 16:01:42,GreenPepper,ne
+2011-08-24 16:01:47,GreenPepper,wohl eher formBinary
+2011-08-24 16:02:09,GreenPepper,"dann fromBinary<""10010101110"">();"
+2011-08-24 16:02:22,GreenPepper,^^
+2011-08-24 16:02:58,GreenPepper,so kann man es halt besser nachvollziehen ;-)
+2011-08-24 16:04:29,Svenska,vergiss es
+2011-08-24 16:04:34,GreenPepper,warum?
+2011-08-24 16:04:38,Svenska,rechne lieber im kopf oder zettel oder taschenrechner um in hex
+2011-08-24 16:04:47,Svenska,"und schreib in nem kommentar ran, um was es geht :-)"
+2011-08-24 16:04:52,Svenska,hat man mehr von und sieht nicht so furchtbar aus
+2011-08-24 16:05:16,GreenPepper,okay
+2011-08-24 16:05:58,GreenPepper,"wenn du meinst, hab noch net so die erfahrung mit so vielen bitmanipulationen und hex werten :)"
+2011-08-24 16:06:13,GreenPepper,muss ich wohl erst noch dran gewöhnen :-)
+2011-08-24 16:06:29,Svenska,"naja, die bitmaske nutzt dir nur was, wenn du das datenblatt vor der nase hast"
+2011-08-24 16:10:37,GreenPepper,"also, nochmal als summary: die GDT ist sozusagen eine sammlung von regeln. naja, und man kann anderen funktionen jetzt sagen, dass das element x als einschränkung für diese funktion gilt"
+2011-08-24 16:11:19,GreenPepper,kann man das so sagen?
+2011-08-24 16:11:37,Svenska,die GDT ist die sammlung aller segmente
+2011-08-24 16:12:03,Svenska,und jedes stück speicher ist einem segment zugehörig. die selektoren geben dann das passende segment an.
+2011-08-24 16:19:23,kevin,Svenska: Aller globalen Segmente
+2011-08-24 16:19:30,Svenska,ja richtig
+2011-08-24 16:19:33,Svenska,;-)
+2011-08-24 16:20:14,kevin,"GreenPepper: Und nimm Hex statt Binär, das ist lesbarer"
+2011-08-24 16:20:49,kevin,"Braucht zwar etwas Übung, aber dann geht es. In Binär abzuschätzen, ob die 1 gerade an der 28. oder 29. Stelle steht geht auch mit viel Übung nicht. ;-)"
+2011-08-24 16:22:26,Naoe-Kanno,"Dafür müsste man dann schon eine sehr genau Schätzmethode namens ""Zählen"" anwenden, und die liegt leider bei gefühlten O(n^n)"
+2011-08-24 16:22:29,Naoe-Kanno,bis später
+2011-08-24 16:22:51,kevin,Die Korrektheit dafür bei gefühlten O(0) ;-)
+2011-08-24 16:22:59,Naoe-Kanno,;-)
+2011-08-24 16:31:47,GreenPepper,hmm. aber nur die interrupts müssen auf die GDT zugreifen. threads sind ja auch egl. nur interrupts
+2011-08-24 16:34:21,GreenPepper,es geht nämlich gerade um das design 
+2011-08-24 16:34:43,Svenska,hä?
+2011-08-24 16:34:45,GreenPepper,bzw. der zugriff erfolgt nur mit den selektoren
+2011-08-24 16:34:54,Svenska,du schreibst komisches zeug
+2011-08-24 16:35:05,GreenPepper,hm.
+2011-08-24 16:36:43,bluecode,GreenPepper: man kann keine Stringliterale als Templateparameter verwenden
+2011-08-24 16:39:00,GreenPepper,die frage ist ob nur Interrupts die Segmente benötigen
+2011-08-24 16:39:20,Svenska,…
+2011-08-24 16:39:44,Svenska,"[ ] ich weiß, was segmentierung ist. ;-)"
+2011-08-24 16:41:09,GreenPepper,ich will die GDT in eine Interrupt-Klasse als static member haben
+2011-08-24 16:41:30,Svenska,wozu?
+2011-08-24 16:41:31,bluecode,"keine gute idee, in die gdt kommen schon noch andere sachen"
+2011-08-24 16:41:34,bluecode,wie TSS
+2011-08-24 16:41:52,GreenPepper,okay. dann natürlich nicht
+2011-08-24 16:41:57,GreenPepper,das war eigl nur meine frage^
+2011-08-24 16:41:58,GreenPepper,^
+2011-08-24 16:42:10,Svenska,"im einfachsten fall willst du eine einzige, systemweite gdt haben"
+2011-08-24 16:42:18,Svenska,"darum heißt sie ja auch ""globale"" descriptortabelle ^^"
+2011-08-24 16:42:55,Svenska,und dadrin definierst du dir eine handvoll segmente
+2011-08-24 16:43:03,GreenPepper,also 5
+2011-08-24 16:43:08,GreenPepper,:-)
+2011-08-24 16:43:13,Svenska,"kernelcodesegment, kerneldatensegment, usercodesegment, userdatensegment, taskstatesegment"
+2011-08-24 16:43:34,Svenska,"wenn du APM unterstützen möchtest (eine historische stromspartechnologie), dann brauchst du noch ein paar mehr"
+2011-08-24 16:43:49,GreenPepper,will ich zum glück nicht
+2011-08-24 16:43:49,Svenska,"und wenn du das VESA Protected Mode Interface nutzen möchtest, brauchst du glaube auch noch ein paar weitere"
+2011-08-24 16:44:08,Svenska,aber im großen und ganzen war es das.
+2011-08-24 16:44:41,Svenska,"das nennt man dann übrigens ""flat memory"" :-)"
+2011-08-24 16:44:45,bluecode,tss ist 1 pro core
+2011-08-24 16:45:15,Svenska,ok. viel weiter als das hab ich nie real programmiert ;)
+2011-08-24 16:48:12,bluecode,"ich hab garnicht gewusst, dass du programmieren kannst ;-P"
+2011-08-24 16:48:47,billy,moin
+2011-08-24 16:48:55,Svenska,moin
+2011-08-24 16:49:12,Svenska,"naja, mein osdev-ordner ist halt ziemlich leer ;)"
+2011-08-24 16:49:19,Svenska,programmieren kann ich schon :p
+2011-08-24 16:51:56,kevin,Auf ein zusätzliches TSS für Doublefaults bestehe ich auch noch ;-)
+2011-08-24 16:52:47,kevin,"VM86 benutzt in tyndur auch nochmal eins, aber das kann man wohl auch weniger kaputt implementieren, wenn man sich den Speicher freihält"
+2011-08-24 16:55:28,kevin,*g*
+2011-08-24 17:05:45,Jidder,moin
+2011-08-24 17:56:51,akluth,Feierabend
+2011-08-24 17:56:53,akluth,Bis denn
+2011-08-24 18:43:29,Svenska,tschø
+2011-08-24 21:16:17,Jidder,noch jemand da?
+2011-08-24 21:21:04,bluecode,kloar
+2011-08-24 21:21:50,Jidder,macht jemand gerade irgendwas spannendes?
+2011-08-24 21:22:32,bluecode,möglicherweise
+2011-08-24 21:23:05,Jidder,ich bin möglicherweise neidisch
+2011-08-24 21:25:23,bluecode,möglicherweise freue ich mich darüber
+2011-08-24 23:29:38,Jidder,okay schutzbrille aufgesetzt
+2011-08-24 23:29:53,Jidder,wie gehts weiter?
+2011-08-24 23:33:46,Svenska,jetzt wird geschwissen?
+2011-08-24 23:33:49,Svenska,ääh geschweißt?
+2011-08-24 23:34:02,Jidder,ich hab sie schon wieder abgenommen
+2011-08-24 23:34:14,Jidder,sämtliche aktivitäten müssen aus sicherheitsgründen eingestellt werden
+2011-08-24 23:35:27,Paddy,Svenska mag wohl gestorkene Verben?
+2011-08-24 23:47:11,Svenska,:-)

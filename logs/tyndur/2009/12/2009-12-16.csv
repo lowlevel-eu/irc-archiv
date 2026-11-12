@@ -1,0 +1,74 @@
+date/time,nick,message
+2009-12-16 09:49:40,pcmattman,kwolf: ping
+2009-12-16 09:50:27,kwolf,pcmattman: pong
+2009-12-16 09:51:04,pcmattman,"I have a hung boot, it seems"
+2009-12-16 09:51:45,kwolf,"Hm, any messages before the hang?"
+2009-12-16 09:52:01,pcmattman,"I grabbed the live CD and booted it in Windows Virtual PC, and it's stuck on ""servmgr: Konnte Konfigurationsverzeichnis nicht oeffnen: 'ata:/cdrom|iso9660:/hd.img|ramoverlay:/cached|ext2://config/servmgr"""
+2009-12-16 09:52:33,kwolf,"Oh no, it prints the ugly path.... *g*"
+2009-12-16 09:52:49,pcmattman,The ugly path?
+2009-12-16 09:53:02,kwolf,ata:/cdrom|iso9660:/hd.img|ramoverlay:/cached|ext2://config/servmgr
+2009-12-16 09:53:13,pcmattman,Is that wrong?
+2009-12-16 09:53:27,kwolf,"No, it's right, but I wouldn't want users to see it"
+2009-12-16 09:53:43,pcmattman,"Ah, I see"
+2009-12-16 09:53:48,kwolf,"Hm, can you boot the harddisk image?"
+2009-12-16 09:54:10,kwolf,"If so, you could have a look from within the system what exactly is going wrong"
+2009-12-16 09:54:31,pcmattman,I don't think I can boot the hard disk image in Virtual PC (it has its own format for disks)
+2009-12-16 09:55:12,kwolf,qemu-img convert -O vpc hd.img hd.vhd
+2009-12-16 09:55:34,pcmattman,I didn't know qemu-img could do that :)
+2009-12-16 09:55:38,kwolf,If you have a sufficiently recent qemu version. I think it needs 0.10 or so
+2009-12-16 09:55:52,pcmattman,I have one compiled from a recent git
+2009-12-16 09:55:56,kwolf,It can since I implemented it ;-)
+2009-12-16 09:56:40,pcmattman,I seem to have everything in qemu-img except vhd :(
+2009-12-16 09:56:55,kwolf,It's called vpc
+2009-12-16 09:57:04,pcmattman,"Ah, of course"
+2009-12-16 09:57:12,pcmattman,I misread
+2009-12-16 09:58:50,kwolf,"I don't like the name because everyone expects vhd, but it was there (read-only) before I touched it"
+2009-12-16 09:58:52,pcmattman,"Right, now it boots fine"
+2009-12-16 09:59:32,kwolf,Now you could try to attach the CD and look up if the paths exist
+2009-12-16 09:59:47,kwolf,ls ata:/
+2009-12-16 10:00:04,kwolf,And then ata:/cdrom|iso9660:/ and so on
+2009-12-16 10:00:13,pcmattman,Even with a CD in the drive it comes up with ata:/ata00_p0 and ata:/ata00
+2009-12-16 10:00:22,pcmattman,No sign of a CDROM
+2009-12-16 10:00:40,kwolf,"Hm, that kind of explains why it wouldn't boot...."
+2009-12-16 10:00:51,pcmattman,Yup
+2009-12-16 10:01:03,kwolf,Strange. Worked fine for me both on qemu and real hardware
+2009-12-16 10:01:04,pcmattman,"Hmm, perhaps the CDROM got put onto a SATA bus or something?"
+2009-12-16 10:01:18,kwolf,"Hm, shouldn't there be a compatibility mode?"
+2009-12-16 10:01:27,pcmattman,Perhaps
+2009-12-16 10:01:42,kwolf,Does Pedigree recognize the CDROM in VPC?
+2009-12-16 10:01:53,pcmattman,"It does, come to think of it"
+2009-12-16 10:02:04,kwolf,"You don't have SATA, do you?"
+2009-12-16 10:02:10,pcmattman,"No, so that isn't the problem"
+2009-12-16 10:02:53,kwolf,Hm. Looks like I need to set up a Windows VM to run VPC in it...
+2009-12-16 10:03:37,pcmattman,"The ATA stuff works, just having problems with the live CD"
+2009-12-16 10:03:46,pcmattman,"I couldn't break kedit, for instance"
+2009-12-16 10:04:04,kwolf,"Well, at least ATA without PI works ;-)"
+2009-12-16 10:04:08,pcmattman,:)
+2009-12-16 10:05:40,kwolf,"If you're feeling like putting more time on it, you could enable the debug messages in ata. But I don't want to keep you from doing your own work"
+2009-12-16 10:07:16,pcmattman,"I'll have a bit more of a play later, maybe tomorrow"
+2009-12-16 10:07:28,pcmattman,"I'll try it in QEMU for example, which might work a bit better :)"
+2009-12-16 10:07:52,kwolf,"qemu should work fine, it's what we use all the time"
+2009-12-16 10:08:16,kwolf,"Hm, I think I've never tried the Live CD in bochs. Only the harddisk image."
+2009-12-16 10:09:19,pcmattman,"I can try the live CD in bochs, if that helps any"
+2009-12-16 10:10:49,kwolf,"If you like, you can do that, but I can also test it myself. I think you could help more with the VPC thing"
+2009-12-16 10:11:10,kwolf,I don't think anyone of us has a VPC installation
+2009-12-16 10:11:22,pcmattman,"Hm, true"
+2009-12-16 10:11:49,pcmattman,"I can also reboot into a VHD using Windows 7's bootloader, which might be handy to play with sometime in the next couple of weeks"
+2009-12-16 10:12:48,kwolf,Booting into a VHD on real hardware?
+2009-12-16 10:12:55,pcmattman,That's right
+2009-12-16 10:13:09,pcmattman,It's one of the new features of the Windows 7 bootloader/boot manager
+2009-12-16 10:13:21,kwolf,How does that work? I guess they hook into int13 but how does it work later on?
+2009-12-16 10:13:38,pcmattman,I think it may be still virtualised
+2009-12-16 10:14:09,kwolf,"Hm, interesting"
+2009-12-16 10:14:13,pcmattman,"In effect, the minimal Windows services and drivers are loaded, and then the OS is emulated/virtualised on the CPU"
+2009-12-16 10:14:30,pcmattman,So the virtual machine effectively has all the resources to itself
+2009-12-16 10:14:39,kwolf,"So it's still VPC hardware that you see and not the real hardware, right?"
+2009-12-16 10:14:48,pcmattman,I think so
+2009-12-16 10:14:53,pcmattman,I haven't really played with it very much
+2009-12-16 10:15:46,kwolf,Makes quite a difference for testing OSes
+2009-12-16 10:16:19,pcmattman,Perhaps it's designed for Windows 7 and Windows 7 has special hooks for it?
+2009-12-16 10:16:25,pcmattman,I'll have to try it and see
+2009-12-16 10:17:57,kwolf,Sounds like an interesting feature at least
+2009-12-16 10:18:43,pcmattman,"Well, yes, even if it does only boot Windows 7, it is still something quite unusual"
+2009-12-16 21:53:21,FreakyPenguin,pcmattman: What vpc version did you test?
+2009-12-16 21:54:15,FreakyPenguin,I just successfully tested it on vpc2007(64-Bit version) on a win2008-Host

@@ -1,0 +1,477 @@
+date/time,nick,message
+2013-09-30 09:37:56,alexander,Morgen
+2013-09-30 09:39:22,max,Moin
+2013-09-30 09:39:34,kevin,Moin
+2013-09-30 11:13:35,mroman,Moin
+2013-09-30 11:13:54,mroman,hat float nicht +0 und -0?
+2013-09-30 11:14:02,kevin,Sollte
+2013-09-30 11:14:16,Lowl3v3l,ein signed float ja
+2013-09-30 11:14:18,mroman,was passiert bei (int) damit?
+2013-09-30 11:14:26,mroman,(int)-0.0f;
+2013-09-30 11:14:41,mroman,und -0.0f vermutlich != 0.0f?
+2013-09-30 11:14:50,max,-0.0f == +0.0f
+2013-09-30 11:15:04,max,Und aller Wahrscheinlichkeit nach ist (int)-0.0f dann auch 0
+2013-09-30 11:15:08,Lowl3v3l,würd ich auch sagen.
+2013-09-30 11:15:27,mgottschlag,"""-0.0f == +0.0f"" - echt? ich dachte, das wär in C zumindest nicht so"
+2013-09-30 11:16:07,mgottschlag,"hm, okay, doch"
+2013-09-30 13:22:45,Guest1053,"Hey Leute ich hab mal ne Frage bezüglich der Lauflängenkodierung (RLE). Ich habe eine Implementierung aus dem Netz übernommen. Nun die Frage: Wenn ich sehe dass einige Teile richtig übernommen wurden, dann kann ich ja davon ausgehen, dass sie komplett stimmt oder?"
+2013-09-30 13:23:32,Darkchaos,"Es ist so: in dem File Header der Compressten Datei steht, dass die Datei uncompressed ca 100 Byte größer wird. Bei mir wird sie aber 6x so groß wie compressed"
+2013-09-30 13:23:41,Darkchaos,jetzt frag ich mich a) ist denn RLE soo gut?
+2013-09-30 13:24:20,Darkchaos,und b) warum hab ich lauter 0x0 nach dem RLE'n (vielleicht ein grund warum es so gut compressed)
+2013-09-30 13:27:44,max,„100 Byte größer“ und „6x so groß“ können durchaus äquivalent sein
+2013-09-30 13:28:03,max,"Wenn RLE sooooo gut wäre, würden wir alle Bitmap mit RLE als Grafikformat benutzen und wären glücklich"
+2013-09-30 13:28:18,max,Lauter 0en solltest du gerade _nach_ dem RLEn nicht mehr haben
+2013-09-30 13:38:02,Darkchaos,Nach dem Ent-RLEn meinte ich
+2013-09-30 13:38:09,Darkchaos,und naja
+2013-09-30 13:38:27,Darkchaos,"von 900kB zu 901kB laut FileHeader, laut mir 6MB"
+2013-09-30 13:38:55,kevin,"Dann vermute ich, dass du was falsch machst"
+2013-09-30 13:46:38,Darkchaos,"wenn aber die datei tatsächlich viele 0en hat, kann man ja immer 256 Byte zu 3 Byte codieren"
+2013-09-30 13:47:27,Darkchaos,vielleicht ist der fileheader einfach kaputt
+2013-09-30 13:51:15,Darkchaos,"vorallem stimmt der dekodierte Header, der ist nicht kaputt"
+2013-09-30 13:51:29,Darkchaos,dann hat jemand sich wohl mit 0x0en viel Platz geschaffen
+2013-09-30 14:11:55,mroman,Was sagt C zu int32_t = (int16_t)((uint16_t)foo)); ?
+2013-09-30 14:12:15,mroman,ist das hardware-abhaengig?
+2013-09-30 14:12:24,max,"wenn foo > INT16_MAX oder wie das heißt ist, ist es undefiniert"
+2013-09-30 14:12:30,mroman,ist foo nicht.
+2013-09-30 14:12:48,max,ich korrigiere mich
+2013-09-30 14:12:56,max,"wenn (uint16_t)foo > INT16_MAX ist, ist es undefiniert"
+2013-09-30 14:13:02,mroman,foo ist eigentilch bereits uint16_t
+2013-09-30 14:13:17,max,INT16_MAX ist nicht UINT16_MAX
+2013-09-30 14:13:51,mroman,das soll eigentlich sign extension machen
+2013-09-30 14:14:02,mroman,also von 16bit two's complement zu 32bit two's complement
+2013-09-30 14:14:08,max,"Ja, das wird halt so nix"
+2013-09-30 14:14:12,mroman,also es soll foo als 16bit two's complement behandeln
+2013-09-30 14:14:20,mroman,"und es zu einem 32bit signed integer ""promoten"""
+2013-09-30 14:14:34,max,"Wenn foo negativ oder größer als 32767 wird, gibts ein Problem"
+2013-09-30 14:14:46,max,"Praktisch vermutlich nicht, aber theoretisch schon"
+2013-09-30 14:15:00,max,"Und du hast ja gefragt, was C dazu sagt :-P"
+2013-09-30 14:15:04,mroman,Ja
+2013-09-30 14:15:06,mroman,was C dazu sagt :)
+2013-09-30 14:15:23,max,"Der Standard sagt ziemlich eindeutig, sign extensions macht man ohne Casts"
+2013-09-30 14:15:38,max,"also int32_t bar = foo;, wenn foo int16_t ist"
+2013-09-30 14:16:00,max,"Wenn foo das nicht ist, gl hf"
+2013-09-30 14:16:39,mroman,was passiert eigentlich bei
+2013-09-30 14:16:55,mroman,signed char = foo; //foo ist uint32_t
+2013-09-30 14:17:05,mroman,also
+2013-09-30 14:17:11,mroman,uint32_t an int8_t zuweisen
+2013-09-30 14:17:16,mroman,das klingt undefiniert.
+2013-09-30 14:17:31,max,"Ist es auch, wenn der Wert größer als 127 ist"
+2013-09-30 14:17:35,mroman,dachte ich
+2013-09-30 14:24:28,mroman,hm
+2013-09-30 14:24:49,mroman,uint8_t nach int8_t casten ist also auch undefiniert?
+2013-09-30 14:25:19,max,jo
+2013-09-30 14:25:27,max,"Also, nein"
+2013-09-30 14:25:36,max,"Aber für den Fall, dass es nicht reinpasst halt"
+2013-09-30 14:26:29,mroman,"Wenn ich will, dass er es auf Basis von two's complement macht?"
+2013-09-30 14:26:37,mroman,also mein uint8_t enthaelt two's complement.
+2013-09-30 14:26:46,max,"Das ist bei C ja nicht definiert, wie negative Zahlen dargestellt werden"
+2013-09-30 14:26:51,mroman,ja
+2013-09-30 14:26:55,max,Ach so
+2013-09-30 14:27:01,mroman,verumtlich nicht.
+2013-09-30 14:27:23,max,"Ja, dann musst du halt bar = (foo < 0x80) ? foo : -(0x100 - foo) machen oder so"
+2013-09-30 14:37:31,mroman,k
+2013-09-30 15:33:08,Jonathan,moin
+2013-09-30 16:02:07,tufel,huhu
+2013-09-30 16:04:11,tufel,nun wie kann man sowas : y = a << b in vhdl einbauen?
+2013-09-30 16:06:44,mgottschlag,bei konstantem b nimmst du einfach nur die oberen Bits
+2013-09-30 16:07:08,mgottschlag,"bei variablem b machst du das entweder in mehreren Takten, oder implementierst parallel alle verschiedenen Möglichkeiten"
+2013-09-30 16:07:21,mgottschlag,Bits auswählen ging irgendwie mit (32 downto b)
+2013-09-30 16:09:19,tufel,mmh ok danke :)
+2013-09-30 16:14:39,tufel,"bei konstanten b, welche oberen bits sind da gemeind ?"
+2013-09-30 16:18:38,mgottschlag,"argh, ich hab >> gemeint"
+2013-09-30 16:18:56,mgottschlag,"bei << übernimmst du die unteren Bits und füllst mit Nullen auf, also (32 - b downto 0)"
+2013-09-30 16:20:12,tufel,mmh und wie wird der rest nach linkts oder rechts verschoben ?
+2013-09-30 16:22:30,mgottschlag,garnicht? du nimmst die Bits und konkatenierst andere dran
+2013-09-30 16:22:47,mgottschlag,"""Verschieben"" gibt es nicht, es gibt nur Bitvektoren, die man aufteilen und aneinanderreihen kann"
+2013-09-30 16:34:59,tufel,"kann man den 2 unterschiedliche lange bit-vectoren miteinander ""logisch verechnen ?"
+2013-09-30 16:36:16,mgottschlag,glaub ich nicht
+2013-09-30 17:09:05,tufel,so jetzt hab ich mal mein eigener links-shift konstuiert: http://codeviewer.org/preview
+2013-09-30 17:10:32,tufel,http://codeviewer.org/view/code:3701
+2013-09-30 17:12:57,Manuel,hi
+2013-09-30 17:15:08,Lowl3v3l,hi
+2013-09-30 17:15:15,mgottschlag,hi
+2013-09-30 17:16:18,tufel,huhu
+2013-09-30 17:38:23,Darkchaos,Weiß jemand aus dem Kopf die integer MaxValue
+2013-09-30 17:38:50,Darkchaos,"Also ""int32_t"""
+2013-09-30 17:39:31,Darkchaos,"Weil ich gerade überlege, ich habe eine Size in UInt64_t aber kann immer nur max Int32_t.MaxValue auslesen, ob es sich lohnt, eine Schleife dafür zu implementieren"
+2013-09-30 17:42:06,Darkchaos,Ok 4GB für UInt32 und 2GB für Int32 falls 2^32 stimmt
+2013-09-30 17:42:51,Manuel,"Eine frage: Ich habe hier 8 bits, im wiki stehen sie von 7-0. Aber wo fange ich an mit dem abtatsten? Also wenn ich den ersten in den Assembler schiebe, fängt es dann bei 7 oder 0 an?"
+2013-09-30 17:43:47,Darkchaos,"Ich weiß zwar nicht, von was du es gerade hast aber da gibt es zwei möglichkeiten a) Probieren und schauen was rauskommt und b) Bei Dateien etc hängt es von Big oder Little-Endian ab"
+2013-09-30 17:43:55,Darkchaos,je nach OS von 7 bis 0 oder von 0 bis 7
+2013-09-30 17:44:02,Svenska^,moin
+2013-09-30 17:44:07,Darkchaos,Hi
+2013-09-30 17:44:32,Darkchaos,"Ich würde ja auch mal wieder gerne an meinem OS coden, aber der Zorn auf's fixxen des Pagings verhindert es komplett"
+2013-09-30 17:45:13,Svenska^,Manuel: man fängt bei bits ueblicherweise von rechts an zu zählen
+2013-09-30 17:45:20,Svenska^,also das rechte bit ist bit 0
+2013-09-30 17:45:44,Manuel,"Ok, hat mich verwirrt weil die wiki bei 7 anfängt^^"
+2013-09-30 17:45:55,Svenska^,"ja, das linkste bit bei einem byte ist dann bit 7"
+2013-09-30 17:46:11,Svenska^,das gilt fuer informatiker. mathematiker zählen gelegentlich auch von 8 (links) bis 1 (rechts)
+2013-09-30 17:46:15,Manuel,"ok, und wenn ich das dann in einem register habe fängt es bei bit0 oder bit 7 an"
+2013-09-30 17:46:25,Svenska^,ein register hat keinen anfang :-)
+2013-09-30 17:46:29,Manuel,uhm
+2013-09-30 17:46:36,Manuel,Ich meine die Bitreihe die ich darein dann lade
+2013-09-30 17:46:37,Svenska^,die sind nicht bitadressierbar (zumindest nicht auf x86)
+2013-09-30 17:46:54,Svenska^,was willst du denn wo reinladen?
+2013-09-30 17:47:45,Manuel,"Von einem Port, eine 8 bit lange zeichenkette nach einem register"
+2013-09-30 17:47:52,Svenska^,"wenn du ""MOV AL, 0x12"" machst, dann steht in AL das Bitmuster ""0001 0010"" drin"
+2013-09-30 17:47:59,max,bt/bts/btr/btc funktionieren doch auch auf Registern
+2013-09-30 17:48:02,max,Oder nicht?
+2013-09-30 17:48:10,Svenska^,"eine ""8 bit lange zeichenkette"" gibt es nicht"
+2013-09-30 17:48:11,max,also von wegen [17:46:37] <Svenska^> die sind nicht bitadressierbar (zumindest nicht auf x86)
+2013-09-30 17:48:30,Svenska^,"entweder, die hat 8 zeichen (und dann 8 bytes) oder die hat ein zeichen (und dann 1 byte = 8 bit)"
+2013-09-30 17:48:39,Manuel,ja ich meine halt 8 bit hintereinander
+2013-09-30 17:48:58,Svenska^,löse dich von bits. die machen nur scherereien.
+2013-09-30 17:49:09,max,Transzendiere die Bitebene!
+2013-09-30 17:49:10,Svenska^,"die kleinste einheit, die du auf x86 verarbeiten kannst, ist ein byte"
+2013-09-30 17:49:17,max,gar nich
+2013-09-30 17:49:18,Manuel,xD. Für die Floppy brauch ich aber bit
+2013-09-30 17:49:19,max,bt/bts/btr/btc
+2013-09-30 17:49:33,Manuel,Die Statusbits^^
+2013-09-30 17:49:35,Svenska^,"alles, was kleiner ist, bepfuscht man ueblicherweise mit bitoperationen auf diesen bytes..."
+2013-09-30 17:49:39,Svenska^,aso
+2013-09-30 17:49:44,max,bt/bts/btr/btc D:
+2013-09-30 17:50:45,Manuel,"ahso, falles es jemand interressiert habe ich hier einen blog für mein os gemacht http://pulsar-dev.blogspot.de/"
+2013-09-30 17:50:59,Manuel,"ist nichts großartiges und möchte hier jetzt auch net spammen, eben für die die es interressiert"
+2013-09-30 17:52:21,Svenska^,"max: die bitoperationen sind aber, naja... jetzt nicht das, was ich meinte"
+2013-09-30 17:52:43,tufel,"mmmh es gibt bei der x86 architektur, diese Ports, die nur über spezielle befehle gesteuert werden können , sind solche ports sinvoll ? :D"
+2013-09-30 17:53:00,Svenska^,"tufel: wenn du genug(TM) adressraum hast, braucht man sie nicht"
+2013-09-30 17:53:15,Svenska^,"max: und die gibts erst ab 386, aber manuel arbeitet im RM :-)"
+2013-09-30 17:53:22,max,"Ja, und?"
+2013-09-30 17:53:29,max,Er wird doch bestimmt keinen 8086/286 zu Hause haben :-P
+2013-09-30 17:53:29,Svenska^,ok
+2013-09-30 17:53:37,max,Ich hab auch schon mit SSE im RM gearbeitet :-P
+2013-09-30 17:54:35,Svenska^,wie auch immer
+2013-09-30 17:54:48,Svenska^,"mit bits arbeitet man in der regel nicht, sondern macht bytes draus =)"
+2013-09-30 17:55:01,max,Oder Kästen
+2013-09-30 17:55:13,Svenska^,exakt
+2013-09-30 17:55:27,Darkchaos,Oder setzt die bits innerhalb einem Byte :)
+2013-09-30 17:55:45,Svenska^,Manuel: wo brauchst du denn bits fuer die floppy?
+2013-09-30 17:55:58,Darkchaos,"Dann war das mit der Endianess auch falsch, die bezieht sich nämlich auf ganze Bytes, wie mir gerade einfällt"
+2013-09-30 17:56:05,Svenska^,exakt
+2013-09-30 17:56:33,Darkchaos,"Svenska^: Auch wenn ich noch nicht's mit Floppy gemacht habe: Vielleicht sowas wie: ""Zum aktivieren setzen wir bit 3 des Kontrollregisters auf an"""
+2013-09-30 17:56:49,Svenska^,"(und um die verwirrung komplett zu machen, hat IBM frueher die bits in der doku andersrum nummeriert, also von links gezählt. im rechner war es aber wie ueblich.)"
+2013-09-30 17:56:50,Darkchaos,Was ja uint32_t a |= (1 << 3); wäre
+2013-09-30 17:57:06,Svenska^,"ja, darum frag ich ja. so eindeutig ist die frage nicht :-)"
+2013-09-30 17:57:10,Svenska^,(zumindest fuer mich)
+2013-09-30 17:57:16,Darkchaos,"Die C-Syntax zeigt es ja schon. ""<<"""
+2013-09-30 17:57:28,Svenska^,...wenn er C wollte :-)
+2013-09-30 17:57:34,Darkchaos,"wobei man ja auch (0xFF >> 5); machen kann, oder?"
+2013-09-30 17:57:40,Svenska^,klar
+2013-09-30 17:57:41,Darkchaos,ah ne
+2013-09-30 17:57:45,Darkchaos,irgendwie anders
+2013-09-30 17:57:56,Darkchaos,weil ja dann 2 und 1 auch gesetzt werden
+2013-09-30 17:58:05,Darkchaos,"müsste man dann raussuchen speziell, wäre aber unüblich"
+2013-09-30 17:58:22,mgottschlag,"also Manuels umlaute sind die einzigen, die bei mir als Fragezeichen rauskommen :="
+2013-09-30 17:58:24,mgottschlag,*:)
+2013-09-30 17:58:43,Svenska^,"achso, ja. praktisch macht man entweder byte |= (1 <<3) [setzen] oder byte &= ~(1 << 3) [löschen]"
+2013-09-30 17:59:11,mgottschlag,"hm, ne, doch nicht"
+2013-09-30 17:59:28,Manuel,"Svenksa: Ich brauche diese also Input vom port, und muss die Bits stück für stück überprüfen auf ihren status"
+2013-09-30 17:59:28,Darkchaos,Dann kann ich mittlerweile UTF-8? :O äöüß
+2013-09-30 17:59:37,mgottschlag,"naja, die Frage ist, ob ich es kann."
+2013-09-30 17:59:41,mgottschlag,"bbl, bin mal auf dem Heimweg"
+2013-09-30 18:00:04,Darkchaos,Manuel: Bit 3 gesetzt: if ((a & (1 << 3)) != 0)
+2013-09-30 18:00:11,Svenska^,Manuel: vom FDC liest du mit nem IN-befehl immer ganze bytes (nämlich das entsprechende register)
+2013-09-30 18:00:20,Svenska^,"und dadrin guckst du dann, ob das bit gesetzt ist"
+2013-09-30 18:01:29,Manuel,Meine ich ja...... ich hole das byte vom port ab und überprüfe es dann im register^^ so meinte ich es wusste nicht wie ich es ausdrücken sollte
+2013-09-30 18:01:51,Svenska^,"und wenn du in einem FDC-register ein bit setzen willst, dann musst du das FDC-register in ein CPU-register lesen, im CPU-register das bit setzen und dann in das FDC-register zurueckschreiben"
+2013-09-30 18:02:00,Svenska^,genau
+2013-09-30 18:02:28,tufel,mh tut eigentlich überhaupt dieser linksshifter ? :  http://codeviewer.org/view/code:3701
+2013-09-30 18:02:38,Svenska^,"denn wenn du einfach ein byte mit gesetztem bit 3 (und sonst nullen) schreibst, wuerdest du die restlichen bits ueberschreiben, die da drin sind"
+2013-09-30 18:03:13,Svenska^,"tufel: ich weiss ja nicht, wie speziell du deine cpu bauen möchtest, aber eine ALU sollte es fertig geben"
+2013-09-30 18:03:31,Svenska^,"die CPU ist ja an sich nur dafuer da, die ALU vernuenftig anzusteuern :-)"
+2013-09-30 18:03:37,Svenska^,(und ist so auch komplex genug)
+2013-09-30 18:04:15,tufel,"mmh ok, dann bau ich mal eine ALU"
+2013-09-30 18:05:20,Darkchaos,hat jemand lust mir mein paging zu fixxen? :PP
+2013-09-30 18:06:14,Svenska^,"meins funktioniert: es setzt paging auf, aktiviert es und springt an die kerneladresse. und dann gibts ne endlosschleife :-)"
+2013-09-30 18:06:28,Darkchaos,Da kann meins schon mehr :D
+2013-09-30 18:06:33,Darkchaos,sogar mit heap
+2013-09-30 18:06:33,Manuel,Nur wenn du mir den Hardwaretreiber des Floppy laufwerkes fertigschreibst :D
+2013-09-30 18:06:53,Darkchaos,"Problem ist nur das selbstmappen des PDs, da steige ich nicht mehr durch"
+2013-09-30 18:07:12,Darkchaos,Ich habe glaube ich das Problem das jeder mal an seinem OS hat. Den Punkt andem er nichtmehr durch seinen eigenen Code durchsteigt
+2013-09-30 18:07:27,Darkchaos,Manuel: Hast du denn schon ein Driver-interface und ein HAL? :O Das ist mein nächstes Problem^^
+2013-09-30 18:08:47,Manuel,HAL?
+2013-09-30 18:08:57,Darkchaos,Hardware Abstraction Layer
+2013-09-30 18:09:05,Darkchaos,"hat jemand von euch schonmal mit ""BSDIFF40"" gearbeitet?"
+2013-09-30 18:09:16,Svenska^,was das?
+2013-09-30 18:09:17,Manuel,Glaube nicht :D Aber ich habe eine CLI
+2013-09-30 18:09:29,Svenska^,wie gut ist deine CLI?
+2013-09-30 18:09:32,Darkchaos,Eine Art Patch System
+2013-09-30 18:09:43,Manuel,Sie Funktioniert einwandfrei^^
+2013-09-30 18:10:11,Darkchaos,"Und ich habe nun patches dich ich applyen muss, die in einem gemoddeten BSDIFF40 sind. Nur finde ich dazu nicht viel. Zwar headers und alles, aber niemand sagt, wie ich den DATA-Block bearbeiten muss"
+2013-09-30 18:10:46,Manuel,Svenska: Oder möchtest du was anderse davon wissen?
+2013-09-30 18:10:57,Svenska^,"ja... zum beispiel, was sie kann"
+2013-09-30 18:10:58,Svenska^,=)
+2013-09-30 18:11:36,Svenska^,Darkchaos: du willst einfach eine datei patchen?
+2013-09-30 18:11:40,Manuel,"Ja, HELP, zeigt alle Befehle an, DIR Zeigt eben alle Dateien und Ordner an, Shutdown und restart da weis man ja schon was gemeint ist"
+2013-09-30 18:11:52,Darkchaos,Svenska^: Ja aber den Patch kann ich nicht ganz raffen^^
+2013-09-30 18:12:02,Darkchaos,Manuel: Also kein piping?
+2013-09-30 18:12:15,Manuel,Soundunterstützung kommt noch
+2013-09-30 18:12:22,Svenska^,lol
+2013-09-30 18:12:46,Manuel,Aber wenn du wissen willst was ich für die nächste zeit geplant habe kannst auf meinem Blog nachsehen
+2013-09-30 18:12:48,Svenska^,"Darkchaos: ""usage: bspatch oldfile newfile patchfile"""
+2013-09-30 18:13:16,Darkchaos,"Habe ich schon, Hut ab wenn du das packst in so kurzer Zeit"
+2013-09-30 18:13:31,Darkchaos,Svenska^: Wenn ich jetzt noch Linux am laufen hätte :)
+2013-09-30 18:13:40,Darkchaos,aber da findet sich sicher ein Source
+2013-09-30 18:13:43,Svenska^,grml
+2013-09-30 18:13:49,Svenska^,http://www.daemonology.net/bsdiff/
+2013-09-30 18:13:55,Svenska^,ich habs grad im source nachgelesen ^^
+2013-09-30 18:14:53,Svenska^,"könnte unter windows sogar kompilieren, wenn man die bzip2-header hat"
+2013-09-30 18:14:59,Manuel,"xD jetzt hör ich aber auf zu chatten, sonst komme ich heute zu nichts mehr :D"
+2013-09-30 18:16:13,Svenska^,"Manuel: denke dir erstmal aus, wie anwendungen auf dateien zugreifen sollen"
+2013-09-30 18:16:39,Manuel,Über mein Dateisystemtreiber
+2013-09-30 18:16:39,Svenska^,"und dann denke dir aus, wie das dateisystem auf die hardware zugreifen soll"
+2013-09-30 18:16:54,Manuel,das dateisystem greift über die hardwaretreiber zu :D
+2013-09-30 18:17:03,Svenska^,"und zwar so, dass das dateisystem unabhängig vom hardwaretreiber ist :D"
+2013-09-30 18:17:28,Svenska^,"also denkst du dir die funktionen aus, die du da benutzen möchtest."
+2013-09-30 18:17:41,Svenska^,und das ist dann ein teil vom HAL deines betriebssystems
+2013-09-30 18:17:57,Manuel,Schreiben/Lesen/Löschen/Kopieren/Ausschneiden war mein gedanke
+2013-09-30 18:18:03,Darkchaos,Manuel:
+2013-09-30 18:18:05,Svenska^,grossartig
+2013-09-30 18:18:07,Darkchaos,"Schreiben, Lesen, Löschen"
+2013-09-30 18:18:23,Svenska^,"noch besser: Lesen Schreiben, Position Bestimmen?"
+2013-09-30 18:18:33,Darkchaos,Kopieren> a = device1.lesen; device1.schreiben(a);
+2013-09-30 18:18:39,Manuel,Position in wiefern? Ordner? Oder Sektoren?
+2013-09-30 18:18:46,Svenska^,hmm
+2013-09-30 18:19:06,Svenska^,"ich hatte doch mal gesagt, dass eine festplatte eine aufeinanderfolgende menge von blöcken ist"
+2013-09-30 18:19:22,Manuel,"Die sektoren werden dann vom hardwaretreiber angesteuert, damit hat das dateisystem nichts zu tun"
+2013-09-30 18:19:27,Svenska^,"wenn du mit dem BIOS arbeitest, ist das nicht immer der fall. aber es ist praktisch, wenn man das so sieht"
+2013-09-30 18:19:37,Svenska^,eine partition ist genau dasselbe
+2013-09-30 18:19:50,Svenska^,"und wenn man dateien auch so betrachtet, macht sich das fuer programme viel besser, damit zu arbeiten"
+2013-09-30 18:19:52,Manuel,"Psst, muss nicht wieder erklären"
+2013-09-30 18:20:13,Svenska^,"das heisst, fuer deine anwendung ist eine datei eine (durchnummerierte) sammlung von bytes"
+2013-09-30 18:20:34,Svenska^,quasi ein lochstreifen :D
+2013-09-30 18:20:34,Manuel,jo schon klar :D Ich hab gestern auch aufgepasst
+2013-09-30 18:20:39,Darkchaos,"ja, die Modularität wird dir ein wenig fehlen, aber strenggenommen könnte das OS dafür schneller laufen"
+2013-09-30 18:20:44,Darkchaos,Treiber im Kernel etc
+2013-09-30 18:21:05,Manuel,Mein ganzes OS läuft im Kernel
+2013-09-30 18:21:18,Svenska^,"und den kannst du hin- und herspulen (""position setzen""), lesen (""daten an position lesen und ein byte weiterspulen"") und schreiben (""daten an position ueberschreiben und ein byte weiterspulen"")"
+2013-09-30 18:21:52,Manuel,Lochstreifen und überschreiben geht wohl schlecht :D
+2013-09-30 18:21:59,Darkchaos,Svenska^: Das errinnert mich irgendwie an die Turing-Maschine
+2013-09-30 18:22:01,Svenska^,"drueberkleben, neu lochen"
+2013-09-30 18:22:05,Manuel,xD
+2013-09-30 18:22:09,Svenska^,Darkchaos: exakt
+2013-09-30 18:22:23,Svenska^,ist ne relativ praktische beschreibung
+2013-09-30 18:22:23,Darkchaos,da gab es genau das gleiche
+2013-09-30 18:22:41,Svenska^,deine ganze cpu ist ne (verdammt schnelle) turingmaschine ^^
+2013-09-30 18:22:48,Darkchaos,Wie ich diesen Teil der Informatik hass4e :D
+2013-09-30 18:23:16,Svenska^,"wie auch immer. mit dieser sichtweise brauchst du als anwendung nur wissen, wo in der datei deine gesuchten daten stehen"
+2013-09-30 18:23:41,Svenska^,"das dateisystem rechnet aus dieser position dann aus, wo im dateisystem (auf der partition) die daten gespeichert werden"
+2013-09-30 18:23:57,Darkchaos,das mag ich an .NET die Klassen MemoryStream und FileStream
+2013-09-30 18:24:07,Svenska^,"der partitionstreiber rechnet aus, wo dieses byte auf der festplatte landet"
+2013-09-30 18:24:14,Svenska^,und der festplattentreiber liest oder schreibt es dann.
+2013-09-30 18:24:19,Darkchaos,Svenska^: In etwa so: Fileheader.BaseOffset + CurrentOffset
+2013-09-30 18:25:15,Darkchaos,hmm ich glaube ich werde eine art .NET für mein OS spezifisch machen
+2013-09-30 18:25:30,Darkchaos,"Oder eine Skriptsprache, in der man alles machen kann"
+2013-09-30 18:25:37,Manuel,"test	al,10000000b Überprüft ja nur das 8 bit auf 1 oder nicht?"
+2013-09-30 18:26:28,Svenska^,"ich wuerde es das 7. bit nennen, aber ja"
+2013-09-30 18:26:38,Manuel,ok
+2013-09-30 18:27:54,Svenska^,"und noch was: gewöhn dir hex an oder gruppiere die bits, damit sich das besser liest :)"
+2013-09-30 18:28:03,Svenska^,wird bei 16 und 32 bit noch viel wichtiger
+2013-09-30 18:28:33,Svenska^,"test al, 80h"
+2013-09-30 18:28:47,Manuel,00h ist dann bit 1?
+2013-09-30 18:28:55,Svenska^,nein
+2013-09-30 18:28:56,Manuel,ja muss doch
+2013-09-30 18:28:57,Svenska^,01h
+2013-09-30 18:28:58,Manuel,hö
+2013-09-30 18:29:00,Svenska^,00h = alles nullen
+2013-09-30 18:29:01,Manuel,ah stimmt
+2013-09-30 18:29:07,Manuel,wir fangen ja bei 80h an
+2013-09-30 18:29:14,Svenska^,?
+2013-09-30 18:29:27,Manuel,ehm quatsch >.< ich schreib jetzt nichts mehr bin durch den wind
+2013-09-30 18:29:28,Svenska^,bit 1 wäre uebrigens 02h :D
+2013-09-30 18:29:34,Svenska^,bit 0 wäre 01h
+2013-09-30 18:30:16,Svenska^,"wenn dein assembler das kann, kannst du auch (1 << N) schreiben, wenn du das Nte bit meinst"
+2013-09-30 18:30:21,Svenska^,das liest sich dann noch besser
+2013-09-30 18:30:49,Manuel,"kann er, aber nicht mit solchen operationen"
+2013-09-30 18:31:05,Svenska^,fuer N als zahl natuerlich :)
+2013-09-30 18:32:16,Svenska^,"und wenn du dann im source noch ein paar #defines machst (wenn der assembler das unterstuetzt), dann ergibt das sowas:"
+2013-09-30 18:32:28,Svenska^,#define BUSY 4
+2013-09-30 18:32:33,Svenska^,"TEST al, BUSY"
+2013-09-30 18:32:36,Svenska^,ääh
+2013-09-30 18:32:40,Svenska^,"TEST al, (1 << BUSY)"
+2013-09-30 18:32:47,Svenska^,"dann ist auf anhieb klar, was du da gerade versuchst :)"
+2013-09-30 18:33:30,Manuel,k
+2013-09-30 18:37:09,Svenska^,und damit verabscheue ich mich und winke lächelnd
+2013-09-30 19:21:21,Darkchaos,Hat es hier ein paar findige Opensource Entwickler?
+2013-09-30 19:21:44,Darkchaos,Ich hatte die Idee einer openSource dezentralen Cloud
+2013-09-30 19:22:08,Darkchaos,"Die Idee ist, dass die Daten asynchron Verschlüsselt werden"
+2013-09-30 19:22:18,Darkchaos,und nur der User hat den private Key
+2013-09-30 19:22:25,Darkchaos,Somit sind die Daten sicher
+2013-09-30 19:22:55,Darkchaos,"Ich überlege mir nur, ob jede Datei auf eine beliebige Node gespeichert wird, und ein MySQL Server koordiniert, von welcher Node das angefordert wird"
+2013-09-30 19:23:13,Darkchaos,"Oder, ob man X Verzeichnisse anlegen kann, und jedes auf eine eigene Node"
+2013-09-30 19:23:43,Darkchaos,"Toll wäre es, wenn jeder eine Node einrichten könnte, aber das birgt dann Datenverlust"
+2013-09-30 19:25:29,Darkchaos,Heutzutage kann man ja locker SHA-256 nehmen oder ähnlich
+2013-09-30 19:26:06,Jidder,das klingt nicht sehr dezentral mit dem mysql server
+2013-09-30 19:26:08,Jonathan,"Mach es doch so, dass jede Datei auf mindestens zwei Nodes gespeichert wird - dann können die User auch selbst was hosten"
+2013-09-30 19:26:17,Darkchaos,sieht jemand bei dem Konzept eine Sicherheitslücke?
+2013-09-30 19:26:30,Jidder,wer stellt die nodes zur verfügung?
+2013-09-30 19:26:42,Jonathan,...die NSA? *g*
+2013-09-30 19:26:44,Darkchaos,"Jidder: Das stimmt, aber es dreht sich dabei eigentlich nur darum, dass nicht alle Daten zentral bei mir liegen zur Profitgewinnung"
+2013-09-30 19:26:45,Jonathan,"(Naja, kurz afk)"
+2013-09-30 19:26:55,Darkchaos,sondern irgendwo in der Welt immer eine Datei.
+2013-09-30 19:27:05,Darkchaos,"Naja erstmal das Projekt, aber toll wäre es jeder"
+2013-09-30 19:27:40,Darkchaos,"Das schlimmste was passieren könnte, wäre, dass er Schadsoftware zurück gibt (also der Download)"
+2013-09-30 19:27:42,Jidder,"du musst garantieren können, dass daten nicht verschwinden"
+2013-09-30 19:27:51,Darkchaos,Da könnte man aber _zentral_ hashes speichern
+2013-09-30 19:28:00,Darkchaos,naja dafür zahlt man ja nichts :P
+2013-09-30 19:28:21,Darkchaos,"aber ja, eine zweifache redundanz"
+2013-09-30 19:28:37,Darkchaos,"zB dass die eigenen Server nur genutzt werden, falls eine gesponsorte Node nicht verfügbar ist"
+2013-09-30 19:28:48,Darkchaos,"oder der Nutzer richtet sich eine eigene Node ein, wobei er dann ja uns nichtmehr bräuchte"
+2013-09-30 19:29:18,Jidder,zweifache redundanz ist immer noch ziemlich wenig
+2013-09-30 19:29:35,Darkchaos,momentan hab ich nur 10GB onlinespeicher :)
+2013-09-30 19:30:30,Darkchaos,hmm
+2013-09-30 19:30:59,Darkchaos,Vielleicht beliebige vom Nutzer einstellbare Redundanz? (Und man kann einen Antrag bei einem Node-Geber erstellen?)
+2013-09-30 19:31:06,Jidder,überleg doch mal
+2013-09-30 19:31:10,Darkchaos,"Sodass ein Node-Sponsor immer entscheiden darf, wer was hostet?"
+2013-09-30 19:31:16,Jidder,"die nutzer hosten die daten selber, oder nicht?"
+2013-09-30 19:31:24,Jidder,auf ihren privat pcs
+2013-09-30 19:31:42,Darkchaos,ja ich meinte 2-fache Online Redundanz
+2013-09-30 19:31:47,Darkchaos,Oder worauf möchtest du hinaus?
+2013-09-30 19:31:59,Darkchaos,UPnP für automatisches Portforwarding?
+2013-09-30 19:32:10,Jidder,"nein, dass selbst 20-fache redundanz nicht ausreichen würde"
+2013-09-30 19:32:25,Jidder,"weil die idee, dass die nutzer für was verantwortlich sind, schlecht ist"
+2013-09-30 19:32:35,Jidder,das ist die unzuverlässigste komponente überhaupt
+2013-09-30 19:32:54,Darkchaos,"naja, aber es gibt doch sicher ein paar Leute die auf ihrem vServer ungenutzt speicher haben"
+2013-09-30 19:33:12,Darkchaos,"und daher ja 1 bis 2 fache Projektredundanz. 2fache, falls mal ne Platte kaputt geht"
+2013-09-30 19:33:28,Darkchaos,wobei ja dann wieder ein einfaches zentrales System ist
+2013-09-30 19:33:46,Jidder,"ich denke nicht dass ein hardwaredefekt das problem ist, sondern wenn ein nutzer sich entscheidet nicht mehr teilzunehmen"
+2013-09-30 19:33:49,Jidder,dann sind die daten weg
+2013-09-30 19:34:15,Jidder,"niemand kann garantieren, dass die daten auf einem dauerhaft betriebenem system sind"
+2013-09-30 19:34:16,Darkchaos,"naja, dazu gibt es ja einen Server von uns, nur sollte der Traffic sparen etc"
+2013-09-30 19:34:45,Jidder,"ja dann stimmt das, dass das wieder ein zentrales system ist"
+2013-09-30 19:41:07,Darkchaos,hmm
+2013-09-30 19:47:15,Darkchaos,Aber es würde ansonsten funktionieren
+2013-09-30 19:47:54,Darkchaos,"eine komplette Redundanz geht jedenfalls nicht, nicht jeder kann mal kurz mehrere TB sponsoren"
+2013-09-30 20:04:39,tufel,huhu
+2013-09-30 20:06:41,tufel,mhh geht eigetlich überhaupt in vhdl A(15 downto b) wenn b nicht konstant ist ?
+2013-09-30 20:10:35,mroman,das weiss ich jetzt nicht :(
+2013-09-30 20:12:25,tufel,mmh ok
+2013-09-30 20:22:28,Darkchaos,wtf ist vhdl?
+2013-09-30 20:22:41,Jidder,wtf ist wtf?
+2013-09-30 20:23:06,Darkchaos,von der Syntax her kommt es mir ja vor wie eine Art Shader
+2013-09-30 20:24:39,tufel,"naja, nicht ganz :D Es ist ne Hardware-Beschreibungssprache"
+2013-09-30 20:27:45,Darkchaos,"eben, wie der computercode"
+2013-09-30 20:27:51,Darkchaos,äh lol
+2013-09-30 20:27:52,Darkchaos,gpu code
+2013-09-30 20:36:12,tufel,"ne, ist ist zwar ne Programmier-Sprache, damit designed man aber Hardware :D"
+2013-09-30 20:42:30,mgottschlag,"""ist schon mit Dateischlüssel verschlüsselt"" sein"
+2013-09-30 20:46:30,Darkchaos,"""designed"" hardware?"
+2013-09-30 20:49:11,tufel,"nun mgottschlag, tut das eigentlich überhaupt in vhdl ""A(15 downto b)"" wenn b nicht konstant ist?"
+2013-09-30 20:52:58,tufel,"joar, man beschreibt was nacher die hardware tun soll."
+2013-09-30 21:23:03,mgottschlag,"""(20:42:30) mgottschlag: ""ist schon mit Dateischlüssel verschlüsselt"" sein"" - das sollte natürlich in einen anderen Chat"
+2013-09-30 21:23:13,mgottschlag,"und warum schreibt pidgin überhaupt in Tabs, die garnicht aktiv sind="
+2013-09-30 21:23:14,mgottschlag,?
+2013-09-30 21:23:21,mgottschlag,tufel: wahrscheinlich wird es garnicht synthetisieren
+2013-09-30 21:30:12,tufel,mmh und wie kann man das ändern ?
+2013-09-30 21:31:04,mgottschlag,du nimmst einfach nur die Version mit konstantem b
+2013-09-30 21:33:03,tufel,naja ok
+2013-09-30 22:28:32,Darkchaos,Kann mir jemand evtl. nochmal erklären wie das mit dem PD als letzte PT mappen war?
+2013-09-30 22:28:37,Darkchaos,wäre cool :)
+2013-09-30 22:44:37,mgottschlag,"Darkchaos: das ist recht schwer zu erklären - aber zeichne es dir mal auf, und guck, wo du landest, wenn du nach Schema F (erst Verzeichniseintrag folgen, dann dort im Tabelleneintrag die wirkliche Adresse raussuchen) z.B. die Adresse 0xfffff000 auflöst"
+2013-09-30 22:45:12,mgottschlag,"also, wenn du einfach PD[1023] = PD hast"
+2013-09-30 22:46:29,Darkchaos,"Ich weiß nur nichtmehr genau, wie ich dann auf die Adressen komme. Also dass es vom prinzip her geht ist klar. Ich glaube ich müsste es einfach mal versuchen"
+2013-09-30 22:47:19,Darkchaos,nur wie kommst du auf 0xFFFFF000
+2013-09-30 22:49:18,Darkchaos,4GB - 4MB ist es nicht
+2013-09-30 22:55:14,Dimension,nabend
+2013-09-30 22:57:47,mgottschlag,"das ist einfach nur die letzte Seite, da solltest du z.B. wieder aufs PD kommen"
+2013-09-30 22:58:01,mgottschlag,und 0xffffe000 zeigt dann auf die vorletzte PT
+2013-09-30 22:58:11,Dimension,hi
+2013-09-30 22:59:39,Dimension,kann man mit standard x86 befehlen den cache zeitweilig deaktivieren?
+2013-09-30 23:00:45,Dimension,"für grosse memcpys zb, ohne die gecachten codesegmente zu verlieren"
+2013-09-30 23:02:51,Jidder,"es gibt einmal die möglichkeit in den page tables ein bit zu setzen, dass für die page den cache deaktiviert"
+2013-09-30 23:03:10,Jidder,"außerdem gibt es mit sse instruktionen, die den cache irgendwie umgehen"
+2013-09-30 23:03:27,Jidder,stichwort non-temporal in den manuals
+2013-09-30 23:04:24,Jidder,in cr0 kann man scheinbar auch noch den cache komplett abschalten
+2013-09-30 23:04:36,Darkchaos,ich raff's nicht ganz. Ist nicht jedes PT 4MB groß? Und die letzte Seite demnach 0xFFFFBFFF
+2013-09-30 23:05:01,Jidder,wie hast du das ausgerechnet?
+2013-09-30 23:05:47,Dimension,"gut, bleibt der cache nach deaktivierung und reaktivierung in cr0 weiter intakt?"
+2013-09-30 23:06:05,Jidder,müsstest du mal in den intel manuals nachlesen
+2013-09-30 23:06:35,Dimension,ich habe grade compiler errors und kann es deswegen nicht ausprobieren.
+2013-09-30 23:08:10,Darkchaos,4GB - 4096Byte
+2013-09-30 23:08:58,Dimension,ich schaue gleich ins manual. falls noch jemand mit damit erfahrung hat kann mir das trotzdem weiterhelfen
+2013-09-30 23:09:09,Jidder,ich glaube niemand von uns würde so etwas tun
+2013-09-30 23:10:04,Dimension,@Jidder: war das an mich adressiert?
+2013-09-30 23:10:08,Jidder,ja
+2013-09-30 23:10:26,Jidder,Darkchaos: 4 GB - 4096 Bytes = 0x100000000 - 0x1000 = 0xFFFFF000
+2013-09-30 23:10:37,Dimension,spezifiziere warum
+2013-09-30 23:10:45,Jidder,Darkchaos: das ist wie 1000000 - 100 = 999900
+2013-09-30 23:11:12,Darkchaos,ach ich dämlon
+2013-09-30 23:11:23,Darkchaos,ich hab 0xFFFFFFFF - 0x4000 gerechnet. Grottig falsch
+2013-09-30 23:11:27,Jidder,um den cache über cr0 zu deaktivieren musst du im kernel modus sein. im kernelmodus brauchst du aber kein memcpy für große datenmengen. für den userspace gibt es die sse instruktionen
+2013-09-30 23:12:22,Jidder,und natürlich bereits existierende und optimale memcpy-implementierungen
+2013-09-30 23:13:32,Dimension,welche alternative gibt es zu memcpy (intern mit rep movx) die nicht cachen? geht sse auch mit rep?
+2013-09-30 23:14:13,Jidder,rep ist sowieso die schlechteste idee
+2013-09-30 23:14:27,Jidder,sse mit einer normalen schleife ist deutlich besser
+2013-09-30 23:14:40,Dimension,dann habe ich alles falsch gemacht
+2013-09-30 23:16:29,Dimension,"ok das mit dem sse hört sich gut an, da cr0 auch zusätzlichen overhead bedeutet"
+2013-09-30 23:17:36,Dimension,wo bekommt man diese optimierten memcpys. ich nutze diese auch im kernel
+2013-09-30 23:18:02,Jidder,http://agner.org/optimize/ die subroutine library
+2013-09-30 23:18:09,Darkchaos_,Lass den Compilerswitch -nostdlib weg :D
+2013-09-30 23:24:12,Darkchaos,(1023 << 22) = 0xFFFFF000?
+2013-09-30 23:25:41,Jidder,ne
+2013-09-30 23:25:50,Jidder,0xfffff << 12
+2013-09-30 23:26:50,Darkchaos,"und 0xFFFFF << 12 ist dann die Adresse, an der ich das PD reinschreibe?"
+2013-09-30 23:28:16,mgottschlag,"Darkchaos: huh? überhaupt schreibst du mit der Technik maximal ins PD, und sonst nirgendwohin"
+2013-09-30 23:28:45,mgottschlag,"und dadurch, dass du damit rekursion hast, werden halt magisch alle Pagetables in einen 4MB-Bereich (den entsprechenden PD-Eintrag) gemappt"
+2013-09-30 23:29:08,mgottschlag,"und wie diese Magie funktionert, musst du halt für ein paar PD-Einträge mal durchrechnen"
+2013-09-30 23:29:26,mgottschlag,"also, du musst dir halt mal überlegen, wo du z.B. die erste, zweite, ... Pagetable dann wiederfindest"
+2013-09-30 23:29:49,Dimension,"auf wiedersehen, channel"
+2013-09-30 23:29:54,mgottschlag,weil die Pagetables ja jetzt plötzlich als Einträge im PD (das jetzt gleichzeitig ein PT ist!) in nem PT steht
+2013-09-30 23:30:10,Darkchaos,mgottschlag: Ja an der Adresse schreibe ich das PD in die PD.
+2013-09-30 23:30:31,mgottschlag,"übrigens ist das extrem verwirrend, zwei User mit gleich langen Nicks zu haben, die beide mit D anfangen"
+2013-09-30 23:31:08,mgottschlag,"""<Darkchaos> mgottschlag: Ja an der Adresse schreibe ich das PD in die PD."" - die Adresse hat mit dem PD aber nichts zu tun"
+2013-09-30 23:31:22,mgottschlag,PD-Einträge gehören nämlich immer zu 4MB-Blöcken
+2013-09-30 23:32:01,Darkchaos,"Ich dachte das ist die adresse, an der die referenzadresse für die letzte PT steht"
+2013-09-30 23:32:39,mgottschlag,"das ist die Adresse, wo du das letzte PT wiederfindest, wenn du die Technik anwendest"
+2013-09-30 23:32:51,Darkchaos,"Und in dieser PT stehen dann alle Einträge des PD. Das heißt, die erste Pagetable befindet sich als 1. Page der letzten Table"
+2013-09-30 23:33:22,Jidder,ja
+2013-09-30 23:33:28,mgottschlag,"ja, so ungefähr, aber die Aussage ""an der ich das PD reinschreibe?"" ist etwas... missverständlich"
+2013-09-30 23:33:48,Darkchaos,"naja, ist es nicht ein einfaches memcpy des Page-Directories an die Adresse?"
+2013-09-30 23:34:21,Jidder,paging ist magie kein memcpy
+2013-09-30 23:34:51,mgottschlag,Darkchaos: für ein memcpy an die Adresse musst du aber schon alles andere eingerichtet haben
+2013-09-30 23:35:14,mgottschlag,und auch dann ist memcpy mit Pagedirs nicht immer die beste Idee
+2013-09-30 23:35:17,Darkchaos,Das Paging an sich am laufen haben?
+2013-09-30 23:35:52,mgottschlag,"0xfffff000 ist eine virtuelle Adresse, die erst durch diesen Pagingtrick eine Bedeutung bekommt!"
+2013-09-30 23:36:14,mgottschlag,"und das muss noch nicht mal genau die Adresse sein, dass kann man an beliebigen 4MB-Grenzen ausrichten"
+2013-09-30 23:36:31,Darkchaos,wobei ein 1:1 mapping schon sinnmacht
+2013-09-30 23:36:53,mgottschlag,bei einem 1:1-Mapping liegt 0xfffff000 nur für 4GB-RAM im gültigen Bereich
+2013-09-30 23:37:10,mgottschlag,ansonsten ist das als physische Adresse oft ungültig
+2013-09-30 23:37:13,Darkchaos,ok argument
+2013-09-30 23:37:48,mgottschlag,"insofern, das hier sind alles Konstrukte, die man durch geschicktes Paging erreicht"
+2013-09-30 23:37:57,mgottschlag,"die sind nicht ""einfach schon da"", weil die CPU das so macht"
+2013-09-30 23:38:25,Darkchaos,jetzt muss ich nochmal denken. puuh
+2013-09-30 23:38:47,Jidder,uff um diese zeit
+2013-09-30 23:39:39,mgottschlag,"rekursive Pagetabellen legst du dir halt an, um dir später das Leben einfacher zu machen, weil du damit erreichst, dass plötzlich alle PTs hintereinander im virtuellen Adressraum verfügbar sind"
+2013-09-30 23:39:55,Darkchaos,Ist das PD eigentlich 4kB groß?
+2013-09-30 23:40:05,Darkchaos,Es hat ja 1024 PT-Addressen
+2013-09-30 23:40:05,mgottschlag,schlielich müssen mit Paging PTs und PDs ja garnicht gemappt sein
+2013-09-30 23:40:06,mgottschlag,ja
+2013-09-30 23:40:36,Darkchaos,Also muss ich zB 0xDEADBEEF + (4 * 1023) -> letzte physische PT
+2013-09-30 23:41:08,mgottschlag,"wenn 0xdeadbeef dein PD ist, ja - aber PDs müssen an 4k-Grenzen ausgerichtet sein"
+2013-09-30 23:41:39,Darkchaos,und dann tue ich ein memcpy von 0xDEADBEEF nach 0xDEADBEEF + 4*1023 4kB
+2013-09-30 23:41:48,Darkchaos,"(ja natürlich, mein PD ist pmm_alloc())"
+2013-09-30 23:42:08,mgottschlag,was soll dir das memcpy bringen?
+2013-09-30 23:42:33,Darkchaos,ach moment
+2013-09-30 23:42:48,Darkchaos,Ich habe ja nur 4Byte
+2013-09-30 23:43:01,Darkchaos,Was trage ich also als PageTable adresse ein
+2013-09-30 23:43:13,Darkchaos,PD + 4 * 1023 = &PD;
+2013-09-30 23:46:31,Jidder,gefällt dir die notation PD[1023] = PD; nicht?
+2013-09-30 23:46:36,Jidder,das ist immerhin näher an der realität
+2013-09-30 23:47:13,Darkchaos,ist PD[1023] nicht *(PD + 4 * 1023)
+2013-09-30 23:47:26,Jidder,wenn PD ein integer ist ja
+2013-09-30 23:47:35,Jidder,oder nicht mal
+2013-09-30 23:47:50,Jidder,warum fängst du mit 4 * 1023 an? hast du nicht schon paging?
+2013-09-30 23:47:53,Darkchaos,"ja aber ich will ja die Adresse nicht referenzieren eigentlich, oder?"
+2013-09-30 23:47:58,Darkchaos,ja
+2013-09-30 23:48:11,Jidder,"also hast du schon code geschrieben, der eine page table in ein page directory einträgt, oder?"
+2013-09-30 23:48:22,Darkchaos,ja
+2013-09-30 23:48:34,Jidder,dann ersetz da einfach die page table durch das page directory
+2013-09-30 23:48:36,Darkchaos,"alles klappt, außer mapping on the run :)"
+2013-09-30 23:48:43,Jidder,deine notation hier im chat ist nämlich ziemlich komisch
+2013-09-30 23:48:51,Jidder,und ich traue dir zu das nach C zu übertragen
+2013-09-30 23:49:59,Darkchaos,"achso klar, jetzt raffe ichs :D"
+2013-09-30 23:50:09,Darkchaos,Man muss dereferenzieren um an die Adresse zu schreiben
+2013-09-30 23:56:17,Darkchaos,!?
+2013-09-30 23:56:34,Jidder,meine page directories sind arrays
+2013-09-30 23:56:45,Jidder,wenn ich da was eintragen will schreibe ich page_directory[123] = 435;
+2013-09-30 23:58:39,Jidder,"der begriff dereferenzieren würde ich eher für * verwenden, wenn ich direkt einen zeiger habe"

@@ -1,0 +1,813 @@
+date/time,nick,message
+2014-07-31 12:08:22,iksnagreb,moin
+2014-07-31 12:16:51,Jonathan,Moin
+2014-07-31 12:28:38,Svenska,moin
+2014-07-31 12:29:02,Jonathan,Huhu Svenska
+2014-07-31 12:48:51,Jonathan,Svenska: Ich hab hier eine Z8430APS (Z80A CTC)
+2014-07-31 12:49:00,Jonathan,Die würde ich gern als Timermodul verwursten
+2014-07-31 12:49:35,Jonathan,"Jetzt ist halt nur die Frage, wie ich deren Interrupt am besten anschließe..."
+2014-07-31 12:56:02,Svenska,"hm, davn hab ich drei stück hier :)"
+2014-07-31 12:56:14,Svenska,"also Z80 CTC, nicht Z84-CMOS"
+2014-07-31 12:56:56,Jonathan,"Ja, ich auch in NMOS"
+2014-07-31 12:57:03,Jonathan,Aber die kann man ja trotzdem anschließen
+2014-07-31 12:57:04,Svenska,wieviel interruptlogik steckt denn in deinem system?
+2014-07-31 12:57:08,Jonathan,0. :D
+2014-07-31 12:57:13,Jonathan,Da muss noch rein.
+2014-07-31 12:57:46,Jonathan,Wobei ich wahrscheinlich nichtmal richtige Interrupts brauche...
+2014-07-31 12:57:47,Svenska,"dann kannst du den standard-daisy-chain-ansatz nehmen, der im datenblatt steht :D"
+2014-07-31 12:57:58,Jonathan,"Mit Slots, die auch mal leer sein können? Nö."
+2014-07-31 12:58:20,Svenska,hm?
+2014-07-31 12:58:26,Jonathan,"Aber wenn ein Interrupt sowieso in ein Software-Signal umgewandelt wird, muss das Viech nichtmal auf ""richtige"" Ints reagieren können"
+2014-07-31 12:58:44,Svenska,"naja, du musst dich irgendwann für einen interrupt entscheiden"
+2014-07-31 12:58:50,Jonathan,"Außer, ich mach nen Hybridkernel und erlaube es Tasks, Interrupt-Handler in den Kernelspace zu schreiben."
+2014-07-31 12:58:55,Svenska,"gibt ja drei modi, die du wählen kannst"
+2014-07-31 12:58:57,Jonathan,Ja
+2014-07-31 12:59:03,Jonathan,"Naja, vier"
+2014-07-31 12:59:05,Svenska,?
+2014-07-31 12:59:09,Jonathan,DI *g*
+2014-07-31 12:59:17,Svenska,das ist kein interruptmodus ^^
+2014-07-31 12:59:22,Jonathan,"Doch, Interrupts aus :P"
+2014-07-31 12:59:31,Svenska,-.-
+2014-07-31 12:59:33,Jonathan,xD
+2014-07-31 12:59:46,Svenska,"effektiv willst du bestimmt mehrere interrupts unterstützen, oder? :)"
+2014-07-31 12:59:49,Jonathan,:P
+2014-07-31 12:59:58,Jonathan,Aber wenn man mal überlegt:
+2014-07-31 13:00:00,Svenska,"oder, im einfachsten fall, überlässt du das der hardware"
+2014-07-31 13:00:07,Jonathan,Die Kiste wird ein waschechter Mikrokernel.
+2014-07-31 13:00:34,Jonathan,D.h. Interrupts (außer der für den Task Switcher) werden sowieso von Tasks bearbeitet.
+2014-07-31 13:00:59,Svenska,"moment, das ist alles lange nach dem handler dann"
+2014-07-31 13:01:05,Jonathan,"Es würde also ausreichen, wenn der Task Switcher bei jedem Switch einmal nachsieht, ob Ints angekommen sind, und wenn ja, setzt er den betroffenen Tasks ein Signal..."
+2014-07-31 13:01:31,Svenska,ich würde das ja dem handler aufbürden...
+2014-07-31 13:01:39,Jonathan,"Und ""nachsehen"" kann auch einen kleinen Poll bei einem kleinen Chip bedeuten..."
+2014-07-31 13:02:06,Svenska,"...also INT kommt rein, handler guckt in die liste der registrierten ints, setzt für den entsprechenden task ein signal, möglicherweise noch ein prioritätsflag, fertig."
+2014-07-31 13:02:19,Jonathan,Theoretisch ja
+2014-07-31 13:02:25,Jonathan,Praktisch doof:
+2014-07-31 13:02:35,Jonathan,"Hat ein Task mal seinen Stack falsch, wenn der Int kommt..."
+2014-07-31 13:02:48,Jonathan,"Naja, das würde aber sowieso dann passieren, beim Task Switch."
+2014-07-31 13:02:48,Svenska,?
+2014-07-31 13:02:59,Jonathan,Hm.
+2014-07-31 13:03:06,Svenska,"ein task kann ein signal nur verarbeiten, wenn er es auch verarbeiten kann"
+2014-07-31 13:03:14,Svenska,das hat ja den interrupt nicht zu interessieren ^^
+2014-07-31 13:03:20,Jonathan,Schon :P
+2014-07-31 13:03:29,Svenska,"wichtig ist: wie kriegt der handler raus, welcher interrupt da gerade gefeuert hat"
+2014-07-31 13:03:29,Jonathan,"Aber ich überlege noch, ob ich mir das Leben nicht einfach mache"
+2014-07-31 13:04:04,Jonathan,"Ein AVR sitzt auf dem Mainboard, die Interrupt-Leitungen der Peripherie an ihn angeschlossen..."
+2014-07-31 13:04:19,Svenska,naja
+2014-07-31 13:04:22,Jonathan,"Und wenn ein Int feuert, speichert er ihn in nem FIFO, und der Task Switcher liest's aus."
+2014-07-31 13:05:00,Svenska,ich hab nen 541 und nen 148
+2014-07-31 13:05:28,Svenska,"wenn du es richtig gut machen willst, mit edge-triggered interrupts, brauchst du noch ein flipflop und ein register dazu"
+2014-07-31 13:05:52,Jonathan,Oder halt einen AVR :D
+2014-07-31 13:06:07,Svenska,geschmackssache.
+2014-07-31 13:06:11,Jonathan,Joa.
+2014-07-31 13:06:16,Svenska,"ich laste die bürde des ""signal abschalten"" halt der hardware auf"
+2014-07-31 13:06:38,Svenska,"IM0 würde ich an deiner stelle weglassen, der stinkt."
+2014-07-31 13:07:04,Svenska,"IM1 wäre, wenn du jedes einzelne gerät fragen kannst, ob es einen interrupt ausgelöst hat, der einfachste modus"
+2014-07-31 13:08:31,Jonathan,Ja
+2014-07-31 13:08:35,Svenska,"dein Z80 dürfte zu schnell sein, dass du das mit nem AVR machen kannst"
+2014-07-31 13:09:34,Svenska,wobei für IM1 kannst du ja WAIT benutzen... kostet halt ein IC
+2014-07-31 13:10:10,Svenska,meine empfehlung wäre IM2 mit 2 ICs (und dem FF in der hardware). dann hast du die totale freiheit *g*
+2014-07-31 13:11:40,Jonathan,Ja... Schwierig :D
+2014-07-31 13:12:03,Jonathan,"Wobei der Z80 CTC auch erwartet, dass er direkt mit IM2 angeschlossen ist"
+2014-07-31 13:12:16,Svenska,ja
+2014-07-31 13:12:49,Svenska,"wobei du einfach IEI auf low legen kannst, und fertig"
+2014-07-31 13:13:48,Svenska,(oder M1 auf high)
+2014-07-31 13:13:51,Jonathan,Problem:
+2014-07-31 13:14:02,Jonathan,Der will korrekte Interrupt-Ack-Zyklen sehen
+2014-07-31 13:14:09,Jonathan,Glaube ich
+2014-07-31 13:14:21,Jonathan,Kann ich nicht so recht aus dem Datenblatt herauslesen
+2014-07-31 13:14:27,Svenska,ich les gerade
+2014-07-31 13:16:09,Jonathan,"""The CTC decodes the 2-byte RETI code internally..."""
+2014-07-31 13:16:22,Svenska,"nett, ich weiß. :)"
+2014-07-31 13:16:45,Svenska,"also wenn du es dir _wirklich_ einfach machen willst, schließt du die CTC direkt an"
+2014-07-31 13:17:02,Jonathan,...und hab dann Interruptkollisionen :D
+2014-07-31 13:17:10,Svenska,warum?
+2014-07-31 13:17:13,Jonathan,Naja
+2014-07-31 13:17:25,Jonathan,"Ich kann ja hier kein Daisy-Chain benutzen, mit eigener Hardware..."
+2014-07-31 13:17:27,Svenska,den 148 klemmst du dann schlicht hinter die ctc...
+2014-07-31 13:17:55,Svenska,"und wenn IEO high ist, darf der 148 nicht dekodieren"
+2014-07-31 13:18:26,Jonathan,"Naja, Problem ist auch, dass die CTC eben die korrekten Signalfolgen erwartet"
+2014-07-31 13:18:35,Jonathan,IORQ und M1
+2014-07-31 13:18:36,Svenska,deswegen die ctc direkt an den z80
+2014-07-31 13:18:43,Svenska,und alle restlicht interruptlogik dahinter
+2014-07-31 13:18:49,Jonathan,Klingt für mich irgendwie doof :(
+2014-07-31 13:19:03,Jonathan,"Also, *sehr* doof"
+2014-07-31 13:19:09,Svenska,wieviele interrupts willst du denn haben?
+2014-07-31 13:19:13,Jonathan,1 pro Slot
+2014-07-31 13:19:18,Svenska,die CTC allein macht 4
+2014-07-31 13:19:21,Jonathan,Ja
+2014-07-31 13:19:27,Jonathan,Das ist auch schon so ein Problem
+2014-07-31 13:19:28,Svenska,und ich unterstütze das schlichtweg nicht. punkt.
+2014-07-31 13:19:35,Jonathan,:D
+2014-07-31 13:19:42,Svenska,"(deswegen kommt bei mir auch keine CTC rein, weil ich weder PIO noch SIO habe.)"
+2014-07-31 13:19:52,Jonathan,Hmmm
+2014-07-31 13:20:10,Jonathan,"Vielleicht nutze ich auch einfach die CTC, ohne ihre INT-Pins zu verdrahten"
+2014-07-31 13:20:21,Jonathan,Bzw. IEI auf low
+2014-07-31 13:20:29,Svenska,slot 0 (also der avr) hat sowieso bessere timer als die ctc
+2014-07-31 13:20:33,Jonathan,^^
+2014-07-31 13:20:44,Jonathan,"Naja, die CTC kann halt vom Z80 konfiguriert werden."
+2014-07-31 13:20:47,Jonathan,Und das will ich auch.
+2014-07-31 13:20:52,Svenska,"kann der avr auch, ist halt software ^^"
+2014-07-31 13:21:03,Jonathan,Aber eigentlich kann ich ja folgendes tun:
+2014-07-31 13:21:37,Jonathan,Die ZO-Pins an ein paar Flipflops hängen
+2014-07-31 13:21:47,Jonathan,Und dann daraus selbst Ints generieren
+2014-07-31 13:22:27,Svenska,"in meinem system verlange ich von jeder interrupt-auslösenden hardware, dass sie ihr INT so lange aktiv hält, bis der interrupt abgearbeitet wurde. und mein boardcontroller wird halt später einen gemeinsamen interrupt für seriell und timer haben, wo dann der handler unterscheiden muss."
+2014-07-31 13:22:31,Jonathan,"Diese drei FFs an ein Register, und wenn man das ausliest, werden die ZO-FFs zurückgesetzt"
+2014-07-31 13:22:46,Jonathan,Hmmmm
+2014-07-31 13:23:29,Svenska,"und wenn eine peripherie mehr machen will, dann muss sie das genauso implementieren. so komme ich mit 2 ICs hin und habe schnelle vektorinterrupts."
+2014-07-31 13:24:07,Jonathan,"Hmmm, a"
+2014-07-31 13:24:08,Jonathan,*ja
+2014-07-31 13:25:00,Svenska,"das einzige problem, mit dem ich aber leben kann, ist, dass interrupt-acknowledgements in software laufen. wenn also eine hardware einen int auslöst und kein treiber dafür existiert, hängt das system (bzw. kann nur noch ohne interrupts weiterlaufen)"
+2014-07-31 13:25:48,Svenska,"wobei man das im zweifelsfall auch automatisieren könnte, mit nem 138 und nem flipflop..."
+2014-07-31 13:26:39,Jonathan,"Naja, im Grunde genommen brauche ich Ints auch nur für zwei Sachen:"
+2014-07-31 13:26:47,Jonathan,1. Task Scheduler (riecht nach NMI)
+2014-07-31 13:27:08,Jonathan,"2. Aufwecken von Treibern, die auf ihre Hardware warten und deshalb schlafen"
+2014-07-31 13:27:20,Svenska,das heißt:
+2014-07-31 13:27:22,Svenska,1. timer
+2014-07-31 13:27:24,Svenska,2. hardware
+2014-07-31 13:27:29,Svenska,-> das übliche :p
+2014-07-31 13:27:32,Jonathan,Ja
+2014-07-31 13:27:42,Jonathan,1. Ist einfach :P
+2014-07-31 13:27:51,Svenska,"es spielt ja keine rolle, was deine software mit dem interrupt anfängt"
+2014-07-31 13:28:03,Jonathan,HC590 + Jumper = Einstellbarer Vorteiler
+2014-07-31 13:28:11,Jonathan,Das an den NMI und ich bin fertig.
+2014-07-31 13:28:17,Svenska,"aber sie muss in jedem fall wissen, welcher interrupt es war (wie auch immer) und ihn bestätigen können (wie auch immer)"
+2014-07-31 13:28:18,Jonathan,(NMI ist tatsächlich Edge-Triggered)
+2014-07-31 13:28:23,Jonathan,"Ja, genau"
+2014-07-31 13:28:42,Svenska,"und dazu brauchst du logik, die du nicht vollständig in einen AVR stopfen kannst, weil der zu langsam ist"
+2014-07-31 13:28:53,Jonathan,Richtig
+2014-07-31 13:29:27,Svenska,nimm doch einen avr und einen 148 und sei glücklich? :D
+2014-07-31 13:29:41,Jonathan,"Ach ja, meinen i8042 werde ich wahrscheinlich wirklich als KBC verwursten"
+2014-07-31 13:29:53,Svenska,(übrigens würde ich den taskswitcher NICHT an den NMI hängen.)
+2014-07-31 13:30:05,Jonathan,"Wenn nicht an den NMI, woran dann? :P"
+2014-07-31 13:30:07,Svenska,"(weil dann kannst du keine critical sections mehr in deinem system haben, und das stinkt.)"
+2014-07-31 13:30:25,Jonathan,"Ach, doch, die hab ich trotzdem"
+2014-07-31 13:30:38,Svenska,du maskierst den nmi?
+2014-07-31 13:30:45,Jonathan,Zumindest seinen Handler *g*
+2014-07-31 13:31:04,Svenska,"hm, blöde frage"
+2014-07-31 13:31:11,Svenska,wie kommst du denn wieder zurück?
+2014-07-31 13:31:16,Jonathan,?
+2014-07-31 13:31:28,Svenska,"ach ne, RST pusht ja auf den stack"
+2014-07-31 13:31:45,Svenska,"also musst du garantieren, dass jeder task zu jeder zeit, ausnahmslos immer 2 byte freien speicher auf dem stack hat"
+2014-07-31 13:32:17,Jonathan,Hmmm...
+2014-07-31 13:32:24,Jonathan,Das ist doch alles doof! :D
+2014-07-31 13:32:29,Svenska,du siehst das problem? :D
+2014-07-31 13:32:45,Jonathan,"Theoretisch schon, ja *g*"
+2014-07-31 13:33:19,Svenska,"nimm nen prioritätsencoder. eingang: alle aktiven interrupts, ausgang: datenbus, enable-eingänge: M1 und IORQ"
+2014-07-31 13:33:30,Jonathan,Oooooder:
+2014-07-31 13:34:03,Jonathan,"Ich schalte in IM1, und lasse dann die Software bestimmen, welcher INT das war, indem sie beim Interrupt-Controller nachfragt"
+2014-07-31 13:34:08,Svenska,"dazu nen AVR, der den datenbus liest und 2*(anzahl_ints) pins bereitstellt und latches und flipflops ersetzt"
+2014-07-31 13:34:35,Svenska,"klar, das geht auch. aber dann brauchst du trotzdem mindestens den avr, und du sparst die vektortabelle im speicher (hast aber deutlich mehr code)"
+2014-07-31 13:34:50,Jonathan,Ja
+2014-07-31 13:35:21,Svenska,"...irgendwie finde ich den ansatz, RETI zu decodieren, bescheuert."
+2014-07-31 13:35:26,Jonathan,Same here.
+2014-07-31 13:35:43,Svenska,"die kombination aus datenbus und iorq und m1 sagt doch, welcher int gerade verarbeitet wird"
+2014-07-31 13:35:58,Svenska,wobei
+2014-07-31 13:36:05,Svenska,einen vorteil hat es
+2014-07-31 13:36:23,Svenska,"du kannst gefahrlos im handler EI machen, weil der gleiche interrupt definitiv nicht kommen wird"
+2014-07-31 13:36:50,Jonathan,"Naja, gegenüber dem ""The interrupting device may place any instruction on the bus"" vom 8080 ist das doch ein extremer Fortschritt"
+2014-07-31 13:37:06,Svenska,...
+2014-07-31 13:37:18,Jonathan,Stimmst du mir nicht zu? *g*
+2014-07-31 13:37:25,Svenska,mom
+2014-07-31 13:38:20,Svenska,nicht unbedingt
+2014-07-31 13:39:17,Svenska,"das device muss nur ""0xC7 | (INT << 3)"" auf den bus legen, dann hast du vektorinterrupts"
+2014-07-31 13:39:58,Jonathan,"Ja, stolze 8 Stück. :D"
+2014-07-31 13:40:04,Svenska,und? mehr hab ich auch nicht.
+2014-07-31 13:40:06,Jonathan,^^
+2014-07-31 13:40:16,Svenska,"mehr wirst du auch nicht haben, vermute ich."
+2014-07-31 13:40:21,Svenska,du zierst dich ja schon beim zweiten. *g*
+2014-07-31 13:40:32,Jonathan,*g*
+2014-07-31 13:42:51,Svenska,mach' ne vernünftige interruptlogik
+2014-07-31 13:43:15,Svenska,vernünftig = vektorinterrupts mit automatischer decodierung
+2014-07-31 13:43:18,Jonathan,Ja
+2014-07-31 13:43:37,Svenska,"ob du jetzt edge-triggered und einen controller nimmst, oder level-triggered ohne controller, bleibt dir überlassen"
+2014-07-31 13:43:55,Svenska,aber alles andere wird nur hässliche frickelei
+2014-07-31 13:44:33,Jonathan,Aber ich würde es schon gern per Software aufm Z80 machen
+2014-07-31 13:44:48,Jonathan,1. Dann hätte ich 256 Vektoren und könnte jedem möglichen Slot einen Int geben
+2014-07-31 13:44:58,Svenska,1. gibt es nur 128 vektoren
+2014-07-31 13:45:04,Jonathan,"2. Ints, für die kein Vektor hinterlegt ist, crashen nicht gleich das ganze System"
+2014-07-31 13:45:24,Jonathan,"Svenska: IM1 und der Handler fragt dann den Controller, welcher Int das war :P"
+2014-07-31 13:45:25,Svenska,2. dafür macht man eine 256-byte-tabelle auf einen default-handler
+2014-07-31 13:45:37,Svenska,(hast du überhaupt genug ram für die ganzen vektoren? :D)
+2014-07-31 13:45:51,Jonathan,512 Bytes sind jetzt wirklich nicht die Wet
+2014-07-31 13:45:53,Jonathan,*Welt
+2014-07-31 13:45:56,Jonathan,Ich hab noch 10k frei
+2014-07-31 13:46:06,Svenska,"und wenn du solche komischen dinge wie die CTC wirklich einbinden willst, dann kannst du die noch _vor_ die eigentliche interruptlogik setzen und kriegst pro timerchannel noch einen zusätzlichen interrupt"
+2014-07-31 13:46:23,Svenska,die kannst du ja hinter die 8 (oder 16) slot-interrupts setzen
+2014-07-31 13:46:56,Jonathan,"Ich glaub, die CTC versehe ich lieber mit externer Interruptlogik"
+2014-07-31 13:46:57,Svenska,"ich weiß ja nicht, wieviel hardware du da jemals an dein system anschließen willst, aber für 256 interruptquellen brauchst du 256 tasks allein zum signale empfangen"
+2014-07-31 13:46:58,Jonathan,Das wird entspannter
+2014-07-31 13:47:13,Svenska,und dann hast du keine programme mehr.
+2014-07-31 13:47:19,Jonathan,*g*
+2014-07-31 13:47:47,Jonathan,Wobei ich mit IM1 + Softwarehandler doch wahrscheinlich besser bedient bin
+2014-07-31 13:48:09,Jonathan,"Dann kann ich in der Vektortabelle z.B. auch hinterlegen, welcher Int bei welchem Task das SIGIRQ setzen soll"
+2014-07-31 13:48:47,Jonathan,"Und dann macht der Softwarehandler folgendes: Wenn Sprungziel vorhanden, springe in den Interrupthandler, ansonsten setze ein Signal, wenn da eine PID hinterlegt ist"
+2014-07-31 13:48:54,Jonathan,"Und wenn beides fehlt, macht er einfach garnix"
+2014-07-31 13:49:14,Svenska,"wenn du meinst, das sei so perfekt, dann mach das so"
+2014-07-31 13:49:45,Jonathan,Hmmmm
+2014-07-31 13:49:54,Svenska,"wobei ich mich ernsthaft frage, wie du interrupts auslösen können willst, die nicht existieren"
+2014-07-31 13:50:10,_sivizius,pünktlich 13:37 hört mein wlan-stick auf zu senden-.-
+2014-07-31 13:50:10,Jonathan,AVR + 74HC74 + 74HC573 + 74HC32 = Interruptlogik
+2014-07-31 13:50:12,_sivizius,ohai
+2014-07-31 13:50:15,Jonathan,*g*
+2014-07-31 13:50:16,Svenska,"wenn du nur 16 handler definierst, weil die hardware nur 16 ints kann, warum hast du dann angst, dass ein int 64 dein system crasht?"
+2014-07-31 13:50:25,Jonathan,Hi _sivizius
+2014-07-31 13:50:28,Svenska,hi
+2014-07-31 13:50:43,Jonathan,"Svenska: Weil ich nie weiß, ob ich später nicht 200 Karten an der Kiste hängen habe? xD"
+2014-07-31 13:50:44,Svenska,_sivizius: warum bist du eigentlich so auf grub fixiert?
+2014-07-31 13:50:44,Jonathan,*g*
+2014-07-31 13:51:50,Svenska,"du hast das ""weil deine hardware nur 16 ints kann"" überlesen, glaube ich."
+2014-07-31 13:52:13,Jonathan,Das lässt sich ja theoretisch auch ändern
+2014-07-31 13:52:26,Jonathan,"Also, wenn man es unbedingt will"
+2014-07-31 13:52:29,Svenska,"...wenn du 200 karten an deine cpu hängst, dann hast du andere probleme als die adressierung der interrupts."
+2014-07-31 13:52:33,Jonathan,*g*
+2014-07-31 13:52:42,Jonathan,Najaaaaaaa
+2014-07-31 13:52:53,Jonathan,"Wenn 200 Treiber schlafen, bis irgendwo was passiert, hab ich auch keine Probleme *damit*."
+2014-07-31 13:53:05,Svenska,ich dachte eher an den bustakt.
+2014-07-31 13:53:10,_sivizius,Svenska: soll ich denn wieder meinen eigenen bootloader nehmen?
+2014-07-31 13:53:17,Jonathan,Svenska: Achso *g*
+2014-07-31 13:53:21,Jonathan,"Ja, das mag schon sein"
+2014-07-31 13:53:51,Jonathan,"Egal, was die Kiste kann, das kann sie"
+2014-07-31 13:54:09,Svenska,"_sivizius: wie wäre es mit syslinux? das kannst du auf fat (syslinux), ext2/ext3/ext4 (extlinux), iso9660 (isolinux) und auch übers netzwerk (pxelinux) machen, es ist ziemlich einfach und kann auch multiboot."
+2014-07-31 13:54:28,Jonathan,"Und wenn ich dadurch dann gleich normale Interrupt-Handler und SIGIRQ mit einem Stück Code erschlagen kann, dann mach ich das so."
+2014-07-31 13:54:36,_sivizius,"ich hab es jetzt geschaft, ein laufendes grub2 zu haben"
+2014-07-31 13:54:43,_sivizius,mein problem ist grad multiboot
+2014-07-31 13:54:59,Svenska,"was unterscheidet denn jetzt SIGIRQ von einem ""normalen interrupt-handler""? ich dachte, ints werden bei dir schlicht konvertiert?"
+2014-07-31 13:55:01,_sivizius,aber das krieg ich auch noch hin
+2014-07-31 13:55:52,Svenska,na dann viel glück damit
+2014-07-31 13:56:44,Jonathan,"Svenska: Nicht alle Ints werden konvertiert, der Int für den Task Switcher zum Beispiel nicht :P"
+2014-07-31 13:57:00,Svenska,sonst noch beispiele?
+2014-07-31 13:57:55,iksnagreb,"macht es sinn sich ein eigenes switch zu baun, das auch mit strings arbeiten kann?"
+2014-07-31 13:58:03,Jonathan,"Falls ich später Hybridkernel-Funktionen implementiere, wäre es gut, wenn Tasks auch richtige Interrupthandler registrieren können"
+2014-07-31 13:58:08,Svenska,"_sivizius: achso, usb-sticks kann man mit und ohne partitionstabelle formatieren. wenn es keine partitionstabelle gibt, gibt es normalerweise auch keinen bootsektor (die signatur fehlt) und man nennt es ""Superfloppy"""
+2014-07-31 13:58:49,Svenska,"Jonathan: wie wäre es mit einem task, der schlicht das signal empfängt?"
+2014-07-31 14:00:11,Svenska,"_sivizius: achso, usb-sticks kann man mit und ohne partitionstabelle formatieren. wenn es keine partitionstabelle gibt, gibt es normalerweise auch keinen bootsektor (die signatur fehlt) und man nennt es ""Superfloppy"""
+2014-07-31 14:02:50,Svenska,"(meine schlussfolgerung: wenn du die CTC willst, willst du IM2. willst du was anderes, willst du die CTC nicht. und wenn du einen AVR als controller benutzen willst, dann kann der auch gleich die timer machen.)"
+2014-07-31 14:02:59,Svenska,und ich bin erstmal weg ^^
+2014-07-31 14:07:24,_sivizius,hmpf
+2014-07-31 14:10:35,_sivizius,wenn man den router auch 10m in der wohnung verschiebt kann ich hier auch kein sinnvoles wlan haben
+2014-07-31 14:25:46,kevin,WLAN-Kabel zu kurz? Das ist natürlich doof.
+2014-07-31 14:40:25,Jonathan,"Ja, meins hier auch..."
+2014-07-31 14:40:40,Svenska^,auf meins tritt alle 30min einer. :-(
+2014-07-31 14:40:44,Jonathan,Deshalb musste ich mir so nen Powerline-Krempel holen :(
+2014-07-31 14:40:59,Jonathan,Da hab ich dann mein WLAN-Kabel rein gesteckt
+2014-07-31 14:41:04,Jonathan,Und jetzt reicht es auch bis zu mir nach oben
+2014-07-31 14:41:33,Svenska^,lan-kabel ist verboten?
+2014-07-31 14:42:05,Jonathan,Leider ja
+2014-07-31 14:42:15,Jonathan,3 Stockwerke im Weg.
+2014-07-31 14:45:07,darklink,O.o
+2014-07-31 14:48:24,_sivizius,powerline hat ja schon etwas von wlan kabel
+2014-07-31 14:53:22,_sivizius,13% pakete verlust im wlan o.O.
+2014-07-31 14:53:52,Svenska^,"oh, das ist so die größenordnung, ab der tcp langsam stirbt"
+2014-07-31 14:54:37,Jonathan,Stirb langsam - TCP
+2014-07-31 14:55:58,_sivizius,aber irc geht noch^^
+2014-07-31 14:56:23,Svenska^,"ja, nur neue verbindungen herstellen oder grössere datenmengen uebertragen ist dann nervig"
+2014-07-31 14:56:51,_sivizius,"ich schau mal, vllt besetzt jmd anderes meinen funkkanal"
+2014-07-31 14:57:13,_sivizius,öh
+2014-07-31 14:57:17,_sivizius,ist alles frei
+2014-07-31 14:57:45,Svenska^,antenne geschickter verteilen?
+2014-07-31 14:57:49,_sivizius,und nur noch 2% verlustig geworden
+2014-07-31 14:57:57,_sivizius,versteh ich grad nicht
+2014-07-31 15:03:36,_sivizius,und wieder 20%
+2014-07-31 15:03:50,Svenska^,windrichtung ^^
+2014-07-31 15:06:43,Jonathan,Mondphase!
+2014-07-31 15:07:48,kevin,"Hm, seit wann ist der Mond denn so schnell unterwegs?"
+2014-07-31 15:08:10,kevin,"Und welche Auswirkungen hätte es, wenn er es tatsächlich wäre?"
+2014-07-31 15:08:17,Svenska^,Relativ zur Sonne ist er verdammt schnell. :-)
+2014-07-31 15:08:58,kevin,"Ja, aber innerhalb von 6 Minuten zwischen Voll- und Neumond ist dann doch nochmal ein bisschen schneller ;-)"
+2014-07-31 15:09:12,kevin,+Grammatik
+2014-07-31 15:09:47,Svenska^,"Ueber die Auswirkungen möchte ich nicht nachdenken. Ueberflutungen sind da nur das Mindeste, glaube ich."
+2014-07-31 15:09:54,_sivizius,das liegt eindeutig an einer wasserader unter meinem haus
+2014-07-31 15:10:00,_sivizius,die erdstrahlen sind schuld
+2014-07-31 15:10:14,Svenska^,Und Axel Stoll ist tot.
+2014-07-31 15:10:17,Jonathan,Kauf dir einen Nord-Süd-Gleichrichter
+2014-07-31 15:10:37,_sivizius,"achja, und hier war mal ein indianer-friedhof"
+2014-07-31 15:10:41,_sivizius,...in europa
+2014-07-31 15:10:55,Svenska^,"""INDIANEEEER!!!!!"" - ""servus"""
+2014-07-31 15:14:04,Jonathan,Naja
+2014-07-31 15:14:17,Jonathan,"Die Bayern sind doch auch so exotisch, die könnte man fast mit Indianern verwechseln *g*"
+2014-07-31 15:14:23,Svenska^,(das war ein filmzitat.)
+2014-07-31 15:14:49,_sivizius,schuh des manitu 
+2014-07-31 15:43:01,Svenska^,yep.
+2014-07-31 16:05:08,kevin,"Hach, schön zu sehen, dass die Standards im Kernel auch nicht unbedingt höher sind"
+2014-07-31 16:05:19,kevin," /* returns 1 on error, 0 otherwise */"
+2014-07-31 16:05:22,kevin,        if ((dma_stat & CHECK_DMA_MASK) != ATA_DMA_INTR)
+2014-07-31 16:05:23,kevin,                return 0x10 | dma_stat;
+2014-07-31 16:05:25,kevin,        return 0;
+2014-07-31 16:05:38,DerHartmut,*g*
+2014-07-31 16:05:58,Svenska^,"klingt nach ""1 ist definiert als nicht 0"""
+2014-07-31 16:06:16,Svenska^,"mit ""nicht"" im sinne von ""irgendwas anderes"" :-)"
+2014-07-31 16:06:19,kevin,Ich hab erst vor kurzem einen Bug in qemu durch ein !! gefixt ;-)
+2014-07-31 16:06:48,Svenska^,"hm, lustig ^^"
+2014-07-31 16:07:29,kevin,"Jedenfalls weiß ich jetzt, wieso die Fehlermeldung dma_stat 35 sagt, wo qemu nur ein 0x25 rausgegeben hat"
+2014-07-31 16:07:56,Svenska^,*g*
+2014-07-31 16:08:36,Svenska^,"hmm, ich habe gerade die reformat-paragraph funktion in vim schätzen gelernt =)"
+2014-07-31 16:08:45,Svenska^,sehr angenehm sowas.
+2014-07-31 16:10:36,Svenska^,seufz. vim ist auch so eine baustelle. den kann man bestimmt wesentlich effizienter benutzen als ich es normal so mache. *g*
+2014-07-31 16:13:13,kevin,Das ist bei vim grundsätzlich so
+2014-07-31 16:13:23,kevin,"Egal auf welchem Stand man ist, wenn man in die Hilfe schaut, findet man immer was neues"
+2014-07-31 16:14:05,Svenska^,"ich wusste mal, dass vim in der lage ist, header-files nach möglichen autocompletions zu durchsuchen oder prototypen anzuzeigen"
+2014-07-31 16:14:22,Svenska^,praktisch mach ich einfach ein zweites terminal mit header oder manpage auf
+2014-07-31 16:14:45,Svenska^,"also ich weiss immernoch, dass vim dazu in der lage, ich weiss nur nicht mehr wie. :-)"
+2014-07-31 16:16:19,kevin,"Reicht immerhin dafür, dass du die Schuld bei dir und nicht bei vim suchst ;-)"
+2014-07-31 16:16:41,Svenska^,"ach, wenn ich vim eins unterstelle, dann, dass er gross und schwer ist"
+2014-07-31 16:17:02,Svenska^,"aber ich akzeptiere, dass ich vim nicht auf einen z80 portieren können muss und nehm ihm das nicht uebel ;-)"
+2014-07-31 16:18:48,kevin,"Hm... Irgendwie war ich mir ganz sicher wie man diesen Status 0x25 bekommt. Aber dieser Fehlerzustand wird von der alten qemu-Version, um die es geht, gar nicht geprüft :-/"
+2014-07-31 16:19:07,Svenska^,was versuchst du gerade zu fixen?
+2014-07-31 16:19:22,Svenska^,isa-dma bei ide? :-)
+2014-07-31 16:20:17,kevin,"Nö, ganz normales PCI"
+2014-07-31 16:20:47,kevin,"Und auf altem qemu meint ein noch älteres Linux, DMA abschalten zu müssen, weil er komische Statuscodes kriegt"
+2014-07-31 16:20:52,Svenska^,"Schade, normales/modernes Zeug halt. *g*"
+2014-07-31 16:21:07,kevin,"Nein, nicht AHCI ;-)"
+2014-07-31 16:25:11,Svenska^,"ich hatte mal versucht, userspace-qemu auf ppc ein statisches mips-binary ausfuehren zu lassen. gab aber nur segfaults, leider."
+2014-07-31 16:25:45,Svenska^,"duerfte auch so eine total unsupportete konfiguration sein, glaube ich. *g*"
+2014-07-31 16:35:18,th3falc0n,moin
+2014-07-31 16:35:20,th3falc0n,ich habe ein monster erschaffen
+2014-07-31 16:39:00,Svenska^,...war wer schwanger? *g*
+2014-07-31 16:40:42,Jonathan,lol
+2014-07-31 16:42:00,th3falc0n,"mein rechner umgebaut, i7 auf 4.5GHz übertaktet (meine wasserkühlung schaft das mit nem 140mm 2000rpm lüfter noch so gerade eben, und zu der 7970 noch ne 7770 eingebaut, damit ich meinen hauptmonitor wieder auf 120Hz betreiben kann"
+2014-07-31 16:42:10,th3falc0n,+f
+2014-07-31 16:43:35,darklink,vieleicht sollte ich das auch machen
+2014-07-31 16:43:46,yayachiken,> 120 Hz
+2014-07-31 16:43:49,yayachiken,bro do you even vsync
+2014-07-31 16:44:20,darklink,"Pentium 4 raus, intel i7 rein, übertakten das ganze und spaß haben mit einem 120 FPS Minecraft auf nem 8 Jahre altem PC"
+2014-07-31 16:44:24,th3falc0n,"die 120Hz sind im gegensatz zu 60Hz schon merkbar (hauptsächlich bei schneller bewegung nah an der kamera, spricht rennspiele)"
+2014-07-31 16:45:13,th3falc0n,weil motion blur vom auge ist einfach schöner als motion blur von so nem shader der nix kann
+2014-07-31 16:45:25,darklink,^^
+2014-07-31 16:45:29,darklink,glaub ich
+2014-07-31 16:45:59,th3falc0n,"das problem ist, dass ich jetzt noch mehr klimaanlage brauch D:"
+2014-07-31 16:46:49,Jonathan,*g*
+2014-07-31 16:46:56,Jonathan,Ich hab keine Klimaanlage
+2014-07-31 16:47:03,Jonathan,"Und auch einen Prozessor auf 4,3GHz..."
+2014-07-31 16:47:28,Jonathan,"Aber auch nicht so ne riesige GraKa, sondern ""nur"" ne 7870"
+2014-07-31 16:47:41,Jonathan,Dafür 2x 8GB DDR3-2133! \o/
+2014-07-31 16:47:46,th3falc0n,ich hab meinen rechner auf der sonnenseite von ner dunkelroten klinkerwand... die wände haben im sommer innen über 30°C
+2014-07-31 16:47:55,th3falc0n,ohne klimaanlage kannste im backofen besser überleben
+2014-07-31 16:48:14,Jonathan,lol
+2014-07-31 16:48:15,Jonathan,:D
+2014-07-31 16:48:43,th3falc0n,ok > 30° sind übertrieben
+2014-07-31 16:48:51,Jonathan,Hmmm!
+2014-07-31 16:48:53,th3falc0n,aber 26-28
+2014-07-31 16:48:58,Jonathan,Installier doch außen Peltierelemente! :D
+2014-07-31 16:49:09,Jonathan,Also vorne dran ne schwarze Fläche
+2014-07-31 16:49:10,th3falc0n,"hmm, ob das für die klimaanlage reicht  xD"
+2014-07-31 16:49:12,Jonathan,Dahinter die Pelztiere
+2014-07-31 16:49:21,Jonathan,Und dahinter die Wand
+2014-07-31 16:49:59,th3falc0n,"selbstversorgendes system, mit der klimaanlage und den peltiers (zum erzeugen)"
+2014-07-31 16:50:01,th3falc0n,wäre irgendwie lustig
+2014-07-31 16:50:05,Jonathan,"Hehe, ja"
+2014-07-31 16:50:30,Jonathan,"Die Leistung, die die Klimaanlage verbraucht, ist dann übrigens zusätzliche Kühlleistung"
+2014-07-31 16:50:42,Jonathan,Wird ja direkt aus der Wärme erzeugt
+2014-07-31 16:50:50,th3falc0n,hmm
+2014-07-31 16:51:01,Jonathan,"(Also, aus der Wärmedifferenz)"
+2014-07-31 16:51:09,Svenska^,öh
+2014-07-31 16:51:16,Svenska^,"ich bezweifle, dass das so funktioniert."
+2014-07-31 16:51:18,Jonathan,*g*
+2014-07-31 16:51:33,Jonathan,Wieso nicht?
+2014-07-31 16:51:38,Jonathan,Leistung zu gering?
+2014-07-31 16:51:54,Jonathan,"Naja, wahrscheinlich auch zu teuer"
+2014-07-31 16:51:55,th3falc0n,naja die wärmepumpe dafür müsste ne effizienz > 2 haben
+2014-07-31 16:52:02,Svenska^,"vorne pumpst du mit den peltier-elementen wärme in einen raum, um dann mit einer klimaanlage die waerme wieder seitlich rauszupumpen und aus der differenz die klimaanlage zu speisen"
+2014-07-31 16:52:10,Jonathan,*g*
+2014-07-31 16:52:18,th3falc0n,ist thermodynamisch schwierig
+2014-07-31 16:52:22,Jonathan,Ja
+2014-07-31 16:52:33,Svenska^,peltierelemente sind unglaublich ineffizient und du wirst sicherlich keine differenz grösser als 10 grad haben
+2014-07-31 16:52:35,Jonathan,Oder an die Wand ein Solarpanel machen
+2014-07-31 16:52:39,Svenska^,damit kannst du das schon vergessen.
+2014-07-31 16:52:42,th3falc0n,vor die peltiers solar xD
+2014-07-31 16:52:45,Jonathan,Das ist wahrscheinlich besser *g*
+2014-07-31 16:52:49,th3falc0n,das holt 10% mehr effizienz
+2014-07-31 16:52:50,th3falc0n,xD
+2014-07-31 16:52:53,Jonathan,Yay!
+2014-07-31 16:53:02,Svenska^,im winter: solarzellen
+2014-07-31 16:53:05,Jonathan,Hmmmmmm
+2014-07-31 16:53:19,Jonathan,Wobei Solarzellen mit integriertem nachgeschalteten thermoelektrischen Wandler doch nett wären
+2014-07-31 16:53:21,Svenska^,"im sommer: schwarz angemalte heizkörper, die wasser aufwärmen und im kreis pumpen"
+2014-07-31 16:53:27,Jonathan,*g*
+2014-07-31 16:53:31,Jonathan,Ja
+2014-07-31 16:54:01,Svenska^,"(oder du lässt einfach vom dach wasser runterlaufen, was von der sonne verdunstet wird und die wand kuehlt. duerfte billiger sein.)"
+2014-07-31 16:54:02,th3falc0n,minecraft macht bei mir mit 184 aktiven mods (FTB Monster pack) übrigens exakt 120FPS (auch ohne vsync)
+2014-07-31 16:54:06,Jonathan,"Wobei es schon sinnvoll wäre, wenn man Solarzellen und Pelztiere auf einem gemeinsamen Wafer herstellen könnte, direkt über einander gestapelt"
+2014-07-31 16:54:23,Svenska^,nicht wirklich
+2014-07-31 16:54:27,Jonathan,Hm
+2014-07-31 16:54:28,th3falc0n,das wäre sogar ideal um die solarzellen zu kühlen
+2014-07-31 16:54:38,th3falc0n,oder zu heizen
+2014-07-31 16:54:42,th3falc0n,je nach jahreszeit
+2014-07-31 16:55:03,Svenska^,"wenn man sieht, dass man pelztiere mit einigen ampere (und damit einigen watts!) befuettern muss, um einen kleinen luftkubus um 10 grad zu kuehlen..."
+2014-07-31 16:55:18,Jonathan,"Hm, ja"
+2014-07-31 16:55:24,Svenska^,...und die andere richtung nicht wirklich effizienter ist...
+2014-07-31 16:55:37,Jonathan,Aber ich hatte immerhin schonmal ne LED mit ner Kerze betrieben! :P
+2014-07-31 16:55:39,Svenska^,...vergiss es.
+2014-07-31 16:56:06,Svenska^,"in mittel-/nordeuropäischen breiten lohnen sich solarzellen allerdings, um die klimaanlage zu betreiben"
+2014-07-31 16:56:22,Svenska^,im sueden nimmt man dann doch lieber die wärme der sonne statt des lichts
+2014-07-31 16:56:42,th3falc0n,ich bau mir bei gelegenheit einen nukularreaktor im garten
+2014-07-31 16:56:45,Svenska^,...vermutlich wären ein paar rohre in der wand weentlich angenehmer.
+2014-07-31 16:57:11,th3falc0n,"ich hab hier nicht das sagen, also auch keine chance umzubauen (außer ich treib mit dem nukularreaktor das geld auf xD)"
+2014-07-31 16:57:20,Jonathan,*g*
+2014-07-31 16:57:27,Svenska^,lol
+2014-07-31 16:58:22,Svenska^,nimm den minecraft-garten. da ists einfacher.
+2014-07-31 16:59:48,Jonathan,"Ha, genau."
+2014-07-31 17:00:14,_sivizius,mal wieder so eine anfängerfrage: erkennt grub2 nur den multiboot2-spezifikation? ich laß das gerade
+2014-07-31 17:00:19,Jonathan,"th3falc0n: Wie viel verbraucht deine CPU eigentlich bei 4,5GHz auf Volllast? Wie sieht die Spannung aus?"
+2014-07-31 17:01:23,th3falc0n,1.304V Vcore
+2014-07-31 17:01:30,th3falc0n,leistung kann ich dir nicht sagen xD
+2014-07-31 17:01:46,Svenska^,"_sivizius: nein, grub2 kann auch multiboot 1 booten"
+2014-07-31 17:02:08,th3falc0n,laut AIDA sinds 96W leistung
+2014-07-31 17:02:58,th3falc0n,MAX-TDP sind laut intel 95W... ich bin 6°C unter case maximum nach 20min volllast
+2014-07-31 17:03:29,th3falc0n,"(also bei 67°C case temp, die cores sind dann so bei 69°C)"
+2014-07-31 17:03:40,Jonathan,Eieieiei
+2014-07-31 17:03:43,Jonathan,Das ist viel
+2014-07-31 17:04:01,Jonathan,Hast du HWMonitor installiert?
+2014-07-31 17:04:06,th3falc0n,73°C ist maximum nach intel (das heisst ohne garantie oder lebenszeit verlust)
+2014-07-31 17:04:25,Jonathan,Heizwell?
+2014-07-31 17:04:47,Svenska^,"wenn du die temperatur tiefer hältst, ist die lebenszeit besser"
+2014-07-31 17:05:00,th3falc0n,nö hwmonitor hab ich nicht...
+2014-07-31 17:05:10,Svenska^,"das ist zwar kein linearer, aber ein ziemlich streng monotoner zusammenhang."
+2014-07-31 17:05:17,th3falc0n,ist i7-2600K sandy bridge
+2014-07-31 17:05:35,Jonathan,Ah okay
+2014-07-31 17:05:38,th3falc0n,Svenska^: der kommt nur unter volllast mit FPU stressing so hoch
+2014-07-31 17:05:42,Jonathan,Installier HWMonitor mal
+2014-07-31 17:05:53,th3falc0n,"mit vollast ohne FPU sinds 62°C, im normalbetrieb nie mehr als 55°"
+2014-07-31 17:06:21,Jonathan,Hm
+2014-07-31 17:06:29,Jonathan,Ich auf 40°C Leerlauf
+2014-07-31 17:07:27,th3falc0n,leerlauf hab ich 43
+2014-07-31 17:07:48,Jonathan,HWMonitor installiert?
+2014-07-31 17:07:54,th3falc0n,jo
+2014-07-31 17:07:58,th3falc0n,und jetzt?
+2014-07-31 17:07:59,th3falc0n,xD
+2014-07-31 17:08:18,Jonathan,Jetzt mal die CPU schnell zwischen 100% Last und 0% Last wechseln lassen
+2014-07-31 17:09:07,th3falc0n,moment ich besorg mir kurz prime95
+2014-07-31 17:09:12,Jonathan,Jo
+2014-07-31 17:12:53,Jonathan,Huch?
+2014-07-31 17:13:21,th3falc0n_,"nun gut, wenn es bei einem test stabil ist, heisst es immernoch nicht, dass das system prime95 überlebt"
+2014-07-31 17:13:26,Jonathan,*g*
+2014-07-31 17:13:38,th3falc0n_,kann mein original mal outtimen? xD
+2014-07-31 17:13:38,Jonathan,Bei der VCore hätte ich das auch nicht gedacht
+2014-07-31 17:13:50,Jonathan,"1,3V ist mMn viel zu viel"
+2014-07-31 17:14:03,Jonathan,"Intel gibt unter den Absolute Maximum Ratings 1,4V VCore an..."
+2014-07-31 17:14:26,Jonathan,"Und wenn man die auch nur ganz kurze Zeit überschreitet, kann das die CPU ernsthaft beschädigen."
+2014-07-31 17:14:52,Jonathan,"th3falc0n_: Überleg mal, was passiert, wenn die CPU schlagartig von 100% Last auf 0% Last geht."
+2014-07-31 17:15:06,th3falc0n_,kabumm?
+2014-07-31 17:15:11,Jonathan,"Naja, nicht unbedingt."
+2014-07-31 17:15:15,th3falc0n_,induktion ist der tot der cpu?
+2014-07-31 17:15:18,Jonathan,Richtig.
+2014-07-31 17:15:40,Jonathan,Es gibt - bedingt durch Induktion und langsame Regelung - eine kleine Spannungsspitze.
+2014-07-31 17:15:40,th3falc0n_,mein board lässt mir leider nicht die wahl Vcore selber zu bestimmen
+2014-07-31 17:15:47,Jonathan,lol
+2014-07-31 17:15:54,Jonathan,Dann würd ich mit so einem Board absolut nicht übertakten. xD
+2014-07-31 17:15:59,Jonathan,4GHz vielleicht.
+2014-07-31 17:16:11,Jonathan,"Aber nicht so hoch, das ist verdammt gefährlich für die CPU."
+2014-07-31 17:16:34,th3falc0n_,"es ist extra ein msi mit OC Genie, damit du dir selber keine sorgen machen musst *g* was besseres ließ sich nicht auftreiben (die CPU soll eh nicht mehr so lange halten ^^)"
+2014-07-31 17:16:45,Jonathan,"Die Spannungsspitzen könnten bestimmt mal über 1,45V gehen... Und dann werden die Gates der Transistoren beschädigt"
+2014-07-31 17:17:06,Jonathan,"Nee du, takte mal runter :P"
+2014-07-31 17:17:14,Jonathan,Das kann man guten Gewissens doch nicht machen
+2014-07-31 17:17:42,Svenska^,erinnert mich an die reaktion einer vietnamesin meiner klasse (bzw ihrer schwester)
+2014-07-31 17:17:50,Svenska^,"rucksack zerrissen ""oh juhuu, endlich krieg ich nen neuen"""
+2014-07-31 17:18:00,Jonathan,*g*
+2014-07-31 17:18:29,Jonathan,"th3falc0n_: Ein Tipp für den CPU-Kauf: Wenn möglich, mach dich irgendwo über Batches schlau, die gute Übertaktungs-Performance haben"
+2014-07-31 17:18:43,Svenska^,...wenn du dich fuers uebertakten interessierst
+2014-07-31 17:18:45,Jonathan,"Je nach Waferposition,  Wafer-Qualität usw schwankt das nämlich"
+2014-07-31 17:19:46,Jonathan,"Extremes Beispiel: Ich hab 4,3GHz @ 1,15V stabil... Jemand anderes, mit gleichem Mainboard hat bei 4,1GHz und 1,3V Crashes (beides i5-3570k)"
+2014-07-31 17:20:21,th3falc0n_,hmm
+2014-07-31 17:20:39,Jonathan,"(""Jemand anderes"" ist in dem Fall jemand, dem ich den PC gebaut habe)"
+2014-07-31 17:20:50,th3falc0n_,"was ist jetzt genauer, die VID aus HWMonitor oder die Vcore ausm mainboard control panel?"
+2014-07-31 17:20:57,Jonathan,HWMonito
+2014-07-31 17:20:58,Jonathan,*r
+2014-07-31 17:21:03,Jonathan,Das misst in Echtzeit
+2014-07-31 17:21:05,th3falc0n_,oh gott
+2014-07-31 17:21:15,th3falc0n_,"das sagt mir 1,38V"
+2014-07-31 17:21:17,Jonathan,xD
+2014-07-31 17:21:25,yayachiken,"Jonathan, auch gleiches netzteil?"
+2014-07-31 17:21:26,Jonathan,Deine CPU wird nach 3 Wochen verrecken
+2014-07-31 17:21:39,Jonathan,"yayachiken: Ja, sogar das gleiche Netzteil... Und meine alte Grafikkarte"
+2014-07-31 17:21:42,yayachiken,ok
+2014-07-31 17:21:56,yayachiken,weil restwelligkeit und schwankungen sind da auch immer so ne sachew
+2014-07-31 17:22:00,Jonathan,Ja
+2014-07-31 17:22:20,Jonathan,Aber bei nem BeQuiet-Netzteil hab ich da eigentlich nicht soooo große Sorgen :P
+2014-07-31 17:22:44,Jonathan,"th3falc0n_: Deine CPU hat gerade ein ernsthaftes Problem, wenn ich das mal so sagen darf."
+2014-07-31 17:22:54,th3falc0n_,ähm
+2014-07-31 17:23:08,th3falc0n_,ich bin mir gerade ziemlich unsicher was mein mainboard da fabriziert
+2014-07-31 17:23:13,Jonathan,Naja
+2014-07-31 17:23:22,th3falc0n_,"bin auf 3,8GHz runter und er macht immernoch 1.36V VID"
+2014-07-31 17:23:26,Jonathan,"Das ist meistens so, dass diese ""Auto-OC""-Dinger viel zu große Spannungen erzeugen"
+2014-07-31 17:23:46,Jonathan,"Die sind darauf ausgelegt, dass sie niemals nie Crashes erzeugen und es beim ersten Versuch klappt"
+2014-07-31 17:23:54,Jonathan,Mit jeder beliebigen noch so schlechten CPU
+2014-07-31 17:23:59,Jonathan,Dafür wird die CPU halt gequält...
+2014-07-31 17:24:47,Jonathan,"Der Kunde will halt, dass es einfach sofort funktioniert, und er nicht noch manuell an Parametern rumexperimentieren muss, die er garnicht versteht."
+2014-07-31 17:24:54,th3falc0n_,"hmm zu dem 2600K: ""1.38 for 4.5 is a bit high, but it shouldnt hurt your chip. A few people here have been pushing 1.45v for a year or more ok"""
+2014-07-31 17:25:07,Jonathan,Würde ich mich lieber nicht drauf verlassen
+2014-07-31 17:25:26,Jonathan,"Die CPU von ""diesem Jemand"" lief ~6 Monate lang auf 1,35V"
+2014-07-31 17:25:43,Jonathan,"Am Ende crashte sie immer und immer öfter, wegen Verschleiß durch die hohe Spannung"
+2014-07-31 17:25:48,Jonathan,Jetzt packt sie nur noch 4GHz
+2014-07-31 17:26:00,th3falc0n_,nur noch 4GHz ist gut xD
+2014-07-31 17:26:03,Jonathan,xD
+2014-07-31 17:26:17,Svenska^,"hmm, meine cpu läuft stabil bei 1,66 ghz. dafuer ist sie auch ausgelegt."
+2014-07-31 17:26:29,Jonathan,"Naja, 4GHz ist kein sooo großes Problem, solange man die Spannung manuell einstellen kann"
+2014-07-31 17:27:00,Jonathan,"Svenska^: Meine läuft stabil bei 4,3GHz. Dafür ist sie auch nicht ausgelegt. :)"
+2014-07-31 17:27:45,th3falc0n_,Jonathan: woher kommen denn deine erfahrungen bzw auslegungen über die spannung? 22nm litho oder?
+2014-07-31 17:27:48,Jonathan,"th3falc0n_: Vielleicht gibt's ja vom Mainboard-Hersteller irgendein Tool, mit dem du die Spannung von Windows aus einstellen kannst"
+2014-07-31 17:28:29,Jonathan,"th3falc0n_: Ja, aber Sandy Bridge verträgt auch nur 0,1V mehr, oder?"
+2014-07-31 17:29:23,Jonathan,"Bei 1,4V wird's mir auf jeden Fall etwas mulmig, auch bei nem Sandy"
+2014-07-31 17:29:45,th3falc0n_,"VID Range ""min 0.25 max 1.52"""
+2014-07-31 17:30:04,Jonathan,"Also bist du 0,1V drunter"
+2014-07-31 17:30:10,Jonathan,mMn zu knapp
+2014-07-31 17:30:30,Jonathan,Induktionsspitzen könnten da schon locker über die Absolute Maximum Ratings gehen :(
+2014-07-31 17:31:51,th3falc0n_,"1.38V maximum sind aber 0,14V ^^"
+2014-07-31 17:32:07,Jonathan,^^
+2014-07-31 17:32:16,th3falc0n_,und laut diversen tests für sandy bridge bei 4.5 vollkommen ok
+2014-07-31 17:32:22,Jonathan,Aber deiner crasht :P
+2014-07-31 17:32:40,Jonathan,"Versuch mal 4,4GHz + 2 Stunden Prime95"
+2014-07-31 17:33:15,th3falc0n_,"ja, aber ich glaub das liegt eher daran, dass das mainboard nicht nachkommt die 1.38V zu liefern, nachdem der bei 1.0V prime startet"
+2014-07-31 17:33:39,th3falc0n_,(ja der geht bis auf 0.961V runter automatisch)
+2014-07-31 17:34:20,Jonathan,"Dann stell doch ab, dass er automatisch runtertaktet :D"
+2014-07-31 17:34:25,Jonathan,Sollte dann stabiler werden
+2014-07-31 17:34:29,Jonathan,Spread Spectrum auch aus
+2014-07-31 17:34:32,th3falc0n_,dann hab ich ne heizung :(
+2014-07-31 17:34:36,th3falc0n_,ss ist aus
+2014-07-31 17:34:40,Jonathan,Hast du sowieso. *g*
+2014-07-31 17:34:53,Jonathan,"Ich hab auch normal auf 4,3GHz im Leerlauf"
+2014-07-31 17:34:55,Svenska^,"ich finds grad witzig, dass ihr >200 Wh fuers testen verbratet, um dann später 0,1s einzusparen"
+2014-07-31 17:35:08,Jonathan,*g*
+2014-07-31 17:35:09,Jonathan,Naja
+2014-07-31 17:35:13,Svenska^,oder um mehr fps zu haben als schwanzvergleich ^^
+2014-07-31 17:35:17,Jonathan,xd
+2014-07-31 17:35:19,Svenska^,weil man die sowieso nicht sieht
+2014-07-31 17:35:27,th3falc0n_,ja ich brauch mehr FPS diggah
+2014-07-31 17:35:31,th3falc0n_,MEHR FPS
+2014-07-31 17:36:20,th3falc0n_,oder man machts einfach weil man spaß dran hat und den strom nicht bezahlen muss *g*
+2014-07-31 17:36:21,Jonathan,"Ob eine LTSpice-Simulation 10 Minuten oder 7 Minuten braucht, ist mir das aber schon wert"
+2014-07-31 17:36:28,Jonathan,Und Spaß macht's auch :P
+2014-07-31 17:36:29,th3falc0n_,sondern nur die cpu
+2014-07-31 17:36:49,Svenska^,"naja, fuer spass muss man die cpu nicht slowmotion-grillen"
+2014-07-31 17:36:54,Jonathan,*g*
+2014-07-31 17:37:09,th3falc0n_,so ich teste mal kurz p95 bei 4.4GHz
+2014-07-31 17:37:31,Jonathan,"1,15V auf nem i5-3570k sind doch noch unter dem, was manche i5-3570k auf Normaltakt brauchen"
+2014-07-31 17:37:38,Jonathan,Von daher: *Ich* grille meine CPU nicht :P
+2014-07-31 17:37:52,th3falc0n_,hmm stabil
+2014-07-31 17:37:54,Jonathan,Hmmm
+2014-07-31 17:38:00,Jonathan,Lass den mal ne Stunde laufen
+2014-07-31 17:38:21,Jonathan,Apropos
+2014-07-31 17:38:22,th3falc0n_,hab ich nen knall? ich zock einfach mit den einstellungen und beim ersten freeze geh ich 100MHz runter
+2014-07-31 17:38:39,Jonathan,Der Z84C0020PEC verträgt ja bis zu 7V Versorgungsspannung
+2014-07-31 17:38:50,Jonathan,"Ich frage mich, welche Taktraten der dann packt"
+2014-07-31 17:38:56,th3falc0n_,achja und VID ist bei 1.406V
+2014-07-31 17:39:22,th3falc0n_,und keine (messbare) spitze beim ausmachen
+2014-07-31 17:39:38,Jonathan,"Na wenn er jetzt stabil ist, ist ja alles gut ^^"
+2014-07-31 17:39:56,th3falc0n_,ich teste nochmal kurz 4.5GHz
+2014-07-31 17:40:03,th3falc0n_,bis nach dem restart dann
+2014-07-31 17:40:05,Jonathan,kk
+2014-07-31 17:40:07,Jonathan,Hmmm
+2014-07-31 17:40:24,Jonathan,Svenska^: 7V Vcc dürfen einen CMOS-Z80 laut Datenblatt nicht beschädigen
+2014-07-31 17:40:50,Jonathan,"Jetzt will ich irgendwie wissen, wie hoch ich so einen takten kann, auf Überspannung :P"
+2014-07-31 17:43:15,th3falc0n,ok es ist kein richtiger freeze
+2014-07-31 17:43:32,th3falc0n,"""A clock interrupt was not received on a secondary processor within the allocated time interval"""
+2014-07-31 17:43:54,th3falc0n,ich würde mal (ganz stark) auf Vcore regelprobleme vom mainboard tippen
+2014-07-31 17:44:28,th3falc0n,denn die 2 sekunden die es funktioniert hat hat er zwischen 1.39 und 1.406 geschwankt
+2014-07-31 17:46:54,th3falc0n,Jonathan: ich aktivier mal kurz dumps und provoziere nochmal den bluescreen
+2014-07-31 17:46:56,Svenska^,ich werde meinen Z80A nicht uebertakten
+2014-07-31 17:47:00,Svenska^,der ist mir zu wertvoll.
+2014-07-31 17:47:05,th3falc0n,ich hab nämlich das gefühl das ist nicht die CPU alleine
+2014-07-31 17:47:25,Svenska^,"(außerdem kann meine infrastruktur den nur auf 8 mhz uebertakten, alle anderen werte sind deutlich kleiner)"
+2014-07-31 17:47:41,Svenska^,der nimmt so schon 200 mW glaube ich
+2014-07-31 17:50:29,Jonathan,"Naja, bei nem CMOS-Vieh kann man's ja machen"
+2014-07-31 17:50:33,Jonathan,Relativ gefahrlos
+2014-07-31 17:50:40,Jonathan,Überhitzen wird der eh nicht *g*
+2014-07-31 17:52:08,Svenska^,naja
+2014-07-31 17:52:16,Svenska^,"egal, ich mach feierabend"
+2014-07-31 17:52:24,Svenska^,wird eh nicht besser heute. xD
+2014-07-31 17:52:29,Svenska^,gn8 ^^
+2014-07-31 17:56:23,Jonathan,"th3falc0n: Und, wie sieht's aus?"
+2014-07-31 17:56:48,th3falc0n,er hat keinen dump gespeichert
+2014-07-31 17:56:52,th3falc0n,obwohl ich es ihm befohlen habe
+2014-07-31 17:56:57,Jonathan,"Naja, das ist klar"
+2014-07-31 17:57:08,th3falc0n,wieso ist das klar?
+2014-07-31 17:57:26,Jonathan,"Wenn die CPU Müll berechnet, wird sie auch keinen Dump mehr speichern können ^^"
+2014-07-31 17:57:36,th3falc0n,bei anderen mit dem gleichen errorcode kann man es mit dem minidumps auf die grafikkarte zurückführen
+2014-07-31 17:57:55,Jonathan,Du kannst hier *sämtliche* Fehlercodes bekommen.
+2014-07-31 17:57:55,th3falc0n,also erwarte ich mindestens nen dump -.-
+2014-07-31 17:58:02,Jonathan,"Es ist reiner Zufall, was genau da passiert."
+2014-07-31 17:58:30,Jonathan,"Wenn die CPU zufällig genau dann abschmiert und was falsches berechnet, während sie was im Grafiktreiber macht, wird der Fehlercode auch auf die Grafik hinweisen."
+2014-07-31 17:58:43,Jonathan,"Wenn's im NTFS-Treiber passiert, sieht es aus wie ein Dateisystemfehler."
+2014-07-31 17:58:45,th3falc0n,"dann ist es auch reiner zufall, dass er sich reproduzierbar mit 0x00000101 verabschiedet?"
+2014-07-31 17:59:02,Jonathan,"Das nicht, aber in welchem Code."
+2014-07-31 17:59:29,Jonathan,Bei dir gibt wohl als erstes die Interruptlogik den Geist auf.
+2014-07-31 18:01:54,th3falc0n,"ich guck mal ins richtige bios/uefi und nicht in diesen in windows kack, bis später"
+2014-07-31 18:02:05,Jonathan,Nagut
+2014-07-31 18:21:44,th3falc0n,feste einstellung hilft nix Jonathan
+2014-07-31 18:22:14,th3falc0n,"bin jetzt bei 4.4GHz mit C1E/EIST, dann hat er im IDLE 0.981V und PEAK 1.406V"
+2014-07-31 18:22:23,Jonathan,Hmmm
+2014-07-31 18:24:04,Jonathan,An der Spannung kannst du echt absolut nix drehen?
+2014-07-31 18:25:10,th3falc0n_,dafür gibts jetzt andere stabilitätsprobleme... wie z.B. CAT5e kabel auf die man treten kann
+2014-07-31 18:27:05,th3falc0n_,"und doch an der spannung kann ich was drehen... ich kann sie auf +0.0000 stellen, dann macht er aber trotzdem irgendwas automatisches +0.0000"
+2014-07-31 18:28:53,th3falc0n_,ähm
+2014-07-31 18:29:04,th3falc0n_,+12V gemessen 8.272V
+2014-07-31 18:29:12,th3falc0n_,ich hol mal kurz n multimeter
+2014-07-31 18:33:05,th3falc0n_,"so alles 12.20 gemessen, ATX12V aufm mainboard, die PCIe 12V schiene, lüfterausgänge aufm mainboard, sata schiene"
+2014-07-31 18:33:14,th3falc0n_,und warum behauptet er jetzt 8.272?
+2014-07-31 18:36:13,_sivizius,"kann es sein, dass firefox pakete schluckt?"
+2014-07-31 18:36:29,_sivizius,ich hab den jetzt mal abgeschaltet und 0% geht verlustig
+2014-07-31 18:48:03,th3falc0n_,So Jonathan bin jetzt fertig. http://www.3dmark.com/3dmv/5081075 <- falls es dich interressiert ^^
+2014-07-31 18:48:45,th3falc0n_,grafik-takt stimmt übrigens nicht... ist 1000 und 1425
+2014-07-31 18:50:27,Jonathan,xDDDD
+2014-07-31 18:50:36,Jonathan,"""8.192 MB GEIL DDR3 @ 667 MHz"""
+2014-07-31 18:50:43,Jonathan,"Ganz ehrlich, mit dem RAM brauchst du auch nicht zu übertakten"
+2014-07-31 18:50:54,th3falc0n_,ähm
+2014-07-31 18:51:08,th3falc0n_,das stimmt auch nicht
+2014-07-31 18:51:08,Jonathan,"Da kann der RAM die Daten nicht schnell genug nachliefern, wie die CPU sie verarbeiten kann xD"
+2014-07-31 18:51:10,Jonathan,Achso
+2014-07-31 18:51:13,Jonathan,Na zum Glück
+2014-07-31 18:51:42,Jonathan,Spannungen seh ich darauf absolut garkeine
+2014-07-31 18:51:42,XanClic,667 MHz ist DDR3-1333
+2014-07-31 18:51:44,th3falc0n_,moment stimmt wohl
+2014-07-31 18:51:45,Jonathan,Ja
+2014-07-31 18:51:48,Jonathan,Also
+2014-07-31 18:51:55,XanClic,"[18:51:08] <Jonathan> Da kann der RAM die Daten nicht schnell genug nachliefern, wie die CPU sie verarbeiten kann xD"
+2014-07-31 18:51:59,XanClic,und das nennt sich prefetching
+2014-07-31 18:52:04,Jonathan,Ja :P
+2014-07-31 18:52:16,Jonathan,"Aber wenn man wirklich mal was tun will, was viele Daten verarbeitet, dann...möp"
+2014-07-31 18:52:20,Jonathan,Is nich
+2014-07-31 18:52:26,XanClic,und was hat das mit übertakten zu tun
+2014-07-31 18:52:29,Jonathan,Naja
+2014-07-31 18:52:50,Jonathan,"Wenn man übertaktet, um mehr Leistung zu bekommen, dann bringt mehr Takt nichts, wenn die CPU auf den RAM warten muss"
+2014-07-31 18:52:55,th3falc0n_,naja das ist allerdings auch das höchste was der 2600K kann
+2014-07-31 18:52:59,XanClic,> wenn
+2014-07-31 18:53:19,XanClic,"Wenn man übertaktet, um mehr Leistung zu bekommen, dann bringt der Takt nichts, wenn die CPU auf die Festplatte warten muss"
+2014-07-31 18:53:21,XanClic,??!??!
+2014-07-31 18:53:28,Jonathan,---> RAMDisk
+2014-07-31 18:53:29,Jonathan,:D
+2014-07-31 18:53:38,XanClic,RAM → L1
+2014-07-31 18:53:42,XanClic,??!??!
+2014-07-31 18:54:12,Jonathan,"Naja, wenn man mittlere bis große Datenmengen mit der CPU verarbeiten will, braucht man auch guten RAM dafür"
+2014-07-31 18:54:23,XanClic,"Und wenn man große Datenmengen hat, reicht eine RAM-Disk nicht"
+2014-07-31 18:54:26,XanClic,Was genau wolltest du jetzt sagen?
+2014-07-31 18:54:46,Jonathan,Sowas wie Physikdaten lädt man ja auch nicht von Platt
+2014-07-31 18:54:47,Jonathan,*e
+2014-07-31 18:55:06,Jonathan,"Zumindest hab ich noch kein Spiel gesehen, das sowas auf Platte auslagern würde *g*"
+2014-07-31 18:55:22,XanClic,"Ja, soll ich jetzt einen Anwendungsfall finden, in dem man keinen RAM braucht, sondern Cache im Allgemeinen reicht?"
+2014-07-31 18:55:31,Jonathan,Kannst du gern tun :P
+2014-07-31 18:55:39,XanClic,"Im Prinzip alles, weil Cache so ausgelegt ist"
+2014-07-31 18:55:57,XanClic,Wenn eine bestimmte Anwendung einen bestimmten Flaschenhals hat
+2014-07-31 18:56:01,XanClic,Und man was anderes verbessert
+2014-07-31 18:56:06,XanClic,Dann wird die Anwendung nicht schneller
+2014-07-31 18:56:08,XanClic,Supplies Supplies
+2014-07-31 18:57:58,Jonathan,"http://www.tomshardware.com/reviews/memory-bandwidth-latency-gaming,3409.html"
+2014-07-31 18:58:00,Jonathan,:C
+2014-07-31 18:58:25,XanClic,> DDR3-2133
+2014-07-31 18:58:27,XanClic,fun fact
+2014-07-31 18:58:27,Jonathan,"Ja, kommt auf das Programm an"
+2014-07-31 18:58:33,XanClic,Sandy Bridge kann nur DDR3-1333
+2014-07-31 18:59:29,Jonathan,Offiziell
+2014-07-31 18:59:38,Jonathan,"Offiziell kann er aber auch keine 4,5GHz..."
+2014-07-31 19:00:07,XanClic,Ja pfff wenn man den gesamten Motherboardtakt hochsetzt
+2014-07-31 19:00:12,Jonathan,Nee
+2014-07-31 19:00:21,Jonathan,Der Speichercontroller kann's tatsächlich einstellen.
+2014-07-31 19:00:44,XanClic,"Und es ist eine Weile her, als ich zum letzten Mal die Liste der Multiplier gesehen hab"
+2014-07-31 19:00:52,XanClic,"Aber so weit ich mich erinnere, kann er sehr wohl offiziell 4,5 GHz"
+2014-07-31 19:00:54,XanClic,Wenn es K ist
+2014-07-31 19:01:14,Jonathan,"Mein Board listet mir auch Optionen bis zu DDR3-2400 auf, obwohl ""maximum"" in Intels Liste 1866 ist (oder sogar 1600?)"
+2014-07-31 19:01:58,Jonathan,"(Und Multiplier gehen bis >60, aber Intel gibt trotzdem als Maximaltakt 3,4GHz an :P)"
+2014-07-31 19:02:21,Jonathan,"(Genauso gehen die RAM-Multiplier höher, auch wenn Intel einen niedrigeren Maximaltakt angibt)"
+2014-07-31 19:13:42,th3falc0n,"so Jonathan jetzt läuft der RAM mit DDR3-1600, besser?"
+2014-07-31 19:15:54,th3falc0n,cpu hab ich aber nochmal 100Mhz runter genommen also 4.3GHz
+2014-07-31 19:17:51,Jonathan,"th3falc0n: Ja, theoretisch besser, wenn der auch dafür spezifiziert ist"
+2014-07-31 19:18:07,th3falc0n,ähm nö xD
+2014-07-31 19:18:10,Jonathan,...
+2014-07-31 19:18:12,Jonathan,SEUFZ :D
+2014-07-31 19:18:14,th3falc0n,der ist DDR3-1333
+2014-07-31 19:18:23,Jonathan,Dann lass ihn auf seinem normalen Takt xD
+2014-07-31 19:18:27,th3falc0n,hey wenns stabil läuft
+2014-07-31 19:18:30,Jonathan,DRAM zu übertakten ist nix
+2014-07-31 19:18:31,Jonathan,Naja
+2014-07-31 19:18:36,Jonathan,Abwarten
+2014-07-31 19:18:58,Jonathan,"Dann lass jetzt ne Runde p95 laufen, so 10 Minuten"
+2014-07-31 19:19:15,Jonathan,"Dabei die Option wählen, die den RAM am meisten beansprucht"
+2014-07-31 19:19:29,Jonathan,Währenddessen die Spannungen beobachten
+2014-07-31 19:20:23,Jonathan,Hm
+2014-07-31 19:20:31,Jonathan,Ob das wohl gleich nen Ping Timeout gibt?
+2014-07-31 19:22:54,th3falc0n_,das waren 5 minuten prima95... warum musste er dann aufgeben?
+2014-07-31 19:23:07,Jonathan,[19:18:03] <th3falc0n> ähm nö xD <--- deshalb
+2014-07-31 19:23:35,th3falc0n_,"so genug für heute, ich hab keinen bock mehr, außerdem will ich keinen bann wegen 20 instanzen gleichzeitig am timeouten xD"
+2014-07-31 19:23:35,Jonathan,DRAM hat bestimmte interne Kapazitäten und Widerstandswerte
+2014-07-31 19:23:47,Jonathan,Takte den RAM auf 1333 zurück ^^
+2014-07-31 19:23:51,th3falc0n_,hab ich doch schon
+2014-07-31 19:23:53,Jonathan,Gut
+2014-07-31 19:24:05,Jonathan,DRAM ist meistens genau auf seine internen Timingkonstanten angepasst
+2014-07-31 19:24:11,Jonathan,Wie schnell sich Kondensatoren usw umladen
+2014-07-31 19:24:18,th3falc0n_,hey der lief 5 minuten
+2014-07-31 19:24:28,Jonathan,Übertakten bringt dieses tolle abgeglichene System voll aus dem Tritt...
+2014-07-31 19:24:39,th3falc0n_,wie siehts mit untertakten aus?
+2014-07-31 19:24:54,Jonathan,"Das geht, aber das ist sinnlos"
+2014-07-31 19:25:00,th3falc0n_,wieso?
+2014-07-31 19:25:03,Jonathan,?
+2014-07-31 19:25:12,Jonathan,"Wieso es geht, oder wieso es keinen Sinn hat?"
+2014-07-31 19:25:14,th3falc0n_,"wenn ich mir fürs nächste mal schon 1866 anschaffe, aber der momentan damit nicht klarkommt?"
+2014-07-31 19:25:24,th3falc0n_,macht das durchaus sinn
+2014-07-31 19:25:31,Jonathan,"Ja, den kannst du runtertakten."
+2014-07-31 19:25:38,Jonathan,Da macht das sogar auch Sinn. ^^
+2014-07-31 19:25:59,Jonathan,DDR3 hat für verschiedene Taktraten Einstellungen im SPD-ROM hinterlegt
+2014-07-31 19:26:08,th3falc0n_,ok
+2014-07-31 19:26:15,Jonathan,Dort gibt es auch Einstellungen für niedrigere Takte
+2014-07-31 19:26:26,Jonathan,"Dafür werden dann auch die Latenzzeiten kürzer, und vieles ändert sich am Timing"
+2014-07-31 19:26:41,Jonathan,DRAMs sind relativ eigenwillig :P
+2014-07-31 19:27:22,Jonathan,"z.B. verlieren sie innerhalb von einer zehntel Sekunde ihren gesamten Inhalt, wenn sie nicht regelmäßig wiederaufgefrischt werden"
+2014-07-31 19:27:34,Jonathan,Da muss das Timing wirklich sehr exakt stimmen ^^
+2014-07-31 19:27:38,th3falc0n_,"ja das weiß ich ja, trotzdem kann man es einfach mal ausprobieren ^^"
+2014-07-31 19:27:41,Jonathan,Joa ^^
+2014-07-31 19:27:48,Jonathan,Solange er dabei nicht kaputt geht :P
+2014-07-31 19:27:59,th3falc0n_,"wenns jetzt 1600er gewesen wäre, und ich es nur nicht mehr gewusst hätte"
+2014-07-31 19:28:12,Jonathan,"Bei ner CPU ist das unkritischer... Solange der Takt geringer ist als die Gatterlaufzeit, ist alles super"
+2014-07-31 19:28:20,Jonathan,Bei DRAM gerät alles aus den Fugen :(
+2014-07-31 19:29:25,th3falc0n_,"ich guck mal eben ob in dem server im keller 1600er drinsteckt, wenn ja tausch ich den"
+2014-07-31 19:30:07,Jonathan,*g*
+2014-07-31 19:30:41,Jonathan,"Naja, 1333 ---> 1600 bringt nicht soooo viel, da ist der Unterschied nicht so groß"
+2014-07-31 19:30:56,Jonathan,1333 ---> 2133 wäre was anderes xD
+2014-07-31 19:36:01,JanDing,warum wird das eigentlich in frequenzen angegeben und nicht in wellenlänge?
+2014-07-31 19:36:06,JanDing,ich wette da wären die zahlen runder
+2014-07-31 19:36:56,JanDing,"1333 MHz wäre dann 22,5 cm und 2133 MHz wäre 14 cm"
+2014-07-31 19:37:42,_sivizius,ist aber vom medium abhängig
+2014-07-31 19:37:48,JanDing,kupfer
+2014-07-31 19:37:56,_sivizius,silicium?
+2014-07-31 19:38:00,Jonathan,Und Gold und Zimm
+2014-07-31 19:38:01,XanClic,das war aber vakuumlichtgeschwindigkeit
+2014-07-31 19:38:03,Jonathan,*Zinn
+2014-07-31 19:38:26,JanDing,wir können das ja gewichten
+2014-07-31 19:38:37,Jonathan,Ja
+2014-07-31 19:38:43,_sivizius,außerdem kann man aus der frequenz besser die geschwindigkeit des ics abschätzen
+2014-07-31 19:39:05,_sivizius,außerdem ist ein meter maß sehr sehr ungünstig
+2014-07-31 19:39:13,JanDing,fuß/inch?
+2014-07-31 19:39:21,Jonathan,"Übrigens berücksichtigt der DDR3-Controller sogar die Signallaufzeit auf den Kabeln zum DRAM, inklusive Verzögerung durch die Lichtgeschwindigkeit"
+2014-07-31 19:39:24,XanClic,Und Frequenz in Fortnight
+2014-07-31 19:39:26,JanDing,oder foot/zoll
+2014-07-31 19:39:30,th3falc0n_,im server stecken 8GB DDR3-1333 :(
+2014-07-31 19:39:31,XanClic,Also Fortnight¯¹
+2014-07-31 19:41:38,th3falc0n_,"mein vServer sagt: ""/dev/mem: Operation not permitted"""
+2014-07-31 19:43:16,JanDing,bist ja auch kein chirurg
+2014-07-31 19:43:37,JanDing,die leute haben medizin studiert. vorher dürfen die gar nicht operieren
+2014-07-31 19:43:52,th3falc0n_,hahaha
+2014-07-31 19:44:13,th3falc0n_,wenn du auf root hinauswillst ich war root@213.165.78.19~:
+2014-07-31 19:44:33,JanDing,ne wollte ich nicht
+2014-07-31 19:44:47,JanDing,"aber ich kann mir vorstellen, dass es aus guten gründen in einem vserver nicht geht"
+2014-07-31 19:45:01,JanDing,außerdem kannst du den ram aus einem vserver gar nicht ausbauen
+2014-07-31 19:45:06,JanDing,"egal, ob es 1600er ist oder nicht"
+2014-07-31 19:45:19,th3falc0n_,es war ja auch nur interessehalber
+2014-07-31 19:45:35,th3falc0n_,"eig könnten die doch die SMBIOS tabelle wenigstens mit ""Emulated DDR RAM"" füllen"
+2014-07-31 19:46:32,JanDing,"was, wenn es kein DDR RAM ist?"
+2014-07-31 19:47:26,th3falc0n_,zeig mir nen (virtual host) server mit was anderem als DDR auf x86/x86-64 und ich bin baff
+2014-07-31 19:47:47,th3falc0n_,also nen aktuellen
+2014-07-31 19:47:53,th3falc0n_,auf dem mein vserver auch laufen könnte
+2014-07-31 19:53:17,JanDing,PS4
+2014-07-31 19:53:50,th3falc0n,"erfüllt nicht die 19"" und ""könnte im rechenzentrum stehen"" kriterien"
+2014-07-31 19:54:17,JanDing,jetzt trollst du mich aber
+2014-07-31 19:54:35,JanDing,werden denn in eine virtuelle maschine smbios informationen bereitgestellt?
+2014-07-31 19:55:52,th3falc0n,ich weiß es nicht xD
+2014-07-31 19:56:27,JanDing,"ich hätte gerne, dass du jetzt danach im internet recherchierst"
+2014-07-31 19:56:34,JanDing,sonst langweile ich mich ^^
+2014-07-31 19:57:09,th3falc0n,jaja
+2014-07-31 19:57:47,th3falc0n,"ich zock jetzt banished, minecraft, trackmania², tera, defiance, LoL, smite oder Starcraft II, bin mir noch nicht sicher"
+2014-07-31 19:58:13,JanDing,"soviel mhz wie du hast, solltest du alles gleichzeitig spielen"
+2014-07-31 19:58:32,th3falc0n,nope stackoverflow im brain
+2014-07-31 19:59:46,Jonathan,"Ha, ein Tera-Spieler! o/"
+2014-07-31 19:59:52,Jonathan,"Level, Klasse, Volk, Server?"
+2014-07-31 20:00:26,th3falc0n,Hasmina
+2014-07-31 20:00:52,Jonathan,"Ich auch, glaub ich"
+2014-07-31 20:00:54,th3falc0n,Lvl 60 Priester 
+2014-07-31 20:00:54,Jonathan,Mal nachsehen
+2014-07-31 20:01:02,Jonathan,<--- Level 60 Mage here
+2014-07-31 20:01:07,th3falc0n,Lvl 56 Zerstörer (im prinzip aufgegeben)
+2014-07-31 20:02:50,Jonathan,"Hmmm, jetzt muss das Ding auch noch patchen"
+2014-07-31 20:02:56,th3falc0n,ja
+2014-07-31 20:02:58,th3falc0n,stundenlang :D
+2014-07-31 20:03:03,th3falc0n,meld dich wenn du fertig bist *g*
+2014-07-31 20:03:19,th3falc0n,das war die neue klasse + tier 15 + neue inis
+2014-07-31 20:03:37,Jonathan,Die hab ich schon
+2014-07-31 20:03:42,Jonathan,Ist noch irgendein kleinerer Patch
+2014-07-31 20:03:44,th3falc0n,hmm
+2014-07-31 20:03:48,th3falc0n,den kenn ich nicht
+2014-07-31 20:03:49,Jonathan,Dauert noch 3 Minuten
+2014-07-31 20:23:50,Jonathan,th3falc0n: Nu hängt der Patcher.
+2014-07-31 20:24:02,th3falc0n,"einfach warten, der hängt länger ^^"
+2014-07-31 20:24:09,th3falc0n,oder mal neu starten und dann warten
+2014-07-31 20:24:14,Jonathan,Hmmm
+2014-07-31 20:24:15,th3falc0n,aber in jedem fall iwie warten xD
+2014-07-31 20:24:17,Jonathan,Ich warte noch
+2014-07-31 21:17:19,Jonathan,"th3falc0n: Hab mich leider geirrt, bin auf Server Kaidun"
+2014-07-31 21:17:25,th3falc0n,:(
+2014-07-31 21:17:29,th3falc0n,servertransfer kaufen hop hop
+2014-07-31 21:17:32,Jonathan,xD
+2014-07-31 21:17:49,Jonathan,Wie viel kostet einer denn?
+2014-07-31 21:18:06,th3falc0n,keine ahnung ^^
+2014-07-31 21:18:43,th3falc0n,249 TT
+2014-07-31 21:19:22,th3falc0n,~15€
+2014-07-31 21:21:27,Jonathan,Ohje
+2014-07-31 21:21:35,Jonathan,Das sind mir dann doch zu viele Euros xD
+2014-07-31 21:21:40,Jonathan,Nur für so nen Transfer
+2014-07-31 23:53:02,th3falc0n,iksnagreb: bist du da?
+2014-07-31 23:53:08,iksnagreb,ja
+2014-07-31 23:53:42,th3falc0n,"cool, ich verzweifel gerade an meinem prozeduralen schema und hab 2 lösungen: A: brauchst du noch jemanden der mit dir codet? oder B: kann ich mir mal dein makescript klauen? xD"
+2014-07-31 23:54:09,th3falc0n,will zu OOP wechseln / neu anfangen
+2014-07-31 23:54:31,iksnagreb,"klar, kannst du dir mein makescript klaun, sind aber mehrere"
+2014-07-31 23:55:00,th3falc0n,wo find ich die?
+2014-07-31 23:55:31,iksnagreb,"das erste im wurzelverzeichnis, die anderen in config"
+2014-07-31 23:55:42,iksnagreb,dann sortiert nach architektur
+2014-07-31 23:57:22,th3falc0n,ich mein ich hab den link zu dem repo nicht mehr ^^
+2014-07-31 23:57:52,iksnagreb,https://github.com/iksnagreb/quartus
+2014-07-31 23:57:57,th3falc0n,dankö

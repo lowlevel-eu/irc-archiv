@@ -1,0 +1,360 @@
+date/time,nick,message
+2011-05-21 00:11:36,Paddy,"Wir brauchen im Forum mal jemanden, der diese Spamthreads auf ein erträgliches Maß zusammenfasst, dass man es noch lesen kann"
+2011-05-21 00:24:18,Jidder,hello you too here?
+2011-05-21 00:48:02,Svenska,"mein beileid, paddy ^^"
+2011-05-21 00:48:02,Jidder,"das beste an einem bus ist ja, dass es für jede tür einen knopf zum öffnen gibt"
+2011-05-21 00:50:42,Svenska,echt?
+2011-05-21 00:50:44,Svenska,hier nicht.
+2011-05-21 00:51:37,Jidder,nicht für die fahrgäste
+2011-05-21 00:51:46,Jidder,für den fahrer
+2011-05-21 00:51:49,Svenska,achso
+2011-05-21 00:51:55,Svenska,ja das stimmt
+2011-05-21 00:54:29,DesL,bb
+2011-05-21 00:54:51,Paddy,gn8
+2011-05-21 01:12:08,Svenska,"hm, wo definiert man am besten globale variablen? ;-)"
+2011-05-21 01:12:24,Svenska,"wenn ich die in einem header mehrfach reinziehe, weint der compiler"
+2011-05-21 01:16:53,bluecode,in einer header als extern deklarieren und in einer Quellcodedatei die variable definieren?
+2011-05-21 01:17:56,Svenska,"wenn ich die in einem header als extern deklariere und in der quelltextdatei, wo ich die definition habe, den header reinziehe, mag der das aber auch nicht"
+2011-05-21 01:18:16,Svenska,"mir gehts um ein statisches array, wo ich zeiger auf callback-strukturen habe"
+2011-05-21 01:18:42,Jidder,er sollte es annehmen
+2011-05-21 01:18:45,Jidder,"wenn nicht, dann machst du was falsch"
+2011-05-21 01:18:57,Svenska,"ja, dass ich was falsch mache, sagt er mir auch ständig :-("
+2011-05-21 01:19:04,Svenska,"ich weiß nicht, wie ich das sauber implementiert kriege"
+2011-05-21 01:19:20,Svenska,"also nicht nur sauber, sondern auch ""schön"""
+2011-05-21 01:19:28,Jidder,wie sieht denn die deklaration und die definition aus?
+2011-05-21 01:20:16,Svenska,ich hab einen core/modules.h; dadrin stehen ganz viele structs für die callbacks einzelner modul-typen
+2011-05-21 01:20:37,Svenska,strict mod_TYPNAME_cb { char name[32]; void (*Init)(); ... };
+2011-05-21 01:21:19,Svenska,"und dann für jeden typ ein array, wo ich die callback-strukturen der module eintrage"
+2011-05-21 01:21:48,Jidder,also hast du extern struct mod_TYPNAME_cd foo[]; im header stehen und struct mod_TYPNAME_cd foo[53]; in der C-datei?
+2011-05-21 01:21:50,Svenska,"struct mod_TYPNAME_cb *mods_TYPNAME[] = { &Modulname, NULL };"
+2011-05-21 01:22:02,Svenska,die stehen zZt beide im header ;)
+2011-05-21 01:22:23,Svenska,"aber das in das C-file zu tun, wollte ich gerade"
+2011-05-21 01:22:27,Svenska,-zu
+2011-05-21 01:23:22,Jidder,der fehler tritt aber noch beim kompilieren auf?
+2011-05-21 01:23:34,Svenska,"naja, wie kriege ich jetzt die arrays woanders bekannt?"
+2011-05-21 01:23:49,Svenska,"#include ""core/modules.c"" ist irgendwie doof"
+2011-05-21 01:24:23,Jidder,ja wie gesagt. das die external declaration in modules.h und die definition in modules.c
+2011-05-21 01:24:35,Svenska,"jetzt krieg ich ganz viele ""redefinition of ..."""
+2011-05-21 01:24:39,Jidder,wie lautet die fehlermeldung?
+2011-05-21 01:24:57,Jidder,wie genau?
+2011-05-21 01:25:06,Svenska,In file included from modules/capture/file.c:9:
+2011-05-21 01:25:06,Svenska,modules/capture/../../core/modules.h:6: error: redefinition of ‘struct mod_capture_cb’
+2011-05-21 01:25:11,Svenska,usw
+2011-05-21 01:25:30,Jidder,dann ist das nicht die defintion von dem array sondern die definition von dem struct
+2011-05-21 01:25:34,Jidder,hast du include guards?
+2011-05-21 01:25:38,Svenska,nein
+2011-05-21 01:25:44,Jidder,dann brauchst du welche
+2011-05-21 01:25:59,Svenska,"hm, wenn man die braucht, hat man dann nicht schon irgendwas falsch gemacht? ;-)"
+2011-05-21 01:26:16,Jidder,nein
+2011-05-21 01:26:36,Jidder,es ist doch plausibel in foo.h einmal stdio.h zu includen und in bar.h auch stdio.h zu includen und in main.c foo.h und bar.h zu includen
+2011-05-21 01:26:51,Jidder,hätte stdio.h keine include guards würde das genau zu dem fehler führen
+2011-05-21 01:28:52,Svenska,core/modules.c:8: error: ‘NULL’ undeclared here (not in a function)
+2011-05-21 01:29:01,Svenska,das ist jetzt interessant...
+2011-05-21 01:29:06,Jidder,#include <stddef.h>
+2011-05-21 01:29:12,Jidder,glaube ich ^^
+2011-05-21 01:29:20,XanClic,Oder string.h oder stdlib.h :3
+2011-05-21 01:29:27,Svenska,oder #define NULL 0
+2011-05-21 01:29:28,Svenska,?
+2011-05-21 01:29:32,Jidder,ne
+2011-05-21 01:29:39,Jidder,dann hast du wieder doppelte definition
+2011-05-21 01:29:53,XanClic,#ifndef NULL #define NULL 0 #endif ginge aber *g*
+2011-05-21 01:29:56,Svenska,oder ich trag die numerische null in die arrays ein ;)
+2011-05-21 01:30:15,Jidder,außer in c++ 2100
+2011-05-21 01:30:20,Svenska,scheint aber zu funktionieren
+2011-05-21 01:30:23,Jidder,mmmbop
+2011-05-21 01:30:41,Jidder,hast du schon den spruch mit dem in den fuß schießen gehört?
+2011-05-21 01:30:53,Svenska,ich hab stdlib.h drin
+2011-05-21 01:31:15,Svenska,"mein header hat jetzt ganz viele ""struct mod_TYPNAME_cb"" und ""extern struct mod_TYPNAME_cb *mods_TYPNAME[]"""
+2011-05-21 01:31:32,Svenska,die im c-file ausgeschrieben und initialisiert werden
+2011-05-21 01:32:36,Svenska,"was mich jetzt noch stört ist, dass ich jede callback-struktur, die ich in das c-file eintragen möchte, dort zweimal vermerken muss: einmal als ""extern struct ..."" und dann noch direkt im array"
+2011-05-21 01:32:43,Svenska,"das lässt sich aber nicht vermeiden, oder?"
+2011-05-21 01:33:31,Jidder,"meinst du mit callback-struktur das Modulname in struct mod_TYPNAME_cb *mods_TYPNAME[] = { &Modulname, NULL };?"
+2011-05-21 01:33:41,Svenska,das ist das array
+2011-05-21 01:33:56,Svenska,extern struct mod_capture_cb FileCapture;
+2011-05-21 01:33:56,Svenska,struct mod_capture_cb *mods_capture[] = {
+2011-05-21 01:33:56,Svenska,"        &FileCapture,"
+2011-05-21 01:33:56,Svenska,        NULL
+2011-05-21 01:33:56,Svenska,};
+2011-05-21 01:34:07,Svenska,"""FileCapture"" muss ich da zweimal hinschreiben"
+2011-05-21 01:34:26,Jidder,"wenn FileCapture nicht in modules.c definiert ist, kommst du da nicht drumherum"
+2011-05-21 01:34:49,Svenska,"naja gut, kann ich mit leben. wird bei vielen modulen halt unübersichtlich"
+2011-05-21 01:35:10,Svenska,gibt ungefähr 6 verschiedene modultypen und von jedem typ am ende vielleicht 1..3 module
+2011-05-21 01:35:22,Jidder,kannst du nicht mods_capture in der selben datei wie FileCapture definieren?
+2011-05-21 01:35:36,Jidder,ah okay
+2011-05-21 01:35:54,Svenska,"naja ""FileCapture"" ist der name der callback-struktur des moduls"
+2011-05-21 01:36:19,Svenska,"die wird also im modul definiert und enthält die funktionszeiger im modul selbst (darf ich die modulfunktionen eigentlich static machen, wenn ich die über zeiger aufrufe?)"
+2011-05-21 01:37:08,Jidder,ja darfste static machen
+2011-05-21 01:37:28,Jidder,static verändert in C nur die sichtbarkeit von funktionen
+2011-05-21 01:37:34,Svenska,ok
+2011-05-21 01:37:38,Jidder,die bleiben aber noch da ^^
+2011-05-21 01:38:41,Svenska,"hmm, die muss ich ja dann auch im entsprechenden deklarierenden headerfile static machen"
+2011-05-21 01:38:50,Svenska,lustig
+2011-05-21 01:38:56,Jidder,oh nein das klappt dann nicht
+2011-05-21 01:39:08,Svenska,doch sonst gibts fehlermeldungen ;-)
+2011-05-21 01:39:11,Jidder,extern und static kannst du nicht kombinieren
+2011-05-21 01:39:18,Svenska,sind ja nicht extern
+2011-05-21 01:39:28,Svenska,die modulinternen funktionen werden ja nirgends extern aufgerufen
+2011-05-21 01:39:33,Jidder,achso die funktionen sind auch in einem header?
+2011-05-21 01:39:35,Jidder,na dann ^^
+2011-05-21 01:39:43,Svenska,nur über ihre funktionszeiger in der callback-struktur
+2011-05-21 01:39:47,Jidder,ich dachte wir wären schon wieder bei den structs
+2011-05-21 01:40:01,Svenska,"naja, sonst müsste ich die callback-struktur jedes moduls immer ganz unten in der datei hinschreiben"
+2011-05-21 01:40:03,Svenska,das ist aber hässlich ^^
+2011-05-21 01:40:31,Jidder,die deklarationen können ja auch direkt in der c-datei stehen
+2011-05-21 01:40:43,Jidder,forward declaration nennt sich das dann
+2011-05-21 01:40:50,Svenska,"ja, nur will man das? ^^"
+2011-05-21 01:40:52,Jidder,dann kann die struktur direkt unter den deklarationen stehen
+2011-05-21 01:41:15,Jidder,"alles was sich leicht refaktorisieren lässt, ist mir egal"
+2011-05-21 01:41:27,Svenska,?
+2011-05-21 01:42:17,Jidder,"du kannst ohne probleme forward-declarations in einen header auslagern, oder wenn der header nur in einer datei (oder wenigen dateien) eingebunden wird, per copy und paste wieder rausfummeln"
+2011-05-21 01:42:32,Jidder,ist ja nur textuelle ersetzung
+2011-05-21 01:42:59,Svenska,hmm
+2011-05-21 01:43:06,Svenska,will man das?
+2011-05-21 01:43:41,Jidder,"alles was sich leicht refaktorisieren lässt, ist mir egal"
+2011-05-21 01:43:54,Svenska,ok^^
+2011-05-21 01:44:11,Jidder,also meinen hirnschmalz hab ich längst an anderen sachen verbraten ^^
+2011-05-21 01:44:52,Jidder,ich wechsle mal die autobahnraststätte
+2011-05-21 01:44:56,Jidder,gn8
+2011-05-21 01:45:54,Svenska,hm
+2011-05-21 01:46:13,Svenska,"das ist halt der haken, wenn man sowas zum ersten mal macht"
+2011-05-21 08:43:57,sfan,moin
+2011-05-21 09:23:19,Healther,moin
+2011-05-21 09:26:26,Paddy,Moin Healther
+2011-05-21 09:26:35,Healther,sersn ;)
+2011-05-21 09:58:47,PNoob_afk,Moin
+2011-05-21 10:00:47,Paddy,Moin
+2011-05-21 10:01:41,Homix,hi
+2011-05-21 10:02:04,Homix,hm dieses tagged tlb zeug ... mit den VPIDs ... kann man das echt nur in verbindung mit VMX benutzen?
+2011-05-21 10:03:31,Paddy,"Also das Intel-Zeug kenn ich nicht, aber bei SVM hab ich es mir mal angeschaut und da kann man die ASIDs wirklich nur mit VMs nutzen"
+2011-05-21 10:03:48,Homix,"hm ok, laut intel manual ist es da das selbe"
+2011-05-21 10:03:58,Homix,und irgwie versteh ich nicht warum ^^
+2011-05-21 10:05:07,Homix,v.a. weil intel das eh seit Hyperthreading implementiert hat
+2011-05-21 10:25:52,Paddy,"Es ist immer wieder erstaunlich, wie lange man an zehn Zeilen Makefile sitzen kann"
+2011-05-21 10:40:07,billy,moin
+2011-05-21 11:32:58,billy,gehört outb in die standard libc?
+2011-05-21 11:42:07,stultus,moin
+2011-05-21 11:42:26,stultus,"billy: ganz sicher nicht, die libc ist normalerweise eher für _user_space da. und der sollte im allgemeinen kein out/in machen."
+2011-05-21 11:48:16,billy,danke stultus
+2011-05-21 11:51:41,PNoob,"billy: Es gibt einen Standard, der vorschreibt was in die libc gehört"
+2011-05-21 11:51:52,Paddy,stultus: Schon mal was von Mikrokerneln gehört? ;-)
+2011-05-21 11:52:27,PNoob,"Paddy: auch bei einem mikrokernel gehörts nicht in die libc. das gehört in einer weitere lib, gegen die die treiber gelinkt werden"
+2011-05-21 11:52:59,Paddy,"Wie man seine Bibliotheken organisiert, ist doch seine eigene Entscheidung"
+2011-05-21 11:53:09,stultus,An sich ja
+2011-05-21 11:53:21,stultus,"Aber den Part den man ""libc"" nennt sollte man imho schon am Standard halten"
+2011-05-21 11:53:30,stultus,"meine Meinung ;) klar, kann man anders machen"
+2011-05-21 11:53:30,Paddy,An welchem Standard?
+2011-05-21 11:53:33,Paddy,C99?
+2011-05-21 11:53:37,stultus,bspw.
+2011-05-21 11:53:38,Paddy,POSIX?
+2011-05-21 11:53:49,Paddy,Also glibc bietet mehr als beides
+2011-05-21 11:54:15,stultus,"pthreads, sonst?"
+2011-05-21 11:54:24,PNoob,ist in POSIX nicht C99 mit drin?
+2011-05-21 11:54:29,PNoob,oder war nur ANSI mit drin?
+2011-05-21 11:54:47,Paddy,stultus: Sachen wie asprintf zum Beispiel
+2011-05-21 11:55:00,stultus,"wtf, das ist nicht im Standard?"
+2011-05-21 11:55:07,stultus,man lernt  nie aus ^^
+2011-05-21 11:55:18,Paddy,"C99 kennt nichtmal strdup, das ist nur Posix"
+2011-05-21 11:55:26,Paddy,Und C1x
+2011-05-21 12:10:59,Paddy,"Hm, binutils sind ganz schön nervig, die muss man ja an zig Stellen anpassen"
+2011-05-21 12:29:05,Paddy,Wie war das in make nochmal? := wertet sofort aus?
+2011-05-21 12:32:34,Guest243087,hupalla
+2011-05-21 12:36:10,Jidder,hm sowas wie codepad.org für makefiles wär mal was feines
+2011-05-21 12:38:20,Paddy,"Hängst du etwa grad auch Makefiles, Jidder?"
+2011-05-21 12:38:24,Paddy,+an
+2011-05-21 12:57:52,Jidder,ne
+2011-05-21 12:58:07,Jidder,aber ich hab die letzte zeile im log gelesen
+2011-05-21 12:58:22,Jidder,ich informiere mich so immer genauestens über das was hier so läuft^^
+2011-05-21 12:58:27,Paddy,Ach so
+2011-05-21 12:58:43,Paddy,"Wenn was laufen würde, wär das ja schön ;-)"
+2011-05-21 12:59:16,Jidder,vielleicht hat ja jemand eine erkältung. dann läuft seine nase^^
+2011-05-21 13:00:20,Paddy,Was würden wir nur ohne Jidder machen
+2011-05-21 13:18:20,billy,re
+2011-05-21 14:08:22,Paddy,"Ui, nass. Schnell Fenster zumachen..."
+2011-05-21 14:09:47,PNoob,regnets bei dir?
+2011-05-21 14:10:04,Paddy,"Nein, ich bin in einem U-Boot"
+2011-05-21 14:11:50,Paddy,"Hm, so ein gcc braucht unangenehm lang zum Bauen"
+2011-05-21 14:12:13,Paddy,"Mal sehen, ob er am Ende wenigstens tut"
+2011-05-21 14:13:49,PNoob,Paddy: also bei uns scheint ja die Sonne
+2011-05-21 14:14:01,PNoob,"und mein Thermometer sagt 34,7°C"
+2011-05-21 14:14:07,PNoob,und das im Schatten
+2011-05-21 14:14:50,Paddy,Dann brauchst du das Fenster nicht zuzumachen
+2011-05-21 14:15:15,PNoob,ne aufmachen wäre sinnvoller
+2011-05-21 14:15:26,PNoob,aber dann beschweren sich die nachbarn
+2011-05-21 14:17:37,DesL,moin
+2011-05-21 14:17:48,PNoob,Moin DesL
+2011-05-21 16:18:29,Svenska,hi
+2011-05-21 16:19:10,PNoob,Moin Svenska
+2011-05-21 17:27:34,DickHuuhn,Oh lol
+2011-05-21 17:27:48,DickHuuhn,Kurz nachdem Apple das Selbstmord-Verbot in ihrer chinesischen Fabrik erlassen hat...
+2011-05-21 17:27:56,DickHuuhn,"...gibts da ein Feuer, 2 Menschen sterben und knapp 20 sind verletzt"
+2011-05-21 17:28:06,Svenska,nett
+2011-05-21 17:28:10,Svenska,woran das wohl liegt?
+2011-05-21 17:28:11,DesL,m(
+2011-05-21 17:34:08,spacer,bin mal weg
+2011-05-21 17:35:05,Jidder,guten flug
+2011-05-21 17:35:32,DickHuuhn,http://spaaaaaaaaaaaaaaaaaaaaaaaccee.com/
+2011-05-21 17:41:06,CounterPillow_,I'minspace
+2011-05-21 17:41:31,CounterPillow_,"Btw DickHuuhn, Quelle zum Feuer bittö"
+2011-05-21 17:41:46,DickHuuhn,quelle zum feuer?
+2011-05-21 17:41:54,DickHuuhn,red gescheit xD
+2011-05-21 17:42:01,CounterPillow_,Quelle zur Nachricht
+2011-05-21 17:42:07,CounterPillow_,[17:28] <DickHuuhn> Kurz nachdem Apple das Selbstmord-Verbot in ihrer chinesischen Fabrik erlassen hat...
+2011-05-21 17:42:11,DickHuuhn,achso :D
+2011-05-21 17:42:17,DickHuuhn,http://mobile.slashdot.org/story/11/05/21/1138209/Explosion-At-Foxconn-Factory-Kills-2-Injures-16
+2011-05-21 17:42:22,DickHuuhn,hörte sich an wie zangendeutsch xP
+2011-05-21 17:44:04,Homix,"allein an dem link erkenn ich, dass das hier nicht ganz stimmen kann: ""[17:27:24] <DickHuuhn> ...gibts da ein Feuer, 2 Menschen sterben und knapp 20 sind verletzt"""
+2011-05-21 17:44:38,DickHuuhn,fast alle die da arbeiten halt :D
+2011-05-21 17:45:04,Homix,"ich meinte 16 != 20 ;) aber ich hatte das ""knapp"" überlesen ;)"
+2011-05-21 17:45:17,CounterPillow_,thx
+2011-05-21 17:45:40,Homix,"wobei ""knapp"" != ""um 25% aufrunden"" ;)"
+2011-05-21 17:46:03,DickHuuhn,ich hab grade cole slaw gegessen und habe ganz viel weißkohl im bauch
+2011-05-21 17:46:08,DickHuuhn,und morgen geh ich in die oper D:
+2011-05-21 17:46:22,DickHuuhn,die armen leute neben mir mit platzkarten :3
+2011-05-21 17:46:33,DickHuuhn,das ist viel schlimmer als so ne applefabrik D:
+2011-05-21 17:47:12,Svenska,kennt sich einer von euch mit synce aus?
+2011-05-21 17:49:47,Jidder,klingt auf jeden fall nicht gut
+2011-05-21 19:31:24,oern,moinsen
+2011-05-21 19:37:11,erik,Guten Abend
+2011-05-21 19:38:37,Guest243863,"was soll das, wer hat mir nen anderen Nick verpasst?"
+2011-05-21 19:38:42,Guest243863,und vor allem warum?
+2011-05-21 19:39:17,Guest243863,und wie ändere ich den jetzt wieder auf etwas vernünftiges?
+2011-05-21 19:39:26,oern,ns identify vergessen?
+2011-05-21 19:39:44,Guest243863,"hä, was bitte?"
+2011-05-21 19:40:10,Svenska,dein nickname ist registriert
+2011-05-21 19:40:21,Svenska,du musst dich mit benutzername und passwort beim euIRC registrieren
+2011-05-21 19:40:22,Guest243863,von wem?
+2011-05-21 19:40:33,Svenska,"wenn du es nicht warst, dann hat sich jemand anderes diesen nick gegönnt"
+2011-05-21 19:40:42,Guest243863,"aha, und wie macht man das per mibbit?"
+2011-05-21 19:40:50,Svenska,"garnicht, weil du das passwort nicht kennst..."
+2011-05-21 19:41:03,Jidder,mit /nick erik_das_original
+2011-05-21 19:41:07,Guest243863,is ja voll Moppelkotze
+2011-05-21 19:41:11,Svenska,"im euIRC sind viele leute drin, nicht nur wir - da hilft nur, dir nen anderen nick zu suchen und den evtl zu registrieren"
+2011-05-21 19:41:35,erik_das_original,"ah, perfekt, Danke Jidder"
+2011-05-21 19:41:55,ErikV,"so, jetzt aber"
+2011-05-21 19:42:03,Svenska,erik der fünfte ;-)
+2011-05-21 19:42:06,Jidder,nummer 5 lebt!
+2011-05-21 19:42:25,ErikV,"soll das heißen das ich mich nie wieder mit ""erik"" hier anmelden kann?"
+2011-05-21 19:42:55,Svenska,"naja schon, nur wird das netzwerk dir diesen namen immer wieder klauen :-)"
+2011-05-21 19:43:26,ErikV,also doch voll Moppelkotze
+2011-05-21 19:43:44,ErikV,:(
+2011-05-21 19:44:00,Jidder,"kannst nur hoffen, dass derjenige ein paar wochen lang diesen nick nicht nutzt"
+2011-05-21 19:44:08,Svenska,"naja man schützt sich damit vor ""nickstealing"""
+2011-05-21 19:44:09,Jidder,dann wird der wieder freigegeben
+2011-05-21 19:44:12,Jidder,so hab ich hier mein op verloren :(
+2011-05-21 19:44:22,Jidder,seitdem ging hier alles berg ab
+2011-05-21 19:44:29,Svenska,lol
+2011-05-21 19:44:56,DesL,"Yay, unsere Theateraufführung des Literaturkurses hat es in DIe lokal Presse geschafft :D"
+2011-05-21 19:44:57,ErikV,"Jidder: wirklich, es fällt mir schwer das zu glauben"
+2011-05-21 19:45:42,Jidder,DesL: jetzt bist du berühmt^^
+2011-05-21 19:45:45,ErikV,"DesL: was ist bei Euch die ""Lokalpresse""? Die Innenseite der Klo-Tür?  ;)"
+2011-05-21 19:46:09,Jidder,ich dachte eher sowas wie eine autopresse
+2011-05-21 19:46:10,DesL,"ErikV: hier hat es 280 000 einwohner, da sind schon ein /paar/ leser mehr"
+2011-05-21 19:46:12,Svenska,"ErikV: nein, der lokale waschsalon hat sowas ^^"
+2011-05-21 19:46:41,ErikV,okay
+2011-05-21 19:47:53,ErikV,"hier in NÜ hat sogar die BILD eine Regional-Zulage, nicht dass das ein Kriterium wäre aber immerhin"
+2011-05-21 19:48:00,Svenska,nü?
+2011-05-21 19:48:47,DesL,Nürlin
+2011-05-21 19:48:59,Svenska,nügdeburg?
+2011-05-21 19:49:07,Svenska,niederüsterreich?
+2011-05-21 19:49:08,Svenska,;.(
+2011-05-21 19:49:09,DesL,Nünster!
+2011-05-21 19:49:10,Svenska,;-)
+2011-05-21 19:49:14,ErikV,Nürnberg!
+2011-05-21 19:49:25,Svenska,hm. da war ich schonmal.
+2011-05-21 19:49:38,DickHuuhn,Nüdeln sind lecker
+2011-05-21 19:49:45,DesL,Nü
+2011-05-21 19:49:51,DickHuuhn,Nüch
+2011-05-21 19:49:59,ErikV,NÜ ist zwar keine schöne Stadt aber immerhin haben wir ne Geister-U-Bahn
+2011-05-21 19:50:24,DesL,geister?
+2011-05-21 19:50:25,Svenska,da ist jährlich die embedded world
+2011-05-21 19:51:16,ErikV,"die fährt ganz ohne Fahrer, wie von Geisterhand"
+2011-05-21 19:51:16,ErikV,"Svenska: richtig, deswegen bin ich da ja auch jedes Jahr"
+2011-05-21 19:51:17,DesL,"bin mal weg, grillen am Kanal :D"
+2011-05-21 19:51:30,ErikV,Svenska: wir haben hier auch noch die SPS/IPC/Drives (im Herbst)
+2011-05-21 19:51:46,Svenska,"hm das sagt mir spontan nix, klingt aber interessant"
+2011-05-21 19:51:58,Svenska,"nur ist nürnberg relativ weit weg von hier, das rechnet sich so schlecht :-)"
+2011-05-21 19:52:44,ErikV,"na da geht es eher um Antriebe und zugehörige Steuerungen, ein bisschen so Ähnlich wie die Embedded-World aber doch auch anders"
+2011-05-21 19:53:01,Svenska,"achso, ne das ist dann weniger meine gegend"
+2011-05-21 19:54:10,ErikV,"auf die SPS/IPC/Drives gehe ich auch nicht regelmäßig sondern nur wenn ich wirklich Zeit dafür hab, aber die Embedded-World gehört für mich zum Pflicht-Programm, zumindest seit ich hier wohne und weiß das es die gibt"
+2011-05-21 19:54:26,Svenska,ich war '07 und '11 da
+2011-05-21 19:54:50,Svenska,"einmal alle tage und einmal morgens hin, mittags angekommen, abends zurück, nachts wieder zuhause"
+2011-05-21 19:54:52,ErikV,2011? warum hast Du mir da nicht bescheid gegeben?
+2011-05-21 19:55:04,Svenska,war ne spontane aktion :-)
+2011-05-21 19:55:10,Svenska,"und zu zweit mit dem auto, ist billiger"
+2011-05-21 19:55:10,ErikV,hm
+2011-05-21 19:56:31,Svenska,ist halt immer ein ritt von knapp 4 stunden
+2011-05-21 19:57:21,ErikV,4 Stunden ist schon arg lang wenn man sich dann noch 9 Stunden lang die Füße platt laufen will
+2011-05-21 19:57:34,Svenska,ja
+2011-05-21 19:57:38,Svenska,und dann noch 4h zurück
+2011-05-21 19:57:50,Svenska,"da läuft man sich die füße nur etwa 6h platt, das reicht auch aus"
+2011-05-21 19:58:39,ErikV,"mit der U-Bahn benötige ich nur 30 Minuten pro Richtung, das reicht mir dann aber auch (vor allem weil man auf der Rückfahrt kaum einen Sitzplatz bekommt)"
+2011-05-21 19:59:29,Svenska,:-)
+2011-05-21 20:01:02,Svenska,"wo kommst du denn her, wenn nicht aus nürnberg?"
+2011-05-21 20:01:59,ErikV,Heute gehört das zu Sachsen-Anhalt aber davor war das Bezirk Magdeburg
+2011-05-21 20:02:11,Svenska,-.-
+2011-05-21 20:02:25,ErikV,Aufgewachsen bin ich aber an der Spree
+2011-05-21 20:02:56,ErikV,ungefähr in der Mitte zwischen Berlin und Dresden
+2011-05-21 20:03:26,Svenska,spreewald - lübbenau? ^^
+2011-05-21 20:03:34,ErikV,fast
+2011-05-21 20:03:53,ErikV,in der Schule hatte ich immerhin Sorbisch
+2011-05-21 20:04:06,Svenska,komische sprache übrigens. cottbus.
+2011-05-21 20:04:27,ErikV,ja
+2011-05-21 20:05:00,Svenska,wie verschlägts einen dann nach nürnberg? ^^
+2011-05-21 20:05:27,Svenska,"na gut, die einzigen personen, die ich kenne, die in fürth wohnen, kommen aus prösen/sachsen"
+2011-05-21 20:05:29,Svenska,von daher…
+2011-05-21 20:06:42,ErikV,"Jobs, was sonst, ich war vor gut 10 Jahren arbeitslos und da bin ich zu Comtech (Computer-Laden-Kette) nach Heidelberg und von da aus dann weiter bis ich so vor gut 5 Jahren nach Nürnberg gekommen bin und hier gefällt es mir eigentlich ganz gut"
+2011-05-21 20:07:03,Svenska,ich kanns nachvollziehen
+2011-05-21 20:07:37,ErikV,außerdem bin ich froh nicht mehr regelmäßig meinen Eltern über den Weg laufen zu müssen
+2011-05-21 20:07:46,Svenska,:D
+2011-05-21 20:11:48,ErikV,ich hoffe nur das ich den Job besser hinkriege nicht das mein Sohn irgendwann das selbe über mich schreibt
+2011-05-21 20:13:12,Svenska,"und, wie schätzt du das ein?"
+2011-05-21 20:14:58,ErikV,"das lässt sich momentan nur schwer vorhersagen, ich weiß ja nicht was der Rosenkrieg noch alles so bringt, aber davon mal abgesehen habe ich heute eine enge Beziehung zu meinem Sohn die zwischen mir und meinen Eltern niemals in der Intensität existiert hat"
+2011-05-21 20:15:12,Svenska,na das klingt doch gut
+2011-05-21 20:15:29,ErikV,"ja, das sehe ich genau so"
+2011-05-21 20:16:14,ErikV,wenn ich die nächsten paar Jahre keine echten Fehler mache dann denke ich wird mein Kleiner nie so über mich schreiben wenn er mein Großer ist
+2011-05-21 20:17:14,ErikV,meine Mutter hat uns vor ein paar Monaten mal für ne Woche besucht und ich muss ehrlich sagen das mir wieder sehr bewusst geworden ist warum ich die gut 500km so toll finde
+2011-05-21 20:17:35,Svenska,oO
+2011-05-21 20:19:06,ErikV,wenn meine hoffentlich bald Ex-Frau (die Scheidung läuft übrigens schon) auch so weit weg wohnen würde ginge es mir auf jeden Fall deutlich besser (physisch und psychisch)
+2011-05-21 20:19:21,DickHuuhn,  Tor für FC Schalke 04 durch Julian Draxler
+2011-05-21 20:20:21,Jidder,omg mein notebook is ja blöd
+2011-05-21 20:20:36,Jidder,jetzt hab ich hier 640x480 
+2011-05-21 20:20:45,Jidder,"ich hab nix gemacht, ich schwör"
+2011-05-21 20:20:51,ErikV,Jidder: bei Computern sitzt das Problem immer davor!!
+2011-05-21 20:21:51,Jidder,ah stimmt
+2011-05-21 20:21:56,Jidder,war gar nicht 640x480
+2011-05-21 20:21:59,Jidder,sondern 800x600
+2011-05-21 20:22:10,Jidder,ich kenn diese kleinen auflösungen nur noch von meinem taschenrechner
+2011-05-21 20:22:43,DickHuuhn,  Tor für FC Schalke 04 durch K.-J. Huntelaar
+2011-05-21 20:23:01,ErikV,"stimmt, selbst die einfachen Oszis haben heute schon mindestens XGA"
+2011-05-21 20:23:42,Jidder,ich muss das jetzt erstmal mit ner bluray kompensieren
+2011-05-21 20:23:42,Jidder,tschüssi
+2011-05-21 20:24:34,ErikV,"Jidder hat also einen akuten Pixelmangel, der ärmste"
+2011-05-21 20:26:52,ErikV,"muss ich ihn heute mal in mein Abendgebet einschließen ""Gesetze der Natur, geheiligt werden Deine 10^80 Quantencomputer mit full-HD-Raytracing ...."""
+2011-05-21 20:43:07,DickHuuhn,  Tor für FC Schalke 04 durch B. Höwedes
+2011-05-21 20:47:22,Paddy,"DickHuuhn: Meinst du, hier ist das richtige Publikum dafür? ;-)"
+2011-05-21 20:48:09,DickHuuhn,sonst doch immer :D
+2011-05-21 20:49:02,ErikV,aber heute mal nicht
+2011-05-21 20:51:45,Paddy,"Hm, ja, vielleicht für die zweite Hälfte. Anschauen lohnt sich wohl nicht mehr, ist eh gelaufen."
+2011-05-21 21:05:54,ChristianH1,"Das einzig gute an Schalke ist, dass sie Bayern einen guten Torwart verkaufen"
+2011-05-21 21:06:34,Paddy,"Schalke und Bayern, das nimmt sich nicht viel"
+2011-05-21 21:07:12,ChristianH1,Die Titelanzahl
+2011-05-21 21:07:36,Paddy,Das macht sie nicht sympathischer
+2011-05-21 21:11:00,Paddy,"Hm, pbuilds anzufangen war keine gute Idee. Es ist irgendwie frustrierend, dann doch nichts portieren zu können, weil die libc nichts hergibt..."
+2011-05-21 21:11:42,DickHuuhn,  Tor für FC Schalke 04 durch J. M. Jurado
+2011-05-21 21:11:44,DickHuuhn,:p
+2011-05-21 21:21:45,ErikV,"so, genug mit dem blöden Fußball, da hol ich mir lieber meinen Schönheitsschlaf, tschüß"
+2011-05-21 21:27:48,DickHuuhn,  Tor für FC Schalke 04 durch K.-J. Huntelaar D:
+2011-05-21 21:32:29,Paddy,"Willst du nicht mal anderes sagen, DickHuuhn? Es wird langsam einseitig ;-)"
+2011-05-21 21:32:56,DickHuuhn,ja soll der msv halt mal ein tor schießen :D
+2011-05-21 21:33:05,DickHuuhn,dann schreib ich auch was für die andere seite lul
+2011-05-21 21:34:08,Paddy,"Sonst fang ich jetzt demnächst an, von Page Faults zu erzählen"
+2011-05-21 21:34:51,DickHuuhn,  PF für 0xFFFF65A0 durch PID 3
+2011-05-21 21:38:13,Paddy,"Och menno. Jetzt hab ich yasm zum Bauen gebracht und merke jetzt erst, dass mir der wenig bringt, wenn ich keine Kommandozeilenargumente habe..."
+2011-05-21 21:40:52,bluecode,*g*
+2011-05-21 21:40:58,bluecode,moin btw
+2011-05-21 21:41:20,Paddy,Moin bluecode
+2011-05-21 21:50:16,DickHuuhn, Das Spiel ist aus. Schalke schlägt Duisburg mit 5:0 und ist Deutscher Pokalsieger 2011. Nach einer verkorksten Saison hat der S04 doch noch einen versöhnlichen Saisonabschluss geschafft und darf in der kommenden Saison international spielen.
+2011-05-21 21:50:29,DickHuuhn,"I'm Cave Johnson, we are done here"
+2011-05-21 21:57:42,stultus,re
+2011-05-21 23:44:25,ChristianH1,"Welches ist die allerkleinste funktionierende Linux-Distribution, die ihr kennt?"
+2011-05-21 23:49:56,Jidder,dlx

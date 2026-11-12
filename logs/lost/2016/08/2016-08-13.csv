@@ -1,0 +1,55 @@
+date/time,nick,message
+2016-08-13 23:25:59,darklink,Quantenmagier: jetzt wieder ok?
+2016-08-13 23:26:37,darklink,"ja, es geht wieder. Tyndur ist wiederda"
+2016-08-13 23:28:26,Quantenmagier,"""then once a trimmed LBA has been read "
+2016-08-13 23:28:26,Quantenmagier,"(e.g., a read command), the data in that logical block becomes determinate"""
+2016-08-13 23:29:01,Quantenmagier,"hm was bringt daß wenn man nach nem trim immer die selben daten von dem LBA lesen kann, is das nicht egal was der an daten zurückgibt?"
+2016-08-13 23:29:28,Paddy,"Egal was, aber konsistent muss es halt sein"
+2016-08-13 23:29:42,Quantenmagier,"""logical block shall return the same data until a subsequent write command"""
+2016-08-13 23:30:02,Quantenmagier,"nee warum muß es konsistent sien, is das nicht egal was in nem gelöschten block steht?"
+2016-08-13 23:30:10,Paddy,"Ich fände das persönlich jedenfalls komisch, wenn ich was von der Platte lese, nichts ändere, nochmal lese und was anderes kommt zurück"
+2016-08-13 23:30:14,Paddy,Insofern finde ich das sinnvoll
+2016-08-13 23:30:55,Quantenmagier,"naja es is ne ssd, die arbeiten halt intern seltsam, finde wenn es performance bringt sollen sich die daten in nem gelöschten block ruhig ändern"
+2016-08-13 23:31:00,Paddy,"Welchen Grund gäbe es denn, es nicht konsistent zu machen?"
+2016-08-13 23:31:02,Paddy,Außer weil es geht
+2016-08-13 23:31:31,Quantenmagier,"naja das konsitente ist ja erst später zu ata hinzugefügt worden, vorher ging nur.."
+2016-08-13 23:31:32,Paddy,Also vernünftige Hardware gibt nach einem Discard eh Nullen zurück
+2016-08-13 23:31:42,Quantenmagier,"""if word 69 bit 14 of the IDENTIFY DEVICE data is "
+2016-08-13 23:31:42,Quantenmagier,"cleared to zero, then the data read is indeterminate."""
+2016-08-13 23:32:03,Paddy,indeterminate != inconsistent between reads
+2016-08-13 23:32:47,Quantenmagier,"Paddy, nee nicht wirklich, der trim is ja grad dafür da, daß die ssd die daten aus gelöschten blöcken nicht schreiben muß und wenn man jetzt nen festes pattern vorgibt wie nullen muß das ja mindestens einmal geschrieben werden"
+2016-08-13 23:33:44,Paddy,"Die Nullen kann auch die Firmware erzeugen, wenn sie sieht, dass der Block nicht alloziert ist"
+2016-08-13 23:33:48,Paddy,Die müssen nicht physisch existieren
+2016-08-13 23:33:57,Quantenmagier,hm ok stimmt auch wieder
+2016-08-13 23:34:43,Paddy,Willst du in deinem OS TRIM benutzen?
+2016-08-13 23:35:03,Quantenmagier,"aber ich versteh trotzdem nicht warum es sinnvoll sein soll daß gelöschte blöcke immer die selben daten zurückgeben, eigentlich kann einem ein read auf gelöschten daten ja egal sein"
+2016-08-13 23:35:25,Quantenmagier,"Paddy, jop ich schreib grad an nem eigenen dateisystem das soll auch trim können"
+2016-08-13 23:36:23,Paddy,"Wieso sollte mein Code damit zurechtkommen müssen, wenn dein Code vorher einen Block discardet hat, der jetzt in meiner Datei gelandet ist?"
+2016-08-13 23:37:10,Paddy,"Es war einfach schon immer so, dass zwei Reads hintereinander ohne Write dazwischen dasselbe zurückgegeben haben"
+2016-08-13 23:37:28,Paddy,"Wenn du das kaputtmachst, kriegst du vermutlich Kompatibilitätsprobleme, weil existierender Code das erwartet"
+2016-08-13 23:38:09,Quantenmagier,hm ok aber wenn ich mein eigenes dateisystem entwickel kann ich doch auf konsistente reads bei gelöschten blöcken verzichten
+2016-08-13 23:38:09,Paddy,"Und wenn es keinen vernünftigen Grund gibt, es kaputtzumachen, lässt man es dann eben lieber bleiben"
+2016-08-13 23:38:46,Quantenmagier,naja der grund ist servdaß ich glaube daß es für die hw aufwändiger ist wen ich das determinate flag bei trims setze
+2016-08-13 23:38:55,Quantenmagier,"*der, daß"
+2016-08-13 23:39:27,Quantenmagier,weil wenn es keine nachteile häte hätte man das flag ja nicht eingeführt
+2016-08-13 23:39:30,Paddy,"Also unter anderen Systemen kann ich auch einfach in meine Datei ein Loch stanzen (hm, klingt komisch, aber wie sagt man Hole Punching sonst auf deutsch?)"
+2016-08-13 23:39:38,Paddy,Da muss nicht das Dateisystem den Block freigegeben haben
+2016-08-13 23:40:33,Quantenmagier,"in deine datei ein loch stanzen? hab noch nie von hole punchung gehört, also mein dateisystem kann sparse files falls du das meinst?"
+2016-08-13 23:40:35,Paddy,"Das Flag kannst du nicht setzen, das setzt die Hardware und du kannst damit herausfinden, was die Hardware macht"
+2016-08-13 23:41:37,Paddy,"Sparse Files ist der eine Teil, aber wenn du mal einen Block beschrieben hast und ihn nachher wieder sparse machen willst, das ist Hole Punching"
+2016-08-13 23:42:05,Paddy,"Bevor es das gab, sind Sparse Files ja immer nur gewachsen, ohne wieder was freigeben zu können"
+2016-08-13 23:43:11,Quantenmagier,"aso nee meine sparse dateien können auch freigeben, aber die gelöschten blöcke dazwischen sind von den enthaltenen daten egal, es sei denn sie sind für das mapping neu belegt, aber dann sind sie ja nicht gelöscht"
+2016-08-13 23:44:28,Quantenmagier,"das is eh nen nettes konzept was ich da habe, mit den sparse files, nach meinem neusten entwurf können die sparse files sogar mit bis zu 7-byte pattern aufgefüllt sein ^^"
+2016-08-13 23:45:03,Quantenmagier,öhm nee sry sind nur 4byte
+2016-08-13 23:45:26,Quantenmagier,eventuell auch 7 kommt drauf an
+2016-08-13 23:46:01,Quantenmagier,"und versionierung geht mit den sparse dateien auch, ist aber noch nicht komplett ausgearbeitet"
+2016-08-13 23:47:13,Quantenmagier,"ich bau das dateisystem irgendwie von der datei aus auf, also wie versionierte sparse dateien aussehn weiß ich shcon recht gut, aber das dateisystem darum mit ordnerstruktur etc liegt noch im dunkeln bei meinem konzept ^^"
+2016-08-13 23:48:35,Quantenmagier,"""Das Flag kannst du nicht setzen, das setzt die Hardware und du kannst damit herausfinden, was die Hardware macht"" - öhm das sieht in der ATA 8 Command Set doku aber anders aus.."
+2016-08-13 23:49:14,Quantenmagier,naja egal ich lass es einfach ungesetzt vllt bringt das performance ^^
+2016-08-13 23:51:27,Quantenmagier,"aber was ich noch nicht verstehe ist daß ""LBA Reserved"" ist, also man kann Count angeben, aber nicht die startadresse, das is irgendwie seltsam"
+2016-08-13 23:55:42,Paddy,TRIM ist komisch
+2016-08-13 23:56:15,Paddy,"Wenn ich das richtig in Erinnerung habe, machst du da einen DMA-Transfer, wobei die Daten da drin Deskriptoren für die zu löschenden Sektoren sind"
+2016-08-13 23:56:22,Paddy,Oder irgendwie so
+2016-08-13 23:56:49,Quantenmagier,"ah ok das kann sein, stimmt irgendwas mit dma hatte ich vorhin gelesen"
+2016-08-13 23:58:51,Quantenmagier,"aber die wichtigste info hab ich immerhin man kann nen count angeben der nen 512Byte Sektor benutzt, dh, ich kann einzelne sektoren, also kann ich 512 Byte große bis 65536*512Byte große bereiche trimmen, das is eigentlich die einzige info die in brauche um ne simple dummy funktion zu schreiben"
+2016-08-13 23:59:40,Quantenmagier,"wundert mich nur daß da explizit 512 Byte steht und nicht sektor, scheinbar ist die sektorgröße von 512 Bytes für SSD festgelegt?"

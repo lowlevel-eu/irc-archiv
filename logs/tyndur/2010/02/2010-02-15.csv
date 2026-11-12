@@ -1,0 +1,133 @@
+date/time,nick,message
+2010-02-15 09:04:48,kwolf,Moin
+2010-02-15 09:29:38,pcmattman,Hi kwolf
+2010-02-15 09:31:14,kwolf,Hi pcmattman
+2010-02-15 09:32:29,pcmattman,Please excuse the internal issues with Pedigree over the past 24 hours :)
+2010-02-15 09:35:09,kwolf,You mean eddyb? I'm not that quick to leave a channel ;-)
+2010-02-15 09:35:35,pcmattman,"Well, he might come here and complain"
+2010-02-15 09:36:02,pcmattman,"On a different note, I am now implementing the mem.h stuff into Pedigree's CDI module"
+2010-02-15 09:36:21,kwolf,"Well, if he comes here, we can have ops"
+2010-02-15 09:37:08,kwolf,"I mean, I'm not going to ban him right away now, but if he continues here, I will do so eventually"
+2010-02-15 09:37:32,pcmattman,Sounds good
+2010-02-15 09:38:03,kwolf,Are you going to implement the real thing for mem.h?
+2010-02-15 09:38:20,pcmattman,"What do you mean, ""the real thing""?"
+2010-02-15 09:38:47,kwolf,"I started with a very simplistic thing for tyndur. Only allocate complete pages, no scatter/gather, always copy"
+2010-02-15 09:39:08,pcmattman,Right
+2010-02-15 09:39:14,kwolf,"Should be compliant with the spec, but rather inefficient"
+2010-02-15 09:39:29,pcmattman,"I'll probably avoid scatter/gather initially, but everything else should be implementable from the beginning"
+2010-02-15 09:40:53,pcmattman,"Realistically though scatter/gather isn't too complicated, it's just easier to ignore it for now"
+2010-02-15 09:42:36,kwolf,"scatter/gather is an option that you may or may not implement in cdi_mem_alloc when physical memory is requested, but it needs not be contiguous"
+2010-02-15 09:43:20,kwolf,But in general I think it will get useful only when we start passing mem_areas from external sources
+2010-02-15 09:46:20,pcmattman,The best thing is that our PhysicalMemoryManager is actually designed in such a way that these calls can directly wrap native kernel calls
+2010-02-15 09:46:46,kwolf,Your PMM can directly handle requests of less than a page?
+2010-02-15 09:47:50,pcmattman,"Okay, most features ;)"
+2010-02-15 09:48:18,kwolf,"Heh, yes, then you end up with my implementation. ;-)"
+2010-02-15 09:50:14,kwolf,This one: http://list.tyndur.org/pipermail/tyndur-devel/2010-February/001667.html
+2010-02-15 09:50:35,pcmattman,"Heh, nice"
+2010-02-15 09:50:50,pcmattman,"These well-designed kernels are great, aren't they? :P"
+2010-02-15 09:50:53,kwolf,So shouldn't take you too long ;-)
+2010-02-15 09:51:08,pcmattman,Already doing a test compile to see if it builds
+2010-02-15 09:51:10,pcmattman,"Heh, failed :P"
+2010-02-15 09:51:41,pcmattman,"-1 != null, it seems"
+2010-02-15 09:52:26,kwolf,But it's almost the same ;-)
+2010-02-15 09:53:01,kwolf,"Anyway, I would be suspicious of code that seems to work at the first attempt"
+2010-02-15 09:53:23,pcmattman,Maybe I should use e1000 or something to make certain the mem functions work
+2010-02-15 09:53:25,pcmattman,(in qemu)
+2010-02-15 09:53:58,kwolf,"Hm, last time I tried (Friday?) no CDI drivers did work in Pedigree"
+2010-02-15 09:54:11,kwolf,Neither e1000 nor pcnet
+2010-02-15 09:54:26,pcmattman,Was that before or after the mem.h stuff went into the CDI master?
+2010-02-15 09:54:48,kwolf,I reverted the submodule to the last commit before mem.h
+2010-02-15 09:54:54,kwolf,Otherwise it wouldn't even build
+2010-02-15 09:55:26,pcmattman,"Hmm, e1000 is being executed, but doesn't even pick up a device"
+2010-02-15 09:55:38,pcmattman,Aren't regressions just wonderful? :)
+2010-02-15 09:56:26,kwolf,They are what makes OS dev interesting :-)
+2010-02-15 09:56:37,pcmattman,"Oh right, I actually disabled the net stuff because I can't figure out how to get a cdi_net_driver in the CDI NIC wrapper"
+2010-02-15 09:57:07,kwolf,"Hm, I guess you should fix that ;-)"
+2010-02-15 09:57:31,kwolf,Is this what happened with the driver initialisation patches?
+2010-02-15 09:57:38,pcmattman,I'd say so
+2010-02-15 09:57:55,pcmattman,"Ah fantastic, I haven't even properly updated most of the code after those patches"
+2010-02-15 09:59:15,kwolf,Looks like we're losing instead of gaining compliant OSes...
+2010-02-15 09:59:30,kwolf,And I don't think a complete implementation does even exist
+2010-02-15 09:59:41,pcmattman,I'll work at it once I commit the mem.h stuff
+2010-02-15 09:59:51,pcmattman,At least Pedigree compiles and boots to bash now
+2010-02-15 10:00:16,kwolf,"If it compiles, boot up shouldn't be too difficult with disabled drivers ;-)"
+2010-02-15 10:04:41,pcmattman,"Okay, pushed that code finally"
+2010-02-15 10:05:02,pcmattman,Working through the backlog of things I needed to do last month but never got around to...
+2010-02-15 10:07:03,kwolf,"Yup, at some point you just need to do it. But everything CDI related should be pretty straightforward."
+2010-02-15 10:07:50,pcmattman,It is so far
+2010-02-15 10:08:11,pcmattman,Now to get these NIC drivers working with the new device initialisation code somehow
+2010-02-15 10:35:42,kwolf,*lol*
+2010-02-15 10:35:45,kwolf,I like your code
+2010-02-15 10:35:48,kwolf, /// \todo Fundamentally wrong
+2010-02-15 10:35:55,kwolf,Could be mine ;-)
+2010-02-15 10:36:32,pcmattman,"Well, look at how I implemented it ;)"
+2010-02-15 10:36:50,pcmattman,"It'll be problematic if someone calls cdi_mem_free on the return value, unless cdi_mem_require_flags makes its argument invalid"
+2010-02-15 10:37:24,kwolf,"It doesn't, so the code is fundamentally wrong  in two ways ;-)"
+2010-02-15 10:38:20,pcmattman,Maybe we should update the documentation of cdi_mem_require_flags
+2010-02-15 10:38:28,pcmattman,"""Can cause its argument to become invalid"""
+2010-02-15 10:38:58,kwolf,"No, you should update your code ;-)"
+2010-02-15 10:39:11,kwolf,Drivers will still need the old buffer
+2010-02-15 10:39:35,kwolf,Because the old buffer is where the caller expects the read data in the end
+2010-02-15 10:40:42,kwolf,"For the function is unused anyway, but I hope to change the interfaces some time this week"
+2010-02-15 10:40:47,kwolf,*For now
+2010-02-15 10:41:38,pcmattman,True
+2010-02-15 10:41:53,pcmattman,It'll be implemented in due time
+2010-02-15 10:43:46,kwolf,"And you always can stop me from doing it by posting your own patches to the interface, so that I'm busy with changing tyndur ;-)"
+2010-02-15 10:44:02,pcmattman,Hahaha
+2010-02-15 10:44:14,pcmattman,"Also, you used double quotes in mem.h rather than angle brackets, tsk tsk!"
+2010-02-15 10:44:17,pcmattman,:P
+2010-02-15 10:45:26,kwolf,You acked it :-P
+2010-02-15 10:46:02,pcmattman,I missed that small detail ;)
+2010-02-15 10:46:24,kwolf,"Will prepare a patch to change the remaining quotes. While at it, we can do it for the drivers, too."
+2010-02-15 16:29:26,quok,moin
+2010-02-15 16:30:39,kwolf__,Moin quok
+2010-02-15 16:30:42,XanClic,"Moin, "
+2010-02-15 16:30:45,XanClic,+quok
+2010-02-15 16:30:53,quok,I had an interesting morning so far
+2010-02-15 16:31:02,quok,I have to take sleeping pills at night because I have restless leg syndrome
+2010-02-15 16:31:35,quok,and in the morning I take pills to keep my blood pressure in check.. it's slightly elevated because I'm a bit overweight (and don't really care to try to correct that situation)
+2010-02-15 16:31:58,quok,"well, this morning I grabbed the wrong pills.. took the sleeping pills instead of the blood pressure pills XD"
+2010-02-15 16:32:06,XanClic,I guessed that *g*
+2010-02-15 16:32:18,kwolf__,And you're still awake? ;-)
+2010-02-15 16:32:24,quok,For now :/
+2010-02-15 16:32:38,quok,"Called off work, my boss laughed at me and told me to get some rest"
+2010-02-15 16:32:45,XanClic,xD
+2010-02-15 16:32:50,quok,instead I'm going to try to code on quokos (and CDI)
+2010-02-15 16:33:20,XanClic,"Hm, I doubt if you enjoy reading that code tomorrow ;-)"
+2010-02-15 16:33:20,kwolf__,"Ok, I will make sure that any CDI patches you send today are given a thorough review ;-)"
+2010-02-15 16:33:53,quok,Mostly I plan on getting CDI stuff started in QuokOS :P
+2010-02-15 16:34:24,kwolf__,"When I did it, a was acutally disappointed because it was so easy ;-)"
+2010-02-15 16:34:28,kwolf__,-a +I
+2010-02-15 16:35:03,kwolf__,Getting the standard libc function copied into the kernel was most of the work
+2010-02-15 16:35:28,kwolf__,"Ok, my implementation is far from complete, but ata works"
+2010-02-15 17:52:26,eddyb,moin :)
+2010-02-15 18:02:05,XanClic,Yay :D
+2010-02-15 18:02:13,DickHuuhn,So und nu
+2010-02-15 18:02:17,DickHuuhn,English or German :O
+2010-02-15 18:02:23,XanClic,Better English
+2010-02-15 18:02:29,DickHuuhn,Okay
+2010-02-15 18:02:45,DickHuuhn,"So, who has won the 512 byte contest now?"
+2010-02-15 18:02:53,DickHuuhn,And by the way quok: Creative-Commons-Zero is closer to Public Domain than ISC :)
+2010-02-15 18:03:23,DickHuuhn,Okay XanClic was now so kind to tell me that this discussion has already been made :P
+2010-02-15 18:04:07,XanClic,"Nice, eventually someone here who is capable of speaking good English ;-)"
+2010-02-15 18:04:56,kwolf__,"Hm, should quok take it personally? ;-)"
+2010-02-15 18:05:00,DickHuuhn,I learned it with my language-buddies Westerwave and Oettinger so stfu
+2010-02-15 18:05:11,XanClic,kwolf__: Meh ;-)
+2010-02-15 18:06:15,XanClic,I mean someone who is also in #niwohlos and can thus act as my babelfish
+2010-02-15 18:10:23,quok,"Ah, I knew I shouldn't have joined #lost :)"
+2010-02-15 18:10:45,XanClic,Because it's too fast to use Google? ;-)
+2010-02-15 18:11:08,quok,I'm trying to not use google :P 
+2010-02-15 18:11:10,quok,but barely following :)
+2010-02-15 18:12:21,kwolf__,As long as you're not forced to participate... But DickHuuhn did it right. ;-)
+2010-02-15 18:13:35,DickHuuhn,What did I do? D:
+2010-02-15 18:14:00,quok,"DickHuuhn: nobody has won yet as one of my testing machines died. I'm still trying to find a replacement for it... one of the entries was tested on it but not the other, so I don't think it's fair at this point to declare a winner"
+2010-02-15 18:14:13,DickHuuhn,"Ah, okay"
+2010-02-15 18:14:14,quok,"although I could just drop that test, but I'd really rather not :)"
+2010-02-15 18:14:23,kwolf__,DickHuuhn: You asked him a question in German. I think this is exactly what he was afraid of. ;-)
+2010-02-15 18:14:34,DickHuuhn,"Oh, sorry, quok :D"
+2010-02-15 18:14:51,quok,"yes, I understood the german"
+2010-02-15 18:15:03,quok,just wasn't at all sure how to phrase my response :)
+2010-02-15 18:15:08,kwolf__,"But answering in English was easier, right ;-)"
+2010-02-15 18:15:16,quok,it was!
+2010-02-15 18:15:26,DickHuuhn,yay
+2010-02-15 18:15:31,quok,I just didn't want to answer in English in #lost :)

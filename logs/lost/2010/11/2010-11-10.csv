@@ -1,0 +1,921 @@
+date/time,nick,message
+2010-11-10 09:20:40,kevin,Moin
+2010-11-10 09:27:48,Homix,hi
+2010-11-10 10:44:13,SHyx0rmZ,Moin
+2010-11-10 10:45:06,kevin,Moin
+2010-11-10 10:46:45,bluecode,moin
+2010-11-10 10:52:41,kevin,"Hm, wie seht ihr das denn? erik meint, dass ds und es im Interruptstub neuladen nicht nötig ist, und irgendwie überzeugt mich sein Argument."
+2010-11-10 10:53:08,kevin,Warum hat das bisher noch niemand erwähnt?
+2010-11-10 10:56:24,Homix,wo genau? wieso ds nicht neuladen?
+2010-11-10 10:56:42,kevin,Weil der Kernel genausogut mit Ring-3-Segmenten laufen kann
+2010-11-10 10:56:53,kevin,"Also Datensegmenten, Code natürlich nicht"
+2010-11-10 10:57:21,Homix,"ich hatte das ursprünglich^^ aber das hat massive probleme gemacht, als ich vm86 code ausgeführt hab, weil das ja dann RealMode DS Werte sind"
+2010-11-10 10:57:36,Homix,oder?
+2010-11-10 10:57:39,Homix,oder irre ich mich da
+2010-11-10 10:58:09,kevin,"Jo, für VM86 muss man natürlich wechseln"
+2010-11-10 10:59:21,kevin,"Hm, mir kommen da ganz böse Ideen. Lieber schnell wieder vergessen."
+2010-11-10 11:00:01,kevin,Wobei VM86 mit XanClics Code jetzt sowieso einen ganz anderen Pfad nehmen dürfte
+2010-11-10 11:00:13,kevin,Also kein Bedarf für böse Ideen :-)
+2010-11-10 11:00:21,Homix,welche bösen ideen? :)
+2010-11-10 11:00:48,kevin,Im PD des VM86-Tasks einfach einen anderen Interruptstub mappen
+2010-11-10 11:01:48,FreakyPenguin,Um die 4 movs zu sparen?
+2010-11-10 11:03:09,bluecode,das ist bestimmt die silver bullet für ein performantes tyndur *g*
+2010-11-10 11:03:36,FreakyPenguin,Da kostet doch der tlb miss mehr. *g*
+2010-11-10 11:03:45,kevin,"Homix: Öhm, warum soll VM86 eigentlich ein Problem sein? Dort holt doch das iret ds vom Stack?"
+2010-11-10 11:04:31,kevin,FreakyPenguin: Aber beim TSS hab ich mir das mit dem Ummappen schon ernsthaft überlegt. Die I/O-Bitmap ständig kopieren ist nicht ganz billig.
+2010-11-10 11:04:36,Homix,"aber wenn vom vm86 mode aus ein interrupt aufgerufen wird, werden keine DS,ES,.. Werte widerhergestellt oder?"
+2010-11-10 11:05:03,Homix,wird die TSS Adresse nicht physisch angegeben?
+2010-11-10 11:05:04,kevin,Das benutzt ja jetzt eh Task Gates
+2010-11-10 11:05:09,kevin,"Nein, linear"
+2010-11-10 11:05:13,Homix,ah ok
+2010-11-10 11:05:43,kevin,"Bzw. nur ein GPF-Task-Gate, wenn ich XanClic richtig verstanden habe. Damit kriegt man alles, was man braucht."
+2010-11-10 11:05:47,Homix,linear ist für mich die physische speicheradresse ohne segmente^^
+2010-11-10 11:06:23,kevin,Dann ist deine Terminologie kaputt
+2010-11-10 11:06:30,kevin,"Linear ist nach Segmentierung, aber vor Paging"
+2010-11-10 11:06:45,Homix,das mein ich ja ;)
+2010-11-10 11:06:59,kevin,Das wäre aber die virtuelle Speicheradresse ohne Segmente
+2010-11-10 11:07:33,Homix,achso ne *durcheinander*
+2010-11-10 11:10:06,Homix,hm aber beim vm86 mode werden die kernel segmente sicherlich nicht automatisch wiederhergestellt bei einem interrupt
+2010-11-10 11:10:34,kevin,Wenn du ein Task Gate nimmst schon
+2010-11-10 11:10:57,Homix,hm achso
+2010-11-10 11:11:03,Homix,ich verwende nur normale interrupts ;)
+2010-11-10 11:14:25,kevin,Langweiler ;-)
+2010-11-10 11:14:39,Homix,was bringen task gates denn?
+2010-11-10 11:15:16,kevin,Sie laden halt den kompletten Registerzustand aus dem TSS
+2010-11-10 11:15:32,kevin,Zumindest für Double Faults solltest du eins benutzen
+2010-11-10 11:17:30,Homix,"hm dann schau ich mal, ob man das merkt, wenn ich bei syscalls das laden und wiederherstellen der segmentregister auskommentiere^^"
+2010-11-10 11:19:51,Homix,ok in bochs ... 11 befehle eingespart ;) immerhin^^
+2010-11-10 11:24:21,Homix,hm bisschen hat es sich gebessert ;)
+2010-11-10 11:34:02,kevin,Rein subjektiv? ;-)
+2010-11-10 11:34:33,Homix,das fenster verschieben ruckelt weniger
+2010-11-10 11:35:19,kevin,"Hm, sind das viele Syscalls, oder wie?"
+2010-11-10 11:35:30,Homix,für jeden pixel einer ;)
+2010-11-10 11:35:36,Homix,ne ich hatte die gui mal ausgeschalten und die anzahl der cpu takte eines leeren syscalls gemessen
+2010-11-10 11:36:15,Homix,"in vmware war ein leerer syscall 2100 takte lang, danach nur noch ca. 1700 takte"
+2010-11-10 11:37:15,Homix,auf einem (recht modernen) core2duo statt 570 takte nur noch 530^^ (ok nicht ganz so große veränderung ;) )
+2010-11-10 11:37:21,kevin,Autsch *g*
+2010-11-10 11:38:30,Homix,autsch? ;)
+2010-11-10 11:39:05,kevin,Für jeden Pixel einen Syscall
+2010-11-10 11:39:12,Homix,das war ein scherz ;)
+2010-11-10 11:39:27,kevin,Dafür war es auch zu flüssig ;-)
+2010-11-10 11:39:33,Homix,*g*
+2010-11-10 11:40:15,kevin,"Nein, aber müssen doch wirklich viele Syscalls sein, wenn es einen spürbaren Unterschied bringt?"
+2010-11-10 11:44:57,Homix,ja denke schon
+2010-11-10 11:45:00,Homix,die paar takte^^
+2010-11-10 11:47:48,Homix,"aber für das, dass das eine recht einfach umzusetzende optimierung war, nimmt man das doch gern mit ;)"
+2010-11-10 12:01:19,Papierkorb,Moin
+2010-11-10 12:40:20,Jidder,moin moin
+2010-11-10 12:40:33,FreakyPenguin,Moin Jidder
+2010-11-10 12:42:55,cjuner,"Was für test coverage generatoren für C++ kennt ihr, die HTML generieren? Ich kenne lcov und zcov, sind eigentlich ganz ok, aber habe mich gefragt, ob es da nicht noch andere gibt?"
+2010-11-10 12:45:44,kevin,Ich habe bisher auch nur lcov benutzt
+2010-11-10 12:51:59,AGGROStar1991,moin^^
+2010-11-10 12:52:18,Jidder,moin
+2010-11-10 12:58:06,FreakyPenguin,kevin: Ich glaube dein alloc_op-Patch gegen Fragmentierung ist noch etwas kaputt
+2010-11-10 12:58:30,kevin,"Ja, da gibt es noch ein Problem"
+2010-11-10 12:58:44,kevin,"Aber ich glaube, letztes Mal als ich das ansprechen wollte, musstest du grad zufällig weg ;-)"
+2010-11-10 12:59:21,FreakyPenguin,Das klingt so vorwurfsvoll ;-)
+2010-11-10 12:59:36,kevin,Würde ich dir denn jemals Vorwürfe machen? ;-)
+2010-11-10 12:59:49,FreakyPenguin,"Stimmt, ich vergass ;-)"
+2010-11-10 13:00:13,kevin,"Das Problem, das ich kenne, war (glaube ich) dass der Userspace auf ein Element zeigt, das von alloc_op gemergt wird, so dass der Userspace mitten in was völlig anderes zeigt und dann komplett aus dem Takt kommt"
+2010-11-10 13:00:57,FreakyPenguin,Ah das ist natürlich fies
+2010-11-10 13:01:35,kevin,"Du hast noch nicht näher angeschaut, was dein Problem ist? Sonst würde ich es für wahrscheinlich halten, dass es genau das ist"
+2010-11-10 13:02:13,FreakyPenguin,Ich glaube alloc_op ist auch noch nicht ganz korrekt
+2010-11-10 13:02:31,kevin,"Hm, gut möglich"
+2010-11-10 13:02:54,kevin,"Inwiefern das relevant ist, wenn schon das ganze Prinzip broken by design ist, ist natürlich die Frage ;-)"
+2010-11-10 13:03:22,bluecode,*g*
+2010-11-10 13:03:32,kevin,"Unser Ring ist ja kein richtiger Ring, sondern mehr ein Puffer, wo der Kernel nach Lust und Laune Einträge überspringt und mal hier und mal dort was werkelt"
+2010-11-10 13:03:51,kevin,"Ich bin mir nicht sicher, ob das eine gute Idee ist"
+2010-11-10 13:04:01,kevin,"Oder besser gesagt: Ich bin mir relativ sicher, dass es keine gute Idee ist ;-)"
+2010-11-10 13:04:10,FreakyPenguin,Wie stellst du dir das denn in richtig vor? ;-)
+2010-11-10 13:04:34,kevin,Ich hatte ja mal an einen richtigen Ring gedacht ;-)
+2010-11-10 13:05:16,FreakyPenguin,Das klingt aber langweilig ;-)
+2010-11-10 13:05:43,kevin,"Naja, wenn du es interessanter findest, fix ruhig den existierenden Ansatz weiter ;-)"
+2010-11-10 13:10:18,bluecode,um was geht es denn überhaupt bei alloc_op?
+2010-11-10 13:12:47,kevin,"Einen Eintrag im LIOv2-Ring allozieren, damit der Kernel da eine Nachricht reinpacken kann"
+2010-11-10 13:19:23,bluecode,ist der im Userspace?
+2010-11-10 13:20:51,kevin,Der Ring ist sozusagen Shared Memory zwischen Kernel und einem Userspace-Service
+2010-11-10 13:21:22,bluecode,klingt nach ner tollen Idee bei Multicoresystemen...
+2010-11-10 13:22:28,kevin,Wie würdest du es machen?
+2010-11-10 13:25:19,kevin,"Naja, ich geh erstmal was essen. Du kannst ja solange schonmal deine Gedanken ausbreiten ;-)"
+2010-11-10 13:32:36,Jidder,hm der double fault handler in kernel2 wurde wohl auch noch nie augerufen
+2010-11-10 13:43:34,SHyx0rmZ,"hm, ich stöber grad im Tyndursource rum, hab ich was verpasst oder wird nirgendwo der Timer eingerichtet?"
+2010-11-10 13:46:53,SHyx0rmZ,nvm
+2010-11-10 13:47:52,pgahlen,moin
+2010-11-10 13:52:34,bluecode,SHyx0rmZ: http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/kernel2/src/timer.c;h=33d0dcb7adda1ef92c229c866c6aa5ebbe21516b;hb=HEAD ?
+2010-11-10 13:53:13,bluecode,"SHyx0rmZ: und wird von init aufgerufen, http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/kernel2/src/init.c;h=a4d16d53051b4093277f0eb665c8082c411a6389;hb=HEAD#l213"
+2010-11-10 13:54:22,SHyx0rmZ,das muss ich wohl überlesen haben :D
+2010-11-10 13:55:23,SHyx0rmZ,"ah, meine Version war zu alt"
+2010-11-10 13:56:59,SHyx0rmZ,"hm, aber genau ist das nicht, oder?"
+2010-11-10 13:57:46,PNoob,Moin
+2010-11-10 13:59:29,kevin,Jidder: Was ist denn mit dem falsch? Ich habe eigentlich schon ein paar Doube Faults gehabt.
+2010-11-10 14:02:34,DesL,moin
+2010-11-10 14:03:08,PNoob,Moin DesL
+2010-11-10 14:09:53,kevin,bluecode: Und du wolltest zum Ring auch nichts näheres mehr sagen?
+2010-11-10 14:11:12,bluecode,"was soll ich dazu sagen? Mit Multithreading auf einer Multicore-CPU gibt das ne Race Condition, wenn der Kernel und der Userspace gleichzeitig auf den Ring zugreifen"
+2010-11-10 14:11:48,bluecode,es sei den man kann den mit atomaren Operationen verändern
+2010-11-10 14:12:12,bluecode,*nur mit
+2010-11-10 14:13:06,bluecode,und locking dürfte da auch keine Option sein *g*
+2010-11-10 14:16:25,kevin,"Die eine Hälfte vom Ring gehört dem Userspace, die andere dem Kernel"
+2010-11-10 14:16:36,kevin,"Atomar muss nur das Ändern des Pointers sein, und das ist kein Problem"
+2010-11-10 14:16:55,kevin,"Und auch das nur im Userspace, der Kernel ist ja gar nicht unterbrechbar"
+2010-11-10 14:17:15,bluecode,deswegen sagte ich ja multicore+multithreading
+2010-11-10 14:17:44,bluecode,"da kann ja auf dem anderen Core der gleiche Prozess laufen werden der Kernel auf dem einen ganz toll ""ununterbrechbar"" irgendwas tut"
+2010-11-10 14:17:52,bluecode,*während
+2010-11-10 14:18:10,pgahlen_,"könnte man eigentlich die GDT so dynamisch machen, das man nicht immer (wie im Tutorial) mit defines arbeitet? sondern bei jedem set_entry n Counter um 1 erhöht?"
+2010-11-10 14:18:32,bluecode,natürlich kann man das
+2010-11-10 14:19:11,bluecode,"kevin: was sind denn das für ""Hälften""? Und was darf wer da alles für operationen drauf machen? Und was wird da überhaupt drin gespeichert?"
+2010-11-10 14:20:16,kevin,"Okay, stimmt, wenn wir irgendwann in ferner Zukunft Mehrprozessorbetrieb unterstützen sollten, dann muss der Kernel seinen Pointer halt auch atomar setzen."
+2010-11-10 14:21:49,kevin,"Da drin werden Requests an den Service gespeichert, Sachen wie ""lade mal Cluster x in den Cache"". Der Kernel legt Requests rein und der Userspace bearbeitet sie"
+2010-11-10 14:22:30,bluecode,"d.h. es ist ein Stack, der userspace kann popen und der kernelspace pushen?"
+2010-11-10 14:23:49,kevin,"Eine Queue, wenn schon"
+2010-11-10 14:24:23,bluecode,äh jo stimmt
+2010-11-10 14:24:30,kevin,"Aber ansonsten trifft es das, ja"
+2010-11-10 14:24:35,bluecode,dann hast du aber zwei pointer zum updaten
+2010-11-10 14:24:57,kevin,"Nur einen, der den jeweils anderen interessiert"
+2010-11-10 14:25:07,kevin,"Nämlich den, an dem er anhalten muss"
+2010-11-10 14:26:34,kevin,"Ich muss mir das alles nochmal sauber aufschreiben, aber ich sehe da kein Problem - zumal wir ja nicht die ersten sind, die so einen Ringpuffer benutzen"
+2010-11-10 14:27:58,bluecode,"hm, der deq interessiert sich wohl für head und ->next, tail kann ihm egal sein, und der enq für tail und ->next und head kann ihm egal sein, könnte funktionieren *g*"
+2010-11-10 14:28:42,bluecode,wer alloziert eigentlich den Speicher?
+2010-11-10 14:30:55,kevin,"Ich glaube, im Moment macht das der User"
+2010-11-10 14:31:38,bluecode,und woher kriegt der kernel dann den speicher beim enq?
+2010-11-10 14:33:37,kevin,Der Userspace registriert den Speicher halt beim Kernel und dann werkelt der Kernel drauf rum
+2010-11-10 14:34:04,kevin,"Andersrum wäre es halt, dass der Kernel anlegt und der Userspace per Syscall nachfragt, wo er den Speicher denn nun findet. Im Prinzip läuft das aufs selbe hinaus."
+2010-11-10 14:39:57,cjuner,"ich finde es besser, dass der userspace seinen speicher verwaltet"
+2010-11-10 14:40:27,kevin,"Es ist ja nicht ""sein"" Speicher, sondern gemeinsamer Speicher"
+2010-11-10 14:40:40,cjuner,worum geht es konkret?
+2010-11-10 14:41:21,kevin,"cjuner: Lies dir die Log durch, wäre ein bisschen viel zu wiederholen ;-)"
+2010-11-10 14:42:13,cjuner,wie weit denn? ich lese da in näherer vergangenheit nur was mit nem cache
+2010-11-10 14:43:49,kevin,"Ab 13:11, würde ich sagen"
+2010-11-10 14:44:39,kevin,"FreakyPenguin: Einwände gegen so einen richtigen Ring mit definiertem Head und Tail, außer dass es zu langweilig ist, natürlich? ;-)"
+2010-11-10 14:46:00,FreakyPenguin,Ich glaube nicht ;-)
+2010-11-10 14:47:28,kevin,Machst du kurz? ;-)
+2010-11-10 14:48:51,bluecode,*g*
+2010-11-10 14:51:05,chris12,moin
+2010-11-10 14:56:22,markus111,*HEUL* - trotz 2.6.36er kernel funktioniert mein ubuntu nicht vernünftig
+2010-11-10 14:56:28,markus111,und hallo
+2010-11-10 14:56:32,kevin,"FreakyPenguin: Wenn keiner mehr mitmachen will, schließe ich mich halt dem Paddy an und lass das mit tyndur bleiben ;-)"
+2010-11-10 14:56:39,SHyx0rmZ,*g*
+2010-11-10 14:59:42,FreakyPenguin,Der Paddy hat doch keine Ahnung ;-)
+2010-11-10 14:59:53,markus111,*heul* ich muss wohl noch ein wenig warten :(
+2010-11-10 15:00:49,markus111,Ubuntu 10.10 is so schön :) aber es geht nicht :(
+2010-11-10 15:00:58,kevin,"FreakyPenguin: Naja, dem PNoob anschließen wäre nicht wesentlich besser ;-)"
+2010-11-10 15:01:18,FreakyPenguin,Der ist wenigstens Admin. ;-)
+2010-11-10 15:01:31,bluecode,:-D
+2010-11-10 15:02:25,bluecode,wimre hatte FreakyPenguin doch mehr kloc als du kevin ;-) 
+2010-11-10 15:02:45,FreakyPenguin,Der kevin hat aber mehr Bugfixes ;-)
+2010-11-10 15:03:20,kevin,"Nachdem ich CDI aus kernel2 wieder gelöscht habe, dürfte sein Vorsprung immerhin nicht mehr ganz so groß sein ;-)"
+2010-11-10 15:03:29,bluecode,"Kann ja keiner von dir erwarten, dass du deine eigenen Bugs fixt, FreakyPenguin ;-P"
+2010-11-10 15:03:39,FreakyPenguin,Genau ;-)
+2010-11-10 15:03:43,kevin,"Ja, aber den Bug in alloc_op hab ja ich eingebaut ;-)"
+2010-11-10 15:03:44,markus111,wer schraubt hier an lightOS?
+2010-11-10 15:03:48,kevin,Niemand
+2010-11-10 15:03:55,bluecode,korrekt
+2010-11-10 15:03:56,SHyx0rmZ,"ui, wieso wurde CDI denn gelöscht? Implementierung hat sich zu sehr an den Tyndurstandard gehalten? *g*"
+2010-11-10 15:04:12,kevin,SHyx0rmZ: Weil man das im Kernel nicht braucht?
+2010-11-10 15:04:22,markus111,wie funktioniert das mit den shared libs?
+2010-11-10 15:04:32,bluecode,es ist effektiv kaputt
+2010-11-10 15:04:35,bluecode,*g*
+2010-11-10 15:04:44,markus111,"ich bin zwar noch lange nich so weit, aber das intressiert mich^^"
+2010-11-10 15:05:27,bluecode,und was genau interessiert dich da?
+2010-11-10 15:05:54,markus111,wie die geladen werden und entprechende aufrufe funktionieren
+2010-11-10 15:06:36,markus111,erstmal: kompliziert?
+2010-11-10 15:06:42,mastamind,nein
+2010-11-10 15:06:54,mastamind,geladen werden sie exe dateien.
+2010-11-10 15:07:09,bluecode,+wie
+2010-11-10 15:07:12,mastamind,"nur dass man sich ausuchen kann, an welche adresse man sie läd."
+2010-11-10 15:07:14,Jidder,darfst auch du sagen
+2010-11-10 15:07:18,mastamind,bluecode: stimmt. :-)
+2010-11-10 15:07:33,Jidder,Jidder: aus!
+2010-11-10 15:08:58,PNoob,markus111: es ist aufjedenall nichts worüber du dir jetzt gedanken amchen must.
+2010-11-10 15:09:12,PNoob,Hab ich hier was gehört es will sich wer mir anschließen?
+2010-11-10 15:09:24,PNoob,werde ich eigentlich auch mal gefragt.
+2010-11-10 15:09:27,DesL,loool: .mp4 dauer: 3 minuten. größe: 47 MB | alle frames als .png: 14 GB m(
+2010-11-10 15:09:32,PNoob,-. +?
+2010-11-10 15:10:03,mastamind,DesL: full hd?
+2010-11-10 15:10:16,markus111,DesL: kenn ich :D
+2010-11-10 15:10:39,DesL,"1280*720, aber die quali ist nicht so geil"
+2010-11-10 15:11:08,markus111,hab 1080p in 10minuten länge^^
+2010-11-10 15:11:15,bluecode,"mastamind: so einfach ist das irgendwie auch nicht, da muss man schließlich die lib und die exe im Prinzip ""fixen"""
+2010-11-10 15:12:15,mastamind,bluecode: im vergleich zu beweisen ist das doch simpel. :-)
+2010-11-10 15:12:19,bluecode,"und meine Erinnerung daran ist nur, dass mir das bei einem typ von relocation nicht gelingen wollte und ich deswegen irgendein obskures Linkerflag beim linken angeben muss"
+2010-11-10 15:14:38,bluecode,"ah, ""-z nocopyreloc"""
+2010-11-10 15:16:03,bluecode,mastamind: manche Beweise sind sehr viel einfacher
+2010-11-10 15:19:27,mastamind,"bluecode: das sagt man immer, wenn man es kann."
+2010-11-10 15:19:48,mastamind,das copy reloc zeug find ich auch sehr sehr dubios.
+2010-11-10 15:20:29,markus111,"hm, nano is garnich schlecht"
+2010-11-10 15:20:33,SHyx0rmZ,wtf
+2010-11-10 15:21:52,bluecode,"als ob du keine einfachen Beweise wie ne Induktion um sum_i=0...n(i) = n * (n - 1) / 2 (falls die Formel überhaupt stimmt *g*) zu zeigen, machen könntest, mastamind ;-)"
+2010-11-10 15:22:24,mastamind,bluecode: das is ja auch kinderkram. :-)
+2010-11-10 15:22:30,bluecode,wahrscheinlich +
+2010-11-10 15:22:42,mastamind,http://news.orf.at/stories/2024687/ ich find das langsam echt nur mehr peinlich.
+2010-11-10 15:23:24,mastamind,"ob da wohl noch keiner auf die idee gekommen ist, dass man einfach das kabel absteckt und dann damit die ganze virtuelle armee vor unüberwindbaren grenzen steht?"
+2010-11-10 15:23:45,bluecode,das ist halt ne doofe Idee im Bankensektor zB
+2010-11-10 15:23:57,Homix,"das funktioniert nicht mehr,e infach den stecker ziehen^^"
+2010-11-10 15:24:19,bluecode,"stimmt, dann würden viele hier Amok laufen *g*"
+2010-11-10 15:24:27,mastamind,:-)
+2010-11-10 15:24:45,Homix,*g*
+2010-11-10 15:27:28,markus111,nano nimmt strg o nicht
+2010-11-10 15:27:40,PNoob,Ach wir bekriegen uns demnächst übers Internet?
+2010-11-10 15:27:49,bluecode,nicht demnächst
+2010-11-10 15:27:58,PNoob,dritter Weltkrieg = Cyberwar oder was?
+2010-11-10 15:28:17,bluecode,zumindest der Erstschlag wird bestimmt dort ausgetragen
+2010-11-10 15:28:54,DesL,oder ausgelöst
+2010-11-10 15:32:24,bluecode,hm btw. mastamind du hast nicht zufällig Interesse demnächst eine Seminararbeit zu lesen? :-D
+2010-11-10 15:33:03,kevin,Worüber denn?
+2010-11-10 15:33:21,bluecode,"eine Datenstruktur, den rank-pairing Heap"
+2010-11-10 15:33:42,bluecode,kann das gleiche gleich schnell wie der fibonacciheap ist aber einfacher
+2010-11-10 15:33:54,mastamind,bluecode: doch klar. :-)
+2010-11-10 15:34:23,bluecode,"yay, kostenlose Korrekturleser *g*"
+2010-11-10 15:34:42,mastamind,"erwarte aber bitte nicht, dass ich da viel darüber sagen kann."
+2010-11-10 15:36:01,PNoob,bluecode: du kannst das mir auch geben zum lesen. 
+2010-11-10 15:36:10,kevin,*g*
+2010-11-10 15:36:12,PNoob,ich verlange auch kein geld
+2010-11-10 15:41:42,DesL,ich schon
+2010-11-10 15:44:57,markus111,für 2500€ mach ichs
+2010-11-10 15:49:48,Homix,lol
+2010-11-10 15:50:15,Homix,hab noch nie was von rank-pairing Heap gehört^^
+2010-11-10 15:50:27,Homix,nicht mal wikipedia kennt das :(
+2010-11-10 15:51:00,DesL,"kennt wer ein programm mit dem ich pngs über die kommandozeile komprimieren kann? ich habe hier ~400 unkomprimierte, die großteils schwarz sind :P"
+2010-11-10 15:52:54,Tobiking,"Verdammt, warum kündigen Lehrstühle an das sie in diesem Semester Projekte anbieten wollen, und tun es dann doch nicht."
+2010-11-10 15:53:33,Tobiking,"Jetzt hab ich nen Semester mit dem Projekt gewartet, weil es letztes Semester nur Müll gab, jetzt sieht es dieses Semester auch nicht besser aus..."
+2010-11-10 15:54:03,bluecode,Homix: ist von 2009
+2010-11-10 15:54:48,Homix,d.h. der rank-pairing Heap wurde 2009 erfunden? :D
+2010-11-10 15:55:16,bluecode,jo
+2010-11-10 15:55:24,Homix,cool
+2010-11-10 15:55:27,mastamind,Tobiking: was hast denn zur auswahl?
+2010-11-10 15:57:00,Tobiking,Irgendwelche Themen die mir gar nichts sagen ^^
+2010-11-10 15:58:33,Tobiking,"Irgendwas mit ""spielerischer Exploration von Musiksammlungen"", ""Sicheres Internetbanking in der Cloud"", ""Netztwerkbasierte Sensorfusion für einen Fahrzeugschwarm"" und 2 die ich gar nicht deuten kann ^^"
+2010-11-10 15:58:57,mastamind,nummer zwei klingt ja grauenhaft...
+2010-11-10 15:59:04,mastamind,das letzte klingt noch ganz interessant.
+2010-11-10 15:59:05,AGGROStar1991,also das mit dem fahrzeugschwarm klingt spannend^
+2010-11-10 15:59:06,kevin,Ich würde eins von den undeutbaren nehmen *g*
+2010-11-10 15:59:12,Tobiking,"""Verlagerung von übergeordneten Steuerungsfunktionen in die Feldebene von Materialflusssystemen mithilfe eines Cloudbasierten Ansatzes"""
+2010-11-10 15:59:13,bluecode,"Homix: aber das du das nicht kennst muss nichts heißen, in der einleitung zum paper stehen ca. 10 andere Heaps von denen ich auch noch nie was gehört habe *g*"
+2010-11-10 15:59:15,Homix,:D
+2010-11-10 15:59:18,AGGROStar1991,"genau, münze werfen xD"
+2010-11-10 16:00:06,Tobiking,Ich wollte aber was mit dem Lehrstuhl Eingebettete Systeme oder Computergrafik machen die beide angekündigt hatten was anzubieten...
+2010-11-10 16:00:08,bluecode,"ich würde erstmal alles mit ""cloud"" und dem restlichen Buzzwordbingo rauswerfen"
+2010-11-10 16:00:11,Tobiking,Und jetzt ist da nix
+2010-11-10 16:00:15,bluecode,"und dann feststellen, dass nichts übrig bleibt *g*"
+2010-11-10 16:00:30,mastamind,"ich frag mich, wem das ganze claud zeug eingefallen ist."
+2010-11-10 16:00:36,mastamind,in zwei jahren gibts dann storm.
+2010-11-10 16:00:41,AGGROStar1991,xD
+2010-11-10 16:01:15,Tobiking,Zum Glück wird das Projekt nicht benotet. Man muss nur die Mindestanforderungen schaffen
+2010-11-10 16:01:18,bluecode,menschen die an diese tollen boards diagramme mit 4 wölkchen und 3 Pfeilen malen
+2010-11-10 16:01:30,AGGROStar1991,und in 3 jahren tornad windowscersion-so sicher wie ein wirbelsturm bei offenem fenster xD
+2010-11-10 16:01:51,mastamind,und ihe frisur hält. :-)
+2010-11-10 16:02:15,Tobiking,"""Scalable Virtual Data Infrastructure"" gibts noch..."
+2010-11-10 16:02:48,Tobiking,Irgendwas mit einem Dienst der Daten zu verfügung stellt
+2010-11-10 16:03:28,kevin,Für die Cloud? ;-)
+2010-11-10 16:03:33,mastamind,*g*
+2010-11-10 16:03:43,AGGROStar1991,xD
+2010-11-10 16:03:45,AGGROStar1991,haha^^
+2010-11-10 16:04:09,Tobiking,"Laut der Zeichnung soll das für Cloud, Grid und Cluster sein"
+2010-11-10 16:04:29,kevin,"markus111: Es gibt hier im Channel einige, denen man das raten möchte"
+2010-11-10 16:05:25,AGGROStar1991,glücklicherweise sehe ich auf grund meiner anspruchsvollen artikulation keinen bedarf solcher massnahmen^^
+2010-11-10 16:06:17,bluecode,"du darfst ruhig meinen Namen nennen, kevin :-P"
+2010-11-10 16:06:17,markus111,kevin: PN**b?
+2010-11-10 16:06:29,AGGROStar1991,moin xanclic^^
+2010-11-10 16:06:31,XanClic,Moin
+2010-11-10 16:06:36,Tobiking,"Ah, das mit den Fahrzeugschwarm ist von den Lehrstühlen Computergrafik und Eingebettete Systeme zusammen"
+2010-11-10 16:06:36,kevin,Moin
+2010-11-10 16:06:37,AGGROStar1991,na wie war die olympiade? :D
+2010-11-10 16:06:40,markus111,Moin
+2010-11-10 16:06:52,markus111,mathe olympiade?^^
+2010-11-10 16:06:52,XanClic,"Hm, bei der letzten Aufgabe hab ich tatsächlich einen Beweis geführt ;-)"
+2010-11-10 16:07:15,mastamind,AGGROStar1991: Maßnahmen
+2010-11-10 16:07:18,AGGROStar1991,ich hab da immer nur meine eigenen falschen aussagen bestätigt in immer neuen wegen bis ich keinen bock mehr hatte^^
+2010-11-10 16:07:33,AGGROStar1991,die erste war doch cool^^
+2010-11-10 16:07:33,kevin,"Mensch mastamind, ich hab es mir extra verkniffen ;-)"
+2010-11-10 16:07:38,AGGROStar1991,xD
+2010-11-10 16:07:45,mastamind,kevin: ich konnte nicht. *gg*
+2010-11-10 16:07:50,AGGROStar1991,ich dachte meine tarnung is gut :D
+2010-11-10 16:07:55,XanClic,"Ja, nach der ersten dachte ich „Mist, du hast doch gar kein Schulzeug mit, wenn die jetzt alle so schnell gehen…“"
+2010-11-10 16:08:05,AGGROStar1991,xD
+2010-11-10 16:08:07,XanClic,Da hab ich dann wohl nochmal „Glück gehabt“
+2010-11-10 16:08:12,AGGROStar1991,ich musste danach nimmer zur schule^^
+2010-11-10 16:08:19,AGGROStar1991,ach die erste war cool und die dritte :D
+2010-11-10 16:08:25,markus111,Mathematik?
+2010-11-10 16:08:30,mastamind,Tobiking: nimmst das mit dem schwarm?
+2010-11-10 16:08:31,AGGROStar1991,joa^^
+2010-11-10 16:08:43,XanClic,"Hm, die dritte… Ich fand das Ergebnis hässlich, kann sein, dass ich auch einfach nur was falsches hab"
+2010-11-10 16:08:46,markus111,hatn freund heut auch gemacht
+2010-11-10 16:09:02,AGGROStar1991,bei der 2. hab ich ewig gerechnet und keinen iwie brauchbaren rechenweg aber ein ergebnis :D
+2010-11-10 16:09:12,AGGROStar1991,"und beim dritten war bei mir auch hässlich, aber naja^^"
+2010-11-10 16:09:39,Tobiking,mastamind: Ich denke schon das ich es als erste Priorität wählen werde. Das klingt bisher am besten
+2010-11-10 16:09:44,XanClic,"Bei der zweiten hatte ich Abstand = 5/8 * | a² - b² | / (a + b), aber die war doof *g*"
+2010-11-10 16:09:48,AGGROStar1991,und auf die 4. hatte ich nach über einer stunde ohne richtige idee keine lust mehr xD und ich musste ja danach auch nimmer zur schule^^
+2010-11-10 16:09:57,mastamind,Tobiking: bekommst du das dann fix?
+2010-11-10 16:10:06,bluecode,Tobiking: du musst eins wählen?
+2010-11-10 16:10:14,bluecode,bzw. machen
+2010-11-10 16:10:21,AGGROStar1991,"ich hatte da was ganz anderes, hab die aber auch nich ganz zuende gemacht, hatte noch iwas mit cotangens da zu stehen^^"
+2010-11-10 16:10:27,Tobiking,"Ja, das wird ausgewählt mit prioritäten. Und dann je nach Eignung/Wartezeit zusortiert"
+2010-11-10 16:10:35,XanClic,"Hm, die vierte ging eigentlich… Rekursive Funktionen aufstellen, dann zeigen, dass das bei n = 3 passt und anschließend per z. B. Induktion zeigen, dass es bei n = 4 bis ∞ nix mehr wird"
+2010-11-10 16:10:42,XanClic,"Also, so hab ich das gemacht *g*"
+2010-11-10 16:10:45,mastamind,"Tobiking: dann viel glück, dass du das bekommst."
+2010-11-10 16:10:45,AGGROStar1991,^^
+2010-11-10 16:11:07,markus111,klkiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+2010-11-10 16:11:08,AGGROStar1991,darauf bin ich net gekommen^^
+2010-11-10 16:11:09,Tobiking,Bis zu 12 Studenten pro Projekt. Die ersten 10 nach Eignung anhand der abgeschlossenen Prüfungen. Die 2 zusätzlichen dann die am längsten das Vordiplom haben
+2010-11-10 16:11:16,AGGROStar1991,wie gesagt die erste war lässig :D
+2010-11-10 16:11:25,markus111,uuups
+2010-11-10 16:11:34,AGGROStar1991,a= 450=d=g
+2010-11-10 16:11:37,markus111,vllt sollt ich nicht auf die tastatur legen
+2010-11-10 16:11:43,AGGROStar1991,b=e=h=170
+2010-11-10 16:11:43,XanClic,Gaaa nich
+2010-11-10 16:11:51,Tobiking,"Die Aufgabenstellung klingt aber echt aufwendig, wenn da nicht die Mindestziele drunter stehen würden"
+2010-11-10 16:11:54,XanClic,a₀ = a₃ = a₆ = 450
+2010-11-10 16:11:55,AGGROStar1991,xD
+2010-11-10 16:12:11,AGGROStar1991,denn eben so xD
+2010-11-10 16:12:14,XanClic,Da kann man viel besser mit Summenzeichen arbeiten :3
+2010-11-10 16:12:21,AGGROStar1991,und c=f=i=50^^
+2010-11-10 16:12:32,AGGROStar1991,ach ich nummerier die immer so
+2010-11-10 16:12:49,AGGROStar1991,"auch bei vektoren kann ich x1 x2.... nich leiden, is bei mir immer x y z^^"
+2010-11-10 16:13:23,XanClic,"Bei uns ist es immer x, y, z, aber ich finde das eine ungehörige Diskriminierung höherer Dimensionen"
+2010-11-10 16:13:43,AGGROStar1991,xD
+2010-11-10 16:14:00,kevin,"XanClic: Hm, und nullbasiert. Man sieht, in welche Ecke du eigentlich gehörst. *g*"
+2010-11-10 16:14:08,XanClic,"Hm, joar *g*"
+2010-11-10 16:14:13,AGGROStar1991,"naja nimmste halt chinesische zeichen, das reicht für über 2000 dimensionen :D"
+2010-11-10 16:14:33,XanClic,Man kann die auch kombinieren :3
+2010-11-10 16:14:41,AGGROStar1991,kevin aber die eine aufgabe heute war nullbasiert^^
+2010-11-10 16:15:12,XanClic,"Also, eine andere – bei der war in der Antwort bei mir ca. jedes vierte Wort „Flocke“"
+2010-11-10 16:15:22,kevin,wz markus
+2010-11-10 16:15:26,AGGROStar1991,xD
+2010-11-10 16:15:52,AGGROStar1991,ab welcher punktzahl kommt man eig weiter?^^
+2010-11-10 16:16:11,XanClic,"Bei der ersten Runde reicht es schon seit Jahren, dass ich einer von zweien bin, der was abgibt"
+2010-11-10 16:16:21,DesL,erkennt wer die Schrifttype der überschrift vom dem Logo? http://weblogs.baltimoresun.com/business/consuminginterests/blog/mgm-logo.jpg
+2010-11-10 16:16:45,AGGROStar1991,"naja ich sag mal, bei mir sind 4 ausm jahrgang gestartet, 3 aus meinem mathekurs, alle 3 weiter+#"
+2010-11-10 16:16:58,AGGROStar1991,2 davon sind heute gestartet und noch eine andere ausser sek 2^^
+2010-11-10 16:17:42,mastamind,DesL: ist das eine preisfrage? vielleicht gibts die schriftart nur für die paar buchstaben und sie hat gar keinen namen.
+2010-11-10 16:18:07,DesL,ich nehm auch was ähnliches XD
+2010-11-10 16:18:37,XanClic,"Im Raum heute saßen nach 11:30 Uhr nur noch drei Leute, der eine andere und eine aus der neunten Klasse"
+2010-11-10 16:18:48,XanClic,"Ach, und der Lehrer *g*"
+2010-11-10 16:18:58,AGGROStar1991,naja wir warn nach 11:30 noch 5 oder so
+2010-11-10 16:19:13,AGGROStar1991,halt 3 ausser 11.-13. und 2 ausser 9.-10.
+2010-11-10 16:20:37,ircbot,Initializing...
+2010-11-10 16:21:00,ircbot,Done.
+2010-11-10 16:21:21,DesL,!ircbot info
+2010-11-10 16:21:28,markus111,dass man mich immer gleich rauschmeißen muss...
+2010-11-10 16:22:10,ircbot,ERROR: unknown command.
+2010-11-10 16:22:30,XanClic,Sieh es als Kick für den aktuellen Boteinsatz an
+2010-11-10 16:23:29,markus111,*lol*
+2010-11-10 16:25:35,markus111,DesL: wie kommst du auf diese syntax?
+2010-11-10 16:28:35,markus111,ich mach mich mal wieder an mein os
+2010-11-10 16:31:43,AGGROStar1991,aber nich nur copy-pasten :D
+2010-11-10 16:32:19,kevin,"Er hat nicht gesagt, er macht sich an meinOS"
+2010-11-10 16:32:32,markus111,ich copy paste aus meim alten os
+2010-11-10 16:32:42,PNoob,mööp
+2010-11-10 16:37:51,mastamind,"wie passend is denn ""namenlos"" als os-name?"
+2010-11-10 16:38:03,markus111,hab schon
+2010-11-10 16:38:07,markus111,WhiteOS
+2010-11-10 16:38:18,mastamind,hm?
+2010-11-10 16:38:42,markus111,Weiß wie Schnee 
+2010-11-10 16:38:51,mastamind,:-)
+2010-11-10 16:39:20,markus111,meint ihr ich soll gleich APIC nehmen?
+2010-11-10 16:42:21,PNoob,Ich hab auch mal ne Frage zu APIC. Muss man sich wenn man APic benutzt noch um ne IDT und den PIC kümmern oder kann man das alles weglasen?
+2010-11-10 16:42:41,bluecode,"den PIC kann man weglassen, eine IDT braucht man aber"
+2010-11-10 16:43:09,mastamind,"kann man den pic nicht erst weglassen, wenn man den io-apic verwendet? der local apic alleine reicht doch nicht, oder?"
+2010-11-10 16:43:22,bluecode,jo
+2010-11-10 16:43:28,markus111,"hat ein Windows 95 PC, baujahr 95 schon nen apic?"
+2010-11-10 16:43:39,bluecode,ich hab angenommen er meint das ganze Paket LAPIC und IOAPIC mit APIC
+2010-11-10 16:43:45,mastamind,"local apic wahrscheinlich ja, io apic nicht."
+2010-11-10 16:44:06,markus111,das is mir fürn anfang zu kompliziert
+2010-11-10 16:44:11,PNoob,markus111: da kannste den Prozessor nach fragen
+2010-11-10 16:44:19,markus111,ich nehm erstmal den PIC
+2010-11-10 16:44:25,bluecode,zumindest nach der LAPIC kann man den Prozessor fragen
+2010-11-10 16:44:45,bluecode,aber sinnvoller dürfte wohl SMP/ACPI-Tabellen sein
+2010-11-10 16:45:04,PNoob,"aber wenn ein lapic da ist, werden doch io apic's auch da sein oder nicht?"
+2010-11-10 16:45:24,mastamind,nein
+2010-11-10 16:45:39,mastamind,io apics gibts erst seit ca 10 jahren in desktop chipsets.
+2010-11-10 16:45:42,mastamind,eher 8 jahre.
+2010-11-10 16:45:50,bluecode,"ioapic ist auf dem mainboard, lapic im Prozessor, wenn man pech hat, dann ist nur der Prozessor neu genug"
+2010-11-10 16:46:45,markus111,"auch wenn der PIC veraltet ist, ich verwend ihn erstmal"
+2010-11-10 16:46:46,bluecode,"und selbst wenn eine vorhanden ist, muss man immernoch rausfinden an welcher Adresse die liegt"
+2010-11-10 16:46:50,PNoob,ah. da hab ich wieder was dazugelernt
+2010-11-10 16:47:21,mastamind,"die adresse steht in den mp tabellen, oder?"
+2010-11-10 16:47:22,PNoob,wofür benötigt man dann eigentlich noch eine IDT? wenn man den Pic unbenutzt lässt?
+2010-11-10 16:47:27,mastamind,per acpi bekommt man sie auch.
+2010-11-10 16:47:28,bluecode,"jo, mastamind"
+2010-11-10 16:47:42,bluecode,was hat die IDT mit der PIC zu tun?
+2010-11-10 16:48:31,markus111,"idz ist doch, wo die entsprechenden interrupts hingehen"
+2010-11-10 16:48:38,markus111,IDT*
+2010-11-10 16:49:01,PNoob,die irq's und exceptions gehen doch dann über die apics. weshalb brauch man dann die IDT?
+2010-11-10 16:49:12,XanClic,Die Exceptions gehen doch nicht über den APIC
+2010-11-10 16:49:21,PNoob,die gehen über den PIC?
+2010-11-10 16:49:29,XanClic,Über den IOAPIC gehen nur die IRQs (und wohl auch die IPIs)
+2010-11-10 16:49:31,bluecode,"nein, die triggern direkt einen interrupt..."
+2010-11-10 16:49:34,XanClic,Die löst die CPU aus?
+2010-11-10 16:49:53,markus111,http://www.lowlevel.eu/wiki/IDT
+2010-11-10 16:49:55,XanClic,"Wobei IPIs… Ne, die gehen über den LAPIC, aber da halt ich mich besser zurück *g*"
+2010-11-10 16:49:58,bluecode,"ich würde vermuten, dass IPIs nicht über die IOAPIC gehen"
+2010-11-10 16:50:15,mastamind,die ipis geht per local apic.
+2010-11-10 16:50:30,mastamind,die gehen ganz fix nicht über den io apic.
+2010-11-10 16:53:36,DesL,moin Homix
+2010-11-10 16:58:08,markus111,"wer sieht in memsetw(videomem, clr_attr << 8, SCREEN_WIDTH * SCREEN_HEIGHT); mehr als 3 argumente????"
+2010-11-10 16:58:30,markus111,"ah, ich seh schon"
+2010-11-10 16:58:31,XanClic,Kommt auf die Definition von SCREEN_WIDTH und SCREEN_HEIGHT an
+2010-11-10 16:58:33,mastamind,vielleicht sind die marcos falsch.
+2010-11-10 16:58:39,mastamind,macros
+2010-11-10 16:59:02,markus111,hab size_t definition vergessen
+2010-11-10 17:00:47,markus111,"yay, weißer hintergrund, dunkelgraue schrift"
+2010-11-10 17:01:44,markus111,ich hoff mal das weiß ist nicht zu grell
+2010-11-10 17:06:37,Jidder,doch ist es
+2010-11-10 17:09:46,markus111,ich sollte das einmal tauschen
+2010-11-10 17:10:11,markus111,"jaa, so ist es hübsch"
+2010-11-10 17:11:16,pgahlen,wie schnell is eig son Floppylaufwerk? also wenn es liest ?
+2010-11-10 17:11:31,markus111,< 1MB/s^^
+2010-11-10 17:11:53,pgahlen,"omg dann dauert das ja voll lange, bis der BL ma fertig ist"
+2010-11-10 17:12:02,DesL,wie gros ist der? Oo
+2010-11-10 17:12:20,markus111,auf ne floppy passt doch grad mal 1MB drauf
+2010-11-10 17:12:29,XanClic,"1,4, bitte"
+2010-11-10 17:12:38,AGGROStar1991,1.44 xD
+2010-11-10 17:12:46,XanClic,"Nein, 1,40625, glaub ich"
+2010-11-10 17:13:15,XanClic,"Ich habe mich noch nicht von den fiesen Diskettenherstellern kaufen lassen, die meinen, dass 1440 kB = 1,44 MB"
+2010-11-10 17:13:50,markus111,"Apple meint, 1GB = 1 000 000 000 Byte -.-"
+2010-11-10 17:14:30,pgahlen,also der BL alles drum und drann mit Kernel ist 10 KB gross
+2010-11-10 17:14:45,XanClic,"Och, das geht in ca. einer Sekunde"
+2010-11-10 17:14:51,XanClic,"10 kB, das passt ja noch in einen Zylinder"
+2010-11-10 17:48:43,mastamind,"ist euch das schon mal passiert, dass sich ein pc hardwaremäßig einfach so neugestartet hat?"
+2010-11-10 17:49:06,mastamind,is mir jetzt zwei mal passiert. plötzlich hör ich den bootpieps vom bios.
+2010-11-10 17:51:15,DesL,"hm, hardwareschaden als ursache zählt wohl nicht?"
+2010-11-10 17:51:18,DesL,:P
+2010-11-10 17:51:44,markus111,bin zum tennis
+2010-11-10 17:51:46,markus111,tschötschö
+2010-11-10 17:52:09,PNoob,Der Hartmut ist da
+2010-11-10 17:52:49,mastamind,DesL: ich weiß es nicht. es passiert plötzlich. im log steht nichts.
+2010-11-10 17:54:31,PNoob,mastamind: kann auch nen Software Fehler sein.
+2010-11-10 17:54:42,PNoob,welches OS?
+2010-11-10 17:54:48,DesL,"PNoob: nope, der tut nur so, ist in wirklich keit akluth"
+2010-11-10 17:55:22,PNoob,DesL: es is DerHartmut
+2010-11-10 17:55:50,PNoob,akluth = Alexander Kluth. und soweit ich weiß heißt DerHartmut so.
+2010-11-10 17:58:06,FreakyPenguin,PNoob: Du hättest wohl bluecodes Ironiedetektor doch annehmen sollen. ;-)
+2010-11-10 17:58:29,PNoob,och nö
+2010-11-10 17:59:25,PNoob,aber du kannst wenn du willst gerne bei NandOS mitmachen. Da darfst du ganz viel kaputten Code schreiben. Ich schlage auch nicht wenn er verbuggt.
+2010-11-10 17:59:30,DesL,eine fulminante idee
+2010-11-10 18:06:27,mastamind,PNoob: das glaub ich eher nicht...
+2010-11-10 18:20:10,PNoob,irgendwie hat sich mein Laptop aufgehängt
+2010-11-10 18:22:08,Jidder,da würde ich mich auch aufhängen
+2010-11-10 18:22:15,DesL,^^
+2010-11-10 18:28:34,Homix,*g*
+2010-11-10 18:49:56,PNoob,ihr = nicht freundlich
+2010-11-10 18:54:39,DesL,bb
+2010-11-10 18:55:47,Jidder,tschö
+2010-11-10 18:58:00,pgahlen,:D ich mach gleich ma den ersten Release von C-OS :D
+2010-11-10 18:58:32,pgahlen,muss noch ebend die IDT zu Ende frikkeln
+2010-11-10 18:59:21,PNoob,und was kann C-OS?
+2010-11-10 19:01:06,pgahlen,C-OS kann ........ *Trommelwirbel* .......... Nichts
+2010-11-10 19:01:22,pgahlen,hey Microsoft hat ne neue XBOX released
+2010-11-10 19:02:05,PNoob,Das C-OS nichts kann hab ich mir gedacht
+2010-11-10 19:02:29,pgahlen,PNoob: fängste scvhon wieder damit an?
+2010-11-10 19:02:51,PNoob,Microsoft hat noch nen Schrotthaufen mehr auf'n markt gebracht. Wollen die sich in den Ruin Treiben...
+2010-11-10 19:02:58,PNoob,nö
+2010-11-10 19:03:27,PNoob,"aber in der Zeit die du an C-OS entwickelt hast, kann das OS nur nichts können."
+2010-11-10 19:03:47,pgahlen,"PNoob: Alles eine Sache des Marketings ... Bill Gates verdient z.B. mal ganz coole 4 Mio in 12 Stunden, wenn er nichts macht"
+2010-11-10 19:04:07,pgahlen,Windows ist das meistgenutzte OS ... was willst du mehr wenn du MS wärst
+2010-11-10 19:04:09,PNoob,und wieviel Ausgaben hat er in der Zeit?
+2010-11-10 19:04:19,pgahlen,weniger als er verdient
+2010-11-10 19:04:26,pgahlen,das war glaub ich schon der Gewinn
+2010-11-10 19:04:44,PNoob,"microsoft hat in den letzten Jahren immer Schlechtere Zahlen. Wenn die So weiter machen, geht die Firma den Bach runter"
+2010-11-10 19:04:44,pgahlen,"ich habs ma ausgerechnet, ich glaub das sind 5$ in der Sekunde"
+2010-11-10 19:05:05,pgahlen,:D naja die mussten ja auch die Konkurenz fördern
+2010-11-10 19:05:14,pgahlen,Apple war ja schon ma pleite
+2010-11-10 19:05:31,pgahlen,wer hat geholfen ............ MS
+2010-11-10 19:06:26,pgahlen,"wird man hier eigentlich gekickt, wenn man sagt Windows (oder Microsoft) rockt?"
+2010-11-10 19:06:47,Jidder,"man wird hier gekickt, wenn man diskutiert nur um der diskussions willen"
+2010-11-10 19:06:59,pgahlen,"ok, ich hör ja schon auf :D"
+2010-11-10 19:09:20,PNoob,MS ist der größte Schrott
+2010-11-10 19:10:44,pgahlen,MS oder Windows?
+2010-11-10 19:12:43,Homix,"""microsoft hat in den letzten Jahren immer Schlechtere Zahlen"" quatsch^^"
+2010-11-10 19:15:44,Papierkorb,N'abend
+2010-11-10 19:28:31,markus111,Moooin
+2010-11-10 19:33:00,markus111,so still hier
+2010-11-10 19:48:35,PNoob,Homix: das ist kein Quatsch
+2010-11-10 19:49:19,PNoob,pgahlen: gar nichts mehr von MS? bzw. nicht mehr Freiwillig. nur Win7 benutze ich um Spiele spielen zu können die WINE nicht kann. ansonsten alles Linux
+2010-11-10 19:57:24,Homix,doch ist es ;)
+2010-11-10 20:13:07,PNoob,(19:49:17) PNoob: pgahlen: gar nichts mehr von MS? bzw. nicht mehr Freiwillig. nur Win7 benutze ich um Spiele spielen zu können die WINE nicht kann. ansonsten alles Linux
+2010-11-10 20:13:25,pgahlen,aso
+2010-11-10 20:19:47,DesL,moin
+2010-11-10 20:20:35,markus111,moin
+2010-11-10 20:24:29,AGGROStar1991,moin
+2010-11-10 20:27:59,pgahlen,moin
+2010-11-10 20:28:07,pgahlen,so hab jetzt mal released
+2010-11-10 20:28:33,pgahlen,http://c-os.co.de/index.php?option=com_content&view=category&layout=blog&id=5&Itemid=5
+2010-11-10 20:29:17,pgahlen,"hab nur n Problem mit dem HTML, der meint bei Firefox immer, er müsste das im Browser anzeigen, und nicht herunterladen"
+2010-11-10 20:29:32,pgahlen,hat da einer n heissen Tip für mich?
+2010-11-10 20:30:14,chris12,moin
+2010-11-10 20:30:20,pgahlen,moin chris12
+2010-11-10 20:30:47,pgahlen,"kann ma jemand gucken, ob er ne Exception oder so kriegt?"
+2010-11-10 20:31:03,PNoob,Moin Chris12
+2010-11-10 20:33:20,markus111,tach kumpel
+2010-11-10 20:33:52,PNoob,pgahlen: bei meinem TestPC geht gar nichts
+2010-11-10 20:34:10,pgahlen,... was passiert denn (nicht)?
+2010-11-10 20:34:38,pgahlen,hast du real-Hardware benutzt?
+2010-11-10 20:35:00,PNoob,(20:33:51) PNoob: pgahlen: bei meinem TestPC geht gar nichts << sollte klar sein
+2010-11-10 20:35:08,PNoob,keinerlei Bildshirmausgabe
+2010-11-10 20:35:22,PNoob,der bleibt nach dem booting von Floppy oder so hängen
+2010-11-10 20:35:26,pgahlen,hm er bootet aber von Floppy?
+2010-11-10 20:35:39,pgahlen,hm ... war bei mir auch schonma
+2010-11-10 20:35:47,pgahlen,haste ma n 3tes ma gestartet?
+2010-11-10 20:35:52,pgahlen,*2tes
+2010-11-10 20:36:21,PNoob,ich hab das 10 mal gestartet. unter anderem auch die festplatten abgeklemmt.
+2010-11-10 20:36:25,PNoob,es tut sich nichts
+2010-11-10 20:36:35,pgahlen,hm ok
+2010-11-10 20:36:41,pgahlen,shit happens
+2010-11-10 20:37:03,pgahlen,"als dus heruntergeladen hast, wie gross war das Image?"
+2010-11-10 20:37:54,AGGROStar1991,"6,2 KB"
+2010-11-10 20:38:02,markus111,"0,5bytes"
+2010-11-10 20:38:05,AGGROStar1991,aber wart mal ich probiers mal auf realer hardware
+2010-11-10 20:38:23,pgahlen,"ne dann is das Problem, das mein FTP die 0en weggehauen hat"
+2010-11-10 20:39:33,AGGROStar1991,also auf realer meckerts auch
+2010-11-10 20:40:06,PNoob,"also bei mir ist das image 1,4 MB groß"
+2010-11-10 20:40:10,PNoob,somit also richtig
+2010-11-10 20:40:19,pgahlen,"das Problem ist, das iergendwas beim runterladen schief läuft"
+2010-11-10 20:40:40,pgahlen,"weil es bei mir vieeeeeel länger aduert es durch filezilla runterzuladen, als durch Firefox"
+2010-11-10 20:41:12,PNoob, ich habs mit rechtsklick und so gemacht.
+2010-11-10 20:41:29,PNoob,Ich teste das gleich mal in qemu
+2010-11-10 20:42:00,pgahlen,das klappt alles nicht
+2010-11-10 20:42:20,markus111,cpu auslastung lässt sich doch nur berechnen und nicht irgendwo auslesen?
+2010-11-10 20:42:35,Jidder,ja
+2010-11-10 20:42:41,markus111,ok
+2010-11-10 20:43:35,pgahlen,... also bei mir hats per Rechtsklick in Qemu geklappt
+2010-11-10 20:43:36,markus111,und was meint ihr sollte das erste unterstützte dateisystem sein?
+2010-11-10 20:43:39,markus111,ext2?
+2010-11-10 20:43:47,Jidder,ja
+2010-11-10 20:43:54,markus111,kein fat also
+2010-11-10 20:43:59,Jidder,ist doch egal
+2010-11-10 20:44:02,PNoob,also der Screenshot ist nen FAKE
+2010-11-10 20:44:14,AGGROStar1991,vllt nich gleich NTFS oder EXT4^^
+2010-11-10 20:44:17,pgahlen,PNoob nope
+2010-11-10 20:44:21,DesL,hm? welcher?
+2010-11-10 20:44:22,PNoob,es geht weder echte Hardware noch geht QEMU
+2010-11-10 20:44:32,pgahlen,Junge es ist kein FAKE
+2010-11-10 20:44:32,PNoob,pgahlen: klar warum gehts dann in Qemu nich?
+2010-11-10 20:44:41,pgahlen,"kp, bei mir gehts einwandfrei"
+2010-11-10 20:44:46,PNoob,ach aber nen Qemu Screenshot aber in qemu gehts nicht
+2010-11-10 20:44:57,DesL,hat wer nen link?
+2010-11-10 20:45:03,pgahlen,zu?
+2010-11-10 20:45:06,PNoob,pgahlen: du bist nen FAIL
+2010-11-10 20:45:07,markus111,wie wärs mit der idee das pgahlen das falsch hochgeladen hat?
+2010-11-10 20:45:12,AGGROStar1991,also bei mir kanns dran liegen das es nich korrekt gedownloadet is
+2010-11-10 20:45:13,pgahlen,das liegt iergendwie am Download
+2010-11-10 20:45:28,XanClic,PNoob: Ich mach dich gleich rund
+2010-11-10 20:45:36,PNoob,markus111: er behauptet ja er hätte es runtergeladen und QEMU würd egehen.
+2010-11-10 20:45:39,DesL,zum screen
+2010-11-10 20:45:40,pgahlen,"ja, er lädt nicht 1,44 MB runter, sondern nur n paar KB"
+2010-11-10 20:45:50,PNoob,(20:43:34) pgahlen: ... also bei mir hats per Rechtsklick in Qemu geklappt
+2010-11-10 20:45:50,XanClic,Bei mir sinds 1474560 Byte
+2010-11-10 20:45:57,DesL,PNoob: dein ton
+2010-11-10 20:46:00,markus111,worum gehts deenn?
+2010-11-10 20:46:06,PNoob,"pgahlen: bei mir sind es 1,4 MB laut linux"
+2010-11-10 20:46:10,pgahlen,ich verzweifle
+2010-11-10 20:46:14,AGGROStar1991,bei mir waren es nur 6.2 KB
+2010-11-10 20:46:17,XanClic,DesL: http://www.c-os.co.de/images/osimg/v002/COSPic001.png
+2010-11-10 20:46:18,pgahlen,mom ich lads ma wo anders hoch
+2010-11-10 20:46:33,PNoob,und wenn du sagt du hättest es runtergeladen und es würde in qemu gehen. wrum geht es denn bei mir nicht?
+2010-11-10 20:46:37,markus111,da hat jemand mein design geklaut :(
+2010-11-10 20:46:42,DesL,und wieso soll das ein fake sein?
+2010-11-10 20:46:50,PNoob,der Screenshot?
+2010-11-10 20:46:53,Jidder,ich finde es lächerlich von einem fake zu sprechen
+2010-11-10 20:46:57,XanClic,ack
+2010-11-10 20:47:00,PNoob,weil es in Qemu nicht läuft
+2010-11-10 20:47:06,DesL,full ack
+2010-11-10 20:47:07,XanClic,"Und wenn, dann wäre er sehr schlecht *g*"
+2010-11-10 20:47:11,markus111,hat jemand nen link für mich?
+2010-11-10 20:47:17,pgahlen,markus111 das Design hatte ich schon vor nem halbe Jahr :D
+2010-11-10 20:47:19,PNoob,wurde gerade gepastet
+2010-11-10 20:47:31,markus111,wo?
+2010-11-10 20:47:40,markus111,pgahlen: mein bg is dunkler ;)
+2010-11-10 20:47:41,pgahlen,gibbet sowas wie Pastebin für files?
+2010-11-10 20:47:47,PNoob,(20:46:16) XanClic: DesL: http://www.c-os.co.de/images/osimg/v002/COSPic001.png
+2010-11-10 20:47:53,Jidder,rapidshare
+2010-11-10 20:48:04,PNoob,da kann ich nichts runterladen
+2010-11-10 20:48:08,markus111,"ah, gefunden"
+2010-11-10 20:48:10,PNoob,ut ist besser
+2010-11-10 20:48:10,XanClic,"pgahlen: Da qemu keine Exception ausgibt, denke ich mal, dass es am Bootloader liegt (oder zumindest irgendwo im RM passiert)"
+2010-11-10 20:48:23,Jidder,PNoob: das ist aber dein problem
+2010-11-10 20:48:36,AGGROStar1991,nein jiddes da siehst du was falsch
+2010-11-10 20:48:43,pgahlen,hm bei mir funktioniert es ja ... kann mir mal wer den qemu-log von ihm pasten?
+2010-11-10 20:48:44,Jidder,"ich denke, dass es im pm passiert, weil die segment register mit selektoren geladen sind"
+2010-11-10 20:48:44,AGGROStar1991,die welt muss sich nach PNoob richten
+2010-11-10 20:48:51,Jidder,achso
+2010-11-10 20:48:58,PNoob,AGGROStar1991: nein das stimmt nicht
+2010-11-10 20:48:59,Jidder,jeder und jidder kann sich mal irren
+2010-11-10 20:49:21,XanClic,In bochs geht es
+2010-11-10 20:49:32,markus111,bei mir gehts
+2010-11-10 20:49:34,AGGROStar1991,pgahlen: bei mir kommt mit den 6.2KB bei qemu: Floppy: not a bootable device
+2010-11-10 20:49:43,markus111,sieht aus wie aufm screenshot
+2010-11-10 20:50:13,XanClic,"Jidder: Hm, stimmt… Aber dann müsste ja schon irgendwo eine Meldung von einem Interrupt kommen, oder?"
+2010-11-10 20:50:44,Jidder,weiß nicht. mein qemu gibt nie was aus ... windows
+2010-11-10 20:51:02,PNoob,also auf jedenfall glaube ich nicht das der screenshot die gleiche version ist wie die Floppy.
+2010-11-10 20:51:05,PNoob,weil es geht nicht
+2010-11-10 20:51:12,XanClic,"Hm, ich hatte jetzt auf deine telepathischen Fähigkeiten vertraut *g*"
+2010-11-10 20:51:21,XanClic,"PNoob: Boah, PNoob"
+2010-11-10 20:51:32,XanClic,Ich habs in bochs erfolgreich getestet
+2010-11-10 20:51:37,PNoob,ah
+2010-11-10 20:51:44,Jidder,ich ebenfalls
+2010-11-10 20:51:48,DesL,PNoob: du übertreibst es mal wieder
+2010-11-10 20:51:48,PNoob,trotzdem muss das bild nen FAKE sein.
+2010-11-10 20:51:55,XanClic,Du bist ein FAKE
+2010-11-10 20:51:56,PNoob,weil unter qemu läuft es nicht
+2010-11-10 20:52:01,Jidder,PNoob: du bist ein idiot. geh fernsehen gucken
+2010-11-10 20:52:06,DesL,XanClic: fake brain
+2010-11-10 20:52:07,XanClic,"Wenn das ein Screenshot mit GUI wäre, dann könnte ich mir sowas vorstellen"
+2010-11-10 20:52:26,XanClic,"Übrigens heißt es „Weil es unter qemu nicht läuft“, nur so am Rande"
+2010-11-10 20:52:32,Jidder,wie pgahlen das einzig richtige tut ...
+2010-11-10 20:52:58,AGGROStar1991,hmz gibts im irc nen votekick?
+2010-11-10 20:53:09,XanClic,"Nö, dazu wollte ich immer mal einen Bot basteln :-/"
+2010-11-10 20:53:16,XanClic,"ok, „immer mal“ – seit drei Tagen oder so"
+2010-11-10 20:53:18,DesL,könnte man mal bei tyndur implementieren
+2010-11-10 20:53:23,AGGROStar1991,jop
+2010-11-10 20:53:25,DickHuuhn,"XanClic, Peter macht Grammatikflames und hat keine Freunde"
+2010-11-10 20:53:29,markus111,http://img192.imageshack.us/img192/8893/cose.png
+2010-11-10 20:53:29,DickHuuhn,Willst du so sein wie Peter
+2010-11-10 20:53:37,markus111,was habt ihr denn alle?
+2010-11-10 20:53:38,XanClic,Ich bin Deutschland
+2010-11-10 20:53:58,AGGROStar1991,wie gesagt ich hab nich korrekt gedownloadet
+2010-11-10 20:54:15,markus111,und der noob is zu doof?
+2010-11-10 20:54:20,PNoob,nope
+2010-11-10 20:54:23,XanClic,In qemu läuft es auch bei mir nicht…
+2010-11-10 20:54:51,PNoob,"und qemu müsste ja melden, das es kein Bootable device giibt. tut es aber nicht"
+2010-11-10 20:55:05,markus111,dann ist dein qemu kaputt
+2010-11-10 20:55:09,markus111,hatt ich auch schon
+2010-11-10 20:55:11,PNoob,Das BIOS von einer Real HW müsste auch maulen wenn es nicht bootable ist.
+2010-11-10 20:55:19,PNoob,markus111: mein qemu läuft wunderbar
+2010-11-10 20:55:21,DesL,"yay, Marcell Davis is back!"
+2010-11-10 20:55:26,PNoob,nur mein Bochs ist kaput
+2010-11-10 20:55:52,PNoob,XanClic: was für Symtome zeigt es denn bei dir unter QEMU?
+2010-11-10 20:56:09,markus111,"DesL: îch hol gleich meinehomies, dann gibts miieeese beulerei, juunge :D"
+2010-11-10 20:56:12,XanClic,Es Triplefaultet mir vermutlich unterm Arsch weg
+2010-11-10 20:56:18,DesL,XD
+2010-11-10 20:56:39,XanClic,Nur steht im Log keine Exception
+2010-11-10 20:57:08,markus111,merkwürdiges zeug was ihr euch da zusammencodet :D
+2010-11-10 20:58:00,PNoob,"XanClic: nun erklär du mir mal, wie man mit dem Image einen Screenshot machen soll unter qemu?"
+2010-11-10 20:58:10,XanClic,m(
+2010-11-10 20:58:14,PNoob,da es ja bei dir unter bochs läuft ist dein image wohl heile
+2010-11-10 20:58:33,XanClic,"Du meinst also mit Fake, dass der ein bochs genommen hat, einen Screenshot angefertigt hat und dann die qemu-Titelleiste drübergemalt hat?"
+2010-11-10 20:58:38,PNoob,XanClic: du behauptest das ist kein FAKE. dann sag wie man das macht
+2010-11-10 20:58:40,XanClic,ENOSENSE?
+2010-11-10 20:58:51,DesL,ack
+2010-11-10 20:58:57,PNoob,XanClic: ich weiß nicht wie er es gemacht hat.
+2010-11-10 20:59:07,PNoob,aber wie hat er den Screenshot gemacht?
+2010-11-10 20:59:13,markus111,PNoob: gestartet??
+2010-11-10 20:59:35,PNoob,markus111: XanClic bekommt es doch auch nicht zum laufen
+2010-11-10 20:59:38,PNoob,also unter qemu
+2010-11-10 21:00:00,PNoob,markus111: und wie macht man dann nen Screenshot wenn es gar nicht läuft?
+2010-11-10 21:00:06,DesL,"gnar, du regst mich auf. mastamind: noch fragen?"
+2010-11-10 21:01:26,PNoob,Ich zeig euch gleich mal ne ALPHA von NandOS mit GUI
+2010-11-10 21:01:41,PNoob,dauert noch nen Augenblick weil ich ein paar sachen ändern Muss
+2010-11-10 21:02:43,markus111,welche version?
+2010-11-10 21:03:00,DesL,4.2
+2010-11-10 21:03:09,PNoob,ALPHA X.X.X
+2010-11-10 21:03:13,markus111,es gibt kein qemu 4.2
+2010-11-10 21:03:24,DesL,ich meinte nandos
+2010-11-10 21:03:26,PNoob,die aktuelle
+2010-11-10 21:03:34,markus111,.13?
+2010-11-10 21:03:43,pgahlen,hm also mein Internet is grad ma voll mies drauf
+2010-11-10 21:04:10,pgahlen,"hm, kann mir mal wer den Qemu Log von meinem Image pasten?"
+2010-11-10 21:04:30,markus111,"irgendwie hab ich das gefühl das Pnoob grad ziemlich nervt, lieg ich da richtig?"
+2010-11-10 21:04:37,AGGROStar1991,ach is nandos schon bei 0.1.3.3.7?
+2010-11-10 21:04:44,pgahlen,lol
+2010-11-10 21:04:48,DesL,^^
+2010-11-10 21:04:57,AGGROStar1991,also ich vote hiermit für nen votekick bei tyndur
+2010-11-10 21:05:04,markus111,meines is bei 0.0.0.0.0.0.0.0.0.0.0.1
+2010-11-10 21:05:15,AGGROStar1991,wer is dafür?
+2010-11-10 21:05:18,DesL,*auch
+2010-11-10 21:05:27,pgahlen,:D meines ist seit etwa 15 Minuten auf v. 0.02
+2010-11-10 21:05:27,PNoob,pgahlen:  nein NandOS ist nicht soweit
+2010-11-10 21:05:40,PNoob,NandOS hat aber ne ALPHA GUI
+2010-11-10 21:05:48,PNoob,und die Version werde ich gleich mal zum testen rausgeben
+2010-11-10 21:05:50,pgahlen,LOOOOOL
+2010-11-10 21:05:59,markus111,meins bekommt die WhiteUI
+2010-11-10 21:06:13,PNoob,pgahlen:  man kann leider noch nichts machen
+2010-11-10 21:06:20,pgahlen,-.- super GUI
+2010-11-10 21:06:24,PNoob,es wird nur nen Fenster gezeigt und nen Mauszeiger
+2010-11-10 21:06:24,pgahlen,mom
+2010-11-10 21:06:31,pgahlen,"ok, hab auch ne Alpha GUI"
+2010-11-10 21:06:53,pgahlen,aso
+2010-11-10 21:07:05,pgahlen,kann man schon die Maus bewegen?
+2010-11-10 21:07:18,PNoob,mal gehts mal nicht
+2010-11-10 21:07:27,pgahlen,n Fenster hab ich auch ... sogar schon mit Close-Button :d
+2010-11-10 21:07:39,markus111,mein skype meckert grad über access violations rum
+2010-11-10 21:07:48,pgahlen,hm keiner n Log für mich ?
+2010-11-10 21:07:50,Homix,ich hab auch schon ne halbe gui^^
+2010-11-10 21:08:15,pgahlen,"lol, jetzt sind auf einmal alle arauf erpicht ne GUI zu haben ..."
+2010-11-10 21:08:25,markus111,is ja auch geil xD
+2010-11-10 21:08:31,AGGROStar1991,dafür is asmimux grün ;D
+2010-11-10 21:08:35,pgahlen,ich war das ma ... bis ich die Vorzüge von einer TUI entdeckt habe
+2010-11-10 21:08:38,Homix,"ich war aber einer der ersten, die ihre gui wirklich vorgeführt haben^^"
+2010-11-10 21:08:40,PNoob,pgahlen: Homix hat schon lange ne GUI
+2010-11-10 21:09:23,markus111,pgahlen: TUI ist ein reiseunternehmen
+2010-11-10 21:09:56,pgahlen,hm egal ... ich will ersma n Log zu meinem Schrottimage sehen :D
+2010-11-10 21:10:17,markus111,"wart mal, ich probier mal in qemu"
+2010-11-10 21:10:56,markus111,der is wie verrückt am rebooten#
+2010-11-10 21:11:36,markus111,"log bekommst du, mom"
+2010-11-10 21:15:23,pgahlen,thx
+2010-11-10 21:18:47,markus111,gleisch hab ichs xD
+2010-11-10 21:19:02,pgahlen,lass dir Zeit
+2010-11-10 21:19:32,markus111,http://www.file-upload.net/download-2962482/qemu.log.gz.html
+2010-11-10 21:19:39,markus111,hab nix besseres gefunden
+2010-11-10 21:19:45,markus111,zum hochladen
+2010-11-10 21:19:54,pgahlen,ok ... danke
+2010-11-10 21:20:58,pgahlen,"WTF 2,5 MB log"
+2010-11-10 21:21:05,Homix,wtf 80 mb log^^
+2010-11-10 21:21:07,markus111,"ne, 80"
+2010-11-10 21:21:53,markus111,der hat zum ausgeben von einem zeichen ca 0.1 sek gebraucht
+2010-11-10 21:22:23,pgahlen,-.-
+2010-11-10 21:22:28,pgahlen,er downloadet noch
+2010-11-10 21:22:32,markus111,lol xD
+2010-11-10 21:22:38,pgahlen,mein WLAN ist unter aller sau
+2010-11-10 21:23:19,markus111,es tritt btw keine exception auf
+2010-11-10 21:23:32,XanClic,Und deshalb sind nur ca. 1 kB des Logs nützlich
+2010-11-10 21:23:39,XanClic,*„nützlich“
+2010-11-10 21:23:39,pgahlen,... das wäre ja auch das geringste übel
+2010-11-10 21:25:24,pgahlen,iergendwie hakt der bei 53%
+2010-11-10 21:28:52,markus111,shortform: http://pastebin.com/XK4gtYKw
+2010-11-10 21:29:16,markus111,mit -d int
+2010-11-10 21:29:31,Jidder,das selbe log hab ich auch
+2010-11-10 21:29:36,Jidder,das sagt glaube ich nichts aus
+2010-11-10 21:30:01,Jidder,die verzeichneten sind noch beim booten aufgetreten
+2010-11-10 21:30:53,Jidder,die verzeichneten interrupts
+2010-11-10 21:31:12,pgahlen,OOOO.OOOO markus111 dein erster Log soll 2 GB haben
+2010-11-10 21:31:29,markus111,w00t??
+2010-11-10 21:31:44,markus111,hier sinds 80
+2010-11-10 21:31:48,markus111,mb
+2010-11-10 21:33:18,markus111,"""Lady Gaga Revenge 2 is out!"" - neiiiiiiiiiiiiin, bitte nicht den guten appstore mit som scheiß vollzumülln :("
+2010-11-10 21:34:12,pgahlen,"markus111, die echte Verpesstung ist ja wohl eher sowas wie Billionair oder wie das heisst"
+2010-11-10 21:34:21,pgahlen,wo man 999 Euro ausgibt
+2010-11-10 21:34:29,markus111,iRa Pro
+2010-11-10 21:34:36,pgahlen,"und dann startet, und das einzige was man sieht, ist ein Dollar Schein"
+2010-11-10 21:34:47,pgahlen,was macht iRa Pro?
+2010-11-10 21:35:04,markus111,kameras angucken - funzt aber nich
+2010-11-10 21:35:10,markus111,is müll
+2010-11-10 21:35:15,pgahlen,-.-
+2010-11-10 21:35:29,pgahlen,auf meinem iPad hab ich ne Menge Müll Apps
+2010-11-10 21:35:39,markus111,aber die kosten nich 700€
+2010-11-10 21:35:57,pgahlen,ne
+2010-11-10 21:36:00,DickHuuhn,"pgahlen, das hieß ""I am rich"" :3"
+2010-11-10 21:36:10,DickHuuhn,und zeigte nen diamanten oder so
+2010-11-10 21:36:13,markus111,I am rich is rausgeflogen
+2010-11-10 21:36:14,pgahlen,ah oder so
+2010-11-10 21:36:22,DickHuuhn,"markus111, jo x)"
+2010-11-10 21:36:28,pgahlen,das gibbet jetzt bei Cydia
+2010-11-10 21:36:35,markus111,kostet jetzt 79ct 
+2010-11-10 21:36:41,DickHuuhn,lol!
+2010-11-10 21:36:51,pgahlen,"markus111, haste jetzt Cydia?"
+2010-11-10 21:36:56,markus111,nöp
+2010-11-10 21:37:02,pgahlen,oh das I am Rich in Cydia is n Theme :D
+2010-11-10 21:37:09,markus111,mach ich morgen oder so
+2010-11-10 21:37:10,pgahlen,gcc is voll cool
+2010-11-10 21:37:21,markus111,gcc aufm Handy/iPod :D
+2010-11-10 21:37:39,pgahlen,jo ... funzt auch auf iPad ... da geht das voll geil ab
+2010-11-10 21:37:43,pgahlen,das is jetzt wie n PC
+2010-11-10 21:37:59,pgahlen,angeblich kann man Springboard durch GNOME ersetzen
+2010-11-10 21:38:03,markus111,iPad ohne jailbreak is glaubich nutzlos (noch)
+2010-11-10 21:38:13,pgahlen,bis Freitag ja
+2010-11-10 21:38:32,markus111,dann mach ich mir ma eben cydia und so drauf
+2010-11-10 21:39:06,markus111,"oha, der ebreak is 10mb  groß"
+2010-11-10 21:45:26,pgahlen,"chill ma nach 1 Monat hast du 1,7 GB sonstige Dateien da drauf"
+2010-11-10 21:45:33,pgahlen,woher die auch immer kommen
+2010-11-10 21:46:21,pgahlen,"naja, bin ma pennen"
+2010-11-10 21:46:23,pgahlen,gn8
+2010-11-10 21:46:42,markus111,n8
+2010-11-10 21:51:12,markus111,n8
+2010-11-10 22:00:44,XanClic,gn8
+2010-11-10 22:06:46,Jidder,http://www.youtube.com/watch?v=EcXiMQ0J2So
+2010-11-10 22:22:48,Paddy,Hi
+2010-11-10 22:24:04,chris12,gn128
+2010-11-10 22:25:00,DesL,moin Paddy
+2010-11-10 22:38:38,PNooob,re
+2010-11-10 22:39:35,mastamind,"DesL: wie kann ich dich aufregen, wenn ich gar nicht da war?"
+2010-11-10 22:40:01,PNooob,"was würdet ihr machen, wenn ihr nen Heft habt, wo 3 Schlecht Deutscharbeiten drin sind und die Lehrerin da ne Unterschrift drunter haben will. Hab bisher keine der arbeiten vorgezeigt."
+2010-11-10 22:40:26,PNooob,Ich weiß momentan nicht weiter
+2010-11-10 22:40:44,mastamind,deinen eltern zeigen und besserung geloben.
+2010-11-10 22:41:40,PNooob,dann gibts ärger und PC Vwrbot fürs restliche Schuljahr.
+2010-11-10 22:42:00,mastamind,da musst halt durch.
+2010-11-10 22:44:55,PNooob,"eigentlich hatte ich mir am anfang des Schuljahres vorgenommen, alle arbeiten vorzuzeigen. Meine mutter meine es würde für ne Schlechte note erstmal nur ne Verwarnung geben ohne strafe. Meine schwester schreibt ne 5 bekommt ne woche PC verbot. Ich schreib 2 tage später ne 5 und trau mich nicht die vorzuzeigen, weil ich keine lust auf pc verbot hab. Dann kam"
+2010-11-10 22:46:22,PNooob,ne gramatik arbeit mit ner 4 hinzu. Wollte ich vorzeigen. Ging aber nicht weil die 5 im heft ist. Und nun sind noch 2 diktate hinzugekommen ne 6 und ne 5.
+2010-11-10 22:47:12,DesL,ich würde dir ja empfehlen weniger zeit aufs schwindeln und mehr aufs lernen zu verwenden
+2010-11-10 22:47:31,PNooob,"was meint ihr, kann ich mit dem Argument meine Mutter hätte ihr wort gebrochen die strafe umgehen?"
+2010-11-10 22:47:37,mastamind,"dir sollte komplett egal sein, ob du dann bestraft wirst oder nicht. was deine eltern sagen, sollte dir egal sein. du solltest so klug sein, selbst zu erkennen, wie wichtig es ist, deutsch richtig zu können."
+2010-11-10 22:47:42,DesL,m(
+2010-11-10 22:47:51,DesL,full ack
+2010-11-10 22:48:10,PNooob,"DesL schwindeln verbraucht kaum zeit. Heft in tasche, tasche zu fertig"
+2010-11-10 22:48:36,DesL,s/zeit/energie
+2010-11-10 22:49:01,Jidder,"ich bin dafür, dass PNooob computerverbot bekommt"
+2010-11-10 22:49:11,DesL,*g*
+2010-11-10 22:49:30,PNooob,"mastamind ich kann deutsch dürfte sich so um 4 bewegen. Ich bekomme nur in Diktaten so schlechte Zensuren, weil meine Schrift sehr schlecht zu lesen ist."
+2010-11-10 22:49:45,DickHuuhn,http://www.spiegel.de/fotostrecke/fotostrecke-36611.html lol
+2010-11-10 22:50:12,PNooob,Jidder dann nerv ich euch über mein Handy. Da bin ich auch gerade on.
+2010-11-10 22:50:14,mastamind,"PNooob: wenn ich mir deine wikiartikel und dein schreiben hier so ansehe, kommt mir nicht vor, dass du besonders gut deutsch kannst."
+2010-11-10 22:50:37,Jidder,"aber dann müssen wir uns anhören, wie blöd seine eltern sind, weil er für 52 cent pro sms trotzdem hier reinkommt"
+2010-11-10 22:50:51,DesL,"DickHuuhn: lol, facepalm"
+2010-11-10 22:50:53,Jidder,"ich wollte es ja zuerst nicht absenden, aber wenn er es selbst auch noch erwähnt"
+2010-11-10 22:50:59,DickHuuhn,"DesL, die fotostrecke ist eh so geil xD"
+2010-11-10 22:51:10,PNooob,ich sag ja so 3- bis 4 so in dem bereich bin ich anzusiedeln.
+2010-11-10 22:51:45,Paddy,"Man könnte es dir ja erleichtern, indem dich hier jemand bannt"
+2010-11-10 22:51:59,Paddy,Dann kommt es auf das PC-Verbot auch nicht mehr an
+2010-11-10 22:52:01,PNooob,Jidder: WLAN kostet mich keinen Pfennig
+2010-11-10 22:52:26,PNooob,Paddy ban mit welchem grund?
+2010-11-10 22:52:50,Jidder,schlechte noten
+2010-11-10 22:53:11,PNooob,das ist nur deutsch
+2010-11-10 22:53:50,PNooob,alle anderen fächer sind ok
+2010-11-10 22:55:04,PNooob,"vieleicht sollte ich meine Deutschlehrerin fragen ob ich den Aufsatz den wir dieses halbjahr noch schreiben, am pc schreiben darf."
+2010-11-10 22:55:25,PNooob,letztes jahr durfte ich das auch.
+2010-11-10 22:55:36,DesL,OO
+2010-11-10 22:55:39,PNooob,hat aber nichts mehr gebracht
+2010-11-10 22:55:52,mastamind,dann kanns wohl nicht an der kleinen schrift liegen.
+2010-11-10 22:56:03,DesL,XD
+2010-11-10 22:56:05,PNooob,trotzdem war deutsch im zeugniss ne mangelhafte note
+2010-11-10 22:56:13,mastamind,du musst halt üben.
+2010-11-10 22:56:17,mastamind,und vielleicht mehr lesen.
+2010-11-10 22:56:26,PNooob,mastamind der Aufsatz war ne 4+
+2010-11-10 22:56:41,mastamind,und damit bist du zufrieden?
+2010-11-10 22:58:07,DickHuuhn,"""Die Volkshochschule Bremen bietet seit 1978 Kurse an für Jugendliche und Erwachsene, die noch nicht richtig lesen und schreiben können"""
+2010-11-10 22:58:13,PNooob,naja es ist nicht optimal ne 3 wär mir lieber aber es reicht um nicht sitzenzubleiben. Und wenn english oder mathe ne 2 wirh kann ich trotzdem meinen erweiterten realschulabachluss machen.
+2010-11-10 22:58:36,DesL,"mangelhaft ist defizit, oder?"
+2010-11-10 22:58:38,PNooob,Dickhuuhn ich kann lesen und schreiben.
+2010-11-10 22:58:43,DickHuuhn,anscheinend nicht
+2010-11-10 22:58:51,DickHuuhn,wenn man es nicht lesen kann...
+2010-11-10 22:58:53,PNooob,mangelhaft ist 5
+2010-11-10 22:59:03,DesL,m(
+2010-11-10 22:59:08,Paddy,"write-only, er schreibt seine Aufsätze in Perl"
+2010-11-10 22:59:17,DesL,"dir ist nicht klar was ich meine, dann sag auch nicht dazu"
+2010-11-10 22:59:53,DesL,wäre zumindest optimaler
+2010-11-10 23:00:00,DickHuuhn,"Paddy, lol"
+2010-11-10 23:00:32,PNooob,Paddy wäre ne möglichkeit
+2010-11-10 23:00:35,DickHuuhn,"Wie war das noch mit dem einen bei GBO, der für seine Informatikklausur nen Brainfuckinterpreter geschrieben hat und dann alle Aufgaben mit dem Code gelöst hat? ^^"
+2010-11-10 23:01:00,DesL,^^
+2010-11-10 23:01:38,mastamind,GBO?
+2010-11-10 23:01:51,DesL,german bash
+2010-11-10 23:01:57,mastamind,ah
+2010-11-10 23:02:17,PNooob,wofür steht das O?
+2010-11-10 23:02:27,DesL,org
+2010-11-10 23:02:37,PNooob,ah
+2010-11-10 23:03:43,DickHuuhn,sagt mal
+2010-11-10 23:04:03,DesL,mal
+2010-11-10 23:04:07,DickHuuhn,"Wenn ich Sonntags arbeite, und ich in der nächsten Woche eh den nächsten Samstag frei habe, kriege ich dann trotzdem nen Ausgleichstag?"
+2010-11-10 23:04:21,Jidder,ich würde nicht arbeiten
+2010-11-10 23:04:28,Jidder,warum konjunktiv
+2010-11-10 23:04:31,Jidder,ich werde nicht arbeite
+2010-11-10 23:04:32,Jidder,n
+2010-11-10 23:04:36,DickHuuhn,"Jidder, warum, ist doch geil :3"
+2010-11-10 23:05:00,DickHuuhn,1 1/2h sonntags arbeiten und dafür in der nächsten woche langes wochenende
+2010-11-10 23:05:04,DickHuuhn,Und 2 Überstunden
+2010-11-10 23:07:49,PNooob,du arbeitest 7 Tage die woche?
+2010-11-10 23:07:51,DickHuuhn,"(3) Werden Arbeitnehmer an einem Sonntag beschäftigt, müssen sie einen Ersatzruhetag haben, der innerhalb eines den Beschäftigungstag einschließenden Zeitraums von zwei Wochen zu gewähren ist. Werden Arbeitnehmer an einem auf einen Werktag fallenden Feiertag beschäftigt, müssen sie einen Ersatzruhetag haben, der innerhalb eines den Beschäftigungstag einschließenden Zeitraums von acht Wochen zu gewähren ist."
+2010-11-10 23:07:58,DickHuuhn,"PNooob, das geht doch gar nicht m("
+2010-11-10 23:08:36,DickHuuhn,"jedenfalls, absatz 3 sagt nicht ob der ruhetag zusätzlich ist oder ob ich überhaupt nur irgendeinen brauche (also samstag oder so)"
+2010-11-10 23:08:45,PNooob,deswegen ja. Hattest du vieleicht deinen rihetag schon?
+2010-11-10 23:09:00,DickHuuhn,wtf laberst du für nen mist
+2010-11-10 23:09:14,DickHuuhn,Ich hab doch noch nichtmal die Arbeit gemacht um die es geht wie soll ich da meinen ruhetag schon haben oO
+2010-11-10 23:09:30,mastamind,DickHuuhn: musst du samstags arbeiten?
+2010-11-10 23:09:34,DickHuuhn,"mastamind, nö"
+2010-11-10 23:09:38,mastamind,ok
+2010-11-10 23:09:42,DickHuuhn,"Hab 5 Tage Woche, 38,5h und so"
+2010-11-10 23:09:58,PNooob,"wenn du am sonntag gearbeitet hast, wirst du doch sicherlich schon einen tag frei gehabt haben oder?"
+2010-11-10 23:10:12,DickHuuhn,"PNooob, ich habe aber nicht am sonntag gearbeitet..."
+2010-11-10 23:10:31,DickHuuhn,Ich habe vor es zu tun :P
+2010-11-10 23:10:38,PNooob,aber du hast es vor oder wie?
+2010-11-10 23:10:58,mastamind,"ihr habt sowas wie einen kollektivvertrag in deutschland nicht, oder?"
+2010-11-10 23:11:20,DickHuuhn,"mastamind, kein Deutscher? Meh, ich dachte schon du könntest als Arbeiter vllt helfen ^^"
+2010-11-10 23:11:31,DickHuuhn,"Wir haben ein ArbZG, was schon seit 1919 gilt oder so :D"
+2010-11-10 23:11:33,PNooob,Dickhuuhn ich würde einfach Freitag zuhause bleiben.
+2010-11-10 23:11:40,mastamind,leider nein. ich kenn nur die österreichischen gesetze.
+2010-11-10 23:11:42,DickHuuhn,"PNooob, ne is klar"
+2010-11-10 23:11:45,DesL,:P
+2010-11-10 23:12:01,DickHuuhn,Dann bleib ich gleich die ganze Woche zu Hause noch besser :P
+2010-11-10 23:12:23,DickHuuhn,Ich würde die Arbeitsstelle aber doch noch ein bisschen behalten
+2010-11-10 23:12:36,PNooob,Dickhuuhn das ist doch sowieso nur Zivi oder?
+2010-11-10 23:12:47,DickHuuhn,"""nur"" ist gut"
+2010-11-10 23:13:08,DickHuuhn,Bei einem normalen Job geh ich für sowas keine maximal 3 Jahre wegen Dienstflucht in den Bau :3
+2010-11-10 23:13:20,PNooob,ich bin froh das der scheiß abgeschafft wurde.
+2010-11-10 23:13:34,DickHuuhn,"wieso froh, so einfaches geld machst du nie mehr im leben ^^"
+2010-11-10 23:13:45,PNooob,bei Zivi muss man das OO
+2010-11-10 23:14:08,DickHuuhn,"PNooob, vor 70 Jahren hätte man dich dann an die Wand gestellt lulz"
+2010-11-10 23:14:18,PNooob,da stdiere ich lieber gemütlich und beziehe bafög
+2010-11-10 23:14:54,DesL,"PNooob: das geht aber nur wenn deine eltern nicht zu viel verdienen, afaik"
+2010-11-10 23:14:55,Jidder,lol der PNooob und studieren
+2010-11-10 23:15:06,PNooob,Dickhuuhn was arbeitest du eigentlich?
+2010-11-10 23:15:15,DickHuuhn,"zivi, hast du doch eben selber gesagt :P"
+2010-11-10 23:15:25,PNooob,DesL tun sie nicht.
+2010-11-10 23:15:52,DickHuuhn,Wisst ihr zufällig ob bei Bafög das Bernsteinzimmer im Keller angerechnet wird?
+2010-11-10 23:16:12,mastamind,"PNooob: wenn du studieren willst, solltest erst recht gut deutsch können."
+2010-11-10 23:16:12,PNooob,aber was. Spielst du mit kleinen Kindern oder darst du alte Leute füttern oder was anderes?
+2010-11-10 23:16:31,DickHuuhn,"PNooob, ich mach alles"
+2010-11-10 23:16:39,DesL,DesL: nur zu 15%
+2010-11-10 23:16:51,PNooob,mastamind das lerne ich dann noch auf den 2 Gym jahren.
+2010-11-10 23:16:59,DickHuuhn,Und zwar alles im Sinne von alles
+2010-11-10 23:17:06,Jidder,die werden dann ja das reinste kinderspiel
+2010-11-10 23:17:09,PNooob,Dickhuuhn sag mal
+2010-11-10 23:17:18,DesL,hat wer erfahrung mit irfanview?
+2010-11-10 23:17:20,DickHuuhn,ja alles
+2010-11-10 23:17:30,DickHuuhn,"ist ein krankenhaus, und wenn mir einer sagt ich soll was machen dann mach ich das :/"
+2010-11-10 23:17:34,Jidder,ich hab damit schon mal bilder kleiner und größer gemacht
+2010-11-10 23:17:38,Jidder,ne größer noch nich
+2010-11-10 23:17:41,Jidder,also nur kleiner
+2010-11-10 23:18:12,DesL,auch mit scripting?
+2010-11-10 23:18:34,PNooob,nein
+2010-11-10 23:18:45,PNooob,was willst du denn machen?
+2010-11-10 23:18:54,DesL,scripten
+2010-11-10 23:19:06,DesL,kann irfanview mehrere ebenen verarbeiten?
+2010-11-10 23:52:27,DesL,"irfanview ist doch doof, kann gescriptet werden, ist aber für ebenen zu blöde :P"

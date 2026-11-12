@@ -1,0 +1,87 @@
+date/time,nick,message
+2017-04-19 00:00:25,XanClic,"Paddy, OK, bald D:"
+2017-04-19 00:02:36,Paddy,"XanClic: Gleich nach der v3 vom USB-Treiber, oder wie? ;-)"
+2017-04-19 00:02:50,XanClic,"Ich sehe, du siehst die Prioritäten genau wie ich"
+2017-04-19 00:02:53,XanClic,Kann den ja in Rust neuschreiben.
+2017-04-19 00:02:58,Paddy,*g*
+2017-04-19 00:03:12,XanClic,"Der Plan war eigentlich COBOL für nächstes Jahr, aber ich glaube, das wird nichts :-P"
+2017-04-19 00:03:14,Svenska,ich wär ja fuer forth
+2017-04-19 10:32:45,MasterQ32,morgen
+2017-04-19 12:22:48,MasterQ32,moin
+2017-04-19 12:23:10,MasterQ32,"ich hab grade nen vermeintlichen bug in MonoDevelop gefunden, aufgrund von einem verhalten von C#/.NET"
+2017-04-19 13:27:27,feliwir,"hey, hat hier jemand schonmal eine eigene PCB erstellt?"
+2017-04-19 13:28:36,MasterQ32,"platine? ja, war aber grausig ^^"
+2017-04-19 19:41:57,dietzi,Wunderschönen guten Abend. Gleich wieder mal direkt eine Frage...
+2017-04-19 19:42:09,MasterQ32,heyhey
+2017-04-19 19:42:15,Svenska,naaaaamd
+2017-04-19 19:43:15,dietzi,"Thema: ARP. Habe ich es richtig aufgefasst, dass ich bei einem ARP-Paket (Operation = 1) folgendermaßen antworte: Empfänger-MAC mit Absender-MAC tauschen und Empfänger-IP = Absender-IP.  Als Absender-IP setzte ich danach meine eigene IP ?"
+2017-04-19 19:43:44,dietzi,und natürlich operation = 2
+2017-04-19 19:44:17,dietzi,Quasi so hier: https://pastebin.com/rr4BSwAV
+2017-04-19 19:44:25,Svenska,kennst du wireshark?
+2017-04-19 19:45:26,dietzi,Wireshark spuckt mir gar nichts aus im Moment. Ich weiß nun aber auch nicht ob die Karte sendet oder nicht..... Demzufolge wollte ich erstmal meine Pakete auf Gültigkeit (theoretisch) prüfen und dann weitersuchen woran es liegt
+2017-04-19 19:46:09,Svenska,hast du ne direkte verbindung zwischen deinem testrechner und dem dev-rechner (crosskabel) oder ist da ein switch zwischen?
+2017-04-19 19:46:32,Svenska,im zweifel: zweite netzwerkkarte in den dev-rechner (gibt's fuer usb) und direkt rankabeln
+2017-04-19 19:46:58,Svenska,"dann wireshark im promiscuous-modus laufen lassen, dass der auch alle pakete auf dem kabel sieht, und nicht nur die, die das OS empfängt und durchleitet"
+2017-04-19 19:47:25,dietzi,Aktuell läuft der Test-Rechner per LAN über Router über Server und mein Dev-Rechner (Laptop) läuft per WLAN. Da werde ich mal das Kabel kurz umstecken
+2017-04-19 19:47:27,Svenska,"du brauchst kein ARP, um ethernet-pakete zu erzeugen"
+2017-04-19 19:48:12,Svenska,"und wenn du deinen testrechner einfach mal ein paar (ethernet-)broadcasts erzeugen lässt, dann sollten die auch ankommen. im zweifelsfall kannst du auch ein statisches udp-paket erzeugen, empfänger und ip-adresse kennst du ja"
+2017-04-19 19:48:50,Svenska,"dein problem ist, dass du gerade extrem viele baustellen auf einmal hast, das macht das debugging schwer."
+2017-04-19 19:52:15,dietzi,Das mit den Baustellen ist auslegungssache..... Ethernet-Pakete empfange ich ja bereits erfolgreich und lese erfolgreich die Daten. Nun möchte ich eben auch Pakete versenden....
+2017-04-19 20:04:11,dietzi,"Wird durch ""uint8_t *data = &arp_val;"" arp_val in ein uint8_t-Array ""konvertiert""? Oder habe ich da wieder mal Unsinn geschrieben?"
+2017-04-19 20:04:45,MasterQ32,was ist arp_val?
+2017-04-19 20:04:55,MasterQ32,aber danach betrachtest du arp_val als uint8_t
+2017-04-19 20:05:17,dietzi,https://pastebin.com/PSjg0hy8
+2017-04-19 20:05:27,Svenska,"data ist ein zeiger, und an den ort des zeigers schreibst du die adresse von arp_val, was auch immer das ist"
+2017-04-19 20:06:31,dietzi,"Das heißt, dass beispielsweise data[4] dem Offset 4 in struct arp entspricht?"
+2017-04-19 20:06:37,Svenska,nein
+2017-04-19 20:07:20,dietzi,"Es geht mir um die Write-Routine. Ich habe eine Funktion, welche den TX-Buffer mit Bytes füllt"
+2017-04-19 20:07:35,Svenska,data[0] bis data[3] enthalten die *adresse* von arp_val
+2017-04-19 20:07:38,Svenska,nicht deren werten
+2017-04-19 20:07:51,dietzi,"Nun wollte ich mir viel Schreibarbeit und Bitshifting sparen und die Daten aus ""struct arp"" direkt in diesen Buffer umwandeln"
+2017-04-19 20:08:25,Svenska,"kann aber auch sein, dass ich mal wieder großen unsinn erzähle und eigentlich keine ahnung hab"
+2017-04-19 20:08:53,Svenska,"aber wenn arp_val ein ""uint8_t *"" ist, also ein zeiger auf bytes, dann sollte das & da weg"
+2017-04-19 20:11:42,MasterQ32,welchen typ hat denn jetzt arp_val?
+2017-04-19 20:11:42,MasterQ32,struct arp?
+2017-04-19 20:11:42,MasterQ32,struct arpt *?
+2017-04-19 20:13:47,dietzi,struct arp arp_val;
+2017-04-19 20:15:14,Svenska,"also, wenn du schreibarbeit sparen willst und dafuer bereit bist, implementation-defined behavior in kauf zu nehmen, dann wuerde ich an deiner stelle einfach die ""struct arp"" mit einem ""uint8_t[]"" ueberlagern, per union"
+2017-04-19 20:16:48,Svenska,das funktioniert ganz gut und du musst nicht mit zeigern rumhantieren
+2017-04-19 20:17:01,MasterQ32,"Svenska: wenn die struct packed ist, ist es afaik defined behaviour, den pointer zu casten"
+2017-04-19 20:17:13,MasterQ32,aber bei unpacked structs definitiv nicht
+2017-04-19 20:17:26,Svenska,"ja gut, davon bin ich mal implizit ausgegangen ;)"
+2017-04-19 20:17:43,Svenska,"ich weiß, dass man beliebige dinge nach (char) casten darf, aber ob das auch fuer (uint8_t) gilt, weiß ich nicht"
+2017-04-19 20:17:49,Svenska,"ich weiß, dass es funktioniert *g*"
+2017-04-19 20:18:06,MasterQ32,:D
+2017-04-19 20:18:14,MasterQ32,ist char eig. als 8 bit definiert?
+2017-04-19 20:18:18,dietzi,Wie funktioniert diese überlagern?
+2017-04-19 20:18:29,Svenska,MasterQ32: ist implementation-defined
+2017-04-19 20:18:38,MasterQ32,"okay, dann hab ich das richtig im kopf"
+2017-04-19 20:18:43,Svenska,"ein char ist CHAR_BITS breit, und je nach compiler entweder signed oder unsigned"
+2017-04-19 20:19:05,Svenska,"aber wenn du POSIX hast, ist CHAR_BITS == 8"
+2017-04-19 20:19:28,Svenska,dietzi: union { struct arp arp; uint8_t data[]; }
+2017-04-19 20:19:54,Svenska,du kannst deine daten ins arp-feld reinschreiben und als bytes aus data rauslesen
+2017-04-19 20:23:07,dietzi,Wird arp und data automatisch referenziert oder muss ich data nochmal zuweisen?
+2017-04-19 20:23:37,Svenska,"eine union ist wie eine struct, wobei aber alle elemente an der gleichen adresse anfangen"
+2017-04-19 20:24:06,Svenska,"d.h. wenn du in ""arp"" schreibst, schreibst du gleichzeitig auch in ""data"""
+2017-04-19 20:24:11,dietzi,Das heißt ich schreibe in die struct und kann direkt aus data lesen?
+2017-04-19 20:24:17,dietzi,Gut. Verstanden
+2017-04-19 20:24:58,dietzi,"Compiler sagt nein.... ""flexible array member in union"" bei data[]"
+2017-04-19 20:25:08,Svenska,dann gib dem die größe
+2017-04-19 20:25:18,Svenska,uint8_t data[sizeof(struct arp)];
+2017-04-19 20:25:20,Svenska,oder sowas
+2017-04-19 20:32:56,dietzi,So richtig steige ich da noch nicht durch..... Wie genau gestalte ich den Zugriff? Wie schreibe ich die Daten in arp_val und lese aus data? Aktuell habe ich das so: https://pastebin.com/MQigu2B0
+2017-04-19 20:33:24,dietzi,Der Wert von data[0] passt aber nicht.....
+2017-04-19 20:33:39,Svenska,"bedenke, dass du eventuell die endianness anpassen musst"
+2017-04-19 20:34:11,dietzi,Sollte eigentlich alles little sein
+2017-04-19 20:34:56,Svenska,dann steht in arp_val gruetze
+2017-04-19 20:35:40,dietzi,Da passt alles
+2017-04-19 20:35:52,dietzi,Habe ich mittels kprintf verifiziert
+2017-04-19 20:35:56,Svenska,hm
+2017-04-19 20:40:14,Svenska,du machst was falsch: https://pastebin.com/UvWqvS4H
+2017-04-19 20:40:57,Svenska,das programm tut bei mir.
+2017-04-19 20:41:29,Svenska,"das problem mit den baustellen ist, dass du (a) hardware-treiber, (b) ip-stack, (c) kernel gleichzeitig entwickelst ;)"
+2017-04-19 20:41:42,Svenska,"und es gut sein kann, dass du einen bug irgendwo anders hast, als du es erwartest."
+2017-04-19 20:41:57,Svenska,"ich hab mal *echt lange* nach komischen werten gesucht, bis ich gemerkt hab, dass der bug in printf() lag."
+2017-04-19 20:44:15,dietzi,kprintf hat bis jetzt alles richtig gemacht zumal es das unveränderte Original aus dem Tutorial ist.....
+2017-04-19 20:44:30,dietzi,Ich weiß dass es nur ein Beispiel war ;)
+2017-04-19 20:47:52,dietzi,Das mit dem union passt. Hatte einen Denkfehler bei den Testwerten. Alles gut :)

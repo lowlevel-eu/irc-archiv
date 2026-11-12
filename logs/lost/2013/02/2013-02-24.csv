@@ -1,0 +1,305 @@
+date/time,nick,message
+2013-02-24 08:14:49,billy,Moin
+2013-02-24 11:46:16,Naopleon,Mein Paging  will nich recht...
+2013-02-24 13:03:04,Naopleon,verdammt Kevin ist auch im Englischen Forum
+2013-02-24 13:04:10,Paddy,Wir haben unsere Spione überall!
+2013-02-24 13:07:13,Naopleon,shit ich kann mir OMG:D
+2013-02-24 13:07:27,Naopleon,Naopleon: tippfehler
+2013-02-24 13:07:52,Paddy,"Ähm, was habt ihr dem gegeben?"
+2013-02-24 13:09:52,Naopleon,Paddy: ?
+2013-02-24 13:11:07,Naopleon,Paddy: ?
+2013-02-24 13:12:17,Naopleon,Paddy: ?
+2013-02-24 13:14:23,Paddy,Naopleon: !
+2013-02-24 13:19:58,Naopleon,Paddy: aha...
+2013-02-24 13:22:26,Naopleon,Paddy: http://forum.osdev.org/viewtopic.php?f=1&p=220013#p220013HILF
+2013-02-24 13:22:39,Naopleon,Paddy: http://forum.osdev.org/viewtopic.php?f=1&p=220013#p220013 HILF
+2013-02-24 13:23:15,Paddy,Traust du dem Lowlevel-Forum nicht mehr? ;-)
+2013-02-24 13:23:44,Naopleon,Nö aber schau mal in die IRC Logs Link ...
+2013-02-24 13:24:37,Paddy,Was sollte ich da sehen?
+2013-02-24 13:24:39,Paddy,"Naja, auf jeden Fall:"
+2013-02-24 13:24:41,Paddy,0: v=0e e=0000 i=0 cpl=0 IP=0008:000000000010051d pc=000000000010051d SP=0010:0000000000126fac CR2=000000000010051d
+2013-02-24 13:24:48,Paddy,Dein Code ist nicht gemappt
+2013-02-24 13:24:59,Naopleon,aha
+2013-02-24 13:25:16,Paddy,cr2 = eip und der Error Code hat Bit 0 nicht gesetzt
+2013-02-24 13:25:27,Naopleon,Paddy: aber ich hab doch die ersten 256 MB gemappt?
+2013-02-24 13:25:35,Paddy,Offenbar nicht
+2013-02-24 13:27:04,Paddy,"CR3=00001000. Also mach mal eine Endlosschleife bevor du Paging aktivierst und schau dann mal im qemu-Monitor, was an 0x1000 steht"
+2013-02-24 13:27:32,Naopleon,an 0x1000 ist mein Context das weiß ich schon
+2013-02-24 13:28:07,Naopleon,weil 0x1000 ist dann das erste was frei ist nach 0x0 das reserviert ist
+2013-02-24 13:30:43,Naopleon,jo danke trotzdem
+2013-02-24 13:31:49,Paddy,"Inwiefern hast du jetzt das gemacht, was ich vorgeschlagen habe?"
+2013-02-24 13:32:19,Naopleon,Ich habs schon gemacht
+2013-02-24 13:32:21,Paddy,"Natürlich liegt da dein PD, aber ich habe gesagt, du sollst prüfen, ob in dem PD das richtige drinsteht"
+2013-02-24 13:32:52,Naopleon,aso 
+2013-02-24 13:38:01,Naopleon,also die FLags sind 0xb
+2013-02-24 13:38:56,Naopleon,also nicht besonders
+2013-02-24 13:39:37,Naopleon,und der letzte Pagetbl pointer ist 0x64
+2013-02-24 13:40:18,Naopleon,also was is verkehrt ;)
+2013-02-24 13:40:21,Naopleon,?
+2013-02-24 13:42:15,Naopleon,Page Table entries folgen:
+2013-02-24 13:49:34,Naopleon,Da sind die Flags auch 0xb
+2013-02-24 13:49:47,Naopleon,und der Letzte PagePointer ist 0xfff
+2013-02-24 13:51:59,Naopleon,für die RW_Flags nutze ich 8 für frei verfügbare bits 7 und für die Pointer immer 19 bit
+2013-02-24 13:52:23,Naopleon,vllt ist das der fehler
+2013-02-24 13:52:36,Naopleon,Paddy: noch da?
+2013-02-24 13:52:41,Naopleon,:D
+2013-02-24 13:53:23,Paddy,Naopleon: Was ist der allererste Eintrag im PD?
+2013-02-24 13:53:29,billy,Moin
+2013-02-24 13:53:33,Paddy,Komplett mit Adresse und Flag und allem drum und dran?
+2013-02-24 13:53:35,Paddy,Moin billy
+2013-02-24 13:53:52,billy,Worum gehts?
+2013-02-24 13:53:55,Naopleon,billy: moin
+2013-02-24 13:54:29,Paddy,"billy: Rate mal, wenn das Stichwort PD vorkommt ;-)"
+2013-02-24 13:55:24,Naopleon,pointer 0x0 und RWflags0xb
+2013-02-24 13:55:55,Paddy,"Der komplette Eintrag ist ein Wert mit acht Hexziffern, keine zwei Teile"
+2013-02-24 13:56:07,Naopleon,Ich glaub den Fehler aber wo zu sehen
+2013-02-24 13:56:22,Paddy,"Aber falls du das richtig liest, liegt die PT korrekt an 0x0, dann müsstest du die als nächstes anschauen"
+2013-02-24 13:57:34,Naopleon,Paddy: Ich speichere das in einem Packed struct und der sieht 8bit für frei verfügbar vor im Wiki sinds aber nur 3bit
+2013-02-24 13:57:48,Paddy,Bitfelder sind böse
+2013-02-24 13:58:05,Paddy,"Nimm einen uint32_t, das ist wesentlich sicherer"
+2013-02-24 13:58:24,Naopleon,Paddy: eigtl sinds sie cool aber man darf sich nich verzählen
+2013-02-24 13:58:38,Paddy,"""böse"" in dem Sinn, dass der C-Standard die Reihenfolge nicht definiert, in denen die Felder im Speicher liegen"
+2013-02-24 13:58:48,Naopleon,achso
+2013-02-24 13:58:57,Paddy,"Ist also keine gute Idee, die für die Kommunikation mit Hardware zu benutzen"
+2013-02-24 13:59:03,MSN,was ist böse?
+2013-02-24 13:59:08,Paddy,Bitfelder
+2013-02-24 13:59:11,MSN,ah
+2013-02-24 13:59:11,Naopleon,wie macht C das dann
+2013-02-24 13:59:14,Naopleon,GCC
+2013-02-24 13:59:20,Naopleon,meinte ich
+2013-02-24 13:59:34,Paddy,"Ich bin mir nichtmal sicher, ob gcc es über alle Plattformen einheitlich macht. Ich glaube nicht."
+2013-02-24 13:59:50,Paddy,"mingw war irgendwie anders, wenn ich mich nicht täusche"
+2013-02-24 14:00:07,Naopleon,Paddy: wie meinst du gcc macht das so wies will
+2013-02-24 14:00:18,Naopleon,und hat da keine feste Regelung
+2013-02-24 14:00:35,Paddy,"Er muss es ja so machen, wie er will, weil der Standard nur sagt, dass es ""implementation defined"" ist"
+2013-02-24 14:01:12,Paddy,"Auf Windows hat er standardmäßig eine Regelung, die mit den MS-Compilern übereinstimmt, glaube ich. Und auf Linux eben eine andere."
+2013-02-24 14:01:14,Paddy,Von daher: Einfach bleiben lassen
+2013-02-24 14:02:03,Naopleon,Paddy: Das ist der Scheiß kevins kernel ist so gut das man machen kann was man will man kriegt es nicht besser hin
+2013-02-24 14:02:18,Naopleon,*gleich gut
+2013-02-24 14:02:37,Paddy,"Wär auch doof, wenn das Tutorial nicht den besten Weg zeigen würde, oder?"
+2013-02-24 14:03:40,Naopleon,Oh man Linux geht auch nur mit GCC also mache ich das mit Bitfeldern so das es unter GCC geht sieht wirklich übersichtlicher aus als Bitshifterei
+2013-02-24 14:03:51,Paddy,"Naja, musst du wissen"
+2013-02-24 14:04:14,Paddy,Aber pte.rw = true finde ich nicht viel übersichtlicher als pte |= PTE_RW
+2013-02-24 14:05:16,Naopleon,Ich krieg bei Bitoperationen immer Kopfschmerzen(obwohl ich weiß wies geht)
+2013-02-24 14:05:22,Paddy,"Und wenn du mal einen kompletten Eintrag auf einmal angeben musst, wird deine Variante wirklich aufgebläht"
+2013-02-24 14:05:47,Paddy,1. pte = addr | PTE_USER | PTE_RW | PTE_PRESENT;
+2013-02-24 14:06:21,Paddy,"2. pte = (struct pte) { .addr = addr, .user = true, .rw = true, .present = true };"
+2013-02-24 14:07:10,Naopleon,Paddy: 2. ist länger aber besser lesbar wenn man ein paar\n reinmacht
+2013-02-24 14:07:23,Naopleon,defensive Programierung
+2013-02-24 14:08:06,Naopleon,und die RWs kombieniere ich auch mit |
+2013-02-24 14:08:13,Naopleon,trotzdem danke
+2013-02-24 14:08:16,Paddy,"Am besten gewöhnst du dich einfach an Bitoperationen, davon bekommst du in einem OS nämlich einen ganzen Haufen"
+2013-02-24 14:08:36,Naopleon,*|=
+2013-02-24 14:17:43,Naopleon,interessant des wird s gespeichert 0x3200b 
+2013-02-24 14:17:57,Naopleon,Die Flags sind hinten hat mir echt geholfen
+2013-02-24 14:23:22,Naopleon,Jetzt ist der ganze PageTable Eintrag 0xb00ffff
+2013-02-24 14:26:21,Naopleon,Der letzte PDir eintrag 0xb000064 undich krieg immer noch denselben fetten TripleFault
+2013-02-24 14:26:29,Naopleon,? :(
+2013-02-24 14:34:25,Naopleon,Paddy:?
+2013-02-24 14:34:40,Naopleon,Paddy: ?
+2013-02-24 14:35:11,Naopleon,fatmodul: ?
+2013-02-24 14:40:20,Paddy,Sieht irgendwie falschrum aus
+2013-02-24 14:40:49,Paddy,0x0b sollten die letzten zwei Hexziffern sein
+2013-02-24 14:41:25,Naopleon,Wirklich wegen Little Endian?
+2013-02-24 14:41:32,Naopleon,oder wieso?
+2013-02-24 14:42:05,Paddy,"Ich rede hier von Hexzahlen, unabhängig von der Endianess"
+2013-02-24 14:42:12,Paddy,Bit 0 ist das niederwertigste Bit
+2013-02-24 14:42:34,Paddy,"Wenn du es byteweise anzeigst, ist 0b im ersten Byte, wegen LE"
+2013-02-24 14:45:40,Naopleon,jetzt hab ichs wieder sorum 0x3200b is der letzr pgdir entry
+2013-02-24 14:46:53,Naopleon,und 0x7fff80bf der letzte Pgdir Eintrag
+2013-02-24 14:46:55,Paddy,Warum schaust du dir übrigens den letzten Eintrag an?
+2013-02-24 14:46:55,Naopleon,?
+2013-02-24 14:46:57,Paddy,Dein PF bezieht sich auf den ersten
+2013-02-24 14:48:19,Naopleon,ne auf irgendeinen in der Mitte aber wenn der letzte im aufbau stimmt sollte es der erste auch
+2013-02-24 14:48:27,Naopleon,ist aber nicht so :(
+2013-02-24 14:48:34,Paddy,"Nein, der erste, nicht in der Mitte"
+2013-02-24 14:48:53,Paddy,cr2=0x10051d und der erste PD-Eintrag beschreibt 0 bis 0x400000
+2013-02-24 14:49:31,Paddy,"Was willst du übrigens mit ""0x3200b is der letzr pgdir entry"" und ""0x7fff80bf der letzte Pgdir Eintrag"" sagen?"
+2013-02-24 14:49:55,Paddy,"Ist der entscheidende Unterschied der zwischen ""letzr"" und ""letzte"" oder der zwischen ""entry"" und ""Eintrag""?"
+2013-02-24 14:50:58,Naopleon,7ffff80b ist der letzte PGtbl eintrag und totaler mist
+2013-02-24 14:51:10,Paddy,Dann fix das vielleicht erstmal
+2013-02-24 14:58:19,Naopleon,also wenn ich mir das mal genauer anschaue ist das sogar richtig :(
+2013-02-24 15:00:19,Naopleon,das ist 11111111111111100000000101
+2013-02-24 15:04:25,Naopleon,21+8+3 =32 Bits 
+2013-02-24 15:04:36,Naopleon,jetzt bin ich mit meinem Latein am ende
+2013-02-24 15:11:31,Naopleon,3200b stimmt Teoretisch auch 
+2013-02-24 15:11:33,Naopleon,OH MIST
+2013-02-24 15:12:47,Naopleon,TRIPLE FAULT !!!!!!!!!!!!!!!!!!!!!
+2013-02-24 15:15:10,Naopleon,Ich krieg immer noch denselben Fehler obwohl ich alle Tabellen Richtig verschoben habe Kann mir das jmd rational erklären???
+2013-02-24 15:20:01,Naopleon,https://docs.google.com/file/d/0B-x3QNiQfEeCdFpaS3pWQkJQcXM/edit hier ist nochmal ein Link für interessierte
+2013-02-24 15:20:11,Naopleon,ich weiß jez nich mehr weiter
+2013-02-24 15:23:06,Naopleon,vllt sollt ichs doch ma ohne structs versuchen
+2013-02-24 15:23:36,Naopleon,aber da kommt eh nur TripleFault weil ich ja die richtigen Werte in den Tabellen hab
+2013-02-24 15:24:52,livinskull,source cde in google docs?
+2013-02-24 15:24:55,livinskull,o.O
+2013-02-24 15:25:06,Paddy,Naopleon: Was ist jetzt der erste PD-Eintrag?
+2013-02-24 15:25:19,Naopleon,*Google drive 
+2013-02-24 15:25:59,Naopleon,Paddy: Ich schau gern noch mal aber der letzte Eintrag ist eig richtig also wirds der erste auch sein
+2013-02-24 15:27:16,Paddy,"Wie schaust du übrigens nach? Im Monitor mit ""xp 0x1000""?"
+2013-02-24 15:30:45,Naopleon,"Mit Debug ausgabe kprintf(""PageTbl Content 0x%x"",page_table->pgtbl[pt_index]);"
+2013-02-24 15:30:58,Naopleon,GDB geht nich
+2013-02-24 15:31:25,Paddy,kprintf ist halt im Zweifelsfall buggy
+2013-02-24 15:31:46,Paddy,"Der xp-Befehl, den ich geschrieben habe, ist übrigens nicht für gdb, sondern direkt für den qemu-Monitor"
+2013-02-24 15:32:52,Naopleon,GDB geht aber gar nicht wenn ich in die Binary reingehe dann den Emulator starte mit -S und versuche mit target remote :1234 zu verbinden passiert nix
+2013-02-24 15:33:09,Paddy,Rede ich eigentlich chinesisch?
+2013-02-24 15:33:09,Naopleon,und nach ein paar sekunden Connection Time our
+2013-02-24 15:33:20,Naopleon,achso
+2013-02-24 15:33:32,Naopleon,wie geht das was du willst
+2013-02-24 15:33:38,Naopleon,;)
+2013-02-24 15:33:44,Naopleon,?
+2013-02-24 15:33:50,Naopleon,nie gehört
+2013-02-24 15:35:10,Paddy,Drück mal in qemu Strg-Alt-2
+2013-02-24 15:35:34,Naopleon,ag
+2013-02-24 15:35:36,Naopleon,aha
+2013-02-24 15:35:55,Paddy,Strg-Alt-1 wechselt dann wieder zurück
+2013-02-24 15:36:07,Naopleon,Wie examined man dann memory?
+2013-02-24 15:36:09,Paddy,xp und info registers sind vermutlich die wichtigsten Monitorbefehle
+2013-02-24 15:36:31,Paddy,xp 0x1000 gibt ein dword an physisch 0x1000 aus
+2013-02-24 15:36:40,Paddy,x 0x1000 würde das gleiche an virtuell 0x1000 machen
+2013-02-24 15:36:52,Paddy,xp /40 0x1000 gibt 40 dwords aus
+2013-02-24 15:37:05,Naopleon,cool wieder was gelernt
+2013-02-24 15:41:06,Naopleon,also bei xp 0x1000 kommt 0000000000000000100: 0x0001180bzurück
+2013-02-24 15:42:04,Naopleon,ist eig auch nicht falsch
+2013-02-24 15:44:19,Paddy,Was ist denn 0x800 für ein Flag?
+2013-02-24 15:44:46,Paddy,"Naja, egal. Dann liegt die PT also bei 0x11000, rightig?"
+2013-02-24 15:44:52,Paddy,Autsch... *richtig
+2013-02-24 15:45:07,Naopleon,0x800 ist kein Flag mehr hier fängt die Addresse an
+2013-02-24 15:45:20,Paddy,Gleichzeitig in zwei verschiedenen Sprachen Zeug schreiben kommt nicht gut *g*
+2013-02-24 15:45:24,Paddy,"Naopleon: Nö, kann nicht sein"
+2013-02-24 15:45:38,Paddy,Eine Page ist 4096 = 0x1000 Bytes groß
+2013-02-24 15:45:51,Paddy,0x800 wäre irgendwo in der Mitte einer Page
+2013-02-24 15:46:07,Naopleon,Paddy: doch die Flags sind nur 1 Byte groß dann kommt die addresse
+2013-02-24 15:46:32,Paddy,"Nein, die Flags sind 12 Bits"
+2013-02-24 15:46:33,Naopleon,Naopleon: Nein dann kommen noch 3 freie Bits
+2013-02-24 15:46:58,Paddy,"Aber gut, dann erklär du mir Paging"
+2013-02-24 15:47:03,Paddy,Vielleicht krieg ich es dann in meinem Kernel kaputt
+2013-02-24 15:47:40,Naopleon,ja stimmt mit denen zu rfreien Verfügung sins 12 bit
+2013-02-24 15:48:43,Naopleon,stimmt
+2013-02-24 15:48:52,Naopleon,wär mir nich aufgefallen
+2013-02-24 15:50:25,Naopleon,stimmt ich hab nur 3 für die Frei verfügbaren (*push the head against the wall)
+2013-02-24 15:51:16,Naopleon,geht aber trotzdem noch nich
+2013-02-24 15:53:12,Paddy,Wie sieht der Eintrag jetzt aus?
+2013-02-24 15:53:52,Naopleon,warte ..
+2013-02-24 15:54:36,Naopleon,0x0002300b
+2013-02-24 15:56:00,Naopleon,und an 0x23000 am anfang der ersten Page sieht das so aus 0x0000000b
+2013-02-24 15:56:19,Naopleon,also was zur HÖLLE läuft hier schief
+2013-02-24 15:56:41,Naopleon,*am anfang der ersten Pagetable
+2013-02-24 15:57:24,Naopleon,?
+2013-02-24 15:57:28,Naopleon,neuer Code
+2013-02-24 15:57:29,Naopleon,:
+2013-02-24 15:59:22,Naopleon,https://docs.google.com/file/d/0B-x3QNiQfEeCVlRCOXhDOXk2VTA/edit also Paddy denkst du das Ich/wir das in den nächsten 3 Monaten hinkriegen
+2013-02-24 15:59:25,Naopleon,;)
+2013-02-24 16:01:53,Naopleon,an Addresse 0x1004 sieht das aber so aus
+2013-02-24 16:02:06,Naopleon,0x02400b08
+2013-02-24 16:02:24,Naopleon,hier geht was schief 
+2013-02-24 16:03:11,Paddy,Soll 0x0 denn gemappt sein?
+2013-02-24 16:03:48,Naopleon,naja eig ist es ja reserviert du hast Recht aber wo ist da das Problem
+2013-02-24 16:03:49,Naopleon,?
+2013-02-24 16:11:13,Naopleon,aber wieso beim zweiten Eintrag die Flags nich stimmen is  ne gute Frage
+2013-02-24 16:12:06,Naopleon,Paddy: oder
+2013-02-24 16:17:02,Paddy,"Ja, aber das kannst du jetzt ja selber debuggen"
+2013-02-24 16:17:15,Naopleon,jo
+2013-02-24 16:56:43,Naopleon,"Paddy: Das Problem ist das die Liste nicht gepackt ist sondern das es immer noch ein leeres Byte dazwischen gibt  kann man listen auch mit attribute packed ""zusammenquetschen"""
+2013-02-24 16:56:48,Naopleon,?
+2013-02-24 17:10:58,Paddy,"Naopleon: Das Prinzip von Listen ist eigentlich, dass die Elemente quer durch den Speicher verstreut sind"
+2013-02-24 17:11:22,Naopleon,Paddy: Ich dachte das ist bloß bei Linked Lists der Fall
+2013-02-24 17:11:40,Naopleon,aber gut zu wissen
+2013-02-24 17:12:13,Paddy,"Hm, von was für Listen redest du sonst?"
+2013-02-24 17:12:23,Paddy,"Das wo alles am Stück ist, heißt bei mir Array"
+2013-02-24 17:12:55,Naopleon,struct vmm_pagetblentr pgtbl[1024];
+2013-02-24 17:13:16,livinskull,__attribute__((packed));
+2013-02-24 17:13:16,livinskull,^^
+2013-02-24 17:13:26,Naopleon,dawurde aber immer ein Leeres Byte zwischendrin gespeichert 
+2013-02-24 17:13:55,Naopleon,livinskull: und __attribute__ ging nich
+2013-02-24 17:14:31,Paddy,Arrays sind immer gepackt
+2013-02-24 17:14:49,Naopleon,mm/vmm.c:43:12: error: ‘packed’ attribute ignored for field of type ‘struct vmm_pagedirentr[1024]’ [-Werror=attributes]                                                                                                                 
+2013-02-24 17:14:49,Naopleon,mm/vmm.c:47:12: error: ‘packed’ attribute ignored for field of type ‘struct vmm_pagetblentr[1024]’ [-Werror=attributes]  
+2013-02-24 17:15:01,Naopleon,da
+2013-02-24 17:15:02,Paddy,Wie sieht deine struct vmm_pagetblentr aus?
+2013-02-24 17:15:04,Naopleon,;)
+2013-02-24 17:15:07,livinskull,heh ja das geht auch nich aufn array sondern auf ne struct
+2013-02-24 17:15:38,Naopleon,hab ich auch ursprünglich gemacht ein Arry in einem packed struct 
+2013-02-24 17:15:45,mgottschlag,Naopleon: lass die Finger von structs mit Bitfeldern
+2013-02-24 17:16:03,mgottschlag,das funktioniert in 99% der Fälle einfach nicht
+2013-02-24 17:16:08,Paddy,"Meinst du, auf dich hört er eher? ;-)"
+2013-02-24 17:16:22,mgottschlag,das ist natürlich ein argument
+2013-02-24 17:16:28,Naopleon,wurde aber trotzdem ein Leerbyte gespeichert zwischen den Array membern
+2013-02-24 17:16:38,mgottschlag,aber mit bitfields wird mit hoher wahrscheinlichkeit nicht mal attribute((packed)) funktionieren
+2013-02-24 17:16:49,Paddy,"Aber stimmt, mit Bitfeldern ist nicht nur implementation defined, in welcher Reihenfolge die Bits sind, sondern auch wie große Felder er benutzt"
+2013-02-24 17:16:55,Paddy,Daran hatte ich vorhin nicht gedacht
+2013-02-24 17:17:04,mgottschlag,"Naopleon: du willst ein array von gepackten structs, nicht ein gepacktes struct mit einem ungepackten array"
+2013-02-24 17:17:26,Naopleon,mgottschlag: mit Bitfeldern hat das jez nic zu tun es geht um ein arry
+2013-02-24 17:17:30,Naopleon,mgottschlag: jap
+2013-02-24 17:17:34,Paddy,"Naopleon: Nein, nicht zwischen den Elementen, sondern am Ende von jedem Element"
+2013-02-24 17:17:41,mgottschlag,"dein Code zeigt mir Bitfelder, hast du das schon geändert?"
+2013-02-24 17:17:43,Paddy,Deine struct ist größer als du denkst
+2013-02-24 17:17:59,Paddy,Behaupte ich einfach mal
+2013-02-24 17:18:00,Naopleon,also mal ganz von vorne
+2013-02-24 17:18:01,Naopleon,..
+2013-02-24 17:18:11,mgottschlag,"und so lange da Bitfelder sind, macht der Compiler, was du willst, auch außerhalb der struct"
+2013-02-24 17:18:17,mgottschlag,*was er will
+2013-02-24 17:18:20,mgottschlag,nicht was du willst
+2013-02-24 17:19:23,Naopleon,mgottschlag: des mit den Bitfeldern geht jez auch ich kann einzelne Table entrys richtig aufstellen bloß mit der liste hab ich Schwierigkeiten
+2013-02-24 17:19:41,mgottschlag,was sagt sizeof(deinestruct)?
+2013-02-24 17:20:03,mgottschlag,"wenn das nicht 4 sagt, dann hast du mit den bitfeldern offensichtlich immernoch schwierigkeiten"
+2013-02-24 17:20:16,Paddy,BUILD_BUG_ON() fdS
+2013-02-24 17:20:39,Paddy,"Hm, oder C11 hat doch sogar statische Zusicherungen"
+2013-02-24 17:20:50,Paddy,Ganz ohne dreckige Tricks
+2013-02-24 17:25:03,Naopleon,ah da heißt's die größe ist 5
+2013-02-24 17:25:08,Naopleon,bytes
+2013-02-24 17:25:19,mgottschlag,"so, und ab jetzt finger weg von bitfeldern"
+2013-02-24 17:25:33,mgottschlag,ganz einfach ^^
+2013-02-24 17:25:46,Naopleon,Ich will aber immer noch nich kevins Code kopieren
+2013-02-24 17:25:54,mgottschlag,"wobei, ich seh grad"
+2013-02-24 17:26:01,mgottschlag,wieviele bits sind eigentlich 22 + 4? :p
+2013-02-24 17:26:05,mgottschlag,"also, 22 + 4 + 8"
+2013-02-24 17:27:40,Naopleon,34
+2013-02-24 17:29:12,mgottschlag,(für alle anderen: es geht darum: http://codepad.org/mhHjJcjV )
+2013-02-24 17:32:37,mgottschlag,"Naopleon: ich geh davon aus, du weißt, worauf ich hinaus will?"
+2013-02-24 17:32:51,Naopleon,yehhh how ICH hab's hingekgriegt 
+2013-02-24 17:33:06,Naopleon,liegtzumindest richtig im Speicher
+2013-02-24 17:33:09,Naopleon,mgottschlag: ja
+2013-02-24 17:48:22,Naopleon,HAHA XanClic mein OS kann jez Paging und es funktioniert ! genauso wie bei dir
+2013-02-24 17:48:27,Naopleon,:D
+2013-02-24 17:48:39,XanClic,Dann haben wir jetzt also beide Recht
+2013-02-24 17:48:42,XanClic,Was machen wir nu
+2013-02-24 17:50:07,Naopleon,was weiß ich
+2013-02-24 17:56:46,Paddy,"Dass das OS nicht gleich abstürzt, heißt bei dir schon, dass es Paging kann?"
+2013-02-24 17:57:14,XanClic,Vielleicht sieht Paging bei mir ja auch so aus? :3
+2013-02-24 17:58:59,Paddy,"Der Unterschied ist, dass dein OS auch noch funktionieren würde, wenn es mehr täte *g*"
+2013-02-24 17:59:17,XanClic,Bei Paloxena4 stimmt das sogar
+2013-02-24 18:00:04,Naopleon,Paddy: ja
+2013-02-24 18:00:11,Naopleon,Paddy: schon
+2013-02-24 18:00:26,Naopleon,Paddy: Paging ist ja aktiviert
+2013-02-24 20:18:23,Naopleon,Da wär ich wieder
+2013-02-24 20:23:02,Naopleon,Raspberry ausprobieren iwie kann das kein Full HD
+2013-02-24 20:23:10,Naopleon,*noch nicht
+2013-02-24 20:23:28,XanClic,EPARSE
+2013-02-24 20:23:39,Naopleon,?
+2013-02-24 20:23:51,XanClic,Ich kann den Satz nicht parsen
+2013-02-24 20:24:48,Naopleon,Was kopieren oder wie
+2013-02-24 20:24:52,Naopleon,?
+2013-02-24 20:25:11,XanClic,Auch an dem tu ich mich schwer
+2013-02-24 20:40:37,Naopleon,ja Kvirc spinnt
+2013-02-24 21:28:09,iksnagreb,guten abend
+2013-02-24 21:28:19,XanClic,Moin
+2013-02-24 21:28:28,iksnagreb,ist das ein richtiges Makefile für ne lib: http://pastebin.com/nus1wQsw ?
+2013-02-24 21:29:06,XanClic,"normalerweise will man ar rcs, denke ich"
+2013-02-24 21:29:29,iksnagreb,"was macht das, ich kenn mich damit nicht gut aus?"
+2013-02-24 21:29:32,XanClic,Wobei das anscheinend auch egal ist
+2013-02-24 21:29:46,XanClic,"Die Manpage meint, ohne c warnt ar, wenn die Datei erstellt wird"
+2013-02-24 21:30:00,XanClic,"Aber ansonsten, hast du denn ausprobiert, obs tut?"
+2013-02-24 21:30:04,Paddy,ar cvs oder gar ar svn ist sicher viel moderner
+2013-02-24 21:30:36,iksnagreb,"ja, es scheint zu tun, aber ich hab die lib noch nicht getestet"
+2013-02-24 21:43:30,iksnagreb,"in einer lib sind ja auch header, in denen typen definiert sind wie z.b. time_t wenn ich jetzt mein programm mit der lib linke kennt er die funktionen in der lib, aber nicht die typen, was stimmt da nicht, oder wie kann ich das problem lösen?"
+2013-02-24 21:48:42,XanClic,Typen werden nicht in Objektdateien definiert
+2013-02-24 21:49:02,XanClic,"Man kann also nicht gegen irgendwas linken, wo Typen definiert sind, um die zu definieren"
+2013-02-24 21:49:06,XanClic,Das macht man mit Headern
+2013-02-24 21:49:36,iksnagreb,"die sind ja auch in headern und die sind teil der lib, oder hab ich da was falsch verstanden"
+2013-02-24 21:49:59,XanClic,Die sind Teil der Bibliothek im allgemeinen Sinne
+2013-02-24 21:50:11,XanClic,Aber nicht Teil der Bibliothek in der Form „lib….a“
+2013-02-24 21:50:25,XanClic,Das .a-Archiv enthält nur Objektdateien und keine Header
+2013-02-24 21:51:39,iksnagreb,und wie bekomme ich die dann in mein programm? also brauch ich einmal die lib mit als lib.a und dann nochmal als verzeichnis mit den headern?
+2013-02-24 21:51:56,XanClic,Ja
+2013-02-24 21:52:17,iksnagreb,"ah, ok danke"
+2013-02-24 23:18:19,MSN,dann mach ich jez auch mal wieder nen bisschen paging :D

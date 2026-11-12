@@ -1,0 +1,180 @@
+date/time,nick,message
+2007-11-27 19:18:08,VerrueckterPinguin,So jetzt ist der Logger an. ;-)
+2007-11-27 19:18:10,Homix,wie würdest du es denn machen ?
+2007-11-27 19:18:13,VerrueckterPinguin,Moin ;-)
+2007-11-27 19:22:27,taljeth,Moin VerrueckterPinguin
+2007-11-27 19:31:17,Jidder,moooooooooooooooooin *knuddel*
+2007-11-27 19:32:02,bluecode,*zurücktotknuddel*
+2007-11-27 19:35:11,bluecode,"taljeth: Es macht vielleicht aber Sinn nicht (nur) Funktionen zu spezifizieren, sondern auch den Treiber dazu zwingen bestimmte Funktionen bereitzustellen, die dann von der OS spezifischen main Funktion (die für diese bestimmte Geräteklasse, also zB eine Netzwerkkarte, geschrieben wurde) aufgerufen werden. Der Treiber stellt dann zB sowas wie getPCIDeviceIdCount(), enumPCIDeviceId() zur verfügung und die main funktion sucht nach dem"
+2007-11-27 19:35:11,bluecode,"Device, alloziert die I/O Ports & Interrupts und vielleicht noch anderes."
+2007-11-27 19:35:16,bluecode,"Dann wird zB die Treiberfunktion initDevice(struct io_port, ...) aufgerufen die dann den devicespezifischen Teil macht und wieder zurückkehrt zu main. main ruft dann halt beim auftreten von Interrupts, TCP/IP-Stack will was, etc... wieder Treiberspezifische Funktionen auf. Natürlich muss man trotzdem noch einiges an zusatzfunktionen spezifizieren..."
+2007-11-27 19:37:39,taljeth,Vielleicht sollte man einfach mal klein anfangen und dann mit der Zeit erweitern?
+2007-11-27 19:38:14,VerrueckterPinguin,Für die folgen davon haben wir doch ein gutes Beispiel? *g*
+2007-11-27 19:38:17,bluecode,wie meinst du das?
+2007-11-27 19:40:22,VerrueckterPinguin,Naja LostIO kennt ihr doch mittlerweile alle ... ;-)
+2007-11-27 19:40:42,bluecode,ich meinte taljeth
+2007-11-27 19:41:13,VerrueckterPinguin,Dann schreib das doch. ;-)
+2007-11-27 19:41:28,bluecode,sieht man doch an den Timestamps ;-)
+2007-11-27 19:41:40,VerrueckterPinguin,3 Sekunden reichen doch? ;-)
+2007-11-27 19:41:48,taljeth,bluecode: Ich finde solche Bandwurmsätze nicht einladend. ;-)
+2007-11-27 19:41:58,taljeth,"Wenn überhaupt, dann schreibe ich sie. *g*"
+2007-11-27 19:42:27,bluecode,d.h. du hast nicht verstanden was ich gesagt hab/sagen will?
+2007-11-27 19:45:31,taljeth,"Nicht so ganz. Falls du meinst, daß der Treiber Callbacks registriert, ist es selbstverständlich. Wenn du was anderes meinst, wurde das nicht klar"
+2007-11-27 19:51:21,bluecode,"nein, das mein ich eigentlich nicht: Stell es dir so vor: Der Treiber (hier der Code der unter allen OS laufen soll) ist nicht eigenständig in dem Sinn, dass er eine main Funktion hat und API Funktionen nutzt, sondern er wird von einer OS-(& Geräte-) spezifischen main Funktion aufgerufen."
+2007-11-27 19:54:22,taljeth,Was wäre der Vorteil?
+2007-11-27 19:55:35,bluecode,das ich kein Interface für Ereignisse bereitstellen muss (also Funktionen zum registrieren von Interrupthandlern etc...). Die Ereignisse werden vom OS spezifischen Teil verarbeitet und dann Treiberfunktionen entsprechend aufgerufen.
+2007-11-27 19:56:23,VerrueckterPinguin,Man könnte doch die Treiber so auch für nicht-Mikrokernel verwenden. Das geht mit einer eigenen main doch nicht wirklich gut...
+2007-11-27 19:56:44,bluecode,"jo, das ist ein weiterer vorteil"
+2007-11-27 19:57:34,taljeth,Irgendeine main (oder driver_init) muß es aber trotzdem immer geben.
+2007-11-27 19:57:43,VerrueckterPinguin,"Jo, das ist klar."
+2007-11-27 19:57:47,bluecode,jo natürlich.
+2007-11-27 19:57:52,taljeth,"Irgendwoher muß die main ja auch wissen, was sie einbinden soll"
+2007-11-27 19:58:35,bluecode,wie gesagt die main ist gerätespezifisch. Dann weiß sie auch genau welches Interface der Treiber bereitstellt.
+2007-11-27 19:59:12,VerrueckterPinguin,taljeth: Was meinst du denn genau?
+2007-11-27 20:00:07,taljeth,bluecode: Die main wäre aber auch OS-spezifisch?
+2007-11-27 20:00:15,bluecode,"jo, genau."
+2007-11-27 20:00:48,bluecode,"wie gesagt, die soll die ganzen ereignisse sinnvoll annehmen"
+2007-11-27 20:01:21,VerrueckterPinguin,Wären da Callbacks nicht praktischer?
+2007-11-27 20:01:41,bluecode,für lightOS bescheiden zu implementieren
+2007-11-27 20:01:53,bluecode,wäre ein wait_for_message nicht besser? ;-)
+2007-11-27 20:02:03,bluecode,für Lost bescheiden zu implementieren ;-)
+2007-11-27 20:02:09,VerrueckterPinguin,Jo aber sonst braucht man da zwingend Threads wenn man einen Mono hat.
+2007-11-27 20:02:30,bluecode,nein eigentlich nicht
+2007-11-27 20:02:40,bluecode,der Treiber hat ja im Prinzip nur Callbacks
+2007-11-27 20:03:08,bluecode,"mir ist halt wichtig, dass er die nicht registrieren muss, sondern eben dies vom OS spezifischen teil übernommen wird"
+2007-11-27 20:03:13,taljeth,"Ja, aber die OS-abhängige main gefällt mir nicht"
+2007-11-27 20:03:34,taljeth,"Ich möchte einen Treiber, der überall unverändert kompiliert und die OS-Anpassung halt nur durch die Lib passiert"
+2007-11-27 20:03:58,VerrueckterPinguin,"bluecode: Ah, ich sehe das erst jetzt... Die Schleife soll also in den Teil, der zum Code gehört, den das OS bereitstellt?"
+2007-11-27 20:04:07,bluecode,er kompiliert ja überall. Es wird nur beim Linken dann die os spezifische main mitgelinkt
+2007-11-27 20:04:44,VerrueckterPinguin,taljeth: Wenn der OS-spezifische Code zum OS und nicht zum Treiber gehört macht das ja nichts.
+2007-11-27 20:04:50,bluecode,ich erstell grad mal ein bisschen pseudocode ;-)
+2007-11-27 20:05:04,bluecode,jo exakt so VerrueckterPinguin :-)
+2007-11-27 20:05:25,taljeth,VerrueckterPinguin: Eine main in der Lib klingt aber... kriminell. ;-)
+2007-11-27 20:05:53,VerrueckterPinguin,"bluecode: Ich habe das vorhin auch falsch verstanden, und gedacht du wolltest die Schleife im Treiber-Teil, deswegen habe ich so gefragt. ;-)"
+2007-11-27 20:06:12,VerrueckterPinguin,taljeth: Nicht krimineller als crt0 auch. *g*
+2007-11-27 20:06:33,VerrueckterPinguin,"taljeth: Die könnte man ja dann auch in einen Header packen, wenn du das möchtest. ;-)"
+2007-11-27 20:08:21,VerrueckterPinguin,"taljeth: Was mich daran erinnert, das ich mir da schon lange etwas besseres ausdenken wollte. ;-)"
+2007-11-27 20:19:36,janosch,wie gibt die bash eigentlich text auf ein terminal aus? schreibt die in ein device?
+2007-11-27 20:19:37,bluecode,sowas in die Richtung ist gemeint: http://www.nopaste.com/p/ahnE0FeFf
+2007-11-27 20:19:47,bluecode,"janosch: ja, /dev/TTY"
+2007-11-27 20:20:35,janosch,"ich überlege (soweit es möglich ist) bash für meinos zu portieren, aber ich glaube ich sollte mir das erstmal angucken bevor ich große sprüche kloppe"
+2007-11-27 20:20:53,bluecode,du solltest erstmal deinOS implementieren
+2007-11-27 20:21:10,janosch,ja man sollte aber ja ein konzept haben bevor man mit einem os anfängt ;)
+2007-11-27 20:21:18,bluecode,bash kannst du dann in 1a portieren ;-)
+2007-11-27 20:21:42,janosch,wenn ich bloß das problem mit dem TSS lösen könnte..
+2007-11-27 20:21:52,bluecode,*g*
+2007-11-27 20:22:08,bluecode,jaja bugs sind was fieses :-)
+2007-11-27 20:22:22,janosch,"ich hab hier zwar schon alle möglichen treiber rumliegen, keyboard usw. aber TSS geht noch nicht mal *g*"
+2007-11-27 20:23:53,VerrueckterPinguin," bluecode Wäre es nicht besser, eine etwas allgemeinere Main zu haben?"
+2007-11-27 20:25:44,bluecode,"ich würde sagen nein, dann muss man ja wieder ein ereignissystem einführen. wie gesagt, main wird so wie ich mir das vorstell gerätespezifisch."
+2007-11-27 20:26:13,taljeth,Geräte- und OS-spezifisch gleichzeitig
+2007-11-27 20:26:23,bluecode,jo
+2007-11-27 20:26:30,taljeth,Das ist 0xd00fc0de
+2007-11-27 20:26:42,bluecode,was speziell?
+2007-11-27 20:26:48,taljeth,[20:28] <taljeth> Geräte- und OS-spezifisch gleichzeitig
+2007-11-27 20:26:48,taljeth,Das
+2007-11-27 20:26:56,bluecode,achso
+2007-11-27 20:27:09,taljeth,Man sollte sauber in einen OS-unabhängigen Treiber und geräteunabhängig Lib trennen.
+2007-11-27 20:28:02,bluecode,eine geräteunabhändige lib wirst du nicht hinkriegen ohne nicht auch ein VFS/devfs zu spezifizieren
+2007-11-27 20:28:26,Homix,ein vfs ist blöd (für einige ose und v.a. für anfänger :) )
+2007-11-27 20:29:01,taljeth,"Geräteunabhängig sollte schon gehen, wenn auch vielleicht nicht Geräteklassenunabhängig. Oder so. ;-)"
+2007-11-27 20:29:29,bluecode,"oh, sry habs sorum gelesen"
+2007-11-27 20:29:41,Homix,"na ja ganz geräteunabhängig is es schwierig, halt unterteilen in Netzwerkkarten, Grafikkarten, ..."
+2007-11-27 20:29:42,bluecode,dann mach vorschläge :-)
+2007-11-27 20:29:47,Homix,ah ok
+2007-11-27 20:30:03,bluecode,ehm btw. meins ist geräteunabhängig und OS-unabhängig ;-)
+2007-11-27 20:30:06,bluecode,nur um das mal zu sagen
+2007-11-27 20:30:16,taljeth,"bluecode: Erster Vorschlag wäre, deine Event Loop in die OS-spezifische Lib zu verbannen, für LOST würde ich da nämlich direkt RPCs nehmen"
+2007-11-27 20:31:41,bluecode,und wie macht das dann der monolithische kernel?
+2007-11-27 20:31:58,taljeth,Der ruft die Funktionen direkt auf?
+2007-11-27 20:32:19,bluecode,und warum darf das die os spezifische main nicht?
+2007-11-27 20:32:28,bluecode,"btw. dann würde es nicht ""ohne weiteres"" kompilieren ;-)"
+2007-11-27 20:33:13,taljeth,"Hm, deine main war in der Lib?"
+2007-11-27 20:33:17,Homix,also ich wäre ja inzwischen nicht mehr für irgendso ein treiber interface ;
+2007-11-27 20:33:30,Homix,ne
+2007-11-27 20:33:32,Homix,hmm
+2007-11-27 20:33:36,Homix,mom
+2007-11-27 20:33:38,Homix,ent
+2007-11-27 20:33:42,Homix,*toaster anfall*
+2007-11-27 20:34:14,bluecode,"taljeth: nicht lib im sinne von shared library, sondern eher im Sinne von ""ich linke es später dazu""."
+2007-11-27 20:34:22,bluecode,Homix: warum?
+2007-11-27 20:34:26,taljeth,"Ja, schon klar."
+2007-11-27 20:34:32,Homix,inwiefern ist der NDIS Wrapper portierbar ?
+2007-11-27 20:34:46,taljeth,"Das Konzept gefällt mir irgendwie nicht so richtig, die main in einer externen Lib zu haben."
+2007-11-27 20:35:06,Homix,"ich fände es lieber sinnvoll, eine leicht portierbaren NDIS Wrapper zu schreiben,w enn der jetzige für Linux nicht leicht zu portieren ist"
+2007-11-27 20:35:15,bluecode,taljeth: ?
+2007-11-27 20:35:27,Homix,Netzwerkkartentreiber sind imho derzeit das wichtigste (für mich)
+2007-11-27 20:37:34,Homix,"Dateisystemtreiber, Netzwerkkartentreiber (und evt. Grafik-/Soundkartentreiber, wenn möglich) sind mir wichtig"
+2007-11-27 20:37:45,Homix,und für Netzwerkkartentreiber würde sich NDIS gut anbieten
+2007-11-27 20:38:18,bluecode,dann portier das doch einfach ;-)
+2007-11-27 20:39:17,Homix,ich bezweifle dass das möglich ist :)
+2007-11-27 20:40:16,bluecode,dann lass es ;-)
+2007-11-27 20:40:36,Homix,für LOST wäre NDIS sicher auch interessant :)
+2007-11-27 20:41:35,Homix,hmm da es ein NDIS Wrapper ist für Linux denke ich dass die Entwickler nicht sehr auf Platformunabhängigkeit geachtet haben
+2007-11-27 20:43:15,VerrueckterPinguin,"Würde es nicht reichen, wenn die Spezifikation nur die nötigsten Funktionen vorschreibt? Wo die main dann genau liegt gehört doch eigentlich garnicht dazu?"
+2007-11-27 20:45:14,bluecode,"das problem ist, dass es schwierig ist so verschiedene IPC ansätze in einer API zu vereinen ohne es total fricklig, errorprone und lahmarschig zu machen."
+2007-11-27 20:46:50,Homix,verschiedene IPC Ansätze ? ich hab gar keine IPCs ...
+2007-11-27 20:47:07,VerrueckterPinguin,"Hm wenn da beispielsweise eine Callback-Funktion sendPacket existiert, ist es doch egal, wie und von wem die aufgerufen wird?"
+2007-11-27 20:47:50,bluecode,"jo, und?"
+2007-11-27 20:47:51,VerrueckterPinguin,"Die Schwierigkeit sehe ich eher bei Zugriffen, die die Treiber untereinander ausführen müssen."
+2007-11-27 20:48:23,Homix,"bei mir ist es entweder so, dass der Treiber eine Kernel Funktion ala ReceivedNetworkPacket aufruft oder der Kernel vom Treiber was aufruft ala SendNetworkPacket"
+2007-11-27 20:48:38,Homix,Zugriffe untereinander gibt es bei mir nicht :)
+2007-11-27 20:48:46,taljeth,bluecode: So ungefähr stelle ich mir die main eines Treibers vor: http://www.nopaste.com/p/avAMhwtzd
+2007-11-27 20:48:56,VerrueckterPinguin,Homix: Wie greift denn der FAT-Treiber auf die Festplatte zu? ;-)
+2007-11-27 20:49:20,Homix,indem er ReadSector aufruft :)
+2007-11-27 20:50:05,VerrueckterPinguin,"Jo eben, das ist doch eindeutig ein Zugriff auf den anderen Treiber."
+2007-11-27 20:50:17,Homix,geht über den Kernel
+2007-11-27 20:50:37,bluecode,"taljeth: ich hab in lightOS kein Konzept von Interrupt-Callbacks. Bei mir müsstest du der Funktion ein Handle auf den MessagePort übergeben an den die Message gesendet werden soll. Später müsstest du dann ""auf"" diesem Port warten bis zB eine InterruptMessage kommt."
+2007-11-27 20:51:06,bluecode,Homix: IPC geht auch über den Kernel ;-)
+2007-11-27 20:51:07,taljeth,Das ist ja wunderbar. Dann implementier das so in run_drivers() und ruf halt entsprechend den Callback auf.
+2007-11-27 20:51:26,Homix,ja ich sagte ja nicht dass IPC nicht über den kernel geht :)
+2007-11-27 20:51:31,bluecode,Dann muss ich natürlich noch die entsprechenden handles überall reinfrickeln ;-)
+2007-11-27 20:51:41,bluecode,Es gibt ja nicht zwangsweise einen MessagePort
+2007-11-27 20:52:25,taljeth,Hm?
+2007-11-27 20:52:50,taljeth,Ist das wirklich so viel schwieriger wie ich mir das vorstelle?
+2007-11-27 20:53:38,bluecode,hm.... nein... dein Beispiel ist garnicht schlecht
+2007-11-27 20:54:31,VerrueckterPinguin,"taljeth: So mit der Main hat man aber wieder das Problem, dass Threads benötigt werden"
+2007-11-27 20:54:43,taljeth,"Nicht zwingend, oder?"
+2007-11-27 20:54:50,VerrueckterPinguin,Weil run_drivers(); darf ja nicht zurückkehren...
+2007-11-27 20:55:02,bluecode,das soll ja auch die callbacks aufrufen
+2007-11-27 20:55:16,bluecode,"(bei euch nicht, da das automagisch geht)"
+2007-11-27 20:55:18,taljeth,"VerrueckterPinguin: Ich denke, man kann spezifizieren, daß es undefiniert ist, ob es zurückkommt."
+2007-11-27 20:55:32,taljeth,Die Funktion muß halt direkt dahinter aufhören
+2007-11-27 20:55:47,VerrueckterPinguin,Darauf würde in der Version mit der main ja noch ein Aufruf folgen um aufzuräumen
+2007-11-27 20:56:02,taljeth,shutdown-Callback im Treiber?
+2007-11-27 20:57:01,taljeth,"Das mit dem opaque geht übrigens eigentlich anders, aber das kann man korrigieren, wenn wir uns grundsätzlich einig sind. ;-)"
+2007-11-27 20:57:41,bluecode,was willst du denn mit dem opaque überhaupt?
+2007-11-27 20:57:50,taljeth,Treiberspezifische Daten halt
+2007-11-27 20:58:04,bluecode,ah :-)
+2007-11-27 20:59:29,taljeth,Wobei ich irgendwie Treiber und Karte in einen Topf geworfen habe...
+2007-11-27 20:59:50,taljeth,"Beim Treiber an sich macht das ja nicht viel Sinn, der könnte einfach static-Variablen nehmen"
+2007-11-27 20:59:58,taljeth,Aber für die einzelne Karte ist es nützlich
+2007-11-27 21:00:44,bluecode,du willst mit einer treiberinstanz mehrere Karten betreiben?
+2007-11-27 21:01:10,bluecode,"wobei, das kann man sich ja aussuchen"
+2007-11-27 21:02:31,bluecode,hm... wenn ich jetzt noch ein C++ Wrapper krieg bin ich vllt glücklich
+2007-11-27 21:03:13,taljeth,"Ich mache doch schon OO in C, falls du das nicht bemerkt hast. Vom Konzept her sollte das also nicht zu schwer sein. ;-)"
+2007-11-27 21:03:41,bluecode,Jeder gute C Code ist objektorientiert.
+2007-11-27 21:04:39,taljeth,Öhm...
+2007-11-27 21:05:18,taljeth,"Es gibt auch Anwendungsbereiche, wo OO nicht so furchtbar viel Sinn macht..."
+2007-11-27 21:16:29,bluecode,taljeth: schon das wiki angeschaut? :-)
+2007-11-27 21:17:52,taljeth,Nö.
+2007-11-27 21:18:57,bluecode,och menno... dann kann ich ja garnix kaputtmachen heute :-P
+2007-11-27 21:20:01,taljeth,Wieso hast du gestern überhaupt nochmal neuinstalliert?
+2007-11-27 21:20:48,bluecode,"ich hab nochmal versucht das uploaden hinzukriegen, dabei hab ich wahrscheinlich die Datei/Ordnerzugriffsrechte total kaputtgemacht. Auf jeden Fall wurde überhaupt nichts mehr angezeigt."
+2007-11-27 21:22:57,bluecode,"hm, sieht bei euch die Hauptseite ganz normal aus?"
+2007-11-27 21:25:01,taljeth,"Soweit ich das beurteilen kann, ja"
+2007-11-27 21:25:20,bluecode,"sehr schön, dann funktioniert alles und du musst nichts mehr tun taljeth :-)"
+2007-11-27 21:25:31,taljeth,Was war es denn?
+2007-11-27 21:25:37,bluecode,kA
+2007-11-27 21:26:16,bluecode,"hab einfach das include in LocalSettings.php wieder ""einkommentiert"" und es geht..."
+2007-11-27 21:26:19,taljeth,Du hast doch irgendwas geändert?
+2007-11-27 21:26:36,taljeth,"Tjo, so einfach kann es sein."
+2007-11-27 21:26:51,bluecode,"jo, gestern ging das aber irgendwie nicht ;-)"
+2007-11-27 21:56:46,VerrueckterPinguin,"So, ich bin weg. Gute Nacht"
+2007-11-27 21:56:57,bluecode,gn8
+2007-11-27 21:59:41,taljeth,hm8
+2007-11-27 21:59:47,taljeth,Fast...
+2007-11-27 22:25:23,taljeth,gn8
+2007-11-27 22:25:32,bluecode,gn8
+2007-11-27 22:27:14,Homix,"ich geh auch, gn8"
+2007-11-27 22:28:57,schnippi,n8 :)

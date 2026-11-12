@@ -1,0 +1,70 @@
+date/time,nick,message
+2013-09-16 07:41:05,Rookie,"Halo zusammen, ich habe Probleme bei der Registrierung im Forum. Könnt ihr mir weiterhelfen ?"
+2013-09-16 08:12:53,Rookie,"Hallo, könnt ihr mir bei der Registrierung bei LowLevel helfen ?"
+2013-09-16 14:57:30,Svenska,hi
+2013-09-16 15:09:59,Svenska,"wie kann ich in einer struct mehrere buffer mit verschiedenen typen (und größen) deklarieren und auf diese mit einer einzelnen funktion zugreifen, die die nummer des buffers bekommt?"
+2013-09-16 15:10:09,Svenska,"erschwerend kommt dazu, dass ich keine pointer benutzen kann"
+2013-09-16 15:10:43,Svenska,geht das überhaupt?
+2013-09-16 15:25:31,mgottschlag,versteh ich nicht.
+2013-09-16 15:25:45,mgottschlag,"also, die ganzen Einschränkungen versteh ich nicht"
+2013-09-16 15:30:53,Svenska,"pointer gehen nicht, weil das zwei getrennte architekturen sind, die sich den header teilen"
+2013-09-16 15:31:25,Svenska,"im client wird die variable in einem speziellen shared-memory-bereich angelegt, im host je nach zustand von flags in eine lokale variable kopiert"
+2013-09-16 15:31:43,Svenska,der host kann nicht direkt auf den speicher zugreifen (und der client besteht aus mehreren kernen)
+2013-09-16 15:34:39,tufel,huhu
+2013-09-16 15:35:29,Svenska,hi
+2013-09-16 15:48:08,Svenska,"mgottschlag: ich habe kommunikationskanäle, die entweder sonstwohin zeigen (wird behandelt) oder auf einen buffer, der ebenfalls im shared memory liegt"
+2013-09-16 15:48:26,Svenska,und src/dst/type eines kanals werden ebenfalls im shared memory abgelegt
+2013-09-16 15:49:06,Svenska,"das problem ist, dass ich von einer seite aus nur mit read()/write()-artigen funktionen auf diesen shared memory zugreifen kann, wobei ich den physischen offset innerhalb des shm kennen muss"
+2013-09-16 15:49:31,Svenska,deswegen wollte ich nur eine (packed) struct im shared memory ablegen und dann so darauf zugreifen.
+2013-09-16 15:52:16,mgottschlag,"struct buffer { int size; char[] buf;}, und dann mehrere davon ablegen?"
+2013-09-16 15:52:51,mgottschlag,s/int/intwasauchimmer_t/
+2013-09-16 16:09:56,Svenska,dann hab ich mehrere...
+2013-09-16 16:10:17,Svenska,"garantiert mir der linker, dass die im speicher zwingend, ohne platz dazwischen aufeinander folgen?"
+2013-09-16 16:10:26,Svenska,nen eigenes linkerscript wollte ich mir nämlich ersparen ^^
+2013-09-16 16:13:30,mgottschlag,"ich weiß nicht, ob er das tut, der Linker hat für structs mit unbestimmter Größe nichts zu tun"
+2013-09-16 16:13:59,mgottschlag,oder meinst du den Platz zwischen size und buf? da musst du vielleicht __attribute__((packed)) oder so nehmen
+2013-09-16 16:14:15,Svenska,"das ist sowieso pflicht, weil host und client verschiedene architekturen rennen"
+2013-09-16 16:14:41,mgottschlag,"eine einzelne struct geht halt nicht, wenn du die Größen der Buffer nicht kennst"
+2013-09-16 16:14:46,Svenska,"erschwerend kommt dazu, dass das linkerscript den shm halbiert, in die unteren 16 mb kommen libc,newlib,libgcc,crt0 rein"
+2013-09-16 16:15:14,mgottschlag,was für eine Architektur eigentlich? was wird mit dem z80 gekoppelt? ^^
+2013-09-16 16:15:40,Svenska,"d.h. auf dem client reiche ich SECTION(""shared_dram"") nach, dann lande ich im shm+16M und auf dem host muss ich mit 0x01000000 manuell hantieren"
+2013-09-16 16:16:02,Svenska,"host=dualcore arm cortex a9, client=adapteva parallella epiphany"
+2013-09-16 16:16:53,Svenska,die größen der buffer kenne ich. aber jeder buffer hat theoretisch ne andere größe und nen anderen typ und ich kann mir nicht mal eben so nen pointer darauf erzeugen ^^
+2013-09-16 16:17:21,Svenska,"und ich möchte eine read()-funktion haben, der ich die buf-nummer übergeben kann"
+2013-09-16 16:17:34,mgottschlag,"an, du hast einen parallella?"
+2013-09-16 16:17:37,mgottschlag,*ah
+2013-09-16 16:17:44,Svenska,*hust* uni
+2013-09-16 16:17:54,mgottschlag,achso ^^
+2013-09-16 16:18:01,Svenska,:-)
+2013-09-16 16:18:31,mgottschlag,"wie schön lässt der sich programmieren? ich kenne bei diesen Parallelarchitekturen ja sonst nur welche, wo ich seltsame Speicherzugriffssysteme habe und das Programmieren üblicherweise recht hässlich ist"
+2013-09-16 16:18:46,Svenska,die architektur ist eigentlich unglaublich geil
+2013-09-16 16:18:49,Svenska,aus meiner sicht
+2013-09-16 16:19:03,Svenska,der mist skaliert auch bis 4095 cores =)
+2013-09-16 16:20:12,Svenska,"Jeder core hat 1 MB (=20 Bit) Adressraum und 32 KB SRAM. Die oberen 12 Bit werden aus der ID (Position) des Cores gebaut. Eine ID von 0 referenziert immer den lokalen Core, damit man identischen Code auf allen Cores ausführen kann."
+2013-09-16 16:21:51,Svenska,"Außerdem hat unser Board einen 32 MB DRAM, der vom ARM aus indirekt zugreifbar ist (die API bietet sowas ähnliches wie read()/write() an, mit fixen Offsets)."
+2013-09-16 16:22:14,Svenska,"Code ist prinzipiell von überall aus ausführbar, nur halt umso schneller, je näher er am lokalen Core ist. :-)"
+2013-09-16 16:24:00,Svenska,"Die 32 KB SRAM werden in 4 Banks unterteilt, die jeweils gleichzeitig aktiv sein können. Also 8K Code, 8K Daten und 2 Bänke für DMA oder sowas ist optimal."
+2013-09-16 16:24:09,Svenska,"Ich finde, das klingt relativ annehmbar ^^"
+2013-09-16 16:24:32,mgottschlag,"naja, das klingt zumindest so, dass ich schon schlimmeres gehört habe :)"
+2013-09-16 16:24:59,Svenska,jo
+2013-09-16 16:25:10,mgottschlag,"kommt aber irgendwie noch nicht an AMDs GCN an, das ja angeblich vollständige Cache-Kohärenz hat - das muss ich irgendwann auch nochmal ausprobieren"
+2013-09-16 16:25:19,Svenska,das teil hat keinerlei caches
+2013-09-16 16:25:56,mgottschlag,"ja, aber dann halt mit Zugriff auf den vollständigen Speicher, von überall und jederzeit"
+2013-09-16 16:27:07,Svenska,joa
+2013-09-16 16:27:49,Svenska,"was du nicht hast, ist ein flacher adressraum (d.h. du kannst pro MB nur 32 KB adressieren). außerdem ist die architektur für schreibzugriffe optimiert, d.h. writes sind 16x effizienter laut DB als reads"
+2013-09-16 16:29:10,Svenska,"da die DMA-engine aber direkt in den speicher fremder cores schreiben kann, tut das nicht weh"
+2013-09-16 16:30:44,Svenska,die AMD-teile kenne ich nicht
+2013-09-16 16:30:56,Svenska,was ist an denen so besonderes?
+2013-09-16 16:35:03,mgottschlag,"naja, Grafikkarten haben generell einen großen, flexiblen Adressraum mit MMU und allem drum und dran"
+2013-09-16 16:35:14,Svenska,sind aber SIMD
+2013-09-16 16:35:39,mgottschlag,"ja, aber inzwischen in recht kleinen Threadgruppen"
+2013-09-16 16:36:25,Svenska,hm
+2013-09-16 16:36:40,Svenska,"naja, epiphany ist halt eine sehr überschaubare architektur"
+2013-09-16 16:36:46,Svenska,das find ich sehr angenehm ^^
+2013-09-16 17:07:05,tufel,wie bildet man in VHDL am besten ein registersatz ab ?
+2013-09-16 18:07:36,Svenska,"""checking for cc option to accept ANSI C... no"" << muss ich mir jetzt sorgen machen, dass der jetzt meinen armen, alten C-Compiler mit ANSI-C beschmeißt? das versteht der doch garnicht ^^"
+2013-09-16 18:28:34,tufel,huhu
+2013-09-16 19:10:38,Svenska,"hat sich erledigt. ""configure: no space"""
+2013-09-16 19:10:46,Svenska,(vermutlich environment zu klein)
+2013-09-16 23:59:00,ehenkes,hi
+2013-09-16 23:59:55,ehenkes,wie kommt man an die basis des IO APIC (nicht local APIC) heran?

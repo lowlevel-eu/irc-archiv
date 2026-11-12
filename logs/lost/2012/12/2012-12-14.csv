@@ -1,0 +1,50 @@
+date/time,nick,message
+2012-12-14 14:13:58,tyndur,test
+2012-12-14 14:14:17,tyndur,iksnagreb: Tut wieder
+2012-12-14 17:15:32,pocky,bitte macht was gegen die spamuser im wiki... ich will sehen was sich ändert und keine endlose sinnlos-user liste D:
+2012-12-14 17:22:22,kevin,Es ändert sich nichts
+2012-12-14 17:22:30,kevin,Außer neuen Spambots eben
+2012-12-14 17:23:15,pocky,"baut doch ein captcha ein, oder deaktiviert das anmelden, dann muss man sich eben hier melden wenn man nen acc will"
+2012-12-14 21:36:50,iksnagreb,"hallo, ich hab mal wieder ein problem, diesesmal beim paging, ich versuche gerade den kernel zu mappen, aber irgendwie ist der nicht 4k aligned, ich hab dann versucht, das irgendwie zu richten, aber ich bekomms nicht hin, kann jemand sich das mal ansehen? https://docs.google.com/open?id=0B3zUIFJ_B5J6dHptVXMwX2xFZTQ"
+2012-12-14 21:38:19,iksnagreb,"sry, dass der code nicht so ordentlich ist, den werd ich wohl ordenlicher machen, wenns läuft, das problem ist irgendwo in vmm.c, glaub ich"
+2012-12-14 21:42:51,pocky,wie hast dus denn versucht zu richten?
+2012-12-14 21:43:47,iksnagreb,"das ist die zeile in der ich von start 2 abziehe und dann auf end 4094 addiere, dann sind die werte passen, damit sie als 4k aligned gelten"
+2012-12-14 21:43:54,iksnagreb,ist aber keine gute idee
+2012-12-14 21:44:09,iksnagreb,mir fiel nur nichts anderes ein
+2012-12-14 21:45:42,pocky,"bei mir spackt das hässliche googlel docs rum, kanns mir leider nicht anschauen"
+2012-12-14 21:46:21,iksnagreb,"kannst dus da über Datei->Herunterladen herunterladen, ist nen zip-archiev"
+2012-12-14 21:46:43,pocky,"das weiß ich selbst, aber es will net"
+2012-12-14 21:46:59,pocky,"ah, jetzt gehts, F5 hilft"
+2012-12-14 21:49:19,pocky,warum is kernel_start uint32_t?
+2012-12-14 21:49:57,iksnagreb,"weil es sonst gar nicht läuft, sollte eigentlich void sein, so wie in pmm,"
+2012-12-14 21:53:16,iksnagreb,"es wird bei mir ausgeführt, nur paging wird nicht aktiviert, weil da irgendwo nen fehler ist, ich hab es ja so geschrieben, dass es nur ohne fehler aktiviert, aber alle fehler geben ne fehlermeldung aus, aber es kommt keine"
+2012-12-14 21:53:51,pocky,bei mir kackt es schon bein pmm ab
+2012-12-14 21:54:53,pocky,"er versucht scheinbar 0x0010D000 zu allocieren, aber die wird wohl schon benutzt"
+2012-12-14 21:56:27,pocky,"mh, ich bau wohl erstmal bei meinem eigenen paging ein, dann weiß ich auch wies funktioniert und kann dir besser helfen xD"
+2012-12-14 21:56:36,iksnagreb,"bei mir ist es 10A000, das problem hab ich schon immer, aber es ist nur das markieren, das ist kein ernstes problem, denn wenn etwas schon markiert ist, ist es ja schon geschützt vor erneuter vergabe"
+2012-12-14 21:57:18,pocky,"mach doch erstmal das problem weg, bevor du paging machst"
+2012-12-14 21:57:27,pocky,so kleine fehler machen nur ärger
+2012-12-14 21:58:22,iksnagreb,"wenn ich wüsste, wo es ist, es scheint die funktionen aus der mmap vom bootloader falsch zu bekommen"
+2012-12-14 22:01:36,iksnagreb,"ich habs gefunden, es war die bitmap im pmm, ihre addresse liegt im adressbereich des kernel, also wurde versucht, sie zweimal zu markieren, dafür schon mal danke, ich hätt wohl nie nochmal nachgesehen, wo der fehler da ist"
+2012-12-14 22:03:39,pocky,vllt funktioniert ja jetzt auch gleich das andere
+2012-12-14 22:04:13,iksnagreb,"das wär schön, ist aber leider nicht so:("
+2012-12-14 22:04:37,pocky,also das mit dem -2 etc is schonmal blödsinn
+2012-12-14 22:05:12,iksnagreb,"das weiß ich auch, aber so lief es erstmal, wenn auch ganz falsch"
+2012-12-14 22:06:06,pocky,ich muss mich da jetzt auch erstmal einlesen... vmm hab ich meinem os ja auch noch net spendiert...
+2012-12-14 22:08:01,iksnagreb,"ich durchsuch mal das forum, vielleicht gibst da ja was ähnliches"
+2012-12-14 22:54:38,Jidder,iksnagreb: du solltest kernel_start so wie in pmm.c deklarieren und verwenden
+2012-12-14 22:54:46,Jidder,da hast du dann auch (uintptr_t) &kernel_start geschrieben
+2012-12-14 22:54:55,Jidder,weil du die addresse der variablen haben willst
+2012-12-14 22:55:14,Jidder,das -2 zieht was vom wert in der variablen ab
+2012-12-14 22:55:28,Jidder,"udn wenn du kernel_start ohne & schreibst, bekommst du auch nur den wert der variablen"
+2012-12-14 22:56:53,Jidder,"du solltest außerdem dir was für das auf und abrunden einfallen lassen. zum beispiel könntest du uintptr_t p = (uintptr_t) &kernel_start; schreiben und dann (p / 4096) * 4096; rechnen, um das auf pagegröße abzurunden"
+2012-12-14 22:57:13,Jidder,um aufzurunden könntest du ((p + 4095) / 4096) * 4096 nehmen
+2012-12-14 22:57:56,Jidder,"um das zu verstehen rechnest du das am besten mal mit zahlen wie z.b. 0, 1, 4095, 4096, 4097 per hand durch (hinweis: / rundet immer ab)"
+2012-12-14 23:00:05,Jidder,"außerdem musst du dir was einfallen lassen, wie du auf seiten zugreifst, die du gerade frisch allokiert hast. wen du in vmm_create_context() einfach pmm_alloc() aufrufst, ist das ergebnis ja nirgends gemappt. wenn du also auf die resultierende seite zugreifen willst, gibt es einen page fault"
+2012-12-14 23:01:13,Jidder,"du hast ein paar optionen: 1. einen bestimmten bereich beim initialisieren 1:1 mappen, und pmm_alloc() gibt immer speicher aus dem bereich zurück (zum beispiel die ersten X megabyte)"
+2012-12-14 23:01:31,Jidder,2. ein vmm_alloc() das ein pmm_alloc() ausführt und danach eine freie seite im virtuellen addressraum sucht und die seite dahin mappt. die funktion gibt dann die virtuelle addresse zurück
+2012-12-14 23:01:53,Jidder,"die zweite methode hast das problem, dass das mapping wiederum auch pmm_alloc() aufruft"
+2012-12-14 23:02:05,pocky,gn8
+2012-12-14 23:02:09,Jidder,gn8
+2012-12-14 23:02:49,Jidder,aber das ist eine geschichte für ein anderes mal ^^
+2012-12-14 23:19:34,iksnagreb,"danke Jidder, ich werd jetzt mal versuchen, das umzusetzen"

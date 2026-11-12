@@ -1,0 +1,52 @@
+date/time,nick,message
+2016-09-13 13:52:30,Jonathan,Moin
+2016-09-13 14:18:28,kevin,Moin
+2016-09-13 22:15:24,Svenska,"hmm, wie kriegt man eigentlich audio aus qemu raus, wenn man keine normale standardsoundkarte nimmt?"
+2016-09-13 22:15:52,Svenska,ich hab da jetzt nen cortex-m3 und kann da einen wolfson wm8750 codec per i2c anschließen
+2016-09-13 22:15:59,Svenska,...nur wie kriege ich die audiodaten da rein?
+2016-09-13 22:23:14,mgottschlag,hm? du musst den ja nicht nur per i2c sondern irgendwie auch per i2s anschließen
+2016-09-13 22:23:17,mgottschlag,kann qemu sowas?
+2016-09-13 22:23:21,Svenska,eben...
+2016-09-13 22:23:28,Svenska,i2c ist nur das control interface
+2016-09-13 22:23:40,mgottschlag,und meinst du jetzt einen physischen oder emulierten wm8750? :D
+2016-09-13 22:23:49,Svenska,"einen emulierten, qemu kann das laut ""-device ?"" ;-)"
+2016-09-13 22:23:49,mgottschlag,"wenn emuliert, dann kann das Board wohl auch I2S, oder?"
+2016-09-13 22:23:57,Svenska,"öh, nein? *g*"
+2016-09-13 22:24:09,mgottschlag,huh? was für eine CPU emulierst du?
+2016-09-13 22:24:19,Svenska,ich hab mal startup-code und gedöns fuer das lm3s811evb-target geschrieben
+2016-09-13 22:24:20,mgottschlag,"ich meine, was für eine Maschine?"
+2016-09-13 22:24:31,Svenska,da ist ein stinknormaler cortex-m3 drauf
+2016-09-13 22:24:47,Svenska,"und per i2c hängt noch ein OLED dran, das kann ich auch ansprechen"
+2016-09-13 22:25:19,Svenska,"an den emulierten GPIOs hängt vermutlich nix, und wie ich da was anschließe, weiß ich auch nicht"
+2016-09-13 22:26:03,mgottschlag,Svenska: der SSI des lm3s811 kann I2S
+2016-09-13 22:26:08,mgottschlag,so sieht zumindest das Datasheet aus
+2016-09-13 22:26:22,Svenska,...nur sind die auch angeschlossen?
+2016-09-13 22:26:25,mgottschlag,"ohne MCLK, aber das ist ja quasi normal"
+2016-09-13 22:26:31,mgottschlag,also das würde ich bei qemu ja erwarten :D
+2016-09-13 22:26:53,mgottschlag,afaik funktionieren diese CODECs tatsächlich und sind nicht nur einfach so da :)
+2016-09-13 22:27:08,Svenska,"ich nicht, weil das board den wm8750 ja nicht nativ hat"
+2016-09-13 22:27:33,Svenska,"ich hab nur ""qemu-system-arm -M lm3s811evb -device wm8750,address=0x20"" gemacht ;)"
+2016-09-13 22:27:42,mgottschlag,hm
+2016-09-13 22:28:28,Svenska,"und dann hängt der codec zwar am i2c, aber sonst taucht der nirgends im qtree auf"
+2016-09-13 22:28:49,mgottschlag,"ja, und online findet man den SSI nur in Verbindung mit einem angeblich daran angeschlossenen OLED"
+2016-09-13 22:29:03,mgottschlag,"ah, ne, falsches Board"
+2016-09-13 22:29:07,Svenska,mit SSI meinst du den SPI?
+2016-09-13 22:29:21,mgottschlag,"ja, das emulierte Board kann anscheinend kein I2S"
+2016-09-13 22:29:31,mgottschlag,"naja, mit der SSI-Einheit kann man mehr als nur SPI machen"
+2016-09-13 22:29:42,mgottschlag,"die hat noch ein Frame-Signal, d.h. zumindest I2S geht auch"
+2016-09-13 22:29:57,Svenska,"kA, mit i2s hab ich noch nie gearbeitet..."
+2016-09-13 22:30:04,Svenska,...nur mit pwm-dac :-D
+2016-09-13 22:30:13,Svenska,"aber das kann qemu auch nicht, zumindest hab ich nix gefunden"
+2016-09-13 22:31:13,mgottschlag,"I2S = SPI mit einem zusätzlichen Signal, das sagt, ob das aktuelle Wort jetzt gerade links oder rechts ist"
+2016-09-13 22:31:33,Svenska,"ach, mehr ist das nicht? lustig..."
+2016-09-13 22:32:07,mgottschlag,"diverse Codecs wollen auch noch eine Master Clock, die 2-4 mal höher als die Bit Clock ist, aber das ist stark unterschiedlich"
+2016-09-13 22:32:33,Svenska,"der wolfson will entweder 12 MHz (vom USB) oder eine andere fixe, der scheint da nett zu sein"
+2016-09-13 22:33:53,Svenska,"das andere lm3s-board hat ein größeres OLED, aber auch kein audio"
+2016-09-13 22:34:34,mgottschlag,das Samsung-Board hat anscheinend I2S
+2016-09-13 22:34:43,Svenska,und keinen cortex-m3 mehr ;)
+2016-09-13 22:34:47,mgottschlag,"ja, logisch"
+2016-09-13 22:35:21,Svenska,"es gibt schon einige boards mit audio, ordentlichem displaycontroller, mmu und megabyteweise ram"
+2016-09-13 22:35:29,Svenska,aber die wollte ich eigentlich nicht anfassen *g*
+2016-09-13 22:50:13,Svenska,"also gibt's wohl keine möglichkeit, aus einem qemu-cortex-m3-board mehr rauszuholen als ein display"
+2016-09-13 22:51:10,Svenska,"die meisten devices fuer i2c und spi sind irgendwelche sensoren, die emuliert keinen sinn ergeben (adc, dac, temperatur), flash oder irgendwelche cpu- oder pda-spezifischen teile"
+2016-09-13 23:47:42,Svenska,schade.

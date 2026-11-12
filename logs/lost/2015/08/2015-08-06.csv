@@ -1,0 +1,219 @@
+date/time,nick,message
+2015-08-06 13:01:31,iksnagreb,moin
+2015-08-06 13:15:04,Tufel,huhu
+2015-08-06 17:10:01,darklink,so. Ich implementiere jetze malloc
+2015-08-06 17:11:48,kevin,Viel Spaß
+2015-08-06 17:12:18,kevin,Wie wird deins intern funktionieren?
+2015-08-06 17:12:19,darklink,^^ hab auch schon ein bisschen drüber nach gedacht
+2015-08-06 17:12:52,kevin,"Ich bin mittlerweile zu diesem Ergebnis gekommen: Die sinnvollste Weise, malloc zu implementieren, ist ein fertiges zu kopieren ;-)"
+2015-08-06 17:12:53,darklink,"ich habe ein array, wo die für malloc allozierte pages drinne stehen"
+2015-08-06 17:13:20,kevin,Ein Array? Also statische Größe?
+2015-08-06 17:13:25,darklink,ja
+2015-08-06 17:13:28,Svenska,"also kein richtiges malloc, sondern ein kernel_allocate_page?"
+2015-08-06 17:13:48,darklink,es soll so wie malloc funktionieren
+2015-08-06 17:14:12,Svenska,öh ... wieviel wird ein malloc(16) denn dann reservieren?
+2015-08-06 17:14:28,kevin,16 Bytes hoffentlich
+2015-08-06 17:14:42,darklink,wenn keine 20 bytes in bereits für malloc reservierten speicherplatz frei ist 4096
+2015-08-06 17:14:43,Svenska,"naja, praktisch etwas mehr..."
+2015-08-06 17:14:45,darklink,ansonsten 20
+2015-08-06 17:14:49,kevin,"Evtl. noch ein paar mehr, wenn man ein paar Sachen prüfen will"
+2015-08-06 17:15:19,kevin,"Okay, eine Länge wäre praktisch, das gebe ich zu"
+2015-08-06 17:15:21,Svenska,"ich hab so ein minimales malloc() in produktivcode, aber für den ist free() sinnlos, daher passt das schon ;)"
+2015-08-06 17:15:35,darklink,vor jeden von malloc zurückgegebenen pointer ist die größe
+2015-08-06 17:15:43,darklink,"ist die null, ist es nicht reserviert"
+2015-08-06 17:16:08,darklink,is sie ungleich null sind n bytes reserviert
+2015-08-06 17:16:08,kevin,"Jo, das ist sinnvoll"
+2015-08-06 17:16:31,Svenska,"woher weißt du, wieviel nicht reserviert ist, wenn es null ist?"
+2015-08-06 17:16:49,Svenska,a = malloc(16); b = malloc(16); c = malloc(16); free(b);
+2015-08-06 17:17:01,darklink,die größe von a wird 32
+2015-08-06 17:17:07,darklink,36*
+2015-08-06 17:17:13,kevin,urgs...
+2015-08-06 17:17:15,Svenska,öh
+2015-08-06 17:17:19,Svenska,das ist ungünstig.
+2015-08-06 17:17:32,Svenska,"(außerdem würde es 40 werden, aber egal.)"
+2015-08-06 17:17:37,kevin,Vergiss dein Array und mach eine anständige Freispeicherliste
+2015-08-06 17:17:37,darklink,nein
+2015-08-06 17:18:01,Svenska,"stimmt, 36. ;)"
+2015-08-06 17:18:05,Svenska,aber das ist trotzdem doof.
+2015-08-06 17:18:05,darklink,ich nehme vieleicht auch noch ein attributeint
+2015-08-06 17:18:25,Svenska,"wenn ich ein malloc(16) mache, dann will ich nicht, dass da irgendwann 32 bytes für reserviert werden"
+2015-08-06 17:18:34,darklink,"höchstes bit zeigt, ob die page frei ist und  der rest ist die task-ID"
+2015-08-06 17:18:54,darklink,(0 für den kernel)
+2015-08-06 17:19:02,Svenska,a = malloc(16); b = malloc(2G); free(b);
+2015-08-06 17:19:06,Svenska,und schon ist sämtlicher speicher voll.
+2015-08-06 17:19:11,darklink,lol
+2015-08-06 17:19:35,darklink,ich limitiere malloc auf 512 MB
+2015-08-06 17:19:37,darklink,MiB*
+2015-08-06 17:19:41,Svenska,machts auch nicht besser
+2015-08-06 17:19:54,Svenska,a = malloc(16); b = malloc(512 MB - 40); free(b);
+2015-08-06 17:20:14,Svenska,"a belegt jetzt (512 MB - 20), und der speicher ist trotzdem voll"
+2015-08-06 17:20:26,Svenska,"und der owner von a weiß davon noch nichtmal was, kann also auch nix dagegen tun."
+2015-08-06 17:20:43,Svenska,(und warum ausgerechnet 512 MB ?)
+2015-08-06 17:20:50,darklink,ähm keine ahnung
+2015-08-06 17:21:15,Svenska,ganz schlechte begründung ^^
+2015-08-06 17:21:33,darklink,ich füge wie gesagt ne prozess-ID an
+2015-08-06 17:21:50,darklink,und mit gesetztem höchstwertigem bit ist die page frei
+2015-08-06 17:22:04,Svenska,das klingt ... kaputt.
+2015-08-06 17:22:22,darklink,(damit keiner auf die idee kommt den speicher von nem anderen prozess zu free'n
+2015-08-06 17:22:34,Svenska,wie sollte das denn gehen?
+2015-08-06 17:22:56,Svenska,ein prozess kann doch sowieso keinen pointer auf den speicher eines anderen prozesses bauen
+2015-08-06 17:23:00,Svenska,wegen paging und so
+2015-08-06 17:23:24,darklink,aber es können nur ganze pages gemappt werde
+2015-08-06 17:23:30,Svenska,"mal abgesehen davon: soll dein malloc() im kernel laufen, oder soll das ein userspace-malloc() werden?"
+2015-08-06 17:23:37,darklink,im kernel
+2015-08-06 17:23:43,Svenska,lol
+2015-08-06 17:24:14,kevin,Kerneldatenstrukturen einem Prozess zuzuweisen ist ein interessanter Ansatz
+2015-08-06 17:24:19,kevin,Um nicht zu sagen kaputt
+2015-08-06 17:24:30,darklink,kernel is prozess ID -1
+2015-08-06 17:24:52,Svenska,"das heißt, wenn ein prozess 16 bytes anfordert, dann kriegt er auch schreibzugriff auf die 4 bytes davor (liegen ja in der gleichen page) und kann damit alles kaputtmachen, richtig?"
+2015-08-06 17:24:52,darklink,und die page is gelöscht wenn NUR das höchstwertige bit gesetzt is
+2015-08-06 17:24:59,kevin,"Das heißt, da steht immer -1 drin?"
+2015-08-06 17:25:07,kevin,Weil der Userspace die Funktion ja nicht aufrufen kann?
+2015-08-06 17:25:19,darklink,userspace kriegt die funktion auch
+2015-08-06 17:25:35,darklink,"ich weiß, dass es die aufgabe für die libc"
+2015-08-06 17:25:41,darklink,ist
+2015-08-06 17:25:46,Svenska,außerdem kann ein prozess auf die 4 bytes _hinter_ seinem bereich zugreifen (wo größe und pid des nächsten blocks stehen) und damit andere prozesse töten?
+2015-08-06 17:26:01,Svenska,seh ich das soweit richtig?
+2015-08-06 17:26:41,kevin,"Und auf die davor auch, wenn der Bereich mitten in der Page liegt"
+2015-08-06 17:26:42,Svenska,falls ja: ganz schlechte idee.
+2015-08-06 17:27:10,darklink,oh
+2015-08-06 17:27:39,darklink,dann porte ich lieber libc's malloc
+2015-08-06 17:27:44,darklink,glibc's*
+2015-08-06 17:27:46,Svenska,"(a) das ganze sicherheitsgedöns von paging basiert auf pages, also werden an den userspace nur PAGES ausgegeben"
+2015-08-06 17:28:14,Svenska,"(b) malloc() für den userspace wird in der libc implementiert, und da passt dein ansatz schon (also größe + block)"
+2015-08-06 17:28:29,Svenska,"(c) malloc() für den kernel wird im kernel implementiert, auch da passt dein ansatz schon (größe + block)"
+2015-08-06 17:29:29,Svenska,"(d) das userspace-malloc() muss eine möglichkeit haben, (userspace-)pages vom kernel zu bekommen und zurückzugeben."
+2015-08-06 17:29:39,Svenska,zum beispiel durch mmap() oder sowas
+2015-08-06 17:30:27,Svenska,"da jeder task in seinem eigenen adressraum läuft, darf mmap() sich sogar die zieladresse wünschen ;)"
+2015-08-06 17:30:40,kevin,"darklink: Schreib lieber ein funktionierendes malloc. Ein existierendes zu portieren ist im Prinzip sinnvoll, aber erst, wenn du theoretisch weißt, wie es geht"
+2015-08-06 17:31:05,darklink,ok.
+2015-08-06 19:53:31,Svenska,"hm, manchmal ist goto doch nützlich ..."
+2015-08-06 19:53:36,Svenska,... oder ich bin asm-versaut. :-)
+2015-08-06 19:58:10,XanClic,Soll ich jetzt wirklich find qemu -name '*.c' -exec git blame {} \; | grep 'Max Reitz.*goto' | wc -l machen? ;-)
+2015-08-06 19:58:30,XanClic,In block/ sinds jedenfalls schonmal 100
+2015-08-06 19:58:32,Svenska,:-D
+2015-08-06 19:58:51,Svenska,"gut, dann bin ich wenigstens nicht allein mit dem gedanken"
+2015-08-06 19:59:07,Svenska,"...was mein unverständnis gegenüber sprachen, die das schlichtweg verbieten, nicht gerade senkt"
+2015-08-06 19:59:07,XanClic,Solange man nicht nach hinten springt…
+2015-08-06 19:59:13,Svenska,oh. :-D
+2015-08-06 19:59:17,XanClic,:-P
+2015-08-06 19:59:30,XanClic,Einmal hab ich das aber auch irgendwo gemacht
+2015-08-06 19:59:49,Svenska,ich hab ein while(1) { draw; read; handle; go_back; }
+2015-08-06 20:00:35,Svenska,"und ""handle"" ist eine schleife, die zeichenweise durch das read geht."
+2015-08-06 20:00:50,Svenska,"und danach, wenn nix sinnvolles drin war, steht ein goto handle :/"
+2015-08-06 20:00:54,Svenska,bzw goto read
+2015-08-06 20:20:56,darklink,"Ich kommentiere die goto's in meinem code mit ""Evil goto! TODO"""
+2015-08-06 20:21:09,Jidder,GOTO :EOF
+2015-08-06 20:22:53,Svenska,"hihi, besonders die letzte antwort: https://www.mikrocontroller.net/topic/373448"
+2015-08-06 20:24:22,darklink,ich gugg ma nach
+2015-08-06 20:28:21,darklink,t´yndur braucht lange zum klonen :(
+2015-08-06 20:28:49,darklink,da is ja selbst der linux kernel schneller
+2015-08-06 20:31:22,darklink,bei max reitz find ich nix
+2015-08-06 20:31:29,darklink,und generell find ich 160
+2015-08-06 20:31:33,XanClic,war ja auch qemu
+2015-08-06 20:31:48,darklink,oh
+2015-08-06 20:31:57,XanClic,Und das braucht noch viel länger zum Clonen ;-)
+2015-08-06 20:32:48,darklink,leider kann man nicht break 3; machen um aus mehreren schleifen rauszuspringen
+2015-08-06 20:33:42,Svenska,"das wäre der goto-ersatz in meinem perl (""last LOOP"")"
+2015-08-06 20:34:13,darklink,named loops sind auch quasi gotos
+2015-08-06 20:34:29,Svenska,sag ich ja
+2015-08-06 20:34:46,darklink,perl kann ich nicht
+2015-08-06 20:35:04,darklink,last LOOP sieht für mich aus wie eine schleife namens last
+2015-08-06 20:35:17,Svenska,last ist perl für break
+2015-08-06 20:35:23,Svenska,LOOP ist ein label
+2015-08-06 20:35:51,Svenska,"(in C gibt es ""continue"" und ""break"", in perl gibt's ""next"", ""redo"" und ""last"")"
+2015-08-06 20:36:27,darklink,XanClic: nein. Das sammeln der objekte geht viel schneller und das empfangen ca gleich schnell (allerdings hat das wenigstens doppelten uplink)
+2015-08-06 20:36:52,XanClic,schade
+2015-08-06 20:37:12,darklink,du musstest also eine deiner schleifen LOOP benennen
+2015-08-06 20:37:24,Svenska,ja logisch
+2015-08-06 20:37:39,Svenska,"wenn ich das nicht tue, springt er aus der innersten schleife raus"
+2015-08-06 20:37:51,Svenska,"wenn ich das nicht will, muss ich schon angeben, welche ich beenden will"
+2015-08-06 20:38:36,darklink,ich find es persönlich besser ne zahl nachm break oder continue einzufügen
+2015-08-06 20:38:52,darklink,break 2; //Springe aus zwei schleifen
+2015-08-06 20:39:33,darklink,continue 3; //springe aus zwei schleifen und lass die nächste schleife nochmal weiterlaufen
+2015-08-06 20:39:44,Svenska,"ich kenne keine sprache, die sowas tut"
+2015-08-06 20:39:52,Svenska,und so häufig braucht man das dann auch wieder nicht
+2015-08-06 20:40:03,Svenska,"egal, bin erstmal afk."
+2015-08-06 20:40:11,darklink,und eine unterscheidung zwischen break im switch case und beim break inner schleife
+2015-08-06 20:40:14,Svenska,"aufstehen, essen beschaffen, weiter auskurieren :("
+2015-08-06 20:42:28,darklink,Ich lass ma find was suchen
+2015-08-06 20:42:33,darklink,finden*
+2015-08-06 20:46:57,darklink,5576 auf branch master
+2015-08-06 20:51:47,Jidder,"wer flusskontrollstatements wie goto, if, for oder while braucht hat nicht genug abstraktionsebenen. nur foreach ist zulässig"
+2015-08-06 20:52:16,Jidder,oh denglisch
+2015-08-06 20:52:18,Jidder,flusskontrollstellungsnahmen
+2015-08-06 20:53:24,Jidder,funktionsaufrufe sind auch ungültig. benannte lambdaausdrücke heißen die jetzt
+2015-08-06 20:54:20,XanClic,und sind hoffentlich deprecated?
+2015-08-06 20:54:27,darklink,119 von Max Reitz
+2015-08-06 20:54:36,darklink,"Jidder, je deutsch desto DAU"
+2015-08-06 20:55:18,darklink,foreach gibts nich
+2015-08-06 20:55:21,darklink,in c
+2015-08-06 20:55:43,Jidder,in C16 hoffentlich
+2015-08-06 20:56:40,darklink,warum nehmen wir alles außer goto's raus und fügen konditionale goto's ein?
+2015-08-06 20:58:02,darklink,und goto's die die adresse nachm goto pusht und welche die PC mit dem obersten wert aufm stack überschreibt?
+2015-08-06 20:58:29,darklink,+nicht
+2015-08-06 21:00:37,darklink,XanClic: was für ne geburt
+2015-08-06 21:01:36,XanClic,私の、むろん
+2015-08-06 21:02:05,XanClic,"und gut zu wissen, dass ich die Nachricht auf dem Laptop immer noch drin hab"
+2015-08-06 21:02:27,darklink,meine font ist kaput
+2015-08-06 21:02:35,darklink,was war das letzte zeichen?
+2015-08-06 21:02:49,XanClic,"i im Quit, n hier"
+2015-08-06 21:02:55,darklink,"sollte das so aussehen wie ein umgekipptes, aufm kopf stehendes katakana TO?"
+2015-08-06 21:03:27,XanClic,das sollte aussehen wie ein n
+2015-08-06 21:03:54,darklink,hexchat mag keine CJK schriftzeichen
+2015-08-06 21:04:13,darklink,wennichs markiere seh ichs auchh
+2015-08-06 21:04:54,Svenska,"lol, cjk liefert mir ergebnisse zur creutzfeldt-jakob-krankheit ;)"
+2015-08-06 21:05:05,XanClic,cjk ist ja auch eine Krankheit
+2015-08-06 21:05:07,XanClic,*duck*
+2015-08-06 21:06:19,darklink,außer ner gemeinsamen schriftbreitwe haben sie eigentlich nix gemeinsam
+2015-08-06 21:06:36,Svenska,doch.
+2015-08-06 21:06:43,Svenska,sie alle nutzen chinesische schriftzeichen.
+2015-08-06 21:07:02,darklink,die bedeutungen sind aber oftmals unterschiedlich
+2015-08-06 21:07:14,Svenska,und?
+2015-08-06 21:07:25,darklink,und im koreanischen hab ich bisher keine chinesischen zeichen gesehen
+2015-08-06 21:07:30,darklink,nur hangeul
+2015-08-06 21:07:33,Svenska,"deutsch, englisch und spanisch nutzen auch gleiche zeichen für verschiedene bedeutungen ^^"
+2015-08-06 21:07:44,darklink,eben
+2015-08-06 21:07:44,Svenska,heißt hanja
+2015-08-06 21:07:52,Svenska,aber deswegen nutzen sie alle die lateinische schrift
+2015-08-06 21:08:24,XanClic,ß
+2015-08-06 21:08:29,darklink,ßeiße
+2015-08-06 21:08:34,darklink,ups
+2015-08-06 21:08:41,Svenska,sseisse
+2015-08-06 21:08:45,XanClic,ẞeiße
+2015-08-06 21:08:51,Svenska,Sseisse?
+2015-08-06 21:09:13,darklink,ich hab das große eszett nicht aufm kühlschrank
+2015-08-06 21:09:22,darklink,warte - kühlschrank?
+2015-08-06 21:09:49,darklink,s/kühlschrank/tastatur/ - ich hab wohl hunger
+2015-08-06 21:10:05,XanClic,
+2015-08-06 21:10:05,Svenska,lol
+2015-08-06 21:10:29,Svenska,"wie auch immer, cjk-sprachen enthalten chinesische schriftzeichen. wie auch immer die in der jeweiligen sprache genannt werden."
+2015-08-06 21:10:29,darklink,"XanClic, das fraktur eszett sieht ßeiße aus"
+2015-08-06 21:10:35,XanClic,das waren auch zwei S
+2015-08-06 21:10:45,darklink,dann eben das erste s
+2015-08-06 21:10:47,XanClic,"latin small letter S war das erste, da gabs kein Fraktur für"
+2015-08-06 21:10:59,Svenska,unicode-fraktur kennt kein ß
+2015-08-06 21:11:14,Svenska,und das war das normale lange s
+2015-08-06 21:11:35,darklink,das sieht eher wie ein krüppel-f aus das latin small letter s inner fraktur
+2015-08-06 21:11:50,Svenska,[ ] du kennst fraktur
+2015-08-06 21:11:56,Svenska,:D
+2015-08-06 21:12:08,darklink,はい
+2015-08-06 21:12:15,XanClic,いいえ、後輩
+2015-08-06 21:12:25,darklink,was ist mit der wärme
+2015-08-06 21:12:39,darklink,was ist mit dem beginn*
+2015-08-06 21:13:10,XanClic,感じを勉強しなきゃいけないで〜す
+2015-08-06 21:13:18,XanClic,god damnit ich aber auch
+2015-08-06 21:13:41,XanClic,*漢字を勉強しなきゃいけない
+2015-08-06 21:14:13,darklink,was für ne stärke der kanji?
+2015-08-06 21:14:38,darklink,ach studie
+2015-08-06 21:14:45,XanClic,nein Lernen
+2015-08-06 21:15:46,darklink,hab gleich ne japanisch IME
+2015-08-06 21:16:05,darklink,könntet ihr kurs was ausprobieren?
+2015-08-06 21:16:27,XanClic,"Wenn du so fragst, vermutlich nicht"
+2015-08-06 21:16:43,darklink,"ich weiß nicht ob das linking außerhalb meines LAN's funtzt, aber könnte einer mal morten-raspi.ddns.net/pc/ aufrufen?"
+2015-08-06 21:17:30,XanClic,"wenn da die Summenformel für Iodwasserstoff in Kleinbuchstaben stehen soll, tut es"
+2015-08-06 21:17:48,darklink,ja
+2015-08-06 21:17:55,darklink,ok danke
+2015-08-06 21:20:30,Svenska,"""Die zwei modifizierten Buchstaben ⟨ơ⟩ und ⟨ư⟩ kennzeichnen Vokale, die in westlichen Sprachen unbekannt sind, so genannte Stöhnlaute."""
+2015-08-06 21:21:57,darklink,"die anzahl wie die in diesem anime ""ありがとうございます"" sagen erscheint mir suspekt"
+2015-08-06 23:20:59,Jidder,irgendwas sortiert meine desktop icons immer wieder um

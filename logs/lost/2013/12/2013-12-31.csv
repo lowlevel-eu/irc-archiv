@@ -1,0 +1,463 @@
+date/time,nick,message
+2013-12-31 11:49:07,Jonathan,Moin
+2013-12-31 14:24:16,ISOrunner2,Hi
+2013-12-31 14:30:54,ISOrunner2,"Hallo, ich habe gerade versucht Multitasking zu implementieren wie es in Teil 6 - Multitasking beschrieben wird. Aber es passiert einfach nichts :( http://pastebin.com/LA3hmd8u"
+2013-12-31 14:34:06,ISOrunner2,Kann mir bitte jemand sagen wo der Fehler liegt? 
+2013-12-31 14:37:25,ISOrunner2,Irgendjemand?
+2013-12-31 14:40:08,ISOrunner2,Ist hier irgendjemand der mir bei meinem Problem helfen kann?
+2013-12-31 14:42:09,Paddy,Der Fehler liegt vermutlich in deinem Code
+2013-12-31 14:42:22,ISOrunner2,Es währe auch interessant was für ein Fehler :/
+2013-12-31 14:42:42,ISOrunner2,Der PasteBin Link ist weiter oben
+2013-12-31 14:42:58,Paddy,Kannst du den Assembler-Code noch posten?
+2013-12-31 14:43:15,ISOrunner2,Meinst du mit dem ich meinen Kernel starte
+2013-12-31 14:43:16,Paddy,Also handle_interrupt und so
+2013-12-31 14:43:26,Paddy,"Ach so, das ist C-Code"
+2013-12-31 14:43:28,ISOrunner2,Das habe ich mit asm volatile gemacht.
+2013-12-31 14:43:49,Paddy,"Ich meinte den Code, der den eigentlichen Taskwechsel macht"
+2013-12-31 14:44:06,ISOrunner2,Der ist doch in C?
+2013-12-31 14:44:42,Paddy,"Hm, wieso sollte denn bei deinem Code irgendwas taskswitchen?"
+2013-12-31 14:44:50,Paddy,"push %esp; call handle_interrupt; mov %eax, %esp"
+2013-12-31 14:45:05,ISOrunner2,Wurde doch auch so im Tutorial gemacht.
+2013-12-31 14:45:12,Paddy,Du übergibst also den aktuellen Stackpointer an handle_interrupt()
+2013-12-31 14:45:21,ISOrunner2,Jop
+2013-12-31 14:45:43,mroman_,muestest du nicht einen Timer setzen der handle_interrupt periodisch aufruft?
+2013-12-31 14:45:50,Paddy,"cpu->intr zeigt an irgendeine Stelle auf dem Stack, aber warum dort eine Interruptnummer liegen sollte, ist unklar"
+2013-12-31 14:46:01,Paddy,Dann returnst du aus handle_interrupt()
+2013-12-31 14:46:19,Paddy,"Dein Stack ist an der Stelle grad kaputt, weil du was gepusht hast, was du nicht mehr popst, aber das spielt im Moment keine Rolle"
+2013-12-31 14:46:51,ISOrunner2,Ich bin leider nicht so gut in Assembler :/
+2013-12-31 14:47:06,Paddy,"Hm, nein, stimmt gar nicht, das mov %eax, %esp setzt ihn sogar wieder zurück"
+2013-12-31 14:47:15,Paddy,Und danach kommt auf jeden Fall eine Endlosschleife
+2013-12-31 14:47:40,Paddy,"Ich sehe nicht, wie du ohne irgendeinen Sprung in einen anderen Task wechseln willst?"
+2013-12-31 14:47:55,ISOrunner2,"Wie mach ich das denn? Sorry, wenn das blöd klingt."
+2013-12-31 14:48:39,Paddy,"Naja, auf die Gefahr hin, dass du mich nicht mehr magst, so: http://www.lowlevel.eu/wiki/Teil_6_-_Multitasking"
+2013-12-31 14:49:00,ISOrunner2,Nach diesem Tutorial habe ich das ja gemacht.
+2013-12-31 14:49:16,Paddy,Aber du hast den Code zum Aufrufen von handle_interrupt an einer völlig anderen Stelle eingebaut
+2013-12-31 14:49:38,ISOrunner2,Also muss alles so in der Reihenfolge implementiert werden wie im Artikel beschrieben?
+2013-12-31 14:49:53,Paddy,"Hast du den Kernel komplett nach dem Tut aufgebaut, oder versuchst du nur Teil 6 zu implementieren ohne den Rest?"
+2013-12-31 14:50:18,ISOrunner2,Nicht exakt nach dem Tut
+2013-12-31 14:50:28,Paddy,Aber das Interrupthandling ist ähnlich?
+2013-12-31 14:50:50,ISOrunner2,Ich hab das so gemacht wie in Teil 6 beschrieben
+2013-12-31 14:51:37,Paddy,"Dann hast du auch schon einen Aufrufer von handle_interrupt in einer Assemblerdatei, richtig?"
+2013-12-31 14:51:51,ISOrunner2,Muss ich das als erstes Aufrufen?
+2013-12-31 14:52:04,Paddy,Wie als erstes?
+2013-12-31 14:52:15,ISOrunner2,Ich möchte möglichst alles in C machen
+2013-12-31 14:52:32,Paddy,Beantworte am besten erstmal meine Frage
+2013-12-31 14:52:36,Paddy,"[14:51] <Paddy> Dann hast du auch schon einen Aufrufer von handle_interrupt in einer Assemblerdatei, richtig?"
+2013-12-31 14:52:54,Paddy,"Und wenn nein, funktioniert dein Interrupthandler?"
+2013-12-31 14:53:06,ISOrunner2,"Ich möchte dafür keine Extra Assembler-Datei erstellen, Inline_Assembler ist oke"
+2013-12-31 14:53:21,Paddy,Das war nicht meine Frage
+2013-12-31 14:53:25,Paddy,"Ich will wissen, was du hast"
+2013-12-31 14:53:28,ISOrunner2,Dann halt nein
+2013-12-31 14:53:30,Paddy,Nicht was du haben oder nicht haben willst
+2013-12-31 14:53:37,ISOrunner2,:$
+2013-12-31 14:53:37,Paddy,"[14:52] <Paddy> Und wenn nein, funktioniert dein Interrupthandler?"
+2013-12-31 14:53:47,ISOrunner2,Keine Ahnung :/
+2013-12-31 14:53:58,Paddy,Dann fix erstmal das
+2013-12-31 14:54:03,Paddy,Ohne Interrupts kein Multitasking
+2013-12-31 14:54:26,ISOrunner2,oke dann mach ich erst interrupts
+2013-12-31 14:54:28,Paddy,"Wenn du die Interrupts ohne Assembler behandelst, ist meine starke Vermutung, dass der Handler nicht tut"
+2013-12-31 14:54:57,ISOrunner2,Ich bin dann mal beschäftigt
+2013-12-31 14:59:36,ISOrunner2,Wieviele Einträge hat die GDT?
+2013-12-31 15:01:53,Jidder,so viele wie du da rein tust
+2013-12-31 15:02:07,Jidder,"mindestens 3: null deskriptor, code und daten"
+2013-12-31 15:02:12,ISOrunner2|AFK,oke
+2013-12-31 15:02:45,Jidder,oh und wenn es um GDTs aus unseren tutorials geht: nachzählen
+2013-12-31 15:03:17,ISOrunner2|AFK,oke
+2013-12-31 15:04:20,ISOrunner2|AFK,Also 7?
+2013-12-31 15:05:06,Paddy,Könnte hinkommen
+2013-12-31 15:05:16,ISOrunner2|AFK,Was heißt könnte?
+2013-12-31 15:05:36,ISOrunner2|AFK,7 oder etwa nicht?
+2013-12-31 15:05:45,Paddy,Dass ich es nicht geprüft habe und nicht auswendig weiß
+2013-12-31 15:05:52,ISOrunner2|AFK,Achso
+2013-12-31 15:06:01,Paddy,6 oder 7 klingen am wahrscheinlichsten
+2013-12-31 15:06:27,ISOrunner2|AFK,Ich habe nachgezählt doch 6
+2013-12-31 15:06:36,Paddy,"Null, Code/Daten für Ring 0, Code/Daten für Ring 3, TSS für Taskswitch und evtl. TSS für Double Faults"
+2013-12-31 15:07:00,ISOrunner2|AFK,Ich mach dann mal weiter
+2013-12-31 15:07:02,ISOrunner2|AFK,.
+2013-12-31 15:15:18,tufel,mmh mroman könnte ich nochmal das Datenblatt von deiner CPU sehen ? :)
+2013-12-31 15:31:49,iksnagreb,moin
+2013-12-31 15:31:52,Jidder,moin
+2013-12-31 15:35:17,ISOrunner2,Das nächste Problem: Nach laden der GDT startet der Rechner neu :/
+2013-12-31 15:35:43,Paddy,Dann ist die GDT falsch
+2013-12-31 15:35:51,ISOrunner2,Ich poste mal den Code
+2013-12-31 15:36:51,ISOrunner2,gdt.h: http://pastebin.com/72bLXDQs gdt.c: http://pastebin.com/JHYJrYHx
+2013-12-31 15:44:40,Jidder,in gdt_set_entry würde ich ja klammern setzten
+2013-12-31 15:44:55,ISOrunner2,Oke
+2013-12-31 15:44:56,Jidder,ohne ist das glaube ich nicht richtig
+2013-12-31 15:45:02,ISOrunner2,Ich versuch das mal
+2013-12-31 15:45:02,mroman_,tufel: http://mroman.ch/VA/
+2013-12-31 15:45:11,Jidder,"limit ist außerdem 0xfffff und nicht 0xffffff, aber das sollte nicht die ursache sein"
+2013-12-31 15:45:20,mroman_,http://mroman.ch/VA/VAMANUAL.pdf
+2013-12-31 15:46:56,ISOrunner2,Funktioniert immernoch nicht :/
+2013-12-31 15:47:27,Jidder,limit | 0xffffll sieht außerdem falsch aus
+2013-12-31 15:47:34,Jidder,wobei das auch egal sein sollte
+2013-12-31 15:47:51,mroman_,"MMU, DMA kannst du natuerlich alles weglassen"
+2013-12-31 15:47:57,Jidder,oh ne sollte nicht egal sein
+2013-12-31 15:48:11,mroman_,Cache theoretisch auch
+2013-12-31 15:48:21,ISOrunner2,Funktioniert immernoch nicht :/
+2013-12-31 15:48:29,Jidder,deine klammersetzung ist jetzt richtig?
+2013-12-31 15:48:37,ISOrunner2,"Ja, habe ich berichtigt."
+2013-12-31 15:48:40,Jidder,glaub ich dir nicht
+2013-12-31 15:48:45,ISOrunner2,:D
+2013-12-31 15:48:49,ISOrunner2,ich poste den neuen code
+2013-12-31 15:49:12,Jidder,;)
+2013-12-31 15:49:19,ISOrunner2,http://pastebin.com/At3FM0sG
+2013-12-31 15:49:46,Jidder,ok
+2013-12-31 15:49:49,ISOrunner2,Sollte alles stimmen
+2013-12-31 15:49:51,Jidder,was steht denn im qemu log?
+2013-12-31 15:50:08,ISOrunner2,Ähm wie öffnet man dieses Qemu Log? *grins*
+2013-12-31 15:50:25,ISOrunner2,Ist das die Ausgabe in der Konsole?
+2013-12-31 15:50:30,Jidder,"wenn du qemu beim starten den parameter -d int übergibst, schreibt er das das log in die datei qemu.log"
+2013-12-31 15:50:37,ISOrunner2,Oke 
+2013-12-31 15:50:38,Jidder,die liegt unter windows im aktuellen verzeichnis und unter linux in /tmp
+2013-12-31 15:50:39,ISOrunner2,moment
+2013-12-31 15:50:46,Jidder,hab ich mir sagen lassen
+2013-12-31 15:50:51,ISOrunner2,oke ich versuch mal
+2013-12-31 15:51:01,tufel,mroman_: gibts für deine architektur eigentlich auch schon ein assembler und nen compiler?
+2013-12-31 15:51:08,Jidder,das hier ist nicht der browser
+2013-12-31 15:51:48,ISOrunner2,Qemu Log ist leer
+2013-12-31 15:52:17,mroman_,tufel: Ja
+2013-12-31 15:52:39,Jidder,"du hast den parameter schon zusätzlich zu deinem normalen aufruf von qemu übergeben, oder?"
+2013-12-31 15:52:45,ISOrunner2,ja
+2013-12-31 15:52:52,mroman_,"einen Assembler, Disassembler, Compiler und einen Emulator."
+2013-12-31 15:53:03,Jidder,ISOrunner2: das ist seltsam
+2013-12-31 15:53:14,ISOrunner2,Jidder: Ich starte Qemu mit -kernel kernel.o -m 50M -curses -d int
+2013-12-31 15:53:24,Jidder,welches betriebssystem nutzt du?
+2013-12-31 15:53:32,Paddy,"Neuere qemu-Versionen geben es standardmäßig auf stderr aus, glaube ich"
+2013-12-31 15:53:33,ISOrunner2,Trisquel GNU/Linux
+2013-12-31 15:54:08,mroman_,https://bitbucket.org/mroman_/emulathor/src/fc48fe22fdade5777099eea372e5f06e2b4d2b2b/src/assembler/?at=master
+2013-12-31 15:56:02,tufel,mmh cool
+2013-12-31 15:56:52,Jidder,"ISOrunner2: hm also ich hab keine erklärung, warum das nicht in den logs auftaucht. wenn es auf stderr ausgegeben werden wird, dann stehts auf der konsole"
+2013-12-31 15:56:56,Jidder,"das passiert aber nicht, oder?"
+2013-12-31 15:57:23,ISOrunner2,Also die Konsole bleibt Leer
+2013-12-31 15:59:18,Jidder,"hast du ein funktionieres printf oder so, dass hexadezimalzahlen ausgeben kann?"
+2013-12-31 15:59:41,ISOrunner2,Ich habe eine int2ascii funktion
+2013-12-31 15:59:47,ISOrunner2,und eine puts funktion
+2013-12-31 16:01:05,Jidder,hm
+2013-12-31 16:01:52,Jidder,"kannst du das hier mal anpassen für deine ausgabefunktionen und direkt über das asm-statement, das die gdt lädt, tun?"
+2013-12-31 16:01:52,Jidder,http://pastebin.com/BJS3U2N5
+2013-12-31 16:02:03,Jidder,und dann einen screenshot davon hochladen?
+2013-12-31 16:02:06,Jidder,auf imgur.com oder so
+2013-12-31 16:02:09,ISOrunner2,oke
+2013-12-31 16:05:09,ISOrunner2,Soll ich das gdt_init(); entfernen?
+2013-12-31 16:05:29,Jidder,ne ich meinte einfach in zeile 36 von deiner gdt.c einfügen
+2013-12-31 16:05:45,Jidder,"damit der halt bis dahin durchläuft, die gdt ausgibt und sich dann aufhängt"
+2013-12-31 16:05:52,ISOrunner2,oke
+2013-12-31 16:08:19,ISOrunner2,http://imgur.com/LLNaAZ5
+2013-12-31 16:08:33,Jidder,da scheint ja irgendwas nicht zu funktionieren
+2013-12-31 16:08:40,Jidder,wie zulässig sind deine ausgabefunktionen?
+2013-12-31 16:08:47,Jidder,zuverlässig
+2013-12-31 16:09:04,ISOrunner2,was ist eigentlich dieses %x?
+2013-12-31 16:09:04,Jidder,wobei ausgabefunktionen auch mal einen tüv bräuchten
+2013-12-31 16:09:15,Jidder,ah das liegt das problem
+2013-12-31 16:09:22,Jidder,printf gibt einen formatierten string aus
+2013-12-31 16:09:37,Jidder,"das %x bedeutet, dass printf an der stelle eine hexadezimalzahl ausgeben soll"
+2013-12-31 16:09:52,ISOrunner2,Ich habe leider keine printf nur eine puts die keine Formatfunktion ist :/
+2013-12-31 16:10:16,Jidder,"also ich hab angenommen, dass du das kennst, und das printf irgendwie in puts(int2ascii(x)) oder so umwandelst"
+2013-12-31 16:10:23,Jidder,was auch immer die korrekte verwendung der funktion ist
+2013-12-31 16:10:31,ISOrunner2,achso
+2013-12-31 16:10:49,ISOrunner2,moment
+2013-12-31 16:12:06,ISOrunner2,Jetzt funzt es
+2013-12-31 16:12:14,ISOrunner2,Ich mach mal screenshot
+2013-12-31 16:13:32,ISOrunner2,http://imgur.com/A2gGFpQ
+2013-12-31 16:14:14,ISOrunner2,Ich muss kurz AFK
+2013-12-31 16:14:31,Jidder,ich versuch das in derweil mal zu dekodieren
+2013-12-31 16:14:40,Jidder,was hab ich mir da nur wieder einfallen lassen
+2013-12-31 16:19:15,Jidder,ISOrunner2|AFK: es sieht auf jeden fall nicht annähernd so aus wie es sollte
+2013-12-31 16:19:19,Jidder,wie ist uint64_t definiert?
+2013-12-31 16:24:28,Jidder,ich freu mich schon auf mitternacht. ich wette auf dem aktuellen google doodle passiert dann irgendwas
+2013-12-31 16:24:44,Jidder,die 3 geht von der tanzfläche und die 4 geht rauf oder so
+2013-12-31 16:28:52,Paddy,"Argh, immer dieser Inlineassembler... Ich werde wohl nie verstehen, wann man ""memory"" clobbern muss."
+2013-12-31 16:29:58,SHyx0rmZ,Dann mach es einfach immer ;-)
+2013-12-31 16:30:42,Paddy,An deiner Stelle wäre ich auch schnell gegangen *g*
+2013-12-31 16:31:19,mroman_,"If your assembler instructions access memory in an unpredictable fashion, add ‘memory’ to the list of clobbered registers. "
+2013-12-31 16:32:11,Paddy,"Ich finde das nicht so unpredictable, dass er einen Pointer dereferenziert"
+2013-12-31 16:32:37,mroman_,"Ich wuerde alles was auf Speicher zugreift als ""unpredictable"" zaehlen"
+2013-12-31 16:32:43,Paddy,Also alle Syscalls?
+2013-12-31 16:32:44,mroman_,"sofern es nicht mit ""m"" in der Clobberlist steht."
+2013-12-31 16:35:51,mroman_,aber ja
+2013-12-31 16:36:01,mroman_,inline assembly ist mir auchgrundsaetzlich immer ein RAetsel
+2013-12-31 16:36:08,mroman_,schon nur mit all den modifiern wie earlyclobber und so
+2013-12-31 16:39:16,Jidder,mit microsoft visual c++ wär das nicht passiert
+2013-12-31 16:41:41,Paddy,"Stimmt, da wäre ich nie so weit gekommen"
+2013-12-31 17:06:33,ISOrunner2,wieder da
+2013-12-31 17:07:20,ISOrunner2,Jidder
+2013-12-31 17:07:32,ISOrunner2,Was ist den nun falsch?
+2013-12-31 17:07:45,Jidder,also es sollten am anfang zum beispiel 8 nullen kommen
+2013-12-31 17:07:51,Jidder,weil der null deskriptor 8 bytes groß ist
+2013-12-31 17:08:08,DerHartmut,Aloha
+2013-12-31 17:08:25,Jidder,kann dein puts einen zeilenumbruch machen?
+2013-12-31 17:08:29,ISOrunner2,Ja
+2013-12-31 17:09:04,Jidder,vorletzten und letztem } in meinem codeschnipsel einen zeilenumbruch ausgeben?
+2013-12-31 17:09:23,Jidder,und vielleicht leerzeichen zwischen den zahlen ausgeben?
+2013-12-31 17:10:00,ISOrunner2,ich habs jetzt hingekriegt das nach jeder zahl ein zeilenumbruch kommt
+2013-12-31 17:10:49,Jidder,nach jeder zahl ist ein bisschen oft. nach jedem deskriptor (8 zahlen) wäre besser
+2013-12-31 17:11:01,ISOrunner2,habe ich 
+2013-12-31 17:11:21,Jidder,der zweite deskriptor sollte zum beispiel so aussehen: 255 255 0 0 0 154 207 0
+2013-12-31 17:12:17,ISOrunner2,das ist richtig oder? http://pastebin.com/24JTmywP
+2013-12-31 17:12:19,Jidder,"weil aber in deiner ausgabe aber fast nur 255 und 0 stehen, würde ich mal prüfen ob dein uint64_t richtig definiert ist"
+2013-12-31 17:12:41,Jidder,naja fast
+2013-12-31 17:12:49,Jidder,ascii zeigt halt auf keinen gültigen speicher
+2013-12-31 17:12:52,ISOrunner2,typedef unsigned long int uint64_t;
+2013-12-31 17:12:54,Jidder,char ascii[10] wäre besser
+2013-12-31 17:13:10,Jidder,das muss typedef unsigned long long int uint64_t
+2013-12-31 17:13:11,Jidder,sein
+2013-12-31 17:13:17,Jidder,long int ist 32-bit groß
+2013-12-31 17:14:23,ISOrunner2,Jetzt aber oder? http://imgur.com/OLHJT0g
+2013-12-31 17:14:48,Jidder,ja das könnte funktionieren
+2013-12-31 17:15:29,ISOrunner2,Mein Kernel stürzt nicht mehr ab *yeah*
+2013-12-31 17:15:35,ISOrunner2,Vielen Dank!
+2013-12-31 17:15:51,Jidder,gerne
+2013-12-31 17:16:02,Jidder,mein tip wäre übrigens mal ein paar robustere ausgabefunktionen einzubauen
+2013-12-31 17:16:20,Jidder,die sache mit dem int2ascii ist ja schon arg kompliziert und fehleranfällig
+2013-12-31 17:16:36,Jidder,und das ist dann vielleicht auch eine güte übung um c zu lernen
+2013-12-31 17:16:44,ISOrunner2,Ja ich weiß... Aber für so was  hatte ich eigentlich meine conversion_utils.c gedacht.
+2013-12-31 17:18:00,ISOrunner2,Aber das ist ja nur eine Funktion für den Kernel und da finde ich das jetzt nicht ganz so wichtig das wie die Standard Library zu machen.
+2013-12-31 17:18:34,Paddy,Aber es praktisch zu machen ist trotzdem wichtig
+2013-12-31 17:18:41,ISOrunner2,Jop :)
+2013-12-31 17:19:06,Paddy,"Oh, moin DerHartmut, hatte dich gar nicht gesehen :-)"
+2013-12-31 17:19:23,DerHartmut,Servus Paddy :-)
+2013-12-31 17:20:59,ISOrunner2,Jetzt bin ich endlich bereit die IDT zu schreiben :)
+2013-12-31 17:23:59,Jidder,"wenn du halt nicht an die logs von qemu kommst, ist es noch schwerer den code zu debuggen"
+2013-12-31 17:24:19,Jidder,"ich würde da auch nochmal nachforschungen anstellen, warum das qemu keine logs ausgibt"
+2013-12-31 17:25:05,ISOrunner2,Naja ich beschäftige mich jetzt erstmal mit der IDT
+2013-12-31 17:28:41,ISOrunner2|AFK,Gibt es irgendwo eine Liste von Interrupts?
+2013-12-31 17:32:44,Paddy,Sowas? http://www.lowlevel.eu/wiki/IRQ#IRQ_Tabelle
+2013-12-31 17:33:11,ISOrunner2,Ah danke
+2013-12-31 17:38:40,ISOrunner2,"Wieso wird ihn http://www.lowlevel.eu/wiki/Interrupt_Descriptor_Table nicht erklärt wie man ein Interrupt erstellt, oder habe ich das einfach nur überlesen?"
+2013-12-31 17:38:48,mroman_,ueberlese
+2013-12-31 17:39:35,mroman_,Die IDT ist eine Tabelle gefuellt mit Informationen was die CPU bei einem Interrupt tun soll
+2013-12-31 17:40:04,ISOrunner2,Ja und wie erstelle ich einen neuen Interrupt? 
+2013-12-31 17:40:27,mroman_,"""Erstellen"" ist nicht so das richtige Wort dazu"
+2013-12-31 17:40:36,ISOrunner2,"dann halt ""hinzufügen"""
+2013-12-31 17:40:40,mroman_,Es gibt offensichtlich 256 Eintrage in der IDT
+2013-12-31 17:40:45,ISOrunner2,Jop
+2013-12-31 17:40:50,mroman_,d.h die CPU kennt 256 verschieden Interrupts.
+2013-12-31 17:40:55,ISOrunner2,Jop
+2013-12-31 17:40:55,mroman_,*verschiedene
+2013-12-31 17:41:11,mroman_,"wenn du jetzt bestimmen willst, was bei Interrupt No. 60 passieren soll"
+2013-12-31 17:41:16,ISOrunner2,ja
+2013-12-31 17:41:18,mroman_,musst du einen Handler in der IDT registrieren
+2013-12-31 17:42:28,mroman_,ISOrunner2: Beantwortet das deine Frage?
+2013-12-31 17:42:32,ISOrunner2,also muss ich sagen idt[nummer] = meininterruptshandler ?
+2013-12-31 17:42:44,mroman_,ISOrunner2: Jein.
+2013-12-31 17:42:48,ISOrunner2,?
+2013-12-31 17:42:51,mroman_,Du musst natuerlich schon den Deskriptor richtig aufsetzen.
+2013-12-31 17:43:14,ISOrunner2,"Sorry, ich kappier das nicht. :/"
+2013-12-31 17:43:20,mroman_,Nun
+2013-12-31 17:43:24,mroman_,Ich bin kein x86 Experte
+2013-12-31 17:43:31,mroman_,aber dem Wiki-Artikel entnehme ich
+2013-12-31 17:43:39,mroman_,dass Bits 0-15 den Offset innerhalb des Segments sind
+2013-12-31 17:43:48,mroman_,"und zwar den Offset zur ISR, also deinem Handler"
+2013-12-31 17:44:10,ISOrunner2,Also brauch ich auch noch einen ISR
+2013-12-31 17:44:12,ISOrunner2,?
+2013-12-31 17:44:21,mroman_,"ISR ist eine ""Funktion"""
+2013-12-31 17:44:31,ISOrunner2,Aha
+2013-12-31 17:44:33,mroman_,"etwas, was die CPU aufruft, wenn ein Interrupt behandelt werden soll"
+2013-12-31 17:44:57,mroman_,also im Grunde den Offset zur Adresse deiner ISR relativ zum Segment.
+2013-12-31 17:45:15,mroman_,"ich gehe mal davon aus, dass muss relativ zum Code Segment sein"
+2013-12-31 17:45:19,ISOrunner2,also z.b idt[offset] = isr ?
+2013-12-31 17:45:32,ISOrunner2,Oder hab ich das immernoch Falsch verstanden?
+2013-12-31 17:48:11,ISOrunner2,"Sorry, ich bin ein totaler Anfänger wenn es um OSDev geht"
+2013-12-31 17:48:16,mroman_,"kommt darauf an, was isr ist ;)"
+2013-12-31 17:48:30,ISOrunner2,was muss isr denn sein?
+2013-12-31 17:48:54,mroman_,ein Interrupt Descriptor
+2013-12-31 17:49:36,mroman_,also
+2013-12-31 17:49:42,mroman_,deine ISR liegt ja irgendwo im Speicher
+2013-12-31 17:49:53,ISOrunner2,ja
+2013-12-31 17:49:56,mroman_,"also dein Code der aufgerufen werden soll, falls ein Interrupt kommt"
+2013-12-31 17:49:59,mroman_,ok
+2013-12-31 17:50:17,ISOrunner2,also z.b void interrupt_handler() { /// mache irgendwas }
+2013-12-31 17:50:28,mroman_,"Die Interrupt Descriptor Tabelle enthaelt, wie der Name schon sagt, Interrupt Descriptors"
+2013-12-31 17:50:53,ISOrunner2,jop
+2013-12-31 17:50:58,mroman_,Die Bits 0-15 und 48-63 in diesem Descriptor geben die Adresse der ISR im Speicher an
+2013-12-31 17:51:02,mroman_,(relativ zum Segment)
+2013-12-31 17:51:56,ISOrunner2,also muss ich erstmal eine c datei schreiben in der ich für jedes interrupt einen handler schreibe?
+2013-12-31 17:52:13,ISOrunner2,und danach trag ich das in den interrupt deskriptor ein?
+2013-12-31 17:52:27,ISOrunner2,Habe ich das richtig verstanden?
+2013-12-31 17:52:38,mroman_,"Du musst einfach einen Eintrag aufsetzen, und ihn an den richtigen Ort in der Tabelle schreiben."
+2013-12-31 17:52:44,ISOrunner2,Ok :D
+2013-12-31 17:53:04,mroman_,"Ich meine, das ist noch das kleinste Problem ueberhaupt :)"
+2013-12-31 17:53:14,mroman_,"Das groessere Problem ist, die Segmente und so korrekt zu setzen"
+2013-12-31 17:53:21,mroman_,wenn mich mein Bauchgefuehl nicht taeuscht.
+2013-12-31 17:53:28,Jidder,tut es nicht
+2013-12-31 17:54:12,mroman_,ISOrunner2: Entweder machst du dein Eintrag irgendwie als struct mit __attribute__((packed)) (gcc) und ein bisschen Bitmanipulationen um die Eintraege zu setzen
+2013-12-31 17:54:26,mroman_,oder du nimmst einen kA uint64_t und machst dort Bitmanipulationen
+2013-12-31 17:54:34,ISOrunner2,oke
+2013-12-31 17:55:08,ISOrunner2,"ich glaube, ich habe das jetzt soweit verstanden."
+2013-12-31 17:55:40,mroman_,idt |= (6u << 40); muesste z.B den Typ auf Interrupt Gate setzen
+2013-12-31 17:56:05,mroman_,falls idt ein uint64_t ist
+2013-12-31 17:56:14,ISOrunner2,was ist den 6u?
+2013-12-31 17:56:32,mroman_,110b in Binaer
+2013-12-31 17:56:34,Jidder,6
+2013-12-31 17:56:44,Jidder,6 in jeder basis >= 7
+2013-12-31 17:56:50,mroman_,also eine 6 halt
+2013-12-31 17:56:51,ISOrunner2,oke
+2013-12-31 17:56:53,mroman_,(unsigned)
+2013-12-31 17:57:01,mroman_,das u steht fuer unsigned
+2013-12-31 17:57:17,ISOrunner2,daraus wird automatisch (unsigned) 6 gemacht oder?
+2013-12-31 17:57:28,mroman_,"Ich habe mir das so angewoehnt, immer u anzuhaengen falls ich bitmanip mache"
+2013-12-31 17:58:00,mroman_,"ISOrunner2: Ich denke, ja"
+2013-12-31 17:58:09,ISOrunner2,oke
+2013-12-31 17:59:43,mroman_,Du benutzt eh gcc?
+2013-12-31 17:59:53,mroman_,"Ich weiss gerade nicht, ob das C89/C99 ist oder gnu99"
+2013-12-31 18:00:21,ISOrunner2,Ja ich benutze gcc (gnu99)
+2013-12-31 18:01:03,Jidder,in 6 stunden ist gnu99 15 jahre alt
+2013-12-31 18:01:11,Jidder,dann darf er mofa fahren
+2013-12-31 18:01:26,ISOrunner2,:D
+2013-12-31 18:01:28,ISOrunner2,cool
+2013-12-31 18:01:45,mroman_,http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf <- 6.4.4.1
+2013-12-31 18:02:13,ISOrunner2,Ich habe gerade noch eine gute Seite über die IDT gesehen :) http://www.osdever.net/bkerndev/Docs/idt.htm
+2013-12-31 18:02:28,mroman_,Es gibt sogar 6ul
+2013-12-31 18:02:38,mroman_,unsigned long long int und so
+2013-12-31 18:02:50,Jidder,wäre das nicht 6ull
+2013-12-31 18:02:50,ISOrunner2,Wieso ist nn1256.pdf so groß 0.o ?
+2013-12-31 18:02:59,mroman_,"Ich bin ja der Meinung, man sollte nie long, int oder so verwenden"
+2013-12-31 18:03:12,Jidder,ich mach immer typedef long l;
+2013-12-31 18:03:14,ISOrunner2,Aber long braucht man für größere Zahlen
+2013-12-31 18:03:30,mroman_,Jidder: hm. Moeglich
+2013-12-31 18:03:32,Jidder,"long ist so groß wie int. hatten wir ja oben schon, dass das nur 32 bit groß ist"
+2013-12-31 18:03:42,mroman_,ja
+2013-12-31 18:03:42,Jidder,in C auf deinem computer
+2013-12-31 18:03:44,mroman_,ull
+2013-12-31 18:04:11,mroman_,Jidder: Es ist halt nicht portabel
+2013-12-31 18:04:22,mroman_,int i = 70000; <- nicht portabel
+2013-12-31 18:04:42,Jidder,ja
+2013-12-31 18:04:47,Jidder,aber portabilität ist eh eine lüge
+2013-12-31 18:04:51,mroman_,"print(""%d"", 70000); <- nicht portabel"
+2013-12-31 18:05:01,mroman_,daher finde ich die C eigenen typen sucken doch alle ;)
+2013-12-31 18:05:16,Jidder,sogar int i = 257 ist nicht portabel
+2013-12-31 18:05:20,mroman_,ja
+2013-12-31 18:05:23,mroman_,ist es auch nicht
+2013-12-31 18:05:28,mroman_,int ist per se einfach nicht portabel
+2013-12-31 18:05:50,mroman_,"daher sehe ich nicht ein, warum man die ueberhaupt benutzen sollte"
+2013-12-31 18:06:03,Jidder,int32_t ist auch nicht portabel
+2013-12-31 18:06:16,mroman_,Warum nicht?
+2013-12-31 18:06:28,Jidder,"weil es bestimmt compiler gibt, die das nicht implementieren"
+2013-12-31 18:07:45,mroman_,Das ist richtig
+2013-12-31 18:07:52,mroman_,Sie sind optional gemaess C standard
+2013-12-31 18:08:30,mroman_,Jidder: was allerdings nicht optional ist
+2013-12-31 18:08:35,mroman_,ist int_least32_t
+2013-12-31 18:08:43,Paddy,Aber C99 ist optional
+2013-12-31 18:08:51,mroman_,C IST OPTIONAL ;)
+2013-12-31 18:08:56,Paddy,Und insofern auch int_least32_t
+2013-12-31 18:09:00,Paddy,Das eh ;-)
+2013-12-31 18:09:19,mroman_,d.h wenn du int i = 70000; schreibst
+2013-12-31 18:09:29,mroman_,dann kannst du wenigstens int_least32_t i = 70000; schreiben .
+2013-12-31 18:09:43,Paddy,"Uiii, es bootet! Was ist denn da passiert!"
+2013-12-31 18:09:47,Jidder,"yay und dann printf(""i = "" PRIdLEAST, i);"
+2013-12-31 18:09:53,Jidder,32
+2013-12-31 18:09:57,Jidder,irgendwo einstreuen
+2013-12-31 18:09:59,Jidder,ist egal wo
+2013-12-31 18:10:03,Paddy,Ohne % ist das harmlos
+2013-12-31 18:10:37,mroman_,hm
+2013-12-31 18:10:38,mroman_,lol
+2013-12-31 18:10:49,mroman_,"int_fast32_t ist ""required"""
+2013-12-31 18:11:06,Paddy,Hm
+2013-12-31 18:11:09,Paddy,Also das macht mir echt Sorgen
+2013-12-31 18:11:18,mroman_,wobei
+2013-12-31 18:11:21,Paddy,"Multithreaded LIOv2 sollte nicht auf Anhieb laufen, da muss irgendwas falsch sein"
+2013-12-31 18:11:30,Jidder,fast 32? ist also maximal 31?
+2013-12-31 18:11:31,mroman_,"fast32_t garantiert auch nur ""at least"", aber nicht ""exact"""
+2013-12-31 18:11:31,Jidder,hahaha
+2013-12-31 18:11:46,Paddy,"Ach, fast 32 nicht fat 32"
+2013-12-31 18:11:54,Paddy,"Ich glaube, ich implementier mal ein Dateisystem fast 32"
+2013-12-31 18:12:23,Paddy,Das hat dann fast 32 Bit in der FAST
+2013-12-31 18:12:28,Paddy,Und implementiert wird es in Java2k
+2013-12-31 18:12:30,mroman_,"Jidder: Neh, dann muss der Compiler entscheiden"
+2013-12-31 18:12:39,mroman_,"ob es schneller ist, int64_t zu benutzen, oder int32_t"
+2013-12-31 18:12:59,mroman_,"also int_fast32_t muss er den ""schnellsten Datentypen"" auswaehlen, der mindestents 32bit breit ist"
+2013-12-31 18:13:34,mroman_,d.h. statt int32_t sollte man wohl lieber int_fast32_t benutzen
+2013-12-31 18:13:41,mroman_,ausser man braucht exakt 4bytes lange Integers
+2013-12-31 18:14:29,Jidder,dafür nehm ich int
+2013-12-31 18:14:32,Paddy,"Naja, aber int32_t benutzt man in der Regel dann, wenn man genau 32 Bit braucht"
+2013-12-31 18:14:35,Jidder,jetzt sind wir wieder am anfang
+2013-12-31 18:16:48,Paddy,"Yay, ""PANIC: Doppelbelegung in einer Page Table."""
+2013-12-31 18:16:50,Paddy,Geht doch
+2013-12-31 18:18:24,mroman_,"Ich finde, C99 haette einen Datentypen definieren sollen"
+2013-12-31 18:18:28,mroman_,der einfach N-Bytes ist
+2013-12-31 18:18:52,ISOrunner2,http://pastebin.com/AKuPv7t4 Ist die idt_set_gate Funktion richtig?
+2013-12-31 18:19:06,Jidder,typedef char fuenfbytes[5];
+2013-12-31 18:19:09,mroman_,auf dem man einfach nur Bitmanipulationen ausfuehren kann
+2013-12-31 18:19:15,mroman_,blob64_t idt;
+2013-12-31 18:19:17,mroman_,oder sowas :D
+2013-12-31 18:20:00,mroman_,Jidder: Aber dann geht |= und so nicht?
+2013-12-31 18:20:09,Jidder,braucht man nicht
+2013-12-31 18:20:36,mroman_,doch .
+2013-12-31 18:20:40,mroman_,aber ja
+2013-12-31 18:20:45,ISOrunner2,Habe ich meine idt_set_gate Funktion richtig implementiert?
+2013-12-31 18:21:05,Paddy,In einen uint64_t passen fünf Bytes rein. Problem gelöst.
+2013-12-31 18:21:26,Jidder,"fuenfbytes& or_equals(fuenfbytes& lhs, const fuenfbytes& rhs) { int i; for (int i = 0; i < 5; i++) lhs[i] |= rhs[i]; return lhs; }"
+2013-12-31 18:21:33,Paddy,"Außerdem definiert C99 einen uint40_t, der ist nur ein bisschen zu optional *g*"
+2013-12-31 18:21:35,Jidder,ah ne ohne die &
+2013-12-31 18:21:35,mroman_,base << 16 sieht kaputt aus?
+2013-12-31 18:21:46,mroman_,muesste das nicht uhm
+2013-12-31 18:22:09,mroman_,(base >> 16); sein
+2013-12-31 18:22:14,Jidder,jop
+2013-12-31 18:22:16,mroman_,und das andere base & 0xFFFF;?
+2013-12-31 18:22:24,ISOrunner2,*facepalm*
+2013-12-31 18:24:23,mroman_,"uint40_t ist ja optional, ja"
+2013-12-31 18:26:37,mroman_,"Der Punkt ist halt, dass es Architekturen gibt, die einen groesseren Datenpointer haben"
+2013-12-31 18:26:42,mroman_,als general purpose register
+2013-12-31 18:27:08,mroman_,d.h z.b eine Library fuer Linked Lists mit int length(...) ist dann beschissen
+2013-12-31 18:27:25,mroman_,weil der int overflowen kann
+2013-12-31 18:28:53,mroman_,size_t length ist eigentlich auch beschissen
+2013-12-31 18:30:13,mroman_,"sowie ich das gerade sehe, hat size_t keine definierte mindestgroesse?"
+2013-12-31 18:30:19,mroman_,d.h size_t koennte auch nur ein bit sein .
+2013-12-31 18:30:52,mroman_,d.h size_t strlen(const char *s) ist naja uhm
+2013-12-31 18:31:03,Paddy,"Wenn ein Bit reicht, um den Adressraum abzudecken..."
+2013-12-31 18:32:03,Paddy,"Hm, nein, muss nicht der komplette Adressraum sein, nur die maximale Objektgröße"
+2013-12-31 18:32:05,mroman_,muss ja nicht
+2013-12-31 18:32:18,mroman_,size_t ist der Typ von sizeof in Bytes
+2013-12-31 18:32:22,Paddy,Das sind mindestens 64k
+2013-12-31 18:32:32,mroman_,warum?
+2013-12-31 18:32:49,Paddy,"""65535 bytes in an object (in a hosted environment only)"""
+2013-12-31 18:32:55,Paddy,Als Limit in Kapitel 5
+2013-12-31 18:33:51,mroman_,hm
+2013-12-31 18:33:53,mroman_,stimmt
+2013-12-31 18:34:13,mroman_,hm
+2013-12-31 18:34:18,mroman_,was ist mit 8bit MCs?
+2013-12-31 18:34:28,mroman_,"Z.b die, mit 128Bytes RAM und das wars?"
+2013-12-31 18:34:43,mroman_,d.h die muessten mindestens einen 16bit size_t haben?
+2013-12-31 18:34:52,mroman_,also der Compiler dafuer.
+2013-12-31 18:35:22,mroman_,naja gut
+2013-12-31 18:35:36,mroman_,"das definiert zumindest, dass size_t gross genug sein muss, um 64k zu halten"
+2013-12-31 18:35:58,mroman_,"allerdings verstehe ich dann nicht, warum es malloc(size_t foo) ist"
+2013-12-31 18:36:01,mroman_,oder size_t strlen
+2013-12-31 18:36:11,mroman_,statt bspw uint_max_t strlen?
+2013-12-31 18:36:23,mroman_,*uintmax_t
+2013-12-31 18:36:57,max,Überall max wäre mir auch persönlich lieber
+2013-12-31 18:37:05,mroman_,"size_t darf ja wesentlich kleiner sein, als unsigned int"
+2013-12-31 18:37:06,Paddy,"mroman_: Nein, die können kein C"
+2013-12-31 18:37:16,Paddy,Weil 64k-Objekte kriegen die so oder so nicht hin
+2013-12-31 18:37:36,mroman_,char foo[2^64];?
+2013-12-31 18:38:14,mroman_,eh
+2013-12-31 18:38:15,mroman_,uhm
+2013-12-31 18:38:20,mroman_,nicht hoch 64 :)
+2013-12-31 18:38:24,Paddy,"Wenn ein Objekt maximal size_t groß ist, wieso sollte malloc was anderes nehmen?"
+2013-12-31 18:38:41,Paddy,Alles andere würde ja auf jeden Fall schiefgehen
+2013-12-31 18:39:17,Paddy,"Hm, 4k pro Thread ist arg eng.."
+2013-12-31 18:39:23,mroman_,hm
+2013-12-31 18:41:17,mroman_,das ist ein Argument
+2013-12-31 18:41:47,mroman_,dann muss aber im wesentlichen size_t so gross sein wie der Adressraum
+2013-12-31 18:42:59,mroman_,"es koennte ja sein, dass size_t 8 bit ist"
+2013-12-31 18:43:05,mroman_,aber dein Adressraum 16 bit
+2013-12-31 18:43:15,Paddy,Wenn Objekte so groß wie der Adressraum erlaubt sind
+2013-12-31 18:43:20,Paddy,Die könnten ja auch kleiner sein
+2013-12-31 18:43:22,mroman_,"womit du theoretisch Strings im Speicher haben kannst, die laenger als 255 Zeichen sind"
+2013-12-31 18:43:56,Paddy,"Ja, aber wenn size_t nur 8 Bit hat, macht C solche Strings nicht mit"
+2013-12-31 18:44:25,Paddy,"Sprich, du würdest wohl an allen Ecken und Enden in Undefined Behaviour rennen"
+2013-12-31 18:44:29,mroman_,Ist ein Array-Index zwingend size_t?
+2013-12-31 18:44:45,Paddy,Weiß nicht. Aber die Objektgröße.
+2013-12-31 18:44:53,mroman_,oder sagt C einfach: Es gibt kein groesseres Array als size_t?
+2013-12-31 18:44:56,mroman_,dann ja
+2013-12-31 18:45:01,mroman_,dann waere es undefined behaviour
+2013-12-31 18:45:08,Paddy,"Ein Array ist ein Objekt, falls das die Frage ist"
+2013-12-31 18:45:14,mroman_,ic.
+2013-12-31 18:45:33,mroman_,trotzdem
+2013-12-31 18:45:47,mroman_,hm nagut
+2013-12-31 18:50:07,tufel,ich geh mal off bb
+2013-12-31 19:00:33,Paddy,"Autsch, wie hat das jemals funktioniert...? Threadparameter direkt über dem Stack übergeben..."
+2013-12-31 19:54:32,ISOrunner2,Hi
+2013-12-31 20:25:58,Paddy,"Na sowas, wenn man den neuen Kernel auch aufs Image kopiert, funktioniert es besser"
+2013-12-31 20:27:17,Paddy,"Ui, ich kann von ata:/ata01|xext2:/inner.ext2|xext2:/test.txt lesen"

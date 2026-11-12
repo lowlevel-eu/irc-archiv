@@ -1,0 +1,104 @@
+date/time,nick,message
+2012-09-20 08:47:43,JuZtMe,moin
+2012-09-20 08:51:54,kevin,Moin
+2012-09-20 11:29:34,JuZtMe,"oh ""PANIC: Kein freier Speicher mehr da."" :D"
+2012-09-20 11:30:30,kevin,Du sollst kein mem_allocate(0xffffffff); machen ;-)
+2012-09-20 11:30:41,JuZtMe,hmm ne
+2012-09-20 11:41:25,JuZtMe,war ne endlosschleife die calloc aufruft :D
+2012-09-20 11:42:33,kevin,Auch gut
+2012-09-20 11:43:13,kevin,Falls jemand ein nettes Projekt sucht: Den Kernel gescheit mit OOM umgehen lassen statt zu panicen...
+2012-09-20 11:45:31,JuZtMe,BOFH ;-)
+2012-09-20 11:53:42,JuZtMe,naja so bemerkt man zumindest recht schnell wenn was nicht stimmt :D
+2012-09-20 11:57:37,kevin,"Den Prozess abschießen könnte man ja immer noch, wenn man meint, dass er ein -ENOMEM eh nicht richtig behandelt"
+2012-09-20 11:57:46,kevin,Was vermutlich für 99% der Userspace-Programme zutrifft
+2012-09-20 11:58:39,kevin,"Allerdings ist das gar nicht mal nötig; wenn der Prozess es nicht richtig behandelt, schießt er als nächstes sowieso sich selber mit einem Nullpointerzugriff ab..."
+2012-09-20 11:59:26,JuZtMe,^^
+2012-09-20 12:00:14,JuZtMe,also lostio_route_close kann jetzt mehrere Einträge verwalten :D
+2012-09-20 12:00:42,JuZtMe,das forwarden konnte ich gestern wegen bluescreens nicht probieren...
+2012-09-20 12:02:09,kevin,Bluescreens?
+2012-09-20 12:02:24,JuZtMe,naja nicht wirklich blue ;-()
+2012-09-20 12:02:43,kevin,"Du meinst, du hast rot bekommen? ;-)"
+2012-09-20 12:03:06,JuZtMe,jo
+2012-09-20 12:22:48,JuZtMe,wie finde ich denn in c raus welche devices es gibt?
+2012-09-20 12:22:50,JuZtMe,oO
+2012-09-20 12:23:39,kevin,"""devices"" im Sinn von PCI-Geräte und so?"
+2012-09-20 12:24:09,JuZtMe,naja eigentlich nur alle Netzwerk devices
+2012-09-20 12:24:32,kevin,Innerhalb von tcpip?
+2012-09-20 12:24:54,JuZtMe,jup
+2012-09-20 12:25:15,JuZtMe,ich will die Routen devices zuordnen...
+2012-09-20 12:25:46,kevin,"main.c hat eine static list_t *net_drivers, und die Treiber wiederum haben eine Liste von Devices"
+2012-09-20 12:26:01,JuZtMe,ah ok
+2012-09-20 12:30:29,DesL,moin
+2012-09-20 12:36:23,JuZtMe,moin
+2012-09-20 12:50:01,JuZtMe,oO ich merke grade es wird nur ein Netzwerk device eingerichtet...
+2012-09-20 12:52:01,kevin,Reicht doch. Eine Netzwerkkarte und 640k sollten für jeden genug sein.
+2012-09-20 12:53:25,kevin,Immerhin hat unsere CDI-Implementierung mittlerweile keine Variable the_one_and_only_netcard mehr *g*
+2012-09-20 12:53:49,PatrickBic,"kevin, und 5pcs fuer die welt? :P"
+2012-09-20 12:54:14,kevin,Fünf Computer und gar keine PCs ;-)
+2012-09-20 12:54:32,PatrickBic,ja ja ... wortklaubererei
+2012-09-20 13:09:31,JuZtMe,hmm naja für mein Projekt reichts nicht :D
+2012-09-20 13:15:41,kevin,Musst du's halt fixen ;-)
+2012-09-20 13:16:01,kevin,"Was heißt denn ""wird nicht eingerichtet"" überhaupt? Tut gar nicht oder nur, dass man's manuell in tcpip:/ konfigurieren muss?"
+2012-09-20 13:24:03,JuZtMe,naja jeder Treiber richtet zur zeit nur ein device ein...
+2012-09-20 13:24:21,JuZtMe,also kann ich theoretisch doch mehrere devices haben ...
+2012-09-20 13:24:32,JuZtMe,nur nicht zwei vom selben typ :D
+2012-09-20 13:24:45,JuZtMe,oder ich habe da was falsch verstanden
+2012-09-20 13:25:44,kevin,Oh? Das wäre schade.
+2012-09-20 13:25:45,JuZtMe,oder wird rpc_register_driver pro device aufgerufen?
+2012-09-20 13:26:03,kevin,Ich glaube einmal pro Treiber
+2012-09-20 13:26:26,JuZtMe,na dann nur ein device pro treiber
+2012-09-20 13:27:35,DesL,"so, rpi abgeholt :D"
+2012-09-20 13:28:09,kevin,"juztme: Hm, nö, ich glaube, die Funktion ist falsch benannt und sie wird mehr als einmal aufgerufen"
+2012-09-20 13:28:20,kevin,"Gibt aber eine einfache Möglichkeit, das rauszufinden..."
+2012-09-20 13:28:34,JuZtMe,jup
+2012-09-20 14:06:55,JuZtMe,kevin: wird doch tatsächlich 1x pro device aufgerufen
+2012-09-20 14:07:23,DesL,Oo als was sollte eine SD karte normal unter linux in /dev/ landen? sdx?
+2012-09-20 14:08:41,JuZtMe,sorry ka
+2012-09-20 14:09:20,JuZtMe,dadurch dass die Funktion mehrfach aufgerufen wird hat man auch mehrere Default Routen :D
+2012-09-20 14:09:33,livinskull,jo sdx^^
+2012-09-20 14:10:17,DesL,hm
+2012-09-20 14:10:22,DesL,dann erkennt der die olle SD nicht
+2012-09-20 14:10:36,livinskull,Sep 20 14:06:56 livinbox kernel: [ 1585.431073] scsi 18:0:0:0: Direct-Access     Generic  USB SD Reader    1.00 PQ: 0 ANSI: 0
+2012-09-20 14:10:37,livinskull,Sep 20 14:06:56 livinbox kernel: [ 1585.432285] scsi 18:0:0:1: Direct-Access     Generic  USB MS Reader    1.03 PQ: 0 ANSI: 0
+2012-09-20 14:10:37,livinskull,Sep 20 14:06:56 livinbox kernel: [ 1585.439164] sd 18:0:0:0: [sde] Attached SCSI removable disk
+2012-09-20 14:10:37,livinskull,Sep 20 14:06:56 livinbox kernel: [ 1585.441015] sd 18:0:0:1: [sdf] Attached SCSI removable disk
+2012-09-20 14:10:37,livinskull,:)
+2012-09-20 14:10:53,DesL,ah
+2012-09-20 14:11:12,DesL,"ich hatte grade schon gesehen als die rpi steckte das die nicht ganz optimal sitzt, etwas wackeln hat geholefn XD"
+2012-09-20 14:11:27,livinskull,lol
+2012-09-20 14:13:44,DesL,waaas
+2012-09-20 14:13:56,DesL,wieso kopiert dd da nur mit 2.2MB/s drauf
+2012-09-20 14:14:00,DesL,ach warte
+2012-09-20 14:14:13,DesL,"der macht das zeichenweise wenn ich keien größe angebe, oder wie war das? XD"
+2012-09-20 14:15:11,JuZtMe,jo bs=64k oder so
+2012-09-20 14:20:02,DesL,SD karte: 3.45 tastatur: 3.32 USB-Kabel: 1.59 Netzteil: 3.78 cinch-kabel: 0.67 TV: 10. RPI mit gehäuse: 45 - summiert sich doch ganz schön :D 
+2012-09-20 14:20:22,DesL,nu ans koax kabel habe ich nicht gedact^^
+2012-09-20 14:43:41,DesL,desln:/home/moritz/tmp/archlinuxarm-13-06-2012 # dd if=/dev/null of=/dev/sdb1 bs=1M
+2012-09-20 14:43:42,DesL,dd: öffne „/dev/sdb1“: Das Dateisystem ist nur lesbar
+2012-09-20 14:43:57,DesL,wack. und wieso ist dd auf deutsch? XD
+2012-09-20 14:45:31,livinskull,xD
+2012-09-20 14:50:22,DesL,"jetzt mal ernst, wie kann das sein das /dev/sdb nur lesend geöffnet wird? ich bin root, ich darf das :D"
+2012-09-20 14:50:32,kevin,juztme: Doppelt hält besser. Oder so. ;-)
+2012-09-20 14:50:56,kevin,"Defaultrouten sind doch was tolles, davon kann man nicht genug haben"
+2012-09-20 14:51:47,kevin,DesL: Schreibgeschütztes Medium?
+2012-09-20 14:51:49,JuZtMe,^^
+2012-09-20 14:52:08,JuZtMe,naja wenn beide devices die gleich ip haben ist das aber net so toll
+2012-09-20 14:52:19,DesL,kevin: grade ging es doch noch
+2012-09-20 14:52:28,DesL,ich habe nix wissentlich geändert
+2012-09-20 15:27:45,DesL,"so, ich krieg ne neue SD-Karte von reichelt und darf die alte behalten XD"
+2012-09-20 15:29:11,DesL,/dev/null als inpufile ist ein schreibfehler der mir ständig vorkommt :D
+2012-09-20 15:35:57,JuZtMe,;-)
+2012-09-20 15:38:15,mgottschlag,"""dd if=/dev/null of=/dev/sdb1 bs=1M"" - sowas funktoniert? ich dachte immer, aus /dev/null bekommt man keine Daten raus"
+2012-09-20 15:39:36,DesL,.... das ist ja der witz
+2012-09-20 15:42:59,kevin,Gibt halt eine eher kurze Kopieraktion
+2012-09-20 15:43:03,kevin,Erfolgreich beendet nach 0 Bytes
+2012-09-20 15:44:40,DesL,jo
+2012-09-20 15:49:38,mgottschlag,"aso, okay, dann war das wohl fail."
+2012-09-20 15:49:44,DesL,sag ich doch
+2012-09-20 15:50:04,mgottschlag,"ne, ich meine @ ""das ist ja der witz"" ^^"
+2012-09-20 15:50:52,mgottschlag,"außerdem bin ich offensichtlich zu blöd, im Chatfenster bis unten zu scrollen"
+2012-09-20 15:51:42,kevin,"Was ist eigentlich in den letzten Tagen los, dass sich hier lauter Leute melden, von denen man gar nicht mehr erwartet hätte, dass sie mitlesen?"
+2012-09-20 15:57:08,DesL,frühling
+2012-09-20 15:57:16,DesL,"obwohl, neee, das ist ja auch shcon wieder vorbei"
+2012-09-20 16:03:55,mgottschlag,"hm, mitgelesen hab ich eigentlich durchgehend, nur zu sagen hab ich generell nix :p"
+2012-09-20 16:42:00,DesL,"hm, zeigt mir fdisk mir eigentlich leeren diskspace an? ich frag mich grade ob mit der zweiten SD auch was nicht stimmt :D"

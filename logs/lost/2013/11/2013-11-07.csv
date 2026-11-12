@@ -1,0 +1,558 @@
+date/time,nick,message
+2013-11-07 00:03:15,Darkchaos,hmm ok hatte einen gedanklichen Fehler
+2013-11-07 00:03:22,Jidder,print variablenname
+2013-11-07 00:03:41,Darkchaos,"k danke. Hab ne if reingesetzt um das doppelmapping zu vermeiden, trotzdem noch ein error. Ich dachte der Vergleich ""spinnt"""
+2013-11-07 00:04:03,Darkchaos,dabei war die if ganz legitim :/
+2013-11-07 00:08:41,Darkchaos,"ich komme noch nicht ganz drüber. Der Kernelbereich eines jeden Tasks sollte identisch sein. Wie kommt es nun, dass es im ""kernel-kernelmem"" frei ist, aber nicht im ""task-kernelmem""..."
+2013-11-07 00:09:37,Svenska,du hast ne bitmap pro task?
+2013-11-07 00:09:54,Darkchaos,?
+2013-11-07 00:10:02,Darkchaos,Die Page wurde von irgendjemand vorher schon gemapped
+2013-11-07 00:10:14,Svenska,vielspaß beim fixen ^^
+2013-11-07 00:10:39,Darkchaos,Ansatz ist vorhanden :D
+2013-11-07 00:11:05,Darkchaos,Er gibt mir ne Adresse im > 4MB bereich. Bei mir ist aber zumindest mal <4MB Kernel. Eigentlich 1GB
+2013-11-07 00:11:38,Darkchaos,"Ich weiß nicht warum alles im userspace auf 0x400.000 allokiert, aber egal"
+2013-11-07 00:12:01,Darkchaos,"Jedenfalls gibt mir vmm_get_lowest() die extra einen startoffset parameter hat (kernel: 0, userspace 1GiB)"
+2013-11-07 00:12:09,Darkchaos,eine zu hohe adresse zurück
+2013-11-07 00:13:18,Darkchaos,<< weiß nun bescheid
+2013-11-07 00:14:04,Darkchaos,"Die ersten 4MB sind 1:1 gemappt. Das erklärt die Adressen, aber nicht, warum alles > 4MB bei jedem Task anders aussieht"
+2013-11-07 00:14:44,Darkchaos,"Es sei denn, ich mappe ein paar sachen im Task und update diese nicht, und versuche dann vom anderen auszugehen"
+2013-11-07 00:14:45,Svenska,sollte es doch?
+2013-11-07 00:14:48,Darkchaos,das könnte es sein :D
+2013-11-07 00:14:55,Darkchaos,sorry für die Verwirrung
+2013-11-07 00:15:04,Svenska,jeder task sollte identisch <4MB und verschieden >=4MB seni
+2013-11-07 00:15:08,Darkchaos,"Svenska: Es sollte ab 1GB anders aussehen, oder?"
+2013-11-07 00:15:27,Svenska,ja
+2013-11-07 00:15:52,Darkchaos,also je nach festlegung logischerweiße
+2013-11-07 00:15:52,Svenska,und >4M && <1G sollte nix sein :D
+2013-11-07 00:16:13,Darkchaos,"Svenska: Alles dynamisch allokierte (Prozess-struct, kernelstacks)"
+2013-11-07 00:16:39,Svenska,"warum machst du das nicht >1G, kernelonly?"
+2013-11-07 00:17:09,Svenska,dann hätte jeder task ein identisches mapping <1G
+2013-11-07 00:17:17,Darkchaos,"weil ich dann umlinken müsste etc, das kommt vllt wenn es so wenigstens mal klappt"
+2013-11-07 00:17:26,Svenska,umlinken?
+2013-11-07 00:17:33,Darkchaos,Du meinst jetzt Higher-Half?
+2013-11-07 00:17:37,Svenska,nein
+2013-11-07 00:17:52,Svenska,"kernel = 0..1G, fix"
+2013-11-07 00:18:03,Svenska,userspace = 1G..4G
+2013-11-07 00:18:22,Svenska,aber die per-prozess-dinge kommen in den userspace-teil (werden aber mit ring0-permissions gemappt)
+2013-11-07 00:18:47,Darkchaos,wenn aber ein anderer Prozess (bspw top) darauf zugreifen will?
+2013-11-07 00:18:54,Svenska,is nich?
+2013-11-07 00:19:04,Svenska,ein prozess hat gefälligst die pfoten von anderen prozessen zu lassen
+2013-11-07 00:19:21,Svenska,memory protection ^^
+2013-11-07 00:19:36,Darkchaos,:D das stimmt soweit :P
+2013-11-07 00:19:57,Darkchaos,"aberzB den Kernelstack, den braucht der andere prozess schon im Vorraus (same with cpu_state)"
+2013-11-07 00:20:16,Svenska,?
+2013-11-07 00:21:49,Jidder,"Darkchaosses formulierung ist etwas unklar. wenn der kernel den task wechselt, muss er auf die datenstrukturen des neuen prozesses zugreifen, bevor der prozess gemappt ist"
+2013-11-07 00:23:19,Svenska,achso
+2013-11-07 00:23:33,Svenska,"hm, das ist dann tatsächlich doof"
+2013-11-07 00:24:03,Darkchaos,ist es unschön zeitweise einfach interupts zu deaktivieren?
+2013-11-07 00:24:06,Svenska,"die könnte man temporär mappen, wenn man weiß, wo die sind"
+2013-11-07 00:24:14,Jidder,Darkchaos: kommt drauf an wie lange
+2013-11-07 00:24:18,Svenska,"Darkchaos: ja, aber stellenweise nicht zu vermeiden"
+2013-11-07 00:24:36,Svenska,bei smp wirds aber schwieriger
+2013-11-07 00:24:42,Darkchaos,"Ich formuliere es mal so: Ich habe immer einen Referenz-Kontext, der alle mappings des Kernels enthält. Von diesem kopiert sich jeder Task einfach immer die neueste Version (statt von einem vorherigen Task)"
+2013-11-07 00:24:58,Svenska,"oh, klingt unschön"
+2013-11-07 00:25:03,Darkchaos,Jetzt muss ich aber mappings vornehmen und dadurch den Referenzkontext updaten
+2013-11-07 00:25:40,Darkchaos,"Wenn nun aber ein Prozess den Referenzkontext ändert, nachdem ich angefangen habe, ihn zu bearbeiten, überschreibe ich ihn wieder mit der alten Version"
+2013-11-07 00:26:04,Svenska,"das heißt, dein design hat ein synchronisierungsproblem"
+2013-11-07 00:26:34,Darkchaos,"Jap, aber das Problem tritt eh nur beim spawnen eines neuen Tasks auf. Da kann man durchaus kurz cli und sti verwenden, oder?"
+2013-11-07 00:26:50,Jidder,sind bei dir interrupts im kernel ansonsten aktiviert?
+2013-11-07 00:26:52,Svenska,auf einem single-cpu-system: ja
+2013-11-07 00:26:55,Darkchaos,"ich könnte natürlich auch eine art ""lock-Variable"" einfügen, aber naja"
+2013-11-07 00:27:02,Darkchaos,Jidder: natürlich
+2013-11-07 00:27:07,Jidder,bist du dir da sicher?
+2013-11-07 00:27:09,Svenska,so natürlich ist das nicht :)
+2013-11-07 00:27:19,Darkchaos,Wie sollten denn sonst die PITs durchkommen
+2013-11-07 00:27:33,Svenska,normalerweise ist der kernel passiv
+2013-11-07 00:27:45,Svenska,"und wird immer nur kurz (syscalls, interrupts) aktiv"
+2013-11-07 00:27:54,Darkchaos,Das ist ja ein syscall eigentlich
+2013-11-07 00:27:59,Darkchaos,achsoo
+2013-11-07 00:28:01,Svenska,"in der zeit können interrupts ruhig abgeschaltet bleiben, solange der kernel nicht lange läuft"
+2013-11-07 00:28:38,Darkchaos,"jetzt kommt noch ein kracher: Es ist zwar an sich ein syscall, da aber der kernel zunächst mal einen kernel-task anlegen muss, ist es nicht immer ein syscall"
+2013-11-07 00:28:43,Darkchaos,"Ok, dann passt das"
+2013-11-07 00:28:57,Svenska,"wie gesagt, bei smp brauchst du dann ""richtiges"" locking"
+2013-11-07 00:29:18,Svenska,und ich verschwinde in die haia - gn8
+2013-11-07 00:29:22,Jidder,gn8
+2013-11-07 00:32:34,Darkchaos,"soo, jetzt habe ich mich zu einem #PF hochgearbeitet :)"
+2013-11-07 00:32:41,Darkchaos,damit verabschiede ich mich auch :)
+2013-11-07 00:32:47,Jidder,gn8
+2013-11-07 08:48:18,Darkchaos,Einen wunderschönen Guten Morgen
+2013-11-07 09:15:17,Darkchaos_2,"jahu, tausende DInge geändert, und ich bin wieder beim alten problem :D"
+2013-11-07 09:15:51,mroman,"wenn ich struct foo moo[1024] = { {0, 0} }; mache"
+2013-11-07 09:16:05,mroman,"dann initialisiert mir das doch alle 1024 Elemente auf ein struct foo { 0 , 0}?"
+2013-11-07 09:17:00,mroman,oder moment
+2013-11-07 09:17:07,mroman,ich benutze g_direct_hash und nehme eine Hashtable
+2013-11-07 09:21:42,Darkchaos,das ist ja wieder typisch. kaum hängt der debugger dran funktioniert alles
+2013-11-07 09:22:15,Darkchaos,wenn nicht crashed es!!
+2013-11-07 09:25:13,Darkchaos,"Wie kann denn das angehen. Ich hatte kaputte stackreferenzen, jetzt nicht mehr, trotzdem ein GPF mit kaputtem Stack"
+2013-11-07 09:25:21,Darkchaos,"und zwar nur, wenn ich nicht -S -s an qemu weitergebe"
+2013-11-07 09:25:30,Darkchaos,Zufall? Böswillige Absicht der Entwickler?
+2013-11-07 09:28:16,Darkchaos,Und kann ich in meine endlosschleife ein nop; packen um die CPU nicht dauernd an den 100% Kratzen zu lassen? :P
+2013-11-07 09:28:27,Darkchaos,Schon wieder frage selbst beantwortet :D
+2013-11-07 09:30:35,max,"Erstens mal ist 100 % relativ, weil die CPU-Auslastung nur dadurch definiert ist, wie lange der Idlethread läuft"
+2013-11-07 09:30:57,max,"Zweitens bringt nop gar nichts, was den Stromverbrauch der CPU angeht"
+2013-11-07 09:30:59,max,Du willst hlt
+2013-11-07 09:31:10,kevin,Moin
+2013-11-07 09:31:15,max,Auch das *g*
+2013-11-07 09:31:39,Darkchaos,Morgen
+2013-11-07 09:32:11,kevin,"mroman: Tut es, aber nicht, weil das, was du angibst, für alle Elemente kopiert wird, sondern weil mit Nullen aufgefüllt wird, was du nicht angibst"
+2013-11-07 09:32:43,Darkchaos,"Stromverbrauch ist relativ, ich habe halt das Problem, dass mein OS momentan die CPU des Hosts aufhitzt, weil sie immer volle Last fährt. Was ist der Unterschied zw. hlt und nop? Ich will einfach dass sie ein paar µS nichts macht"
+2013-11-07 09:33:11,max,Das ist doch Stromverbrauch
+2013-11-07 09:33:17,max,Eine CPU ist aus energetischer Sicht eine Heizung
+2013-11-07 09:33:24,max,"Was an Strom reingeht, geht an Wärme raus"
+2013-11-07 09:33:49,max,"Der Unterschied ist, dass nop im Prinzip eine normale Instruktion ist, wohingegen hlt die CPU anhält"
+2013-11-07 09:34:09,max,"Wobei man auch sagen muss, dass vermutlich verschiedene Befehle verschieden viel Strom verbrauch"
+2013-11-07 09:34:12,max,*verbrauchen
+2013-11-07 09:34:24,max,Also so richtig viele SSE-Befehle hintereinander verbrauchen vermutlich mehr als eine Endlosschleife nops
+2013-11-07 09:34:47,Darkchaos,"Ok, die rechnen auch kräftig"
+2013-11-07 09:34:47,max,Aber dennoch willst du hlt
+2013-11-07 09:35:41,mroman,kevin: Dann ist das wohl unbrauchbar :)
+2013-11-07 09:36:31,kevin,"Ist nop eigentlich speziell implementiert oder ein echtes xchg ax, ax?"
+2013-11-07 09:36:41,max,"Ich glaube, speziell"
+2013-11-07 09:36:43,kevin,"mroman: Ich weiß ja nicht, was du vorhast"
+2013-11-07 09:37:22,Darkchaos,Ist denn der gdb-Backtrace nach einer Exception brauchbar?
+2013-11-07 09:37:38,Darkchaos,"Er zeigt mir auf eine Virtuelle Adresse, auf die intr_common_handler() zurück springen würde (iret?)"
+2013-11-07 09:38:02,Darkchaos,Oder ist da der stack kaputt einfahc
+2013-11-07 09:39:49,kevin,"Also in tyndur funktioniert das einigermaßen, aber ich hab mir noch nie näher überlegt, warum, sondern das einfach akzeptiert ;-)"
+2013-11-07 09:40:13,Darkchaos,"hmm, das würde heißen, er springt zurück zu 0x8E6C, klingt nicht nur kaputt, ist es auch"
+2013-11-07 09:40:26,kevin,"Naja, dann funktioniert es vielleicht doch nicht"
+2013-11-07 09:40:51,kevin,"Wenn du genauer untersuchen willst, wohin er springt, würde ich einen Breakpoint aufs iret setzen"
+2013-11-07 09:40:55,kevin,Und dann den Stack anschauen
+2013-11-07 09:41:33,Darkchaos,aber der Stack ist doch kaputt
+2013-11-07 09:43:11,Darkchaos,Ich sehe gerade den Grund für den GPF
+2013-11-07 09:43:35,Darkchaos,"die adresse ist ein offset zum cpu_state Pointer, der warum auch immer, ständig um ein paar Byte verringert oder erhöht wird :O"
+2013-11-07 09:43:54,Darkchaos,407F9C -> 40CE98 -> 40CE34 :O
+2013-11-07 09:44:35,Darkchaos,"halt, das mittlere Fällt raus, das ist der andere Task"
+2013-11-07 09:44:58,Darkchaos,Das sieht mir aber weniger nach einer Überschreibung als nach einer addition/subtraktion aus irgend einem Grund aus
+2013-11-07 09:50:36,Darkchaos,"kevin, max: Gibt es eine einfache Art mir irgendwie ausgeben zu lassen, was alles auf task->cpu_state schreiben zugreift?"
+2013-11-07 09:50:48,Darkchaos,vllt cat multitasking.cpp | grep task->cpu_state =
+2013-11-07 09:50:55,Darkchaos,oder besser ->cpu_state =
+2013-11-07 09:51:07,max,"Theoretisch kann man in gdb watchpoints setzen, aber das hab ich nie wirklich hinbekommen"
+2013-11-07 09:51:59,Darkchaos,"Nur wie bekomme ich grep dazu, meine Sonderzeichen zu mögen?"
+2013-11-07 09:52:03,Darkchaos,Anführungszeichen klappen nicht
+2013-11-07 09:53:01,kevin,"Watchpoints haben bei mir mal funktioniert. Allerdings sind die nur geeignet, wenn du schon in der Nähe vom Fehler sind, weil die durch Singlesteppen implementiert sind und die Sache damit extrem langsam wird."
+2013-11-07 09:53:37,kevin,"Darkchaos: Beschwert er sich, dass er keine Option > kennt?"
+2013-11-07 09:53:44,Darkchaos,jep
+2013-11-07 09:53:50,Darkchaos,"aber '' """" und -F funktionieren nicht"
+2013-11-07 09:53:50,kevin,grep -- task->cpu_state
+2013-11-07 09:54:08,kevin,"-- heißt für GNU-Programme, dass die Optionen da zu Ende sind"
+2013-11-07 09:54:17,Darkchaos,nice :)
+2013-11-07 09:54:42,Darkchaos,"Ok, das ist in der tat komisch"
+2013-11-07 10:04:05,Darkchaos,wenn ich habe cpu_state* a und cpu_state* b;
+2013-11-07 10:04:18,Darkchaos,dann tut doch a = b; nur die Adressen tauschen und nicht die einzelnen Werte
+2013-11-07 10:07:00,Darkchaos,Ich hab den Fehler eingezingelt und muss zur Uni. mist
+2013-11-07 10:09:16,Darkchaos,"Folgendes: mein schedule() erhält warum auch immer eine andere adresse für cpu_state*, d.h. der state liegt angeblich wo anders. und mein schedule speichert dummerweiße nicht den neuen cpu_state, sondern verlinkt ihn einfach dumm rumm"
+2013-11-07 10:11:05,Darkchaos,"Wäre nur die Frage an euch, warum mir die idt.S plötzlich eine neue Adresse für den state mitgibt? Ist das normal, weil sie immer den Stackpointer als Referenz übergibt?"
+2013-11-07 10:11:33,Darkchaos,"und ich demnach den state kopieren muss, statt auf den Stackpointer zu referenzieren, da ja dannach die Sachen wieder vom Stack geholt werden?"
+2013-11-07 10:14:33,Darkchaos,naja ich komme heute abend wieder :)
+2013-11-07 10:15:21,kevin,"Naja, jeder Task hat seinen Zustand doch wohl an seinem eigenen Platz?"
+2013-11-07 10:23:13,mroman,wenn ich eine lib mache
+2013-11-07 10:23:23,mroman,dann muss ich hilfsfunktionen als static deklarieren oder?
+2013-11-07 10:23:42,mroman,"aber das darf ich nicht im Header tun, den Clients dann benutzen?"
+2013-11-07 10:31:52,kevin,static schränkt die Sichtbarkeit auf die aktuelle Datei (oder genauer: translation unit) ein
+2013-11-07 10:31:58,mroman,Ja
+2013-11-07 10:32:05,mroman,"Ich will ja nicht, dass hilfsfunktionen exportiert werden"
+2013-11-07 10:32:09,mroman,also
+2013-11-07 10:32:13,mroman,sonst gibt das ja name collisions
+2013-11-07 10:32:16,mroman,moeglicherweise
+2013-11-07 10:32:16,kevin,Genau
+2013-11-07 10:32:22,mroman,das Problem ist nur gerade
+2013-11-07 10:32:36,mroman,ich habe ein lookup.c lookup.h das von mehreren Komponenten verwendet wird
+2013-11-07 10:32:43,mroman,und jetzt will ich das fuer eine standalone library auch benutzen
+2013-11-07 10:32:58,kevin,"Header werden mit #include eingebunden, wenn also nicht jede Datei, die das includet die Funktion selber definiert, darf da kein static rein"
+2013-11-07 10:33:07,mroman,aber dann darf lookup.c natuerlich nicht alle seine Funktionen exportieren
+2013-11-07 10:33:10,kevin,Außer natürlich static inline mit kompletter Definition im Header
+2013-11-07 10:33:40,mroman,das ist auch doof
+2013-11-07 10:33:49,mroman,ich moechte lookup.c eigentlich nicht kopieren :(
+2013-11-07 10:34:52,mroman,"aber es wird wohl darauf auslaufen, dass ich das muss"
+2013-11-07 10:37:32,mroman,Ich will eigentlich eine Standalone-Disassembler-Library anbieten
+2013-11-07 10:37:38,kevin,"Hm, du willst Funktionen gleichzeitig exportieren und nicht exportieren? :-/"
+2013-11-07 10:37:59,mroman,Naja
+2013-11-07 10:38:11,mroman,lookup.c hat z.b Funktionen wie get_name_of_reg und get_reg_for_nae
+2013-11-07 10:38:13,mroman,*name
+2013-11-07 10:38:23,mroman,"der Assembler benutzt z.b daraus get_reg_for_name(""R1"")"
+2013-11-07 10:38:27,kevin,Ok
+2013-11-07 10:38:44,mroman,und der Disassembler benutzt daraus get_name_of_reg
+2013-11-07 10:39:00,mroman,und dann die Debugging-GUI benutzt natuerlich auch get_name_of_* und so
+2013-11-07 10:39:27,mroman,ich koennte liblookup machen :D
+2013-11-07 10:40:00,mroman,das waere wohl sauberer
+2013-11-07 10:40:40,kevin,"Ich versteh nicht, was das Problem ist"
+2013-11-07 10:40:51,kevin,"Warum muss die Funktion unbedingt static sein, wenn es Benutzer gib?"
+2013-11-07 10:40:56,max,"kevin, ich musste gestern übrigens mündlich auf týndur verweisen"
+2013-11-07 10:41:03,mroman,"Ich will eine Library bauen, die man Standalone benutzen kann"
+2013-11-07 10:41:03,kevin,Ha! *g*
+2013-11-07 10:41:10,max,"Und habe festgestellt, dass es gar nicht so leicht ist, den Namen verständlich auszusprechen *g*"
+2013-11-07 10:41:16,max,Und buchstabieren ist ja auch nicht besser *g*
+2013-11-07 10:41:20,kevin,hehe
+2013-11-07 10:41:23,max,„y mit so einem Strich drüber“
+2013-11-07 10:41:28,kevin,"Hast du erklären müssen, warum man irgendwas am besten nicht so macht? *g*"
+2013-11-07 10:41:30,mroman,und nur eine Funktion char* libva_disasm_instruction anbietet
+2013-11-07 10:41:35,max,"Accent aigu, war das wimre, aber na ja *g*"
+2013-11-07 10:41:39,mroman,aber wenn ich das gegen lookup.o linke
+2013-11-07 10:41:46,mroman,dann habe ich mehr drin als libva_disasm_instruction
+2013-11-07 10:41:59,kevin,"Moment, mal schauen, ob im Isländischbuch steht, wie das Ding wirklich heißt... ;-)"
+2013-11-07 10:41:59,mroman,d.h wenn du dann gegen meine Bibliothek linkst
+2013-11-07 10:42:01,max,"kevin, es ging um P/V und einer hat gefragt, ob es überhaupt irgendwas in der Praxis gibt, wo es Operationen gibt, die so heißen ;-)"
+2013-11-07 10:42:08,mroman,hast du da auch noch get_name_of Funktionen dabei
+2013-11-07 10:42:27,kevin,"max: Okay, lag ich ja nicht so weit daneben *g*"
+2013-11-07 10:43:53,kevin,"týndur ist eben international, und p/v sind der holländischsprachige Anteil"
+2013-11-07 10:44:35,max,Tjo *g*
+2013-11-07 10:44:37,kevin,"Dass es überhaupt nicht praktikabel ist, ein globales Symbol v oder gar p zu haben, ist ja nebensächlich ;-)"
+2013-11-07 10:44:37,mroman,Ich will die Funktionalitaet von lookup.c als Library anbieten
+2013-11-07 10:44:45,mroman,aber das geht so ja nicht
+2013-11-07 10:44:49,max,"Na, solange man kein -Wshadow hat ;-)"
+2013-11-07 10:45:26,kevin,"Hm, guter Punkt. Das wundert mich jetzt aber - haben wir das nicht?"
+2013-11-07 10:45:35,mroman,kevin: https://bitbucket.org/mroman_/emulathor/src/3b051c36062ca75419c03fd9a256b2735577c758/src/disassembler/lib_vasmdis.h?at=master
+2013-11-07 10:45:38,mroman,^- das ist das Problem
+2013-11-07 10:45:50,mroman,erstens gehoeren diese Makros nicht in einen Library-Header
+2013-11-07 10:45:58,mroman,das typedef da auch nicht
+2013-11-07 10:46:17,mroman,"du willst ja nicht, wenn du den Header fuer meine Library inkludierst irgendwelche beschissenen Makros haben, die du gar nicht brauchst"
+2013-11-07 10:46:27,kevin,Dann verschieb sie in die .c-Datei
+2013-11-07 10:46:37,mroman,ausserdem brauchst du bytes_to_instruction auch nicht
+2013-11-07 10:47:02,kevin,"Weiß ich nicht, ob ich die nicht brauche"
+2013-11-07 10:47:13,kevin,"Wenn es keinen Benutzer gibt, mach sie static und wirf sie aus dem Header rua"
+2013-11-07 10:47:15,kevin,*raus
+2013-11-07 10:47:22,kevin,"Wenn es doch einen gibt, dann ist es so in Ordnung"
+2013-11-07 10:47:33,mroman,also
+2013-11-07 10:47:45,mroman,ich will nur disasm_instruction und bytes_to_instruction oeffentlich haben
+2013-11-07 10:47:51,mroman,den Rest nicht
+2013-11-07 10:48:15,mroman,https://bitbucket.org/mroman_/emulathor/src/3b051c36062ca75419c03fd9a256b2735577c758/src/disassembler/lib_vasmdis.c?at=master#cl-30
+2013-11-07 10:48:19,mroman,^- und das ist das zweite Problem
+2013-11-07 10:48:33,mroman,lookup.h/lookup.c stellen eben get_name_of_reg zur Verfuegung
+2013-11-07 10:48:42,mroman,aber get_name_of_reg kann ich nicht statisch machen
+2013-11-07 10:48:52,mroman,weil diese Funktionen von anderen Dingen noch benutzt werden
+2013-11-07 10:49:14,kevin,"Ja, aber nicht zur Verfügung stellen und benutzen wollen ist halt irgendwie ein Widerspruch"
+2013-11-07 10:49:28,kevin,"Du musst schon wissen, was du willst"
+2013-11-07 10:49:33,mroman,Ich weiss was ich will
+2013-11-07 10:49:45,mroman,"Ich weiss nur nicht, wie man es realisiert"
+2013-11-07 10:50:15,kevin,"Du hast verschiedene Benutzer der Libs, und die einen brauchen eine Funktion und die anderen sollen sie nicht sehen"
+2013-11-07 10:50:23,mroman,lookup.c ist ja keine Lib
+2013-11-07 10:50:25,kevin,"Das geht schlecht gleichzeitig, außer die splittest die Lib auf"
+2013-11-07 10:50:33,mroman,das ist einfach ein c File das in meinen Emulator gelinkt wird
+2013-11-07 10:50:48,mroman,und in den Assembler :)
+2013-11-07 10:50:49,kevin,"Wenn du sauber designst, benutzt dein Emulator die Lib und greift nicht blind rein"
+2013-11-07 10:51:09,kevin,"Und wenn der Emulator die anderen Funktionen brauchen kann, können es andere Benutzer vermutlich auch"
+2013-11-07 10:51:24,mroman,Lookup.c ist eigentlich standalone gehalten
+2013-11-07 10:51:43,mroman,aber ich will get_name_of_reg nicht unter diesem Name in der Disassembler-Library haben
+2013-11-07 10:57:07,mroman,und dann gibt es noch ein anderes Problem
+2013-11-07 10:57:12,mroman,ich habe einen Header mit #defines
+2013-11-07 10:57:13,mroman,z.b
+2013-11-07 10:57:18,mroman,#define CPU_CREG_Mr2 0x01u
+2013-11-07 10:57:22,mroman,#define CPU_CREG_MR1 0x02u
+2013-11-07 10:57:28,mroman,und so
+2013-11-07 10:57:38,mroman,den Header muss ich ja quasi duplizieren
+2013-11-07 10:57:58,mroman,der wird vom Emulator logischerweise benoetigt
+2013-11-07 10:58:06,mroman,"aber, er wird natuerlich auch vom disassembler benoetigt"
+2013-11-07 10:58:25,mroman,wenn ich den disassembler also stand-alone machen will
+2013-11-07 10:58:30,mroman,muss ich diese defines doch kopieren?
+2013-11-07 10:58:53,mroman,also zumindest Teile davon muss ich kopieren
+2013-11-07 10:59:04,mroman,#define FLGS_Z braucht der Disassembler natuerlich nicht
+2013-11-07 11:07:58,mroman,naja
+2013-11-07 11:08:04,mroman,bleibt der Assembler hat eine Applikation
+2013-11-07 11:08:09,mroman,und keine Bibliothek
+2013-11-07 11:08:18,mroman,und der Disassembler dann auch
+2013-11-07 13:49:02,Jonathan,moin
+2013-11-07 13:51:15,kevin,Moin
+2013-11-07 16:51:29,tufel,huhu
+2013-11-07 18:46:33,tufel,nun ich mmh gibts eigentlich einen VGA-Emmulator für ein VHDL-Projekt ? :D
+2013-11-07 18:57:12,tufel,mmh kennt sich jemand mit diesem VGASim aus ?
+2013-11-07 18:59:19,mgottschlag2,"gibt es einen besonderen Grund, warum du VGA emulieren willst?"
+2013-11-07 18:59:52,tufel,ich hab noch kein fpga board XD
+2013-11-07 19:01:08,mgottschlag2,dann möchtest du aber eher deine VGA-Implementierung erstmal nur in Testbenches benutzen
+2013-11-07 19:01:23,mgottschlag2,und für alles andere andere Arten der Ausgabe haben (z.B. virtuelle UART?)
+2013-11-07 19:02:03,mgottschlag2,VGA auf FPGA-Ebene simulieren wird nie auch nur annähernd schnell genug gehen (also durchaus schonmal im Bereich von Minuten pro Frame)
+2013-11-07 19:02:42,mgottschlag2,"vor allem aber ist VHDL-Simulation zur Fehlersuche in der Implementierung da, und zu nicht viel sonst"
+2013-11-07 19:03:10,mgottschlag2,"wenn du Software entwickeln möchtest, solltest du einen normalen Emulator schreiben"
+2013-11-07 19:07:40,tufel,"mmh ok, wie soll ich den am besten meine VGA-Implementierung simulieren, müsste ich dann nicht mehr als 500.000 tanktzyklen simulieren ?"
+2013-11-07 19:10:11,stultus,Wäre nen passendes Entwicklerboard praktikabel?
+2013-11-07 19:10:34,stultus,"eine halbwegs moderne Röhre sollte ja selber schluss machen wenn die Frequenzen ausm Ruder laufen, dass da nix kaputt geht"
+2013-11-07 19:11:19,stultus,"oh, kein board hab ich überlesen. dann leg dir eins zu *g*"
+2013-11-07 19:11:30,stultus,Inner Simulation das Signal zurückrechnen dürfte ekelhaft langwierig werden
+2013-11-07 19:12:49,mgottschlag2,also wir haben beim VHDL-Praktikum unsere VGA-Implementierung ganz normal getestet
+2013-11-07 19:13:05,mgottschlag2,"die war allerdings sehr einfach gehalten, und wir haben nicht das ganze System getestet"
+2013-11-07 19:13:26,mgottschlag2,"sondern nur die eigentliche VGA-Implementierung samt Zeichenfunktion, das ging prozedural in der Testbench ganz gut"
+2013-11-07 19:14:21,stultus,Darf ich fragen wo du VGA in nem Praktikum gemacht hast?
+2013-11-07 19:14:43,stultus,Bei uns beschränken die sich auf DCF77 (Funkuhr) + OLED
+2013-11-07 19:15:06,mgottschlag2,"ich bin Informatiker, da ist DCF77 zu schwierig :p"
+2013-11-07 19:15:27,mgottschlag2,das Technische Informatik-Institut hat in Karlsruhe ein VHDL-Praktikum (Hardwarenaher Systementwurf)
+2013-11-07 19:15:39,stultus,gut zu wissen *g*
+2013-11-07 19:15:54,stultus,Eigtl. ist das doch nur Amplitudenmodulation auslesen
+2013-11-07 19:16:10,mgottschlag2,"ja, kP, aber da ist zu viel Elektronik mit drin ^^"
+2013-11-07 19:16:28,mgottschlag2,"btw, meine OLED-Displays aus China könnten auch langsam mal ankommen -.-"
+2013-11-07 19:16:53,stultus,Wir kriegen das schon als fertiges Signal von nem Modul her
+2013-11-07 19:17:04,stultus,das beschränkt sich auf ADC auslesen
+2013-11-07 19:17:36,stultus,"aber ok, wenn der vgaport bereits aufm board ist ist das einfacher"
+2013-11-07 21:02:45,Darkchaos,"Jidder: Ist es normal, dass der Tutorialkernel statt den CPU-State zu speichern, einfach den Pointer überschreibt (der dann auf den Kernelstack zeigt)?"
+2013-11-07 21:03:22,Jidder,welcher pointer?
+2013-11-07 21:03:30,Jidder,"aber ich denke mal, dass das tutorial das schon richtig macht"
+2013-11-07 21:03:33,Darkchaos,ich habe einen Pointer auf cpu_state
+2013-11-07 21:03:46,Darkchaos,und der asm-interupthandler pushed alles auf den Stack
+2013-11-07 21:03:53,Darkchaos,und übergibt esp als Parameter
+2013-11-07 21:04:43,Jidder,jo das soll so sein. wo ist das problem?
+2013-11-07 21:04:55,Darkchaos,Dass sich doch der Stack immer verändert oder?
+2013-11-07 21:05:04,Jidder,"""immer""?"
+2013-11-07 21:05:55,Darkchaos,"Du hast schon recht, aber der neue Task wird doch immer vom Stack geholt, pusht das mein C-Code schon hoch?"
+2013-11-07 21:06:17,Jidder,"der satz macht für mich keinen sinn. die tasks sind in einer liste, nicht in einem stack"
+2013-11-07 21:06:21,Jidder,die tasks haben stacks
+2013-11-07 21:06:31,Darkchaos,Ich beziehe mich gerade auf den Taskwechsel
+2013-11-07 21:06:36,Darkchaos,dort habe ich ja einen eigenständigen Kernelstack
+2013-11-07 21:07:01,Darkchaos,"und auf den werden die parameter des alten Stacks gepushed, vom C-Code referenziert und dann wird der neue Task vom Stack geholt"
+2013-11-07 21:08:11,Darkchaos,"Irgendwie habe ich das Problem dass sie grundlos der ESP irgendwie ändert, und dann auf falsche Daten zeigt"
+2013-11-07 21:08:19,Darkchaos,"wie wenn ich irgendwo ein push zuviel hätte, oder nicht alles vom stack hole?"
+2013-11-07 21:08:37,Darkchaos,"Was aber nie der fall ist, und schon garnicht erklärt warum es schlagartig so ist"
+2013-11-07 21:09:26,Jidder,da kann ich wenig zu sagen
+2013-11-07 21:10:05,Darkchaos,und es verändert sich doch der stack sobald der neue Prozess drauf ist
+2013-11-07 21:10:16,Darkchaos,die liegen zwar noch da (pop lässt ja den speicher gesetzt)
+2013-11-07 21:10:29,Darkchaos,"aber sobald ein neuer task kommt, wird es doch völlig überschrieben oder? (also nach dem 2. schedule)"
+2013-11-07 21:10:43,Jidder,ne jeder task hat seinen eigenen stack
+2013-11-07 21:10:51,Darkchaos,achso und kernel-stack
+2013-11-07 21:10:58,Darkchaos,demnach dürfte sich aber auch der pointer so gut wie nie ändern
+2013-11-07 21:11:02,Jidder,der kernel-stack ist ja wenn dann das problem
+2013-11-07 21:11:06,Darkchaos,"es sei denn, der kernel-stack verändert sich"
+2013-11-07 21:11:33,Jidder,aktivierst oder deaktivierst du während der interruptverarbeitung die interrupts?
+2013-11-07 21:11:58,Darkchaos,Ja aber weit vor dem Crash
+2013-11-07 21:12:03,Darkchaos,2mal überhaupt
+2013-11-07 21:12:03,Jidder,da haben wir doch das problem
+2013-11-07 21:12:10,Jidder,finger weg von den interrupts
+2013-11-07 21:12:11,Darkchaos,"das ist aber erst neu, ging vorher schon nicht"
+2013-11-07 21:12:25,Darkchaos,"irgendjemand meinte gestern, das kann ich schon machen"
+2013-11-07 21:12:30,Darkchaos,ah halt
+2013-11-07 21:12:31,Jidder,wenn du weißt was du tust
+2013-11-07 21:12:36,Darkchaos,es ist doch nicht während eines interupts
+2013-11-07 21:12:39,Jidder,ich würde interrupts im kernel
+2013-11-07 21:12:40,Darkchaos,es ist ja noch kein syscall
+2013-11-07 21:12:52,Jidder,ok
+2013-11-07 21:12:55,Darkchaos,(deswegen brauche ich es auch überhaupt)
+2013-11-07 21:14:41,Jidder,zeile https://gitorious.org/tuxmaniac/arctic_revenge/source/09a37287741ee7e72ee20bc07ba092eebff6894d:kernel/kernel.cpp#L445
+2013-11-07 21:14:46,Jidder,da aktivierst du interrupts
+2013-11-07 21:15:23,Darkchaos,und zwar grundlos
+2013-11-07 21:15:28,Darkchaos,auf dem kernelstack nehme ich an
+2013-11-07 21:17:01,Darkchaos,kann das aber die ursache sein? ich verändere ja nur ein Register eigentlich
+2013-11-07 21:17:21,Jidder,ja
+2013-11-07 21:17:23,Jidder,kann es
+2013-11-07 21:17:34,Darkchaos,weil C irgend etwas am Stack noch rumfummelt?
+2013-11-07 21:17:38,Jidder,"es geht nicht darum was du veränderst, sondern dass interrupts im kernel eine komplizierte sache sind"
+2013-11-07 21:17:59,Jidder,bzw. interrupts während ein anderer interrupt verarbeitet wird
+2013-11-07 21:18:12,Darkchaos,ok
+2013-11-07 21:18:13,Jidder,"ich nehme an, dass der tutorialkernel nicht darauf ausgelegt ist"
+2013-11-07 21:18:39,Darkchaos,"und das sti ""funktioniert"" dann, obwohl ich nur ein gate und kein trap in der IDT habe?"
+2013-11-07 21:18:57,Jidder,was heißt funktioniert?
+2013-11-07 21:20:05,Darkchaos,aktiviert interupts
+2013-11-07 21:20:16,Jidder,"ja, es aktiviert interrupts"
+2013-11-07 21:20:28,Darkchaos,obwohl ich gerade in einem Interrupt stecke?
+2013-11-07 21:20:40,Jidder,ja
+2013-11-07 21:20:49,Darkchaos,ah ok :)
+2013-11-07 21:20:57,Darkchaos,dann kam wohl ein PIT in einem PIT
+2013-11-07 21:21:00,Jidder,dass die cpu gerade einen interrupt behandelt ist für die cpu nichts besonderes
+2013-11-07 21:21:15,Darkchaos,"nein, aber per-default sperrt IDT die Interrupts"
+2013-11-07 21:21:26,Darkchaos,"aber, dass es nicht mehr macht als ein simples cli wusste ich nicht :D"
+2013-11-07 21:23:04,Darkchaos,scheint zu klappen
+2013-11-07 21:24:14,Darkchaos,"paar minuten überlebt, jetzt 10 mal neustarten :)"
+2013-11-07 21:24:25,Jidder,hehe
+2013-11-07 21:24:49,Darkchaos,"Das war ja genau dann, wenn ein PIT länger als 10ms gedauert hat, und sich ein neuer PIT angestaut hat"
+2013-11-07 21:25:02,Darkchaos,Wird das parallelverarbeiten von Interrupts eigentlich wichtig bei Hardware?
+2013-11-07 21:25:11,Darkchaos,Oder kann ich das alles sequentiell in einer Schlange abarbeiten
+2013-11-07 21:25:54,Jidder,"wenn du nur ein cpukern hast, musst du letztendlich das schon irgendwie serialisieren"
+2013-11-07 21:26:09,Darkchaos,weil immer nur ein stack aktiv sein kann :)
+2013-11-07 21:26:41,Darkchaos,"wird das nicht automatisch serialisiert, also sobald ich sti nutze (bzw genauer: iret) kommt der nächste Interrupt"
+2013-11-07 21:26:50,Jidder,jo
+2013-11-07 21:27:29,Darkchaos,"damit brauche ich mir auch keine sorgen mehr um das Szenario zu machen, dass ein Prozess endlos läuft, wenn er nur syscalls aufruft (Die führen ja wg. des Rückgabewertes nicht zu einem Taskswitch), da dannach direkt der PIT ausgeführt wird"
+2013-11-07 21:27:57,Jidder,jop
+2013-11-07 21:31:07,Darkchaos,"Jidder: Wieder ein crash, diesesmal aber komischert Art, vorallem frage ich mich, warum er erst jetzt kommt."
+2013-11-07 21:31:18,Darkchaos,Mein VMM sagt: no Free Memory
+2013-11-07 21:31:18,Darkchaos,:P
+2013-11-07 21:31:30,Darkchaos,"Gibt 0xDEADBEEF zurück, error: not 4kB aligned, und dann der #pf"
+2013-11-07 21:31:50,Darkchaos,"ach mist. Kann es sein, dass Qemu kein GB bereit stellt?"
+2013-11-07 21:32:04,Jidder,"wenn du ihm das sagst, dann macht er das"
+2013-11-07 21:32:06,Darkchaos,"< nimmt alles zurück, paging ftw"
+2013-11-07 21:33:10,Darkchaos,"Ich glaube, entweder mein free ist kaputt, oder ich hab einfach die phys-memory-map nicht zurückgesetzt"
+2013-11-07 21:33:51,Darkchaos,"Wobei auch fast alles virtuelle plötzlich zugemüllt wird, aber das bekomme ich hin :) Ich danke dir schonmal!"
+2013-11-07 21:35:15,Darkchaos,"tatsache, ich habe die physische map vergessen, da es ungemütlich ist virtuell->physisch zu bestimmen :D"
+2013-11-07 21:38:11,Darkchaos,"Jidder: Um nicht den ganzen Code umzuschreiben, kann der Compiler von int nach uint32_t casten und alles richtig machen?"
+2013-11-07 21:38:55,Darkchaos,"Soll heißen, die bits als bits interpretieren. Wie zB int a = -127; uint32_t b = *(uint32_t*)&a; -> b = 255"
+2013-11-07 21:39:22,Jidder,ja das geht. aber warum?
+2013-11-07 21:39:48,Darkchaos,"naja, meine vmm_map funktionen returnen einen statuscode (0 = no errror, n = n errors)"
+2013-11-07 21:40:08,Darkchaos,"Um Redundanz zu vermeiden, wird unmapped mithilfe von vmm_map(..., false);"
+2013-11-07 21:40:36,Darkchaos,Nun soll mir aber unmap die physische Adresse zurückgeben an die die virtuelle gemappt war (wieder der Redundanz Willen)
+2013-11-07 21:40:47,Darkchaos,"also muss er den ""Error-Code"" uminterpretieren"
+2013-11-07 21:41:00,Darkchaos,"Die Alternative wäre, alle Headerdateien, alle vmm_* aufrufe etc umzudeklarieren auf uint32_T"
+2013-11-07 21:41:35,Jidder,ich würde das ja bevorzugen
+2013-11-07 21:41:49,Jidder,außerdem könntest du auch einfach casten
+2013-11-07 21:41:53,Darkchaos,"ok, aber nur weil du's bist :)"
+2013-11-07 21:41:55,Jidder,ohne pointer
+2013-11-07 21:42:02,Jidder,(uint32_t)xy
+2013-11-07 21:42:05,Jidder,fertig
+2013-11-07 21:42:16,Darkchaos,Würde er nicht beim casten einfach abschneiden bzw overflowen?
+2013-11-07 21:42:25,Jidder,int ist so groß wie unsigned int
+2013-11-07 21:42:28,Darkchaos,"obwohl, das ist ja was ich möchte. Umgekehrt wirds problematisch"
+2013-11-07 21:42:43,Jidder,und mit deinem pointerzeug hättest du in dem fall noch größere probleme
+2013-11-07 21:42:50,Darkchaos,von uint32_t zu int32_t für > 255
+2013-11-07 21:43:43,Jidder,ich glaub es ist einfacher es von anfang an richtig zu machen
+2013-11-07 21:44:15,Darkchaos,das impliziert aber auch eine eigenständige unmap funktion und eine virtual_resolve
+2013-11-07 21:45:24,Darkchaos,"nur habe ich in meinem code tausende if's, weil 4 Fälle für das mappen vorhanden sind ({ paging_on, paging_off } x {self, foreign});"
+2013-11-07 21:45:53,Jidder,warum muss denn vmm_map ein int zurückgeben?
+2013-11-07 21:45:58,Jidder,das kann doch auch uint32_t zurückgeben
+2013-11-07 21:46:06,Darkchaos,"ja da hast du recht, das mache ich jetzt auch"
+2013-11-07 21:46:24,Darkchaos,"aber schöner wäre alles getrennt, man will zu debug-zwecken mal Adressen auflösen, ohne sie dazu unmappen zu müssen"
+2013-11-07 21:46:34,Jidder,jep
+2013-11-07 21:47:04,Darkchaos,ok das kommt dann nachdem ich malloc() verbessert habe und bevor die ersten treiber kommen. Vielleicht heute noch
+2013-11-07 21:53:20,Darkchaos,sind eigentlich fat12 treiber wichtiger oder eher POSIX
+2013-11-07 21:57:54,Jidder,kommt drauf an was die kunden wollen
+2013-11-07 21:58:47,Darkchaos,"eigentlich POSIX, weil ja grub auch laden kann, andererseits sollte mankeine programme porten, wenn man nichtmal ein FS hat"
+2013-11-07 21:59:00,Darkchaos,"Aber der FAT-Treiber zieht ein Driver-Interface nach sich, ein VFS und alles andere"
+2013-11-07 22:01:28,Jidder,was POSIXes würdest du denn ohne dateisystemtreiber machen?
+2013-11-07 22:03:11,Darkchaos,fasm mit buffern nutzen
+2013-11-07 22:03:25,Jidder,fasm ist nicht posix und braucht nicht posix
+2013-11-07 22:03:49,Darkchaos,"ok, aber eine libc, und da hätte ich fopen() etc implementiert :D"
+2013-11-07 22:04:30,Tectu,"ich habe eine frage zu der im tutorial vorgeschlagenen multitasking init:      static cpu_state* init_task(uint8_t* stack, uint8_t* user_stack, void* entry)"
+2013-11-07 22:04:43,Tectu,"zwei stacks - der user stack scheint mir klar zu sein, aber wozu der andere?"
+2013-11-07 22:04:48,Tectu,kriegt jeder task kernel - und user task?
+2013-11-07 22:04:55,Tectu,stack*
+2013-11-07 22:04:55,Darkchaos,Das kann ich endlich mal richtig beantworten :)
+2013-11-07 22:05:25,Darkchaos,"Der Kernel benötigt für den Teil, indem er den Interrupt handlet auch einen Stack. Auf diesem läuft der Scheduling-algorithmus und die CPU-Register werden dort gespeichert prinzipiell"
+2013-11-07 22:05:51,Darkchaos,"Das ist nur, damit der C-Code ein bisschen arbeiten kann, ohne im Task rumzuwühlen eigentlich"
+2013-11-07 22:06:11,Tectu,also das ist kernel code der sich nur auf den task bezieht?
+2013-11-07 22:06:46,Darkchaos,prinzipiell ja. Der wird nur vom Anfang der idt.S bis zum iret benötigt
+2013-11-07 22:07:11,Darkchaos,"heißt, wenn dein Kernel nebenher was machen soll, dann braucht der einen eigenen Ring3 Task, hat aber trotzdem dann einen ""user"" stack und einen ""kernel"" stack"
+2013-11-07 22:07:33,Tectu,hmm...
+2013-11-07 22:07:41,Tectu,wieso nicht einen globalen kernel stack?
+2013-11-07 22:07:48,Tectu,von woaus der kernel immer zugreifen kann?
+2013-11-07 22:08:12,Tectu,ah... der kernel_stack ist in ring 3 und der globale kernel stack würde in ring 0 benötigt?
+2013-11-07 22:08:14,Darkchaos,"Das muss dir jemand kompetentes beantworten, aber ich glaube das ist der einfachheit halber"
+2013-11-07 22:08:30,Darkchaos,*Edit: Oben sollte es Ring0 Task heißen ;)
+2013-11-07 22:09:15,mgottschlag2,"Tectu: das Problem ist, dass bei einem Wechsel von Ring3 nach Ring0 die CPU auf den Kernel-Stack wechselt, der in der TSS registriert ist"
+2013-11-07 22:09:40,mgottschlag2,"und wenn sich da alle Prozesse einen teilen, hast du insofern ein Problem, als dass du üblicherweise den CPU-Zustand auf den Stack speicherst"
+2013-11-07 22:10:21,mgottschlag2,"wenn du dann immer dafür sorgst, dass der Zustand aus dem einzelnen Stack gespeichert und ein anderer dort hin geladen wird, um einen Taskwechsel durch zu führen, dann kannst du das so machen"
+2013-11-07 22:10:54,mgottschlag2,"alternativ kann man halt auch einfach den Stack-Pointer wechseln und damit auf einen anderen Stack wechseln, das ist potentiell schneller"
+2013-11-07 22:11:04,Tectu,hmm
+2013-11-07 22:11:14,Tectu,das werde ich nochmal etwas detailierter durchdenken müssen
+2013-11-07 22:11:22,mgottschlag2,"oder man wechselt direkt, nachdem man den CPU-Zustand gespeichert hat, auf einen zentralen Stack, dann kann der Kernel-Thread der einzelnen Prozesse kleiner ausfallen"
+2013-11-07 22:11:29,Tectu,d.h. der kernel stack pro task ist unabhängig von dem task selbst? (Also die grösse)
+2013-11-07 22:12:16,mgottschlag2,hm? inwiefern?
+2013-11-07 22:12:46,mgottschlag2,"der Stack wird ja vor allem dazu benutzt, um den CPU-Zustand darin zu speichern (bei Interrupts etc)"
+2013-11-07 22:12:56,mgottschlag2,und die Größe des CPU-Zustands ist limitiert
+2013-11-07 22:20:30,Tectu,"jap, das meinte ich"
+2013-11-07 22:20:47,Tectu,"also in den kernel_stack des tasks kommt primär der CPU zustand, der rest ist im user_stack?"
+2013-11-07 22:21:15,Jidder,der user stack wird ausschließlich vom programm genutzt
+2013-11-07 22:21:24,Darkchaos,und der kernel stack ausschließlich vom scheduler
+2013-11-07 22:21:33,Jidder,und dem rest des kernels
+2013-11-07 22:21:43,Tectu,was kommt denn da neben CPU zustand noch rein?
+2013-11-07 22:21:46,Darkchaos,der kernel wird als eigenständiger task angesehen (also was treiber etc angeht)
+2013-11-07 22:22:13,Jidder,"Tectu: das übliche. funktionsparameter, rücksprungadressen, lokale variablen, temporäre variablen"
+2013-11-07 22:22:22,Tectu,aber der eigentliche kernel... der läuft immer im kernel_stack des aktuellen tasks?
+2013-11-07 22:22:27,Jidder,jep
+2013-11-07 22:22:32,Tectu,der hat nirgends sein eigenes ding?
+2013-11-07 22:23:05,Darkchaos,"Also meiner hat einen Idle-Task außerhalb und so sachen wie eine ""Error-Console"" läuft auch in nem eigenen Task (wobei man das schon als User-Code interpretieren kann)"
+2013-11-07 22:23:18,Darkchaos,"Aber primär kümmert er sich ja um Interrupthandling, und das findet auf dem Stack statt"
+2013-11-07 22:25:14,Tectu,I see
+2013-11-07 22:25:27,Tectu,also RING0 wird vom kernel nirgends mehr verwendet?
+2013-11-07 22:25:31,Tectu,also wo kernel code ausgeführt wird.
+2013-11-07 22:25:53,mgottschlag2,RING0 wird vom Kernel immer verwendet o.O
+2013-11-07 22:26:18,Tectu,"jap, dachte ich eben auch. der kernel stak pro task verwirrt mich gerade ziemlich gut..."
+2013-11-07 22:26:35,Darkchaos,Tectu: Der Kernel-Stack ist ja auch Ring0
+2013-11-07 22:26:38,Darkchaos,Da findet ein Ringwechsel statt
+2013-11-07 22:27:12,Darkchaos,nur um bei einem Interrupt nicht irgendwie den Task wechseln zu müssen und dabei evtl. ausversehen auch noch was kaputt zu schreiben findet das eben im alten Task statt
+2013-11-07 22:27:24,Darkchaos,so wird zB auch SharedMemory einfacher
+2013-11-07 22:27:49,mgottschlag2,"Tectu: die Sache ist, wenn du den Kernel-Stack nicht wechselst, dann läuft der Kernel immer auf dem Stack weiter, auf dem er war"
+2013-11-07 22:27:54,mgottschlag2,also im Zweifelsfall komplett auf dem Prozess-Kernel-Stack
+2013-11-07 22:29:12,Darkchaos,https://gitorious.org/tuxmaniac/arctic_revenge/commit/6de9bdfa6eae7bd14672b326b85dd375b968ca87 huldigt jidder :) (und meine unfähigkeit mit .gitignore für die Imagedatei :P)
+2013-11-07 22:31:07,Tectu,uiuiuiuiuui
+2013-11-07 22:32:42,mgottschlag2,du hast Binaries im git? o.O
+2013-11-07 22:33:06,mgottschlag2,"hast du schonmal mit Branches gearbeitet? Weißt du, wass Binaries dann für ein riesiges Problem verursachen? :D"
+2013-11-07 22:33:21,Tectu,"mgottschlag2, was für ein riesen problem?"
+2013-11-07 22:33:36,Darkchaos,ne mit git komm ich eigentlich nicht gut klar
+2013-11-07 22:33:36,Tectu,"mgottschlag2, wenn du git auch nur ansatzweise verstehst/beherrschst ist das kaum ein problem"
+2013-11-07 22:33:49,Darkchaos,und binarys wollte ich nicht absichtlich rein tun :P
+2013-11-07 22:33:51,Tectu,"Darkchaos, lies dir mal die doku zu .gitignore durch"
+2013-11-07 22:33:53,Jidder,"Darkchaos: dwenn es einmal drin ist, dann nützt gitignore wohl nichts mehr. du musst die datei wohl aus dem repository wieder untracken"
+2013-11-07 22:33:59,Tectu,jap
+2013-11-07 22:34:02,Tectu,git rm <path>
+2013-11-07 22:34:07,Tectu,rm -r wenns nen dir sein soll
+2013-11-07 22:34:07,Darkchaos,Jidder: Das ist das Problem. git rm löscht die Datei aber auch lokal
+2013-11-07 22:34:17,Tectu,"Darkchaos, git rm --cached <binary>"
+2013-11-07 22:34:22,Darkchaos,hab später immer das gitignore geupdated:D
+2013-11-07 22:34:41,Jidder,du kannst auch einfach beim git commit nicht einfach immer alles adden
+2013-11-07 22:35:13,Darkchaos,sondern alle einzeln?
+2013-11-07 22:35:25,Darkchaos,und bereits getrackte files werden doch automatisch gecommited oder?
+2013-11-07 22:35:31,Tectu,"Jidder, naja, ne binary sollte aber schon ins .gitignore"
+2013-11-07 22:35:51,Tectu,"Darkchaos, nein, git commit nimmt immer den pfad zu den gewollten dateien"
+2013-11-07 22:35:55,Tectu,"Darkchaos, oder -a wenn du alle willst"
+2013-11-07 22:36:03,Tectu,git status gibt auskunft über die geänderten dateien
+2013-11-07 22:36:24,mgottschlag2,"Tectu: nein, Mergekonflikte, bei denen man nicht sinnvoll mergen kann, sind auf jeden Fall ein Problem"
+2013-11-07 22:36:47,mgottschlag2,"unabhängig davon, ob man das mit git beheben kann oder nicht, einfach, weil man nach dem Mergen einen inkonsistenten Zustand hat"
+2013-11-07 22:36:47,Tectu,"mgottschlag2, bei einer binary soll nichts gemerged werden!"
+2013-11-07 22:36:53,Tectu,"mgottschlag2, da sagst du ob binary von branch A oder B"
+2013-11-07 22:37:11,mgottschlag2,"ja, und dann passt das Binary nicht mehr zum Rest"
+2013-11-07 22:37:12,Tectu,zumal man einfach keine binary in die repo zu packen hat :P
+2013-11-07 22:37:16,mgottschlag2,eben ^^
+2013-11-07 22:37:25,Tectu,"Darkchaos, raus mit der binary, sofort!"
+2013-11-07 22:37:39,Darkchaos,Eigentlich war es ja ein Image das einem das GRUB-Erstellen erleichtert :P
+2013-11-07 22:38:04,Darkchaos,https://gitorious.org/tuxmaniac/arctic_revenge/commit/2427e09275724df92b6f88c8184d03a4e41e931f
+2013-11-07 22:38:04,mgottschlag2,"Darkchaos: dann sollte es sich nicht ändern, und das scheint es ja zu tun ^^"
+2013-11-07 22:38:07,mgottschlag2,"also, es sollte immer ein leeres Image sein"
+2013-11-07 22:38:13,mgottschlag2,dann ist das akzeptabel
+2013-11-07 22:38:15,Darkchaos,mgottschlag2 naja :P
+2013-11-07 22:38:35,Darkchaos,"wobei bei mir im git diktatur herrscht, da gibt es nix zu mergen^^"
+2013-11-07 22:38:49,Darkchaos,"geschweige denn, dass einer mitarbeitenwolle"
+2013-11-07 22:39:01,Darkchaos,hä er hats nicht rausgenommen?
+2013-11-07 22:39:13,Darkchaos,hab aber git rm --cached genutzt
+2013-11-07 22:39:53,Darkchaos,Ok update
+2013-11-07 22:40:02,Darkchaos,muss ich das dann vor jedem commit/nach jedem add . machen?
+2013-11-07 22:42:33,Jidder,"nicht, wenn es in deiner gitignore ist"
+2013-11-07 22:42:46,Jidder,schätze ich mal
+2013-11-07 22:47:13,Darkchaos,"hatte jetzt git rm --cached; git add . git commit gemacht, und es war wieder drin"
+2013-11-07 22:47:18,Darkchaos,Also muss es wohl nicht in der ignore sein
+2013-11-07 22:47:39,Jidder,warum guckst du das nicht nach?
+2013-11-07 22:47:53,Darkchaos,mach ich gerade :D
+2013-11-07 22:48:41,Darkchaos,jetzt schon
+2013-11-07 22:48:51,Darkchaos,ein VFS ist ja nichts anderes als Pfad->Device oder?
+2013-11-07 22:49:27,Jidder,ich hab mir über sowas nie viel gedanken gemacht
+2013-11-07 22:49:48,Darkchaos,naja ich muss es ja irgendwie implementieren
+2013-11-07 22:49:59,Darkchaos,"ach halt, malloc fixxen"
+2013-11-07 22:51:42,Darkchaos,Ich muss in dem VFS dann jeden Ordner als BaumElement einfügen
+2013-11-07 22:52:09,Darkchaos,Ich glaube ich sollte mal brain in meinen eigenen Channel routen
+2013-11-07 23:05:27,Darkchaos,"Ok eine Frage habe ich doch noch: um mir einen Parameter zu sparen, soll meine syscalllib (für die User-Seite) einfach eine Variable benutzen. Diese lib darf dann aber nur von einem logischen Task genutzt werden oder?"
+2013-11-07 23:05:51,Darkchaos,"Das soll heißen: Wenn eine elf-datei zwei tasks providen würde, würden die beide auf die gleiche physische Adresse für die Variable zugreifen, es sei denn ich nutze vmm_alloc()"
+2013-11-07 23:08:53,Darkchaos,"Nein, es geht garnicht, solange ich keine Instanz der Lib nutze"
+2013-11-07 23:09:45,Darkchaos,GCC nimmt ja automatisch GPP oder?
+2013-11-07 23:13:07,Darkchaos,"Jidder: Spontaner Einfall, wie ich class1 _class1 = new class1(); umgehen kann? Also das new? Ich kann zwar ne Adresse vergeben, aber die ganzen initalisierungen?"
+2013-11-07 23:16:27,Jidder,was willst du umgehen?
+2013-11-07 23:16:49,Jidder,den konstruktor aufruf?
+2013-11-07 23:16:51,Darkchaos,dass der Compiler new versucht zu nutzen
+2013-11-07 23:17:02,Jidder,malloc
+2013-11-07 23:17:13,Jidder,warum auch immer du das machen willst
+2013-11-07 23:17:20,Darkchaos,"das Ding ist, ich versuche gerade einen malloc-wrapper zu schreiben"
+2013-11-07 23:17:22,Jidder,klingt auf jeden fall nicht richtig
+2013-11-07 23:17:30,Darkchaos,"Jidder: Weil ich nicht weiß, was der Compiler aus meinem new machen möchte"
+2013-11-07 23:17:55,Jidder,http://www.lowlevel.eu/wiki/C%2B%2B#new.2Fdelete
+2013-11-07 23:17:57,Jidder,ditte
+2013-11-07 23:18:25,Darkchaos,hmm
+2013-11-07 23:19:13,Darkchaos,"mein Problem ist jetzt, dass malloc nicht statisch ist"
+2013-11-07 23:19:21,Darkchaos,(der kontext)
+2013-11-07 23:19:32,Jidder,was heißt das?
+2013-11-07 23:19:55,Darkchaos,Kann ich die opeartoren auch als klassenmember definieren?
+2013-11-07 23:20:06,Darkchaos,also sowas wie Klasse1 = api_mem.new Klasse1();
+2013-11-07 23:20:38,Jidder,ja du kannst das für klassen überladen
+2013-11-07 23:20:57,Darkchaos,"Obwohl alles kacke, ich setze vorraus, dass die lib nur von einem Prozess genutzt wird"
+2013-11-07 23:21:09,Darkchaos,nicht überladen sondern anstatt des statischen new
+2013-11-07 23:21:25,Jidder,"ich hab dir den begriff genannt, nach dem du googeln müsstest, wenn du das umsetzen willst"
+2013-11-07 23:22:17,Jidder,"aber ich denke mal du hast irgendwo ein grundlegendes problem, wenn du das jetzt machen willst"
+2013-11-07 23:22:47,Darkchaos,"Angenommen die file1.elf linkt meine lib. die elf hätte aber zwei eigenständige Tasks, die beide gerne darauf zugreifen möchten. dann funktioniert new immer nur für den, der als letzteres init benutzt hat"
+2013-11-07 23:23:12,Darkchaos,"In dem Falle macht das keinen Sinn, aber bei Threading ist das ja genau der fall. Ein und der selbe physische Code, nur andere virtuelle Adressräume"
+2013-11-07 23:23:12,Jidder,wird die elf-datei zweimal gestartet?
+2013-11-07 23:23:41,Darkchaos,"Jidder: Noch ist das kein Problem, nur wenn ich jetzt meine API anpasse, dann kann ich das auch komplett gut machen"
+2013-11-07 23:23:53,Jidder,jetzt verwirrst du mich
+2013-11-07 23:23:55,Jidder,und vermutlich dich auch
+2013-11-07 23:23:57,Darkchaos,"und so hätte ich eine große Klasse, die dann subfunktionen statt statischer bietet"
+2013-11-07 23:24:36,Jidder,"ein prozess hat einen adressraum. wenn eine executable mehrfach gestartet wird, dann haben die unterschiedliche adressräume. wenn ein prozess mehrere threads hat, dann laufen die im selben adressraum"
+2013-11-07 23:25:33,Darkchaos,Jidder: Aber die unterschiedlichen Adressräume sind beide auf die gleiche physische Adresse gemappt. Bei dynamischen Bibliotheken sind sogar alle Prozesse auf diese physische Adresse gemappt
+2013-11-07 23:25:56,Darkchaos,demnach wird doch ein einfaches int a = 0; von jedem Prozess willkürlich überschrieben
+2013-11-07 23:26:23,Jidder,"warum implementierst du das nicht so, dass sie nicht die selbe physische adresse haben?"
+2013-11-07 23:26:25,Jidder,das ist doch einfacher
+2013-11-07 23:26:41,Jidder,dass die den selben speicher nutzen ist eine optimierung
+2013-11-07 23:26:53,Jidder,"und sobald ein prozess den geteilten speicher beschreibt, wird eine kopie für ihn erstellt"
+2013-11-07 23:26:57,Jidder,copy on write nennt sich das
+2013-11-07 23:27:08,Jidder,dann entstehen in dem fall auch keine konflikte
+2013-11-07 23:27:28,Darkchaos,Jidder: Demnach liegt für jede Instanz eine seperate Kopie der kompletten physischen ELF irgendwo?
+2013-11-07 23:27:29,Jidder,"aber wie gesagt, das ist eine optimierung, und du solltest vielleicht erstmal keinen shared memory einbauen"
+2013-11-07 23:27:46,Jidder,im einfachsten fall ja
+2013-11-07 23:27:49,Darkchaos,Jidder: Wäre die nächste Frage gewesen. Einfach Kopieren

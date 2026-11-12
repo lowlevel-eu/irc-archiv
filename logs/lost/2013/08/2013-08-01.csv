@@ -1,0 +1,36 @@
+date/time,nick,message
+2013-08-01 10:44:58,alexander,Morgen
+2013-08-01 12:02:37,Jonathan,moin
+2013-08-01 13:29:12,iksnagreb,moin
+2013-08-01 20:24:52,alexander,Nabend
+2013-08-01 20:25:44,Jonathan,Nabend
+2013-08-01 20:35:24,kevin,Nabend
+2013-08-01 20:35:32,XanClic,Moin
+2013-08-01 20:36:49,kevin,Spalter!
+2013-08-01 20:37:08,XanClic,Die Volksfront von Judäa wird mich zum Licht führen!
+2013-08-01 20:42:12,iksnagreb,"nach dem ende eines taks sollte doch etwa soviel speicher frei sein, wie vor dem start, oder? also alles, was der task brauchte wieder freigeben, oder?"
+2013-08-01 20:42:26,Jonathan,Jop
+2013-08-01 20:42:34,Jonathan,"Andernfalls hast du ein Speicherleck, und sowas ist böse"
+2013-08-01 20:43:02,Jonathan,#proudtohavenodynamicmemoryinmykernel #yolo
+2013-08-01 20:43:06,kevin,"Wenn ansonsten nichts anderes passiert ist, dann vielleicht schon"
+2013-08-01 20:44:04,iksnagreb,"das feigeben braucht recht viel zeit, kann man das irgendwie optimieren?"
+2013-08-01 20:44:31,mgottschlag,was braucht dennzeit?
+2013-08-01 20:44:48,mgottschlag,du kannst halt andere Datenstrukturen/Algorithmen nehmen
+2013-08-01 20:46:14,mgottschlag,"letztenendes geht Freigeben praktisch immer in O(n), wobei n die Anzahl der Seiten ist, also kann man z.B. auch die Seitengröße optimieren (Superpages), wenn alles andere nicht ausreicht"
+2013-08-01 20:46:33,mgottschlag,aber dein Allokator sollte das schon schnell genug schaffen
+2013-08-01 20:47:19,iksnagreb,ich mach das so: http://pastebin.com/n6Jg3Euy
+2013-08-01 20:48:44,mgottschlag,sollte das map_page nicht in der äußeren Schleife sein?
+2013-08-01 20:48:53,mgottschlag,und sind denn immer alle tables vorhanden?
+2013-08-01 20:50:27,Jidder,"eine idee wäre paging von der speicherverwaltung zu trennen. also die angeforderten speicherbereiche in einer gesonderten datenstruktur zu verwalten. das hat dann vorteile, wenn dein betriebssystem oder die programme mehrere seiten anfordern."
+2013-08-01 20:50:32,mgottschlag,"das lässt sich auch durchaus noch etwas beschleunigen, wenn man jeglichen allokierten physischen Speicher pro Prozess in einer verlinkten Liste hält (in ner Datenstruktur analog zu struct page)"
+2013-08-01 20:50:41,mgottschlag,"ja, das auch"
+2013-08-01 20:50:42,Jidder,^ this
+2013-08-01 20:50:48,Jidder,weitermachen ^^
+2013-08-01 20:50:56,mgottschlag,näh :p
+2013-08-01 20:51:19,mgottschlag,*analog zu struct page im linux kernel
+2013-08-01 20:52:01,mgottschlag,"aber dann ist man performancemäßig an dem Punkt, wo du erstmal gucken solltest, ob du nicht eh jetzt mal nen Buddy Allocator schreiben möchtest... soo schwer ist das eigentlich garnicht"
+2013-08-01 20:52:01,Jidder,"ich wollte auch gerade die verkettete liste vorschlagen. wenn der gesamte prozess freigegeben wird, könntest du (abgesehen von gemeinsam genutzten pages) die gesamte liste in einer einzigen operation freigeben"
+2013-08-01 20:52:16,mgottschlag,"stimmt, mit nem Stack gehts sogar in O(1)"
+2013-08-01 20:53:07,mgottschlag,"im Buddy Allocator hat man die entsprechenden Listenpointer sogar schon (als Verkettung von freien Seiten), da kann man recyclen :)"
+2013-08-01 20:53:21,mgottschlag,wobei es da nur in O(n) geht
+2013-08-01 21:03:51,iksnagreb,"naja, erstmal muss ich den fehler im userspace heap finden, der holt sich bei jedem malloc neuen speicher vom kernel, auch wenn er noch genug hat "

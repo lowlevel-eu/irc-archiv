@@ -1,0 +1,126 @@
+date/time,nick,message
+2012-07-25 09:11:19,alexander,Morgen
+2012-07-25 12:15:53,PatrickBic,pmm_alloc soll schon 0x0 0x1000 0x2000 0x3000 usw liefern oder? 
+2012-07-25 12:16:05,PatrickBic,(also jetzt vonner symtomatik
+2012-07-25 12:16:49,livinskull,hä?
+2012-07-25 12:17:05,livinskull,am sinnvollsten page-aligned speicher ;)
+2012-07-25 12:17:58,PatrickBic,aber immer 4kb oder?
+2012-07-25 12:18:06,PatrickBic,meiner spuckt hier 0x0 0x4000 0x8000 usw aus
+2012-07-25 12:18:28,livinskull,das kannste machen wie du willst
+2012-07-25 12:18:37,livinskull,ich mach uimmer page-aligned und 4K
+2012-07-25 12:18:53,livinskull,weil mans dann direkt auf ne page umsetzen kann
+2012-07-25 12:19:16,PatrickBic,joa will ich doch auch xD
+2012-07-25 12:19:21,PatrickBic,und damit solls 0x1000 0x2000 usw sein
+2012-07-25 12:19:39,livinskull,das is aber 1K
+2012-07-25 12:19:46,livinskull,;)
+2012-07-25 12:20:03,livinskull,oh
+2012-07-25 12:20:04,livinskull,wait
+2012-07-25 12:20:06,livinskull,doch nich
+2012-07-25 12:20:28,PatrickBic,0x1000 = 4k = 4096
+2012-07-25 12:20:28,livinskull,jo
+2012-07-25 12:21:19,PatrickBic,http://i47.tinypic.com/9pomms.png
+2012-07-25 12:21:19,PatrickBic,das kommt bei mir raus
+2012-07-25 12:21:58,kevin,Besser als byteweise :-P
+2012-07-25 12:22:45,kevin,"Öhm, und warum fängt der bei 0x400000 an?"
+2012-07-25 12:23:55,livinskull,und warum sagt deine memmap 0 - 0x27c000 free aber dann used 0x0 - 0x40000? :P
+2012-07-25 12:27:57,kevin,Überlagerte Zustände?
+2012-07-25 12:28:14,kevin,"Aber gut, das erklärt meine Frage ;-)"
+2012-07-25 13:05:05,PatrickBic,re .. sorry musste weg
+2012-07-25 13:05:28,PatrickBic,die 2 free: memory map von grub
+2012-07-25 13:05:31,PatrickBic,das erste used: kernel
+2012-07-25 13:05:37,PatrickBic,das zweite used: erstes mb
+2012-07-25 13:12:32,kevin,Ihr könnt alle nicht rechnen
+2012-07-25 13:12:59,kevin,Auch das erste MB ist nicht 4 MB groß
+2012-07-25 13:14:08,stultus,Fühlt sich aber immer so an wies scheint *g*
+2012-07-25 13:15:17,PatrickBic,kevin: ich war mri eh unsicher
+2012-07-25 13:15:25,PatrickBic,*mir eh
+2012-07-25 13:15:26,PatrickBic,ob es 1 oder 4 is
+2012-07-25 13:15:42,PatrickBic,dacht aber das man das schon versteht auch wenns falsch is 
+2012-07-25 13:16:12,kevin,"Ich find das halt toll, weil du vorhin erst livinskull mit seinen 0x1000 verbessert hast ;-)"
+2012-07-25 13:17:12,kevin,"stultus: Wär das nicht eine Möglichkeit, deine Leaks wegzurechnen? *g*"
+2012-07-25 13:17:38,PatrickBic,kevin: ah stimmt ja
+2012-07-25 13:17:38,PatrickBic,ironie :P
+2012-07-25 13:18:41,PatrickBic,"jedenfalls soll ja bei index + offset (index = im bitmap, offset = bit innerhalb dieses wertes) (wenn alles frei is) zwei aufeinander folgende nummern rauskommen oder?"
+2012-07-25 13:18:50,PatrickBic,also bsp 12 1 und 12 2 oder?
+2012-07-25 13:21:01,stultus,"Nen Faktor 4 bei den Leaks würd wohl schon was bringen, jo ^^"
+2012-07-25 13:24:01,kevin,PatrickBic: Wahrscheinlich schon
+2012-07-25 13:24:46,PatrickBic,hier kommt immer 12 1 und dann 12 5 und dann 12 9 usw
+2012-07-25 13:25:05,PatrickBic,pmm_free/alloc/used sehen dennoch richtig aus (laut tyndur code auch)
+2012-07-25 13:27:10,PatrickBic,bitmap[(unsigned int)addr/4096/32] |= (1 << (((unsigned int)addr / 4096) & 31));                  free                            bitmap[(unsigned int)addr/4096/32] &= ~(1<<(((unsigned int)addr/4096)&31));        used
+2012-07-25 13:32:38,kevin,"[13:31] <kevin> Ich glaube, der Code, der sucht, wäre interessanter"
+2012-07-25 13:33:18,PatrickBic,moment
+2012-07-25 13:33:39,PatrickBic,http://pastebin.com/cPjNTndC
+2012-07-25 13:33:53,PatrickBic,bitmap_size is 32768
+2012-07-25 13:38:24,PatrickBic,kevin: sieht (imho) doch gut aus die funktion oder?
+2012-07-25 14:00:59,kevin,"PatrickBic: Hm, ja."
+2012-07-25 14:01:11,kevin,Hast du die Bitmap nach jedem Schritt mal angeschaut?
+2012-07-25 14:03:19,PatrickBic,wenn ich von 0 bis 27C000 free'e is 0/0 0/4 0/8 usw frei (index/offset)
+2012-07-25 14:03:30,PatrickBic,0/1 0/2 0/3 0/5 usw sind belegt
+2012-07-25 14:04:25,PatrickBic,die alloc funktion geht daher ja (auf basis der falschen daten) richtig
+2012-07-25 14:04:26,kevin,Oh
+2012-07-25 14:04:55,kevin,Wie sieht die free-Funktion denn dann aus?
+2012-07-25 14:05:07,PatrickBic,void pmm_free(void* addr){
+2012-07-25 14:05:07,PatrickBic,	bitmap[(unsigned int)addr/4096/32] |= (1 << (((unsigned int)addr / 4096) & 31));
+2012-07-25 14:05:07,PatrickBic,	memUsed--;
+2012-07-25 14:05:07,PatrickBic,}
+2012-07-25 14:05:22,kevin,Und die wird in einer Schleife aufgerufen?
+2012-07-25 14:06:02,PatrickBic,"http://pastebin.com/WTJd1b99  ja, siehe hier"
+2012-07-25 14:06:26,kevin,addr + mmap->len
+2012-07-25 14:06:31,PatrickBic,wenn ich davor ausgebe is natuerlich alles belegt (soll so sein) 
+2012-07-25 14:06:45,kevin,addr ist ein unsigned int*. Pointerarithmetik anyone?
+2012-07-25 14:07:00,PatrickBic,muuuuuuuh
+2012-07-25 14:07:03,PatrickBic,und dabei hat jan mir das gesagt
+2012-07-25 14:07:56,PatrickBic,kevin: hab addr (innerhalb dieser addition) zu nem unsigned char* gecastet aber immer noch selber output
+2012-07-25 14:08:04,kevin,Und damit passt der Faktor 4 genau
+2012-07-25 14:08:17,kevin,Wie gecastet?
+2012-07-25 14:08:40,PatrickBic,ja normal is ja    ptr+irgendwas  wie array[irgendwas]
+2012-07-25 14:08:54,PatrickBic,wenn man nun ptr auf nen anderen typ (bsp char*) castet dann sieht er das nicht mehr als array
+2012-07-25 14:09:03,kevin,Dann halt der hier: addr += 0x1000;
+2012-07-25 14:09:05,PatrickBic,unsigned int* end_addr = (unsigned char*)addr + mmap->len;     <= so
+2012-07-25 14:09:31,kevin,Warum ist das überhaupt ein unsigned int*? Da stehen doch keine Integer?
+2012-07-25 14:10:07,kevin,"PatrickBic: Wenn du auch noch addr = (char*) addr + 0x1000; benutzt, könnte es tun. Aber fix besser gleich den Typ von addr."
+2012-07-25 14:10:28,PatrickBic,ok dann datatype-fix
+2012-07-25 14:10:29,PatrickBic,ich mal eben
+2012-07-25 14:11:14,PatrickBic,sieht soweit gut aus.. jetzt kommt 0x400000 und dann 0x401000 und so
+2012-07-25 14:11:50,PatrickBic,kevin: danke! :D  
+2012-07-25 14:12:44,PatrickBic,da hab ich zehntausend mal drueber gelesen ohne es zu merken :-/
+2012-07-25 14:15:08,PatrickBic,kevin: selber fehler ueberall im paging :P
+2012-07-25 14:19:26,kevin,"PatrickBic: Es hat eben doch seinen Sinn, Datentypen mit Bedacht auszuwählen ;-)"
+2012-07-25 15:52:41,DesL,moin
+2012-07-25 15:52:46,Svenska,hi
+2012-07-25 17:19:50,PatrickBic,"kevin: danke, paging geht nun auch ;)"
+2012-07-25 17:19:59,PatrickBic,muss ich mir merken das ich da mehr augenmerk drauf leg
+2012-07-25 17:41:13,Jidder,moin
+2012-07-25 17:41:20,Svenska,moin
+2012-07-25 17:42:36,Jidder,ich mach alle 30 minuten eine schublade auf
+2012-07-25 17:42:45,Jidder,da ist noch kühle luft von heute morgen drin
+2012-07-25 17:43:21,Jidder,war heute morgen nämlich im supermarkt und hab da ein bisschen kalte luft aus dem tiefkühlregal geklaut
+2012-07-25 17:43:31,Jidder,mit einem mitgebrachten einkaufsbeutel
+2012-07-25 17:43:46,Jidder,an der kasse wollten se zwar in den mal reingucken
+2012-07-25 17:43:54,Jidder,aber sie haben mich mit einem augenzwinkern durchgewunken
+2012-07-25 17:44:50,Svenska,*grins*
+2012-07-25 17:44:54,Jidder,aber ich muss mir was besseres einfallen lassen um den beutel zu befüllen
+2012-07-25 17:45:07,Jidder,ich hab immer im tiefkühlfach eingeatmet und in den beutel ausgeatmet
+2012-07-25 17:45:11,Jidder,das dauert ziemlich lange
+2012-07-25 17:45:15,Jidder,und mir wurde dabei schummrig
+2012-07-25 17:45:24,Svenska,ich empfehle ja variante 2: die kühle luft zuhause aufbereiten
+2012-07-25 17:45:59,Jidder,ja selbstgemacht kommt auf dauer günstiger
+2012-07-25 17:46:41,alexander,Soll aber illegal sein hab ich gehlrt
+2012-07-25 17:46:45,alexander,*gehört
+2012-07-25 17:46:57,Jidder,nicht wenn man es für den eigenbedarf macht
+2012-07-25 17:46:58,Jidder,und unter 25 gramm
+2012-07-25 17:47:14,Jidder,hab ich gehör
+2012-07-25 17:47:14,Jidder,t
+2012-07-25 17:47:26,Svenska,"ich weiß ja nicht, ich mach das schon ewig, jeder weiß es und es gibt keine probleme"
+2012-07-25 17:47:37,Svenska,"und meine eltern machen das auch, zumindest im auto"
+2012-07-25 17:48:24,Jidder,vorsicht hier wird geloggt
+2012-07-25 17:48:29,Jidder,bei euch lassen die das vielleicht durchgehen
+2012-07-25 17:49:03,Jidder,aber hier im internet wird klimaschutz etwas ernster gehandhabt
+2012-07-25 17:52:55,Svenska,darum entwickelt arm ja jetzt v8
+2012-07-25 17:55:11,Jidder,ah natives javascript
+2012-07-25 17:55:34,Svenska,da hast du eben lange gesucht :-)
+2012-07-25 17:56:27,livinskull,war v8 nicht googles js engine?
+2012-07-25 17:56:41,Svenska,"ja, und ARMv8 ist die 64-bit-architektur von arm :D"
+2012-07-25 17:57:03,alexander,Ojemine ist das kompliziert
+2012-07-25 17:57:21,Jidder,deswegen hats bei mir auch so lange gedauert
+2012-07-25 17:57:29,Svenska,"""arm926ejs"" finde ich komplizierter."

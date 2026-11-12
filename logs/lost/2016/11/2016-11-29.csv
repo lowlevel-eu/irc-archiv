@@ -1,0 +1,206 @@
+date/time,nick,message
+2016-11-29 13:30:07,moritz31,@kevin :D hast du dich von unserem Chaos gestern gut erholt ?
+2016-11-29 13:30:35,kevin,"Die Rauchzeichen kamen aus deinem Kopf, nicht aus meinem ;-)"
+2016-11-29 13:31:28,moritz31,":'D ich glaub der raucht auch immer noch, jedenfalls standen heute morgen Indianer vor meiner Haustür"
+2016-11-29 13:32:23,kevin,Vielleicht kennen die sich ja mit Paging aus
+2016-11-29 13:33:35,moritz31,neee haben mich nur verduzt angeschaut und nach nem Klappstuhl gefragt
+2016-11-29 13:38:44,kevin,Dem vergrabenen?
+2016-11-29 13:41:32,moritz31,genau dem :D
+2016-11-29 13:57:41,moritz31,wenn ich über die Qemu Console mein PD debuggen will und zur zweiten page table will wo muss ich denn dann hin ? 
+2016-11-29 13:57:48,moritz31,ans pd komm ich ja mit xp 0x1000
+2016-11-29 13:57:59,moritz31,dann müssten 32bit weiter der 2. eintrag liegen oder ?
+2016-11-29 14:08:47,kevin,"Ja, also 0x1004"
+2016-11-29 14:09:11,kevin,"Oder wenn du mehrere Einträge auf einmal sehen willst, kannst du übrigens auch sowas wie xp /20 0x1000 machen"
+2016-11-29 14:17:50,moritz31,mhhh okay steht wirklich was drin :D allerdings 67 am Ende mal die Flags nachschauen
+2016-11-29 14:19:35,moritz31,Dirty/Accessed und meine Flags also alles erstmal okay denk ich
+2016-11-29 14:50:18,Godwine,man kann doch auch sowas wie info tlb machen und der listet alle mappings auf
+2016-11-29 14:52:55,kevin,"Nur alle, die im TLB sind"
+2016-11-29 14:55:00,Godwine,habs grad ausprobiert
+2016-11-29 14:55:17,Godwine,qemu listet auch mappings auf die mein kernel definitiv nicht zugegriffen hat
+2016-11-29 14:58:25,Godwine,okay es sei denn das was der da anzeigt ist das mapping vom pd auf sich selbst wobei das hab ich geschrieben bevor der addressraum geladen wurde
+2016-11-29 15:11:50,Godwine,"interressant: ein programm im userspace löst scheinbar mit mov eax, 1 einen pagefault aus xD"
+2016-11-29 15:14:18,kevin,Ist der Code selber nicht richtig gemappt?
+2016-11-29 15:16:27,Godwine,wahrscheinlich sowas ja
+2016-11-29 15:16:50,Godwine,wird nämlich eher beim syscall dahinter passieren
+2016-11-29 15:16:53,Godwine,xD
+2016-11-29 15:17:06,Godwine,syscalls debuggen ist auch echt doof
+2016-11-29 15:21:51,kevin,"Wenn du nicht genau weißt, wo der PF passiert, dann solltest du erstmal das rausfinden..."
+2016-11-29 15:22:07,kevin,"Wenn es ein mov $1, %eax ist, dann ist es kein Syscall"
+2016-11-29 15:26:15,Godwine,"ja das sind zwei zeilen einmal mov eax,1 und dann int 0x80"
+2016-11-29 15:26:25,Godwine,ja ich hab rausgefunden wo der pf passiert
+2016-11-29 15:27:43,Godwine,der passiert beim return aus dem kernel aber wieso passiert der jetzt weil ich hab die funktion eigentlich nicht verändert in letzter zeit
+2016-11-29 15:30:02,kevin,Dann war wohl schon immer was falsch
+2016-11-29 15:31:30,Godwine,irgendwo ist doch immer was falsch
+2016-11-29 15:32:25,kevin,Da will  ich dir jetzt mal nicht widersprechen ;-)
+2016-11-29 15:37:54,moritz31,402000: 0000000000000000 ---DA--U- da tritt das Problem auf :'D steht nix drin
+2016-11-29 15:39:50,Godwine,interessant dass der dirty und accessed flags setzt selbst wenn die page nicht present ist
+2016-11-29 15:40:24,moritz31,also Table ist ja scohnmal schön gemappt @kevin :'D
+2016-11-29 15:40:25,moritz31,00000000ffc01000: 0000000000401000 ---DA--UW
+2016-11-29 15:43:10,moritz31,@kevin kannst du nochmal gucken ? http://pastebin.com/4N5GXMf2
+2016-11-29 15:44:23,kevin,Wo fliegt denn der PF jetzt?
+2016-11-29 15:45:46,moritz31,EIP=00101900 CR2=00401000 beim invlpg der neuen Seite bleibt er mit dem Pagefault hängen davor die Ausgabe geht danach nicht mehr 
+2016-11-29 15:46:35,kevin,101900 ist das invlpg in Zeile 25 oder wie?
+2016-11-29 15:47:04,Jonathan,Moin
+2016-11-29 15:47:16,moritz31,jo 
+2016-11-29 15:47:21,moritz31,@Jonathan Moin 
+2016-11-29 15:47:49,kevin,Och Moritz
+2016-11-29 15:47:57,kevin,page_table[PT_index] = (uint32_t)phys | flags;
+2016-11-29 15:48:03,kevin,page_table ist immer noch die physische Adresse
+2016-11-29 15:48:27,Jonathan,Hmm ;)
+2016-11-29 15:48:28,kevin,"Das invlpg für die PT kommt übrigens zu spät, das sollte vor der for-Schleife sein"
+2016-11-29 15:48:43,kevin,Daran wird das hier aber nicht liegen
+2016-11-29 15:50:37,moritz31,ahhh okay ja hab's kapiert :'D hab das jetzt mal so um gemurkst das er immer die virtuelle nimmt 
+2016-11-29 15:51:41,Godwine,moment in die pagetable muss doch die physische addresse
+2016-11-29 15:52:08,kevin,"Übrigens glaube ich nicht, dass du für den PD-Eintrag flags benutzen willst, sondern eher was fest gesetztes"
+2016-11-29 15:52:46,kevin,"Godwine: Ja, schon, aber die Pagetable selber adressierst du mit einer virtuellen Adresse"
+2016-11-29 15:52:51,moritz31,@Godwine ja die wird ja auch rein geschrieben 
+2016-11-29 15:56:18,Godwine,schreib doch einfach die physische addresse des pd in den letzten eintrag der pd dann liegen die tables alle ganz ordentlich in den letzten 4mb des addressraums
+2016-11-29 15:56:33,Godwine,achso
+2016-11-29 15:56:37,Godwine,das machst du oder?
+2016-11-29 15:56:40,moritz31,jap :D
+2016-11-29 15:57:50,Godwine,oh okay stand ist also du hast alles nötige gemappt und füllst die pd jetzt auf?
+2016-11-29 15:58:05,kevin,Er hat alles nötige versucht zu mappen
+2016-11-29 15:58:15,kevin,"Und jetzt schaut er, dass er es auch wirklich mappt ;-)"
+2016-11-29 15:58:34,moritz31,so ich guck später weiter schreib gleich ein Mathe test :'D
+2016-11-29 15:58:40,moritz31,bis später :)
+2016-11-29 19:49:51,moritz31,Nabend :)
+2016-11-29 19:55:12,Godwine,wb
+2016-11-29 19:57:10,moritz31,thx :) bin gerade am Debuggen wo der Fehler aufritt :D
+2016-11-29 20:00:34,moritz31,achso ich muss meiner alloc function ja die virtuelle addresse des PD mitgeben oder ?
+2016-11-29 20:02:33,kevin,Irgendwoher braucht sie die jedenfalls
+2016-11-29 20:02:48,Godwine,kommt drauf an
+2016-11-29 20:02:51,kevin,"Bzw. nein, du hast sie doch"
+2016-11-29 20:03:14,Godwine,du kannst auch ein kernelspace alloc machen der sich eine freie addresse aus dem kernel addressraum sucht
+2016-11-29 20:03:43,kevin,Die virtuelle Adresse des aktuellen PD ist 0xffc00000 bei dir
+2016-11-29 20:03:57,kevin,"Quatsch, letzte Page, nicht die erste"
+2016-11-29 20:04:00,kevin,0xfffff000
+2016-11-29 20:04:10,Godwine,da fangen die pagetables aber an
+2016-11-29 20:04:36,moritz31,also theoretisch ist das PD an stelle 0x1000 und gemappt auch an 0x1000 aber wenn ich auf kernel_context->page_directory Zugreife kommt der Pagefault
+2016-11-29 20:05:13,Godwine,mach dir ein paar makros um die addresse jedes pd oder pt eintrags zu errechnen
+2016-11-29 20:06:27,Godwine,pt ist ja 0xFFC00000 + pd_index * 0x1000 + pt_index * 4
+2016-11-29 20:07:00,Godwine,und pde ist 0xFFFFF000 + pd_index * 4
+2016-11-29 20:09:00,moritz31,ide 0xFFFFF000 kommt durch das rekursive mapping oder ?
+2016-11-29 20:10:30,kevin,Ja
+2016-11-29 20:10:49,kevin,"kernel_context->page_directory sollte aber auch tun, wenn dein 1:1-Mapping stimmt"
+2016-11-29 20:11:22,kevin,Bekommst du cr2=0x1000?
+2016-11-29 20:12:18,moritz31,nope cr2 = 0 einfach 
+2016-11-29 20:12:33,moritz31,info tlb sagt das mapping gibts auch noch 
+2016-11-29 20:17:42,moritz31,kernel_context ist ja static und ich allokiere keinen Speicher dafür kann dass das Problem sein ?
+2016-11-29 20:18:37,kevin,Nein
+2016-11-29 20:18:52,kevin,"Wenn es static ist, dann ist es im gleichen Speicherbereich wie der Kernelcode selber"
+2016-11-29 20:19:26,kevin,"Also knapp über 0x100000, wenn ich deine Adressen richtig in Erinnerung habe"
+2016-11-29 20:19:33,moritz31,jap genau 
+2016-11-29 20:19:52,moritz31,weil wenn ich mir über kprintf die addresse ausgebe bekomme ich immer 0
+2016-11-29 20:20:18,kevin,Welche Adresse? kernel_context->page_directory?
+2016-11-29 20:20:41,kevin,"Hm... Wart mal, deklarierst du kernel_context nur als Pointer, den du nie initialisierst?"
+2016-11-29 20:21:15,kevin,"Dann wäre natürlich nur der Pointer im .data vom Kernel, aber zeigen würde er auf NULL"
+2016-11-29 20:21:20,kevin,Das würde dann deinen PF erklären
+2016-11-29 20:22:25,moritz31,"jap genau das hab ich mir oben überlegt gehabt ,deswegen die Frage"
+2016-11-29 20:23:25,kevin,Warum deklarierst du denn einen Pointer und nicht direkt die struct?
+2016-11-29 20:23:48,moritz31,static struct vmem_context* kernel_context;  so deklarier ich den 
+2016-11-29 20:25:08,Godwine,wenn du die struct direkt deklarierst hättest du noch den vorteil dass es gleich auf 0 initialisiert ist
+2016-11-29 20:26:10,kevin,moritz31: Warum nicht static struct vmem_context kernel_context;
+2016-11-29 20:30:37,moritz31,auf was initalisiere ich denn dann den struct auf gar nichts oder ?
+2016-11-29 20:32:47,kevin,"Was statisch ist, wird per Default genullt"
+2016-11-29 20:33:22,kevin,Sonst musst du halt explizit initialisieren
+2016-11-29 20:34:46,moritz31,naja aber kontext ist jetzt trotzdem 0 
+2016-11-29 20:35:28,Godwine,die addresse der struct bekommst du jetzt mit &kernel_context
+2016-11-29 20:36:10,moritz31,achso ja da war ja was ;)
+2016-11-29 20:39:05,moritz31,aber über context.page_directory sollte ich die addresse des pd bekommen oder ? 
+2016-11-29 20:43:53,moritz31,"also was ich erwartet hätte wäre jetzt für &context immer die selbe Adresse zurück zu bekommen, was leider nicht der Fall ist "
+2016-11-29 20:43:56,kevin,"Wenn du sie dorthin geschrieben hast, dann ja"
+2016-11-29 20:44:28,kevin,"Wie, &context ändert sich ohne dass du neu baust? Das kann nicht sein."
+2016-11-29 20:45:21,moritz31,ich leg in meinem create_context einmal vmem_context an und schreib das dann in kernel_context 
+2016-11-29 20:46:32,moritz31,"und solange ich noch in meinem init bin ist die Adresse 105f98 und später beim vmem_alloc wo ich ja auch das static kernel_context verwende ist es dann 105fa8, aber kann sein wenn ich das übergebe ? "
+2016-11-29 20:48:10,kevin,"Mir fehlt da der Kontext (no pun intended), um nachzuvollziehen, was du genau tust"
+2016-11-29 20:48:16,kevin,Code?
+2016-11-29 20:49:14,moritz31,http://pastebin.com/ZfWzF0Ag
+2016-11-29 20:52:43,kevin,Da sehe ich keine Ausgabe von irgendeinem Kontext
+2016-11-29 20:53:09,kevin,"Äh, oh"
+2016-11-29 20:53:16,kevin,struct vmem_context context;
+2016-11-29 20:53:22,kevin,Das deklariert eine lokale Variable
+2016-11-29 20:53:44,kevin,"Hm, nein, macht nichts"
+2016-11-29 20:53:55,kevin,"Der klassische Fehler wäre, einen Pointer darauf zurückzugeben, aber das machst du nicht"
+2016-11-29 20:54:26,moritz31,:'D 
+2016-11-29 20:54:55,kevin,"Den Fehler machst du wohl erst, wenn du die Adressen vergleichst, wie du oben sagst ;-)"
+2016-11-29 20:55:01,moritz31,http://pastebin.com/Pjjk7w85
+2016-11-29 20:55:30,kevin,"kernel_context ist eine globale Variable, oder?"
+2016-11-29 20:55:59,moritz31,static struct vmem_context kernel_context;
+2016-11-29 20:56:02,moritz31,so wie oben ;)
+2016-11-29 20:56:32,kevin,"Das heißt, wenn du context in vmem_create_context() anschaust, bekommst du die Adresse der lokalen Variable, also irgendwas auf dem Stack"
+2016-11-29 20:56:53,kevin,"kernel_context in vmem_init() ist die globale Variable in .data, also woanders"
+2016-11-29 20:57:11,kevin,kernel_context = vmem_create_context(); kopiert nur den Inhalt
+2016-11-29 20:57:31,kevin,Sollte eigentlich gehen
+2016-11-29 20:57:38,moritz31,Context lass ich mir ja in vmem_map_page ausgeben
+2016-11-29 20:57:58,moritz31,also ändert sich zwischen init und alloc und da greife ich beides mal auf kernel_context zu
+2016-11-29 20:58:18,kevin,"Allerdings ist es Blödsinn, den Kontext ständig durch die Gegend zu kopieren. Insofern war die Pointer-Variante nicht so blöd, wenn du sie richtig initialisierst."
+2016-11-29 20:59:22,kevin,"vmem_map_page() nimmt halt auch wieder eine Kopie vom Kontext, und die liegt logischerweise woanders als das Original"
+2016-11-29 20:59:40,moritz31,achso stimmt
+2016-11-29 21:00:19,moritz31,aber erklären warum ich in vmem_alloc nicht auf context.page_dir zugreifen kann
+2016-11-29 21:02:33,kevin,"Weil es 0 ist. Du musst nur noch rausfinden, warum es 0 ist."
+2016-11-29 21:02:59,kevin,"Theoretisch würde ich erwarten, dass da eine gültige Adresse drinsteht"
+2016-11-29 21:03:28,moritz31,achso stimmt ja das hatten wir schon 
+2016-11-29 21:04:33,moritz31,so hab mal wieder alles auf pointer umgestellt
+2016-11-29 21:05:19,kevin,"Das war hoffentlich ungefähr so einfach wie ""git reset --hard"""
+2016-11-29 21:05:31,moritz31,jap :'D
+2016-11-29 21:05:54,kevin,"Okay, wenigstens eine Sache, die du richtig machst *g*"
+2016-11-29 21:05:59,moritz31,^^
+2016-11-29 21:11:49,moritz31,mhhhh jetzt steh ich auf dem schlauch
+2016-11-29 21:12:05,moritz31,wenn ich kprintf(vmem_create_context) so mache bekomme ich 2000 zurück
+2016-11-29 21:12:25,moritz31,wenn ich kernel_context = vmem_create_context mache dann ist kernel_context 0
+2016-11-29 21:14:42,moritz31,hä okay das pmem_alloc scheint 0 zurück zugeben
+2016-11-29 21:15:21,kevin,Klingt doch nach einer sinnvollen Adresse für die erste Allokation
+2016-11-29 21:18:41,moritz31,okay liegt am paging
+2016-11-29 21:19:15,moritz31,wenn ich nachdem ich paging über cr0 aktiviert hab funktioinert der zugriff auf kernel_contet->page_directory nicht mehr
+2016-11-29 21:28:43,kevin,"War der Zugriff vor dem Aktivieren von Paging richtig oder hat man es da nur nicht direkt gemerkt, dass er falsch war?"
+2016-11-29 22:09:58,MasterQ32,huhu
+2016-11-29 22:10:05,MasterQ32,hat jemand von euch mal coroutinen gebastelt?
+2016-11-29 22:16:32,XanClic,"Frag mal Kevin, wenn der wieder da ist"
+2016-11-29 22:17:07,MasterQ32,joar
+2016-11-29 22:17:20,MasterQ32,"blöd gesagt: register saven, stack pointer verschieben, returnen"
+2016-11-29 22:17:23,MasterQ32,wäre mein ansatz :D
+2016-11-29 22:17:32,MasterQ32,aber x86 ist da einfach kacke :D
+2016-11-29 22:18:00,XanClic,"Wenn man ganz böse ist, kann man wohl longjmp benutzen, hab ich mir sagen lassen"
+2016-11-29 22:18:03,XanClic,"Ach, da ist er ja"
+2016-11-29 22:18:08,XanClic,Wie gerufen
+2016-11-29 22:18:36,MasterQ32,"das is paddy, nicht kevin :D"
+2016-11-29 22:18:41,XanClic,"Aber es geht doch um Coroutinen, die magst du doch so sehr ;-)"
+2016-11-29 22:19:44,Paddy,Lieber als State Machines mit Callbacks jedenfalls ;-)
+2016-11-29 22:19:53,MasterQ32,:D
+2016-11-29 22:20:05,MasterQ32,ich würde mich gerne mal an coroutinen in C versuchen
+2016-11-29 22:20:15,Paddy,"Ah, du willst wirklich das Lowlevelzeug implementieren?"
+2016-11-29 22:20:35,Paddy,"Ich kann aus Erfahrung berichten, das ist wunderbar geeignet, sich Knoten ins Hirn zu denken"
+2016-11-29 22:20:55,MasterQ32,"muss nicht sein, ne library tut auch ihren zweck :D"
+2016-11-29 22:20:56,MasterQ32,https://swtch.com/libtask/
+2016-11-29 22:21:15,Paddy,Aber im Prinzip ist es nicht schwer. Mehr oder weniger halt wie du Multitasking in einem Kernel auch machst.
+2016-11-29 22:21:26,Paddy,"Register irgendwohin sichern, Stack wechseln, Register wiederherstellen"
+2016-11-29 22:24:08,MasterQ32,wobei die libtask wirklich gut aussieht
+2016-11-29 22:24:09,Paddy,"Das hier wäre eine Implementierung, die das ganz genau so umsetzt, mit Assembler: http://repo.or.cz/qemu/kevin.git/blob/1030182022b75bf1a4e23f92f0a6d8da78c492d6:/coroutine-asm.c"
+2016-11-29 22:24:35,Paddy,"In der Praxis will man was plattformunabhängigeres, aber zum Verstehen dürfte sich das eignen"
+2016-11-29 22:24:46,Paddy,libtask kenn ich nicht. NIH und so. *g*
+2016-11-29 22:25:18,MasterQ32,NIH ??
+2016-11-29 22:25:31,Paddy,Not Invented Here.
+2016-11-29 22:25:59,MasterQ32,ah :D
+2016-11-29 22:27:41,Paddy,"Ah, libtask bringt seine eigene main() mit?"
+2016-11-29 22:27:52,Paddy,"Das klingt ja kriminell genug, um es tatsächlich in Betracht zu ziehen ;-)"
+2016-11-29 22:28:05,MasterQ32,wie meinst?
+2016-11-29 22:28:22,XanClic,Bei mir ist sowas ja eigentlich eher Ausschlusskriterium
+2016-11-29 22:28:35,Paddy,"void taskmain(int argc, char *argv[]);"
+2016-11-29 22:28:37,Paddy,	Write this function instead of main.  Libtask provides its own main.
+2016-11-29 22:28:42,MasterQ32,"ja, schon gelesen"
+2016-11-29 22:28:45,Paddy,"Sprich, du hast keine Kontrolle über die Mainloop"
+2016-11-29 22:28:48,MasterQ32,ich lese grade die orginalmain
+2016-11-29 22:29:23,MasterQ32,die würde ich natürlich rauspatchen und das eigene hinsetzen
+2016-11-29 22:29:27,MasterQ32,die kontrolle brauch ich eben
+2016-11-29 22:29:33,Paddy,"Hab mich nämlich schon gewundert, wo das Äquivalent zu qemu_coroutine_enter() ist. Gibt's nicht, die Mainloop wechselt da wohl selbstständig hin, wo sie will."
+2016-11-29 22:29:36,MasterQ32,vorallem will ich meine coroutinen schön sortieren :D
+2016-11-29 22:29:45,Paddy,Das macht irgendwie den ganzen Vorteil von Coroutinen kaputt
+2016-11-29 22:30:08,Paddy,"Der Trick dabei ist doch gerade, dass ich explizit sage, wann ich sie nach einem yield wieder fortsetzen will"
+2016-11-29 22:32:08,MasterQ32,jup
+2016-11-29 22:32:18,Paddy,"Ich glaube, wenn ich irgendwo Coroutinen brauchen würde, würde ich sie aus qemu klauen. Kann natürlich sein, dass das nur ist, weil das die komische Abart ist, die ich schon kenne."
+2016-11-29 22:37:24,MasterQ32,https://github.com/cloudwu/coroutine
+2016-11-29 22:37:28,MasterQ32,das hier sieht ganz in ordnung aus
+2016-11-29 22:37:42,MasterQ32,lua-style coroutinen
+2016-11-29 22:38:59,MasterQ32,da kann ich die coroutinen selbst kontrollieren
+2016-11-29 22:40:30,MasterQ32,"da muss ich zwar selbst ein wenig drumrumwrappern, aber sieht funktionsfähig aus"
+2016-11-29 22:42:09,MasterQ32,"so, ich packs dann mal. man schreibt sich die tage"

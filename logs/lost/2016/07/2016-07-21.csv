@@ -1,0 +1,552 @@
+date/time,nick,message
+2016-07-21 10:03:31,MasterQ32,:P
+2016-07-21 10:03:34,MasterQ32,morgen
+2016-07-21 12:11:37,darklink,hi
+2016-07-21 12:11:46,darklink,hab ein bisschen am netzwerk rumgespielt
+2016-07-21 12:11:51,darklink,gigabit \o/
+2016-07-21 12:25:40,MasterQ32,morgen :)
+2016-07-21 12:25:43,MasterQ32,gigabit is toll
+2016-07-21 12:26:03,MasterQ32,"ich hoffe ich kann nacher noch an DasOS weiter machen, ich bastel grade am keyboard trreiber"
+2016-07-21 12:35:21,darklink,^^ ich will erstmal die neuste linux version für die wii portieren
+2016-07-21 12:35:36,darklink,linux 3.x baut nicht mit gcc 6
+2016-07-21 12:36:13,darklink,und mir fehlen treiber
+2016-07-21 15:01:24,Jonathan,Moin
+2016-07-21 15:09:13,MasterQ32,huhu
+2016-07-21 15:09:33,MasterQ32,"gibt es irgendwo eine sinnvolle liste an tasten, die eine tastatur so haben kann?"
+2016-07-21 15:25:14,Quantenmagier,moin
+2016-07-21 15:27:00,Quantenmagier,"MasterQ32 ich denke das hängt von dem tastertur-standard ab, also usb/ps2/DIN at/xt usw."
+2016-07-21 15:27:34,Jonathan,MasterQ32: Du suchst wohl die Scancode-Tabellen
+2016-07-21 15:27:41,Jonathan,"Es gibt 3 Stück, sind einfach durchnummeriert"
+2016-07-21 15:27:49,Jonathan,Default ist meistens Scancode-Set 2
+2016-07-21 15:27:58,Jonathan,http://www.computer-engineering.org/ps2keyboard/scancodes2.html
+2016-07-21 15:28:31,MasterQ32,"hm, ja"
+2016-07-21 15:28:37,MasterQ32,die linke spalte der tabelle hab ich gesucht
+2016-07-21 15:28:46,Jonathan,:D
+2016-07-21 15:28:55,MasterQ32,einfach ne liste an virtuel keys :P
+2016-07-21 15:29:04,Jonathan,"Schreibst du nen Tastaturtreiber, oder brauchst du nur die Chars?"
+2016-07-21 15:29:14,Quantenmagier,"mein #include <sys/types.h> funktioniert irgendwie nicht, also ich hab unterhalt des -I verzeichnissees ein verzeichnis sys angelegt und die types.h da reingepackt, aber irgednwie findet er sie so nicht..?!?"
+2016-07-21 15:30:01,Quantenmagier,*unterhalb
+2016-07-21 15:30:06,Jonathan,Quantenmagier: Compileroutput und Commandline wären da mal nett
+2016-07-21 15:30:58,Jonathan,"MasterQ32: Falls du nen Tastaturtreiber schreiben willst, ich hab da mal einen Statemachine-Generator geschrieben, der Dekoder für Scancode-Tabellen erzeugen kann :P"
+2016-07-21 15:31:05,Jonathan,"Den kann ich dir geben, wenn du willst"
+2016-07-21 15:31:28,MasterQ32,okay?
+2016-07-21 15:31:34,MasterQ32,"und ja, ich code einen tastaturtreiber"
+2016-07-21 15:31:36,Jonathan,:D
+2016-07-21 15:31:39,Quantenmagier,"Jonathan: ahh thx fehler gefunden, lesen müßte man können xD"
+2016-07-21 15:31:47,Jonathan,Quantenmagier: Okay :P
+2016-07-21 15:31:56,Jonathan,MasterQ32: Ich lad es dir mal hoch :D
+2016-07-21 15:32:58,MasterQ32,hehe danke :)
+2016-07-21 15:33:26,MasterQ32,"wie ist das eigentlich? bei singlethreaded ist alles zwischen cli und sti interrupt-safe, oder?"
+2016-07-21 15:33:33,Jonathan,Ja
+2016-07-21 15:34:03,Jonathan,"Trotzdem würde ich lieber locks benutzen, mit denen du nicht alles global aushebelst, sondern nur lokal"
+2016-07-21 15:35:52,Quantenmagier,"ich glaub ein befehl nach sti ist auch noch sicher wenn ich das richtig in erinnerung habe, weil man da noch irgendwas laden können soll"
+2016-07-21 15:38:08,MasterQ32,"hm, wie implementiere ich denn locks?"
+2016-07-21 15:38:19,MasterQ32,"außer eben irgendwie ""volatile bool"" ? :FD"
+2016-07-21 15:40:55,Jonathan,MasterQ32: Compare Exchange
+2016-07-21 15:41:16,Jonathan,"""LOCK CMPXCHG"" oder sowas"
+2016-07-21 15:41:23,Jonathan,"Keine Ahnung, kenne x86 nicht so sehr *g*"
+2016-07-21 15:42:16,Jonathan,"Eine einfache Implementation würde einfach in einer Schleife yield() aufrufen, bis die CompareExchange-Operation erfolgreich ist"
+2016-07-21 15:43:00,Jonathan,"Du vergleichst den Inhalt des Locks mit 0 und lädst 1, und zwar atomar, dafür hat der x86 Befehle... Wenn die Operation erfolgreich war, besitzt du das Lock"
+2016-07-21 15:43:16,Jonathan,"Ansonsten besitzt du es nicht, machst yield() und versuchst es mit der nächsten Zeitscheibe nochmal"
+2016-07-21 15:43:25,Jonathan,"https://www.dropbox.com/sh/rfg7oi3ytbvx22c/AADfetL8wJrV2o2nxuHgpEv8a?dl=0 <--- Hier ist mein Keyboard-Treiber, MasterQ32"
+2016-07-21 15:43:46,Jonathan,Ist natürlich für mein eigenes OS geschrieben und für nen 8-Bit-Prozessor (Z80)
+2016-07-21 15:44:05,Jonathan,Die State Machine sollte aber Architekturunabhängig funktionieren
+2016-07-21 15:44:11,Jonathan,Solange ich da nicht irgendwelchen Mist gemacht habe
+2016-07-21 15:45:18,Jonathan,"MasterQ32: create_keymap.lua ist der Dekoder-Generator, keymap.lua enthält die Keymap, _translatetable.h ist der Output vom Generator, und drvmain.c der Treiber"
+2016-07-21 15:48:49,Jonathan,Statemachine ist in kbd_getChar implementiert :)
+2016-07-21 15:51:13,Jonathan,"Und ja, der Code ist teilweise hässlich... *g*"
+2016-07-21 15:55:37,Quantenmagier,joa locks entweder mit lock bts oder mit xchg
+2016-07-21 15:57:09,Quantenmagier,"ich hab meinen tasterturtreiber auch die tage überarbeitet, man kann jetzt endlich groß und kleinschreibung, aber man kann immer nur ein groß geschriebenes zeichen tippen, danach muß man die shift taste loslassen und nochmal drücken, wenn man nochmal ein großes zeichen schrieben will :D"
+2016-07-21 15:57:59,Quantenmagier,ich weiß bloß noch nicht ob das ein feature oder ein bug ist :D
+2016-07-21 15:58:15,Quantenmagier,weil eigentlich will man ja meist eh nur ein zeichen groß haben und den rest klein
+2016-07-21 15:59:08,Jonathan,... *g*
+2016-07-21 16:02:52,Quantenmagier,"huck was hab ich denn da gemacht ""read(0,&c,1)"""
+2016-07-21 16:04:14,Quantenmagier,ich glaub das muß stdio heißen und nicht 0 :D
+2016-07-21 16:04:23,Quantenmagier,*stdin
+2016-07-21 16:07:12,Quantenmagier,hm ich frag mich grad warum ich da read verwendet hab statt fread
+2016-07-21 16:09:04,Quantenmagier,"aso ich glaub weil ich keinen buffer wollte, ist nen spiel und da kommt es auf geschwindigkeit an :D"
+2016-07-21 16:11:59,Svenska,Jonathan: unions und bitfelder mischen sich wirklich nicht besonders gut fuer register
+2016-07-21 16:18:42,Svenska,"und nosys.spec funktioniert fuer newlib genauso gut wie nano.spec, wenn man keinen mist programmiert (z.B. bei switch/case die breaks vergessen). *g*"
+2016-07-21 16:25:28,Quantenmagier,"so dann muß ich noch die pthread_mutex-funktionen reparieren und pthread_create(), nanosleep() und nen dummy für time() implementieren und dann kann ich mein spiel für mein os compilieren. ^^"
+2016-07-21 16:25:45,Svenska,dein OS hat schon threads?
+2016-07-21 16:26:17,Quantenmagier,"jein, also ich erzeug einfach nen weiteren task mit den selben segmenten."
+2016-07-21 16:26:41,Svenska,"also ""hier ist deine dummy-api"" ;-)"
+2016-07-21 16:27:51,Quantenmagier,naja letztendlich ist ja kaum nen unerschied zwischen task und thread solange man die sleben speicherbereiche verwendet sollte das dem spiel nicht auffallen.
+2016-07-21 16:31:12,Quantenmagier,"letztendlich ist ein thread ja nur ein task mit den selben speicherbereichen oder nicht? ok man könnte bei einem thread noch das taskswitching optimieren, aber ansonsten fällt mir grad kein großer unterschied ein?"
+2016-07-21 16:31:35,Quantenmagier,aso und threads laufen immer auf dem selben kern oder?
+2016-07-21 16:31:40,Svenska,nein
+2016-07-21 16:32:06,Svenska,"threads duerfen auch auf mehreren kernen laufen, sonst wäre multithreading nämlich komplett fuern popo ;-)"
+2016-07-21 16:32:19,Quantenmagier,ah ok stimmt sry hatte ich verwechselt ^^
+2016-07-21 16:32:28,Svenska,jeder thread hat seinen eigenen stack
+2016-07-21 16:32:38,Svenska,und eventuell eigenen speicher (thread-local storage)
+2016-07-21 16:33:40,Quantenmagier,aso
+2016-07-21 16:33:56,Svenska,außerdem auch ne eigene thread-id und ein paar andere dinge duerften auch getrennt sein
+2016-07-21 16:34:31,Quantenmagier,"hm ok aber das hab ich ja beim task auch alles, nen task is ja sogar noch mehr getrennt. ^^"
+2016-07-21 16:34:58,Svenska,"ja, aber der rest ist nicht getrennt ^^"
+2016-07-21 16:34:59,Quantenmagier,ich dachte ich mach einfach zwei tasks mit dem selben daten und codesegment
+2016-07-21 16:36:57,Svenska,"In the obsolete LinuxThreads implementation, each of the threads in a process has a different process ID. This is in violation of the POSIX threads specification, and is the source of many other nonconformances to the standard."
+2016-07-21 16:37:29,Svenska,"also ""ja, das kannste schon so machen, ist dann halt nur doof"" ;)"
+2016-07-21 16:37:37,Quantenmagier,aso
+2016-07-21 16:37:58,Quantenmagier,joa stimmt die beiden 'threads' hätten bei mir ne unterschiedliche taskid ^^
+2016-07-21 16:38:10,Svenska,"aha, pthreads(7) gibt das sogar an"
+2016-07-21 16:38:34,Svenska,"getrennt sind thread id, signal mask, errno variable, ""alternate signal stack"" und real-time scheduling gedöns"
+2016-07-21 16:39:35,Svenska,und natuerlich der normale stack
+2016-07-21 16:41:57,Quantenmagier,"hm als thread id hab ich einfach die task id gesetzt, für mein spiel geht das problemlos, aber kann natürlich sein, daß andere programme nach standardbibliothek probleme machen wenn die threads ne unterschiedliche pid haben, das müßte ich dann irgendwann noch verbessern."
+2016-07-21 16:46:23,Quantenmagier,hm sonst müßte ich ne extra liste für threads in jedem task machen der threads benutzt; das würde das taskswitching irgendwie unnötig umständlich machen?
+2016-07-21 16:49:05,Quantenmagier,"ah mir is grad ne bessere idee gekommen, ich könnte einfach der c bibliothek vortäuschen daß alle die selbe pid haben, die thread_id ist dann bei jedem thread die reale task_id und die pid ist die task_id des zuerst gestarteten tasks. ^^"
+2016-07-21 16:50:32,Svenska,alternativ machst du threads zum buerger erster klasse und lässt einfach tasks auf die threads zeigen
+2016-07-21 16:51:11,Quantenmagier,du meinst ich lasse threads auf die tasks zeigen?
+2016-07-21 16:51:18,Svenska,"ja, das meinte ich"
+2016-07-21 16:51:20,Svenska,:-)
+2016-07-21 16:51:37,Quantenmagier,"joa hatte ich auch schon überlegt, stimmt könnte ich auch machen."
+2016-07-21 16:52:38,Quantenmagier,naja mal schuan ich machjetzt erstmal die ganz einfache variante ohne auf ids zu achten und bring so mein spiel zum laufen und um die ids kann ich mich dann hinterher noch kümmern :D
+2016-07-21 16:52:56,Svenska,linux hat das lange genug auch falsch gemacht
+2016-07-21 16:53:18,Quantenmagier,hehe :D
+2016-07-21 16:53:21,Svenska,"...aber linux ist auch groß genug, dass es sich nicht groß um POSIX kuemmern muss, weil die anwendungen dort entwickelt werden"
+2016-07-21 16:54:21,Quantenmagier,"hm joa stimmt, aber viele standardprogramme benutzen eh keine threads und wenn ist ihnen die pid vermutlich egal, denke nicht daß besonders viele programme davon betroffen sind. ^^"
+2016-07-21 16:54:35,Svenska,eben
+2016-07-21 16:58:17,Quantenmagier,"aber witzig, ursprünglich hatte ich geplant threads mit meinem Pong Programm zu implementieren, damit man gegen KI spielen kann und jetzt benutz ich die threads für ein viel komplexeres c program zuerst, weil ich für mein pong erst subebenen im grafiktreiber implementieren wollte obwohl das garnich nötig wäre.. :D"
+2016-07-21 16:59:18,Quantenmagier,"subebenen sollen weitere überlappende 'fenster' sein, bisher unterstützt nämlich jeder task nur maximal ein grafikfenster."
+2016-07-21 17:00:54,Quantenmagier,"hm ich mag threads eigentlich, aber ich finde sie sollten weniger von tasks differenziert sein, das macht sie unnötig umständlich :D"
+2016-07-21 17:01:14,Svenska,?
+2016-07-21 17:01:32,Svenska,du kannst parallele programmierung auch wunderbar mit fork() machen
+2016-07-21 17:01:54,Svenska,das ist unter unix (im gegensatz zu windows) ebenfalls sehr schnell und skaliert gut
+2016-07-21 17:02:34,Quantenmagier,"öhm fork ist aber häßlich von der syntax, weil man danach ne unterscheidung einbauen muß und so und bei pthreads kann man direkt ne funktion angeben."
+2016-07-21 17:02:40,Svenska,?
+2016-07-21 17:02:53,Svenska,"ja, wo ist das problem? ;)"
+2016-07-21 17:03:12,Quantenmagier,unnötige if-verzweigungen
+2016-07-21 17:03:25,Svenska,"stimmt, sonst hast du die in pthread_create() ;-)"
+2016-07-21 17:03:41,Svenska,du kannst die wunderbar in einer fork_child() funktion verstecken
+2016-07-21 17:03:50,Quantenmagier,o.O
+2016-07-21 17:04:07,Svenska,"ich finds bisschen hässlich, dass man in den kindern alle pipes schließen muss, wenn diese sie nicht benutzen wollen"
+2016-07-21 17:04:34,Quantenmagier,"nee in pthread ab ich nur pthread_create(&spielerthread_t,NULL,spieler,NULL); pthread_create(&kithread_t,NULL,spieler,NULL); pthread_create(&ballthread_t,NULL,spieler,NULL); und fertig ist das pong programm :D"
+2016-07-21 17:04:40,Svenska,"aber eine handvoll ifs finde ich jetzt nicht wirklich ein problem, außerdem erzeugst du ja keine hunderttausend threads"
+2016-07-21 17:05:19,Quantenmagier,öhm das spieler muß noch geändert werden
+2016-07-21 17:05:22,Svenska,"jo, und dein if sitzt innerhalb von pthread_create(), denn intern wird da auch nur ein fork oder clone gemacht (vielleicht nicht bei deinem OS, aber das schummelt ja auch)"
+2016-07-21 17:05:25,Quantenmagier,"spieler, ki, ball"
+2016-07-21 17:06:02,Quantenmagier,nee ich übergebe direkt die funktion und damit den Instruktion Pointer wo der thread startet
+2016-07-21 17:07:41,Quantenmagier,huch mein xfce4 desktop ist grad abgeschmiert hab kein hintergrundbild oder desktop icons mehr o.O
+2016-07-21 17:07:57,Svenska,dein OS schummelt ja auch
+2016-07-21 17:08:08,Svenska,aber unter linux wird FORK mit CLONE implementiert
+2016-07-21 17:08:27,Svenska,"und das hat ähnliche semantik, also wird die unterscheidung, ob du nun vater oder kind bist, in der libc getroffen"
+2016-07-21 17:10:28,Quantenmagier,"aso, joa aber man muß wie gesagt extra zu den funktionen springen und kann die nicht übergeben bei fork, deswegen macht fork nur sinn, wenn man die selbe funktion zig mal aufrufen will, wenn man unterschiedliche braucht macht pthreads mehr sinn"
+2016-07-21 17:11:10,Svenska,"wie gesagt, ob du das ""ueberfluessige"" if nun in pthread_create() hast, oder direkt nach dem fork(), ist irrelevant"
+2016-07-21 17:11:57,Svenska,außerdem ist die kombination fork/exec mit threads nicht machbar *g*
+2016-07-21 17:11:58,Quantenmagier,"in dem pthread create hat man aber kein if, sondern einen pointer :P"
+2016-07-21 17:12:05,Svenska,m(
+2016-07-21 17:12:18,Svenska,was tut denn pthread_create() in einem richtigen prozess?
+2016-07-21 17:12:36,Svenska,unter zB linux?
+2016-07-21 17:12:39,Quantenmagier,es erstellt einen thread der eine funktion auf die man pointed ausführt
+2016-07-21 17:12:42,Svenska,"richtig, es ruft CLONE auf ;-)"
+2016-07-21 17:12:59,Quantenmagier,aso und clone übergibt keinen pointer?
+2016-07-21 17:13:14,Quantenmagier,damn is linux buggy XD
+2016-07-21 17:13:20,Svenska,"doch, das teil kriegt nen pointer"
+2016-07-21 17:13:40,Quantenmagier,"hm ok wenn es nen pointer kiregt is doch alles prima, if gesparrt"
+2016-07-21 17:14:05,Svenska,also vier ifs in deinem programm
+2016-07-21 17:15:02,Quantenmagier,o.O
+2016-07-21 17:15:16,Svenska,du rufst viermal pthread_create() auf ;)
+2016-07-21 17:15:35,Quantenmagier,"nee ich ruf es dreimal auf, obwohl du recht hast zweimal würde reichen"
+2016-07-21 17:16:01,Quantenmagier,hauptsache ich hab am ende 3 threads
+2016-07-21 17:16:02,Svenska,stackoverflow hat die details
+2016-07-21 17:16:14,Svenska,clone kriegt einen funktionspointer
+2016-07-21 17:16:22,Svenska,der wird auf den stack geschoben
+2016-07-21 17:16:30,Svenska,dann wird der syscall CLONE aufgerufen
+2016-07-21 17:16:50,Svenska,"wenn ""ich"" das kind bin, wird der pointer vom stack geholt und angesprungen"
+2016-07-21 17:16:52,Svenska,ansonsten mache ich weiter
+2016-07-21 17:16:58,Svenska,-> da ist das if()
+2016-07-21 17:17:04,Quantenmagier,aso wie krank
+2016-07-21 17:17:29,Svenska,"wenn das passende flag gesetzt wurde, wird in beiden fällen weitergeschoben"
+2016-07-21 17:17:42,Svenska,"The actual clone() syscall does not take a function argument, it just continues from the return point, just like fork(). So both the clone() and fork() library functions are wrappers around the clone() syscall."
+2016-07-21 17:18:29,Svenska,und es gibt keinen syscall FORK
+2016-07-21 18:00:14,Quantenmagier,aso
+2016-07-21 18:00:40,Quantenmagier,"naja mein os kann eben pointer übergeben, ist dann wohl besser als posix/linux :D"
+2016-07-21 18:01:31,Svenska,"oder deutlich schlechter, weil es fuer linux einen grund gibt ;)"
+2016-07-21 18:01:45,Svenska,"posix spezifiziert keine syscalls, sondern nur verhalten"
+2016-07-21 18:01:54,Quantenmagier,aso
+2016-07-21 18:05:44,Quantenmagier,"so ein richtiger grund erschließt sich mir aber nicht, ok wenn man die felbe funktion zig mal ausführen will, dann sparrt man sich das übergeben des pointers, aber man hätt ja auch zwei funktionen machen können, eine mit und eine ohne pointer"
+2016-07-21 18:06:08,Svenska,bitte unterscheide zwischen syscall und library-call
+2016-07-21 18:06:21,Svenska,"der linux-syscall CLONE nimmt keinen pointer, aus welchen gruenden auch immer"
+2016-07-21 18:06:25,Quantenmagier,joa ich meine jetzt ja syscalls
+2016-07-21 18:06:52,Svenska,und er taugt fuer sowohl fork() als auch clone()
+2016-07-21 18:07:18,Svenska,davon abgesehen will ich bei fork() nicht immer eine funktion als prozess ausfuehren
+2016-07-21 18:25:14,Quantenmagier,"lol mir ist grad aufgefallen mein in c geschriebenes schachprogramm hat für mein os compiliert 28kB genau wie mein in assembler geschriebener Kernel, da sieht man mal wie ineffizient gcc elfs erstellt trotz -Os :D"
+2016-07-21 18:30:22,Quantenmagier,hm was is das für ne datei?
+2016-07-21 18:30:23,Quantenmagier,"core: ELF 64-bit LSB core file x86-64, version 1 (SYSV), SVR4-style, from 'gdb qas'"
+2016-07-21 18:30:39,Quantenmagier,qas is ne alte version meines kernels
+2016-07-21 18:30:49,Quantenmagier,aber ne gdb elf dafür?
+2016-07-21 18:31:00,Svenska,"eine vernuenftige größe kriegst du mit ""size"" raus"
+2016-07-21 18:31:07,Svenska,die größe der ELF-datei sagt nämlich nix aus
+2016-07-21 18:31:32,Svenska,"und ""from 'gdb qas'"" heißt bestimmt, dass du die damit erzeugt hast *g*"
+2016-07-21 18:32:00,Quantenmagier,naja auch mit size isses noch groß..
+2016-07-21 18:32:07,Quantenmagier,   text	   data	    bss	    dec	    hex	filename
+2016-07-21 18:32:07,Quantenmagier,  24348	    533	   1696	  26577	   67d1	libc/stdlibdir/schach12.x
+2016-07-21 18:32:33,Svenska,"oha, ziemlich viel code ^^"
+2016-07-21 18:32:47,Quantenmagier,joa is halt nen schachprogramm :D
+2016-07-21 18:32:50,Svenska,ineffizient wuerde ich das jetzt aber trotzdem nicht nennen
+2016-07-21 18:33:48,Quantenmagier,1652  3609 50345 schach3ct_noscanf.c
+2016-07-21 18:33:50,Quantenmagier,wc
+2016-07-21 18:34:29,Svenska,"hmm, das, was ich die letzten tage produziert habe, ergibt auf die gleiche menge code ungefähr null bytes ^^"
+2016-07-21 18:34:46,Quantenmagier,hm wie das?
+2016-07-21 18:34:52,Svenska,...nur header files.
+2016-07-21 18:34:55,Quantenmagier,haha :D
+2016-07-21 18:35:10,Svenska,datenblatt abpausen und so
+2016-07-21 18:35:19,Quantenmagier,"joa ich hab eben auch meine header etwas optimiert, aber nicht so viel wie du schienbar :D"
+2016-07-21 18:35:56,Svenska,"naja, ich hatte ueberlegt, wie man registerbeschreibungen gebrauchbar aus dem datenblatt in einen header tut"
+2016-07-21 18:35:59,Svenska,und es stinkt
+2016-07-21 18:36:20,Svenska,"am elegantesten wäre eine struct auf den peripherieblock, die dann aus unions besteht"
+2016-07-21 18:36:35,Svenska,wobei jede union ein uint32_t ist und eine bitfeld-struct
+2016-07-21 18:36:43,Quantenmagier,822  1538 12803 tetris4p.asm
+2016-07-21 18:37:05,Svenska,nachteil: fuer bitfelder ist nichtmal die reihenfolge der bits definiert
+2016-07-21 18:37:06,Quantenmagier,2056 19. Jul 23:07 tetris4p.x
+2016-07-21 18:37:16,Quantenmagier,"4,0K	tetris4p.x"
+2016-07-21 18:37:18,Svenska,"geschweige denn die reihenfolge der bits, wenn sie ueber bytegrenzen hinausgehen"
+2016-07-21 18:37:23,Quantenmagier,hm komishc ll sagt 2k und du sagt 4k
+2016-07-21 18:37:54,Svenska,außerdem ist jeder zugriff auf ein bitfeld zwingend ein RMW-zugriff
+2016-07-21 18:38:52,Quantenmagier,ahh du -b sagt auch 2kB
+2016-07-21 18:38:53,Quantenmagier,2056	tetris4p.x
+2016-07-21 18:40:59,Quantenmagier,"also man kann sagen die codedichte von meinem C schachprogramm ist wesentlich höher als von Asm tetris, weil mein tetris erzeugt nur die 1,3 fache menge an code aus dem quelltext und schach erzeugt die siebenfache"
+2016-07-21 18:42:47,Quantenmagier,hm bitfelder haben doch ne reihenfolge?
+2016-07-21 18:46:02,Quantenmagier,wieviel kB hat eigentlich der tyndur kernel?
+2016-07-21 18:51:21,Quantenmagier,mein kernel hatte mal über 64kB aber nachdem ich die schriftzeichen anders kodiert hatte hat er jetzt eben nurnoch 28kB. ^^
+2016-07-21 18:52:45,Quantenmagier,"ich muß grad an meine erste version denken die noch in 510 bytes passen mußte, damit man nur einen sektor laden muß :D"
+2016-07-21 18:53:18,Quantenmagier,aber die hatte auch keine schriftzeichen oder nur textmodus und keine grafik ^^ 
+2016-07-21 18:56:22,Jonathan,*g*
+2016-07-21 18:56:35,Jonathan,Mein Drahthaufenkernel musste vollständig in 15kB passen
+2016-07-21 18:56:42,Jonathan,"15kB RAM, that is"
+2016-07-21 18:57:03,Jonathan,"(Treiber durften jeweils genau so viel benutzen, Programme bis zu 48k jeweils)"
+2016-07-21 18:57:08,Svenska,"das ist aber einfacher, weil du keine 64-bit-architektur hattest *g*"
+2016-07-21 18:57:16,Jonathan,Stimmt auch *g*
+2016-07-21 18:57:55,Quantenmagier,wobei mein os auch eher 32bit nutzt ^^
+2016-07-21 18:57:57,Jonathan,"Hmmm, just for fun, wie groß war eigentlich das finale Kernel-Image? :D"
+2016-07-21 18:58:07,Jonathan,13.603 Bytes
+2016-07-21 18:58:08,Jonathan,*g*
+2016-07-21 18:58:57,Quantenmagier,"wieso drahthaufen, was war das fürn prozessor?"
+2016-07-21 18:59:08,Jonathan,Z80 auf Lochraster
+2016-07-21 18:59:30,Jonathan,Eigenen Chipsatz drum rum gestrickt und ne MMU für Adressraumerweiterung auf 4MB
+2016-07-21 18:59:32,Quantenmagier,ah ok
+2016-07-21 18:59:32,Jonathan,(Via Banking)
+2016-07-21 18:59:54,Jonathan,War modular mit ner Backplate und konnte automatisch Steckkarten erkennen
+2016-07-21 19:00:07,Jonathan,"(Seriell, Storage, PS/2, VGA hatte ich am Ende)"
+2016-07-21 19:00:20,Jonathan,Alles aus Einzelchips auf Lochraster gelötet :P
+2016-07-21 19:00:27,Quantenmagier,aber du hattest dann auch keine grafik?
+2016-07-21 19:00:40,Jonathan,80x60 Textmodus mit Hardwarescrolling
+2016-07-21 19:01:20,Quantenmagier,"also wenn ich grafik, maus, paging, smp und debugroutinen deaktiviere hat mein kernel noch 11383 Bytes, hätt also auf dienen drahthaufen draufgepasst, wenn mein os nicht pentium brauchen würde. :D"
+2016-07-21 19:01:31,Jonathan,Man konnte sich gleichzeitig auf dem System einmal über VGA+Tastatur und einmal über die serielle Konsole vergnügen
+2016-07-21 19:01:39,Jonathan,Und gleichzeitig Programme über beide Terminals laufen lassen
+2016-07-21 19:01:41,Jonathan,War voll cool :P
+2016-07-21 19:01:59,Quantenmagier,aso krass
+2016-07-21 19:02:03,Jonathan,:D
+2016-07-21 19:02:13,Jonathan,Der Großteil des Kernels hat zwei Sachen gemacht:
+2016-07-21 19:02:19,Quantenmagier,"wie hat der das denn gemacht, also zwei tasks oder was?"
+2016-07-21 19:02:30,Jonathan,Das konnte ganz normal Multitasking
+2016-07-21 19:02:34,Quantenmagier,aso
+2016-07-21 19:02:43,Jonathan,"Präemptiv via Timer, wie man das gewohnt ist :P"
+2016-07-21 19:03:03,Quantenmagier,ok
+2016-07-21 19:03:06,Jonathan,Hat dann in der Timer-ISR Memory-Banks umher geschubst (meine Billigversion von Paging)
+2016-07-21 19:03:50,Svenska,"mit dem Z80 kann man prinzipiell kein transparentes paging aufbauen, weil er keine instructions restarten kann"
+2016-07-21 19:04:02,Jonathan,"Der Großteil des OS hat sich mit zwei Sachen rumgeschlagen, die eine war das doofe Banking (schon mal den Stack eines laufenden Programmes umhergeschubst?), die andere das VFS"
+2016-07-21 19:04:04,Jonathan,Ja :P
+2016-07-21 19:04:16,Quantenmagier,und was für schnittstellen hatte das system?
+2016-07-21 19:04:28,Quantenmagier,"also vga, seriell und?"
+2016-07-21 19:04:28,Jonathan,"Seriell, PS/2, VGA"
+2016-07-21 19:04:33,Quantenmagier,aso die drei ok
+2016-07-21 19:04:42,Jonathan,Hab nen i8042 in dem System verwurstet
+2016-07-21 19:04:45,Svenska,und einen bus fuer weitere hardware
+2016-07-21 19:04:47,Jonathan,Ja :P
+2016-07-21 19:05:05,Svenska,"so ein semi-isa, semi-pci, komisches teil *g*"
+2016-07-21 19:05:10,Jonathan,*g*
+2016-07-21 19:05:18,Jonathan,Funktioniert aber :P
+2016-07-21 19:05:21,Svenska,"hmm, kacke"
+2016-07-21 19:05:24,Jonathan,Hmm?
+2016-07-21 19:05:44,Svenska,ich kann auf gewisse register nicht mit den normalen MOV oder LDR/STR instructions zugreifen
+2016-07-21 19:05:53,Jonathan,"Öh, okay? :D"
+2016-07-21 19:05:57,Svenska,epiphany
+2016-07-21 19:05:57,Jonathan,Das klingt... kaputt?
+2016-07-21 19:05:58,Svenska,grml
+2016-07-21 19:06:00,Jonathan,Achso
+2016-07-21 19:06:03,Jonathan,Ja gut *g*
+2016-07-21 19:06:06,Svenska,"ja, epiphany == kaputt"
+2016-07-21 19:06:07,Jonathan,Epiphany erklärt alles :D
+2016-07-21 19:06:11,Svenska,das macht gerade das headerfile schreiben schwierig
+2016-07-21 19:06:18,Svenska,...weil die entsprechenden register adressierbar sind
+2016-07-21 19:06:32,Jonathan,Aber nicht normal schreibbar?
+2016-07-21 19:06:36,Jonathan,"Hm, ASM-Makro?"
+2016-07-21 19:07:06,Svenska,"hab grad schnell das headerfile runtergeknueppelt, weil ist ja nicht schwer"
+2016-07-21 19:07:11,Svenska,gibt ja nur ~40 register
+2016-07-21 19:07:40,Svenska,aber
+2016-07-21 19:07:41,Quantenmagier,epiphany kenn ich nur als browser
+2016-07-21 19:07:51,Svenska,Quantenmagier: google mal adapteva epiphany ;)
+2016-07-21 19:08:06,Svenska,die core-register liegen ab 0xF0400 im adressraum
+2016-07-21 19:08:18,Quantenmagier,ahh ne cpu ok
+2016-07-21 19:08:28,Svenska,"aber man kann darauf nur zugreifen, wenn man die oberen 12 bits mit der COREID zusammenbaut"
+2016-07-21 19:08:39,Svenska,"weil dann ist es kein lokaler, sondern ein globaler registerzugriff"
+2016-07-21 19:08:43,Svenska,UND
+2016-07-21 19:08:57,Quantenmagier,wow 64 kerne?
+2016-07-21 19:09:12,Svenska,"auf die CONFIG, STATUS und COREID register _muss_ man mit MOVFS/MOVTS (from/to special) zugreifen"
+2016-07-21 19:09:20,Svenska,_mit_ der globalen adresse
+2016-07-21 19:09:22,Jonathan,"Quantenmagier: 16 bis ""viele"" weitgehend unabhängige CPUs, ein FPGA und eine ARM-Bootstrap-CPU in einer sehr seltsamen Architektur ;)"
+2016-07-21 19:09:43,Quantenmagier,ah ok
+2016-07-21 19:09:44,Svenska,"die epiphany selbst hat erstmal nur 16 CPUs (unsere, gibt auch mit 64)"
+2016-07-21 19:10:02,Svenska,"das parallella-system knoten einen dual-core ARM, ein GB RAM und einen FPGA dazu, damit man das teil auch benutzen kann *g*"
+2016-07-21 19:10:09,Svenska,seufz
+2016-07-21 19:10:25,Jonathan,Hmm :D
+2016-07-21 19:10:37,Jonathan,Ich hole mir gerade Apache MINA
+2016-07-21 19:10:40,Svenska,die register sind uebrigens auch aliased
+2016-07-21 19:11:15,Svenska,"also die kann man auch per adresse ansprechen, und PC liegt auf 0x???F0408, mit ???=COREID"
+2016-07-21 19:11:31,Svenska,*fluch*
+2016-07-21 19:11:46,Jonathan,lol *g*
+2016-07-21 19:11:55,Quantenmagier,"hm 150$ eigentlich kein schlechter preis für 16 seltsame kerne, 2 arm kerne und ein fpga"
+2016-07-21 19:12:06,Svenska,was ist apache mina?
+2016-07-21 19:12:17,Jonathan,Svenska: Ein Serverframework :)
+2016-07-21 19:12:24,Svenska,oha
+2016-07-21 19:12:39,Svenska,"ich hab unser board erstmal draußen in die sonne gelegt, damit der luefter nicht mein buero laut macht ^^"
+2016-07-21 19:12:47,Svenska,wird schon nicht ueberhitzen·
+2016-07-21 19:12:48,Jonathan,Jetzt ist es überhitzt? :D
+2016-07-21 19:12:51,Jonathan,... *g*
+2016-07-21 19:13:00,Svenska,"nönö, hat ja einen schnell drehenden, lauten luefter *g*"
+2016-07-21 19:13:22,Jonathan,Bestimmt kackt gleich ein Vogel drauf *g*
+2016-07-21 19:13:32,Svenska,hoffentlich nicht
+2016-07-21 19:13:32,Jonathan,(Und macht es somit richtig?)
+2016-07-21 19:13:38,Quantenmagier,spann nen sonnenschirm drüber auf und stell nen cocktail daneben
+2016-07-21 19:13:39,Svenska,möwenschiss ist furchtbar
+2016-07-21 19:13:59,Jonathan,"Stimmt, ihr seid da ja ein wenig nördlicher und küstlicher ;)"
+2016-07-21 19:14:12,Jonathan,"Bei uns sind es hauptsächlich nur Tauben, die alles vollscheißen"
+2016-07-21 19:14:29,Svenska,"nee, wir sind am meer ^^"
+2016-07-21 19:14:42,Jonathan,Jo :D
+2016-07-21 19:14:45,Quantenmagier,auf welchem level seid ihr bei PMG?
+2016-07-21 19:14:52,Svenska,spielschned
+2016-07-21 19:14:57,Jonathan,Ich auch nicht :P
+2016-07-21 19:15:37,Quantenmagier,"aso, ich hab mir extra mein handy auf cyanogenmod 13 geflashed und xposed geflasht damit ich fake gps vortäuschen und von zu hause aus spielen kann :D"
+2016-07-21 19:15:52,Svenska,"pmg kostet geld, oder?"
+2016-07-21 19:15:58,Quantenmagier,nö is gratis
+2016-07-21 19:16:10,Svenska,hm.
+2016-07-21 19:16:17,Svenska,"egal, mein handy-akku taugt eh nix ^^"
+2016-07-21 19:16:26,Jonathan,Powerbank? :D
+2016-07-21 19:16:38,Svenska,pfft ich sitz im buero und fluche?
+2016-07-21 19:16:50,Quantenmagier,"ich überleg bloß ob ich mal auf die neue verison updaten soll, hab angst daß dann mein fake gps nicht mehr geht, aber denke die haben eher nur bugs gefixed.. ^^"
+2016-07-21 19:17:06,Svenska,wie wäre es mit einem android-emulator? ^^
+2016-07-21 19:17:23,Quantenmagier,"joa hab ich auch shcon überlegt, hab ja eh android studio auf meinem rechner"
+2016-07-21 19:17:48,Quantenmagier,und auf handy spielen is eh immer nervig :D
+2016-07-21 19:18:41,Quantenmagier,"aber ich hab auch mal überlegt ob ich mehr für android entwickeln sollte, die cyanogenmod hat mir irgendwie lust darauf gemacht nen krassen kernel zu flashen xD"
+2016-07-21 19:19:05,Quantenmagier,ich wollte ja eh mal ne ARM-Version von SurO machen
+2016-07-21 19:19:05,Svenska,"ich hab mal angefangen, ein live hintergrundbild zu basteln"
+2016-07-21 19:19:23,Svenska,"quasi ""nimm die uhrzeit, lade hhmm.jpg, mach als hintergrundbild"""
+2016-07-21 19:19:32,Quantenmagier,aso
+2016-07-21 19:19:36,Svenska,fazit: android-programmierung ist pfui und meine java-kuenste sind begrenzt
+2016-07-21 19:19:44,Quantenmagier,joa wo ich momentan dran bin ist ne modem app zu schreiben
+2016-07-21 19:20:31,Quantenmagier,"also er soll meinen computer auf festnetz anrufen, der nimmt per voip ab und dann will ich ne datenverbindung über die telefonleitung jagen"
+2016-07-21 19:21:11,Svenska,"(a) zweifelhaft, modemverbindungen ueber voip laufen nicht gut"
+2016-07-21 19:21:14,Quantenmagier,hat vermutlich maximal 20kB aber für meinen terminkalender oder so sollte es reichen :D
+2016-07-21 19:21:25,Svenska,(b) du willst den audiostream in software dekodieren?
+2016-07-21 19:21:34,Quantenmagier,jop
+2016-07-21 19:21:42,Svenska,"hmm, hab ich auch mal ueberlegt, aber auf nem AVR"
+2016-07-21 19:21:48,Svenska,habs dann aber nie gemacht.
+2016-07-21 19:22:18,Quantenmagier,hm joa auf avr hab ich auch was ähnliches probiert aber der adc war nicht schnell genug
+2016-07-21 19:22:27,Svenska,die 300/1200 bps modi (V.21 und V.22) sind relativ einfach machbar
+2016-07-21 19:23:08,Svenska,"bzw. Bell103/Bell202 aka V.21/V.23, sry"
+2016-07-21 19:23:17,Quantenmagier,ah ok
+2016-07-21 19:23:41,Svenska,"alles, was darueber hinaus geht, wird schwierig"
+2016-07-21 19:24:30,Quantenmagier,"joa ich hab überlegt nen eingenen standard zu machen der auf gsm und voip optimiert ist, weiß nicht ob uraltmodemstandards dafür taugen"
+2016-07-21 19:24:33,Svenska,Bell103 wird im amateurfunk noch immer auf kurzwelle gefahren (300 bps bidirektional)
+2016-07-21 19:25:02,Svenska,Bell202 ist die variante fuer packet radio in höheren bändern (1200 / 75 bps asymmetrisch)
+2016-07-21 19:25:27,Svenska,"beides funktioniert ueber voip, wenn der jitter hinreichend klein ist"
+2016-07-21 19:25:33,Quantenmagier,ah ok
+2016-07-21 19:25:48,Quantenmagier,und auch über gsm?
+2016-07-21 19:25:50,Jonathan,"300 BPS über VoIP, geil 8D"
+2016-07-21 19:25:50,Svenska,"und um mit normalen modems zu reden, MUSST du Bell103 unterstuetzen"
+2016-07-21 19:25:59,Svenska,weil die autoerkennung darueber läuft
+2016-07-21 19:26:17,Svenska,"gsm ist noch eine andere hausnummer, weil das kein audio ist"
+2016-07-21 19:26:41,Jonathan,"Wäre es da nicht eventuell sogar geschickter, direkt VoIP-Pakete zu missbrauchen und den Audioinhalt durch was anderes zu ersetzen?"
+2016-07-21 19:26:45,Jonathan,Bzw. GSM
+2016-07-21 19:26:45,Svenska,"wenn du eine GSM Datenverbindung aufbaust, hast du 9k6 garantiert, weil GSM leitungsvermittelnd ist"
+2016-07-21 19:27:20,Quantenmagier,"joa ich will ja grad keine datenverbindung aufbauen, weil ich mit handy kostenlos auf festnetz anrufen kann aber kein gratis internet habe"
+2016-07-21 19:27:31,Svenska,"alle nachfolgenden standards (EDGE usw) sind paketvermittelnd und haben daher keine durchsatzgarantien, und damit kann man kein modem mehr ansteuern"
+2016-07-21 19:28:07,Svenska,"dann implementiere erstmal Bell103 oder V.21 (haben verschiedene frequenzen, aber das gleiche verfahren)"
+2016-07-21 19:28:48,Quantenmagier,"ah ok, joa könnte ich erstmal versuchen und wenn das nicht klappt kann ich das protokoll ja immernoch anpassen danke ^^"
+2016-07-21 19:28:55,Svenska,"wenn du damit dein modem anrufst, kriegst du ein paar bytes uebertragen und wenn du darauf nicht reagierst, wird das modem irgendwann merken, dass du keine ahnung von den moderrneren ITU-standards hast"
+2016-07-21 19:29:08,Svenska,die standards selbst sind uebrigens alle offen
+2016-07-21 19:29:35,Quantenmagier,"joa ich hab ja kein modem, simuliere das auch über software"
+2016-07-21 19:30:07,Quantenmagier,"hatte überlegt das eventuell über asterix zu machen, das kann doch modems simulieren oder?"
+2016-07-21 19:30:18,Svenska,Bell103 benutzt FSK
+2016-07-21 19:31:00,Quantenmagier,aso
+2016-07-21 19:31:12,Svenska,"der anrufer sendet mit Basis 1170 Hz, der angerufene mit Basis 2125 Hz (""1"" = +100 Hz, ""0"" = -100 Hz)"
+2016-07-21 19:31:53,Svenska,und zwar mit exakt 300 bit pro sekunde ;)
+2016-07-21 19:31:55,Quantenmagier,hm ok das wäre nen anfang und später könnte ich dann ja vllt weitere frequenzen hinzufügen
+2016-07-21 19:32:39,Svenska,fuer V.21 brauchst du 1080 Hz bzw. 1750 Hz
+2016-07-21 19:32:59,Svenska,"oh, und die höhere frequenz ist logisch null ;)"
+2016-07-21 19:33:10,Jonathan,"Svenska: Irgendwo hatte ich mal gelesen, dass jemand den 1170Hz-Ton schreien konnte, und dann immer in ner Telefonzelle geschaut hat, ob der Mainframe wieder online war *g*"
+2016-07-21 19:33:44,Svenska,"es gab mal spielzeugpfeifen in einer kelloggs-packung, mit der man die leitungsstelle auf ""auflegen"" stellen konnte"
+2016-07-21 19:33:59,Jonathan,Hehe
+2016-07-21 19:34:02,Svenska,"wenn man das gut getimed hatte, dann dachte deine gegenstelle, du hättest aufgelegt, obwohl du noch verbunden warst"
+2016-07-21 19:34:23,Quantenmagier,"hahaha, joa ich hab auch damals mal diese signaltöne gepfiffen und es tatsächlich mal hinbekommen mein faxgerät auf empfang einzustellen, aber gedruckt hat es trotzdem nichts :D"
+2016-07-21 19:34:24,Jonathan,"Und dann konnte man mitlauschen, oder wie? *g*"
+2016-07-21 19:34:41,Svenska,"nein, du hast nichts weiter bezahlt, weil die verbindung war ja beendet ^^"
+2016-07-21 19:34:51,Jonathan,"Ah, nett :D"
+2016-07-21 19:37:35,Svenska,http://hackaday.com/2013/01/31/how-a-dial-up-modem-handshake-works/
+2016-07-21 19:41:19,Svenska,zumindest zum testen solltest du aber mit einem echten modem reden
+2016-07-21 19:41:32,Svenska,"asterisk kann vermutlich die AT-schnittstelle simulieren, aber sicher nicht den audioteil"
+2016-07-21 19:43:10,Quantenmagier,aso ok ich hab irgendwo noch ne alte modemkarte rumfliegen müßte ich mal raussuchen
+2016-07-21 19:44:24,Svenska,"wenn du damit anfangen willst, dann guck dir auf jeden fall mal V.8bis und V.21 an, denn damit kannst du schonmal eine korrekt bequasselte 300bps-fullduplex-verbindung aufbauen"
+2016-07-21 19:47:09,Svenska,http://oona.windytan.com/posters/dialup-final.png << da sieht man den V.8 handshake relativ genau
+2016-07-21 20:02:08,Quantenmagier,"ahh ill have a look at this probably i can reuse something of that, but would be hard to use on android because C support for android is bad"
+2016-07-21 20:02:11,Quantenmagier,http://bellard.org/linmodem/
+2016-07-21 20:03:30,Svenska,"oh, nice"
+2016-07-21 20:05:04,Svenska,"funktionen mit namen wie ""get_bit()"" oder ""bit_put()"" klingen immer arg nach überkopf"
+2016-07-21 20:15:06,Svenska,<Quantenmagier> hm joa auf avr hab ich auch was ähnliches probiert aber der adc war nicht schnell genug
+2016-07-21 20:15:09,Svenska,mist
+2016-07-21 20:15:23,Svenska,8 kHz sollte ein AVR doch hinkriegen
+2016-07-21 20:15:30,Svenska,...schwierig wird nur die verarbeitung. ;)
+2016-07-21 20:26:12,Svenska,"lol: ""CED tones are extraordinarily long (at least 2.6 seconds), so you can set your qualify time ... to 1500 ms, which should easily disqualify any voice, except someone who decides to whistle into the phone (and if you decide to whistle a CED tone to a caller, you can't complain if it starts faxing to you)."""
+2016-07-21 20:35:10,Quantenmagier,"joa 8kHz vielleicht noch, aber ich wollte gesang über den avr digitalisieren das klang dann ziemlich kratzig"
+2016-07-21 20:36:59,Svenska,8 kHz ADC = 4 kHz Audio
+2016-07-21 20:37:56,Svenska,"telefonleitungen sind spezifiziert fuer 300 .. 3300 Hz, da reichen also 8 kHz abtastrate gut aus"
+2016-07-21 21:11:15,Svenska,seufz
+2016-07-21 21:11:33,Quantenmagier,ah ok
+2016-07-21 21:12:12,Quantenmagier,"ich muß mal den rechner neu starten, irgendwie spinnt mein x server. ^^"
+2016-07-21 21:12:41,Quantenmagier,"bzw xfce allgemein, der desktop is auch weg"
+2016-07-21 21:23:05,Quantenmagier,hm seltsam der desktop geht immernoch nicht o.O
+2016-07-21 21:35:32,Svenska,hmm
+2016-07-21 21:35:40,Svenska,der assembler stinkt
+2016-07-21 21:36:05,Svenska,"ich habe ein register, bzw. dessen offset"
+2016-07-21 21:36:25,Svenska,"beispiel, CONFIG liegt bei 0xF0400, offset 0x00"
+2016-07-21 21:36:34,Svenska,"das tue ich in eine struct, weil ist toll"
+2016-07-21 21:36:50,Svenska,"um das register zu lesen, muss ich aber dessen NAMEN eingeben"
+2016-07-21 21:37:06,Svenska,"movfs r4, config"
+2016-07-21 21:37:15,Svenska,wie zur hölle kriege ich das effizient umgesetzt?
+2016-07-21 21:37:50,Svenska,der code aus dem sdk macht zwei function calls und ein switch/case auf die registernummer
+2016-07-21 21:38:22,Svenska,"der name entspricht (offset durch 4), aber der assembler will die zahl nicht sehen"
+2016-07-21 21:38:35,Svenska,jemand ne idee?
+2016-07-21 21:41:01,Svenska,"oder muss ich das selbst codieren? wenn ja, wie kann ich die normale register_nummer_ (r0..r63) kriegen?"
+2016-07-21 22:08:17,Quantenmagier,config equ 0xf0400
+2016-07-21 22:08:17,Quantenmagier,?
+2016-07-21 22:08:43,Svenska,das ist falschrum
+2016-07-21 22:08:49,Svenska,0xf0400 equ config
+2016-07-21 22:08:53,Svenska,aber das geht ja nicht ^^
+2016-07-21 22:09:13,Svenska,ich fummel gerade die registergruppen und registernamen in ein enum...
+2016-07-21 22:09:41,Quantenmagier,hm komisch dann hat dein assembler ne andere syntax als meiner
+2016-07-21 22:09:50,Quantenmagier,was nutzt du fürn assembler?
+2016-07-21 22:09:55,Svenska,du kannst keiner zahl einen namen zuweisen *g*
+2016-07-21 22:10:09,Svenska,"ich muss in die instruktion sowas wie ""MOVFS r4, CONFIG"" schreiben"
+2016-07-21 22:10:14,Quantenmagier,nee ich weiß dem namen ne zahl zu mach ich bei alle meinen syscalls so:
+2016-07-21 22:10:16,Svenska,ich habe aber statt CONFIG nur dessen adresse
+2016-07-21 22:10:19,Quantenmagier,syslib_Task_Start equ 01000211h
+2016-07-21 22:10:35,Svenska,"ja, aber ich brauche es gerade andersrum..."
+2016-07-21 22:11:16,Quantenmagier,o.o du packst einen namen in ein register?
+2016-07-21 22:11:31,Svenska,"ich kann doch auch nix dafuer, dass der hersteller das so gemacht hat"
+2016-07-21 22:11:37,Svenska,nein
+2016-07-21 22:11:57,Svenska,"die instruktion will den namen des registers haben, nicht dessen adresse (effektiv ist das nur ein speicherzugriff, aber ich MUSS diese instruktion benutzen, weil spezialregister)"
+2016-07-21 22:12:08,Quantenmagier,aso
+2016-07-21 22:12:28,Quantenmagier,verstehe und du willst aber nicht immer das selbe register benutzen?
+2016-07-21 22:12:41,Svenska,"nein, das wird ein C inline"
+2016-07-21 22:12:51,Svenska,das macht aus 5 instructions und zwei function calls eine instruction
+2016-07-21 22:12:57,Quantenmagier,kannst du nicht für jedes register ein inline machen?
+2016-07-21 22:13:15,Svenska,"öh, ja, könnte ich, aber dann wird der code hässlich"
+2016-07-21 22:13:24,Svenska,"weil ich dann read_config_register(), read_status_register() usw habe"
+2016-07-21 22:13:36,Jonathan,Svenska: Bytes in den Assembleroutput schubsen?
+2016-07-21 22:13:38,Svenska,"im augenblick mache ich ""read_register(CORE, CONFIG)"""
+2016-07-21 22:13:51,Svenska,"Jonathan: bin ich dabei... das encoding ist bissl pfui, und ich hoffe auf den optimizer"
+2016-07-21 22:14:06,Jonathan,Hm *g*
+2016-07-21 22:14:15,Quantenmagier,"das problem wird aber sein, daß der nur maschinencode für jedes register hat, dh wenn du es in eine funktion packst brauchst du selbstmodifizierenden code oder ein precompilermakro"
+2016-07-21 22:14:18,Svenska,"fies wirds, weil ich nicht R0 voraussetzen will, also muss ich irgendwie sagen ""such dir ein register aus und trage dessen nummer dort ein"""
+2016-07-21 22:14:29,Svenska,static inline
+2016-07-21 22:14:41,Svenska,"bzw. static inline naked, wenn's sein muss ;)"
+2016-07-21 22:15:15,Jonathan,Hm... Makro klingt gar nicht schlecht :P
+2016-07-21 22:16:06,Svenska,mit nem makro kriege ich aber keine dynamische registerallocation ;)
+2016-07-21 22:16:46,Jonathan,"Muss das denn sein, oder willst du nur angeben? ;)"
+2016-07-21 22:17:18,Svenska,"naja, eigentlich will ich ""DMA0->CONFIG"" machen können"
+2016-07-21 22:17:36,Quantenmagier,öhm dynamische allokation? compilerdynamisch oder laufzeitdynamisch?
+2016-07-21 22:17:48,Svenska,"das problem ist, dass ich DMA0 erstmal um die COREID erweitern muss (was nicht automatisch geht) oder spezielle instructions brauche"
+2016-07-21 22:23:47,Quantenmagier,naja ich reparier mal meine mutexe in pthread.c
+2016-07-21 22:33:04,Quantenmagier,hm wie hießen nochmal diese zählenden mutexte?
+2016-07-21 22:35:28,Quantenmagier,ahh semaphor
+2016-07-21 22:38:09,Quantenmagier,hm ich überlege ob ich semaphoren und mutexe über nen syscall aufrufe oder ob ich die per inline assembler in die libc packe ohne syscall weil die einfach genug sind maximal nen sechszeiler zu sein..
+2016-07-21 22:38:48,Jonathan,gn8 :)
+2016-07-21 22:38:52,Svenska,gn8
+2016-07-21 22:52:22,Svenska,"es scheitert daran, dass ich dem compiler zwar sagen kann, er möge sich ein register aussuchen, er dann aber ""r4"" benutzt, was ich natuerlich nicht shiften kann. ARGH."
+2016-07-21 22:58:59,Quantenmagier,xD
+2016-07-21 22:59:08,Quantenmagier,dann lass es ihn nicht aussuchen :D
+2016-07-21 22:59:43,Svenska,ich habs
+2016-07-21 22:59:54,Quantenmagier,"ich überlege grade ob ich pthread_mutex_unlock atomar machen muß, eigentlich müßte ja mutex=0; reichen"
+2016-07-21 23:00:13,Svenska,"#define READ(X) ({ uint32_t r; __asm__(""movfs %0, ""#X : ""=r""(ret); r; })"
+2016-07-21 23:00:16,Quantenmagier,so wie ich das sehe muß nur das locking atomar sein
+2016-07-21 23:00:39,Quantenmagier,Ahh nice
+2016-07-21 23:00:47,Quantenmagier,also doch nen precompiler makro ^^
+2016-07-21 23:00:48,Svenska,"gcc-erweiterung fuer ""macro returns value"""
+2016-07-21 23:01:04,Svenska,und ich baue die instruction _als string_ zusammen
+2016-07-21 23:01:50,Quantenmagier,joa compilerdynamisch ist mit präkompiler überhaupt kein problem nur laufzeitdynamisch wär schwer geworden :D
+2016-07-21 23:02:31,Quantenmagier," __asm__ volatile(""xchgb (ebx),al\n\t"":""+a""(res):""b""(mutex):""memory"");"
+2016-07-21 23:02:57,Quantenmagier,"ich hab mal die +a syntax benutzt, damit er die variable als in- und output benutzt, weiß jemand zufällig ob die syntax so richtig ist?"
+2016-07-21 23:03:15,Quantenmagier,das is im prinzip mein mutex_trylock ^^
+2016-07-21 23:03:47,Svenska,isse
+2016-07-21 23:03:52,Svenska,hab grad nen haufen nachgeschlagen
+2016-07-21 23:05:03,Quantenmagier,ok thx
+2016-07-21 23:05:32,Quantenmagier,../../libc/stdlibdir/pthread.c:36: Error: too many memory references for `xchg'
+2016-07-21 23:05:37,Quantenmagier,what will der?
+2016-07-21 23:05:50,Svenska,"statt ""ebx"" musst du %1 nehmen"
+2016-07-21 23:05:54,Svenska,"statt ""al"" dann %0"
+2016-07-21 23:06:03,Quantenmagier,o.O
+2016-07-21 23:06:11,Quantenmagier,das mußt ich ja noch nie
+2016-07-21 23:06:15,Svenska,"und du solltest statt ""+r"" sagen, dass du einen ein 8-bit-al willst"
+2016-07-21 23:06:16,Svenska,okay?
+2016-07-21 23:06:30,Svenska,"hmm, vielleicht geht's auch ohne."
+2016-07-21 23:06:52,Svenska,"jedenfalls solltest du, wenn du als input/output irgendwas vorgibst, das auch im code substituieren"
+2016-07-21 23:07:19,Svenska,ansonsten hab ich von x86 eher wenig ahnung ^^
+2016-07-21 23:08:42,Quantenmagier,aso moment
+2016-07-21 23:08:55,Quantenmagier,ich hab die prozentzeichen vergessen %%al %%ebx
+2016-07-21 23:09:29,Quantenmagier,wofür auch immer die gut sind
+2016-07-21 23:11:08,Quantenmagier,"ok das wars, jetzt hab ich noch ein ""operand type mismatch for `cmp'"" bei ""cmp %%al,$0"""
+2016-07-21 23:13:25,Svenska,%% wird zu %
+2016-07-21 23:13:31,Svenska,weil sonst wäre es eine substitution
+2016-07-21 23:14:57,Quantenmagier,"joa das is klar, aber warum muß ich das % überhaupt vor machen?"
+2016-07-21 23:15:07,Svenska,weil im inline-asm ein register mit % beschrieben wird
+2016-07-21 23:15:24,Svenska,"und weil % ein spezielles zeichen fuer den inliner ist, muss das escaped werden ;)"
+2016-07-21 23:15:38,Quantenmagier,und wenn man es wegläßt interpretiert er es als was?
+2016-07-21 23:16:11,Svenska,"""al"" vermutlich"
+2016-07-21 23:16:28,Svenska,"oder irgendwas komisches, gefolgt von l *g*"
+2016-07-21 23:16:43,Quantenmagier,aso
+2016-07-21 23:17:10,Quantenmagier,wie werd ich jetzt diesem operand type mismatch los?
+2016-07-21 23:17:45,Quantenmagier,"wieso ist %%al und $0 überhaupt ein mismatch, $0 kann doch beliebig lang sein"
+2016-07-21 23:18:16,Svenska,ich sehe kein $0
+2016-07-21 23:18:20,Svenska,und %al ist nur 8-bittig
+2016-07-21 23:18:54,Quantenmagier,"""operand type mismatch for `cmp'"" bei ""cmp %%al,$0"
+2016-07-21 23:19:39,Svenska,was ist $0
+2016-07-21 23:19:48,Quantenmagier,die zahl 0
+2016-07-21 23:20:03,Svenska,oh. der epiphany-assembler will #0 dafuer
+2016-07-21 23:20:08,Svenska,und ignoriert das #
+2016-07-21 23:20:18,Quantenmagier,echt ok krass muß ich mal probieren
+2016-07-21 23:20:26,Svenska,(ist auch ein GNU as mit AT&T-artiger syntax...)
+2016-07-21 23:24:19,Quantenmagier,"hm mit # bekomm ich ""expecting operand after ','; got nothing"" scheinbar entspricht #0 Null und nicht numerisch null"
+2016-07-21 23:27:15,Quantenmagier,"ach mir reichts ich hab das ""cmpb al,0; je ..."" jetzt durch ein ""orb al,al; jz ..."" ersetzt, ist eh besser."
+2016-07-21 23:37:09,Quantenmagier,"so mutexe sind repariert, jetzt brauch ich noch tcgetattr, tcsetattr, nanosleep, tcflush, time, read, pthread_create und dann funktioniert ein weiteres spiel in meinem OS :D"
+2016-07-21 23:40:35,Quantenmagier,"irgendwie ist mein os ähnlich zu linux aber doch das komplette gegenteil, alles ist eine speicheradresse, statt alles ist eine datei und es laufen bisher fast nur spiele und auf linux lief zu anfang alles außer spiele xD"
+2016-07-21 23:42:33,Quantenmagier,"ich weiß noch als ich damals in den vobis shop gegangen bin und sagte ich will linux haben und der meinte dann ""da können sie aber keine spiele drauf spielen"" und wollte mir dann für 60 DM nen Suse andrehen xD"
+2016-07-21 23:43:10,Svenska,Mein Opa hat mir mal ein Debian 2.0 in die Hand gedrückt und ich war zu doof dafür.
+2016-07-21 23:43:25,Quantenmagier,hehe ^^
+2016-07-21 23:43:31,Svenska,"SuSE 6.2 war mein erstes Linux, aber passte nicht auf die Festplatte. ;)"
+2016-07-21 23:45:28,Quantenmagier,"joa ich hatte auch nen suse 6 könnte das selbe gewesen sein, bei mir war das problem daß der irgendwie die soundkarte nicht erkannt hat oder so, hab dan auf debian gewechselt und da lief der 2.6er kernel nicht nur der 2.4er und deswegen lief der smbus nicht oder so und dann hab ich auf dem Chaos Congress einen gesehn und ihn gefragt welches OS er hat und er meinte Gentoo, das hab ich mir mühseelig installiert und alles li"
+2016-07-21 23:45:28,Quantenmagier,"ef einwandfrei, seitdem bin ich gentoo treu geblieben, auch wenn ich manchmal aus zeitdruck xubuntu verwendet hab ^^"
+2016-07-21 23:48:50,Quantenmagier,"ich frag mich ja ob ich jemals produktiv auf SurO wechseln werde, dafür müßte ich nen stabilen mailclient, browser und musikplayer haben mindestens. ^.^"
+2016-07-21 23:50:19,Quantenmagier,"vllt sollte ich mal ne xlib für mein os schreiben, damit ich gtk-programme kompilieren kann, frag mich wie viele syscalls und stdlibc funktionen mir dafür noch fehlen.. :D"
+2016-07-21 23:51:24,Svenska,"syscalls? keine, jenseits von grafik"
+2016-07-21 23:51:39,Quantenmagier,joa die meisten grafikfunktionen hab ich ja schon im kernel
+2016-07-21 23:51:42,Svenska,"die libc fuer xlib ist vermutlich nicht so dick, aber du willst eher dein eigenes gtk-backend bauen"
+2016-07-21 23:52:05,Quantenmagier,echt kann das gtk backend nicht auf der xlib aufbauen?
+2016-07-21 23:52:09,Svenska,doch
+2016-07-21 23:52:15,Svenska,"aber es ist vermutlich einfacher, dein eigenes backend zu bauen"
+2016-07-21 23:52:19,Quantenmagier,aso
+2016-07-21 23:52:21,Svenska,oder willst du X11 haben?
+2016-07-21 23:52:45,Quantenmagier,joa x11 wär shcon schick dann wär ich zu den meisten gnu programmen kompatibel
+2016-07-21 23:53:20,Svenska,wayland *hust*
+2016-07-21 23:53:24,Svenska,oder sdl porten
+2016-07-21 23:53:49,Quantenmagier,hm sdl wär natürlich geil dann könnte ich xonotic und warzone2100 in zeitlupe zocken :D
+2016-07-21 23:54:32,Quantenmagier,wobei ich für warzone2100 auch noch qt brauchen würde
+2016-07-21 23:56:36,Quantenmagier,aber vermutlich ist sdl auch komplexer als gtk?
+2016-07-21 23:57:03,Svenska,nee
+2016-07-21 23:57:25,Svenska,SDL ist doch auch fuer embeddedkrams gebaut
+2016-07-21 23:57:33,Quantenmagier,aso
+2016-07-21 23:57:57,Quantenmagier,"aber sdl kann glaubich auch auf x11 aufbauen, wenn ich also xlib baue würde ich sowohl sdl als auch gtk haben"
+2016-07-21 23:58:09,Svenska,sicher
+2016-07-21 23:58:17,Svenska,"und den ganzen mist, den x11 auch hat *g*"
+2016-07-21 23:59:21,Quantenmagier,"hm joa schon, aber hauptsache es läuft erstmal viel mit wenig aufwand, es dann nativ zu portieren kann man immernoch, wenn es zu langsam ist"
+2016-07-21 23:59:42,Svenska,"das problem mit x11 ist, dass du mit dem protokoll allein nicht weit kommst, sondern auch die ganzen extensions brauchst"
+2016-07-21 23:59:45,Svenska,oder du portierst den x-server

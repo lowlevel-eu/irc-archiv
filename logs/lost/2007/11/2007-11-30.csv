@@ -1,0 +1,263 @@
+date/time,nick,message
+2007-11-30 13:46:47,Homix,haaalloooooooo
+2007-11-30 13:58:41,schnippi,hiho
+2007-11-30 14:26:17,Homix,hallo
+2007-11-30 14:27:31,schnippi,hi janosch
+2007-11-30 14:27:36,janosch,hi
+2007-11-30 14:49:46,janosch,"wie schreibt man am einfachsten an eine Speicherstelle, wenn man nur die physikalische Addresse kennt? (paging ist natürlich an)"
+2007-11-30 14:56:44,janosch,also wenn ich z.B einen prozess erstelle und in das PD schreiben muss
+2007-11-30 15:00:20,Homix,gibt mehrere möglichkeiten :)
+2007-11-30 15:01:05,Homix,ich mach es z.b. so dass das PD und die PTs im  Kernel space liegen und man im kernel einfach per AllocPage so eine anfordern kann und den speicherbereich auch jederzeit verändern kann
+2007-11-30 15:01:56,Homix,"aber wenn du nur die phys. adresse hast, kannst du ja in deinem virtuellen adressraum irgendeine page auf diese phys. page mappen und drauf zugreifen"
+2007-11-30 15:02:21,janosch,ich könnte auch einfach im kernel den speicher 1:1 mappen
+2007-11-30 15:03:09,janosch,"aber das braucht zu viel speicher für die ganzen PTs, kann man nicht einfach paging kurz abschalten?"
+2007-11-30 15:03:17,Homix,lol
+2007-11-30 15:03:26,Homix,zu viel speicher 
+2007-11-30 15:03:27,Homix,?
+2007-11-30 15:03:28,schnippi,hehe
+2007-11-30 15:03:45,schnippi,du musst ja nicht alle kernelpages mappen
+2007-11-30 15:03:45,Homix,das ab und anschalten von paging benötigt sehr viel zeit im gegensatz zu den anderen methoden
+2007-11-30 15:04:00,Homix,"wenn, dann benötigt es virtuellen speicher und keinen phys. speicher"
+2007-11-30 15:04:13,Homix,und virtueller ist oft eh genug da (im kernel space)
+2007-11-30 15:04:48,janosch,"ich mein wenn ich den speicher 1:1 mappe, bei 4GB RAM (die zwar niemand hat) wären das ~4MB"
+2007-11-30 15:04:56,Homix,ja 4 MB pro Prozess
+2007-11-30 15:05:21,Homix,bzw bei 2 GB v.speicher pro Prozess = 2 MB pro Prozess
+2007-11-30 15:05:25,Homix,das ist fast nix :)
+2007-11-30 15:32:31,janosch,ich hab es jetzt über einen buffer geregelt
+2007-11-30 15:35:41,Homix,aso ;)
+2007-11-30 15:36:12,janosch,"und wie war das nochmal mit dem TLB flushen. Ich nehme an das muss ich auch machen, wenn ich ein neues PD lade. Welche Addresse(n) muss ich dann invalidieren? Von allen Pages?"
+2007-11-30 15:38:47,Homix,ne
+2007-11-30 15:39:26,Homix,"wenn du das cr3 register neu lädst, dann wird automatisch der tlb geflusht"
+2007-11-30 15:40:14,Homix,"du musst bloß adressen vom tlb invalidieren, wenn du das pageDir oder PageTables abänderst (v.a. bei AllocPages,FreePages oder mapPages Funktionen)"
+2007-11-30 17:35:24,janosch,muss ich eigentlich zum betrieb mehrerer prozessoren symetrische Interrupts aktivieren?
+2007-11-30 17:45:47,stultus,Yay
+2007-11-30 17:46:02,stultus,DMA fürn Brenner tuts unter Windows wieder.
+2007-11-30 17:46:20,stultus,Erstaunlich was das wechseln von Master und Slave nicht alles bewirken kann. ^^
+2007-11-30 17:46:41,stultus,"janosch: gute frage. ich behaupte mal stumpf nein, im zweifelsfall schau innen LOST source (kernel2)"
+2007-11-30 17:47:19,Noooooooooos,moin
+2007-11-30 17:47:39,janosch,"strultus, kernel2 schaltet das imho nicht ein (hab nirgends gesehen dass der was auf port 0x22 oder so schreibt)"
+2007-11-30 17:48:13,janosch,nur wie macht man dann den taskwechsel auf einem arbeitsprozessor?
+2007-11-30 17:48:20,stultus,dann sollte es auch ohne gehen. ich meine wenigstens x86-smp lief
+2007-11-30 17:54:01,stultus2,hn
+2007-11-30 17:54:04,stultus2,hmmm
+2007-11-30 17:54:05,stultus2,und nochmal weg
+2007-11-30 17:54:22,stultus2,(win pe 2.0 testen. windows ohne directx is nurnoch halb so schlimm :) )
+2007-11-30 17:59:13,Jidder,moin moin
+2007-11-30 18:00:19,janosch,für was brauch man eigentlich genau den TSS bei software multitasking
+2007-11-30 18:00:33,Jidder,für den wechsel von ring 3 nach ring 0
+2007-11-30 18:00:35,Jidder,geht nicht anders
+2007-11-30 18:01:23,janosch,und dir wird automatisch bei einem interrupt ausgelöst?
+2007-11-30 18:02:00,Jidder,was soll automatisch ausgelöst werden?
+2007-11-30 18:03:01,janosch,*der also der taskwechsel von ring3 nach ring0. meine IDT-Entries haben ja im selektor RPL 0
+2007-11-30 18:04:21,Jidder,jo dann wird der ring gewechselt
+2007-11-30 18:04:25,janosch,also brauch man TSS eigentlich nur für die Stacks. und woher weiß ein prozesser welches TSS er benutzt?
+2007-11-30 18:04:27,Jidder,und (ich *glaube*) die neuen werte für ss und esp werden aus dem tss ausgelesen
+2007-11-30 18:04:48,Jidder,mit ltr kannst du ein tss laden
+2007-11-30 18:04:57,janosch,k thx
+2007-11-30 18:05:01,Jidder,je prozessor musst du den befehl mit einem anderen tss ausführen
+2007-11-30 18:06:18,Jidder,"du musst es übrigens nur 1x laden, dann kannst du es so lange verwenden wie du lustig bist"
+2007-11-30 18:06:42,Jidder,"nur jedes mal ss0 und esp0 richtig setzen, wenn ich mich recht erinnere"
+2007-11-30 18:07:11,janosch,wie jedes mal?
+2007-11-30 18:07:20,janosch,die sind doch statisch
+2007-11-30 18:07:36,Jidder,stimmt eigentlich
+2007-11-30 18:07:48,Jidder,ich glaube in lost setzen wir die vor jedem wechsel von ring 0 nach ring 3 neu
+2007-11-30 18:07:53,Jidder,warum weiß ich nicht mehr
+2007-11-30 18:08:02,Jidder,"ob das überhaupt noch so gemacht wird, weiß ich auch nicht ^^"
+2007-11-30 18:08:58,VerrueckterPinguin,Moin
+2007-11-30 18:09:26,VerrueckterPinguin,"Jidder: Ja es wird gemacht, weil jeder Prozess einen eigenen Kernelstack hat."
+2007-11-30 18:11:10,VerrueckterPinguin,"Ich rede jetzt nur von esp0, ss0 bleibt ja gleich."
+2007-11-30 18:24:36,Jidder,"lol der toaster in einem seiner geilen dokumente: ""beide Tabellen [...] frei aus dem deutschen übersetzt"""
+2007-11-30 18:24:51,Jidder,er fasst seinen schreibstil sehr gut zusammen ^^
+2007-11-30 18:37:21,janosch,mmh irgendwie läuft mein 16k-Stack über :\
+2007-11-30 19:53:02,taljeth,Moin
+2007-11-30 19:53:54,Guest220798,Moin taljeth 
+2007-11-30 19:56:48,janosch,"gibt es ein Register, dass nie benutzt wird. Wie Arbeitsregister nur werden die ja in C verwendet. Ich will die ID der CPU speichern (im RAM geht das schlecht)"
+2007-11-30 19:58:25,taljeth,janosch: Wieso sollte ein vorhandenes Register durch Nichtbenutzen verschwendet werden?
+2007-11-30 19:59:54,VerrueckterPinguin,janosch: Die kannst du doch anhand der APIC-ID bestimmen.
+2007-11-30 20:07:24,bluecode,abend
+2007-11-30 20:08:15,taljeth,Moin bluecode 
+2007-11-30 20:08:46,VerrueckterPinguin,Moin bluecode
+2007-11-30 20:39:05,janosch,"in LOST/kernel2/smp steht ""Zur Sicherheit wird jetzt noch die Pruefsumme geprueft. [...] dass alle bytes der Strutktur, inklusiv die der Pruefsumme, addiert 0 ergeben."""
+2007-11-30 20:39:23,janosch,Dann müssten ja alle Bytes 0 sein oder wie?
+2007-11-30 20:40:43,taljeth,"bluecode: Chefmathematiker, beweis mal kurz, daß a +b = 0 => a = 0 && b= 0 ;-)"
+2007-11-30 20:40:59,janosch,"und a,b € N"
+2007-11-30 20:41:15,taljeth,Davon war nicht die Rede.
+2007-11-30 20:41:35,janosch,seitwann können unsigned bytes was anderes sein als N?
+2007-11-30 20:41:52,taljeth,"Ja, sie sind was anderes."
+2007-11-30 20:41:55,janosch,oder sind die signed?
+2007-11-30 20:42:32,taljeth,"Nö, aber N hat die Eigenschaft, unendlich zu sein"
+2007-11-30 20:42:40,janosch,wollte ich grad schreiben
+2007-11-30 20:43:40,janosch,"a+b = 0  a,b € {0,1,2...255} => a = 0 & b = 0"
+2007-11-30 20:43:49,taljeth,"Also nicht N, sondern Z/256 Z  "
+2007-11-30 20:44:25,taljeth,Und in Sachen Restklassenringe kennt sich dann auch wieder bluecode aus. ;-)
+2007-11-30 20:44:46,janosch,"aber das müsstest sogar du sehen, dass dann a und b 0 sein müssen"
+2007-11-30 20:44:48,taljeth,"Aber ich kann dir auch so sagen, daß es da einen Overflow geben kann und man dann wieder bei Null rauskommt."
+2007-11-30 20:45:24,taljeth,Ob signed oder nicht dürfte bei einer simplen Addition gar keine Rolle spielen
+2007-11-30 20:45:36,janosch,also a+b=256
+2007-11-30 20:45:43,taljeth,Oder 512. Oder...
+2007-11-30 20:45:58,janosch,im lostcode wird aber nur 1 byte verwendet
+2007-11-30 20:49:26,bluecode,"janosch: jo, das mit dem einen byte ist korrekt"
+2007-11-30 20:49:36,bluecode,taljeth: verarsch mich noch blödmann :-P
+2007-11-30 20:50:52,Jidder,ich kann a = 0 && b = 0 => a + b = 0 beweisen :D
+2007-11-30 20:51:12,taljeth,"Jidder: Wow, du bist toll. ;-)"
+2007-11-30 20:51:34,Jidder,"bist beeindruckt, ne? ^^"
+2007-11-30 20:51:40,taljeth,Absolut.
+2007-11-30 20:52:15,taljeth,"bluecode: Da versucht man mal, dich auf einem Gebiet zu nennen, wovon du überdurchschnittlich Ahnung hast und dann ist es auch wieder nicht recht... :-P"
+2007-11-30 21:03:31,janosch,"komisch, ich hab bei qemu als parameter ""-smp 3"" aber finde keine Floating Pointer Structure"
+2007-11-30 21:05:22,stultus,re
+2007-11-30 21:05:26,stultus,"man, das hat zeit gekostet :/"
+2007-11-30 21:05:45,stultus,"Warum ist es so schwer, mit Original-Treibern 2 nvidia-karten gleichzeitig in einem system zu betreiben?"
+2007-11-30 21:06:03,stultus,"lief zwar, aber mit nur 640x480 aufm 2. Monitor macht das auch nich wirklich spaß :("
+2007-11-30 21:07:01,Coffee,Guten Abend @ll ;)
+2007-11-30 21:07:34,stultus,namd
+2007-11-30 21:07:40,stultus,"hm. nochmal kurz weg, Xinerama einschalten..."
+2007-11-30 21:07:46,Coffee,ich habe eine frage
+2007-11-30 21:08:03,Coffee,"wie kann ich bei ndisasm einstellen, dass er nur assembler code ausspuckt und nicht so listing oder wie das heißt"
+2007-11-30 21:08:03,Coffee,?
+2007-11-30 21:08:36,Coffee,hi
+2007-11-30 21:08:46,Coffee,ndisasm spuckt ja sowas wie das hier aus(sorry 4 code)
+2007-11-30 21:08:50,Coffee,"00000007  000400            add [eax+rax],al"
+2007-11-30 21:08:50,Coffee,0000000A  0F                db 0x0F
+2007-11-30 21:08:50,Coffee,"0000000B  00FF              add bh,bh"
+2007-11-30 21:08:50,Coffee,0000000D  FF00              inc dword [eax]
+2007-11-30 21:08:56,Coffee,ichwill aber nur
+2007-11-30 21:09:07,Coffee," add [eax+rax],al"
+2007-11-30 21:09:07,Coffee, db 0x0F
+2007-11-30 21:09:08,Coffee,...
+2007-11-30 21:09:40,stultus,whoa.
+2007-11-30 21:09:53,stultus,So is das geil. ^^
+2007-11-30 21:10:10,Coffee,?
+2007-11-30 21:10:10,Coffee,^^
+2007-11-30 21:10:18,stultus,"2 Monitore, Xinerama...."
+2007-11-30 21:10:51,stultus,schade bloß das OpenGL mit so ner Konfiguration versagt :(
+2007-11-30 21:11:02,stultus,Hm. Lässt sich das wohl rauspatchen... ? *g*
+2007-11-30 21:11:26,taljeth,"Wenn du dann irgendwann mit irssi zurückkommst, wissen wir Bescheid. *g*"
+2007-11-30 21:12:43,VerrueckterPinguin,"Coffee: Wenn du Linux benutzt würde ich dir jetzt dazu raten, das ganze durch sed oder awk zu pipen. Ok müsste auch mit cygwin machbar sein... Ob das auch mit nur-Windows Mitteln geht weiss ich nicht. ;-)"
+2007-11-30 21:13:43,Coffee,mhh
+2007-11-30 21:13:44,stultus,taljeth: ich verwend immernoch netcat. *g*
+2007-11-30 21:13:57,taljeth,*g*
+2007-11-30 21:13:59,stultus,hm. Unix Services für Windows?
+2007-11-30 21:14:01,Coffee,ich werde einfach ein programm schreiben wass mir meine ausgegebene datei verändert und das entfernt -.-
+2007-11-30 21:14:11,Coffee,So.
+2007-11-30 21:14:11,stultus,Die ham auch nen verstümmeltes sed und awk *g*
+2007-11-30 21:14:12,Coffee,Fertig.
+2007-11-30 21:14:15,Coffee,Funktioniert
+2007-11-30 21:14:21,VerrueckterPinguin,Mit Unix-Tools ist das leben doch soviel einfacher. *g*
+2007-11-30 21:14:29,Coffee,;)
+2007-11-30 21:14:31,stultus,definitiv.
+2007-11-30 21:14:34,Coffee,kann aber grad net unter linux
+2007-11-30 21:14:40,stultus,"wisst ihr wie ätzend es ist, unter win in cmd.exe arbeiten zu müssen"
+2007-11-30 21:14:47,Coffee,;)
+2007-11-30 21:14:51,stultus,"und alle 5 sek kommt ""ls: unbekannter befehl"" ?!"
+2007-11-30 21:14:52,VerrueckterPinguin,stultus: Leider ja. *g*
+2007-11-30 21:15:13,stultus,sich erstmal auf ls umgewöhnen als windowser ist schwer. aber zurück... geht garnicht. 
+2007-11-30 21:15:14,VerrueckterPinguin,"Genau, das kommt mir irgendwie bekannt vor. ;-)"
+2007-11-30 21:15:47,VerrueckterPinguin,Das will man aber auch nicht. ;-)
+2007-11-30 21:15:49,Coffee,OMH
+2007-11-30 21:15:50,Coffee,OMG
+2007-11-30 21:16:07,Coffee,eine 300kb-exe wird zu > 65546seiten asmcode?^^
+2007-11-30 21:16:12,Coffee,65536
+2007-11-30 21:16:17,taljeth,"stultus: Auch cmd.exe kann Aliases, oder?"
+2007-11-30 21:16:25,Coffee,"echt jetz, taljeth?"
+2007-11-30 21:16:26,stultus,dachte ich.
+2007-11-30 21:16:31,stultus,hab ich aber nicht gefunden :(
+2007-11-30 21:17:00,taljeth,"Also damals (TM) ging das mit doskey, heute gibt es da doch sicher ein tolles Builtin."
+2007-11-30 21:17:43,Coffee,und ich dachte mein source mit knapp 2000seiten asm wäre lang
+2007-11-30 21:17:43,Coffee,OMG
+2007-11-30 21:18:10,Coffee,mal sehen was bei der 9MB-Datei winword.exe (MS Word) rauskommt^^
+2007-11-30 21:19:14,VerrueckterPinguin,"Also das ganze durch das Windowspendant zu ""wc -l"" zu pipen sagt imo mehr aus. ;-)"
+2007-11-30 21:20:57,taljeth,Die Metriken zum C-Code sagen m.E. noch mehr aus. ;-)
+2007-11-30 21:21:12,VerrueckterPinguin,taljeth: Wie verbindet man mit Pascal einen String mit einem Integer?
+2007-11-30 21:21:27,VerrueckterPinguin,"taljeth: Jo, aber das geht mit winword.exe nicht allzu gut. ;-)"
+2007-11-30 21:22:42,Jidder,Coffee: ndisasm beachtet keine dateiformate. probier mal objdump
+2007-11-30 21:24:03,taljeth,"VerrueckterPinguin: In Write(Ln) mit einem Komma, sonst halt str + IntToStr(int)"
+2007-11-30 21:24:14,taljeth,"IntToStr kommt aus sysutils, glaube ich"
+2007-11-30 21:24:29,_seeker_,Hallo
+2007-11-30 21:24:30,VerrueckterPinguin,Thx
+2007-11-30 21:24:36,VerrueckterPinguin,Moin _seeker_
+2007-11-30 21:24:37,taljeth,Moin _seeker_ 
+2007-11-30 21:24:45,_seeker_,wie geht es euch?
+2007-11-30 21:25:35,taljeth,Es beklagt sich offensichtlich keiner. ;-)
+2007-11-30 21:25:50,taljeth,Hast du wieder Internet?
+2007-11-30 21:25:51,_seeker_,supr :)
+2007-11-30 21:25:54,_seeker_,jap
+2007-11-30 21:26:00,_seeker_,nun bei T-Online
+2007-11-30 21:26:25,_seeker_,hoffentlich heißt es nicht bald T-O(f)liine
+2007-11-30 21:26:41,_seeker_,"jedenfalls kann man, wenn etwas nicht funktioniert, direkt bei T-Online anrufen"
+2007-11-30 21:26:53,_seeker_,und sie schieben sich nicht gegenseitig die Schuld in die Schuhe
+2007-11-30 21:26:54,taljeth,"Jo, anrufen kann man immer. Die Frage ist nur, ob das was bringt. ;-)"
+2007-11-30 21:27:42,stultus,hm
+2007-11-30 21:27:49,stultus,uns wurde gerne empfohlen den router neu zu starten.
+2007-11-30 21:28:12,_seeker_,nja
+2007-11-30 21:28:15,stultus,"besonders lustig, da ""wir ham keinen router"" ne korrekte antwort gewesen wäre wenn man sie verwirren wollte, als erstgenerationskunden hatten wir noch das externe modem ohne router. :D"
+2007-11-30 21:28:36,_seeker_,aber was Freenet mit uns abgezogen hat war echt unglaublich
+2007-11-30 21:28:42,stultus,wieso?
+2007-11-30 21:28:45,_seeker_,und problem: Eig können wir noch kein Internet haben
+2007-11-30 21:28:56,_seeker_,"aber wir haben 3 leitungen, die ins Haus führen"
+2007-11-30 21:29:06,_seeker_,"der Port, gehört immer noch freenet"
+2007-11-30 21:29:13,_seeker_,nun haben wir den alten leitung aktiviert
+2007-11-30 21:29:22,_seeker_,und darauf haben wir ein port von T-Online bekommen
+2007-11-30 21:29:30,_seeker_,und freenet weigert sich diesen Port freizugeben
+2007-11-30 21:30:18,Jidder,"wer braucht sed oder awk, wenn der cmd.exe hat? FOR /F ""usebackq tokens=2*"" %i IN (`ndisasm foo.asm`) DO @ECHO %j"
+2007-11-30 21:30:27,Jidder,@Coffee ^^
+2007-11-30 21:30:33,Jidder,geht mit wine sogar unter linux :P
+2007-11-30 21:30:47,VerrueckterPinguin,*lrl*
+2007-11-30 21:31:12,stultus,rofl
+2007-11-30 21:31:15,Jidder,"findet ihr nicht, dass das auch verständlicher ist, als dieses rumgefrickel mit pipes? ^^"
+2007-11-30 21:31:17,stultus,das is nich dein ernst oder? ^^
+2007-11-30 21:31:24,_seeker_,kann mir einer sagen was das programm con\con unter windows 98 bringen SOLLTE?
+2007-11-30 21:31:37,Jidder,das gibt es nicht mal
+2007-11-30 21:31:45,_seeker_,doch
+2007-11-30 21:31:57,_seeker_,führte in Unsere schule zur Bluescreens
+2007-11-30 21:31:59,Jidder,ist aber kein programm sondern eine datei. stammt noch aus doszeiten
+2007-11-30 21:32:04,taljeth,con ist kein legaler Dateiname. Und ein Backslash in einem Namen auch nicht.
+2007-11-30 21:32:06,Jidder,also keine richtige datei
+2007-11-30 21:32:25,_seeker_,war lustig beim programmieren
+2007-11-30 21:32:30,_seeker_,in dev-cpp
+2007-11-30 21:32:41,_seeker_,"system(""con\\con"");"
+2007-11-30 21:32:48,_seeker_,danach kratzte der lehrer PC ab
+2007-11-30 21:32:57,taljeth,*g*
+2007-11-30 21:33:14,taljeth,"nul wäre vermutlich genauso effektiv, oder?"
+2007-11-30 21:33:15,Jidder,geht auch mit nem baseballschläger
+2007-11-30 21:34:01,Coffee,"qqqqso, muss weg, komm wahrscheinlich gegen 11 oder halb 12 wieder. ciao ;)"
+2007-11-30 21:34:03,Jidder,natürlich nicht auf den lehrer -.-
+2007-11-30 21:34:06,stultus,moment
+2007-11-30 21:34:06,_seeker_,sowas fälllt auf ;)
+2007-11-30 21:34:07,stultus,win98 ?
+2007-11-30 21:34:08,_seeker_,cu Coffee
+2007-11-30 21:34:09,stultus,cli ftw.
+2007-11-30 21:34:11,_seeker_,ja win 98
+2007-11-30 21:34:26,stultus,bd Coffee
+2007-11-30 21:34:48,Jidder,is hier fettes win98-hax0r-treffen oder was?
+2007-11-30 21:35:11,stultus,hier sind keine win98-haxx0rs
+2007-11-30 21:35:18,stultus,ich bin gestern jedenfalls on geblieben. ^^
+2007-11-30 21:35:18,Jidder,nur r0xx0rz
+2007-11-30 21:35:48,Jidder,on? is das sowas wie high?
+2007-11-30 21:37:45,stultus,ya
+2007-11-30 21:37:46,stultus,*g*
+2007-11-30 21:44:57,_seeker_,so ich wünsche euch einen schönen abend weiter
+2007-11-30 21:45:03,_seeker_,ich geh nun schlafen
+2007-11-30 21:45:05,_seeker_,guten nacht
+2007-11-30 21:45:12,taljeth,gn8 _seeker_ 
+2007-11-30 22:08:55,VerrueckterPinguin,taljeth: Irgendwie geht da mit dem FilenameMatches immernoch etwas schief: http://www.nopaste.com/p/awA0I3ICJ
+2007-11-30 22:12:03,taljeth,Autsch. ;-)
+2007-11-30 22:12:09,taljeth,Ist die aktuelle Version im SVN?
+2007-11-30 22:12:47,janosch,"die Addresse meiner lokalen APICs liegt hier ""0xFEE00000"". Wenn ich r/w machen will, sagt qemu ""qemu: fatal: Trying to execute code outside RAM or ROM at 0x000eae0e"""
+2007-11-30 22:12:58,VerrueckterPinguin,taljeth: Nein...
+2007-11-30 22:13:11,taljeth,"VerrueckterPinguin: Ist egal, der Fehler ist ja offensichtlich"
+2007-11-30 22:13:55,VerrueckterPinguin,Für mich nicht... *g*
+2007-11-30 22:14:21,taljeth,Der Vergleich '' = '' fehlt. ;-)
+2007-11-30 22:14:31,taljeth,"Das heißt, * tut überall, nur nicht am Ende"
+2007-11-30 22:15:46,taljeth,"Da müßte nach der while-Schleife noch ein if i_pattern = length(pattern) then exit(true); oder so rein, denke ich"
+2007-11-30 22:16:40,taljeth,Aber warum hat lpt dann bei mir funktioniert?
+2007-11-30 22:19:28,VerrueckterPinguin,Woher soll ich das wissen? ;-)
+2007-11-30 22:21:05,VerrueckterPinguin,"Ah gut, endlich wieder zuhause: Nachdem ich md5sum installiert habe ist das Dateisystem im Eimer. _Das_ ist LOST. *g*"
+2007-11-30 22:24:52,Noooooooooos,bin weg cu
+2007-11-30 22:26:57,Jidder,cu
+2007-11-30 22:27:54,VerrueckterPinguin,Tschüss Noooooooooos
+2007-11-30 22:28:58,schnippi,re
+2007-11-30 22:29:29,VerrueckterPinguin,Ah sehr schön: Ich spare Speicher durch das benutzen der selben Blocks in mehreren Dateien. Das kommt mir irgendwie schon von anderswo her bekannt vor... *g*
+2007-11-30 22:29:32,VerrueckterPinguin,wz schnippi
+2007-11-30 23:55:54,VerrueckterPinguin,"Sowas, kaum macht man es richtig, funktioniert es... ;-)"
+2007-11-30 23:57:42,schnippi\lernen,"absolut unverständlich, ne? :)"
+2007-11-30 23:58:31,VerrueckterPinguin,"Ja, total. *g*"

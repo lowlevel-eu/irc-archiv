@@ -1,0 +1,577 @@
+date/time,nick,message
+2016-08-19 00:29:15,Quantenmagier,"so endlich nen General Protection Fault hinbekommen, der ESP ist bei 0x000053D0 dh. gcc scheint den stack so zu organisieren, daß der pointer selbst an 16 byte ausgerichtet ist."
+2016-08-19 00:31:32,Quantenmagier,"0x53A0 jetzt, ok dann is das immerhin schonmal geklärt"
+2016-08-19 01:20:18,Quantenmagier,"ah ich glaub mir ist grad eingefallen wie ich das problem mit dem pthread_exit lösen kann, ich mach ne routine void pthread_execute(){}"
+2016-08-19 01:20:35,Quantenmagier,und die macht pthread_exit(start_routine(arg));
+2016-08-19 01:20:56,Quantenmagier,und dann muß ich von asm aus nur die pthread_execute ansteuern und nix anderen mehr
+2016-08-19 01:21:30,Quantenmagier,und die parameter übergebe ich über ne globale variable dann muß ich mich in asm nicht mit den argumenten auf dem stack rumärgern
+2016-08-19 01:23:07,Quantenmagier,"und ich brauch noch nen mutex, damit die globale variable immer zu dem aufruf passt"
+2016-08-19 01:25:49,Quantenmagier,er müßte auf globale variablen ja auch zugreifen können wenn er nen andern stack hat so lange der alte stack an der selben adresse liegt
+2016-08-19 01:31:12,Quantenmagier,"das is voll genial warum bin ich da nicht eher drauf gekommen, auch wenn es ein wenig lustig ist, daß pthread.c dann zum ordnungsgemäßen funktionieren seine eigenen mutexe benutzt :D"
+2016-08-19 01:39:43,Quantenmagier,"ich werd dann ne abkürzung nehmen indem ich den mutex im parent locke und im child unlocke, das is zwar nach posix undefined ""If a thread attempts to unlock a mutex that it has not locked or a mutex which is unlocked, undefined behavior results."" aber da es mein eigenes system ist kann ich es ja so implementieren daß es geht, das is dann ja mit undefined behaviour konform :D"
+2016-08-19 02:05:35,Quantenmagier,"ach wie dumm er dupliziert meinen assembler code und beschwert sich dann, daß ne zeilenmarke doppelt ist -.-"
+2016-08-19 02:06:19,Quantenmagier,"also mit -Os kompiliert es aber mit -O2 sagt er ""Error: symbol `pthread_mutex_lock_S' is already defined"""
+2016-08-19 02:53:17,Quantenmagier,ahh ok man muß ein %= hinter die zeilenmarken packen
+2016-08-19 02:53:40,Quantenmagier,dann sind die einzigartig selbst wenn sie vom compiler dupliziert werden.
+2016-08-19 02:54:53,Quantenmagier,"so hier übrigens mein meisterwerk zu pthread_create, jetzt muß ich nur noch das task state segment erstellen und stdlib_pthread_execute() im neuen thread ausführen... https://nopaste.me/view/raw/237bf82b"
+2016-08-19 03:01:06,Quantenmagier,"achso ich prüfe die rückgabewerte von pthread_mutex_lock und pthread_mutex_unlock nicht, weil rein logisch kein fehler auftreten kann."
+2016-08-19 06:42:55,darklink,^^
+2016-08-19 07:28:31,darklink,Quantenmagier: ich würde ein undefined behabo
+2016-08-19 07:28:45,darklink,"behavior als ""HCF"" verstehen"
+2016-08-19 07:31:38,darklink,"oder etwas komplett komisches, wie einen thread spawnen und warten bis der then mutex lockt"
+2016-08-19 11:05:55,Quantenmagier,"darklink, nee undefined behavior sagt ja daß man das normal nicht machen soll, und programme die es machen sind es nicht standardkonform, also kann man machen was für das os am besten ist"
+2016-08-19 11:07:05,Quantenmagier,"aber immerhin gelten mutexe nur innerhalb des selben prozesses, dh es gibt keine konflikte mit anderen anwendungen sondern nur mit anderen threads der selben anwendung"
+2016-08-19 11:07:53,Quantenmagier,"es sei denn die beiden prozesse haben shared memory und der mutex liegt dadrauf, aber wenn sie shared memory haben sind sie eh nicht unabhängig"
+2016-08-19 11:10:44,darklink,Quantenmagier: deshalb sollte man etwas komplett verrücktes tun
+2016-08-19 11:14:10,Quantenmagier,"naja man könnte ne fehlermeldung ausgeben, was an nicht-posix-konformem verhlaten aufgetreten ist, aber ich finde wenn ein programm so designed ist, daß es in einem thread nen mutex locked und in nem andern freigibt soll es doch"
+2016-08-19 11:14:57,Quantenmagier,wenn ich das zulasse ist es ja immernoch posix-konform
+2016-08-19 11:15:27,darklink,free(ptr); free(ptr); -> deallokiert das ganze programm und überschreibt es
+2016-08-19 11:15:50,Quantenmagier,und ich spare mir zwei befehle in meiner pthread.c zum synchronisieren
+2016-08-19 11:16:06,darklink,>2 befehle
+2016-08-19 11:16:08,MasterQ32,"@darklink: ""According to the C++ standard, it's ""undefined"". That's a technical term that means, in theory, anything can happen: the program can crash, or keep running but generate garbage results, or send Bjarne Stroustrup an e-mail saying how ugly you are and how funny your mother dresses you."" :shock:"
+2016-08-19 11:16:30,darklink,MasterQ32: siehste
+2016-08-19 11:16:35,kevin,Wir reden hier aber nicht von UB der Programmiersprache
+2016-08-19 11:16:49,MasterQ32,"ja gut, aber das ist mir so irgendwie passend eingefallen :D"
+2016-08-19 11:17:00,kevin,Abgesehen davon ist die Lösung mit globaler Variable und Mutex völlig kaputt
+2016-08-19 11:17:18,kevin,"Aber gut, Quantenmagier scheint das ja zu mögen"
+2016-08-19 11:17:40,Quantenmagier,"darklink ja zweimal die selbe adresse freigeben wäre im falle meines os momentan sehr böse, weil die adressen kernelseitig freigegeben werden und wenn die bereits zu nem andern programm gehört hat das andere programm nen problem xD"
+2016-08-19 11:17:57,darklink,^^
+2016-08-19 11:18:02,darklink,fail
+2016-08-19 11:18:14,darklink,userspace malloc != kernel malloc
+2016-08-19 11:18:28,darklink,alle prozesse haben einen getrennten malloc pool
+2016-08-19 11:19:00,Quantenmagier,"darklink bei mir nicht, den getrennten malloc pool implementiere ich erst mit dem Paging Memory Manager"
+2016-08-19 11:19:50,Quantenmagier,aber vllt leg ich vorher ne tabelle an die kernelseitig prüft ob der ram zu dem prozess gehört der freigibt
+2016-08-19 11:21:29,Quantenmagier,"kevin was is daran kaputt, ich find das is ne super lösung, weil ich dann keine argumente in asm übergeben muß und das verhalten des neuen threads komplett in der libc statt im kernel definiert habe."
+2016-08-19 11:21:57,Quantenmagier,also samt pthread_exit
+2016-08-19 11:23:15,Quantenmagier,"hm ok im kernel ist es eh nicht, aber ich hab es dann halt nicht in asm geschrieben und muß daher die adresse von pthread_exit nicht übergeben, weil die innerhalb der libc fest ist"
+2016-08-19 11:24:43,Quantenmagier,"ich muß jetzt nurnoch rausfinden, wie ich stdlib_pthread_execute aufrufen kann, ob ich die adresse einfach anspringen kann oder ob ich vorher irgendwas am stack oder den registern ändern muß, obwohl die funktion keine argumente hat"
+2016-08-19 11:29:22,darklink,http://hastebin.com/qisobajaba.c
+2016-08-19 11:30:56,darklink,unterstützt bis zu 1M malloc()s
+2016-08-19 11:31:23,darklink,die doppelt indirekte liste ist null bei allen außer dem ersten
+2016-08-19 11:32:04,darklink,die enthält auch einen pointer auf die erste malloc_t liste
+2016-08-19 11:32:31,darklink,sollte es glaube ich noch mal überarbeiten
+2016-08-19 11:34:20,Quantenmagier,verstehe nicht was das malloc_t *list[] soll
+2016-08-19 11:34:30,Quantenmagier,"warum nen array, wenn du ne liste hast?"
+2016-08-19 11:39:29,Quantenmagier,"hm hab grad nochmal meine geschwindigkeitstestergebnisse nachgeschlagen, denke ich lass das demnächst nochmal laufen, damals kam raus daß in qemu nen xchg oder 3mov schneller waren als 3xor, find ich irgendwie seltsam, weil xchg ja nen lock macht und 3xor nicht, aber vllt implementiert qemu das lock auch einfach effektiver so daß drei xor tatsächlich schlechter sind als ein lock xchg"
+2016-08-19 12:01:07,kevin,"Quantenmagier: Warum nimmst du das gleiche Verfahren nicht auch für neue Funktionsaufrufe? Dann kannst du dir auch dort sparen, den Stack zu benutzen."
+2016-08-19 12:01:13,kevin,s/neue/normale/
+2016-08-19 12:04:33,Quantenmagier,"weil das programm dann doppelt so viel speicher für aufrufe braucht, ich hab den stack zwar für den aufruf gespart aber der speicher wird ja trotzdem für die globale variable verbraucht und dazu kommen dann noch die lokalen variablen die die globale variable übernehmen die verbrauchen dann wieder den stack"
+2016-08-19 12:05:27,Quantenmagier,ok es is nicht doppelt so viel aber es ist dennoch mehr
+2016-08-19 12:05:30,kevin,"Du meinst, das wäre Blödsinn?"
+2016-08-19 12:05:43,kevin,"Okay, warum ist es dann beim Starten von Threads kein Blödsinn?"
+2016-08-19 12:07:52,Quantenmagier,"weil beim starten von threads die lokalen variablen immer auf nen eigenen stack des neuen threads gepackt werden aber nur einmal platz für eine globale variable brauchen, dh der overhead für die globale variable ist gering, weil die für alle gestarteten threads an der selben adresse liegt und man sparrt sich dafür das übergeben von argumenten zum und vom assembler, d.h. im endeffekt hat man dann sogar wen"
+2016-08-19 12:07:52,Quantenmagier,iger verbraucht
+2016-08-19 12:10:24,Quantenmagier,"der einzige wirkliche nachteil ist halt daß man für jedes programm nur einen thread nach dem anderen starten kann, also wenn zwei threads des selben prozesses gleichzeitig nen neuen thread starten wollen, muß der eine thread warten bis der thread des anderen threads erstellt wurde."
+2016-08-19 12:10:59,Quantenmagier,das könnte bei argumentübergabe über assembler statt über globale variable gleichzeitig ablaufen
+2016-08-19 12:11:10,Quantenmagier,aber wie oft startet man schon threads parallel
+2016-08-19 12:18:24,kevin,Das kommt auf das Programm an
+2016-08-19 12:19:15,kevin,"Und du gehst davon aus, dass der Thread den Wert in der globalen Variable nicht braucht? Weil sonst muss er den ja auch irgendwohin kopieren."
+2016-08-19 12:19:51,Quantenmagier,tut er ja er kopiert ihn in die lokale variable und führt es dann von da aus
+2016-08-19 12:20:01,Quantenmagier,https://nopaste.me/view/raw/237bf82b
+2016-08-19 12:20:54,Quantenmagier,"das is in stdlib_pthread_execute(), da kopiert es das in lokale variablen bevor er die funktion aufruft"
+2016-08-19 12:22:07,kevin,Dann brauchst du doch den Platz auf dem Stack trotzdem?
+2016-08-19 12:23:16,Quantenmagier,"joa den brauch ich aber so oder so, der overhead ist bloß die beiden globalen variablen und der mutex (char)"
+2016-08-19 12:24:39,Quantenmagier,"aber sonst müßte ich die jetzt globalen variablen an den syscall zum erstellen des neuen threads übergeben, deswegen ist es quasi plus minus null vom speicherverbrauch"
+2016-08-19 12:25:14,kevin,"Ja, aber dafür brauchst du Locks"
+2016-08-19 12:25:25,Quantenmagier,jop stimmt leider
+2016-08-19 12:25:48,kevin,"Die du nicht brauchen würdest, wenn du die Parameter einfach direkt auf den Threadstack packen würdest"
+2016-08-19 12:26:13,Quantenmagier,"aber die brauch ich zum reservieren des stack des neuen threads eh, wenn ich es komplett konkurrent machen will müßte ich deswegen auch ein paralleles malloc schreiben was ohne locks auskommt :D"
+2016-08-19 12:26:13,kevin,"Du machst i386, oder? Also PM"
+2016-08-19 12:26:27,Quantenmagier,jop PM
+2016-08-19 12:27:46,Quantenmagier,"es is vllt nicht die shcnellste methode, aber es ist posix konform und einfach :D"
+2016-08-19 12:27:52,kevin,Also werden die Parameter über den Stack übergeben. Würde die Sache einfach machen.
+2016-08-19 12:28:08,kevin,"Naja, mach was du willst ;-)"
+2016-08-19 12:29:22,Quantenmagier,"joa über den stack wär vllt etwas schneller aber auch komplizierter, vllt mach ich das noch irgendwann nachträglich, wenn ich mich besser mit der c call konvention auskenne ^^"
+2016-08-19 12:35:08,Quantenmagier,"und mir is jetzt auch eingefallen wie ich tid und pid unterscheiden kann, die tid ist das TSS des threads und die pid ist das DS des threads, weil DS für alle threads des selben prozesses gleich ist. Die frage ist könnten auch zwei verschiedene Prozesse das selbe Datensegment haben?"
+2016-08-19 12:36:59,Quantenmagier,ich denke mal nicht daß das vorgesehn ist zwei prozesse auch dem selben adressspace laufen zu lassen oder gibts dafür irgendeine funktion in zB. linux?
+2016-08-19 12:37:08,Quantenmagier,s/auch/auf/
+2016-08-19 12:41:02,Quantenmagier,"ich könnte auch sagen die tid ist das SS und nicht das TSS das wär glaubich sogar noch einfacher, weil man das SS direkt über mov laden kann und das TSS nen spezialbefehl ltr oder so braucht"
+2016-08-19 12:44:49,Quantenmagier,"hm obwohl ich glaub ich muß dann nochmal die interrupt deskriptoren zu rate ziehen, weil ich glaube der syscal brauch nen eigenes SS dh dann wäre TSS doch sinnvoller als SS weil das SS sich beim syscall ändert"
+2016-08-19 12:47:27,kevin,ds ist solange gleich wie der Userspace-Prozess es nicht ändert
+2016-08-19 12:47:56,kevin,Und zwei Prozesse im gleichen Adressraum heißen Threads
+2016-08-19 12:49:59,Quantenmagier,"hm joa ich hatte auch überlegt cs statt ds zu nehmen, aber ich denke daß zwei prozesse das selbe cs verwenden ist wahrscheinlicher als daß sie das selbe ds verwenden.. klar wenn der userspace das ds ändert wär das natürlich murks, aber gcc kann ja keine segmente deswegen wird ein userspace-prozess das ds nicht ändern, im normalfall"
+2016-08-19 12:50:42,kevin,"Das kommt drauf an, wie du es machst"
+2016-08-19 12:51:12,kevin,Jeder andere außer dir hat genau ein einzigen Userspace-Codesegment und ein einziges Userspace-Datensegment für alle Prozesse zusammen
+2016-08-19 12:51:21,kevin,Aber jeder andere benutzt ja auch Segmentierung nicht wirklich
+2016-08-19 12:51:42,Quantenmagier,joa
+2016-08-19 12:52:49,Quantenmagier,"also eigentlich kann ein userspaceprozss sein ds nicht ändern dafür müßte er wissen welche userspace-datensegmente es noch gibt, er könnte es höchstens auf sein ss ändern, aber dann mit dem geänderten ds nen syscall zu machen wär eh irgendwie dumm"
+2016-08-19 12:56:26,Quantenmagier,hm er könnte natürlich auf gut glück ein datensegment auswählen was kleiner ist als sein eigenes und mit ner chance von ca. 1/6tel könnte er dann vortäuschen nen anderer prozess zu sein.. *grübel* vllt sollte ich das dann nochmal überdenken..
+2016-08-19 12:59:47,Quantenmagier,vllt sollte ich dann die pid doch einfach ins tss schreiben dann wär es gegen manipulation gesichert
+2016-08-19 13:00:16,Quantenmagier,aber is dann auch langsamer die pid auszulesen
+2016-08-19 13:00:46,Quantenmagier,hmm immer diese abwägungen zwischen geschiwndigkeit und sichereit
+2016-08-19 13:01:12,Quantenmagier,+h
+2016-08-19 13:04:08,Quantenmagier,"andererseits sollte ich das ds vermutlich eh gegenmanipulation absichern, die frage ist wie verhindert man daß ein prozess ein anderes ring3 ds lädt is da irgendwas vorgesehn?"
+2016-08-19 13:05:57,kevin,"Du meinst ein Segment, das zu einem anderen Prozess gehört?"
+2016-08-19 13:06:11,Quantenmagier,jop
+2016-08-19 13:06:22,kevin,Pack alle Usermode-Segmente in eine LDT statt die GDT
+2016-08-19 13:06:31,kevin,Dann hat jeder Prozess seine eigene LDT
+2016-08-19 13:06:56,Quantenmagier,hm stimmt das wär ne möglichkeit
+2016-08-19 13:07:25,Quantenmagier,"die ldt benutz ich bisher garnicht, sollte ich dann mal ne routine für schreiben"
+2016-08-19 13:09:06,Quantenmagier,"wie machen das denn eigentlich betriebssysteme ohne segmentierung, daß sie verhindern, daß ein prozess auf den adressraum eines anderen schreibt?"
+2016-08-19 13:10:03,Quantenmagier,läuft das da dann über paging oder gibts da noch ne andere variante?
+2016-08-19 13:13:36,darklink,Paging
+2016-08-19 13:18:43,Quantenmagier,ok dh die speicherbereiche von anderen prozessen werden einfach nicht gemapped? sprich man brauch für jeden prozess ne eigene paging-table/-directory?
+2016-08-19 13:30:05,Quantenmagier,"hm wenn ich die ldt benutzte hätte das auch den vorteil, daß ich mehr platz in der gdt hätte für andere prozesse, weil ich dann ja das datensegment und alle stacksegmente der verschiedenen threads und eventuell auch das code-segmentalle in die ldt legen könnte, die frage ist bloß noch ob ich die tss auch in die ldt legen kann oder ob die in der gdt liegen müssen.."
+2016-08-19 13:36:48,Quantenmagier,"geil wenn ich die tss auch in die ldt legen kann könnte ich maximal ca. 2700 Threads pro Prozess starten bei maximal ca. 8000 Prozessen, denke die anzahl der deskriptoren solle erstmal für den normalfall ausreichen, bei meiner aktuellen variante alle deskriptoren in die gdt zu packen hatte ich ja schon angst daß die irgendwann ausgehen ^^"
+2016-08-19 13:39:40,Quantenmagier,"achso scheinbar kann man die tss nicht auf die ldt legen, weil im tss der ldt selektor steht ^^"
+2016-08-19 13:39:54,Quantenmagier,schade
+2016-08-19 13:43:46,Quantenmagier,das reduziert die zahl der möglichen threads drastisch und die zahl der möglichen prozesse wird dadurch halbiert
+2016-08-19 13:45:08,Quantenmagier,"vllt sollte ich mir mal ne alternative zum TSS überlegen, ich nutz ja eh kein hw multitasking und die kompatibilität dazu kann ich eigentlich auch wegschmeißen, den hw-multitaskingtreiber werde ich vermutlich eh nicht mehr verwenden"
+2016-08-19 13:48:53,Quantenmagier,naja LDT und TSS-Surrogat kommen erstmal auf meine ToDo liste.
+2016-08-19 13:49:00,darklink,Meine benutzung der segmente reicht für UINTPTR_MAX prozesse
+2016-08-19 13:49:17,darklink,und genau so viele threads pro prozess
+2016-08-19 13:50:48,darklink,Und 2^64-1 bzw 2^128-1 threads finde ich viel
+2016-08-19 13:52:14,Quantenmagier,krass wie benutzt du die denn? also was machst du an stelle des Task State Segments?
+2016-08-19 13:53:10,darklink,Ka
+2016-08-19 13:53:50,darklink,TSS werde ich glaube ich bei x86 überhaupt nicht mehr nehmen
+2016-08-19 13:54:05,Quantenmagier,wo speicherst du dann den task state?
+2016-08-19 13:54:57,darklink,In ner tabelle
+2016-08-19 13:55:33,Quantenmagier,eine tabelle global oder für jeden prozess oder für jeden thread?
+2016-08-19 13:55:34,darklink,hw multitasking ist sch****
+2016-08-19 13:55:59,darklink,eine tabelle global
+2016-08-19 13:56:44,Quantenmagier,hm und wie findest du in der tabelle platz für 2^64-1 task states? vergrößerst du die dynamisch?
+2016-08-19 13:58:17,darklink,x-mal indirekt
+2016-08-19 13:58:52,Quantenmagier,dh?
+2016-08-19 13:58:59,darklink,also dynamisch
+2016-08-19 13:59:58,Quantenmagier,ah ok dh wenn sie zu klein geworden ist mappest du ne neue page dahinter?
+2016-08-19 14:05:46,darklink,also unter x86 und arm wäre das ein Task ***
+2016-08-19 14:07:06,darklink,unter x86_64 wäre es auch ein Task ***
+2016-08-19 14:07:25,darklink,oder bei beiden noch ein stern mehr?
+2016-08-19 14:07:35,Quantenmagier,o.O
+2016-08-19 14:08:03,Quantenmagier,warum so viele pointer auf pointer? die alle zu dereferenzieren kostet doch viel zeit beim task switch?
+2016-08-19 14:08:51,darklink,>Viel zeit
+2016-08-19 14:08:58,darklink,>HW Multitasking
+2016-08-19 14:09:07,darklink,*hust*
+2016-08-19 14:09:52,Quantenmagier,"naja wenn prozessoren das hw multitasking ordnentlich unterstützen würden wäre das schneller als sw multitasking, aber es wurde leider hw seitig nie groß optimiert wie es scheint. :-/"
+2016-08-19 14:10:09,darklink,hw multitasking und segmentation braucht viel mehr als 3 zusätzliche speicherzugriffe
+2016-08-19 14:10:18,darklink,+zeit
+2016-08-19 14:10:51,Quantenmagier,"ich hatte damals nur die intel referenz als ich mein os angefangen habe und in der intelreferenz war halt nur das hw multitasking erklärt, daß man das meist softwareseitig macht und hw multitasking langsam ist stand in dem intel dokument leider nicht drin"
+2016-08-19 14:11:48,darklink,"damals gabs allerdings schon x86_64, oder`"
+2016-08-19 14:11:52,Quantenmagier,nee
+2016-08-19 14:12:03,darklink,wann hast du angefangen?
+2016-08-19 14:12:19,darklink,1996?
+2016-08-19 14:12:48,Quantenmagier,nee so kurz nach 2000 denke ich
+2016-08-19 14:13:15,darklink,aber nich nach 2005
+2016-08-19 14:14:11,Quantenmagier,"naja der letzte kenrel den ich hier noch rumliegen habe ist nach ls -l von 2005, aber denke ich hab früher angefangen, weil dieses date was da steht beim kopieren geändert wurde oder so"
+2016-08-19 14:14:50,darklink,Du solltest dringend mal git/svn benutzen
+2016-08-19 14:17:10,Quantenmagier,"jop wollte die tage git aufsetzen um code mit nem kumpel zu tauschen, aber find das irgendwie recht kompliziert, also muß ich da für jedes projekt nen eigenes repository anlegen oder kann man die auch irgendwie sammeln oder sagen daß git die repos automatisch erzeugen soll?"
+2016-08-19 14:17:50,XanClic,Klar
+2016-08-19 14:18:21,XanClic,"function mkdir_and_git() { mkdir ""$1"" && git init ""$1"" }"
+2016-08-19 14:18:26,XanClic,alias mkdir=mkdir_and_git
+2016-08-19 14:18:41,darklink,export -f mkdir_and_git
+2016-08-19 14:19:00,XanClic,"Na, sollte schon in die ~/.*shrc"
+2016-08-19 14:19:25,Quantenmagier,"und git kann diese funktion dann benutzen, wenn man nen neues repo hochladen will?"
+2016-08-19 14:19:49,darklink,dann kann ich ja meinen PATH ohne export setzen da drinne?
+2016-08-19 14:19:50,XanClic,"Eigentlich sollst nur du diese Funktion benutzen, um ein Repo anzulegen"
+2016-08-19 14:20:04,XanClic,"Und eigentlich war das auch nur ein Witz, weil ""git init"" jetzt nicht so schwierig auszuführen ist"
+2016-08-19 14:20:47,Quantenmagier,aso naja geht mir halt darum daß ich will daß mein kumpel auch das git auf dem server benutzen können soll und neue repos anlegen aber kein ssh ausführen
+2016-08-19 14:21:11,XanClic,Das ist ja weniger ein git-Problem
+2016-08-19 14:21:25,XanClic,"Sondern eher ein Problem, wie du es ermöglichst, dass der bestimmte Befehle ausführen kann, aber nur die"
+2016-08-19 14:21:31,Quantenmagier,naja dachte man kann die repos irgendwie gitseitig anlegen
+2016-08-19 14:21:40,XanClic,Klar kann man
+2016-08-19 14:21:42,XanClic,git init
+2016-08-19 14:21:43,XanClic,:-P
+2016-08-19 14:22:07,XanClic,"Aber wie man einem Benutzer erlaubt, das zu machen, und nur das, ist eher nicht so gits Problem"
+2016-08-19 14:23:52,Quantenmagier,"hm sehe grad git init benutzt den directory als parameter, ich würd lieber nur nen repository namen und die sollen dann alle im selben dir sein geht das auch oder wie kann in die pfade für git einschränken?"
+2016-08-19 14:24:12,XanClic,Ich persönlich würde halt irgendein kleines CGI-Skript schreiben
+2016-08-19 14:24:35,XanClic,"Das nimmt einen Repositorynamen als Parameter, erstellt das Verzeichnis und führt da git init aus"
+2016-08-19 14:25:10,XanClic,"Alternativ gibts halt Software wie github oder gitorious, die man auf dem Server laufen lassen kann, und die das verwalten"
+2016-08-19 14:25:22,XanClic,Wobei github glaub ich nicht kostenlos ist und beides eher ein bisschen zu fett für den Zweck
+2016-08-19 14:25:54,XanClic,"Und ich meine github wie in github-Software, nicht wie in github.com"
+2016-08-19 14:27:40,Quantenmagier,"hm wie macen das denn die linux entwickler für die git entwickelt wurde, daß sie zum beispiel nen webcam-treiber entwickler von nem filesystem-entwickler abschirmen anhand der linux pfade oder is das alles global und jeder entwickler kann alles ändern?"
+2016-08-19 14:28:07,XanClic,"Es gibt nur einen, der Zeug im offiziellen Linuxrepo committen kann, und das ist Linus"
+2016-08-19 14:28:22,XanClic,"(wobei das die Theorie ist, ich glaube, praktisch haben noch zwei, drei andere Leute Zugriff)"
+2016-08-19 14:28:58,XanClic,"Alle anderen senden Patches an die Linux Kernel Mailing List, da werden die reviewt und dann ggf. von Maintainern in deren private git-Repos gemerget"
+2016-08-19 14:29:01,Quantenmagier,aso und wo hat der den code her hat der dann zwie repos eins wo die entwicker commiten und das offizielle wo nur er commited?
+2016-08-19 14:29:17,XanClic,Und jede $ZEITEINHEIT (eine Woche oder so) senden die Maintainer dann einen Pullrequest an Linus
+2016-08-19 14:29:24,Quantenmagier,aso
+2016-08-19 14:29:44,darklink,Git ist eigentlich bloß ne sammlung von code für das mailen von diffs
+2016-08-19 14:30:02,XanClic,…eigentlich nicht
+2016-08-19 14:30:06,Quantenmagier,läuft dieser pullrequest auch über git? also shcicken die den dann an das offizielle linux repository und linus sieht die dann da?
+2016-08-19 14:30:22,XanClic,"Branches und Rebasing sind die ersten zwei Sachen, die mir einfallen, die darüber hinaus gehen"
+2016-08-19 14:30:34,darklink,XanClic: es hat 3 befehle genau dafür
+2016-08-19 14:30:48,XanClic,"darklink, richtig, es hat aber eine Menge anderer Befehle für andere Sachen"
+2016-08-19 14:31:09,XanClic,Man kann also definitiv sehr gut git-Patches per Mail verschicken und das ist definitiv ein Einsatzzweck
+2016-08-19 14:31:12,XanClic,Man kanns aber auch nicht machen
+2016-08-19 14:31:22,XanClic,Auf github wird normalerweise alles ohne E-Mails gemacht
+2016-08-19 14:31:26,darklink,Ich mache es nicht
+2016-08-19 14:31:44,XanClic,"Quantenmagier, der Pullrequest besteht normalerweise aus einer Serie von Patch-E-Mails"
+2016-08-19 14:32:05,XanClic,"Aber die erste E-Mail enthält normalerweise auch einen Link zum Repository des Maintainers, sodass Linus da direkt die Commits rausziehen kann"
+2016-08-19 14:32:16,Quantenmagier,"o.O urgs warum haben die die funktion nicht direkt in git implementiert, daß man den request direkt in git sieht?"
+2016-08-19 14:32:57,XanClic,"Weil git kein Service ist, sondern eine Sammlung von Programmen?"
+2016-08-19 14:33:12,XanClic,"git läuft nicht die ganze Zeit im Hintergrund und pingt dich an, wenn was passiert"
+2016-08-19 14:33:57,XanClic,Außerdem ist das so nicht wirklich komplizierter
+2016-08-19 14:34:07,XanClic,Anstatt eines Pings von git gibts so halt einen Ping vom E-Mail-Programm
+2016-08-19 14:34:18,Quantenmagier,dachte: git1 --pullreq--> git2 und git2 hat dann nen branch mit dem pullrequest drin und wenn man das repository abrufen will sieht man den neuen branch und kann ihn entweder übernehmen oder verwerfen
+2016-08-19 14:34:41,XanClic,"Der Pullrequest geht an Linus, nicht an das git-Repository"
+2016-08-19 14:35:04,XanClic,So ist das zumindest bei Linux (und qemu)
+2016-08-19 14:35:08,Quantenmagier,joa aber gibt es so eine funktion wie ich sie grad beschrieben habe auch in git?
+2016-08-19 14:35:19,XanClic,Bei github hingegen schickt man Pullrequests schon direkt an das Repository
+2016-08-19 14:35:23,XanClic,Aber das verwaltet dann github und nicht git
+2016-08-19 14:40:56,Quantenmagier,kann man bei git ältere versionen nachträglich hinzufügen? also wenn ich jetzt mein betriebssystem in der aktuellen version in ein repo packe kann ich dann die älteren versionen nachträglich in der versionsgeschichte hinzufügen oder muß ich mit der ältesten version anfangen und das chronologisch hinzufügen?
+2016-08-19 14:43:18,XanClic,Kann man theoretisch schon
+2016-08-19 14:43:21,XanClic,Praktisch will man das wirklich nicht
+2016-08-19 14:43:40,Quantenmagier,wieso nicht? ist das sehr umständlich?
+2016-08-19 14:43:43,XanClic,Ja
+2016-08-19 14:44:04,XanClic,"Also, na ja, ich habs noch nie gemacht"
+2016-08-19 14:44:09,XanClic,"Wenn man es richtig macht, geht es bestimmt"
+2016-08-19 14:44:32,Quantenmagier,gibts dafür denn vorgegebene befehle in git oder muß man sich dafür selbst nen programm zusammen hacken?
+2016-08-19 14:46:36,XanClic,"Man müsste halt einen neuen Branch anlegen, der auf den git-Commit zeigt, nach dem man etwas einfügen will"
+2016-08-19 14:46:44,XanClic,"Oder einen orphan-Branch, wenn es ganz am Anfang sein soll"
+2016-08-19 14:46:53,XanClic,Dann müsste man da den alten Stand reinkopieren und das committen
+2016-08-19 14:47:27,XanClic,Und dann theoretisch entweder den master-Branch dadrauf rebasen oder alles vom master-Branch cherry-picken
+2016-08-19 14:47:38,XanClic,"Aber beides vermutlich schlechte Ideen, weil git das gar nicht mögen wird"
+2016-08-19 14:47:59,XanClic,Wobei…
+2016-08-19 14:48:21,XanClic,"Man kann rebasen, dann wird git wegen Konflikten meckern, und dann macht man git checkout --ours . und dann kann man committen"
+2016-08-19 14:48:22,XanClic,Oder so
+2016-08-19 14:50:56,Quantenmagier,"hmm ok klingt eigentlich ganz gut, aber ich kann ja erstmal meine platten überfliegen was ich an alten versionen finde und die chronologisch commiten, falls ich dann wirklich noch ne version nachträglich finde kann ich mir ja immernoch überlegen ob ich die wirklich hinzufügen will"
+2016-08-19 15:16:23,kevin,XanClic: Der Kernel hat übrigens ein anderes Entwicklungsmodell als qemu ;-)
+2016-08-19 15:16:42,kevin,"Von wegen ""jede $ZEITEINHEIT"" und so"
+2016-08-19 15:17:41,kevin,"Es gibt ein Merge Window von ich glaube normal zwei Wochen und da sollte alles reinkommen, danach sind nur noch RCs"
+2016-08-19 15:21:55,Quantenmagier,"darklink sehe grade der kernel von 'januar 2005' heißt gt3.bin, das is also sogar schon ne version mit grafiktreiber, ich hab also selbst wenn das datum nicht beim kopieren geändert wurde wesentlich früher angefangen. ^^"
+2016-08-19 15:23:52,darklink,^^
+2016-08-19 15:24:22,kevin,Was hast du dann die letzten zehn Jahre gemacht? ;-)
+2016-08-19 15:24:24,Quantenmagier,"sehe grad gt3.bin war die letzte version bevor ich zu fasm gewechselt bin, vorher hab ich das os in DOS geschrieben"
+2016-08-19 15:26:03,Quantenmagier,hier das is der quelltext gt3_.asm: https://nopaste.me/view/raw/7bf5061a
+2016-08-19 15:26:31,Quantenmagier,"so hab ich das damals noch geschrieben, seit fasm gabs dann zum glück etwas mehr struktur :D"
+2016-08-19 15:28:38,kevin,Gruselig :-)
+2016-08-19 15:29:29,Quantenmagier,joa die erste asm version meines os war noch in dos debug geschrieben :D
+2016-08-19 15:30:19,Quantenmagier,das war extrem umständlich im vergleich zu fasm :D
+2016-08-19 15:32:13,Quantenmagier,kevin: zwischen 2010 und 2012 und zwischen 2012 und 2015 hatte ich nicht an dem os weiter geschrieben weil ich zu sehr mit studium beschäftigt war
+2016-08-19 15:33:10,XanClic,"kevin, dann ist $ZEITEINHEIT wohl „alle paar Monate“"
+2016-08-19 15:33:51,kevin,"Quantenmagier: Ich dachte Studium ist die Zeit, in der man für alles mögliche Zeit hat?"
+2016-08-19 15:34:02,XanClic,Pfffffhahahahaha
+2016-08-19 15:34:03,Quantenmagier,kevin mit bachelor master system leide rnicht
+2016-08-19 15:35:34,Quantenmagier,aber das os hat sich in den zehn jahren trotzdem ganz schön entwickelt ich meine ich hab jetzt nen fat treiber und nen elf loader und multitasking etc. :D
+2016-08-19 15:36:23,XanClic,"Die ersten paar Semeter sind die, wo man Zeit für alles hat, weil davon ausgegangen wird, dass Vorlesungs- und Übungsbesuche Zeit kosten"
+2016-08-19 15:36:37,XanClic,Obwohl die ja tatsächlich keine Zeit kosten
+2016-08-19 15:36:52,XanClic,"Aber am Ende wird ja erwartet, dass man aktiv Sachen macht, und das kostet ja tatsächlich Zeit"
+2016-08-19 15:36:58,Quantenmagier,"nee ich hatte mathe nebenfach, das hat schon ganz schön zeit gekostet"
+2016-08-19 15:36:59,kevin,Ihr macht irgendwas falsch
+2016-08-19 15:37:18,kevin,Bei mir ist das mit zunehmender Semesterzahl immer entspannter geworden
+2016-08-19 15:37:28,XanClic,"OK, zu den Mathenebenfachvorlesungen bin ich auch hingegangen"
+2016-08-19 15:37:46,XanClic,"kevin, ich bin mir nicht sicher, ob nicht du was falsch gemacht hast, wenn es bei dir am Anfang nicht entspannt war :-P"
+2016-08-19 15:38:12,XanClic,"Aber ich glaube, wir wissen, was ich falsch gemacht hab"
+2016-08-19 15:38:17,kevin,Guter Punkt *g*
+2016-08-19 15:38:41,kevin,"Aber als Erstsemester war ich ja noch motiviert, da durfte das Zeit kosten ;-)"
+2016-08-19 16:01:18,Quantenmagier,"hm vol nervig far call akzeptieren keine register als adresse, hätte gerne einfach call far dx:ebx gemacht"
+2016-08-19 16:22:05,darklink,Vielleicht ist das verteilt
+2016-08-19 16:22:45,darklink,die mitte ist schwieriger als das anfang und ende
+2016-08-19 16:34:43,Quantenmagier,(gdb) disassemble
+2016-08-19 16:34:43,Quantenmagier,No function contains program counter for selected frame.
+2016-08-19 16:34:48,Quantenmagier,wie machich das nochmal?
+2016-08-19 16:35:52,Svenska,"kA, nutze gdb nicht"
+2016-08-19 16:36:14,Quantenmagier,hm die tage hat das irgendwie funktioniert
+2016-08-19 16:36:41,Quantenmagier,ich bin halt grad an meinem breakpoint in 0x00000726
+2016-08-19 16:43:24,Svenska,dann ist dein program counter außerhalb aller funktionen
+2016-08-19 16:47:18,Quantenmagier,"ahh ich mußte ""layout asm"" benutzen"
+2016-08-19 16:52:32,Quantenmagier,"wie mach ich ""x cs:0x6933"" das will irgendwi enicht"
+2016-08-19 17:09:10,Quantenmagier,ah geil habs endlich hinbekommen die c funktion stdlib_pthread_execute auszuführen ^^
+2016-08-19 17:09:23,Jonathan,Moin
+2016-08-19 17:09:49,Quantenmagier,aber habs nicht mit jmp oder call hinbekommen hab jetzt stattdessen die werte auf den stack gepushed und nen ret gemacht xD
+2016-08-19 17:10:23,kevin,Moin Jonathan
+2016-08-19 17:11:22,Quantenmagier, push dx  ;cs of c programm
+2016-08-19 17:11:23,Quantenmagier, push ebx ;offset of stdlib_pthread_execute()
+2016-08-19 17:11:23,Quantenmagier, iret
+2016-08-19 17:11:29,Quantenmagier,so hab ich das jetzt gemacht
+2016-08-19 17:11:31,Svenska,moin
+2016-08-19 17:12:00,Quantenmagier,frag mich bloß warum das mit jmp far oder call far einfach nciht klappen wollte
+2016-08-19 17:12:00,Svenska,"Quantenmagier: das stichwort, nach dem du suchst, heißt ""ABI"""
+2016-08-19 17:12:14,Svenska,und ist kein abitur :-)
+2016-08-19 17:13:37,Quantenmagier,"Svenska, was für ne ABI? den c code und den asm code die miteinander kommunizieren hab ich doch beide selbst geschrieben?!?"
+2016-08-19 17:14:25,Svenska,und dein compiler baut das interface zum c code nach abi -.-
+2016-08-19 17:14:46,Quantenmagier,nee der benutzt meine selbstgeschriebene libc
+2016-08-19 17:15:01,Quantenmagier,und compiliert es dann nach elf
+2016-08-19 17:15:12,Svenska,"also hast du deinen compiler so zusammengeschustert, dass funktions-prolog und -epilog auch von dir kommen?"
+2016-08-19 17:15:33,Quantenmagier,öhm was is das?
+2016-08-19 17:15:35,kevin,Quantenmagier: iret ohne dass du aus einem Interrupthandler kommst ist falsch
+2016-08-19 17:16:13,Quantenmagier,"kevin jop bin im syscall, später wenn ich im neuen thread bin muß das natürlich durch ret ersetzt werden"
+2016-08-19 17:16:16,Svenska,"der funktionsprolog ist der code, den der compiler VOR die funktion klatscht, um zB parameter abzusammeln oder so"
+2016-08-19 17:16:25,kevin,retf meinst du
+2016-08-19 17:16:34,Quantenmagier,öhm jop danke :D
+2016-08-19 17:16:49,Quantenmagier,"Svenska, ich hab ne crt0.c wenn du das meinst?"
+2016-08-19 17:18:02,Quantenmagier,"Svenska, oder wo kann ich den prolog und epilog bei gcc definieren?"
+2016-08-19 17:20:31,Svenska,kannst du nicht
+2016-08-19 17:20:36,Svenska,darum stichwort ABI -.-
+2016-08-19 17:21:34,Quantenmagier,"Svenska, aso du meinst ich soll mir die gcc ABI bzw. die gcc call konvention angucken?"
+2016-08-19 17:23:04,Svenska,"die ist sogar spezifiziert, nennt sich ABI"
+2016-08-19 17:23:09,Quantenmagier,hab extra nen void function(void) angesprungen damit ich nix übergeben muß und direkt in die funktion reinspringen kann ^^
+2016-08-19 17:23:13,Svenska,ist von intel / microsoft spezifiziert ;)
+2016-08-19 17:23:20,Svenska,"ja, dann ist die ABI ""keine parameter"""
+2016-08-19 17:26:48,Quantenmagier,"hehe ich kann mir jetzt durch das auskommentieren oder drinlassen zweier push's aussuchen ob mein os bei einem pthread_create den vater thread oder den kind thread ausführt, jetzt muß ichs nurnoch hinbekommen daß es beide ausführt :D"
+2016-08-19 17:29:55,Quantenmagier,oh ok irgendwo ist bei der ausführung des kind-threads noch ein problem ich hab grad die ausgabe kaputtgebrochen er gibt jetzt wirre zeichen im spielfeld aus :D
+2016-08-19 17:30:19,Quantenmagier,dabei hab ich nur die spielfigur ein wenig bewegt ^^
+2016-08-19 17:33:40,Quantenmagier,achso ich seh schon der kindthread benutzt noch das kaputte nanosleep was ich noch reparieren muß
+2016-08-19 17:41:51,Quantenmagier,"ok jetzt kann ich die spielfigur ordentlich steuern, und da aus irgendeinem grund die spielfeldgrenzen nicht richtig erkannt werden kann ich sogar unten aus dem spielfeld fliehen :D"
+2016-08-19 17:42:32,Svenska,klingt nach fehlerfrei und stabil
+2016-08-19 17:42:54,kevin,"Fast stabil, schon vergessen?"
+2016-08-19 17:43:01,Svenska,stimmt :-)
+2016-08-19 17:43:02,kevin,Und poxis complient
+2016-08-19 17:43:59,kevin,genuine proffesionel :-)
+2016-08-19 17:44:03,Svenska,*ggg*
+2016-08-19 17:45:13,Quantenmagier,"und hab grad festgestellt der eine fehler in dem spiel mit den spielfeldgrenzen tritt unte rlinux auch auf, der andere nicht, kann sein daß der andere fehler in dem zweiten thread behoben wird, führe ja grad nur einen aus, bin mal gespannt ob der noch da is wenn ich bald mal beide threads gleichzeitig ausführe :D"
+2016-08-19 17:45:48,Quantenmagier,verdammt jetzt hab ich hunger aus linguine
+2016-08-19 17:46:17,Quantenmagier,oder zumindest auf ne linguistik studentin
+2016-08-19 17:46:47,Quantenmagier,ups sind hier eigentlich frauen anwesend?
+2016-08-19 17:46:56,MasterQ32,beides lecker :D
+2016-08-19 17:47:08,Quantenmagier,hehe joa :D
+2016-08-19 17:47:15,Svenska,was ist linguine?
+2016-08-19 17:47:21,MasterQ32,nudelsorte
+2016-08-19 17:47:21,kevin,Pinguine mit L ;-)
+2016-08-19 17:47:31,Quantenmagier,"Svenska, Bandnudeln"
+2016-08-19 17:47:37,Svenska,aah
+2016-08-19 17:47:43,kevin,"Breite Spaghetti, passend zum Code *g*"
+2016-08-19 17:50:36,Quantenmagier,"aber ich bin guter dinge daß das spiel laufen wird, hätte gedacht ich treffe auf mehr fehler, immerhin funkioniert die nuee variante meines schachprogramms ja auch nicht und das obwohl sie noch keine threads benutzt :D"
+2016-08-19 17:50:59,kevin,"Du meinst, wenn etwas zu gut funktioniert, baut man Threads ein?"
+2016-08-19 17:51:06,kevin,Klingt nach einer validen Strategie ;-)
+2016-08-19 17:52:02,Quantenmagier,lol nee die threads waren in der game engine die ich geschrieben hab schon von anfang an drin und in das schachprogramm kommen die irgendwann rein damit es auf mehreren kernen gleichzeitig rechnen kann ^^
+2016-08-19 17:55:01,Quantenmagier,also dieses unready.c was ich grad versuche zum laufen zu bringen is so ne art game-engine für terminal spiele. Die erste version war noch ziemlich buggy aber wenn die stabil auf meinem os läuft versuche ich als nächstes die neue version für mein os zu compilieren die farbausgabe und andere zusätzliche features hat. ^^
+2016-08-19 17:57:41,Quantenmagier,ich hatte ja schonmal nen video von der neuen version gepostet: https://www.youtube.com/watch?v=-WqapavUlus
+2016-08-19 18:01:01,Quantenmagier,"das is so das standardspiel was ich geschrieben habe, aber theoretisch könnte man auch tetris oder andere spiele leicht mit dem basiscode der engine implementieren, vielleicht versuch ich mich mal an pong oder pacman oder so wenn die engine stabil auf meinem os läuft ^^"
+2016-08-19 18:01:56,kevin,"Ich finde, das sieht verwirrend aus"
+2016-08-19 18:02:09,kevin,Bedeuten die ganzen Zeichen irgendwas bestimmtes?
+2016-08-19 18:02:32,Quantenmagier,"naja man steuert halt das grüne pluszeichen und muß der lava also den roten raute zeichen ausweichen, die erklärung der zeichen is auch am anfang des videos"
+2016-08-19 18:03:18,kevin,"Ich meinte eher das ganze Zeug, das sonst so rumfährt"
+2016-08-19 18:03:19,Quantenmagier,"und das besondere an unready is daß man zwei spielebenen hat man kann mit leertaste die dimension wechseln dann werden die roten punkte zu roten rautezeichen, alos die punkte zeigen an wo sich lava in der paralleldimension befindet"
+2016-08-19 18:03:47,Quantenmagier,öhm die grauen schriftzeichen haben abgesehn vom minuszeichen was ne wand darstellt keine bedeutung
+2016-08-19 18:04:05,kevin,Okay
+2016-08-19 18:04:15,kevin,Weil da am Anfang irgendwie der ganze Bildschirm voll ist damit
+2016-08-19 18:04:25,Quantenmagier,"die sind auch nur am anfang des spiels, weil ich das level mit nem asciiart generator erstellt hab und dem konnte ich nicht sagen daß er nur die vorgegebenen zeichen nutzen soll :D"
+2016-08-19 18:05:10,Quantenmagier,also eigentlich hatte ich das spiel für ne competition geschrieben und da mußte man ne grafik einbinden und ich hab sie eben inform von asciiiart in das level eingebunden :D
+2016-08-19 18:05:17,kevin,Ah *g*
+2016-08-19 18:06:11,Quantenmagier,"wenn du bei 0:30 oder so guckst kannst du auch einen teil von der ascii-art lesen, also ""FOR THE"" erkennt man ganz gut ^^"
+2016-08-19 18:06:12,MasterQ32,lol :D
+2016-08-19 18:07:35,Quantenmagier,ich glaub das hieß ENTERED FOR THE PANDORA rebirth irgendwas.. XD
+2016-08-19 18:08:16,MasterQ32,:P
+2016-08-19 18:09:25,Quantenmagier,aber da ich noch kein fopen habe werde ich das spiel zunächst ohne level laufen lassen nur im random-mode den man später sieht. ^^
+2016-08-19 18:11:25,Quantenmagier,wobei der random mode bei der ersten version anders aussieht als in dem video der is echt mehr random der randomcode in version2 soll hingegen gestreifte muskulatur oder so darstellen deswegen diese wände die dann immer nur an wenigen stellen durchläßig sind damit es schwerer ist ^^
+2016-08-19 18:18:56,kevin,Eigentlich müsste ich mal seine alten Textmodusspiele auf tyndur portieren/durchkompilieren
+2016-08-19 18:19:02,MasterQ32,:)
+2016-08-19 18:20:19,kevin,*meine natürlich
+2016-08-19 18:20:40,kevin,"Kommt davon, wenn man mit /me ansetzt und sich dann umentscheidet"
+2016-08-19 18:20:52,Svenska,:-)
+2016-08-19 18:21:01,MasterQ32,hab ich mir schon gedacht
+2016-08-19 18:23:57,Quantenmagier,ach ihr habt auch textmodusspiele geschrieben? cool ^^
+2016-08-19 18:24:22,Quantenmagier,ich könnt ja mal versuchen unready auf tyndur zu portieren ^^
+2016-08-19 18:24:31,Quantenmagier,und mein schachprogramm ^^
+2016-08-19 18:24:40,Svenska,du könntest ja eine z-machine portieren ;)
+2016-08-19 18:24:47,Quantenmagier,vllt läuft auf tyndur ja sogar die neuere variante meines schachprogramms ^^
+2016-08-19 18:29:33,Quantenmagier,naja wenn die neue tyndur version draußen is kann ich das ja mal testen ^^
+2016-08-19 18:35:03,Quantenmagier,wozu denn eigentlich ne z-machine? wenn man poxis-complient is läuft doch eh alles über das standard terminal interface :D
+2016-08-19 18:35:23,Svenska,jo
+2016-08-19 18:35:40,Quantenmagier,also ansi escape codes und so
+2016-08-19 18:36:25,Svenska,kann die z-maschine das?
+2016-08-19 18:36:47,Quantenmagier,nö aber meine game engine :D
+2016-08-19 18:37:51,Quantenmagier,bzw es gibt ja ne z-machine für linux die wird das shcon als frontend haben
+2016-08-19 18:38:36,Svenska,eine...? ;-)
+2016-08-19 18:38:48,Quantenmagier,kp xD
+2016-08-19 18:39:03,Quantenmagier,mindestens eine ^^
+2016-08-19 18:43:10,Quantenmagier,"na toll ne freundin schreibt mir sie will vergewaltigt werden, jetzt hab ich bock auf sex, dabei war ich grad so schön logisch denkend in meine porgrammierung vertieft, frauen können einen echt aus dem konzept bringen.. :'/"
+2016-08-19 18:44:01,MasterQ32,lolwut?
+2016-08-19 18:45:00,MasterQ32,was meint ihr mit z-maschine?
+2016-08-19 18:45:17,Svenska,google mal zork :-)
+2016-08-19 18:45:29,Quantenmagier,MasterQ32: http://www.sandia.gov/z-machine/
+2016-08-19 18:46:02,Quantenmagier,"""Created to validate nuclear weapons models, the Z machine is also in the race for viable fusion energy."" xD"
+2016-08-19 18:46:14,MasterQ32,"zork (spiel) kenne ich, z-machine kann ich aber grade konkret nicht damit in verbindung bringen"
+2016-08-19 18:46:26,Quantenmagier,https://en.wikipedia.org/wiki/Z-machine
+2016-08-19 18:46:45,Svenska,"die z-maschine ist die vm, in der zork und andere spiele geschrieben sind"
+2016-08-19 18:48:22,MasterQ32,ah
+2016-08-19 18:49:18,MasterQ32,"""Everything You Always Wanted to Know About Writing Interactive Fiction But Couldn't Find Anyone Still Working Here to Ask"""
+2016-08-19 18:56:26,Svenska,"ui, strings bestehen aus 5-bit-zeichen, von denen jeweils 3 in einem uint16_t gespeichert werden, plus einem ""dies ist das ende""-bit ;)"
+2016-08-19 18:57:26,Svenska,"und zwei zeichen schalten zwischen alphabeten (kleinbuchstaben, großbuchstaben, sonderzeichen) um"
+2016-08-19 18:59:58,kevin,Kann man machen ;-)
+2016-08-19 19:02:20,MasterQ32,"ach, 5bit worte sind doch was schönes :)"
+2016-08-19 19:03:15,Svenska,"die ersten 6 in jedem alphabet sind reserviert fuer diverses (zB umschalten), d.h. von 32 zeichen bleiben 26 uebrig"
+2016-08-19 19:03:23,Svenska,welch zufall ;)
+2016-08-19 19:04:56,MasterQ32,oha! :D
+2016-08-19 19:06:29,Quantenmagier,und umlaute und scharfes s?
+2016-08-19 19:06:53,MasterQ32,who needs that shit anyways
+2016-08-19 19:06:54,Svenska,was ist das?
+2016-08-19 19:07:10,Quantenmagier,öäüß
+2016-08-19 19:07:39,Svenska,"spätere versionen können eine tabelle angeben, und später wurden auch 1024 zeichen definiert (davon nur ~250 gueltige), die man anders angeben kann"
+2016-08-19 19:07:48,Quantenmagier,"Svenska, aso das was MasterQ32 geschrieben hat war english"
+2016-08-19 19:08:00,MasterQ32,*trololo*
+2016-08-19 19:08:16,Svenska,ich hätte das ja als Englisch bezeichnet
+2016-08-19 19:08:21,Svenska,aber english ist auch richtig
+2016-08-19 19:12:51,Quantenmagier,1024 zeichen reichen ja nichtmal für simplified chinese
+2016-08-19 19:13:19,Svenska,das war 1979 auf us-heimcomputern und englische spiele auch nicht so ganz relevant
+2016-08-19 19:14:48,kevin,"Wie gut unterstützt dein OS denn Chinesisch, Quantenmagier?"
+2016-08-19 19:15:30,Quantenmagier,öhm noch garnicht :D
+2016-08-19 19:15:44,Quantenmagier,aber utf8 kommt noch irgendwann ^^
+2016-08-19 19:15:46,MasterQ32,hab nur noch keine gemalt
+2016-08-19 19:16:03,Svenska,wie sieht's mit rechts-nach-links-sprachen aus?
+2016-08-19 19:16:37,MasterQ32,"okay, das geht glaube ich noch nicht konkret"
+2016-08-19 19:16:43,MasterQ32,aber theoretisch kann ich negativen advance
+2016-08-19 19:16:51,MasterQ32,damit müsste man halt vorher mit leerzeichen padden
+2016-08-19 19:16:57,MasterQ32,aber ansonsten: kein thema
+2016-08-19 19:19:21,Quantenmagier,links nach rechts sprachen kann man einfach die stdio.c patchen dann schriebt er andersrum :D
+2016-08-19 19:28:55,Quantenmagier,"obwohl ich den code noch komplett aus der stdio.c rausnehmen will und direkt in den asm-code packen will weil es die stdio.c unnötig kompliziert macht, die sollte sich ja eigentlich nciht dafür interessieren wie das terminal die zeichne ausgibt ^^"
+2016-08-19 19:29:50,Quantenmagier,yay mir fällt grad ein ich hab noch rote beete saft im kühlschrank :)
+2016-08-19 19:33:37,Quantenmagier,"alternativ könnte ich den terminalcoe auch komplett in c schreiben aber dann weiß ich nciht wie ich ihn in mein betriebssystem bekomme, aber das wäre mal ein anfang um portablen code für mein os zu schreiben statt dem assembler.."
+2016-08-19 19:33:47,Quantenmagier,*terminalcode
+2016-08-19 19:36:53,darklink,Argh
+2016-08-19 19:37:11,darklink,hatte die page size falsch
+2016-08-19 19:37:26,darklink,kein wunder warum arm nicht lud
+2016-08-19 19:37:50,darklink,allerdings funktionierte sowohl x86 als auch x86_64
+2016-08-19 19:38:03,darklink,obwohl die page size gleich voll ist
+2016-08-19 19:38:26,Quantenmagier,vermutlich nimmt es arm etwas genauer mit der size bei x86 is die ja eh fast immer 4k
+2016-08-19 19:39:20,darklink,"Naja, elf-dateien müssen page-aligned werden"
+2016-08-19 19:39:57,darklink,und .text beginnt bei 0x1000 in der datei
+2016-08-19 19:40:11,darklink,außer bei x86_64 bei standartflags
+2016-08-19 19:40:22,darklink,da ist es 0x100000
+2016-08-19 19:40:41,Quantenmagier,"hmm nennt mich bekloppt aber ich denk grad drüber nach ob ich mein betriebssystem in c weiter schreibe, dann müßte ich nur den c code irgendwie in den bisherigen assembler code integrieren oder zumindest c module die der kernel laden kann"
+2016-08-19 19:41:44,Quantenmagier,"darklink, wer sagt daß die page aligned sein müssen?"
+2016-08-19 19:42:07,darklink,Die specs oder so
+2016-08-19 19:43:17,Quantenmagier,kann ich c irgendwie ne tabelle mit addressen geben die ich dann in inline asm anspringen kann?
+2016-08-19 19:43:28,darklink,?
+2016-08-19 19:44:07,darklink,"void callList(void(*list)(), int len) {"
+2016-08-19 19:44:22,darklink,**list *
+2016-08-19 19:44:28,Quantenmagier,"also dachte sowas wie ""zeichne_pixel equ 0x03743"" und dann hab ich in inline asm stehen ""call zeichne_pixel"""
+2016-08-19 19:44:50,darklink,for(int i=0;i<len;i++) (list[i])();
+2016-08-19 19:44:52,darklink,}
+2016-08-19 19:45:09,darklink,da. Callt eine funktionsliste
+2016-08-19 19:46:14,mgottschlag,"Quantenmagier: ich wäre für ""in C komplett neu schreiben"". Wenn du schon weißt, wie du das bisher machst, und 1:1 umsetzt, geht das ganz flott. :)"
+2016-08-19 19:47:04,Quantenmagier,"mgottschlag, nee dafür is mein OS schon zu groß, hab keinen bock das alles nochmal zu schreiben"
+2016-08-19 19:47:33,mgottschlag,hast du dich an ABIs gehalten?
+2016-08-19 19:47:51,Quantenmagier,nö
+2016-08-19 19:48:05,mgottschlag,tja. Das rächt sich meistens :p
+2016-08-19 19:48:42,Quantenmagier,"ich übergeb einfach alles per regster, dachte ich mach inline asm wrapper für die einzelnen funktionen"
+2016-08-19 19:48:43,mgottschlag,"ein ""call zeichne_pixel"" wird übrigens genauso dann in der Ausgabe vom GCC stehen, d.h. der wird dann ganz normal versuchen, das Symbol aufzulösen"
+2016-08-19 19:48:54,mgottschlag,"deine ""Tabelle von Adressen"" ist also deine normale Symboltabelle, das ist genau das, was du willst"
+2016-08-19 19:49:36,mgottschlag,"dazu muss nur in deinem Assemblercode das entsprechende "".global zeichne_pixel"" stehen, damit das in der Symboltabelle eingetragen wird"
+2016-08-19 19:49:57,Quantenmagier,"ahh thx, wie sieht so ne Symboltabelle aus? ich würd versuchen die dann automatisch mit fasm aus dem bestehenden code zu generieren.."
+2016-08-19 19:50:02,mgottschlag,"aber pass auf, dass dein Inline Assembler keine Register kaputt macht, die der GCC nicht kaputt gemacht bekommen will"
+2016-08-19 19:50:10,mgottschlag,fasm generiert die bereits automatisch!
+2016-08-19 19:50:13,darklink,Mein syscall interface hält sich nicht an das x86 abi
+2016-08-19 19:50:14,mgottschlag,aus allen globalen Symbolen!
+2016-08-19 19:50:24,darklink,allerdings an das x86_64 abi
+2016-08-19 19:50:29,mgottschlag,"jedes Label, an dem "".global"" oder das fasm-Äquivalent steht, landet da drin"
+2016-08-19 19:50:51,darklink,außer halt die red zone
+2016-08-19 19:50:52,mgottschlag,"(in GAS wäre es "".global f"", dann ""f:"" und ganz normal dein Code)"
+2016-08-19 19:52:00,darklink,meine assemblerkomponente halten sich auch alle ans abi
+2016-08-19 19:52:10,Quantenmagier,hmm und wie sag ich gcc wo er die fasm symboltabelle findet? oder muß ich den code mit gcc nur compiliern und dann das compilat an fasm übergeben zum assemblieren?
+2016-08-19 19:52:12,darklink,tw ohne stackframe
+2016-08-19 19:52:26,darklink,Quantenmagier: das macht der linker
+2016-08-19 19:52:34,mgottschlag,"Quantenmagier: du linkst doch vermutlich gegen Objektdateien, oder? Da steht die bereits drin."
+2016-08-19 19:52:52,Quantenmagier,öhm.. *hust*
+2016-08-19 19:53:01,mgottschlag,wie compilierst du denn im Moment dann?
+2016-08-19 19:53:06,darklink,bin
+2016-08-19 19:53:09,Quantenmagier,mein fasm output is einfach ne flat raw binary
+2016-08-19 19:53:15,darklink,;D
+2016-08-19 19:53:17,darklink,lol
+2016-08-19 19:53:25,mgottschlag,"dann solltest du fasm mal dazu bekommen, ein .o zu erzeugen oder so, dann wird das viel angenehmer :)"
+2016-08-19 19:53:32,Quantenmagier,und gcc kompiliert gegen .o aus der stdlibc jop
+2016-08-19 19:54:12,mgottschlag,du könntest natürlich auch den Assemblercode vom GCC nehmen und so irgendwie mit deinem Zeugs konkatenieren... aber das macht man nicht.
+2016-08-19 19:54:56,Quantenmagier,ich müßte dann nur gcc mit dem entsprechenden switch sagen daß er in intel-syntax ausgeben soll dann müßte fasm das verarbeiten können
+2016-08-19 19:55:19,mgottschlag,"ja... aber machs doch im Zweifelsfall richtig, mit richtigem Linker, sonst stolperst du da in Kürze schon wieder drüber :D"
+2016-08-19 19:56:18,darklink,Und ich dachte mein linkprozess wäre kaputt
+2016-08-19 19:56:20,Quantenmagier,also was ich leicht machen könnte is mir von fasm ne tabelle mit den adressen der funktionen generieren zu lassen
+2016-08-19 19:57:12,mgottschlag,kann dir fasm nicht einfach ELF .o oder PE .obj erzeugen?
+2016-08-19 19:57:38,Quantenmagier,theoretisch kann es das aber dann kann ich meinen kernel nicht mehr in den mbr kopieren
+2016-08-19 19:57:46,Quantenmagier,oder einen anderen bootsektor
+2016-08-19 19:57:57,mgottschlag,"das müsste trotzdem noch funktionieren, mit dem richtigen Linkerskript"
+2016-08-19 19:58:16,mgottschlag,aber mit C bist du da von der Größe her eh schnell drüber
+2016-08-19 19:58:41,mgottschlag,"ich habe schon C mit passendem Linkerskript für Mikrocontroller verwendet, da braucht man auch so ein paar Tricks, damit der Code an der richtigen Stelle liegt und kompakt ist"
+2016-08-19 19:59:03,mgottschlag,du kannst ja am Ende aus dem ELF-Executable wieder ein bin machen
+2016-08-19 19:59:23,Quantenmagier,"mir is grad die idee gekommen ich kann fasm dazu bringen mir cpp-code mit #defines der adressen der funktionen auszugeben, dann kann ich das direkt in c code für mein inline asm verwenden"
+2016-08-19 19:59:53,mgottschlag,"das wäre dann nicht schön, aber wenigstens angemessen kaputt :)"
+2016-08-19 20:01:06,mgottschlag,"Quantenmagier: http://codepad.org/TlpUSEAx <- Linkerskript für ARM, das den Kernel bei 0x80000000 ladbar macht, am Anfang eigenen Assemblercode in der .setup-Section einfügt (der dann auch definiert an der Adresse platziert wird) und danach den C-Code hat"
+2016-08-19 20:01:14,Quantenmagier,"kann man symbole klein definieren? also ""#define zeichne_pixel 0x3672"" oder muß das ZEICHNE_PIXEL so hässlich gross geschrieben werden für den cpp?"
+2016-08-19 20:01:25,mgottschlag,"nö, kannst du machen, wie du willst"
+2016-08-19 20:01:32,Quantenmagier,oki cool
+2016-08-19 20:02:00,mgottschlag,wie linkst du das dann am Ende?
+2016-08-19 20:02:48,Quantenmagier,"sind dann zwei teile, der assembler code ist der eigentliche kernel und der c code wird ne elf die dann von dem kernel in den kernel nachgeladen wird"
+2016-08-19 20:03:00,mgottschlag,ach so
+2016-08-19 20:03:53,Quantenmagier,und damit die elf keinen zeitaufwändigen syscalls verwendet sondern sich glatt inden kernel einfügt muß die halt die adressen der funktionen im asm-kernelteil wissen
+2016-08-19 20:03:54,darklink,firmlink -O 8000000 -O 1FF80000 -N $(nm mtgos.elf | grep _start | awk '{print $1}') -n $(nm mtgos.neun | grep _start | awk '{print $1}') mtgos.neun.bin mtgos.elf.bin
+2016-08-19 20:04:08,darklink,^- eine zeile aus meinem bauscript
+2016-08-19 20:04:24,Quantenmagier,darki sieht hübschi aus :D
+2016-08-19 20:05:09,Quantenmagier,ich hab irgendwie intuitiv bashscript gelesen statt bauscript xD
+2016-08-19 20:05:22,darklink,ist es ja auch
+2016-08-19 20:06:06,darklink,https://github.com/Mtgxyz/MTGos/blob/master/do.sh
+2016-08-19 20:06:20,darklink,"naja, die zeile ist schon ein bissl anders"
+2016-08-19 20:07:08,Quantenmagier,"mgottschlag, die sache hat nur einen haken, der c code kann so asm code ausführen aber nicht umgekehrt, kann ich dann aus der von gcc erstellten elf datei auch die adressen der funktionen auslesen?"
+2016-08-19 20:07:26,Svenska,ich hab gestern fuer'n kollegen startupcode+linkerscript fuer bare-metal raspberry pi 3 geschrieben (*wuerg*)
+2016-08-19 20:07:29,mgottschlag,nö. Dazu müsstest du richtig linken :p
+2016-08-19 20:07:41,Svenska,aber du kannst im linkerscript auch symbole auf fixe adressen festlegen
+2016-08-19 20:07:57,mgottschlag,"du kannst auch, wenn dir der Linker am Ende ein einziges großes bin ausspuckt, das in zwei Teile spalten und genau deinen aktuellen Ansatz wählen"
+2016-08-19 20:08:10,mgottschlag,"du musst halt nur schauen, dass du die Grenze nicht aus Versehen überschreitest, bevor der Rest geladen wurde"
+2016-08-19 20:08:48,mgottschlag,aus einer ELF-Datei kannst du btw beliebeige Symbole auslesen
+2016-08-19 20:09:00,Svenska,"Quantenmagier: wenn du es einmal richtig machst, kannst du es sogar weiterverwenden"
+2016-08-19 20:09:01,mgottschlag,aber ob das dann noch in den MBR passt... BIN laden ist vermutlich einfacher :)
+2016-08-19 20:11:06,Quantenmagier,"mgottschlag, naja ich hab ja schon nen elf loader geschrieben der ein codesegment und ein datensegment laden kann, ich müßte halt nur zusätzlich implementieren daß die symbole aus der elf geladen werden und in der symboltabelle des asm-teils ergänzt werden."
+2016-08-19 20:11:37,Svenska,"du kannst deinen elf-loader auch so bauen, dass er beliebige segmente laden kann"
+2016-08-19 20:12:19,darklink,Kann man mehrere einsprungpunkte in eine elf bauen?
+2016-08-19 20:12:23,Quantenmagier,"Svenska, bisher hab ich aber nur codesegment und datensegment gebraucht, nach meinem linkerscript verwenden programme nix anderes"
+2016-08-19 20:12:32,Svenska,"ja, das hab ich schon begriffen"
+2016-08-19 20:12:54,Svenska,"ich weiß, dass du nur genau das programmierst, was du gerade brauchst, und nichts weiter"
+2016-08-19 20:13:10,Svenska,nur ist das meistens nicht zielfuehrend
+2016-08-19 20:13:12,Svenska,darklink: nein
+2016-08-19 20:13:26,Quantenmagier,"ahh momentchen mal ich könnte auch einfach dieses kaputte konzept benutzen was ich bei cdi gesehn habe, dann bau ich ne main in den c teil und die parsed die funktionen zum asm teil, dann brauch der asm teil nix auslesen"
+2016-08-19 20:13:45,Svenska,?
+2016-08-19 20:14:13,Svenska,"du kannst, wenn du schon kaputt bist, auch einfach einen ansatz machen wie DOS und CP/M, indem du einfach ein globales array aus allen funktionen anlegst und da die funktionsnamen einträgst"
+2016-08-19 20:14:39,Quantenmagier,"Svenska, joa stimmt schon, nen kompletter elf-loader der alles kann wär aber extrem zeitaufwändig"
+2016-08-19 20:14:45,Svenska,da werden dann beim linken automatisch die adressen raus und du kannst einfach CallTable[PRINTF](args) machen
+2016-08-19 20:14:50,Quantenmagier,deswegen schreib ich nur die teile die ich brauche
+2016-08-19 20:14:59,Svenska,"""extrem zeitaufwändig"" ... naja"
+2016-08-19 20:15:22,Svenska,"und das array kannst du an eine fixe adresse legen, so dass sowohl C- als auch ASM-code das benutzen können"
+2016-08-19 20:15:33,Svenska,außerdem kannst du so die ABI pro funktion neu festlegen *g*
+2016-08-19 20:16:45,Quantenmagier,"Svenska, das mit dem globalen array ist keine schlechte idee, aber den rest hab ich irgendwie nicht verstanden"
+2016-08-19 20:16:47,mgottschlag,bring ihn nicht auf blöde Ideen :D
+2016-08-19 20:16:51,mgottschlag,oh je
+2016-08-19 20:17:00,Svenska,"mgottschlag: wieso, mehr kaputtmachen kann man doch auch nicht"
+2016-08-19 20:17:27,Svenska,typedef void (*func)(void);
+2016-08-19 20:17:48,Svenska,"und dann ""func CallTable[NUM_CALLS]"""
+2016-08-19 20:18:12,Quantenmagier,"Svenska, wieso kann ich mit dem globalen array für jede funktion die abi neu festlegen? die müssen doch trotzdem einheitlich zurückgegeben werden und das array gibt einem nur die adresse der funktion oder nocht?"
+2016-08-19 20:18:16,Quantenmagier,*nicht?
+2016-08-19 20:18:18,Svenska,"dann musst du nur noch festlegen, dass CallTable an einer fixen adresse liegt"
+2016-08-19 20:18:38,Svenska,"geht per linker-script, oder indem du irgendwelche anderen tricks machst. oder du lässt sie als symbol"
+2016-08-19 20:19:00,Svenska,"du kannst in einem array nur einen datentyp haben, im einfachsten fall ""nimmt nix und liefert nix"""
+2016-08-19 20:19:31,Svenska,"und wenn schon kaputt, kannst du funktionsargumente auch in einer globalen struktur angeben"
+2016-08-19 20:19:55,Svenska,"also ARGS[0] = 1; ARGS[1] = ""Hallo""; CallTable[PRINT]();"
+2016-08-19 20:20:29,Quantenmagier,"Svenska, ahhh ok verstehe, aber ich glaub ich lass die argumente lieber in den registern :D"
+2016-08-19 20:20:44,Svenska,"und im asm-code musst du dann nur in ARGS reinpoken, die adresse aus CallTable + 4*X raussammeln und ancallen"
+2016-08-19 20:20:54,Svenska,"das wird schwierig, weil du in C-Code die register nicht auslesen kannst"
+2016-08-19 20:20:55,Quantenmagier,hmm
+2016-08-19 20:21:01,Svenska,"bzw wenn du es versuchst, steht da halt irgendwas drin"
+2016-08-19 20:21:11,Quantenmagier,naja deswegen wollte ich ja inline asm in den c code packen
+2016-08-19 20:21:11,Svenska,"nämlich das, was der gcc da reingeschrieben hat"
+2016-08-19 20:21:29,Svenska,du kannst kein inline asm _vor_ den prolog oder _hinter_ den epilog setzen
+2016-08-19 20:21:37,Quantenmagier,aso da smeinst du
+2016-08-19 20:21:39,Svenska,"es sei denn, du deklarierst die funktion mit __attribute__((naked))"
+2016-08-19 20:21:47,Svenska,und _dann_ solltest du da besser keinen C-Code reinschreiben
+2016-08-19 20:21:51,Quantenmagier,hmm
+2016-08-19 20:22:05,Quantenmagier,"das mit dem naked klingt gut, warum sol lman da keinen c code rein schreiben?"
+2016-08-19 20:22:19,Svenska,(naked funktionen haben weder pro- noch epilog und enthalten daher weder korrekten frame noch stack)
+2016-08-19 20:22:26,Quantenmagier,aso
+2016-08-19 20:23:21,Quantenmagier,"hmm das werd ich mal genauer googlen, vllt gibts da irgendnen trick wie die naked funktionen doch leicht den stack benutzen können und frame pointrs kann man ja eh omiten"
+2016-08-19 20:23:42,Svenska,das geht beim nächsten c-compiler-update kaputt
+2016-08-19 20:24:28,Svenska,"wenn du das wenigstens einigermaßen robust machen willst, dann musst du global state machen (du kannst den auch per ABI uebergeben, also die funktionen vom type ""struct STATE func(struct STATE)"" machen)"
+2016-08-19 20:24:52,Svenska,"oder du machst es gleich richtig, schmeißt einen teil vom code weg und schreibst ihn sauber neu, und kuemmerst dich um funktionierendes linking."
+2016-08-19 20:25:08,Quantenmagier,"hm ok oder ich muß die normale abi nutzen um die c funktionen anzusprechen, aber dafür müßte ich irgendwie wissen, welches argument an welche stelle auf dem stack gehört"
+2016-08-19 20:25:10,Svenska,"es gibt 'n grund, warum ich das immer wieder schreibe"
+2016-08-19 20:25:15,Svenska,das steht in der ABI
+2016-08-19 20:25:29,Svenska,"fuer x86 gibt's mehrere zur auswahl, aber die sind alle dokumentiert"
+2016-08-19 20:28:12,Quantenmagier,"Svenska, nee ich meine jetzt für die von mir geschriebenen Funktionen da muß ich ja wissen welche argumente die funktion in welche reihenfolge hat, damit ich die richtig auf den stack schieben kann, dh ich brauch quasi für jede c funktion die ich in asm aufrufen will so ne art wrapper oder nicht?"
+2016-08-19 20:28:43,Svenska,ja
+2016-08-19 20:28:55,Svenska,"jede funktion hat argumente und rueckgabewerte, und die musst du passend setzen"
+2016-08-19 20:29:07,Svenska,"ob du dafuer jetzt nen wrapper brauchst, hängt davon ab, wie schlampig du programmierst"
+2016-08-19 20:29:48,Quantenmagier,"is die argumentenreihenfolge in der abi die selbe wie die reihenfolge im header? also wenn ich int c(a,b); hab wird zuerst a dann b auf den stack gepushed und wenn ich int c(b,a) habe umgekehrt?"
+2016-08-19 20:30:01,Svenska,lies die ABI.
+2016-08-19 20:31:12,Quantenmagier,bin mal schnell pizza kaufen ehe der lidl zu macht..
+2016-08-19 20:32:44,Quantenmagier,"falls jemand nen link zur gcc abi zur hand hat her damit, sonst muß ich mal danach googlen wenn ich wieder zurück bin.."
+2016-08-19 20:32:57,Svenska,"es gibt keine ""gcc abi"""
+2016-08-19 20:36:08,darklink,das was du meinst ist das systemv abi
+2016-08-19 20:36:18,darklink,intel schreibt kein abi vor
+2016-08-19 20:36:21,darklink,arm schon
+2016-08-19 20:36:37,Svenska,deswegen gibt's auf x86 ja auch verschiedene
+2016-08-19 20:36:50,Svenska,"SysV, stdcall, Pascal-style und was noch?"
+2016-08-19 20:37:10,darklink,Fastcall
+2016-08-19 20:37:26,darklink,m$ hat auch noch ein eigenes
+2016-08-19 20:37:29,Svenska,"ah, stimmt. ;)"
+2016-08-19 20:42:08,darklink,oh es kommt endlich ein bisschen weiter
+2016-08-19 22:25:30,Paddy,Moin
+2016-08-19 22:42:56,Quantenmagier,"puh ich hatte grad echt zweifel ob ich es noch schaffe mein 16 stelliges passwort auf dem laptop einzutippen, ich wußte es nicht mehr aber meine finger schon xD"
+2016-08-19 22:43:58,Paddy,"Ist das nicht normal? Ich glaube, ich könnte die wenigsten Passwört aufsagen ohne sie zu tippen"
+2016-08-19 22:45:33,Quantenmagier,"hmm joa stimmt schon hatte ich auch mal bei so ner vampircommunity wo nen pw vorgegeben war, das konnt ich nach kurzer Zeit tippen, aber kein plan wie es heißt, aber die meisten kann ich eigentlich auch aufsagen :D"
+2016-08-19 23:37:31,Quantenmagier,Loool der Arzt in der Pokemonfolge heißt Doktor Proktor. xD

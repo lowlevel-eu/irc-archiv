@@ -1,0 +1,346 @@
+date/time,nick,message
+2014-12-01 16:19:12,Jonathan,Huhu
+2014-12-01 16:19:17,Jonathan,Oha! Svenska! :D
+2014-12-01 16:19:28,Svenska,uhuh
+2014-12-01 16:19:38,Svenska,*duck* *wegrenn* aaah! :-)
+2014-12-01 16:19:41,Jonathan,:P
+2014-12-01 16:19:58,Jonathan,"Übrigens, falls du es noch nicht gelesen hast: Ich glaub, in deinem Interruptcontroller fehlt ein Latch *g*"
+2014-12-01 16:20:14,Svenska,"ach, der bot spinnt öfter"
+2014-12-01 16:20:41,Svenska,warum?
+2014-12-01 16:20:46,Jonathan,"Du solltest vor den Prioritätsencoder ein Latch setzen, welches den Status der Eingänge einfriert, sobald gelesen wird"
+2014-12-01 16:21:18,Jonathan,"Ansonsten wird es garantiert irgendwann passieren, dass irgendein Gerät während einem Lesevorgang der Interruptnummer auch noch nen Interrupt wirft"
+2014-12-01 16:21:40,Svenska,und dann wird guelle gelesen?
+2014-12-01 16:21:48,Jonathan,Dann ändert sich währenddessen der Ausgabewert und die Kiste will ne nicht-existente ISR angesprungen
+2014-12-01 16:21:48,Jonathan,Richtig
+2014-12-01 16:21:59,Svenska,*schulterzuck* mir egal :-D
+2014-12-01 16:22:02,Jonathan,*g*
+2014-12-01 16:22:22,Svenska,"ich gehe mal davon aus, dass dann entweder der alte oder der neue wert gelesen wird :-)"
+2014-12-01 16:22:26,Jonathan,Nein
+2014-12-01 16:22:30,Svenska,ist ja ein priorisierender encoder *g*
+2014-12-01 16:22:33,Jonathan,Nein
+2014-12-01 16:22:36,Svenska,(kurz schaltplan suchen)
+2014-12-01 16:22:46,Jonathan,Die Bits haben unterschiedliche Laufzeiten
+2014-12-01 16:23:02,_sivizius,hmm.. Svenska gibt es tatsächlich noch...
+2014-12-01 16:23:07,Svenska,tuerlich
+2014-12-01 16:23:08,_sivizius,\o
+2014-12-01 16:23:36,Svenska,"hm, also willst du latch+encoder+latch da haben"
+2014-12-01 16:23:45,Jonathan,"Svenska: Wenn das im falschen Moment umschaltest, verletzt du die Setup-/Hold-Zeiten vom Z80"
+2014-12-01 16:24:05,Jonathan,"Und dann kann es passieren, dass die Flipflops im Z80 Amok laufen"
+2014-12-01 16:24:20,Svenska,hast du das etwa bei dir erlebt? ;)
+2014-12-01 16:24:46,Jonathan,"Ähm, öh..."
+2014-12-01 16:24:48,Jonathan,*g*
+2014-12-01 16:25:02,Svenska,:D
+2014-12-01 16:25:09,Jonathan,http://www.lothar-miller.de/s9y/categories/35-Einsynchronisieren <---
+2014-12-01 16:25:51,Jonathan,Gilt natürlich genauso für diskrete Schaltungen
+2014-12-01 16:26:02,Jonathan,"Für GALs auch, wie ich leidlich feststellen musste, lol"
+2014-12-01 16:26:23,Jonathan,(Und es ist insbesondere bei langsameren Bausteinen (also sowas wie LS und NMOS) ein Problem)
+2014-12-01 16:27:00,Svenska,"hm, hast jedenfalls recht"
+2014-12-01 16:27:17,Jonathan,Du hast ja momentan 184 ---> 541 ---> Z80
+2014-12-01 16:27:21,Svenska,ja
+2014-12-01 16:27:30,Svenska,entweder ich friere in der mitte ein oder ich friere vorher ein
+2014-12-01 16:27:31,Jonathan,Mach da draus einfach 573 ---> 184 ---> 541 ---> Z80
+2014-12-01 16:27:48,Jonathan,Häng den LE vom 573 an /RD vom Z80 ;)
+2014-12-01 16:28:06,Jonathan,Dann wird sich da während Lesevorgängen garantiert nichts mehr ändern
+2014-12-01 16:28:26,Jonathan,Ah nee
+2014-12-01 16:28:34,Jonathan,Häng's an /IORQ ^^
+2014-12-01 16:28:44,Svenska,boah ich soll jetzt nochmal das z80-diagramm raussuchen? ^^
+2014-12-01 16:28:53,Jonathan,Wieso das?
+2014-12-01 16:29:01,Svenska,"an /RD und /WR geh ich nicht ran, wenn es nicht um lesen/schreiben geht"
+2014-12-01 16:29:03,Svenska,:)
+2014-12-01 16:29:10,Svenska,die haben nämlich komische zeitpunkte
+2014-12-01 16:29:17,Jonathan,"Latch rein, LE an /IORQ vom Z80 hängen, fertig ist's"
+2014-12-01 16:29:44,Svenska,"besser wäre, es an /IORQ & /M1 hängen zu können"
+2014-12-01 16:30:01,Svenska,"(oder | statt &, denkfaul)"
+2014-12-01 16:30:20,Jonathan,"Klar, ist aber eigentlich überflüssig, da es sowieso egal ist, was der Prioritätsencoder tut, während /IORQ tut"
+2014-12-01 16:30:27,Jonathan,Zu viel tut
+2014-12-01 16:30:30,Jonathan,"Hm, denken"
+2014-12-01 16:30:39,Jonathan,Konnte ich auch schonmal besser *g*
+2014-12-01 16:30:39,Svenska,ich könnts auch an /M1 hängen
+2014-12-01 16:30:49,Svenska,n unterschied machts jedenfalls nicht
+2014-12-01 16:30:53,Jonathan,Nö
+2014-12-01 16:31:09,Svenska,"wenn ich die bits in der mitte einfriere, brauche ich nur 4 bits verarbeiten"
+2014-12-01 16:31:15,Svenska,also den ausgang vom encoder einfriere
+2014-12-01 16:31:21,Jonathan,Doofe Idee
+2014-12-01 16:31:25,Svenska,warum?
+2014-12-01 16:31:53,Jonathan,"Wenn sich der Ausgang vom Encoder im falschen Moment ändert, wird die Setup-Time vom Latch verletzt"
+2014-12-01 16:31:57,Jonathan,Dann ist's genauso Grütze
+2014-12-01 16:32:27,Jonathan,"Das Latch kann nur vor dem Encoder sitzen, weil es dort nichts macht, ob ein Bit nun noch 0 oder schon 1 ist"
+2014-12-01 16:32:44,Jonathan,Dann kommt der ganz knapp angelegte Interrupt halt erst später dran
+2014-12-01 16:32:54,Svenska,"hm, argument"
+2014-12-01 16:32:59,Jonathan,:P
+2014-12-01 16:33:35,Svenska,"werd ich in jedem fall nicht ordentlich implementieren können, weil die platine voll ist"
+2014-12-01 16:33:39,Jonathan,"Wenn *hinter* dem Encoder ein Bit purzelt, und ein anderes noch nicht, wird ein völlig falscher Int ausgelöst - und nicht einfach nur ein Int zu spät ausgeführt"
+2014-12-01 16:33:43,Jonathan,Ach doof :(
+2014-12-01 16:34:07,Jonathan,"Naja, dann musst du das in Software verwursten"
+2014-12-01 16:34:16,Jonathan,"Also damit rechnen, dass falsche Interrupts ausgelöst werden können"
+2014-12-01 16:34:17,Svenska,muss ich sowieso :)
+2014-12-01 16:34:35,Svenska,"der ""controller"" ist sowieso doof"
+2014-12-01 16:34:36,Jonathan,"""Checking hardware bugs... Buggy"""
+2014-12-01 16:34:37,Jonathan,*g*
+2014-12-01 16:35:04,Svenska,"die halbe interruptlogik _muss_ in der hardware implementiert werden, weil der controller selbst keine ACKs kann"
+2014-12-01 16:35:13,Jonathan,Joa
+2014-12-01 16:35:19,Jonathan,Mein neuer übrigens auch nicht mehr
+2014-12-01 16:35:22,Jonathan,Der wird level-triggered
+2014-12-01 16:35:22,Svenska,"insofern schadet es auch nicht, wenn ich da interrupts bestätige, die es effektiv nicht gibt"
+2014-12-01 16:35:27,Svenska,"jo, ist meiner schon :D"
+2014-12-01 16:35:30,Jonathan,^^
+2014-12-01 16:35:34,Svenska,edge-triggered ist halt scheiße
+2014-12-01 16:35:44,Jonathan,Bei dem unsauberen Edge-Gedönse ist öfters mal einer verloren gegangen :(
+2014-12-01 16:35:49,Jonathan,Ging dem AVR wohl zu schnell
+2014-12-01 16:36:03,Jonathan,Ist sowieso schnarchlahm gewesen
+2014-12-01 16:36:20,Jonathan,Der neue Controller arbeitet aber weiterhin im IM 1
+2014-12-01 16:36:30,Jonathan,(Oder welcher das nochmal war mit 0x0038)
+2014-12-01 16:36:46,Svenska,"ich verstehe nach wie vor nicht warum, aber gut, mach wie du denkst ;)"
+2014-12-01 16:36:51,Jonathan,Deshalb:
+2014-12-01 16:37:02,Svenska,du kriegst 127 vektorinterrupts geschenkt und willst trotzdem in software multiplexen
+2014-12-01 16:37:15,Jonathan,"Bei vielen Geräten kann es vorkommen, dass ein Interrupt kurz nach einem anderen auslöst, während der Controller noch in der ISR ist"
+2014-12-01 16:37:29,Jonathan,"Und Interrupts sind langsam, wenn man alles pushen und poppen muss"
+2014-12-01 16:37:40,Jonathan,Insofern hab ich nen zentralen ISR-Prolog/-Epilog
+2014-12-01 16:37:45,Jonathan,Und mache darin dann einfach
+2014-12-01 16:38:00,Jonathan,while (isThereAnyInt()) {handleInt()}
+2014-12-01 16:38:54,Jonathan,"Insofern spare ich mir da viel Zeit, die ich mit sinnlosem Einspringen und Verlassen von ISRs vergeuden würde"
+2014-12-01 16:39:07,Svenska,(muss man nicht)
+2014-12-01 16:39:16,Jonathan,Ja gut :P
+2014-12-01 16:39:21,Svenska,ich sehe das problem nicht
+2014-12-01 16:40:20,Jonathan,"Ich schon, aber egal *g*"
+2014-12-01 16:41:04,Jonathan,"Zumindest sehen wir beide die Probleme unserer Interruptcontroller, das ist doch schonmal was"
+2014-12-01 16:41:06,Svenska,"wenn du level-triggered interrupts hast, musst du nicht jeden interrupt explizit verarbeiten, auch nicht in einer schleife"
+2014-12-01 16:41:37,Svenska,"ich gehe mal davon aus, dass deine hardware einen interrupt aktiv lässt, bis ein register gelesen wurde"
+2014-12-01 16:41:46,Svenska,oder alternativ ein statusregister hat
+2014-12-01 16:41:57,Jonathan,"Ich möchte einfach nach der ISR nochmal prüfen, ob da wieder ein Interrupt ist, damit ich mir - falls ja - das Verlassen und das erneute Eintreten in die ISR sparen kann"
+2014-12-01 16:42:13,Svenska,"und dein problem ist, dass du das global(!) machen willst"
+2014-12-01 16:42:27,Jonathan,Nachdem die Treiber-ISR gelaufen ist
+2014-12-01 16:42:36,Svenska,"und zwar, indem du nicht bei der hardware nachfragst, um die es gerade geht, sondern den zentralen isr-dispatcher"
+2014-12-01 16:42:42,Jonathan,Ja
+2014-12-01 16:42:45,Svenska,aber genau da ist das aus meiner sicht sinnfrei
+2014-12-01 16:42:50,Jonathan,Weil der sowieso gleich wieder einen Interrupt auslösen würde
+2014-12-01 16:42:55,Jonathan,Wenn da einer ansteht
+2014-12-01 16:43:00,Svenska,"es sei denn, du willst _alle_ ISRs in _eine_ funktion stopfen, und zwar inlined und static"
+2014-12-01 16:43:05,Jonathan,Insofern kann ich auch gleich ne Schleife drehen
+2014-12-01 16:43:06,Jonathan,Nein
+2014-12-01 16:43:14,Jonathan,Ich hab doch meine Kernelmodule :P
+2014-12-01 16:43:25,Svenska,"wenn du funktionen aufrufst, ist da sowieso ein call mit allen pushes drin"
+2014-12-01 16:43:27,Svenska,und genau dann bringts nix
+2014-12-01 16:43:54,Jonathan,"Doch - ich kann den Call so gestalten, dass alle Register zerstört werden dürfen."
+2014-12-01 16:44:01,Jonathan,Dann bringt's ne ganze Menge.
+2014-12-01 16:44:27,Svenska,"alternativ implementierst du schlicht ISRs, die alle register erhalten muessen und ihre schleifen selbst machen"
+2014-12-01 16:44:44,Jonathan,Mein 16C550 ist besonders heimtückisch
+2014-12-01 16:44:46,Svenska,"genau dafuer gibt's ja EXX und EX AF,AF'"
+2014-12-01 16:45:34,Svenska,"das ist ja das besondere am z80, dass der schnelles (overheadarmes) interrupthandling machen kann"
+2014-12-01 16:45:36,Jonathan,"Meistens aktiviert der seinen Interrupt zweimal, und zwar knapp nachdem der Treiber sein while (bytesAvailable) {} fertig hat"
+2014-12-01 16:45:41,Jonathan,Ja gut
+2014-12-01 16:45:49,Jonathan,Ich will das jetzt aber so machen! :P
+2014-12-01 16:46:28,Svenska,"im IM2 ist ein interrupt nur ein einsames CALL auf die zieladresse, du brauchst fuer kleinkram keine register retten, und kannst sogar (fuer die aktive hardware) schleifen drehen, bis deine hardware gluecklich ist"
+2014-12-01 16:47:35,Svenska,"was du daraus machst, ist ein CALL auf einen dispatcher, der dann ein CALL (inklusive register-retten, es sei denn du machst naked-funktionen) auf die zieladresse plus schleifenoverhead macht und dafuer ne menge register verheizt"
+2014-12-01 16:48:17,Jonathan,"Ich glaube, gleich werde ich geschlagen: Was ich daraus mache, ist ein Call ins kernelGate, der sowieso erstmal lustige Dinge tun muss *g*"
+2014-12-01 16:48:31,Svenska,"nö, geschlagen nicht"
+2014-12-01 16:48:41,Svenska,"das erklärt aber, warum du unbedingt den call in den handler vermeiden willst"
+2014-12-01 16:48:51,Svenska,weil interrupts unglaublich teuer sind
+2014-12-01 16:49:10,Svenska,"das ist dann aber dein beschissenes design, und kein fehler des uarts"
+2014-12-01 16:49:17,Jonathan,Ich weiß
+2014-12-01 16:49:40,Jonathan,Aber meine Lehrer wollen auch was halbwegs modernes sehen - und ein Monolith mit reinkompilierten Treibern fällt für die nicht darunter :P
+2014-12-01 16:50:08,Svenska,"liegt vermutlich daran, dass du die entsprechend auf ""mikrokernel"" konditioniert hast :p"
+2014-12-01 16:50:14,Jonathan,*g*
+2014-12-01 16:50:25,Svenska,aber eine ISR sollte billig aufzurufen sein
+2014-12-01 16:50:50,Jonathan,"Ich könnte ja das kernelGate weglassen und stattdessen eine zweite Version für Ints hinsetzen, die das ganze Pointergedöns sein lässt und einfach nur kurz die Page reinmappt"
+2014-12-01 16:50:54,Jonathan,Das wäre dann wieder billig
+2014-12-01 16:51:15,Jonathan,"Und ja, vermutlich ist das am sinnvollsten"
+2014-12-01 16:51:19,Svenska,vermutlich nicht
+2014-12-01 16:51:24,Jonathan,Wieso nicht?
+2014-12-01 16:51:41,Svenska,kernel+treiber (semi-monolithisch) und ordentliches multitasking ist modern genug
+2014-12-01 16:52:08,Svenska,"gilt natuerlich nicht, wenn du ""mikrokernel"" zementiert hast, was ich nicht weiß, aber mich nicht wundern wuerde."
+2014-12-01 16:52:20,Jonathan,"Nee, hab ich nicht zementiert. ^^"
+2014-12-01 16:52:34,Svenska,"vor allem, weil der z80 jetzt nicht gerade das wunderwerk an ""ich bin dafuer gebaut"" ist."
+2014-12-01 16:52:45,Jonathan,Ja gut. :P
+2014-12-01 16:53:38,Svenska,aber ich nehme fuer mich mit: mein interrupt-controller wird bei gleichzeitigen interrupts schlicht falsche interrupts melden
+2014-12-01 16:53:44,Svenska,danke fuer den hinweis ;)
+2014-12-01 16:53:56,Jonathan,"Aber auf einer Skala von ""EX AF, AF' "" bis ""2x durch's kernelGate mit Schleife"" steht sowas wie ""Page ummappen und rein"" dich ganz gut da, oder nicht? ^^"
+2014-12-01 16:53:57,Jonathan,Bitte :P
+2014-12-01 16:54:10,Jonathan,*doch
+2014-12-01 16:54:25,Svenska,nein.
+2014-12-01 16:54:49,Svenska,"ich weiß ja nicht, was fuer hardware du dir da vorstellst"
+2014-12-01 16:55:07,Svenska,aber kernel-stubs + treiber-buffer sollten am einfachsten konstant in page 0 liegen können =)
+2014-12-01 16:55:27,Svenska,"dann braucht die ISR nur nen (treiberabhängigen) ringpuffer befuellen, und fertig"
+2014-12-01 16:55:47,Svenska,"fuer seriell reichen da ja 24 bytes (16 in, 8 out oder so)"
+2014-12-01 16:55:57,Svenska,zumal ja noch die FIFOs im UART dazukommen
+2014-12-01 16:56:22,Jonathan,"Ich stelle mir momentan vor: ""EX+EXX, Interruptnummer lesen, Page austauschen, ISR callen, wieder raus"""
+2014-12-01 16:57:07,Jonathan,"Und ""Page austauschen"" ist mit der guten neuen MMU einfach ein OUT ohne Waitstates"
+2014-12-01 16:57:41,Svenska,"plus n bisschen arithmetik und page finden, wenn die nicht statisch ist"
+2014-12-01 16:57:48,Svenska,du wirst ja pro treiber eine page haben
+2014-12-01 16:57:50,Jonathan,Ja
+2014-12-01 16:57:54,Svenska,und im härtefall sogar drei.
+2014-12-01 16:57:58,Jonathan,Muss man halt in einer Tabelle nachsehen
+2014-12-01 16:58:07,Jonathan,Und der Kernel kümmert sich nur um eine Page pro Treiber
+2014-12-01 16:58:16,Svenska,warum das?
+2014-12-01 16:58:26,Jonathan,"(Der Z80 muss für seine Vektor-Ints auch eine Tabelle nachsehen, insofern gibt sich das nichts, wenn ich das manuell mache)"
+2014-12-01 16:58:42,Jonathan,"Weil es nicht nötig ist, mehr zu machen? :D"
+2014-12-01 16:58:59,Jonathan,"Je Treiber 16k, das sollte reichen"
+2014-12-01 16:59:03,Svenska,"naja... wenn dein treiber ne normale userspace-anwendung ist, dann ist das u.U. schon nötig..."
+2014-12-01 16:59:11,Jonathan,Sind sie nicht mehr
+2014-12-01 16:59:20,Svenska,aha?
+2014-12-01 16:59:29,Jonathan,Das sind ab jetzt Kernelmodule
+2014-12-01 16:59:30,Svenska,also treiber sind was besonderes?
+2014-12-01 16:59:32,Jonathan,Ja
+2014-12-01 16:59:41,Svenska,dann kannst du die auch gleich in den kernel linken
+2014-12-01 16:59:53,Jonathan,Nein
+2014-12-01 16:59:53,Svenska,"wer hat denn vorgeschrieben, dass das alles zur laufzeit konfigurier- und austauschbar sein muss? :D"
+2014-12-01 17:00:01,Jonathan,Ich will das so :P
+2014-12-01 17:00:03,Svenska,reichen keine source-module? :p
+2014-12-01 17:00:28,Jonathan,Ich find das so einfach besser :D
+2014-12-01 17:00:40,Svenska,ok
+2014-12-01 17:01:10,Jonathan,"Das ganze Modul-Gedöns funktioniert ja auch schon, insofern lass ich das so"
+2014-12-01 17:01:20,Svenska,ah ok
+2014-12-01 17:02:39,Jonathan,"Der Kernel hat einen SDCC-Kompatiblen Einsprungpunkt, über den man Module callen kann"
+2014-12-01 17:03:37,Jonathan,Da wird dann auch ein eventueller Pointer umgebastelt
+2014-12-01 17:04:58,Jonathan,"Aber für ISRs muss ich ja auch keinen Pointer umbasteln, insofern brauch ich diesen Einsprungpunkt da nicht benutzen"
+2014-12-01 17:05:22,Jonathan,"Oh, übrigens"
+2014-12-01 17:05:36,Jonathan,__critical {} vom SDCC ist auch buggy
+2014-12-01 17:06:10,Svenska,was tat das nochmal? interrupts ein/ausschalten?
+2014-12-01 17:06:14,Jonathan,Ja
+2014-12-01 17:06:34,Jonathan,"Vorher Ints aus, dann der Code im __critical-Block, danach Int-Status wiederherstellen"
+2014-12-01 17:06:59,Jonathan,"Dazu nutzt er IN A, I und wertet das P/V-Flag aus"
+2014-12-01 17:07:01,Svenska,also ATOMIC_BLOCK() {} im AVR
+2014-12-01 17:07:06,Jonathan,"""P/V contains contents of IFF2"""
+2014-12-01 17:07:12,Jonathan,^Laut Datenblatt
+2014-12-01 17:07:24,Jonathan,Dummerweise haben die Leute vom SDCC wohl nicht die Fußnote im Datenblatt gelesen
+2014-12-01 17:07:36,Jonathan,"""If an interrupt occurs during execution of this instruction, the Parity flag contains a 0."""
+2014-12-01 17:07:58,Jonathan,"D.h.: Interrupt im falschen Moment, wenn man in einen __critical-Block geht, und das Licht ist aus."
+2014-12-01 17:08:06,Svenska,cool :D
+2014-12-01 17:08:10,Jonathan,:D
+2014-12-01 17:08:23,Svenska,"das heißt aber auch, dass man den zustand des i-flags nicht lesen kann?"
+2014-12-01 17:08:39,Jonathan,"Nope - nur, wenn man eventuelle Fehler in Kauf nimmt"
+2014-12-01 17:08:55,Jonathan,"Was die bei SDCC wohl taten, und damit einen gemeinen Bug einbauten"
+2014-12-01 17:08:55,Svenska,oder auf deutsch: geht nicht besser als so
+2014-12-01 17:09:00,Jonathan,Jo
+2014-12-01 17:09:24,Svenska,das heißt: eine idle-schleife mit HALT einbauen
+2014-12-01 17:09:25,Jonathan,"Mein neuer Interruptcontroller hat ein Enable-Flag, das man auch zurücklesen kann... *g*"
+2014-12-01 17:09:49,Svenska,"und wenn die schleife kommt, gucken, ob interrupts aus sind (ist ja da zufällig) und wenn ja, anmachen"
+2014-12-01 17:09:50,Jonathan,"Die Interrupts im Z80 werd ich einfach nicht mehr deaktivieren, sobald sie einmal an sind, fertig"
+2014-12-01 17:10:47,Svenska,"hmm ich frag mich, ob's da nen workaround fuer gibt"
+2014-12-01 17:10:54,Svenska,"ich mein, das problem existiert ja nicht erst seit gestern"
+2014-12-01 17:11:05,Jonathan,"""Nach jeder ISR das Parity-Flag setzen"" geht wohl leider nur unter Verzicht auf das Flag"
+2014-12-01 17:11:27,Svenska,"ich weiß nciht, wofuer es gut ist"
+2014-12-01 17:11:31,Jonathan,Für NMIs
+2014-12-01 17:11:44,Jonathan,"Da kann man dann lesen, ob normale Ints an sind"
+2014-12-01 17:11:46,Svenska,nach jeder isr flag setzen passt aber...
+2014-12-01 17:11:55,Jonathan,Klar
+2014-12-01 17:12:10,Jonathan,Nur kannst du dann das Parity-Flag nicht mehr nutzen
+2014-12-01 17:12:14,Svenska,weil?
+2014-12-01 17:12:25,Jonathan,Kann dann ja zufällig in deinen Berechnungen kommen
+2014-12-01 17:13:52,Svenska,hm
+2014-12-01 17:14:46,Jonathan,"Also wenn sich dein gesamtes System *niemals* auf den Status des P/V-Flags verlässt (außer für IFF2-Abfrage), kannst du IFF2 auslesen"
+2014-12-01 17:14:48,Jonathan,Ansonsten nicht
+2014-12-01 17:18:10,Jonathan,Bin mal kurz afk
+2014-12-01 17:41:29,Jonathan,Svenska: Wieder da
+2014-12-01 17:42:07,Svenska,"oh, caesar - kaiser - zar sind ja das gleiche wort urspruenglich"
+2014-12-01 17:42:13,Svenska,*staun*
+2014-12-01 17:42:25,Jonathan,:D
+2014-12-01 17:46:56,Jonathan,"Aber, naja, Svenska: Fällt dir noch ne andere Lösung für das Problem ein, außer ein Bit im Interruptcontroller?"
+2014-12-01 17:47:27,Svenska,"ich hab da nicht drueber nachgedacht, weil ich spontan das P/V flag nicht einschätzen kann"
+2014-12-01 17:47:38,Jonathan,Hm okay
+2014-12-01 17:47:43,Svenska,"ansonsten kann man das in software umgehen, indem man die idle-schleife missbraucht"
+2014-12-01 17:47:58,Svenska,"wenn keine interrupts mehr kommen, wird die cpu frueher oder später in der idle-schleife deadlocken"
+2014-12-01 17:48:11,Svenska,das kann man abfangen
+2014-12-01 17:48:20,Jonathan,Wtf?
+2014-12-01 17:48:21,Svenska,"(setzt natuerlich voraus, dass die idle-schleife HALT benutzt)"
+2014-12-01 17:48:38,Svenska,naja
+2014-12-01 17:48:47,Jonathan,"D.h. du willst schauen, ob sich die Kiste zu viel im HALT befindet, und wenn ja, am NMI ziehen? xD"
+2014-12-01 17:48:50,Svenska,nein
+2014-12-01 17:49:06,Svenska,"es gibt panic(), also DI/HALT"
+2014-12-01 17:49:12,Svenska,"und es gibt idle(), nur HALT"
+2014-12-01 17:49:30,Svenska,"und wenn du in idle() guckst, ob interrupts aus sind, und sie sind aus, weißt du, dass du gerade in einen deadlock rennst"
+2014-12-01 17:49:37,Svenska,dann kannst du interrupts spontan wieder einschalten...
+2014-12-01 17:49:54,Jonathan,"Äh, ja"
+2014-12-01 17:50:14,Svenska,klassischer workaround :-)
+2014-12-01 17:50:27,Svenska,"ansonsten könnte man noch ein globales flag ""kritische sektion aktiv"" einfuegen"
+2014-12-01 17:50:28,Jonathan,"Ich glaub, ich bevorzuge mal die Hardwarelösung *g*"
+2014-12-01 17:51:06,Svenska,"was von ISRs insofern verarbeitet wird, als dass die direkt zurueckkehren, wenn das flag gesetzt ist"
+2014-12-01 17:51:18,Svenska,"die variante ""ich schalte interrupts nie ab"" find ich unschön"
+2014-12-01 17:52:09,Svenska,und dann gibt es noch die avr-variante
+2014-12-01 17:52:10,Jonathan,Ich schalte sie ja schon ab
+2014-12-01 17:52:24,Jonathan,"Anstatt DI benutze ich einfach ein OUT, fertig"
+2014-12-01 17:52:28,Svenska,die da wäre ATOMIC_BLOCK(I_ist_eins) { }
+2014-12-01 17:52:41,Svenska,wo interrupts immer am ende aktiviert werden
+2014-12-01 17:53:13,Jonathan,"Gut, aber wie willst du da vermeiden, dass du die Interrupts wieder aktivierst, wenn sie vorher eigentlich aus waren?"
+2014-12-01 17:53:14,Svenska,"so wirds glaube auch klassisch gemacht, weil du normalerweise ja weißt, ob du gerade in einer ISR bist (interrupts sind aus) oder nicht (interrupts sind an)"
+2014-12-01 17:53:20,Jonathan,Ja
+2014-12-01 17:53:25,Svenska,apriori-wissen
+2014-12-01 17:53:55,Svenska,"interrupts sind immer an, außer in einer ISR (wenn nicht nested) und in critical section"
+2014-12-01 17:54:11,Svenska,"und ne critical section wird nie unterbrochen, also stellt sich auch die frage nie"
+2014-12-01 17:54:45,Jonathan,"Problematisch wird es eben, wenn eine critical-Sektion mit oder ohne vorher aktivierten Ints aufgerufen werden kann"
+2014-12-01 17:54:57,Svenska,wo tritt das auf?
+2014-12-01 17:55:14,Svenska,genau da könnte man ein globales flag benutzen
+2014-12-01 17:55:23,Jonathan,z.B. wenn du eine Funktion zur Steuerung irgendeiner Hardware hast
+2014-12-01 17:55:26,Svenska,oder mutexes oder so
+2014-12-01 17:55:37,Jonathan,Und diese Funktion wird von einer anderen Funktion mit critical-Block aufgerufen
+2014-12-01 17:55:47,Jonathan,Kann aber auch allein verwendet werden
+2014-12-01 17:56:11,Svenska,"also eine funktion, die aus einer ISR als auch normal aufgerufen werden kann"
+2014-12-01 17:56:25,Svenska,der könnte man ein flag mitgeben
+2014-12-01 17:56:31,Jonathan,"Naja, ich deaktiviere Ints einfach ab jetzt in der Hardware"
+2014-12-01 17:56:35,Jonathan,Das ist am einfachsten
+2014-12-01 17:56:46,Jonathan,Kann ich sowieso noch in das GAL reinquetschen
+2014-12-01 17:56:59,Svenska,klar
+2014-12-01 17:57:05,Svenska,"wenn die cpu spinnt, wird sie ignoriert"
+2014-12-01 17:57:21,Svenska,"""kann mein 486er keine floats, dann schalte ich ihn einfach ab und ersetze ihn durch einen, der das kann"""
+2014-12-01 17:57:43,Jonathan,Ein 486er ohne Floats wäre aber leicht defekt ;)
+2014-12-01 17:57:50,Svenska,486sx
+2014-12-01 17:57:55,Jonathan,Achso ja
+2014-12-01 17:59:01,Jonathan,"Aber hier geht's ja nicht um sowas wie einen Koprozessor, sondern um einen richtigen Bug, der sich nicht allzu leicht beheben lässt :P"
+2014-12-01 17:59:22,Svenska,eben
+2014-12-01 17:59:35,Svenska,"du kannst ihn immer mit logik umgehen, indem du die kaputte logik schlicht umgehst"
+2014-12-01 17:59:42,Jonathan,Jo
+2014-12-01 17:59:55,Svenska,oder du lebst mit dem bug und findest die pathologischen fälle raus und fixt sie
+2014-12-01 17:59:57,Jonathan,*hust* sdldz80 *hust*
+2014-12-01 18:00:24,Svenska,"oder du kuemmerst dich darum, dass das problem dich schlicht nicht betrifft (kostet hier dann P/V)"
+2014-12-01 18:00:52,Jonathan,Joa
+2014-12-01 18:01:03,Jonathan,Ich wähle die saubere Lösung :P
+2014-12-01 18:01:08,Jonathan,Ausnahmsweise
+2014-12-01 18:01:39,Jonathan,Also gibt's rücklesbares Hardware-DI/EI
+2014-12-01 18:01:43,Svenska,also auf EI und DI verzichten und es im IC bauen
+2014-12-01 18:01:49,Jonathan,Genau
+2014-12-01 18:01:59,Svenska,"so richtig sauber find ich das zwar nicht, aber angemessen"
+2014-12-01 18:02:08,Jonathan,Wieso nicht so richtig sauber?
+2014-12-01 18:02:11,Jonathan,Geht's sauberer?
+2014-12-01 18:02:15,Svenska,ne
+2014-12-01 18:02:20,Jonathan,Hm :P
+2014-12-01 18:02:23,Svenska,aber das ist so ein typischer plattform-fix
+2014-12-01 18:02:36,Svenska,"""ich weiß es ist kaputt, aber mit meinem fix wird nie jemand was anfangen können"" :)"
+2014-12-01 18:02:48,Jonathan,xD
+2014-12-01 18:03:01,Svenska,"so von der sorte ""auf baureihe XY ist feature Z kaputt, also abschalten"""
+2014-12-01 18:03:20,Svenska,"aber duerfte fuer dich die beste lösung sein, geb ich zu"
+2014-12-01 18:03:30,Jonathan,Oha *g*
+2014-12-01 20:17:52,Svenska,"ich verfluechtige mich dann mal, wuensche einen angenehmen restabend"
+2014-12-01 21:16:26,Kluthi,Nabend
+2014-12-01 21:22:08,Paddy,Moin
+2014-12-01 21:24:25,Kluthi,Paddy!
+2014-12-01 21:25:24,Paddy,Kluthi!
+2014-12-01 21:25:57,Kluthi,Wie (er)gehts?
+2014-12-01 21:27:35,Paddy,"Och jo, viel los, aber eigentlich ganz gut"
+2014-12-01 21:28:04,Paddy,Und heute hat mir ja nichtmal der Clici Stress gemacht ;-)
+2014-12-01 21:28:11,Paddy,Wie läuft's bei dir?
+2014-12-01 21:29:55,Kluthi,"Och ja, genauso - an und für sich auch gut und Clici macht mir auch keinen Stress :P"
+2014-12-01 21:31:03,Paddy,"Na das wär ja noch was, wenn er dir auch noch Stress macht ;-)"
+2014-12-01 21:32:19,Kluthi,*g*
+2014-12-01 21:38:57,iksnagreb,nabend
+2014-12-01 21:39:00,Jidder,moin
+2014-12-01 21:42:04,Kluthi,Sers
+2014-12-01 21:42:13,XanClic,gruezi
+2014-12-01 21:42:28,Jidder,hi
+2014-12-01 21:42:35,Kluthi,Jetzt wirds aber voll hier
+2014-12-01 21:43:09,XanClic,"Ich soll Stress machen, hab ich gehört"
+2014-12-01 21:43:12,XanClic,Das könnt ihr haben
+2014-12-01 21:43:22,XanClic,…Irgendwann vielleicht mal
+2014-12-01 21:43:33,Paddy,"Was für eine Sprache ist denn ""gruezi""?"
+2014-12-01 21:43:47,Paddy,Morgen am Kickertisch? ;-)
+2014-12-01 21:43:55,XanClic,Aber ich kann doch nicht bis Donnerstag
+2014-12-01 21:44:08,Paddy,Ach so
+2014-12-01 21:44:24,XanClic,"Du meinst, du hast heute Punkte gewonnen, wo ich mal nicht da war? ;-)"
+2014-12-01 21:44:26,Paddy,"Du kannst ja Hartwin lieb fragen, ob er dir am Donnerstag den Punktestand temporär wiederherstellt"
+2014-12-01 21:44:33,Paddy,Ich war doch auch nicht da ;-)
+2014-12-01 21:44:40,XanClic,Bah *g*
+2014-12-01 21:44:51,Kluthi,"Hartwin, ist das ne evolution von hartmut?"
+2014-12-01 21:45:22,XanClic,"Das ist jemand, der gut kickern kann"
+2014-12-01 21:45:25,XanClic,"Ich glaube, mehr muss man nicht sagen"
+2014-12-01 21:47:01,Paddy,Und dem die Datenbank gehört
+2014-12-01 21:47:13,XanClic,"Ein Schelm, wer böses dabei denkt"
+2014-12-01 22:05:56,bluecode,ein Datenbankster also

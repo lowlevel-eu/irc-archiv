@@ -1,0 +1,157 @@
+date/time,nick,message
+2014-09-02 16:22:15,Jonathan,"Svenska: Wie sollte sich rs232_getChar verhalten, wenn der Puffer leer ist?"
+2014-09-02 16:23:06,Svenska,gute frage
+2014-09-02 16:23:13,Jonathan,:D
+2014-09-02 16:23:25,Svenska,getc() blockt
+2014-09-02 16:23:34,Jonathan,"Ich hätte jetzt spontan gedacht, ich implementiere es als int rs232_getChar(); und gebe -1 zurück, wenn nix da ist"
+2014-09-02 16:23:39,Jonathan,Hm...
+2014-09-02 16:23:47,Jonathan,Blocken ist auch doof
+2014-09-02 16:23:47,Svenska,also meine hardware gibt 0xFF zurueck
+2014-09-02 16:24:11,Svenska,"aber du kannst halt nachfragen, ob characters da sind"
+2014-09-02 16:24:14,Jonathan,Ja
+2014-09-02 16:24:27,Jonathan,rs232_peekRecvBuffer() oder sowas
+2014-09-02 16:24:38,Svenska,du denkst kompliziert ^^
+2014-09-02 16:24:41,Jonathan,:P
+2014-09-02 16:24:59,Svenska,"getChar() kann halt gerne garbage zurueckgeben, wenn nix da ist"
+2014-09-02 16:25:08,Jonathan,Joa
+2014-09-02 16:25:15,Jonathan,rs232_dataAvailable()
+2014-09-02 16:25:16,Svenska,aber alle komplizierteren get*()-funktionen muessen halt den aufruf dann vermeiden
+2014-09-02 16:25:23,Jonathan,Sollte ja eigentlich reichen
+2014-09-02 16:25:24,Svenska,kannst du den puffer-fuellstand auslesen?
+2014-09-02 16:25:38,Svenska,(relativ effizient)
+2014-09-02 16:25:58,Jonathan,"Hab nen internen 256-Byte-Ringpuffer, in den immer alles sofort rübergeschaufelt wird, wenn der Chip nen Int wirft"
+2014-09-02 16:26:10,Svenska,öh
+2014-09-02 16:26:18,Svenska,du ignorierst den FIFO? :-D
+2014-09-02 16:26:22,Jonathan,Nein :D
+2014-09-02 16:26:40,Jonathan,"Sobald mein 16C550 sagt, dass sein eigener FIFO voll ist, wird das rübergeholt"
+2014-09-02 16:26:57,Jonathan,Genauso wird immer so viel wie möglich in den Sende-FIFO vom 16C550 geschafft
+2014-09-02 16:27:09,Svenska,"hm, ok. aber dann weißt du ja extrem effizient, wieviele bytes verfuegbar sind"
+2014-09-02 16:27:14,Jonathan,Joa
+2014-09-02 16:27:32,Svenska,auf libc-ebene kannst du noch EOF zurueckgeben
+2014-09-02 16:28:06,Jonathan,Wäre möglich... Aber erstmal sollte die Puffergröße ja ausreichen :)
+2014-09-02 16:28:09,Svenska,"also das byte wird auf int gecastet, und wenn >255, dann ist es ein EOF"
+2014-09-02 16:28:26,Svenska,das wäre die saubere methode
+2014-09-02 16:28:29,Jonathan,Ja
+2014-09-02 16:28:37,Jonathan,Daran dachte ich auch
+2014-09-02 16:29:11,Svenska,"und read() gibt ja die anzahl der bytes zurueck, mit 0=EOF und -1=error"
+2014-09-02 16:39:17,Jonathan,Hm...
+2014-09-02 16:39:36,Jonathan,"Ein kleiner Erfolg ist schonmal da: Die Karte scheint wohl ordnungsgemäß RTS anzuwerfen, sobald der Treiber sie initialisiert hat"
+2014-09-02 16:39:57,Jonathan,Aber es kommen keine Daten an. :(
+2014-09-02 16:43:45,Jonathan,"Okay, die Baudrate wird auch korrekt gesetzt."
+2014-09-02 17:00:36,Jonathan,Irgendwie kommen im gesamten System keine Interrupts mehr an... :(
+2014-09-02 17:09:09,Jonathan,"Wie doof, dass Svenska gerade weg ist."
+2014-09-02 17:09:14,Jonathan,Denn: AAAAAAAAAAARRRRRRRGH!
+2014-09-02 17:09:22,Jonathan,DIESER BESCHEUERTE SDCC
+2014-09-02 17:09:23,Jidder,ich bin ja noch da
+2014-09-02 17:09:25,Jonathan,AAAAAAAAA
+2014-09-02 17:09:29,Jonathan,*rageout*
+2014-09-02 17:09:37,Jonathan,Das Viech ist so buggy wie nix anderes!
+2014-09-02 17:09:46,Jonathan,Folgendes:
+2014-09-02 17:10:08,Jidder,kann vermutlich übrigens nicht helfen ^^
+2014-09-02 17:10:14,Jonathan,Egal! :P
+2014-09-02 17:10:18,Jidder,"aber svenska ist so einer, der logs liest ^^"
+2014-09-02 17:10:19,Jonathan,Muss mal meinen Frust ablassen!
+2014-09-02 17:10:23,Jonathan,Jo
+2014-09-02 17:10:39,Jonathan,"Aaalso: Man kann Funktionen mit ""__critical"" versehen, damit vorher die Interrupts deaktiviert werden, und hinterher - falls nötig - wieder aktiviert."
+2014-09-02 17:11:01,Jonathan,Dabei wird der vorherige Interrupt-Status auf den Stack gelegt.
+2014-09-02 17:11:35,Jonathan,"Wisst ihr, was SDCC dann tut? Dieser doofe Compiler vergisst einfach mal, den Framepointer daran anzupassen, dass jetzt 2 Bytes mehr da liegen."
+2014-09-02 17:11:52,Jonathan,Und anstelle der Funktionsargumente liest der Code dann die Returnadresse.
+2014-09-02 17:11:56,Jonathan,Wie bescheuert ist das denn bitte?!?!
+2014-09-02 17:12:07,Jidder,lol
+2014-09-02 17:12:17,Jonathan,Seufz...
+2014-09-02 17:12:19,Jidder,auf ein skala von 1 bis 10 ist das ziemlich ^^
+2014-09-02 17:12:37,Jonathan,"Da ich ja sowieso schon wegen anderen Bugs im ASM-Output rumfummeln muss, kann ich das ja auch gleich noch fixen..."
+2014-09-02 17:13:05,Jidder,"du verschachtelst aber nicht critical functions, oder?"
+2014-09-02 17:13:11,Jonathan,"Nein, nicht mal"
+2014-09-02 17:13:34,Jonathan,"Das ist laut Doku aber auch problemlos möglich, der alte Interrupt-Status wird ja auf den Stack gelegt"
+2014-09-02 17:13:58,Jonathan,"(Und wenn SDCC sich dann auch noch richtig um den Framepointer kümmern würde, könnte das sogar funktionieren)"
+2014-09-02 17:14:03,Jidder,hm vielleicht hab ich eine alte doku erwischt
+2014-09-02 17:14:30,Jonathan,Könnte sein
+2014-09-02 17:14:52,Jonathan,"Der ASM-Output, den SDCC da generiert, ist aber auch vollständig verschachtelungsfähig (abgesehen vom Framepointer-Bug)"
+2014-09-02 17:15:12,Jidder,da steht unten was bei feature list: http://sdcc.sourceforge.net/mediawiki/index.php/SDCC_3.2.0_Release
+2014-09-02 17:15:18,Jidder,"critical function cannot have arguments for now, though "
+2014-09-02 17:15:22,Jonathan,xD
+2014-09-02 17:15:25,Jidder,also offiziell ist das sogar ein feature ^^
+2014-09-02 17:15:30,Jonathan,"Ja gut, und ich weiß auch, wieso xD"
+2014-09-02 17:15:31,Jonathan,Bäh
+2014-09-02 17:15:41,Jonathan,In meiner Doku stand davon nix
+2014-09-02 17:16:14,Jidder,pfuscher sind das ^^
+2014-09-02 17:16:17,Jonathan,Ja
+2014-09-02 17:16:22,Jonathan,Dabei ist der Fix soooo einfach
+2014-09-02 17:16:45,Jonathan,In __critical-Abschnitten müssten die einfach nur 2 auf den Framepointer addieren
+2014-09-02 17:17:03,Jonathan,"Geht sogar völlig ohne zusätzlichen Code - einfach ""LD IX, 2"" anstatt ""LD IX, 0""..."
+2014-09-02 17:19:23,Jonathan,"Joa, hier in der Doku steht nichts davon, dass da keine Funktionsargumente da sein dürfen"
+2014-09-02 17:19:26,Jonathan,Also mal fixen
+2014-09-02 17:19:31,Jonathan,Gnarf
+2014-09-02 17:21:59,Jidder,im sdcc-code?
+2014-09-02 17:22:40,Jidder,"nach relativ genau 5 minuten code studium würde ich raten, dass nach dieser zeile"
+2014-09-02 17:22:41,Jidder,http://sourceforge.net/p/sdcc/code/HEAD/tree/trunk/sdcc/src/z80/gen.c#l4447
+2014-09-02 17:22:47,Jidder,ein _G.stack.param_offset += 2; kommen sollte
+2014-09-02 17:23:22,Jidder,wobei die variable kurz danach initialisiert wird. die initialisierung müsste also darüber
+2014-09-02 17:24:05,Jonathan,"Nee, SDCC bauen will ich jetzt echt nicht auch noch..."
+2014-09-02 17:24:15,Jonathan,"Ich muss sowieso im ASM-Code rumpopeln, um ein paar Dinge zu fixen"
+2014-09-02 17:24:24,Jonathan,Kann ich das auch noch mit dazu kleben
+2014-09-02 17:24:58,Jidder,hehe ok das geht natürlich auch ^^
+2014-09-02 17:25:15,Jonathan,:P
+2014-09-02 17:25:23,Jonathan,"Bisschen Regex, dann passt das schon *g*"
+2014-09-02 17:25:45,Jonathan,Muss ja nur in den entsprechenden Funktionen eine 0 durch eine 2 ersetzen
+2014-09-02 17:25:59,Jidder,und das geht mit einem regex? das muss ja kontextsensitiv sein
+2014-09-02 17:26:35,Jonathan,Ich suche einfach nach dem gesamten Funktionsprolog per Regex
+2014-09-02 17:26:44,Jidder,ah das geht natürlich auch
+2014-09-02 17:26:49,Jonathan,"Also, nach dem Prolog kritischer Funktionen"
+2014-09-02 17:26:58,Jidder,ah noch besser
+2014-09-02 17:27:02,Jonathan,:D
+2014-09-02 17:27:04,Jidder,dachte prolog einer spezifischen funktion
+2014-09-02 17:27:08,Jonathan,Nee
+2014-09-02 17:27:15,Jonathan,Ich mach einfach folgendes:
+2014-09-02 17:27:20,Jidder,stimmt natürlich. sollten alle gleich sein
+2014-09-02 17:29:35,Jonathan,"code:gsub(""(%([^%(%)]*%) __critical.-{.-ix,#)0"", ""%12"")"
+2014-09-02 17:29:37,Jonathan,^ :D
+2014-09-02 17:29:56,Jidder,ich spreche kein brainfuck
+2014-09-02 17:29:59,Jonathan,*g*
+2014-09-02 17:30:10,Jidder,und die kommentare helfen auch nicht ^^
+2014-09-02 17:30:38,Jonathan,:P
+2014-09-02 17:31:27,Jonathan,"Im Grunde genommen sucht das nach folgendem: ""(blah blah parameterliste) __critical [...] { [...] ix,#0"" und ersetzt es durch das selbe, nur mit ner 2"
+2014-09-02 17:31:58,Jidder,aaaah ich verstehe
+2014-09-02 17:32:02,Jidder,nich schlecht ^^
+2014-09-02 17:32:05,Jonathan,:D
+2014-09-02 17:40:30,Jonathan,Ach dieses dämliche Ding
+2014-09-02 17:40:50,Jonathan,"Jetzt kann ich zwar Funktionsargumente nutzen, aber lokale Variablen zerschießt es mir natürlich völlig."
+2014-09-02 17:44:11,Paddy,Völlig klar: Du brauchst mehr reguläre Ausdrücke
+2014-09-02 17:44:42,Jonathan,Ja
+2014-09-02 17:44:57,Jonathan,"Ich sollte jede einzelne Referenz auf ein Funktionsargument um 2 korrigieren, per Regex."
+2014-09-02 17:46:04,Jonathan,"Ich könnte ja alles zwischen Funktionsprolog und RET durch eine Funktion schicken, die dann alle Vorkommnisse von ""n (ix)"" durch ""n+2 (ix)"" ersetzt (n nur positiv)."
+2014-09-02 17:46:06,Jonathan,*g*
+2014-09-02 17:46:39,Jonathan,"Aber bevor ich das mache, nutze ich doch lieber SDCCs __critical{...}-Block - in der Hoffnung, dass der nicht auch buggy ist :P"
+2014-09-02 17:47:32,Paddy,"Vielleicht lohnt es sich langsam doch mal, den Compiler zu fixen statt seine Ausgabe nachzubearbeiten"
+2014-09-02 17:47:50,Jonathan,Vermutlich *g*
+2014-09-02 17:48:04,Jidder,"bringt __critical denn etwas, das manuelles aktivieren/deaktivieren der interrupts es nicht auch tun würde?"
+2014-09-02 17:48:32,Jonathan,"Ja: Es speichert den vorherigen Status auf dem Stack, wodurch man diese Funktionen verschachteln kann"
+2014-09-02 17:48:52,Jonathan,Was ich hier in dem Fall auch wirklich brauche
+2014-09-02 17:48:53,Jidder,sowas kann man ja auch manuell machen
+2014-09-02 17:49:04,Jonathan,"Ja, wäre schon möglich"
+2014-09-02 17:49:22,Jonathan,Aber dann kann ich auch gleich den Code in einen __critical-Block hängen ^^
+2014-09-02 18:02:09,Jonathan,Boah... Endlich funktioniert jetzt auch der Treiber für die serielle Schnittstelle xD
+2014-09-02 18:02:18,Jonathan,"War ja blöd genug, das Ding zum Laufen zu bekommen"
+2014-09-02 20:19:47,Jonathan,"Jidder: Ich hab gehört, du kennst dich gut in C aus? ;)"
+2014-09-02 20:20:47,Jonathan,Ich muss eine Funktion im Speicher rumkopieren. Täte das so? http://pastebin.com/s83g0uJ6
+2014-09-02 20:22:31,Paddy,"Du benutzt Inline-Assembler und fragst dann danach, was Standard-C tut? ;-)"
+2014-09-02 20:22:49,Jonathan,Die Assembler-Funktion muss ja kopiert werden ;)
+2014-09-02 20:22:57,Jonathan,"Das Kopieren mach ich in C, und darum geht's mir"
+2014-09-02 20:23:10,Paddy,"Ich glaube nicht, dass man in C überhaupt Code kopieren kann"
+2014-09-02 20:23:33,Jidder,"also ich glaube, dass es funktionieren könnte"
+2014-09-02 20:23:35,Paddy,Ein Cast eines Funktionspointers auf einen Objektpointer dürfte relativ undefiniert sein
+2014-09-02 20:23:38,Jidder,und ich kenne mich gut in c aus ^^
+2014-09-02 20:23:44,Jonathan,Okay ^^
+2014-09-02 20:23:44,XanClic,"Paddy, tatsächlich nicht"
+2014-09-02 20:23:47,XanClic,Es gibt da einen Anhang
+2014-09-02 20:24:09,XanClic,J.5.7
+2014-09-02 20:24:22,XanClic,"A pointer to a function may be cast to a pointer to an object or to void, allowing a function to be inspected or modified (for example, by a debugger) (6.5.4)."
+2014-09-02 20:24:51,Paddy,"Okay, implementation defined dann aber zumidnest, oder?"
+2014-09-02 20:24:53,XanClic,jo
+2014-09-02 20:24:58,Jonathan,Danke! :)
+2014-09-02 20:25:00,XanClic,Das ist eine Common Extension™
+2014-09-02 20:25:03,Paddy,Praktisch gesehen wird es eh tun
+2014-09-02 21:21:31,iksnagreb,moin
+2014-09-02 21:22:12,Jonathan,Moin
+2014-09-02 23:22:09,Jonathan,"Yeah, funktioniert! Jetzt kann ich IHX-Dateien per RS232 ins System schießen, und es führt sie aus! :D"

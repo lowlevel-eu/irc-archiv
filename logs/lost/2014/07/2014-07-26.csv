@@ -1,0 +1,326 @@
+date/time,nick,message
+2014-07-26 00:07:32,Jidder,haha! ich kann es noch
+2014-07-26 00:07:36,Jidder,paging funktioniert im ersten versuch
+2014-07-26 00:07:45,Svenska,*g*
+2014-07-26 00:07:51,Svenska,klappt bei mir auch immer
+2014-07-26 00:07:57,Svenska,aber ich mappe nur statisch 8 MB :-)
+2014-07-26 00:08:11,Jidder,JidderOS 325.0 ist bald fertig
+2014-07-26 00:08:11,Svenska,und ich kopierpaste die paar zeilen aus den alten versuchen ^^
+2014-07-26 00:08:27,Svenska,du solltest es 365 nennen
+2014-07-26 00:08:32,Jidder,"ich copy und paste auch, aber bei mir ist alles dynamisch und obfuscated ^^"
+2014-07-26 00:08:33,Svenska,dann funktioniert es jeden tag :-)
+2014-07-26 00:08:43,Jidder,gute idee
+2014-07-26 00:08:56,Jidder,zur zeit ist es sonn- und feiertags ziemlich unzuverlässig
+2014-07-26 00:09:02,Jidder,wird an der versionsnummer liegen
+2014-07-26 00:31:08,Svenska,"hmm. selbst wenn man eine funktion mit __attribute__((noreturn)) markiert, darf man nicht mit JMP reinspringen."
+2014-07-26 00:31:10,Svenska,schade.
+2014-07-26 00:52:25,Svenska,"wie kann man eigentlich erkennen, ob auf eine physische page zugegriffen wurde?"
+2014-07-26 01:04:57,Jidder,x86?
+2014-07-26 01:05:03,Svenska,ja
+2014-07-26 01:05:04,Jidder,ah ne auch da nicht ^^
+2014-07-26 01:05:21,Svenska,"mit virtuellen pages geht das aber, oder?"
+2014-07-26 01:05:23,Jidder,virtuell könnte man in den page tables ablesen
+2014-07-26 01:05:24,Jidder,jo
+2014-07-26 01:05:37,Svenska,"aber auch nur 1 bit, hm"
+2014-07-26 01:06:49,Jidder,mit den debug registern kannst du breakpoints setzen
+2014-07-26 01:06:57,Jidder,"aber auch nicht auf den physischen adressen, wenn paging aktiviert ist"
+2014-07-26 01:07:47,Svenska,"ich hab grad geguckt, wie bsd oder linux das tun, beide machen LRU auf den physischen pages"
+2014-07-26 01:08:02,Svenska,"um rauszukriegen, welche pages man swappen sollte und welche nicht."
+2014-07-26 01:09:14,Jidder,jo
+2014-07-26 01:09:19,Jidder,ziemlich langweilige methode ^^
+2014-07-26 01:09:34,Svenska,"du meinst, am besten random? ^^"
+2014-07-26 01:10:14,Jidder,jop
+2014-07-26 01:10:20,Jidder,oder einfach firefox.exe
+2014-07-26 01:10:39,Jidder,"if (process_name == ""firefox"") { swap(rand()); } "
+2014-07-26 01:10:50,Svenska,lol
+2014-07-26 01:11:04,Jidder,performanceunterschied merkt vermutlich keiner ^^
+2014-07-26 01:12:31,Jidder,"ah natürlich kann man auch den zugriff erkennen, indem man das present flag löscht"
+2014-07-26 01:12:48,Jidder,ist natürlich blöd wegen der vielen page faults ^^
+2014-07-26 01:12:51,Svenska,yeah :-)
+2014-07-26 01:13:09,Svenska,"hmm, auf zum zweiten problem ... ich muss den ersten speicherblock zwingend benutzen, um den PMM zu initialisieren (weil sonst hätte ich garkeinen speicher), aber der fängt bei 0 an und ist eine gaaanz schlechte wahl"
+2014-07-26 01:14:13,Jidder,"der erste speicherblock, den dir die memory map liefert?"
+2014-07-26 01:14:22,Svenska,"wenn eine vorhanden ist, ja"
+2014-07-26 01:14:28,Jidder,nutz das ende des speicherblocks
+2014-07-26 01:14:34,Svenska,hatte ich vor ^^
+2014-07-26 01:15:03,Svenska,ach warum muss das alles so kompliziert sein und warum schreibt sich das nicht von alleine? *g*
+2014-07-26 01:15:17,Jidder,^^
+2014-07-26 01:15:50,Svenska,hat C11 intrinsics für listen? ^^
+2014-07-26 01:16:08,Jidder,__gcc_builtin_linked_list_t
+2014-07-26 01:16:19,Svenska,"nicht dein ernst, oder?"
+2014-07-26 01:16:21,Jidder,nö^^
+2014-07-26 01:16:24,Svenska,gut ^^
+2014-07-26 01:17:34,Jidder,genau wegen der listen-geschichte nehme ich jetzt wieder eine bitmap zum initialisieren der speicherverwaltung
+2014-07-26 01:18:14,Svenska,"man muss irgendwie für jeden typ die gesamte listenimplementierung machen, oder?"
+2014-07-26 01:18:24,Svenska,...solange man mehr als nur void* speichern will
+2014-07-26 01:18:44,Jidder,"kommt drauf an, wieviel du mit makros/pointergefummel du machen willst"
+2014-07-26 01:18:51,Svenska,"ist vermutlich ne blöde frage, aber mir fällt grad nicht ein, wie man das schöner machen kann"
+2014-07-26 01:19:04,Svenska,"hm ja, template-makros *schauder*"
+2014-07-26 01:19:25,Jidder,"linux hat glaube ich eine list.h (oder so), die mit offsetof und containerof oder so arbeitet"
+2014-07-26 01:19:49,Svenska,INSTANTIATE_LIST(uint32_t); INSTANTIATE_LIST(page_t); ...
+2014-07-26 01:19:50,Svenska,*g*
+2014-07-26 01:20:11,Svenska,"offsetof und containerof habe ich noch nicht benutzt, wozu sind die gut? ^^"
+2014-07-26 01:20:49,Jidder,"wenn du ein struct my_type { int foo1; int foo2; struct my_type *next; } hast, das in eine linked list (via next) soll"
+2014-07-26 01:21:00,Jidder,dann kannst du mit diesen makros die funktionen aus der list.h nutzen
+2014-07-26 01:21:19,Jidder,"weil die dann magisch aus einem struct my_type-pointer rauskriegen, wo der next-pointer ist"
+2014-07-26 01:21:40,Svenska,"öh, kann man den nicht einfach als erstes element setzen? ^^"
+2014-07-26 01:22:23,Jidder,"die idee ist glaube ich, dass dasselbe objekt in mehreren listen sein kann"
+2014-07-26 01:22:39,Svenska,hmm
+2014-07-26 01:23:00,Jidder,in c++ wäre das schöner zu lösen (boost intrusive) ^^
+2014-07-26 01:23:11,Svenska,"dynamische speicherverwaltung macht mit statischer verwaltung keinen spaß, deswegen brauch ich listen. ^^"
+2014-07-26 01:23:59,Svenska,(und eine statische bitmap für 4 GB find ich doof)
+2014-07-26 01:24:45,Jidder,"jo die bitmap ist nur temporär zur initialisierung von allem möglichen, was vor der eigentlichen speicherverwaltung initialisiert werden muss (zum beispiel paging). danach wird dann die richtige speicherverwaltung magisch (TODO) initialisiert"
+2014-07-26 01:24:59,Jidder,und die bitmap wird anschließend freigegeben
+2014-07-26 01:25:42,Svenska,oh.
+2014-07-26 01:26:03,Svenska,also eine statische dynamische speicherverwaltung und eine dynamische dynamische speicherverwaltung
+2014-07-26 01:26:41,Jidder,joar
+2014-07-26 01:26:50,Jidder,"ich habe mein system aufgeteilt. das was von multiboot als kernel geladen wird, ist nur ein stub, der paging initialisiert, und anschließend den eigentlich kernel lädt und startet"
+2014-07-26 01:27:15,Jidder,"damit löse ich mehrere probleme: wie krieg ich einen kernel an die virtuelle adresse um 3 GB, wie lade ich einen 64-bit kernel mit multiboot (1)"
+2014-07-26 01:27:41,Svenska,das hab ich auch (nur für 32 bit)
+2014-07-26 01:27:42,Jidder,"und dann kann ich auch einfach kompromisse machen: der stub kriegt die primitivsten datenstrukturen, die möglich sind"
+2014-07-26 01:28:02,Jidder,damit ich da nicht so viel code schreiben muss ^^
+2014-07-26 01:28:21,Svenska,"also der kernel entry richtet einen stack ein und springt zum 2nd-stage-startup, der richtet minimales paging ein und springt zum 3rd-stage-startup, der initialisiert alles"
+2014-07-26 01:28:57,Svenska,"bin mir nicht sicher, ob man das so auch für 64-bit-code machen kann, vermutlich nicht."
+2014-07-26 01:29:18,Jidder,also 32-bit-code kann man mit 64-bit-code nicht in eine binary linken
+2014-07-26 01:29:27,Svenska,genau das wollte ich gerade fragen.
+2014-07-26 01:29:28,Jidder,zumindest nicht im sinne von linken
+2014-07-26 01:29:36,Jidder,eine datei in die andere stopfen geht
+2014-07-26 01:29:38,Svenska,also objcopy-mix'n'match
+2014-07-26 01:30:26,Svenska,"naja, start3 läuft bereits an der richtigen adresse mit aktivem paging, alles davor ist eigentlich nur stub ^^"
+2014-07-26 01:31:01,Jidder,"meine experimente mit objcopy und mehreren ld-aufrufen sind soweit gekommen, dass ich zwar 32-bit-code und 64-bit-code in eine datei bekommen habe, aber vom 32-bit-code waren die offsets verschoben. die erste objektdatei war korrekt gelinkt, die zweite war um 4 byte verschoben, die dritte um 8 byte, etc... ich vermute das ist ein zeichen, dass man die nicht zusammen linken soll ^^"
+2014-07-26 01:31:16,Svenska,:-)
+2014-07-26 01:31:42,Svenska,"eigentlich braucht man ja ""nur"" die adresse von start3, um einen CALL (aus 32-bit-code) dahin zu platzieren"
+2014-07-26 01:32:01,Svenska,"wie schaltet man eigentlich in den 64-bit-mode um, ohne sich den boden unter den füßen wegzureißen?"
+2014-07-26 01:32:21,Svenska,"hofft man da auf den assembler und platziert ein "".bits 64"" oder so? ^^"
+2014-07-26 01:32:57,Svenska,"""MOV CRx,#wert; .bits 64; CALL init"" ? ^^"
+2014-07-26 01:33:13,Svenska,(ich hab nur eine 64-bit-cpu und auf der entwickle ich - keine erfahrung *g*)
+2014-07-26 01:33:16,Jidder,kommt drauf a ^^
+2014-07-26 01:33:18,Jidder,an
+2014-07-26 01:33:52,Jidder,"also ich hab es bisher immer so gemacht, dass 32-bit code und 64-bit code getrennte binarys waren"
+2014-07-26 01:34:02,Jidder,"das heißt call init geht nicht, weil init nicht existiert"
+2014-07-26 01:34:17,Jidder,aber
+2014-07-26 01:34:18,Jidder,"	"".code64\n\t"""
+2014-07-26 01:34:18,Jidder,"			""mov %[entry], %%rax\n\t"""
+2014-07-26 01:34:18,Jidder,"			""jmp *%%rax\n\t"""
+2014-07-26 01:34:19,Svenska,jump/vall durch nen pointer
+2014-07-26 01:34:21,Svenska,call
+2014-07-26 01:34:23,Jidder,so hab ich das schon gemacht
+2014-07-26 01:34:26,Svenska,ja
+2014-07-26 01:34:34,Jidder,wobei entry halt ein parameter vom inline assembler ist
+2014-07-26 01:34:53,Jidder,"also __asm__ ("" .... "" : : [entry] ""m""(kernel_mod->entry.raw) ...)"
+2014-07-26 01:35:08,Svenska,sowas als inline assembly zu realisieren ist ... spannend ^^
+2014-07-26 01:36:56,Jidder,"hm das ist code aus einer verrückten version von JidderOS. da hab ich in c++ einen wrapper um 64-bit-pointer geschrieben, um die im 32-bit modus nutzen zu können ^^"
+2014-07-26 01:37:21,Svenska,"äh, WAS?"
+2014-07-26 01:37:31,Jidder,"d.h. mit foo.raw kommt man an den tatsächlichen 64-bit pointer, während foo.ptr einen ptr liefert, der für 32-bit geeignet ist"
+2014-07-26 01:37:42,Jidder,vorausgesetzt er liegt unter 4 gb
+2014-07-26 01:37:43,Jidder,vermutlich
+2014-07-26 01:37:54,Jidder,wer weiß was ich da geraucht habe
+2014-07-26 01:38:35,Jidder,"oh stimmt gar nicht. das war nicht c++, sondern c und ich habs mit unions gemacht"
+2014-07-26 01:38:35,Jidder,^^
+2014-07-26 01:39:20,Svenska,oh mann
+2014-07-26 01:39:35,Svenska,trotzdem hart
+2014-07-26 01:40:56,Svenska,"sollte man sowas wie PMM mit fixen datentypen wie uint32_t festzurren oder lieber mit ""unsigned int"" frei lassen? ^^"
+2014-07-26 01:41:23,Svenska,"oder alles, was irgendwie sinn hat, mit eigenen typedefs versehen? ^^"
+2014-07-26 01:42:01,Jidder,"portable wäre alles mit typedefs zu versehen. typedef phys_addr_t, typedef phys_size_t, typedef page_num_t, typedef page_size_t ..."
+2014-07-26 01:42:15,Jidder,naja vielleicht übertrieben ^^
+2014-07-26 01:43:26,Jidder,"ich versuche c typen wiederzuverwenden, wo sie semantisch sinn machen. also uintptr_t für virtuelle adressen beispielsweise"
+2014-07-26 01:43:41,Jidder,"und wenn du nicht gerade PSE-36 unterstützt, geht das auch für physische adressen"
+2014-07-26 01:44:03,Svenska,hab eh keinen rechner mit >4G RAM und 32 bit
+2014-07-26 01:44:08,Svenska,korrigiere
+2014-07-26 01:44:14,Svenska,hab eh keinen rechner mit >4G RAM
+2014-07-26 01:45:22,Jidder,ah du machst einen auf apple? du beschränkst dich auf deinen eigenen rechner und alle nutzer von SvenskaOS müssen dasselbe modell nutzen?
+2014-07-26 01:45:30,Svenska,nö
+2014-07-26 01:45:47,Svenska,ich hab schon noch viele andere rechner ^^
+2014-07-26 01:45:59,Svenska,aber meist von der klasse 486 :-)
+2014-07-26 01:46:32,Jidder,"ah produktdiversifikation. einsteigermodell, proffesional, bussines, ultima?"
+2014-07-26 01:46:34,Svenska,"das ist auch eher die zielgruppe. wenn es auf nem 'sx25 flüssig läuft, ist es gut :)"
+2014-07-26 01:46:58,Svenska,ich seh für PAE inzwischen keinen sinn mehr.
+2014-07-26 01:46:59,Jidder,jo ^^
+2014-07-26 01:47:29,Svenska,maschinen mit >4G RAM und ohne 64-bit-prozessor sind alte server
+2014-07-26 01:47:39,Svenska,"sowas hab ich nicht, und was ich nicht habe, hat kaum jemand."
+2014-07-26 01:47:40,Jidder,jo
+2014-07-26 01:48:22,Jidder,ich werde auch nicht für sowas entwickeln
+2014-07-26 01:48:47,Jidder,"wenn die JidderSoft GmbH mehr als 100 mitarbeiter hat, kann ich ja eventuell mal einen praktikaten drauf ansetzen"
+2014-07-26 01:48:54,Jidder,praktikanten
+2014-07-26 01:48:56,Svenska,auf einer 32-bit-maschine laufen die page-nummern also von 0..1M
+2014-07-26 01:49:07,Jidder,jop
+2014-07-26 01:53:09,Svenska,"ein listen-typdef kann man nicht mit ner anonymen struct machen, oder? ^^"
+2014-07-26 01:53:16,Svenska,hab ich sicher schonmal gefragt.
+2014-07-26 01:55:31,Jidder,was meinst du mit einem listen-typedef?
+2014-07-26 01:55:51,Svenska,typedef struct { <???> *next; } list_t;
+2014-07-26 01:56:10,Jidder,ah
+2014-07-26 01:56:22,Jidder,hm
+2014-07-26 01:56:50,Jidder,also versuchen kann man es immer ^^
+2014-07-26 01:57:07,Svenska,geht glaube nicht
+2014-07-26 01:57:29,Jidder,vermute ich auch
+2014-07-26 02:06:13,Svenska,"mal das makefile auf c11 umstellen, da gibt's bestimmt ein paar schöne sachen"
+2014-07-26 02:13:10,Jidder,gcc will mich doch rollen. warum definiert der denn i386 als makro?
+2014-07-26 02:13:22,Svenska,?
+2014-07-26 02:13:45,Jidder,der compiler hat gefälligst alle internen defines mit __ davor zu versehen
+2014-07-26 02:13:53,Jidder,i386 ist bei meinem crosscompiler die einzige ausnahme
+2014-07-26 02:14:07,Svenska,"die epiphany-lib definiert auf dem target PACKED und SECTION, aber nicht auf dem host"
+2014-07-26 02:14:23,Svenska,sehr nervig
+2014-07-26 02:15:45,Svenska,"blöde backwards-kompatiblität. ""static_assert"" heißt garnicht static_assert, sondern _Static_assert :("
+2014-07-26 02:15:58,Jidder,jo ...
+2014-07-26 02:18:27,Svenska,gibts nen statischen binärlogarithmus? :D
+2014-07-26 02:19:02,Svenska,"hm, wobei, brauch ich garnicht. ups."
+2014-07-26 02:27:19,Jidder,was auch immer ein statischer binärlogarithmus gewesen wäre ^^
+2014-07-26 02:27:45,Svenska,"ein makro, was mir den binären logarithmus ausrechnet, zur compilezeit ^^"
+2014-07-26 02:27:51,Jidder,ah
+2014-07-26 02:28:11,Jidder,ich wüsste spontan nichts
+2014-07-26 02:28:35,Jidder,eventuell kann der compiler 31 - __builtin_clz(x) optimieren ^^
+2014-07-26 02:28:54,Svenska,clz sagt mir nix
+2014-07-26 02:29:02,Jidder,count leading zeros
+2014-07-26 02:29:06,Svenska,aah
+2014-07-26 02:29:19,Jidder,gcc sp33k
+2014-07-26 02:30:19,Jidder,"ich glaube ich hab vor einigen jahren das mal genutzt, und der compiler konnte es nicht optimieren"
+2014-07-26 02:30:42,Jidder,als der hat assemblercode äquivalent zu 31 - x - 32 generiert
+2014-07-26 02:30:48,Svenska,lustig
+2014-07-26 02:31:05,Jidder,"wobei x dann die x86 instruktion war, die halt so toll für dieses builtin gewesen wäre"
+2014-07-26 02:31:06,Svenska,"aber ein memcpy() optimieren, das kann er :)"
+2014-07-26 02:31:12,Jidder,jop ^^
+2014-07-26 02:33:09,Svenska,"pow() braucht math.h, oder?"
+2014-07-26 02:33:16,Svenska,"ja,"
+2014-07-26 02:33:19,Svenska,braucht es. :)
+2014-07-26 02:34:07,Svenska,mist. :)
+2014-07-26 02:34:19,Jidder,^^
+2014-07-26 02:39:33,Jidder,ich frag mich ja wofür du pow brauchst
+2014-07-26 02:39:42,Jidder,powAAAAAAAAAAAAAAAAAAAH
+2014-07-26 02:39:55,Svenska,habs ersetzt durch (sizeof(uintptr_t)*8-12)
+2014-07-26 02:40:24,Jidder,das sieht schon mal nicht schlecht aus ^^
+2014-07-26 02:40:36,Jidder,CHAR_BITS statt 8 :P
+2014-07-26 02:40:39,Jidder,(nein bloß nicht)
+2014-07-26 02:40:46,Svenska,lol
+2014-07-26 02:41:08,Svenska,"ich glaube, eins der wenigen dinge, die C echt hart definiert, ist dass BITS_PER_BYTE==8"
+2014-07-26 02:41:20,Jidder,theoretisch nicht
+2014-07-26 02:41:39,Jidder,"ich hab mal gelesen, dass jemand von einer implementierung gehört hat, die angeblich nicht 8 bit chars hatte"
+2014-07-26 02:41:50,Svenska,das kann sein
+2014-07-26 02:41:59,Svenska,"aber dass ein byte 8 bit hat, ist glaube fix"
+2014-07-26 02:42:08,Jidder,"ja, aber c kennt keine bytes ^^"
+2014-07-26 02:42:37,Svenska,"(das betraf die virtuelle maschine von notch's 0x10c, aber das ist ja nicht mehr)"
+2014-07-26 02:42:52,Svenska,warum nicht CHAR_BITS statt 8 ? :D
+2014-07-26 02:43:05,Jidder,"jo die ist in java geschrieben, das 16-bit signed chars hat"
+2014-07-26 02:43:15,Jidder,weil du für CHAR_BITS nen header brauchst
+2014-07-26 02:43:20,Svenska,und welchen? ^^
+2014-07-26 02:43:23,Jidder,keine ahnung
+2014-07-26 02:43:29,Svenska,die virtuelle maschine konnte man in virtuellem assembler programmieren
+2014-07-26 02:43:44,Jidder,limits.h sagt er mir
+2014-07-26 02:43:45,Svenska,"also das war schon low-levelig genug, aber die architektur kannte nur 16 bit werte"
+2014-07-26 02:44:08,Svenska,"ne, limits.h ist posix, das darf ich nicht benutzen xD"
+2014-07-26 02:44:16,Jidder,deswegen ^^
+2014-07-26 02:44:23,Jidder,"und es hieße wohl auch CHAR_BIT, sagt er"
+2014-07-26 02:44:28,Jidder,der goggelmann
+2014-07-26 02:44:53,Jidder,"warum konnte ich vor 2 jahren einen 64-bit kernel linken, aber jetzt gehts nicht mehr? :("
+2014-07-26 02:45:14,Jidder,kernel/x86/entry.o: In function `_start':
+2014-07-26 02:45:14,Jidder,(.text+0x1): relocation truncated to fit: R_X86_64_32 against `.bss'
+2014-07-26 02:45:22,Jidder,das ist eine assembler-datei
+2014-07-26 02:45:30,Jidder,x86_64-elf-gcc  -Iinclude  -c -o kernel/x86/entry.o kernel/x86/entry.S
+2014-07-26 02:45:39,Jidder,"kann doch nicht so schwer sein, die zu assemblieren ..."
+2014-07-26 02:46:07,Jidder,oh ich bin blöd
+2014-07-26 02:46:11,Jidder,"mov $stack_top, %esp"
+2014-07-26 02:46:17,Jidder,natürlich geht das nicht in 64-bit
+2014-07-26 02:46:21,Svenska,rsp? ^^
+2014-07-26 02:46:43,Jidder,jop
+2014-07-26 02:47:00,Jidder,"na super jetzt sagt mir mein os ""implement initialize_64"""
+2014-07-26 02:47:05,Jidder,wer war denn da wieder faul? -.-
+2014-07-26 02:47:11,Svenska,hihi
+2014-07-26 02:49:18,Jidder,oh mein 64-bit kernel ist genau 0x420 bytes groß
+2014-07-26 02:49:21,Jidder,blaze it
+2014-07-26 02:49:34,Svenska,das ist mehr als 1k
+2014-07-26 02:49:47,Jidder,ziemlich high
+2014-07-26 02:50:22,Jidder,ah 1 kilobyte stack
+2014-07-26 02:50:45,Jidder,und anscheinend 32 bytes um ein braungrünes B in die linke bildschirmecke zu zaubern
+2014-07-26 02:50:53,Jidder,wenn es denn funktionieren würde
+2014-07-26 02:50:55,Svenska,:)
+2014-07-26 02:54:18,Svenska,end = (base+len-0xFFF) & ~0xFFF
+2014-07-26 02:56:57,Svenska,"müsste auf den begin der letzten, vollständig verfügbaren page zeigen"
+2014-07-26 02:58:04,Svenska,(wenn base+len die höchste gültige adresse angibt)
+2014-07-26 02:58:10,Jidder,jo
+2014-07-26 02:58:46,Jidder,glaube ich
+2014-07-26 02:58:58,Svenska,sagt bash auch
+2014-07-26 02:59:25,Svenska,"ist nur nicht das, was ich brauchte ^^"
+2014-07-26 03:01:44,Jidder,^^
+2014-07-26 03:13:18,Jidder,ich bin dann mal beim karatetraining
+2014-07-26 03:13:19,Jidder,gn8
+2014-07-26 03:13:23,Svenska,gn8
+2014-07-26 12:58:55,iksnagreb,moin
+2014-07-26 13:41:34,iksnagreb,"wenn ich jetzt nen virtual filesystem im userspace implementieren will, kann ich das schon über ein einfaches massaging ystem machen, oder sollte ich noch ne form von rpc implementieren?"
+2014-07-26 13:42:00,iksnagreb,"ups, messaging natürlich"
+2014-07-26 13:44:29,Jidder,"also ich kann mir vorstellen, dass messages hinreichend sind"
+2014-07-26 13:46:29,iksnagreb,"hm, ich weiß nur nich, wie ich das dann angehen soll, bin schon seit einer woche am überlegen, aber mir fehlt irgendwie noch der richtige ansatz, wie ich zum beispiel die daten der anfragen am besten zum vfs service bekomme"
+2014-07-26 13:49:56,Jidder,"ohne sowas jemals implementiert zu haben, würde ich sagen, dass der vfs-prozess eine kernelfunktion (""WaitForMessage"") aufrufen sollte, der er einen puffer übergibt. dieser funktion übergibt er einen puffer für die daten"
+2014-07-26 13:50:14,Jidder,"wenn jemand eine dateioperation durchführen will, sendet er eine message (""SendMessage""), der er einen gefüllten puffer übergibt"
+2014-07-26 13:50:23,Jidder,der kernel kopiert den einen puffer in den anderen
+2014-07-26 13:50:35,Jidder,und weckt danach den vfs-prozess auf
+2014-07-26 13:51:03,Jidder,der durch den aufruf von WaitForMessage natürlich blockiert wurde
+2014-07-26 13:51:20,iksnagreb,"naja, mein nachrichten system ist eigentlich schon implementiert, ich hab da zwei puffer für frage und zwei für antwort zur verfügung, ich weiß nur nicht, wie zumbeispiel die daten eines read() aufrufs da rein passen sollen"
+2014-07-26 13:52:04,Jidder,"wenn die puffer feste größe haben (und zu klein für daten sind) und du das nicht ändern willst, dann kannst du beispielsweise shared memory implementieren"
+2014-07-26 13:52:24,Jidder,dann kannst du in die puffer handles auf den shared memory verschicken
+2014-07-26 13:52:48,iksnagreb,"die puffer haben keine feste größe, es gibt aber ne maximalgröße, die vom service festgelegt wird"
+2014-07-26 13:53:45,Jidder,"aber die maximalgröße ist kleiner, als das was für die daten sinnvoll ist?"
+2014-07-26 13:56:34,iksnagreb,"naja, das ist dann wohl noch son problem, was sollte die maximal größe sein, wenn nen prozes zum beispiel 64MB aus na datei lesen will, die maximale puffergröße aber z.B. 32MB ist, wär das nen problem"
+2014-07-26 13:57:16,Jidder,read kann ja weniger zurückgeben als gefordert ist
+2014-07-26 13:57:54,iksnagreb,"hm, ok, dann müsste man da mehrere aufrufe machen, um die daten zu lesen"
+2014-07-26 13:58:07,Jidder,"und die menge, die es maximal zurückgibt, solltest du anhand des verhältnis von IPC-latenz zu hardwaregeschwindigkeit machen"
+2014-07-26 13:58:23,Jidder,das muss man übrigens schon immer
+2014-07-26 13:59:54,Jidder,"also wenn die festplatte beispielsweise 1000 MB/s schafft, aber das übertragen der daten durch das messaging 10 ms dauert, hast du ein problem, wenn die puffergröße nur 1 mb ist, weil dann durch das messaging das auf 1 MB / 10 ms = 100 MB/s limitiert ist"
+2014-07-26 14:02:56,Jidder,wobei das in MB/s auszudrücken vielleicht nicht das sinnvollste ist. die prozesse sollen ja nicht nur daten lesen/schreiben sondern auch damit arbeiten
+2014-07-26 14:03:31,iksnagreb,"ich glaub ich werd erstmal aufschreiben, welche funktionen der vfs service bereitstellen muss und welche parameter die brauchen, dann kann ich gucken, wie ich die im ipc system unterbringe, um die optimirung, also das finden der richtigen puffer größe mach ich dann, wenn ichs implementiere"
+2014-07-26 14:04:00,Jidder,jo
+2014-07-26 14:18:31,Jonathan,Moin
+2014-07-26 16:20:39,tdotu,moin
+2014-07-26 16:20:39,tdotu,ich habe gerade ein paar probleme mit der newlib
+2014-07-26 16:22:30,tdotu,irgendwie kriegt das Ding die libgloss nicht zusammengeschraubt und ich weiß nicht warum. ich finde in den logs keine wirklichen Anhaltspunkte warum das nicht gescheit geht
+2014-07-26 16:23:03,tdotu,https://github.com/infinitycoding/universe/tree/master/libs/newlib
+2014-07-26 16:24:37,tdotu,die Pfade sind etwas anders weil das make von Hauptverzeichnis des Projektes ausgeführt wird 
+2014-07-26 16:25:37,tdotu,habt ihr ne Ahnung woran das liegen kann? 
+2014-07-26 16:33:22,Jidder,"gibt er eine fehlermeldung beim kompilieren aus, oder was funktioniert nicht?"
+2014-07-26 16:49:46,tdotu,es gibt keine fehlermedlung aber er gibt auch keine libgloss aus
+2014-07-26 16:49:56,tdotu,die newlib an sich baut er
+2014-07-26 16:56:17,Jidder,sollte die libgloss denn wirklich davon getrennt sein?
+2014-07-26 16:56:30,Jidder,"ich hätte jetzt angenommen, dass das in die selbe lib kommt"
+2014-07-26 17:04:21,tdotu,ne
+2014-07-26 17:04:33,tdotu,ist seperat und wird per linkerskript gemamagt
+2014-07-26 17:04:45,tdotu,(wenn ich das richtig verstanden habe)
+2014-07-26 17:05:00,tdotu,die syscalls sind auf jeden fall nicht in der libc.a die am ende rauskommt
+2014-07-26 17:05:11,Jidder,hm
+2014-07-26 17:07:03,Jidder,https://github.com/infinitycoding/universe/blob/master/libs/newlib/makefile
+2014-07-26 17:07:09,Jidder,du baust die mit make build?
+2014-07-26 17:07:25,Jidder,sind die pfadangaben da alle korrekt? die sehen auf dem ersten blick inkonsistent aus
+2014-07-26 17:07:38,Jidder,"kommt aber drauf an, wie deine verzeichnisstruktur aussieht"
+2014-07-26 17:08:40,tdotu,die pfade passen. Ich weiß das das komisch aussieht
+2014-07-26 17:09:00,Jidder,"dass newlib beim target all nicht auftaucht, ist gewollt? https://github.com/infinitycoding/universe/blob/master/libs/makefile"
+2014-07-26 17:09:40,tdotu,ja. Deshalb sind die pfade ja so komisch. Wir wollten nicht das die newlib jedes mal mitgebaut wird 
+2014-07-26 17:09:52,tdotu,das verzögert das compilieren um ein vielfaches
+2014-07-26 17:11:00,Jidder,ich hab zu wenig erfahrung mit newlib um mehr dazu sagen zu können
+2014-07-26 17:12:00,tdotu,"ok, trotzdem danke :)"
+2014-07-26 17:23:16,tdotu,bin mal off
+2014-07-26 17:23:26,tdotu,tschüs
+2014-07-26 17:23:33,tdotu,*tschüss
+2014-07-26 20:28:38,iksnagreb,nabend
+2014-07-26 22:38:28,th3falc0n,"der moment wenn man realisiert, dass die chinesen nen bruteforce auf den datenbank server am laufen haben :( ich mach mir ernsthafte sorgen"
+2014-07-26 22:58:17,SHyx0rmZ,schalt ab die kiste :D
+2014-07-26 22:58:23,SHyx0rmZ,firewall und gut ist
+2014-07-26 22:58:47,SHyx0rmZ,bei uns haben sie letztens remote execution reingewuselt und dann japaner abgeschossen
+2014-07-26 23:00:18,th3falc0n,"hmm ich glaub mein problem ist, dass ich wegen dem komischen verwaltungspanel von 1und1 den root ssh zugriff  aktiv hab"
+2014-07-26 23:00:25,th3falc0n,das macht den server attraktiv
+2014-07-26 23:00:33,th3falc0n,ändern ich nachher
+2014-07-26 23:00:39,th3falc0n,und auch nurnoch zugriff über ssh key
+2014-07-26 23:03:24,darklink,"Ändere ALLE passwörter, da haben es die idioten schwerer"
+2014-07-26 23:10:02,th3falc0n,hmm  die haben ja noch nicht einmal zugriff gehabt
+2014-07-26 23:10:17,th3falc0n,nur seit monaten erfolglose anmeldeversuche
+2014-07-26 23:10:25,darklink,O.o
+2014-07-26 23:10:33,darklink,Idioten
+2014-07-26 23:10:35,darklink,S
+2014-07-26 23:13:26,SHyx0rmZ,Server abschotten und Whitelist benutzen ist der einfachste weg
+2014-07-26 23:14:50,th3falc0n,whitelist für nen öffentlichen teamspeak?
+2014-07-26 23:24:20,th3falc0n,kann man nen erfolgreichen login faken? ich hab lust die zu verarschen
+2014-07-26 23:29:28,th3falc0n,"bevor da noch irgendwas schlimmes passiert, was muss ich alles regelmäßig checken? also momentan check ich immer: ""ps ax"" ""last"" und ""netstat -lptu"" ... und manchmal die logs "
+2014-07-26 23:46:22,Svenska,moin
+2014-07-26 23:46:26,Svenska,oder auch namd :)
+2014-07-26 23:47:11,Svenska,"th3falc0n: das stichwort ist honeypot bzw. tarpit. aber das willst du nicht mit dem rechner machen, der angegriffen wird. :-)"
+2014-07-26 23:48:20,Svenska,"du könntest natürlich einen user mit dem seltsam klingenden namen ""root"", dem passwort ""root"" und ohne jegliche berechtigungen anlegen... hilft dir aber nicht, wenn der angreifer sicherheitslücken ausnutzt."
+2014-07-26 23:49:00,th3falc0n,ok nachher disable ich mal zugriff über passwort 
+2014-07-26 23:49:23,Svenska,"ich war mal dabei, als ein attacker meinen offenen vnc übernehmen wollte"
+2014-07-26 23:49:48,Svenska,"weil ich gerade dabei war, den einzurichten. innerhalb von 3 sekunden hatte ich ne cmd mit binary vor der nase..."
+2014-07-26 23:50:44,Svenska,(aber einmal woanders hinklicken und der angriff lief ins leere)
+2014-07-26 23:59:38,iksnagreb,"hm, lol, diese diskussion hier hat mich mal dazu gebracht in die logs von meinem server zu sehen..."

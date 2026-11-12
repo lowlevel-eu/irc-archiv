@@ -1,0 +1,961 @@
+date/time,nick,message
+2014-01-11 00:02:45,Darkchaos,btw: http://www.lowlevel.eu/wiki/Exception#Page_Fault Bit 2: Wenn gestzt statt Wenn gesetzt. ist aber wohl eher einekleinigkeit
+2014-01-11 00:13:53,Darkchaos_,"state = 407FC8,  pagefault 405008. Angeblich würde beim Zugriff auf state der Fehler auftreten (lt. EIP). Aber es passiert genau 0x2FC0 früher? "
+2014-01-11 00:17:56,Darkchaos,EIP ist jedenfalls misaligned
+2014-01-11 00:18:15,Svenska,?
+2014-01-11 00:18:23,Svenska,x86 hat verschiedene befehlslängen
+2014-01-11 00:19:03,Darkchaos_,ja aber wenn ich EIP mithilfe von objdump zurückverfolge lande ich zwischen zwei befehlen
+2014-01-11 00:20:10,Darkchaos,der objdump war irgendwie nicht aktuell
+2014-01-11 00:21:12,Darkchaos,"nur die hilfs c-ausschnitte sind falsch. da steht while(true) { asm volatile (""nop"");} Im Assembler taucht aber weder nop auf, noch macht der call zu memcpy sinn"
+2014-01-11 00:22:01,Svenska,das nop könnte aus der endlosschleife kommen
+2014-01-11 00:22:15,Darkchaos,"ja, aber ich habe nirgends ein nop"
+2014-01-11 00:22:25,Svenska,"naja, ist ja nur ne hilfe ^^"
+2014-01-11 00:23:09,Darkchaos,"ich meine damit: asm volatile (""nop""); taucht später nirgends im assembly auf"
+2014-01-11 00:23:59,Darkchaos,hmm ist nop nicht opcode 90?
+2014-01-11 00:24:02,Darkchaos,0x90?
+2014-01-11 00:24:21,Darkchaos,Ich hab hier irgendwo eine neue Zeile mit 0x00 ohne disassembly. nop kanns aber nix sein^^
+2014-01-11 00:25:41,Darkchaos,oder wird das wegoptimiert?
+2014-01-11 00:26:12,Darkchaos_,aber ich sehe auch nirgends ne endlosschleife iwie
+2014-01-11 00:27:13,Darkchaos_,"ok warum auch immer sind manche c-fragmente doppelt, die while ist nach dem pf"
+2014-01-11 00:36:26,Darkchaos_,http://pastebin.com/3MD6mw1z
+2014-01-11 00:36:57,Darkchaos,Svenska: 101a70 ist der crash.
+2014-01-11 00:37:54,Svenska,"also steht gülle auf dem stack, lese ich da raus..."
+2014-01-11 00:38:14,Svenska,"das memcpy() ist übrigens auch dann eins, wenn er memcpy() garnicht aufruft ^^"
+2014-01-11 00:38:17,Darkchaos,"Naja, es gibt einen #PF. Ist eventuell taskmem auch falsch?"
+2014-01-11 00:38:30,Darkchaos,Was? :O
+2014-01-11 00:41:11,Darkchaos,werden die parameter in der Reihenfolge gepusht?
+2014-01-11 00:41:47,Darkchaos,dann ist -0xc(%ebp) bzw %eax kernel_mem Base-Pointer. und mob 0x8(%eax) ist virutal_pagedir_kernelcontext?
+2014-01-11 00:46:34,Jidder,fragen über fragen
+2014-01-11 00:47:37,Darkchaos_,"und noch schlimmer ist, was ich gerade feststelle. kernel_mem.virtual_pagedir_kernelcontext = 0x500.000 == erstens nicht gemappt und zweitens sollte die adresse dort im 4MB Bereich liegen^"
+2014-01-11 00:50:23,Darkchaos,wie mache ich nen screenshot in KDE?
+2014-01-11 00:53:24,Darkchaos,also ohne print taste :D
+2014-01-11 00:57:14,XanClic,Alt+F2 ksnapshot
+2014-01-11 00:57:55,Svenska,eins der imagemagick-programme kann das auch
+2014-01-11 00:58:13,Darkchaos_,Danke XanClic
+2014-01-11 00:58:24,DerHartmut,Nabend
+2014-01-11 00:58:38,Darkchaos_,ok jetzt wirds spannend. Sobald mir GRUB Multibootmodule mitgibt spinnen meine pages komplett? 
+2014-01-11 00:58:39,Darkchaos_,Abend
+2014-01-11 00:59:18,Jidder,warst du nicht so weit schon vor ein paar wochen?
+2014-01-11 00:59:31,Darkchaos,jep und dann hat die Zeit gefehlt
+2014-01-11 01:03:25,Darkchaos_,"http://imgur.com/b8g76So,VE0xxJ1#0"
+2014-01-11 01:05:08,Darkchaos,"wohlbemerkt, das ist bevor etwas speicher für den task alloziert wird. was die komischen 5c mappings sollen raffe ich eh nicht"
+2014-01-11 01:05:33,Jidder,das ist einmal ohne module und einmal mit?
+2014-01-11 01:05:39,Darkchaos,jap
+2014-01-11 01:05:50,Jidder,warum ist 0xfffff000 irgendwohin gemappt?
+2014-01-11 01:06:07,Darkchaos,das ist irgendwie einer der rekursiven zugriffe aufs PD
+2014-01-11 01:06:10,Jidder,ah okay
+2014-01-11 01:06:22,Jidder,das page directory ist also 5x gemappt?
+2014-01-11 01:06:44,Darkchaos,"Nein, ich verschau mich da auch immmer. die dritte Spalte ist die size"
+2014-01-11 01:06:53,Jidder,ah
+2014-01-11 01:06:54,Darkchaos,und die start end size
+2014-01-11 01:07:08,Darkchaos,"ist nicht tlb sondern mem, weil der eigentlich schön groupt. bei tlb fehlt der durchblick komplett"
+2014-01-11 01:07:32,Jidder,naja info tlb wär schon esser
+2014-01-11 01:07:34,Jidder,besser
+2014-01-11 01:07:47,Jidder,mit strg bild-auf/ab kann man glaube ich scrollen
+2014-01-11 01:08:01,Darkchaos,jap kann man.
+2014-01-11 01:08:07,Darkchaos,aber da blickt man wenig :/
+2014-01-11 01:08:20,Darkchaos,"aber ich kanns morgen machen, ich leg mich dann mal ab. Danke aber schonmal für alle Hilfe :)"
+2014-01-11 11:25:58,Jonathan,Moin
+2014-01-11 11:26:04,Darkchaos,hi
+2014-01-11 11:30:05,mroman_,Kann mir jemand einen Wikiaccount anlegen?
+2014-01-11 11:31:49,Darkchaos,mir ggf. auch?
+2014-01-11 11:38:38,Paddy,DesL: Kundschaft ;-)
+2014-01-11 12:15:07,Darkchaos,Das ist aber ein Service hey :D
+2014-01-11 14:15:10,iksnagreb,moin
+2014-01-11 14:17:31,iksnagreb,"weiß irgend jemand, was der grund sein kööte, das linux mint beim booten oder login immer wieder hängen bleibt?"
+2014-01-11 14:17:48,Svenska,bei was bleibt es hängen?
+2014-01-11 14:18:19,iksnagreb,"beim booten oder beim login, nach mehreren veruchen geht es dann"
+2014-01-11 14:18:35,Svenska,-.-
+2014-01-11 14:19:07,iksnagreb,"ich weiß einfach nicht, wo ich nach dem problem suchen kann"
+2014-01-11 14:19:19,Svenska,du gibst deinen 
+2014-01-11 14:19:26,Svenska,du bist dein passwort ein -> hang?
+2014-01-11 14:19:31,Svenska,oder immer davor?
+2014-01-11 14:19:54,iksnagreb,"manchmal schon beim booten, manchmal nach dem enterdruck bei der pasworteingabe"
+2014-01-11 14:20:02,Svenska,"was verstehst du unter ""hängt""? die tastatur-leds blinken?"
+2014-01-11 14:20:15,Svenska,geht strg+alt+f1 noch?
+2014-01-11 14:20:31,iksnagreb,"ne, danach gehn dann auch die tastatur leds nicht mehr"
+2014-01-11 14:21:37,Svenska,hm
+2014-01-11 14:21:42,Svenska,welcher kernel?
+2014-01-11 14:21:56,iksnagreb,3.11.0-12-generic
+2014-01-11 14:21:57,Svenska,was steht in /var/log/syslog nach dem reboot?
+2014-01-11 14:22:04,Svenska,da müsste ja das alte bootlog auch zu finden sein
+2014-01-11 14:22:17,Svenska,"gibt's vielleicht komische meldungen vom kernel? (evtl. mit ""noquiet"" booten)"
+2014-01-11 14:23:50,iksnagreb,"""noquiet"" als parameter über grub?"
+2014-01-11 14:23:53,Svenska,ja
+2014-01-11 14:24:04,Svenska,"dann solltest du die kernelmeldungen bekommen, statt splash-screen"
+2014-01-11 14:24:09,Svenska,"evtl musst du ""splash"" auch wegmachen"
+2014-01-11 14:25:03,iksnagreb,"sollte ich das in der grub.cfg ändern, oder beim booten von hand eintragen?"
+2014-01-11 14:25:19,Svenska,von hand reicht
+2014-01-11 14:25:24,Svenska,"ich will wissen, ob der kernel panict"
+2014-01-11 14:25:29,Svenska,oder ob er sich einfach weghängt
+2014-01-11 14:26:39,iksnagreb,"so, jetzt kann ich den pc rebooten"
+2014-01-11 14:32:08,iksnagreb,"er bleibt jetzt immer hängen, wenn der loginscreen, bzw nur die maus geladen wurde, also seh ich nichts mehr von dem, was er beim booten ausgiebt"
+2014-01-11 14:32:55,Svenska,"also der textkram bootet durch, er startet X und hängt sich dann weg?"
+2014-01-11 14:33:02,Svenska,seit wann ist das - hast du ein update gemacht?
+2014-01-11 14:33:41,iksnagreb,"seit ich es installiert hab, war nur bisher zu faul  mich damit zu beschäftigen"
+2014-01-11 14:34:56,Svenska,"weil so hart weghängen tut sich der kernel eigentlich nur, wenn entweder die hardware nicht mehr ganz sauber ist oder ein treiber spinnt"
+2014-01-11 14:35:21,Svenska,"wenn er hängt, kannst du mal Alt+Druck+B gleichzeitig drücken"
+2014-01-11 14:35:37,Svenska,"und wenn das funktioniert, dann Alt+Druck+R und danach Strg+Alt+F1"
+2014-01-11 14:38:55,iksnagreb,"Alt+Druck+B macht reboot, bei den anderen gar nichts"
+2014-01-11 14:39:14,Svenska,reboot ist schonmal gut
+2014-01-11 14:39:35,ISOrunner2,Hi
+2014-01-11 14:39:51,Svenska,"wie gesagt, wenn es mal klappt, dann guck ins syslog"
+2014-01-11 14:40:07,Svenska,"wenn er hängt, drücke Alt+Druck+S"
+2014-01-11 14:40:29,Svenska,"dann neustarten, reinkommen, log begutachten"
+2014-01-11 14:41:03,mroman,Nur mal so aus neugierde...
+2014-01-11 14:41:09,mroman,ist CDI Vereinbar mit Windows/Linux?
+2014-01-11 14:41:37,Svenska,inwiefern vereinbar?
+2014-01-11 14:44:29,mroman,Naja
+2014-01-11 14:44:44,mroman,"Ich nehme an, da koennte es gewisse Huerden geben"
+2014-01-11 14:44:49,mroman,Permissions etc. z.b
+2014-01-11 14:45:04,mroman,und ich finde gerade from_userspace nicht in CDI?
+2014-01-11 14:45:30,Svenska,"äh, lol? :-)"
+2014-01-11 14:45:37,mroman,oder to_userspace?
+2014-01-11 14:45:48,Svenska,du willst CDI-treiber unter windows oder linux laufenlassen
+2014-01-11 14:46:29,Svenska,"CDI ist OS-unabhängig angelegt, deswegen ist da kein OS-spezifischer kram drin"
+2014-01-11 14:46:53,Svenska,"und da CDI-treiber auch auf mikrokerneln laufen sollen, gibt es {from,to}_userspace nicht. das ist normales RPC."
+2014-01-11 14:47:06,Svenska,(oder so ähnlich ^^)
+2014-01-11 14:47:39,Svenska,"Du müsstest schon einen CDI-Host für Win/Lin implementieren, der auf der einen Seite CDI spricht und auf der anderen Seite die jeweilige OS-API für das Gerät."
+2014-01-11 14:47:59,mroman,was tut dann z.b cdi_net_receive?
+2014-01-11 14:48:09,Svenska,ein paket empfangen?
+2014-01-11 14:48:10,mroman,"da steht, es wird vom netzwerktreiber aufgerufen"
+2014-01-11 14:49:23,Svenska,ist es innerhalb von cdi implementiert?
+2014-01-11 14:53:18,Paddy,CDI definiert das Interface
+2014-01-11 14:53:32,Paddy,Die Implementierung dieses Interfaces ist OS-abhängig und gehört nicht zu CDI
+2014-01-11 14:54:41,Paddy,"Das heißt, du müsstest eine cdi.dll oder was auch immer schreiben, die ein cdi_net_receive() anbietet und das Paket an die Windows-Netzwerkschicht weiterleitet"
+2014-01-11 14:55:13,mroman,ja ok
+2014-01-11 14:55:25,mroman,es ist kein userspace interface
+2014-01-11 14:55:49,mroman,oder?
+2014-01-11 14:56:00,Svenska,es ist ein treiber-interface
+2014-01-11 14:56:09,mroman,ja
+2014-01-11 14:56:11,Svenska,"es stellt funktionen bereit, die ein OS benutzen kann, um mit hardware zu reden"
+2014-01-11 14:56:18,mroman,ja
+2014-01-11 14:56:20,Svenska,"und es stellt funktionen bereit, die ein Treiber benutzen kann, um mit CDI zu reden"
+2014-01-11 14:56:32,Svenska,das userspace interface (oder das rpc-interface) ist teil des OS
+2014-01-11 14:56:37,mroman,"aber es definiert nicht, wie der Userspace dann mit den Treibern schwatzen tut"
+2014-01-11 14:56:57,Svenska,exakt
+2014-01-11 14:57:09,Svenska,zumal userspace auch nicht unbedingt die ganze wahrheit sein muss ^^
+2014-01-11 14:57:22,Svenska,"in linux wäre es ja der kernelspace, der mit den treibern schwatzt"
+2014-01-11 15:11:48,mroman,Hm.
+2014-01-11 15:11:53,mroman,Ich sehe gerade es gibt ein Video-Modul
+2014-01-11 15:11:59,mroman,aber das ist nicht im doxygen Dings drin.
+2014-01-11 15:14:49,mroman,Wie ist das in tyndur denn so
+2014-01-11 15:14:54,mroman,laufen Treiber als Prozesse?
+2014-01-11 15:14:57,mroman,oder als Kernel Threads?
+2014-01-11 15:15:17,mroman,bzw. user space oder kernel prozesse
+2014-01-11 15:16:24,mroman,also...
+2014-01-11 15:16:31,mroman,kann ich als userspace Prozess gegen cdi linken
+2014-01-11 15:16:37,mroman,und dann mal schnell alle ioports reservieren?
+2014-01-11 15:16:44,Svenska,das hängt von deinem OS ab
+2014-01-11 15:16:55,Svenska,aus sicht des OS' ist CDI nur ein batzen code
+2014-01-11 15:17:06,Svenska,"wie du das in dein OS reinfummelst, kannst du selbst entscheiden."
+2014-01-11 15:22:17,ISOrunner2,"Wenn ich Qemu starte buggt das Fenster irgendwie, das blinkt und macht dann normal weiter."
+2014-01-11 15:23:40,Paddy,"Ja, in tyndur kannst du im Userspace gegen CDI linken und alle I/O-Ports registrieren"
+2014-01-11 15:23:49,Paddy,Oder du kannst das mit CDI bleiben lassen und das gleiche direkt mit Syscalls machen
+2014-01-11 15:24:01,Paddy,Was anderes macht die CDI-Lib ja intern auch nicht
+2014-01-11 15:24:11,mroman,k. also ist CDI in tyndur eine userspace lib
+2014-01-11 15:24:22,Paddy,Ja
+2014-01-11 15:24:43,Paddy,Gehört sich für einen Mikrokernel so
+2014-01-11 15:27:59,mroman,naja
+2014-01-11 15:28:18,mroman,"ich finde dass jetzt nicht so cool, wenn jeder Userspace Prozess mit meiner Hardware rumfrickeln kann ;)"
+2014-01-11 15:28:29,Svenska,"wer redet denn von ""jeder""? ;)"
+2014-01-11 15:29:17,Paddy,"In tyndur ist es jeder, weil tyndur keine Berechtigungen implementiert"
+2014-01-11 15:29:29,Paddy,Aber das ist natürlich bei einem vernünftigen Mikrokernel-OS anders
+2014-01-11 15:29:52,Svenska,"aber grundsätzlich gibt es ""root"" und ""rest"". bei minix gibt es sogar noch den unterschied zwischen treibern, root und rest."
+2014-01-11 15:31:41,Paddy,Das ist bei Unix vielleicht so mit root/rest
+2014-01-11 15:32:11,Svenska,"naja, bei windows gibt es zwar Administrator und SYSTEM, aber treiber sind im kernel"
+2014-01-11 15:32:12,mroman,ach
+2014-01-11 15:32:19,mroman,Mikrokernel ist doch sowas wie Haskell
+2014-01-11 15:32:23,mroman,"akademisch, sieht toll aus"
+2014-01-11 15:32:32,mroman,niemand benutzt's in der Praxis ausser fuer Forschungszwecke
+2014-01-11 15:32:52,mroman,mit gewissen Nichen-Anwendungen natuerlich
+2014-01-11 15:33:39,Svenska,windows war mal (fast) ein mikrokernel
+2014-01-11 15:34:35,Svenska,entweder bei NT 3.5 oder bei NT 4.0 wurde der grafiktreiber wieder in den kernel geschoben
+2014-01-11 15:34:37,mroman,was war es denn zu DOS-Zeiten :)?
+2014-01-11 15:34:47,Svenska,"ich meinte ""richtiges"" windows."
+2014-01-11 15:35:08,Svenska,die dos-basierten systeme sind ganz gewöhnliche monolithen
+2014-01-11 15:38:22,iksnagreb,"hm, im syslog konnt ich jetzt nichts finden, und auch im internet gibts nichts, da zu meinem problem passt"
+2014-01-11 15:39:22,Svenska,"naja, dein problem ist jetzt auch relativunspezifisch"
+2014-01-11 15:40:30,iksnagreb,"was noch sehr interressant ist, auch ubuntu 13.10 war auf diesem PC für mich unbenutzbar, das war auch der grund für den wechsel zu mint"
+2014-01-11 15:40:43,iksnagreb,da hatte ich auch boot probleme
+2014-01-11 15:41:29,Svenska,probier mal das klassische debian
+2014-01-11 15:41:37,Svenska,"da ist ein relativ antiker kernel drin, vielleicht klappt das mit dem"
+2014-01-11 15:42:20,iksnagreb,"ich hab aber grad eigent lich keine lust neu zu installieren, alles andere läuft grad o gut"
+2014-01-11 15:42:36,Svenska,was für ne grafikkarte hast du?
+2014-01-11 15:42:58,iksnagreb,AMD Radeon HD 7870 GHz Edition
+2014-01-11 15:43:03,Svenska,welchen grafiktreiber?
+2014-01-11 15:44:01,iksnagreb,xerver-xorg-video-ati
+2014-01-11 15:44:22,Svenska,also radeon
+2014-01-11 15:44:27,Svenska,probier mal catalyst
+2014-01-11 15:44:35,Svenska,also den binärtreiber von amd
+2014-01-11 15:44:40,iksnagreb,ne
+2014-01-11 15:44:58,iksnagreb,"den, der als standart nach der installation installiert war"
+2014-01-11 15:45:11,Svenska,"der opensource-treiber heißt ""radeon"""
+2014-01-11 15:45:24,Svenska,das xorg-modul heißt -ati
+2014-01-11 15:45:36,Svenska,"aber installiere mal den binärtreiber von amd, vielleicht geht es damit besser."
+2014-01-11 15:47:46,ISOrunner2,Kann ich in Assembler auf einen C-Struct zugreifen?
+2014-01-11 15:47:52,Svenska,ja.
+2014-01-11 15:48:01,ISOrunner2,"Cool, wie geht das?"
+2014-01-11 15:48:15,Svenska,"zeiger aufs element setzen, zugreifen"
+2014-01-11 15:48:56,ISOrunner2,Also ich würde das gerne für das wechseln des aktuellen Prozesses gerne nehmen
+2014-01-11 15:49:01,iksnagreb,"argh, 153MB zu laden"
+2014-01-11 15:54:36,ISOrunner2,Ich habe das mit dem Inline-Assembler irgendwie noch nicht richtig kappiert :/ Wie kann ich zum Beispiel das Register %eax in einer von mir definierten uint32_t Variable speichern?
+2014-01-11 15:54:45,\textbf{mroman},ISOrunner2: Kannst du.
+2014-01-11 15:54:52,\textbf{mroman},"Aber evtl. muesstest du es dann ""packed"" machen"
+2014-01-11 15:54:57,\textbf{mroman},weil der Compiler sonst padding reintut
+2014-01-11 15:55:01,ISOrunner2,Hab ich
+2014-01-11 15:55:02,\textbf{mroman},"ausser du weisst, wie er padded."
+2014-01-11 15:55:06,ISOrunner2,__attribute__((packed)
+2014-01-11 15:55:08,ISOrunner2,)
+2014-01-11 15:55:13,\textbf{mroman},ja. dann ist ja kein Problem
+2014-01-11 15:55:23,Svenska,\textbf{mroman}: dein nick ist ja mal richtig schlecht. :-)
+2014-01-11 15:55:28,ISOrunner2,:D
+2014-01-11 15:55:37,\textbf{mroman},struct { int x; char y; int z }; x ist bei offset 0. y bei offset 4 und z bei offsett 5
+2014-01-11 15:55:42,Svenska,"ISOrunner2: mit inline-assembler EAX wegzuspeichern ist reichlich sinnlos, weil du nicht weißt, was da genau drinsteht"
+2014-01-11 15:56:20,ISOrunner2,Svenska: Na ich möchte den Prozess wechseln und dafür musste ich den CPU Status in den aktuellen Prozess speichern
+2014-01-11 15:56:46,ISOrunner2,ich habe eine cpu_state * für meinen prozess und jetzt möchte ich die register darin speichern.
+2014-01-11 15:56:58,ISOrunner2,und danach prozess wechseln
+2014-01-11 15:57:10,Svenska,"so, wie du dir das vorstellst, geht das aber nicht"
+2014-01-11 15:57:16,ISOrunner2,Wieso? 
+2014-01-11 15:57:19,Svenska,du kannst nicht mit assembler den gesamten cpu-zustand auf einmal wechseln
+2014-01-11 15:57:36,ISOrunner2,Ich mach das ja auch noch für die anderen Register usw.
+2014-01-11 15:57:38,Svenska,"weil du dafür code benötigen würdest, und der seinen eigenen zustand braucht"
+2014-01-11 15:57:45,ISOrunner2,oh
+2014-01-11 15:57:58,ISOrunner2,Und wie realisiere ich das dann?
+2014-01-11 15:58:15,Svenska,dafür hat deine cpu eigene funktionen
+2014-01-11 15:58:20,Svenska,wie zum beispiel interrupt-returns
+2014-01-11 15:58:45,Svenska,"die sind auch etwas mächtiger als einfach nur ""zustandswechsel"", weil die z.B. auch ringwechsel und so können"
+2014-01-11 15:58:58,ISOrunner2,kappier ich nicht :D
+2014-01-11 15:58:59,\textbf{mroman},Svenska: Was ist denn da noch problematisch?
+2014-01-11 15:59:02,\textbf{mroman},Ausser Ringwechsel?
+2014-01-11 15:59:22,ISOrunner2,\textbf{mroman}: Ist der Name so gewohlt ? :D
+2014-01-11 15:59:26,Svenska,"du musst halt alle register wechseln, ohne selbst register zu benutzen."
+2014-01-11 15:59:30,ISOrunner2,xD
+2014-01-11 15:59:39,ISOrunner2,Und wie ist das möglich?
+2014-01-11 15:59:43,\textbf{mroman},Svenska: Nicht unbedingt.
+2014-01-11 15:59:51,Svenska,"ich vermute, mroman hat ein latex-plugin gefunden und möchte gerne leute verärgern ^^"
+2014-01-11 15:59:58,\textbf{mroman},Vlt kannst du ja popa oder so benutzen
+2014-01-11 16:00:08,Svenska,"ja, RET ginge auch"
+2014-01-11 16:00:09,\textbf{mroman},und dann irgendwie mit add/sub esp das wieder korrigieren
+2014-01-11 16:00:19,Svenska,"aber in jedem fall ist das nicht so ganz einfach, wie sich der isorunner das vorstellt"
+2014-01-11 16:00:35,Svenska,"und ehe man mit solchen tricks anfängt, kann man auch gerne die ""richtige"" lösung benutzen."
+2014-01-11 16:00:50,ISOrunner2,"Und was ist die ""richtige"" Lösung?"
+2014-01-11 16:00:59,\textbf{mroman},"Svenska: Ja, sowieso @lieber richtig statt Tricks"
+2014-01-11 16:01:02,\textbf{mroman},aber du kennst mich ja
+2014-01-11 16:01:02,Svenska,sagte ich doch: die hardware das machen lassen
+2014-01-11 16:01:10,\textbf{mroman},"wenn's tricks gibt, bin ich immer interessiert"
+2014-01-11 16:01:13,Svenska,änder mal bitte wieder deinen nick auf was latex-freies.
+2014-01-11 16:01:18,Svenska,das nervt wirklich.
+2014-01-11 16:01:20,\textbf{mroman},dass ist der esolanger/golfer in mir
+2014-01-11 16:01:21,ISOrunner2,Svenska: Und wie geht das dann?
+2014-01-11 16:01:26,Svenska,danke
+2014-01-11 16:01:38,Svenska,aaalso: wo wechselst du deinen prozess?
+2014-01-11 16:01:55,ISOrunner2,in meiner methode void proc_switch(int proc_pid);
+2014-01-11 16:02:18,ISOrunner2,mit proc_list[proc_pid] kann ich auf den eigentlichen prozess zugreifen
+2014-01-11 16:02:40,Guest37314,hm
+2014-01-11 16:02:48,Guest37314,"merkt sich euirc das nicht mehr, wann man Nick gewechselt hat"
+2014-01-11 16:02:54,ISOrunner2,und mit proc_list[proc_pid].state kann ich auf den cpu_state* zugreifen
+2014-01-11 16:04:04,Svenska,"ok. in welchem zustand befindet sich die cpu, wenn proc_switch() läuft?"
+2014-01-11 16:04:26,ISOrunner2,in dem des aktuellen prozesses
+2014-01-11 16:04:40,Svenska,das ist shclecht
+2014-01-11 16:04:41,Svenska,schlecht
+2014-01-11 16:04:47,ISOrunner2,jop...
+2014-01-11 16:05:43,iksnagreb,"in deinem interrupt hadler hast du bereits eine möglichkeit, den cpu zustand zu sichern, vermute ich, wenn du es so machst, wie im tutorial"
+2014-01-11 16:06:02,ISOrunner2,ja 
+2014-01-11 16:06:11,Svenska,also wechselst du den task in einem interrupt-handler ^^
+2014-01-11 16:06:28,ISOrunner2,und dann sage ich z.b state = schedule(proc_list); ?
+2014-01-11 16:06:38,Svenska,(entweder durch syscall oder timer - beides löst interrupts aus)
+2014-01-11 16:11:46,Paddy,"Was DOS für eine Kernelart ist, finde ich übrigens eine interessante (wenn auch sinnlose) Frage"
+2014-01-11 16:11:58,Paddy,So eine richtige Trennung von Kernel- und Userspace hat man da ja nicht
+2014-01-11 16:12:22,Paddy,Aber Treiber sind nicht jedenfalls nicht in den Kernel einkompiliert
+2014-01-11 16:12:24,Svenska,dos ist ein monolithischer kernel ^^
+2014-01-11 16:12:27,Paddy,-nicht
+2014-01-11 16:12:34,Svenska,doch..
+2014-01-11 16:12:44,Svenska,"IO.SYS enthält einige treiber, z.B. TIMER$"
+2014-01-11 16:12:49,Paddy,"Einige, aber nicht alle"
+2014-01-11 16:13:01,Paddy,Und wieder andere stecken im BIOS
+2014-01-11 16:13:01,Svenska,und andere werden zur laufzeit in den kernelspace (d.h. RAM^^) nachgeladen
+2014-01-11 16:13:16,Svenska,das ist irrelevant. DOS abstrahiert die BIOS-treiber
+2014-01-11 16:13:18,Paddy,Also ein modularer Monolith? ;-)
+2014-01-11 16:13:24,Svenska,"es verbietet anwendungen halt nicht, die trotzdem zu benutzen"
+2014-01-11 16:13:31,Svenska,"ja, kann man so sagen"
+2014-01-11 16:13:53,Paddy,Würdest du die Anwendungen dann auch noch als Teil des Kernels betrachten?
+2014-01-11 16:14:23,Svenska,ne. der kernel besteht aus IO.SYS und MSDOS.SYS
+2014-01-11 16:14:44,Paddy,Dann hast du doch aber wieder Treiber außerhalb vom Kernel
+2014-01-11 16:14:48,Svenska,"(und, zu deinem gewissen grad, auch dem BIOS. das kann man aber auch HAL nennen)"
+2014-01-11 16:14:51,Svenska,"ja, und? ;-)"
+2014-01-11 16:14:59,Svenska,dein SATA-Treiber unter XP wird auch nicht mitgeliefert
+2014-01-11 16:15:04,Paddy,Ein Monolith hat keine Treiber außerhalb vom Kernel ;-)
+2014-01-11 16:15:17,Svenska,hä?
+2014-01-11 16:15:21,Svenska,du meinst die bios-treiber?
+2014-01-11 16:15:36,Paddy,"Nein, TSRs und so"
+2014-01-11 16:15:54,Svenska,das sind keine treiber ^^
+2014-01-11 16:18:30,Svenska,"sonst dürftest du auch nicht sagen, dass linux ein kernel ist, weil man ja so dinge wie DOSEMU benutzen kann, die direkt auf der VGA-karte wurschteln"
+2014-01-11 16:18:39,Paddy,Was sind denn dann so Sachen wie CD-ROM- oder Soundtreiber? Waren das keine TSRs?
+2014-01-11 16:18:45,Svenska,"nein, das sind treiber..."
+2014-01-11 16:18:48,Svenska,:-)
+2014-01-11 16:18:55,Paddy,Aber nicht in io.sys und msdos.sys
+2014-01-11 16:19:02,Svenska,aber im ram
+2014-01-11 16:19:03,Paddy,Wie funktionieren solche Treiber denn?
+2014-01-11 16:19:17,Paddy,Also was ist der Unterschied zu normalen Programmen?
+2014-01-11 16:19:17,Svenska,auf eine art sind tsrs und treiber das gleiche (technisch)
+2014-01-11 16:19:24,Paddy,Also doch ;-)
+2014-01-11 16:19:42,Svenska,auf die andere art sind tsrs und treiber aber verschieden (anwendungszweck) ^^
+2014-01-11 16:19:54,Paddy,"Naja, du wolltest ja nicht verstehen, was für Treiber ich meine"
+2014-01-11 16:20:11,Svenska,eine MOUSE.EXE ist ein TSR
+2014-01-11 16:20:15,Svenska,ein MOUSE.SYS aber nicht
+2014-01-11 16:20:24,Svenska,-> letzteres ist kein TSR-programm. :-)
+2014-01-11 16:20:41,Svenska,"was du in der config.sys lädst, sind ""richtige"" treiber, die von DOS genauso behandelt werden, wie auch die eingebauten"
+2014-01-11 16:20:41,Paddy,"Wegen der Dateiendung, oder gibt's da echte Unterschiede?"
+2014-01-11 16:20:50,Svenska,(also mit DEVICE/DEVICEHIGH)
+2014-01-11 16:21:00,Paddy,"Was macht einen ""richtigen"" Treiber aus?"
+2014-01-11 16:21:10,Paddy,In die DOS-Interna hab ich mich nie richtig eingearbeitet
+2014-01-11 16:21:38,Svenska,"ein TSR-programm nutzt die ms-dos-api für ""reserviere mir speicher am oberen ende des RAMs und gib ihn nicht frei, wenn ich ende"""
+2014-01-11 16:22:10,Svenska,und dieses stück speicher wird dann halt in interrupts gehängt oder sonstwas mit gemacht
+2014-01-11 16:22:36,Svenska,"ein treiber nutzt solche funktionen nicht, weil er eben nur aus diesem block speicher besteht"
+2014-01-11 16:22:53,Svenska,und das gilt für HIMEM.SYS genauso wie für TIMER$
+2014-01-11 16:23:04,Paddy,Aber hat so ein Treiber vernünftige APIs oder hookt der auch wieder nur Interrupts?
+2014-01-11 16:23:18,Svenska,ein IDE-treiber wird zwangsweise den IDE-treiber hooken müssen
+2014-01-11 16:23:29,Svenska,"und ""vernünftige API"" musst du mir jetzt erklären. :-)"
+2014-01-11 16:23:41,Svenska,"maustreiber nutzen int 0x33 oder so, packet driver int 0x60"
+2014-01-11 16:23:47,Svenska,das _ist_ deren API
+2014-01-11 16:24:10,Svenska,ein antiviren-tsr wird den tastaturinterrupt hooken und irgendwelche kombinationen rausfiltern
+2014-01-11 16:24:19,DesL,"mroman:  query, email und username plox"
+2014-01-11 16:24:21,Svenska,das würde ich - anwendungsfall - aber nicht als treiber bezeichnen
+2014-01-11 16:24:31,DesL,Paddy:  alle wollen sie mich nur für das eine :P
+2014-01-11 16:24:33,Paddy,"Ich meine, int 21h wird doch von mehreren Treibern benutzt?"
+2014-01-11 16:24:40,Svenska,"nein, int 21h wird von DOS benutzt"
+2014-01-11 16:24:51,Svenska,"also dem quatsch, der in MSDOS.SYS drin ist"
+2014-01-11 16:24:52,Paddy,"Waren da nicht auch einige Treiber, die es mitbenutzen?"
+2014-01-11 16:25:05,Svenska,int 21h -> MSDOS.SYS -> IO.SYS -> BIOS
+2014-01-11 16:25:16,Paddy,"Grad deine display.sys hatte sowas mit drin, glaube ich ;-)"
+2014-01-11 16:25:16,Svenska,mir wäre da spontan nix bekannt
+2014-01-11 16:25:42,Svenska,"kann gut sein, weil die gewisse DOS-funktionen erweitert"
+2014-01-11 16:25:56,mroman,plox?
+2014-01-11 16:26:01,Svenska,"da gibts auch einiges von, aber selbst dann ist es ein treiber wie jedes andere auch"
+2014-01-11 16:26:23,Svenska,ANSI.SYS dürfte den int10h hooken
+2014-01-11 16:26:39,Svenska,MSCDEX vielleicht
+2014-01-11 16:27:11,Svenska,"niemand verbietet deinem kernel, syscalls hinzuzufügen ^^"
+2014-01-11 16:27:31,Svenska,oder direkte hardwarezugriffe (vgl. libusb)
+2014-01-11 16:27:57,Svenska,insofern ist das für mich ein (teilweise modularer) monolith.
+2014-01-11 16:28:25,Svenska,"(übrigens erst ab version 2.0, wo kräftig bei unix geklaut wurde. davor war es ein reiner monolith.)"
+2014-01-11 17:02:33,ISOrunner2,Hi
+2014-01-11 17:14:11,ISOrunner2,"http://pastebin.com/SMY4ynWT Ich versuche gerade Multitasking zu implementieren, und das Ergebnis ist das nichts passiert :/"
+2014-01-11 17:14:47,ISOrunner2,Ich weiß das das viel ist ^^
+2014-01-11 17:18:46,ISOrunner2,tufel: Hallo
+2014-01-11 17:20:37,tufel,huhu
+2014-01-11 17:21:00,ISOrunner2,http://pastebin.com/SMY4ynWT Weißt du wieso mein Multitasking nicht tut?
+2014-01-11 17:21:50,mgottschlag,"was ist ""nichts""?"
+2014-01-11 17:22:03,ISOrunner2,Naja mein Kernel macht einfach nichts ^^
+2014-01-11 17:22:23,ISOrunner2,Eigentlich sollten die Prozesse ausgeführt werden
+2014-01-11 17:22:29,mgottschlag,"wenn du strg+als+2 drückst, kommst du in die qemu-konsole, wo dir info registers sagt, wo dein kernel grad ist"
+2014-01-11 17:23:05,mgottschlag,"(also, eip musst du dann in der Ausgabe von objdump -d deinKernel suchen)"
+2014-01-11 17:23:19,ISOrunner2,oke
+2014-01-11 17:23:43,ISOrunner2,  100251:	eb fe                	jmp    0x100251
+2014-01-11 17:24:03,ISOrunner2,Das ist anscheind mein while(1);
+2014-01-11 17:24:27,ISOrunner2,Das initialisieren der Prozesse ist also kein Problem
+2014-01-11 17:26:44,ISOrunner2,Ach ich glaube ich kenn jetzt das Problem
+2014-01-11 17:26:45,mroman,"du kannst objdump angeben, er soll assembly mit source intermixen"
+2014-01-11 17:26:56,mroman,sofern du mit -g und -O0 kompilierst
+2014-01-11 17:26:56,mgottschlag,wo wechselst du überhaupt Prozesse?
+2014-01-11 17:27:05,ISOrunner2,in intr_handler()
+2014-01-11 17:27:34,mgottschlag,"ah, ne, tust du nicht"
+2014-01-11 17:27:38,ISOrunner2,?
+2014-01-11 17:27:40,ISOrunner2,What?
+2014-01-11 17:27:51,ISOrunner2,Häää
+2014-01-11 17:28:02,mgottschlag,"weil du zwar state updatest, der Wert geht aber nie in den Asembler-Teil zurück"
+2014-01-11 17:28:02,Darkchaos,Das Gefühl hab ich beim OSDEV auch 24/7
+2014-01-11 17:28:26,ISOrunner2,häääääää
+2014-01-11 17:28:46,mroman,ich sehe da auchk einen switch.
+2014-01-11 17:28:51,mroman,*keinen
+2014-01-11 17:28:55,mgottschlag,"du brauchst noch ein return state;, und im Assembler-Teil musst du dann auch wirklich auf den anderen Stack wechseln"
+2014-01-11 17:29:56,mgottschlag,"mov %eax, %esp oder so, schließlich wird der CPU-Zustand von %esp aus gepoppt, aber %esp hat noch den Wert von vor dem Interrupt"
+2014-01-11 17:30:02,mroman,allerdings gehen bei ihm alle Interrupts an intr_handler
+2014-01-11 17:30:14,mgottschlag,"oder aber, du willst nicht state = ..., sondern *state = *..."
+2014-01-11 17:30:18,ISOrunner2,ahh
+2014-01-11 17:30:26,mgottschlag,"das macht das ganze dann, ohne ESP zu verändern"
+2014-01-11 17:30:42,mroman,oh. weiter unten ist Assemblercode
+2014-01-11 17:30:54,mgottschlag,(sondern der alte Stack wird verändert
+2014-01-11 17:30:56,mgottschlag,)
+2014-01-11 17:33:52,ISOrunner2,"""*state = proc_list[proc_schedule(proc_pid_list, proc_max)].state;"" gibt den fehler: ""components/driver/isr.c:78:11: Fehler: unverträgliche Typen bei Zuweisung an Typ »struct cpu_state« von Typ »struct cpu_state *«"""
+2014-01-11 17:34:26,mroman,"das zweite ist ein Pointer, das erstere nicht."
+2014-01-11 17:35:02,Svenska,"ich dachte, die frage hatten wir schon ^^"
+2014-01-11 17:35:10,ISOrunner2,"""int intr_handler(struct cpu_state *state)"" hä"
+2014-01-11 17:35:19,ISOrunner2,ist doch ein pointer
+2014-01-11 17:35:25,mroman,ja
+2014-01-11 17:35:27,mroman,aber *state nicht
+2014-01-11 17:35:30,mroman,*state dereferenziert ja
+2014-01-11 17:35:37,ISOrunner2,ohh
+2014-01-11 17:36:14,mroman,mgottschlag hat auch *state = *... geschrieben ;)
+2014-01-11 17:36:22,ISOrunner2,"""state = proc_list[proc_schedule(proc_pid_list, proc_max)].state"" Aber so funktioniert das ja auch nicht"
+2014-01-11 17:36:25,mroman,also vermutlich meinte er damit *state = *proc_list oder so
+2014-01-11 17:36:31,mgottschlag,ja das überträgst du Adressen
+2014-01-11 17:36:37,mgottschlag,du willst aber Inhalte übertragen
+2014-01-11 17:36:55,mgottschlag,denn Pointeränderungen sind außerhalb der Funktion nicht sichtbar
+2014-01-11 17:37:06,mgottschlag,"schließlich ist state ja eine lokale Variable, die nie zurückgegeben wird"
+2014-01-11 17:37:19,mgottschlag,"d.h. du musst den Speicherbereich, der hinter state steht, beschreiben"
+2014-01-11 17:37:22,mgottschlag,und das ist halt *state
+2014-01-11 17:37:42,mgottschlag,"und als Quelle nimmst du den Speicherbereich, der hinter dem proc_list-Eintrag steht, und das ist halt *proc_list[...]"
+2014-01-11 17:38:01,ISOrunner2,Ahh
+2014-01-11 17:38:11,ISOrunner2,Ändert aber nicht viel
+2014-01-11 17:38:22,mgottschlag,"das bedeutet aber auch, dass du den alten Inhalt von state irgendwo sicherst :)"
+2014-01-11 17:38:28,mgottschlag,bzw sichern musst
+2014-01-11 17:38:51,ISOrunner2,Stimmt ich muss den alten Zustand im alten Prozess sichern... richtig?
+2014-01-11 17:39:00,mgottschlag,ja
+2014-01-11 17:39:19,ISOrunner2,Weil der Standard Wert der Register in cpu_state ist ja 0
+2014-01-11 17:39:29,mgottschlag,"und wenn diese änderung nichts gebracht hat, solltest du etwas Debugausgaben in deinen Interrupthandler einfügen, die dir ausgeben, was für ein EIP danach wiederhergestellt werden soll"
+2014-01-11 17:39:48,mgottschlag,bzw was für ein neuer Zustand hergestellt werden soll
+2014-01-11 17:42:58,ISOrunner2,Funktioniert immernoch nicht :D
+2014-01-11 17:43:29,ISOrunner2,http://pastebin.com/AHfny2A7
+2014-01-11 17:44:49,ISOrunner2,Liegt das vllt. an meinem Scheduler?
+2014-01-11 17:45:05,ISOrunner2,Der ist ein wenig komisch implementiert ^^
+2014-01-11 17:46:32,ISOrunner2,Ach ich bin so schlau...
+2014-01-11 17:46:41,ISOrunner2,Habe die Priorität vergessen :D
+2014-01-11 17:48:15,ISOrunner2,Und wer siehe da? Funktioniert immernoch nicht xD
+2014-01-11 17:50:01,mgottschlag,"argh, der WLAN-Router hängt im Moment an ner Steckdose, die an nem Lichtschalter hängt, und ich nehme atm immer den falschen Schalter, wenn ich das Licht an/ausmachen möchte -.-"
+2014-01-11 17:50:11,mgottschlag,ISOrunner2: mehr Debugausgaben.
+2014-01-11 17:50:32,ISOrunner2,Es sieht so aus als würde er garnicht erst den Task wechseln
+2014-01-11 17:50:56,mgottschlag,wie sieht es genau aus?
+2014-01-11 17:51:09,ISOrunner2,http://pastebin.com/AHfny2A7
+2014-01-11 17:51:37,mgottschlag,und was verleitet dich zu der Annahme?
+2014-01-11 17:51:49,ISOrunner2,Ich habe nach dem wechseln des Tasks versucht eine Meldung auszugeben
+2014-01-11 17:52:04,ISOrunner2,ohne Erfolg
+2014-01-11 17:52:07,mgottschlag,"kann es sein, dass der falsche Interrupt kommt?"
+2014-01-11 17:52:09,mgottschlag,moment
+2014-01-11 17:52:24,mgottschlag,0x32 != 32 :D
+2014-01-11 17:52:37,ISOrunner2,xD
+2014-01-11 17:52:59,ISOrunner2,Yay funktioniert immernoch nicht
+2014-01-11 17:53:46,mgottschlag,"Mehr Debugausgaben - was für Interrups kommen, wie sieht der Zustand aus, etc etc"
+2014-01-11 17:55:13,ISOrunner2,Alles klar Kernel! Sie bekommen weitere Informationen nach dem *piep* http://pastebin.com/TCwsM8A4
+2014-01-11 17:55:19,Svenska,ein klassisches panic() wäre schon ganz gut
+2014-01-11 17:56:36,mgottschlag,ISOrunner2: das hab ich nicht gemeint... vor allem der state am ende des Interrupts ist interessant
+2014-01-11 17:56:58,ISOrunner2,mgottschlag: was?
+2014-01-11 17:57:05,ISOrunner2,jkl
+2014-01-11 17:57:09,Jidder,ö
+2014-01-11 17:57:14,ISOrunner2,Was ?
+2014-01-11 17:57:19,ISOrunner2,Was hast du gemeint?
+2014-01-11 17:57:43,mgottschlag,"ich will wissen, wie *state aussieht, nachdem du es geupdatet hast"
+2014-01-11 17:58:00,mgottschlag,"weil das bestimmt, ob du den Prozess wechselst"
+2014-01-11 17:58:24,ISOrunner2,Kann ich das mit dem Qemu Monitor machen oder muss ich das von Hand machen?
+2014-01-11 18:00:40,mgottschlag,musst du von Hand machen
+2014-01-11 18:00:53,ISOrunner2,Also die register mit meiner ausgabe funktion ausgeben oder wie?
+2014-01-11 18:00:56,mgottschlag,aber ein gescheites printf im Kernel solltest du eh eher früher als später haben
+2014-01-11 18:00:58,mgottschlag,ja
+2014-01-11 18:01:29,ISOrunner2,momentmal
+2014-01-11 18:02:30,ISOrunner2,Was für register denn?
+2014-01-11 18:02:41,Svenska,cpu-register wären ne ganz gute schätzung...
+2014-01-11 18:03:00,ISOrunner2,Alle? e*x?
+2014-01-11 18:03:06,mgottschlag,"keine Register, sondern das, was du später in diese Register reinschreiben willst :)"
+2014-01-11 18:03:12,ISOrunner2,achso
+2014-01-11 18:06:23,ISOrunner2,moment...
+2014-01-11 18:06:46,ISOrunner2,fertig
+2014-01-11 18:07:02,ISOrunner2,mgottschlag: Welches Register möchtest du?
+2014-01-11 18:07:22,mgottschlag,alle interessanten
+2014-01-11 18:07:30,mgottschlag,das interessanteste ist sicher eip
+2014-01-11 18:07:45,ISOrunner2,1049062
+2014-01-11 18:07:59,mgottschlag,"ist das in deinem Prozess, oder im Kernel?"
+2014-01-11 18:08:04,ISOrunner2,ich guck mal
+2014-01-11 18:09:03,ISOrunner2, objdump -d kernel.o | grep 1049062 bringt mir nichts
+2014-01-11 18:09:13,Svenska,"könnte daran liegen, dass es dezimal ist"
+2014-01-11 18:09:17,mroman,ist 1049062 dez oder hex?
+2014-01-11 18:09:23,ISOrunner2,dez
+2014-01-11 18:09:31,mroman,und was benutzt objdump?
+2014-01-11 18:09:35,ISOrunner2,hex...
+2014-01-11 18:09:40,mroman,There you go
+2014-01-11 18:09:56,ISOrunner2,also 1001E6
+2014-01-11 18:10:18,ISOrunner2,"1001e6:	83 ec 1c             	sub    $0x1c,%esp"
+2014-01-11 18:11:02,mroman,das reserviert Platz auf dem Stack
+2014-01-11 18:11:45,ISOrunner2,und das heißt was?
+2014-01-11 18:13:52,mgottschlag,ISOrunner2: aus der Zeile kann hier keiner was lesen :p
+2014-01-11 18:13:53,mroman,in welcher Funktion liegt 1001e6 denn?
+2014-01-11 18:14:08,mroman,"mgottschlag: Nicht mehr, als dass es Platz auf dem Stack reserviert"
+2014-01-11 18:14:22,Jidder,es könnte auch knapp 4 gb freigeben
+2014-01-11 18:14:41,mroman,ja. ok
+2014-01-11 18:14:45,mroman,!
+2014-01-11 18:15:09,ISOrunner2,task_a
+2014-01-11 18:15:15,ISOrunner2,"001001e6 <task_a>:   1001e6:	83 ec 1c             	sub    $0x1c,%esp"
+2014-01-11 18:16:44,mgottschlag,"das sieht doch schonmal so aus, als müsste es da eigentlich hinspringen"
+2014-01-11 18:16:49,mgottschlag,zeig nochmal deinen aktuellen Code
+2014-01-11 18:17:00,ISOrunner2,welche datei?
+2014-01-11 18:17:08,ISOrunner2,den interrupt handler?
+2014-01-11 18:17:24,mgottschlag,"zum Beispiel den, ja, aber assembler und C"
+2014-01-11 18:17:35,ISOrunner2,also alles?
+2014-01-11 18:17:54,ISOrunner2,"okay, you are the boss ^^"
+2014-01-11 18:18:05,Svenska,"""Duetto 0.9.3 is out for better bringing C++ to the web."" << ein zweiter C++-Compiler, der Javascript erzeugt. *seufz*"
+2014-01-11 18:18:27,ISOrunner2,Ist das nicht unnötig?
+2014-01-11 18:19:28,mroman,Yeah
+2014-01-11 18:19:39,mroman,"Browser sollten lieber Haskell-Support einbauen, statt JavaScript."
+2014-01-11 18:20:10,Jidder,oh auch llvm basiert
+2014-01-11 18:20:25,Jidder,wie emscripten
+2014-01-11 18:20:29,Svenska,jup
+2014-01-11 18:20:31,ISOrunner2,http://pastebin.com/QrTipGdR
+2014-01-11 18:20:44,Svenska,"mroman: ich weiß ja nicht, was du so an haskell magst..."
+2014-01-11 18:20:56,Jidder,man sollte die projekte vereinigen. <insert relevant xkcd here>
+2014-01-11 18:21:38,ISOrunner2,"Alles was man mit C++ kann, kann man mit JavaScript 100% leichter."
+2014-01-11 18:21:52,ISOrunner2,ohne lästige Compiler-Fehler.
+2014-01-11 18:22:16,Jidder,nur dass #include <iostream> kein gültiges javascript ist
+2014-01-11 18:22:27,Jidder,"aber schon richtig, dass es kein compilerfehler wäre"
+2014-01-11 18:22:32,Jidder,sondern ein interpreterfehler
+2014-01-11 18:22:39,ISOrunner2,^.^
+2014-01-11 18:22:54,Svenska,"na dann empfehle ich dir, ein OS in javascript zu schreiben"
+2014-01-11 18:22:58,ISOrunner2,mgottschlag: http://pastebin.com/QrTipGdR <-- Aktueller Code
+2014-01-11 18:23:01,XanClic,"Es ist auch in Brainfuck sehr schwer, Compilerfehler zu bekommen"
+2014-01-11 18:23:03,Jidder,man kann kein OS in c++ schreiben!!!!
+2014-01-11 18:23:09,ISOrunner2,Svenska: Das habe ich nicht gesagt
+2014-01-11 18:23:20,ISOrunner2,Jidder: Oh doch
+2014-01-11 18:23:34,ISOrunner2,Jidder: Ist dann halt langsam wie M$-WIN
+2014-01-11 18:23:36,Svenska,Jidder: warum nicht?
+2014-01-11 18:23:50,Jidder,hätte ich !!11!!einself schreiben müssen?
+2014-01-11 18:23:55,ISOrunner2,xD
+2014-01-11 18:23:58,XanClic,"Svenska, ich zitiere einen Kommilitonen: „Die [Gruppe anderer Kommilitonen] haben zu wenig zu tun, die schreiben Haskell“"
+2014-01-11 18:24:34,Svenska,Jidder: Ja.
+2014-01-11 18:24:47,Jidder,ok. merk ich mir fürs nächste mal!!!11!!einself
+2014-01-11 18:24:49,ISOrunner2,"Jidder: Bekommst du einen Linker-Fehler? Dann würde ich mal ein extern ""C"" {} um deine init funktion oder so packen"
+2014-01-11 18:24:53,Svenska,"wie auch immer, bin ich bin dann mal afk."
+2014-01-11 18:25:24,Jidder,ISOrunner2: ich weiß wie man ein OS in C++ schreibt
+2014-01-11 18:25:35,ISOrunner2,Jidder: [18:23] <Jidder> man kann kein OS in c++ schreiben!!!!
+2014-01-11 18:25:59,Svenska,"(ach ja, die fehljustierten ironiedetektoren... *g*)"
+2014-01-11 18:26:07,mroman,"Ich weiss ja nicht, was du an Haskell so nicht magst."
+2014-01-11 18:26:11,XanClic,"Svenska, dafür ist Jidder ja da"
+2014-01-11 18:26:17,XanClic,Um unsere Ironiedetektoren zu justieren
+2014-01-11 18:26:18,XanClic,Glaube ich
+2014-01-11 18:26:20,ISOrunner2,Kanns sein das wir Off-Topic sind?
+2014-01-11 18:26:25,mroman,Ja
+2014-01-11 18:26:27,Jidder,"erst schreibt man einen javascriptinterpreter in C, dann ein OS in c++ und das kompiliert man dann nach javascript und führt es im interpreter aus"
+2014-01-11 18:27:09,ISOrunner2,Können wir uns bitte um mein Problem kümmern?
+2014-01-11 18:27:27,ISOrunner2,http://pastebin.com/QrTipGdR <-- Aktueller Code
+2014-01-11 18:27:32,XanClic,Das ist wie Medienpiraterie
+2014-01-11 18:27:59,XanClic,"„Wenn wir Piraterie verbieten, werden alle derzeit illegal geladenen Sachen gekauft“"
+2014-01-11 18:28:08,Jidder,bei der ausgabe der register passiert auf jeden fall ein buffer overflow
+2014-01-11 18:28:15,XanClic,"Und hier „Wenn wir Offtopic-Diskussionen verbieten, werden alle mir bei meinem Problem helfen“"
+2014-01-11 18:28:26,Jidder,bzw. nicht initialisierte zeiger
+2014-01-11 18:28:35,ISOrunner2,i fix that ...
+2014-01-11 18:29:58,ISOrunner2,häää
+2014-01-11 18:30:08,ISOrunner2,Wieso zeigt er mir bei allem das gleiche an?
+2014-01-11 18:30:43,Jidder,weiß nicht
+2014-01-11 18:30:49,Jidder,klingt aber nach einem problem mit dem code
+2014-01-11 18:31:23,ISOrunner2,http://pastebin.com/VcrWPn0j
+2014-01-11 18:31:32,Jidder,das ist nicht besser
+2014-01-11 18:31:37,Jidder,char eax[12];
+2014-01-11 18:31:41,Jidder,mach das mal
+2014-01-11 18:31:58,Jidder,bei allen registern
+2014-01-11 18:32:03,ISOrunner2,alles klar
+2014-01-11 18:32:18,ISOrunner2,oke
+2014-01-11 18:32:23,ISOrunner2,funktioniert
+2014-01-11 18:32:25,Jidder,"alles klar = du weißt warum = """" nicht geht?"
+2014-01-11 18:32:41,ISOrunner2,ja ich habe jetzt [12] gemacht
+2014-01-11 18:33:09,ISOrunner2,EAX: 0 EBX: 0 ECX: 0 EDX: 0 EIP: 1049062
+2014-01-11 18:33:30,mgottschlag,"so, sry, war weg"
+2014-01-11 18:33:46,ISOrunner2,mgottschlag: EAX: 0 EBX: 0 ECX: 0 EDX: 0 EIP: 1049062
+2014-01-11 18:33:53,Jidder,27 zeilen code um 5 zahlen auszugeben
+2014-01-11 18:33:59,Jidder,willst das nicht mal verbessern?
+2014-01-11 18:34:03,ISOrunner2,nachher
+2014-01-11 18:34:19,ISOrunner2,ich werde das nachher aufjeden fall machen
+2014-01-11 18:34:55,ISOrunner2,oder vllt. besser auch jetzt
+2014-01-11 18:40:21,mroman,http://www.lowlevel.eu/w/images/3/35/EpOS_V0.1.png
+2014-01-11 18:40:30,mroman,Das fordert ja schon fast meine DIP-Skillz heraus.
+2014-01-11 18:40:40,mroman,Leider sind die wohl nicht gut genug.
+2014-01-11 18:40:48,Jidder,was ist denn DIP?
+2014-01-11 18:43:18,mroman,Digital Image Processing
+2014-01-11 18:44:51,mroman,Hatte ich ein Semester lange eben
+2014-01-11 18:45:03,mroman,aber ist halt mehr surface scratching
+2014-01-11 18:45:13,mroman,nicht wirklich bereits praxis taugliches wissen
+2014-01-11 18:45:39,mroman,ausser es geht um einfache Objekterkennung oder so
+2014-01-11 18:45:47,mroman,dann schon
+2014-01-11 18:45:55,Jidder,ach und du willst den namen dekodieren?
+2014-01-11 18:46:27,ISOrunner2,ich habe jetzt ein stdarg.h kann mir jemand erklären wie ich das jetzt mit den format argumenten mache?
+2014-01-11 18:48:22,Jidder,die verwendung von va_start und va_end?
+2014-01-11 18:48:30,ISOrunner2,ja
+2014-01-11 18:49:29,Paddy,"Wie dem epOS sein Linus heißt, ist doch sowieso bekannt?"
+2014-01-11 18:49:39,Paddy,"Image runterladen hilft übrigens auch, falls das noch online ist ;-)"
+2014-01-11 18:49:45,Jidder,"ISOrunner2: wenn du eine funktion int kprintf(const char *format, ...) hast, dann:"
+2014-01-11 18:49:56,ISOrunner2,jop habe ich
+2014-01-11 18:50:07,Jidder,"va_list args; va_start(args, format); kvprintf(format, args); va_end(args);"
+2014-01-11 18:50:33,Jidder,"mit int kvprintf(const char *format, va_list args);"
+2014-01-11 18:51:34,Jidder,"und da kannst du dann durch wiederholtes aufrufen von va_arg(args, int) oder va_arg(args, char *) dir die parameter holen"
+2014-01-11 18:52:00,Jidder,"die funktionen rufst du halt auf, wenn du ein %d, %x, %s, ... in format gefunden hast"
+2014-01-11 18:52:21,ISOrunner2,kann ich irgendwie meine bestehende puts() funktion benutzen?
+2014-01-11 18:52:34,Jidder,ja
+2014-01-11 18:52:43,Jidder,"die rufst du dann halt auf, wenn du die ausgabe formatiert hast"
+2014-01-11 18:52:54,Svenska,für %s auch
+2014-01-11 18:53:19,ISOrunner2,also muss das konvertieren immernoch ich machen?
+2014-01-11 18:53:24,Svenska,ja
+2014-01-11 18:53:29,Jidder,in der kvprintf halt
+2014-01-11 18:53:36,Jidder,aber das ist dann die einzige stelle
+2014-01-11 18:54:01,ISOrunner2,und wie mach ich das z.b mit int's?
+2014-01-11 18:54:11,ISOrunner2,wie hole ich mir das int?
+2014-01-11 18:54:17,Jidder,"va_arg(args, int)"
+2014-01-11 18:54:48,ISOrunner2,int muss eine vorher angelegte variable sein? richtig?
+2014-01-11 18:54:59,Jidder,ne int ist in diesem fall der typ
+2014-01-11 18:55:03,ISOrunner2,achso
+2014-01-11 18:55:03,Jidder,"int x = va_args(args, int)"
+2014-01-11 18:55:11,Jidder,"va_args ist eigentlich keine funktion, sondern ein makro"
+2014-01-11 18:55:34,ISOrunner2,gibt es irgendwo eine liste mit den typen die unterstüzt werden müssen?
+2014-01-11 18:56:00,Jidder,"naja der standard hat eine liste, z.b. hier http://www.cplusplus.com/reference/cstdio/printf/"
+2014-01-11 18:56:13,Svenska,du musst aber nicht alles vollständig unterstützen
+2014-01-11 18:56:18,Jidder,"aber du musst nur das implementieren was du brauchst. d, x, s würde ich empfehlen"
+2014-01-11 18:56:34,Jidder,"und vielleicht c, p, u und i"
+2014-01-11 18:56:42,Jidder,die sind relativ einfach wenn die anderen erstmal funktionieren
+2014-01-11 18:58:39,Svenska,"der unterschied zwischen %p und %x ist nur, dass bei %p ein 0x vorgestellt wird, oder?"
+2014-01-11 18:58:47,Jidder,glaube ja
+2014-01-11 18:58:50,ISOrunner2,"""unbekannter Typname: »va_list«"" hää"
+2014-01-11 18:59:13,Svenska,__builtin_va_list oder so
+2014-01-11 18:59:24,Jidder,wo hast du denn die stdarg.h her?
+2014-01-11 18:59:33,ISOrunner2,osdev.org oder so glaube ich
+2014-01-11 18:59:37,Svenska,m(
+2014-01-11 19:00:06,Svenska,"du kompilierst mit -nostdlib, richtig?"
+2014-01-11 19:00:10,ISOrunner2,ja
+2014-01-11 19:00:20,Svenska,"ich hatte dir mal gesagt, dass du das nicht tun solltest ^^"
+2014-01-11 19:00:31,ISOrunner2,oder? tue ich das? mal gucken...
+2014-01-11 19:00:37,Svenska,also mach das weg und lass -ffreestanding allein ;)
+2014-01-11 19:01:01,ISOrunner2,ne habe ich doch nicht drin
+2014-01-11 19:01:09,Svenska,ok
+2014-01-11 19:01:17,Svenska,aber __builtin_va_list müsste gehen
+2014-01-11 19:01:46,Jidder,naja die anderen makros werden dann aber trotzdem nicht gehen
+2014-01-11 19:01:53,Svenska,bei mir schon
+2014-01-11 19:02:04,ISOrunner2, Fehler: »args« als andere Symbolart redeklariert
+2014-01-11 19:02:09,Svenska,"int vprintf(const char *fmt, __builtin_va_list ap)"
+2014-01-11 19:02:18,Svenska,aber ich habe auch kein stdarg.h includiert
+2014-01-11 19:02:23,ISOrunner2,"""#define va_list        __builtin_va_list"" ist das falsch?"
+2014-01-11 19:02:48,Svenska,definiere falsch :-)
+2014-01-11 19:02:49,Jidder,sollte schon passen
+2014-01-11 19:02:57,Svenska,"wenn du das drin hast, dann kannst du auch va_list benutzen"
+2014-01-11 19:03:03,Jidder,aber was ist denn mit der stdarg.h passiert?
+2014-01-11 19:03:07,Jidder,warum steht das da nicht drin?
+2014-01-11 19:03:10,Jidder,warum wird die nicht eingebunden
+2014-01-11 19:03:13,Jidder,irgendwas läuft doch falshc
+2014-01-11 19:03:21,Jidder,wir können doch nicht einen header runterladen und den dann nicht benutzen
+2014-01-11 19:05:21,ISOrunner2,»va_start« in Funktion mit fester Parameterzahl verwendet
+2014-01-11 19:06:47,ISOrunner2,ahh
+2014-01-11 19:06:51,ISOrunner2,jetzt funktioniert es
+2014-01-11 19:07:14,ISOrunner2,Mal ausprobieren..
+2014-01-11 19:12:57,tufel,ich ghe mal wieder off bb
+2014-01-11 19:50:37,ISOrunner2,ach fu** wieso ist es so verdammt schwierig printf zu implementieren?
+2014-01-11 19:51:26,ISOrunner2,ach ich schmeiß printf in die tonne das tu ich mir jetzt nicht an
+2014-01-11 19:51:44,Svenska,"und jetzt denk mal drüber nach, wenn du printf vollständig implementieren willst :-)"
+2014-01-11 19:52:07,ISOrunner2,Dann wäre das schon fast selbstmord
+2014-01-11 19:53:16,ISOrunner2,Gibt es nicht was vorgefertiges ? irgendjemand hat sich das doch schonmal angetan....
+2014-01-11 19:53:28,Svenska,"klar, jede c-bibliothek deiner wahl kann printf()"
+2014-01-11 19:53:34,Svenska,selbst wenn sie sonst nicht viel kann.
+2014-01-11 19:53:45,Svenska,aber sicher ist eins: der code dadrin ist nicht besonders einfach zu verstehen...
+2014-01-11 19:54:08,ISOrunner2,aber das printf aus der hostlib funktioniert doch nicht?
+2014-01-11 19:54:22,ISOrunner2,das ist ja platformabhängig
+2014-01-11 19:54:52,SHyx0rmZ,was ist denn an printf so schwer? oO
+2014-01-11 19:54:56,mgottschlag,"es gibt einige kleine drop-in-printf-Implementierungen, die man nehmen kann"
+2014-01-11 19:55:17,mgottschlag,aber selber schreiben ist tendenziell sinnvoller
+2014-01-11 19:55:26,ISOrunner2,_heute_ tu ich mir das nicht an
+2014-01-11 19:55:42,Svenska,die hostlib ist ein bisschen zu hart zu portieren (wenn es die glibc ist)
+2014-01-11 19:55:59,Svenska,"aber das printf dadrin wird am ende auch nur ein ""schreib string hier hin"" ausführen"
+2014-01-11 19:56:14,Svenska,am ende läuft doch alles immer auf vsnprintf() hinaus...
+2014-01-11 19:56:30,ISOrunner2,was ist vsnprintf?
+2014-01-11 19:56:39,Svenska,die basisfunktion
+2014-01-11 19:56:50,Svenska,oder vsprintf zumindest
+2014-01-11 19:56:58,ISOrunner2,und was ist der untersch. zwischen printf und vs(n)printf?
+2014-01-11 19:57:16,Svenska,v: nimmt va_arg statt ... ; s: schreibt in string statt stdout ; n: hat zeichenbegrenzung
+2014-01-11 19:59:13,ISOrunner2,Können wir wieder auf mein Problem kommen?
+2014-01-11 19:59:20,ISOrunner2,*zurückkommen
+2014-01-11 20:00:09,ISOrunner2,nachdem ganzen stress mit printf möchte ich wenigstens irgendwas heute zuende bringen
+2014-01-11 20:00:58,Svenska,"<dummerkommentar>""Sie können den Computer jetzt ausschalten."" Bitte mit oranger Schrift auf schwarzem Bildschirm vorstellen. *g*</dummerkommentar>"
+2014-01-11 20:01:19,ISOrunner2,-.-
+2014-01-11 20:01:28,ISOrunner2,Ich verstehe gerade kein Spaß
+2014-01-11 20:01:43,Svenska,"Ich weiß, machst du selten. ^^"
+2014-01-11 20:01:53,ISOrunner2,sonst schon nur jetzt gerade nicht
+2014-01-11 20:02:00,ISOrunner2,ich fühl mich total scheiße
+2014-01-11 20:02:10,Svenska,Eine gebrauchbare Debugausgabe sollte aber ziemlich hohe Priorität haben.
+2014-01-11 20:02:28,Svenska,"Die API muss ja nicht zwingend die von printf() sein, aber wenigstens gut genug."
+2014-01-11 20:03:05,ISOrunner2,EAX: 0 EBX: 0 ECX: 0 EIP: 1049062
+2014-01-11 20:03:15,Svenska,"ja, das ist schonmal hässlich ;)"
+2014-01-11 20:03:20,ISOrunner2,?
+2014-01-11 20:03:37,ISOrunner2,komm auf den punkt
+2014-01-11 20:03:41,SHyx0rmZ,Hex wäre nice
+2014-01-11 20:03:53,Svenska,"ja, hexadezimal hätte was"
+2014-01-11 20:04:01,ISOrunner2,dnn halt 1001E6
+2014-01-11 20:04:03,ISOrunner2,*dann
+2014-01-11 20:04:12,Svenska,"EDX wäre vielleicht auch sinnvoll, sowie auch ESP, EBP, ESI und EDI"
+2014-01-11 20:04:33,Svenska,möglicherweise auch noch FLAGS und CR2 ;-)
+2014-01-11 20:04:33,SHyx0rmZ,außerdem meinst du statt E R :P
+2014-01-11 20:04:36,SHyx0rmZ,*duck*
+2014-01-11 20:04:52,Svenska,RDI?
+2014-01-11 20:04:57,SHyx0rmZ,z.B.
+2014-01-11 20:04:59,Svenska,return-do-interrupt? ^^
+2014-01-11 20:05:08,SHyx0rmZ,noch nie vom Long Mode gehört?
+2014-01-11 20:05:12,Svenska,klar
+2014-01-11 20:05:18,Svenska,aber nie näher mit befasst
+2014-01-11 20:05:31,SHyx0rmZ,also machst du es auch falsch *g*
+2014-01-11 20:05:40,Svenska,die meisten meiner cpus können den nicht
+2014-01-11 20:05:45,Svenska,quasi alle-außer-einer...
+2014-01-11 20:10:05,ISOrunner2,EAX: 0 EBX: 0 ECX: 0 EDX: 0 EIP: 1049062 ESP: 0 EBP: 0 ESI: 0 EDI: 0 EFLAGS: 51 CR2: 0
+2014-01-11 20:10:21,Svenska,hex und mehrzeilig wäre sicherlich auch gut. :-D
+2014-01-11 20:10:26,Svenska,und ein stacktrace ;)
+2014-01-11 20:10:27,SHyx0rmZ,^ dies
+2014-01-11 20:10:43,ISOrunner2|AFK,das dürfte länger dauern meine mayestät
+2014-01-11 20:10:54,Svenska,stacktrace geht auch später noch
+2014-01-11 20:11:07,Svenska,aber hex und mehrzeilig wären schon gut. ^^
+2014-01-11 20:14:13,Svenska,"achso, und deine ausgabefunktion sollte mindestens \n und \t verstehen (damit du tabellen machen kannst, die lesen sich viiiiel besser)"
+2014-01-11 20:17:55,ISOrunner2|AFK,wieder da war kurz weg
+2014-01-11 20:18:50,ISOrunner2,Du willst es mehrzeilig?
+2014-01-11 20:18:55,ISOrunner2,Hier kriegst du es mehrzeilig
+2014-01-11 20:20:45,ISOrunner2,Svenska: http://pastebin.com/
+2014-01-11 20:20:48,ISOrunner2,oops
+2014-01-11 20:20:54,ISOrunner2,http://pastebin.com/FqwA3P3P
+2014-01-11 20:21:04,Svenska,-.-
+2014-01-11 20:21:09,ISOrunner2,?
+2014-01-11 20:21:25,XanClic,Jaaaa gib es mir mehrzeilig
+2014-01-11 20:21:58,Svenska,darf ich 5 zeilen pasten? ^^
+2014-01-11 20:22:08,Jidder,meine erlaubnis hast du
+2014-01-11 20:22:08,XanClic,Hauptsache mehrzeilig
+2014-01-11 20:22:23,Jidder,yay
+2014-01-11 20:22:35,Jidder,ich hab den finger am abzug
+2014-01-11 20:22:40,Jidder,wehe es werden 6 zeilen
+2014-01-11 20:24:25,Svenska,"[CRIT ] Got exception 0x2 (#NMI, error 0x0) at 0xe0105a0a!"
+2014-01-11 20:24:25,Svenska,"[CRIT ] EAX: 0x00000000, EAB: 0x00000000, ECX: 0x00000000, EDX: 0x00000000"
+2014-01-11 20:24:25,Svenska,"[CRIT ] ESI: 0x00000000, EDI: 0x00000000, EBP: 0xe012dff4, ESP: 0x00000000"
+2014-01-11 20:24:25,Svenska,"[CRIT ]  CS: 0x00000008,  SS: 0x00000000, EFLAGS: 0x00000097"
+2014-01-11 20:24:25,Svenska,"[CRIT ] CR0: 0x80000011, CR2: 0x00000000, CR3: 0x001010000"
+2014-01-11 20:24:50,Svenska,sowas ist muchos bättros
+2014-01-11 20:24:55,Jidder,oooh mit twittereinbindung
+2014-01-11 20:25:01,Jidder,NMI
+2014-01-11 20:25:03,Jidder,#NMI
+2014-01-11 20:25:12,ISOrunner2,und was hat das jetzt mit meinem problem zu tun?
+2014-01-11 20:25:17,Paddy,Gar niemand drin :-(
+2014-01-11 20:25:20,Svenska,so sieht ne gute debugausgabe aus ^^
+2014-01-11 20:25:33,ISOrunner2,toll
+2014-01-11 20:25:35,Svenska,(oder zumindest viel besser. *g*)
+2014-01-11 20:25:52,Svenska,das wirft mein OS im exception-handler aus ^^
+2014-01-11 20:26:12,Svenska,(bis auf die führenden nullen. da müsste ich tatsächlich mal printf() erweitern. *g*)
+2014-01-11 20:26:18,Paddy,Sollen wir jetzt einen Exceptionmeldungenvergleich machen oder wie? ;-)
+2014-01-11 20:26:21,ISOrunner2,kannst du mir jetzt bitte sagen was ich falsch mach?
+2014-01-11 20:26:49,Svenska,"Paddy: nö, aber so ähnlich dürfte das bei jedem aussehen. bonuspunkte gibts für stacktraces, aber da warte ich auf mromans wiki-erklärung. :-D"
+2014-01-11 20:26:58,Svenska,"ISOrunner2: kann ich nicht, weil ich es nicht weiß."
+2014-01-11 20:27:15,Jidder,"ISOrunner2: wir halten es nicht vor dir geheim, sondern du musst das problem selbst finden"
+2014-01-11 20:27:24,Jidder,debugfunktionen helfen dir dabei
+2014-01-11 20:28:23,Paddy,"Ach, hatten wir schonmal: http://forum.lowlevel.eu/index.php?topic=3129.0"
+2014-01-11 20:28:34,Svenska,jup
+2014-01-11 20:29:10,Paddy,"Ui, tyndur hatte dort sogar einen Stacktrace mit Funktionsnamen"
+2014-01-11 20:29:20,Svenska,inzwischen nicht mehr? ^^
+2014-01-11 20:29:35,Paddy,Ich hab schon lang keine mehr gesehen. Oder es tut nur bei NMIs ;-)
+2014-01-11 20:30:09,Jidder,die funktionsnamen kommen nur bei funktionen aus dem kernel
+2014-01-11 20:30:14,Jidder,weil nur dessen header geparst wird
+2014-01-11 20:30:32,Jidder,so war das zumindest mal vor ein paar jahren
+2014-01-11 20:30:50,Paddy,"Ja, aber auch das habe ich in letzter Zeit nicht gesehen"
+2014-01-11 20:32:42,ISOrunner2,Ich mach jetzt mal eine ordentliche debugausgabe
+2014-01-11 20:32:53,Paddy,"Vielleicht ist der Trick, kernel1 zu verwenden"
+2014-01-11 20:33:28,XanClic,In dem Thread hab ich http://www.lowlevel.eu/w/images/3/3a/Paloxena-PSOD.png ja gar nicht gepostet
+2014-01-11 20:33:38,XanClic,"Weiß gar nicht, wie ich das unterlassen konnte"
+2014-01-11 20:34:08,Svenska,gleich reinkippen ^^
+2014-01-11 20:35:07,XanClic,weiß nicht
+2014-01-11 20:35:13,XanClic,"man sieht da, dass ich CR0.CD an hab"
+2014-01-11 20:35:20,XanClic,"Ich glaube, das könnte peinlich sein"
+2014-01-11 20:35:36,Svenska,y?
+2014-01-11 20:35:40,Jidder,"heutzutage minimum DVD, besser Blu-ray"
+2014-01-11 20:35:44,XanClic,Genau
+2014-01-11 20:36:06,XanClic,"Ne, weil ich irgendwann genug davon hatte, meine Cachingprobleme mit MMIO zu lösen :-P"
+2014-01-11 20:37:19,Paddy,"Wie hast du es denn hinbekommen, Cachingprobleme zu haben?"
+2014-01-11 20:37:26,XanClic,Gute Frage
+2014-01-11 20:37:47,Paddy,"Ich glaube, tyndur hat auch eins, aber nur in der Form, dass Grafik langsam ist"
+2014-01-11 20:37:58,Paddy,Das lässt sich durch CD nicht lösen ;-)
+2014-01-11 20:37:59,XanClic,Wird wohl irgendwas mit Fehlerausschluss bei USB zu tun gehabt haben :-P
+2014-01-11 20:38:02,Paddy,Ah
+2014-01-11 20:39:40,Svenska,"uuh, usb. fancy."
+2014-01-11 20:43:21,XanClic,"USB ist nur fancy, wenn es auch tut"
+2014-01-11 20:43:47,Svenska,"achso, du meinst, (nur) der versuch ist strafbar?^^"
+2014-01-11 20:43:55,XanClic,USB an sich ist strafbar
+2014-01-11 20:44:02,XanClic,Sollte es zumindest sein
+2014-01-11 20:44:41,Svenska,das ist richtig. aber bei mir musste es ja nicht wirklich zuverlässig sein.
+2014-01-11 20:45:00,Svenska,ich hab im HardFaultHandler einfach den Watchdog angeworfen und das gesamtsystem autostartend gemacht ^^
+2014-01-11 20:45:27,XanClic,"HardFaultHandler erinnert mich wieder an den Spaß, den ich mit dem USB-Diskettenlaufwerk hatte…"
+2014-01-11 20:45:53,XanClic,"Da gehört es offenbar zum Protokoll dazu, unter bestimmten Bedingungen einfach alles zu stallen, sodass das ganze Gerät einen USB-Reset braucht"
+2014-01-11 20:49:36,Svenska,klingt nach spaß am gerät
+2014-01-11 20:49:47,XanClic,Auf jeden Fall
+2014-01-11 20:50:01,XanClic,"Vermutlich hab ich nur deshalb so eine schlechte Beziehung zu USB, weil ich so selten Alkohol trinke"
+2014-01-11 20:50:12,Svenska,da gibt's abhilfe...
+2014-01-11 20:50:12,XanClic,Sonst ließe sich das bestimmt gut zusammenführen
+2014-01-11 20:50:35,XanClic,"Also, strenggenommen glaube ich sogar, dass USB unter dieser Bedingung entwickelt wurde"
+2014-01-11 20:51:15,DerHartmut,Nabend
+2014-01-11 21:00:54,Paddy,Moin DerHartmut
+2014-01-11 21:44:10,ISOrunner2,Wie kann ich in den 80x25 textmodus wechseln?
+2014-01-11 21:44:16,ISOrunner2,ich meine 80x50 
+2014-01-11 21:44:48,Svenska,"80x25 macht das BIOS, für 80x50 musst du an den VGA-Registern rumspielen (Zeilenanzahl ändern und ROM-Font umschalten)"
+2014-01-11 21:45:13,ISOrunner2,Wie würde das in GNU Assembler aussehen?
+2014-01-11 21:47:18,Svenska,"Keine Ahnung. Ich würde behaupten, dass das noch ne Stufe zu hoch ist; da brauchst du schon einen fast gebrauchbaren VGA-Treiber für. Es gibt aber Code im Netz, und eine Beschreibung der VGA-Hardware bei im OSDev-Wiki."
+2014-01-11 21:47:56,ISOrunner2,"Moment, ich glaube ich habe was gefunden..."
+2014-01-11 21:51:13,XanClic,"wenn man weiß, wie, ist das einfachste vermutlich vm86 und dann das bios benutzen"
+2014-01-11 21:51:18,XanClic,aber das hast du besser überhört
+2014-01-11 21:52:03,Paddy,VM86 geht doch ganz einfach mit einem zusätzlichen TSS und Paging für die IDT
+2014-01-11 21:52:28,ISOrunner2,"wie geht das eigentlich, ich mein das was paddy gemacht hat?"
+2014-01-11 21:52:40,Paddy,ISOrunner2: Hör nicht auf mich ;-)
+2014-01-11 21:53:15,ISOrunner2,"Wie kann ich z.b ""* ISOrunner2 kotzt sich ins Hemd"" machen?"
+2014-01-11 21:53:25,Paddy,Ach so
+2014-01-11 21:53:32,Paddy, /me duckt sich
+2014-01-11 22:00:15,ISOrunner2,Ich habe ein kleines Problem mit qemu
+2014-01-11 22:31:12,mgottschlag,hat hier schonmal wer mips-osdev gemacht?
+2014-01-11 22:32:11,mgottschlag,"(Hintergrund: mir ist langweilig, und ich hab die Hardware, und ich versuche gerade herauszufinden, ob es außer uboot- und Linux-Quellcode noch mehr Ressourcen gibt)"
+2014-01-11 22:36:06,Jidder,ich glaub für nintendo 64 gibts da noch geleakten source code ^^
+2014-01-11 22:37:26,Svenska,"ich hab mal linux (fast) zu fuß auf ner alten fritzbox zum laufen gebracht, da war ein TI AR7 drin (MIPS)"
+2014-01-11 22:37:36,Svenska,aber der bootloader war da schon im flash.
+2014-01-11 22:41:11,ISOrunner2,Svenska: Ist er nicht wundervoll? http://imgur.com/zLbj4Fj 
+2014-01-11 22:41:44,Svenska,"ISOrunner2: Jap, ist er. Gratuliere."
+2014-01-11 22:41:44,ISOrunner2,Svenska: Wie gefällt dir mein Debug-Screen?
+2014-01-11 22:41:49,ISOrunner2,Ah :D
+2014-01-11 22:42:28,Paddy,"Nett. Aber die Segmentregister haben nur 16 Bit, die könntest du alle in eine Zeile packen ;-)"
+2014-01-11 22:42:34,Svenska,"(Du könntest noch DS/ES/FS/GS anzeigen, aber kA, ob die wichtig sind; und den restlichen Kram noch in eine Zeile packen.)"
+2014-01-11 22:42:43,Paddy,Sind doch da
+2014-01-11 22:42:54,Svenska,"oh stimmt, übersehen ^^"
+2014-01-11 22:43:07,Svenska,"(Und vielleicht auch das ""INTR 0x32"" durch den Namen ersetzen.) Aber so ist gut. :-)"
+2014-01-11 22:43:14,ISOrunner2,Paddy: Die anderen die nicht in einer Zeile sind passten nicht so gut in die Tabelle deswegen habe ich für jeden seine eigene Zeile gemacht.
+2014-01-11 22:45:56,Svenska,*seufz* wie ich unlesbare captchas hasse -.-
+2014-01-11 22:46:24,Jidder,ich glaube Svenska ist ein computer
+2014-01-11 22:46:32,ISOrunner2,:D
+2014-01-11 22:46:59,Svenska,y u ßinck so?
+2014-01-11 22:47:08,ISOrunner2,um genauer zu sein ein Spam-Bot ^^
+2014-01-11 22:47:29,Svenska,"ne, ich tunnele traffic durch nen vserver in einem dt. rz"
+2014-01-11 22:47:48,Svenska,"logisch, dass aus dessen netzwerk mehr anfragen an den captchaserver gehen"
+2014-01-11 22:47:58,Svenska,aber dass das so offensichtlich krass unterschiedliche captchas ergibt...
+2014-01-11 22:48:33,mgottschlag,"ja, Bootloader will ich auch nicht selber schreiben, da nehm ich schön den u-boot, der schon drauf ist :)"
+2014-01-11 22:48:35,Svenska,aber der venus-leuchtturm ist jetzt auch entzündet.
+2014-01-11 22:48:50,Svenska,"mgottschlag: für mips gibt es die üblichen verdächtigen: windows, linux, bsd... :-)"
+2014-01-11 22:49:00,Svenska,"(windows ce, aber die neusten wollen nur noch arm, glaube ich)"
+2014-01-11 22:54:03,ISOrunner2,Svenska: http://i.imgur.com/0dwg3qd.png?1 - Ist es jetzt besser? :D
+2014-01-11 22:54:23,Svenska,"lol, ok ^^"
+2014-01-11 22:54:34,ISOrunner2,Svenska: :D
+2014-01-11 22:54:42,Svenska,"ach stimmt, ich hatte ja verpeilt, dass >=32 keine exceptions mehr sind"
+2014-01-11 22:54:57,ISOrunner2,:D
+2014-01-11 22:59:36,ISOrunner2,"Svenska: Kannst du vllt. anhand der Register erkennen, wieso mein Multitasking nicht funktioniert ? :/"
+2014-01-11 23:00:07,Svenska,"ich kann vieles, aber hellsehen gehört nicht dazu"
+2014-01-11 23:00:17,Svenska,"ich kann dir hinweise geben, wie du selbst drauf kommen kannst"
+2014-01-11 23:00:24,ISOrunner2,oke
+2014-01-11 23:00:29,Paddy,Wie soll man das vom einem CPU-Dump bei einem Timerinterrupt erkennen?
+2014-01-11 23:00:39,Svenska,aber lösungen kriegst du von mir nur echt selten ^^
+2014-01-11 23:01:27,ISOrunner2,Svenska: Du hattest mir doch geholfen meine IDT/GDT fertig zustellen? Oder war das jemand völlig anders?
+2014-01-11 23:01:39,ISOrunner2,*anderes
+2014-01-11 23:01:43,Svenska,selten != nie. :-D
+2014-01-11 23:01:49,ISOrunner2,:D
+2014-01-11 23:01:58,Svenska,"falls ich's war, kann ich mich da nur wenig dran erinnern, aber ich war jedenfalls dabei ;)"
+2014-01-11 23:02:06,ISOrunner2,Ja
+2014-01-11 23:02:12,Svenska,"multitasking kann ich die details nicht, weil ich's bisher selbst nicht gemacht hab"
+2014-01-11 23:02:21,Svenska,"ich weiß grob, wie man es macht, aber eben die details nicht"
+2014-01-11 23:02:21,ISOrunner2,:D
+2014-01-11 23:03:42,Paddy,So wie's im Wiki steht
+2014-01-11 23:04:10,ISOrunner2,Paddy: Weißt du mehr darüber?
+2014-01-11 23:04:19,Paddy,"Ich weiß, dass meins so tut als würde es tun"
+2014-01-11 23:04:44,Paddy,Was geht denn überhaup schief bei dir?
+2014-01-11 23:04:52,ISOrunner2,Paddy: Weißt du wie ich herausfinden könnte warum es bei mir nicht tut?
+2014-01-11 23:05:28,Paddy,"Solange du nicht sagst, was genau nicht tut, wird es schwer"
+2014-01-11 23:05:35,ISOrunner2,Naja
+2014-01-11 23:05:55,ISOrunner2,Wenn ich mein Timerinterrupt aufrufe wechselt er irgendwie nicht den Prozess
+2014-01-11 23:06:16,ISOrunner2,und mir fällt gerade auf das ich vllt. gucken sollte ob mein scheduler funktioniert...
+2014-01-11 23:06:16,Paddy,"Also kein Crash, aber es tasks halt nicht so richtig multi?"
+2014-01-11 23:06:32,Paddy,"Genau, dann würde ich mal den Scheduler anschauen."
+2014-01-11 23:06:34,mgottschlag,"ISOrunner2: ist das der alte, oder der neue state?"
+2014-01-11 23:06:52,ISOrunner2,mgottschlag: Der auf dem Screenshot? Das ist der vom aktuellen.
+2014-01-11 23:06:58,Svenska,Paddy: mir glaubt er ja nicht mehr ;)
+2014-01-11 23:07:09,mgottschlag,und wtf ist aktuell? :p
+2014-01-11 23:07:19,ISOrunner2,steinzeitmensch :D
+2014-01-11 23:07:21,ISOrunner2,xD
+2014-01-11 23:07:29,Paddy,"mgottschlag: Der eine Task, der läuft, vermutlich? ;-)"
+2014-01-11 23:07:32,mgottschlag,"also, ich meine, vor oder nach dem scheduling/neusetzen vom state"
+2014-01-11 23:07:37,ISOrunner2,mgottschlag: Also der Status wann ich den Interrupt ausgelöst habe
+2014-01-11 23:07:48,ISOrunner2,vor dem scheduling
+2014-01-11 23:07:57,mgottschlag,"ISOrunner2: interessanter ist tendenziell der andere, weil der dir zeigt, ob der Scheduler funktioniert hat"
+2014-01-11 23:08:03,ISOrunner2,oke
+2014-01-11 23:08:06,mgottschlag,bzw der Vergleich von beidem
+2014-01-11 23:08:27,mgottschlag,"wenn beide den selben EIP haben, hat dein Scheduler offensichtlich nichts gemacht :)"
+2014-01-11 23:08:32,ISOrunner2,:D
+2014-01-11 23:08:36,mgottschlag,"ach btw, ich hab da so ne Ahnung, was kaputt sein könnte"
+2014-01-11 23:08:55,mgottschlag,"und zwar initialisierst du das ganze ja, indem du einen Interrupt auslöst"
+2014-01-11 23:09:17,mgottschlag,wohin wird da der Zustand von dem Kernelthread gespeichert? Wird da zufällig ein Prozess praktisch überschrieben?
+2014-01-11 23:09:34,mgottschlag,"also, von dem Thread, bevor du Multithreading überhaupt aktiviert hast"
+2014-01-11 23:11:06,ISOrunner2,Dein Verdacht hat sich bestätigt: Der Scheduler ist kaputt :/
+2014-01-11 23:11:19,ISOrunner2,ach warte...
+2014-01-11 23:11:41,Paddy,Ist das immer noch der alte Code?
+2014-01-11 23:11:49,ISOrunner2,ich muss die variablen noch aktualisieren ... fail
+2014-01-11 23:11:52,Paddy,                proc_list[proc_curr_pid].state = state;
+2014-01-11 23:11:54,Paddy,                *state = *proc_list[proc_curr_pid].state;
+2014-01-11 23:11:57,Paddy,Das sieht nämlich komisch aus
+2014-01-11 23:12:06,ISOrunner2,moment
+2014-01-11 23:12:12,Paddy,Da kopierst du den Inhalt auf sich selbst
+2014-01-11 23:12:59,ISOrunner2,ne hast recht scheduler ist kaputt
+2014-01-11 23:13:30,ISOrunner2,oke wie löse ich das problem?
+2014-01-11 23:13:36,mgottschlag,"hm, da gibts aber auch korrekte Versionen, die hier im Chatlog rumfliegen :)"
+2014-01-11 23:13:50,ISOrunner2,:D
+2014-01-11 23:13:52,mgottschlag,http://pastebin.com/AHfny2A7 die hier sieht in dem Bereich eigentlich ganz gut aus
+2014-01-11 23:14:28,mgottschlag,also ich meine jetzt ganz speziell next_proc bezüglich Paddys Kommentar
+2014-01-11 23:14:32,ISOrunner2,was ist daran anders?
+2014-01-11 23:15:03,mgottschlag,"also, moment"
+2014-01-11 23:15:16,mgottschlag,"ich merk grad, das ganze ist aber noch woanders kaputt"
+2014-01-11 23:15:25,ISOrunner2,wo?
+2014-01-11 23:15:57,mgottschlag,"also, was wir gesagt hatten von wegen *state kopieren und so, das geht nur, wenn du einen einzigen state-Bereich mit einem einzigen Kernel-Thread für alle Prozesse hast"
+2014-01-11 23:16:13,ISOrunner2,hä
+2014-01-11 23:16:14,mgottschlag,ähm
+2014-01-11 23:16:18,mgottschlag,ich meine Kernel-Stack
+2014-01-11 23:16:45,mgottschlag,weil im Moment überschreibst du immer wieder den Kernel-Stack von einem deiner Prozesse
+2014-01-11 23:16:55,mgottschlag,"ich weiß natürlich nicht, ob das dein Problem ist, aber es ist kaputt"
+2014-01-11 23:17:38,mgottschlag,"stattdessen müsstest du wirklich den Stack wechseln, also aus deinem Interrupthandler den Pointer auf den neuen Stack zurückgeben, anstatt den Inhalt in den Stack eines anderen Prozesses zu kopieren"
+2014-01-11 23:17:56,mgottschlag,und dann im Assemblerteil nach dem Aufrufen des C-Handlers in den zurückgegebenen Stack wechseln
+2014-01-11 23:18:03,ISOrunner2,oke...
+2014-01-11 23:18:04,ISOrunner2,moment
+2014-01-11 23:19:49,ISOrunner2,was muss den jetzt nach dem call des interrupt_handlers in den assembler teil? ich benutze gnu assembler
+2014-01-11 23:20:15,mgottschlag,"mov %dasregisterwostatedrinist, %esp"
+2014-01-11 23:20:21,Svenska,"wir haben das mit dem gnu assembler schon mitgekriegt, glaube ich ^^"
+2014-01-11 23:20:28,ISOrunner2,:D
+2014-01-11 23:21:39,ISOrunner2,Es sieht schon so aus als würde er was machen :D
+2014-01-11 23:22:41,mgottschlag,"wenn das jetzt was tut, dann hast du dir vorher einfach durch das Kopieren einen Task getötet :)"
+2014-01-11 23:23:43,ISOrunner2,Der Cursor springt von A zu B und die Zahlen wechseln sich total schnell :D
+2014-01-11 23:23:56,Svenska,bäumchen wechsel dich? ^^
+2014-01-11 23:25:53,Svenska,*seufz* hat wer von euch schonmal den klassischen dynamische-programmierungs-algorithmus zum stringmatchen umgesetzt?
+2014-01-11 23:26:33,ISOrunner2,*stille*
+2014-01-11 23:27:46,Svenska,"#define MAX3(X,Y,Z) ( (Y > Z) ? (X > Y) ? 1 : 2 : (X > Z) ? 1 : 3 ) << stimmt das? :D"
+2014-01-11 23:28:51,ISOrunner2,"Oh God, why are you kidding me?"
+2014-01-11 23:29:11,Svenska,"sollte 1 zurückgeben, wenn X das größte ist, 2 wenn Y das größte ist und 3 wenn Z das größte ist"
+2014-01-11 23:29:15,ISOrunner2,General Protection Fault Exception Das hat ja gut funktioniert ....
+2014-01-11 23:29:18,Jidder,also intuitiv würde ich sagen nein
+2014-01-11 23:29:23,Svenska,"unter der voraussetzung, dass weder X/Y/Z seiteneffekte haben"
+2014-01-11 23:29:52,Svenska,inwiefern nein?
+2014-01-11 23:30:08,Jidder,muss der dritte vergleich nicht auch X > Y sein?
+2014-01-11 23:30:16,Jidder,also ich mach das glaube ich immer so
+2014-01-11 23:30:41,Svenska,"der erste Y>Z, wenn true: MAX(X,Y), wenn false MAX(X,Z)"
+2014-01-11 23:30:53,Svenska,"weil wenn Y<Z, kann Y schonmal nicht größtes sein"
+2014-01-11 23:31:06,ISOrunner2,mgottschlag: Irgendwas stimmt immernoch nicht ... General Protection Fault Exception
+2014-01-11 23:31:16,mgottschlag,Code?
+2014-01-11 23:31:22,ISOrunner2,Moment
+2014-01-11 23:31:40,Jidder,Svenska: ich hab es mir mal aufgemalt und ich glaube es kommt auf das gleiche hinau
+2014-01-11 23:31:42,Jidder,s
+2014-01-11 23:32:00,Svenska,also passt?
+2014-01-11 23:32:12,mgottschlag,"ne, da muss schon X > Z hin, so passt es"
+2014-01-11 23:32:13,Jidder,"#define MAX3(X, Y, Z) MAX(X, MAX(Y, Z))"
+2014-01-11 23:32:21,Jidder,oder geht das nicht?
+2014-01-11 23:32:35,mgottschlag,das ist allerdings schöner ^^
+2014-01-11 23:32:38,Svenska,"ich will ja nicht nur das maximum, sondern vor allem, _welches_ das maximum war"
+2014-01-11 23:32:43,Jidder,ah ja
+2014-01-11 23:32:50,Svenska,sonst wär ja einfach ^^
+2014-01-11 23:33:54,ISOrunner2,mgottschlag: http://pastebin.com/f7BZjMhk
+2014-01-11 23:34:35,mgottschlag,ISOrunner2: das pop %eax musst du wegnehmen
+2014-01-11 23:35:03,ISOrunner2,ändert nichts :D
+2014-01-11 23:35:07,mgottschlag,"weil das push %eax ja nicht mehr den Stack-Pointer beeinflusst, den du vorher setzt"
+2014-01-11 23:35:28,Svenska,Jidder: hast du grad nix zu tun? ;)
+2014-01-11 23:35:30,Jidder,zeile 23/24 hatten wir vorhin schon mal
+2014-01-11 23:35:44,Jidder,Svenska: jop
+2014-01-11 23:35:45,mgottschlag,"ja, die ist hier in der Tat wieder kaputt"
+2014-01-11 23:36:02,ISOrunner2,Warte ein Moment! Der Mechaniker kommt!
+2014-01-11 23:36:05,Jidder,wobei ich immer am denken bin und mir neue geniale sachen einfallen lassen
+2014-01-11 23:36:15,Svenska,"http://pastebin.com/8EqsXJa9 << hast du eine ahnung, warum das komische ergebnisse rauswirft?"
+2014-01-11 23:36:44,Svenska,"(und nein, nicht über get_cost() wundern, die segfaultet tatsächlich, wenn du ungültige buchstaben eingibst.)"
+2014-01-11 23:36:46,Jidder,das ist ein string matching algorithmus?
+2014-01-11 23:36:55,Svenska,ja
+2014-01-11 23:37:11,Svenska,"der versucht, zwei strings so gegeneinander auszurichten, dass die sich am ähnlichsten sind"
+2014-01-11 23:37:26,Svenska,"lücken kosten -8, alles andere kostet nach tabelle. praktische anwendung: genomsequenzierung."
+2014-01-11 23:37:28,ISOrunner2,mgottschlag: Funktioniert immernoch nicht 
+2014-01-11 23:38:12,Jidder,hm mal gucken
+2014-01-11 23:38:15,ISOrunner2,"mgottschlag: ""*state = *proc_list[proc_curr_pid].state;"" ist doch korrekt oder?"
+2014-01-11 23:38:20,mgottschlag,"nein, jetzt nicht mehr"
+2014-01-11 23:38:29,mgottschlag,weil du jetzt keinen Zustand mehr kopieren möchtest
+2014-01-11 23:38:39,mgottschlag,sondern den neuen Pointer zurückgibst
+2014-01-11 23:39:05,Svenska,(Jidder: ab dem #if 0 kannst du aufhören zu lesen. *g*)
+2014-01-11 23:39:06,mgottschlag,"wenn du das geändert hast, solltest du dir wieder vorher/nachher den Zustand ausgeben lassen und gucken, ob da alles stimmt"
+2014-01-11 23:39:16,mgottschlag,damit kannst du dann das Problem auf relativ wenig Assembler eingrenzen
+2014-01-11 23:41:57,ISOrunner2,Es liegt anscheind am Scheduler ich guck mal ...
+2014-01-11 23:46:54,Jidder,Svenska: mit welchen eingaben testest du das denn?
+2014-01-11 23:47:01,Svenska,"Jidder: fachbegriff ""sequence alignment"" bzw. ""needleman/wunsch"""
+2014-01-11 23:47:14,Svenska,ARAAAR und AARAAR
+2014-01-11 23:48:00,Svenska,"kommt 18 raus, sollte aber -5 sein. die richtige lösung hätte dann +13."
+2014-01-11 23:59:59,Jidder,"die matrix muss nicht symmetrisch sein, oder?"

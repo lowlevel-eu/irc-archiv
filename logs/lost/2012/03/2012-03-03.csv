@@ -1,0 +1,191 @@
+date/time,nick,message
+2012-03-03 00:08:55,Naoe-Kanno,"gehe ich recht in der Annahme, dass qemu -kernel nicht im PM bootet?"
+2012-03-03 00:09:04,XanClic,Nein
+2012-03-03 00:09:13,XanClic,"Also, es bootet im PM"
+2012-03-03 00:09:31,Naoe-Kanno,dann bin ich was falsch tuend
+2012-03-03 00:10:46,taljeth,"qemu -kernel macht PM, wenn Multiboot"
+2012-03-03 00:11:00,taljeth,Du bootest es nicht zufällig als Linuxkernel oder so?
+2012-03-03 00:11:14,Naoe-Kanno,"nicht, dass ich wüsste"
+2012-03-03 00:11:21,Naoe-Kanno,"hm, invalid opcode, sagt der Log"
+2012-03-03 00:13:40,taljeth,Immer gut
+2012-03-03 00:15:58,Naoe-Kanno,EIP=0000fb42 <- auch gut?
+2012-03-03 00:18:11,Naoe-Kanno, 53133	Disassembler disagrees with translator over instruction decoding
+2012-03-03 00:18:11,Naoe-Kanno, 53134	Please report this to qemu-devel@nongnu.org
+2012-03-03 00:18:13,Naoe-Kanno,aha
+2012-03-03 00:18:27,taljeth,"Und cs=f000, vermute ich?"
+2012-03-03 00:20:35,Naoe-Kanno,cs=9020
+2012-03-03 00:21:48,Naoe-Kanno,http://pastebin.com/jxBuLEmN
+2012-03-03 00:22:31,taljeth,Sieht komisch aus
+2012-03-03 00:22:51,taljeth,Wobei ich natürlich das Linux-Bootprotokoll nicht kenne
+2012-03-03 00:23:02,Naoe-Kanno,was hat das mit Linux am Hut?
+2012-03-03 00:23:26,taljeth,"War halt nur so eine Vermutung, dass man für Linux irgendwo dorthin springen müsste oder so"
+2012-03-03 00:24:11,Naoe-Kanno,hrm
+2012-03-03 00:25:15,Naoe-Kanno,"die einzige Idee, die ich noch hab..."
+2012-03-03 00:28:26,Naoe-Kanno,interessant
+2012-03-03 00:28:30,Naoe-Kanno,muss am Speicher liegen...
+2012-03-03 00:29:36,Naoe-Kanno,"wenn ich den Kernel mit -Ttext=0x1000,-Tdata=0x1800 linke, tut's, mit 0x100000 und 0x180000 nicht"
+2012-03-03 00:31:46,taljeth,-ENOSENSE?
+2012-03-03 00:32:10,Naoe-Kanno,"keine Idee, warum"
+2012-03-03 00:40:47,Jidder,ich würd ja ein richtiges linkerskript empfehlen
+2012-03-03 00:41:12,Jidder,die nicht auf der kommandozeile erwähnten sektionen neigen dazu sich gleichmäßig im speicher zu verteilen
+2012-03-03 00:42:47,Naoe-Kanno,zu faul für nen ordentliches Makefile :D
+2012-03-03 00:42:55,Naoe-Kanno,"aber wäre wohl angebracht, ja"
+2012-03-03 00:43:06,taljeth,Was hat Linkerskript mit Makefile zu tun?
+2012-03-03 00:46:50,Jidder,http://pastebin.com/jxBuLEmN <- zeile einmillionfünfzehntausendneunhundertdreiundfünfzig?
+2012-03-03 00:47:34,Naoe-Kanno,jup
+2012-03-03 00:47:44,Jidder,weiter oben steht nichts interessantes? o_O
+2012-03-03 00:47:49,Naoe-Kanno,exakt
+2012-03-03 00:47:56,Jidder,das glaube ich dir nicht ^^
+2012-03-03 00:48:14,Naoe-Kanno,das Makefile besteht auch nur aus folgendem
+2012-03-03 00:48:15,Naoe-Kanno,"	gcc -g -g3 -Wall -Wextra -Werror -std=gnu1x -ffreestanding -nostdlib -nostartfiles -nodefaultlibs -fno-leading-underscore -O0 -ansi -m32 -Wl,-Ttext=0x1000,-Tdata=0x1800 -o kernel.bin *.c"
+2012-03-03 00:48:18,Naoe-Kanno,ich glaub das schon
+2012-03-03 00:48:22,Naoe-Kanno,aber ich guck bestimmt nicht nach
+2012-03-03 00:48:30,Naoe-Kanno,bei der Anzahl an Zeilen
+2012-03-03 00:49:17,Jidder,die ersten 100 sind in der regel auch interessant. oder hast du mehr flags als -d int?
+2012-03-03 00:50:27,Naoe-Kanno,ja
+2012-03-03 00:50:38,Jidder,ansonsten was sagt objdump -h kernel.bin?
+2012-03-03 00:50:47,Naoe-Kanno,"-d in_asm,int,cpu_reset,cpu"
+2012-03-03 00:52:35,Naoe-Kanno,http://pastebin.com/cwfbgHWX
+2012-03-03 00:53:06,Jidder,ein paar sektionen werden nach 128 MB geladen
+2012-03-03 00:53:32,Jidder,dagegen sollteste ein linkerskript nehmen
+2012-03-03 00:53:53,Jidder,"ich glaube die sektionen mit LMA=00000000 werden von qemu ignoriert, aber wer weiß das schon so genau"
+2012-03-03 00:54:24,Naoe-Kanno,aber an 128 MB ist ja eigentlich nicht schlimm
+2012-03-03 00:54:34,Jidder,außer du hast nicht so viel speicher ^^
+2012-03-03 00:54:36,Naoe-Kanno,mit -m 6G passiert das immer noch
+2012-03-03 00:55:12,Jidder,öffne mal dein qemu.log in einem editor deiner wahl und suche nach 0x2badb002. das erste vorkommen sollte direkt vor dem übergang in den kernel sein
+2012-03-03 00:55:31,Jidder,ab da kannste dich durch den code hangeln
+2012-03-03 00:55:33,Jidder,dafür ist ja in_asm da
+2012-03-03 00:55:36,Jidder,TADA
+2012-03-03 00:56:53,Naoe-Kanno,taucht nicht auf
+2012-03-03 00:57:04,Jidder,"dann nahme ich an, dass dein kernel nicht als multiboot kernel erkannt wird"
+2012-03-03 00:57:07,Jidder,nehme
+2012-03-03 00:57:12,Jidder,nahme nur nach nach
+2012-03-03 00:58:24,Naoe-Kanno,"ah, ist sogar logisch"
+2012-03-03 00:58:59,taljeth,"mbchk und so hast du aber sicher schon probiert, oder?"
+2012-03-03 00:59:12,Naoe-Kanno,ld -n rettet's mal wieder
+2012-03-03 00:59:29,Naoe-Kanno,"wenn .data in der Binary an 0x2000 anfängt, wo soll er dann auch den Header finden..."
+2012-03-03 00:59:51,Jidder,in dem dump von eben wars noch bei 1800 ^^
+2012-03-03 01:00:08,Jidder,was machst du wenn dein code größer als 4 KB wird?
+2012-03-03 01:00:26,XanClic,"Und das wird er, über 640 können wir uns streiten, aber bei 4"
+2012-03-03 01:00:49,taljeth,"In den sauren Apfel beißen und doch ein Linkerskript schreiben, mit dem er jetzt schon eine halbe Stunde gespart hätte? ;-)"
+2012-03-03 01:01:04,Jidder,wir brauchen einen standardisierten fragekatalog um solche dinge zu erkennen
+2012-03-03 01:01:09,Naoe-Kanno,^^
+2012-03-03 01:01:16,taljeth,Der standardisierte Fragenkatalog war doch da
+2012-03-03 01:01:21,Jidder,taljeth war ja auch schon vor fast einer dreiviertel stunde auf dem richtigen pfad
+2012-03-03 01:01:28,Jidder,mit dem linuxkernelzeug
+2012-03-03 01:01:29,taljeth,"Nur wie alle Noobs sagt er halt ""nö, das isses garantiert nicht"""
+2012-03-03 01:01:38,taljeth,Und du mit Linkerskript
+2012-03-03 01:02:21,Jidder,man könnte das auch direkt als plugin in vi(sual studio) integrieren
+2012-03-03 01:03:00,taljeth,"Hm, ein Makro, das einen Kernel mitsamt Makefile und Linkerskript schreibt?"
+2012-03-03 01:03:23,Jidder,"dann kommt die büroklammer und sagt: ""es sieht so aus als ob sie versuchen einen kernel zu schreiben..."""
+2012-03-03 01:03:43,DesL,lulz
+2012-03-03 01:03:54,DesL,also git für vs?
+2012-03-03 01:04:03,Jidder,karl klammer
+2012-03-03 01:04:06,Jidder,oder wie der heißt
+2012-03-03 01:04:11,Threadcore,und sonst gibts ja immer noch http://channel9.msdn.com/achievements/visualstudio
+2012-03-03 01:04:11,Jidder,igitt git 
+2012-03-03 01:04:32,Jidder,lol
+2012-03-03 01:04:53,Threadcore,Write a single line of 300 characters long. Who needs carriage returns? Uses FxCop
+2012-03-03 01:04:56,Threadcore,...
+2012-03-03 01:05:41,Naoe-Kanno,"ah, die Achievements wollte ich mir eh mal installieren"
+2012-03-03 01:05:41,Naoe-Kanno,danke
+2012-03-03 01:06:12,Threadcore,np
+2012-03-03 01:06:45,Jidder,ich will cdi.achievements
+2012-03-03 01:07:25,Naoe-Kanno,*g*
+2012-03-03 01:07:27,Threadcore,Lonely im Geschäft zu bekommen wird schwierig ;P
+2012-03-03 01:07:37,taljeth,"Hm. ""Schreibe einen Dateisystemtreiber als cdi/storage?"" *g*"
+2012-03-03 01:07:55,Jidder,0/10
+2012-03-03 01:08:12,Jidder,"man könnte das natürlich staffeln. je ein achievement für 1, 5 und 10 treiber"
+2012-03-03 01:08:14,Threadcore,taljeth was habe ich nur ins rollen gebracht
+2012-03-03 01:08:25,taljeth,Threadcore: Du?
+2012-03-03 01:08:36,Threadcore,oder eher Jidder ;)
+2012-03-03 01:08:44,taljeth,Der macht das immer
+2012-03-03 01:08:48,Jidder,haha fail leave
+2012-03-03 01:09:07,taljeth,"Clici, gib's zu, du hast eh ein Highlight auf ""storage"""
+2012-03-03 01:09:08,Jidder,jetzt sitzt er da und schaut sich grüne schrift auf grau-schwarzem hintergrund an
+2012-03-03 01:09:36,taljeth,"Wenn er das schöner findet, warum nicht"
+2012-03-03 01:12:36,XanClic,"Verdammt, taljeth, woher weißt du das nur"
+2012-03-03 01:12:40,XanClic,http://xanclic.is-a-geek.org/users/hochlicht.jpg
+2012-03-03 01:13:12,taljeth,Extra noch schnell eingerichtet? ;-)
+2012-03-03 01:13:18,XanClic,*hust* Ach was
+2012-03-03 01:13:29,XanClic,"Und außerdem, „schnell“ *g*"
+2012-03-03 01:13:38,taljeth,*g*
+2012-03-03 01:13:39,Jidder,^^
+2012-03-03 01:13:56,Jidder,relevant http://jidder.de/images/Sauerei.png
+2012-03-03 01:15:34,Naoe-Kanno,*g*
+2012-03-03 01:24:57,Jidder,es ist zeit für http://www.youtube.com/watch?v=FBe1KgrRYmU
+2012-03-03 01:25:15,Jidder,oh da ist jemand zu spät gekommen
+2012-03-03 01:25:18,Jidder,fangen wir nochmal von vorne an
+2012-03-03 01:25:20,Jidder,es ist zeit für http://www.youtube.com/watch?v=FBe1KgrRYmU
+2012-03-03 01:25:32,Jidder,jetzt sind wieder alle auf dem selben stand
+2012-03-03 01:25:50,Jidder,wann hab ich das eigentlich das letzte mal gepostet?
+2012-03-03 01:26:34,Jidder,"ich find ja gut, wie er beim hasen klingelt"
+2012-03-03 01:29:12,Jidder,"ich will ja nicht verraten wie die geschichte ausgeht, aber ich finde das stellt einen schon zufrieden"
+2012-03-03 01:29:20,Jidder,hollywood hätte es nicht besser machen können
+2012-03-03 01:31:39,Jidder,hm ein hindreichend großer misthaufen kann sich selbst entzünden
+2012-03-03 01:32:01,Jidder,das würde ich gerne mal sehen
+2012-03-03 01:32:03,Jidder,aber nicht riechen
+2012-03-03 02:37:38,Naoe-Kanno,gn8
+2012-03-03 11:02:32,alexander,Morgne
+2012-03-03 11:08:48,taljeth,Moin
+2012-03-03 11:33:47,alexander,Morgen taljeth 
+2012-03-03 13:50:11,bluecode,moinsen
+2012-03-03 13:55:57,alexander,Moinerle bluecode 
+2012-03-03 14:18:23,bluecode,"also, I want a pony"
+2012-03-03 14:54:57,DesL,moin
+2012-03-03 14:55:44,alexander,hallo DesL 
+2012-03-03 14:56:12,DesL,"musste grade via weboberfläche manuelll die internetverbidung am dslmodem aktivieren Oo und weil dns nicht klappte, musste ich via 192.168.1.1 rein, ""alice.box"" ging nicht. was ist das für ein scheiss gerät?"
+2012-03-03 15:24:53,DesL,wie mir der hubschrauber auf den keks geht -.-
+2012-03-03 15:27:31,Threadcore,guten morgen ;P
+2012-03-03 15:31:40,Threadcore,in ner VM nen Bluescreen...mensch
+2012-03-03 17:47:52,livinskull,kvirc user hier?
+2012-03-03 17:47:58,livinskull,lol nich thier
+2012-03-03 17:48:00,livinskull,sorry
+2012-03-03 18:09:19,billy,moin
+2012-03-03 18:09:34,XanClic,Moin
+2012-03-03 18:14:43,livinskull,moin
+2012-03-03 18:20:57,billy,gibt es Dokumentation zum VFS von tyndur?
+2012-03-03 18:26:53,bluecode,taljeth!
+2012-03-03 18:29:40,bluecode,"stimmt, du beantwortest die Fragen auch noch ;-)"
+2012-03-03 18:29:46,bluecode,-noch
+2012-03-03 18:47:28,livinskull,"ihr wisst, das tyndur's ""date"" in qemu crashed? ;)"
+2012-03-03 18:56:12,taljeth,Nur Samstags. Oder so.
+2012-03-03 18:57:31,livinskull,lol
+2012-03-03 19:12:25,billy,"ich glaub, anstatt VFS zu machen spiele ich lieber erstmal mit dem FAT12 Dateisystem rum"
+2012-03-03 19:19:31,bluecode,ich glaub es macht eh keinen Sinn das tyndur VFS anzuschauen und daraus irgendetwas schließen zu wollen
+2012-03-03 19:19:42,bluecode,Microkernel sind was das angeht doch etwas speziell
+2012-03-03 19:26:45,billy,was haltet ihr eigentlich von der Windows 8 beta?
+2012-03-03 19:27:25,stultus,"Seltener Müll, nach allem was ich gehört hab"
+2012-03-03 19:27:42,stultus,"mit Metro und Desktop als ""App"" kann man ja leben. Aber wieso nehmen die mir dann noch das Startmenü weg?"
+2012-03-03 19:28:10,bluecode,die Leute bei Fujitsu fragen sich momentan wie man mit Metro nen Server wohl steuert *g*
+2012-03-03 19:28:23,billy,am besten gar nicht
+2012-03-03 19:28:45,stultus,Interessante Frage ^^
+2012-03-03 19:28:52,stultus,"positiv, wenn gelöst, gehts auch mitm Handy *g*"
+2012-03-03 19:28:52,billy,Windows 8 wird sich so hoffentlich nie durchsetzen
+2012-03-03 19:29:32,XanClic,Das 8 kann man weglassen
+2012-03-03 19:29:40,XanClic,Dummerweise ist das dann schon passiert
+2012-03-03 19:29:50,stultus,nanana
+2012-03-03 19:30:03,stultus,"Das gibt ne Kooperation mit Facebook, dann geht das weg wie warme semmeln ^^"
+2012-03-03 19:30:06,billy,bluecode: abgesehen davon: in Zukunft sind alle Geräte doch sowieso Tablets. Auch Server :P
+2012-03-03 19:30:24,billy,Was sich MS dabei wohl denkt...
+2012-03-03 19:30:49,XanClic,"„Was Gnome macht, damit kann auch Windows nicht ganz falsch liegen“, vermutlich"
+2012-03-03 19:30:51,stultus,bluecode: noch zu harmlos das bild
+2012-03-03 19:31:08,stultus,denk lieber an McDo und deren Tablett(regale) *g*
+2012-03-03 19:31:45,DesL,re
+2012-03-03 19:32:34,billy,moin DesL
+2012-03-03 19:33:00,bluecode,hm
+2012-03-03 19:33:14,bluecode,so schlecht sind also tablets für informatiker garnicht
+2012-03-03 19:33:22,bluecode,da kann man ja den kaffee drauf abstellen
+2012-03-03 19:33:42,DesL,grade 10 minuten mit der polizei diskutiert ob ich zum einkaufen durch die polizeisperre darf -.-
+2012-03-03 19:33:49,XanClic,Du Anarchist du
+2012-03-03 19:33:59,bluecode,ich dachte du warst gestern schon ;-)
+2012-03-03 19:34:04,billy,bluecode: das kann man auch mit nem CD Laufwerk ;-)
+2012-03-03 19:34:41,bluecode,auf dem kann man aber nicht wischen
+2012-03-03 19:34:53,billy,stimmt
+2012-03-03 19:35:09,DesL,"ja nee, nur für heute, eigentlich sollten die um 18 uhr wieder abgebaut haben"
+2012-03-03 19:35:34,bluecode,früher war mal Samstags um 1600 schluss
+2012-03-03 19:35:49,DesL,mit polizeisperren?
+2012-03-03 19:35:54,XanClic,"Gott segne den Lidl im Bahnhof, der auch sonntags offen hat"
+2012-03-03 19:35:55,bluecode,"ne, mit einkaufen"
+2012-03-03 19:36:10,DesL,aso
+2012-03-03 22:05:47,SHyx0rmZ,Moin

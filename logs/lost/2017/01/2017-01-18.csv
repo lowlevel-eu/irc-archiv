@@ -1,0 +1,304 @@
+date/time,nick,message
+2017-01-18 00:27:28,Godwine,ist es normal dass qemu-img convert so lange dauert? :O
+2017-01-18 00:27:37,XanClic,"wenn man große Images hat, ja"
+2017-01-18 00:27:52,Godwine,nur wird das zielimage irgendwie nicht größer
+2017-01-18 00:27:57,Godwine,nur knapp 200kb
+2017-01-18 00:28:01,Godwine,hängt da was?
+2017-01-18 00:28:13,XanClic,mit killall -SIGUSR1 qemu-img bekommst du den aktuellen Fortschritt
+2017-01-18 00:29:29,Godwine,nö irgendwie nicht
+2017-01-18 00:29:45,XanClic,Dann ist bei dir wohl was kaputt
+2017-01-18 00:29:51,Godwine,läuft als root
+2017-01-18 00:29:57,Godwine,kanns das sein? xD
+2017-01-18 00:30:09,XanClic,Dann wird killall schon meckern…
+2017-01-18 00:30:33,Godwine,ja sudo halt
+2017-01-18 00:30:47,XanClic,"Wenn killall nicht meckert, ist das Signal rausgegangen, und dann sollte qemu-img auch was anzeigen"
+2017-01-18 00:31:18,Godwine,tuts aber nicht also ist da was kaputt?
+2017-01-18 00:31:44,Godwine,oh man warum wachsen diese doofen qcow2 files auch immer weiter
+2017-01-18 00:32:03,Godwine,ich hab ne 128gb disk und die datei ist inzwischen 250 gb groß xD
+2017-01-18 00:32:14,Svenska,weil sparse und du nicht aufgepasst hast?
+2017-01-18 00:32:16,XanClic,Ist sie 128 GB groß oder 128 GB lang?
+2017-01-18 00:32:19,XanClic,äh 250 GB
+2017-01-18 00:32:32,XanClic,250 GB lang würde mich persönlich nämlich nicht besonders interessieren
+2017-01-18 00:32:49,Godwine,also die virtuelle größe ist 128 gb und die tatsächliche größe der datei ist etwas über 250 gb
+2017-01-18 00:33:06,XanClic,"Dann wohl, weil du entweder Snapshots drin hast oder ein doofes Dateisystem"
+2017-01-18 00:33:24,XanClic,"(Ich interpretier die Gegenüberstellung mal so, dass das die Ausgabe von qemu-img info war)"
+2017-01-18 00:33:26,Godwine,keine snapshots aber windoof ntfs drin
+2017-01-18 00:33:31,XanClic,"Die Frage ist, was ist draußen"
+2017-01-18 00:33:40,XanClic,Wobei eigentlich nur HPFS und FAT doof sind
+2017-01-18 00:33:44,XanClic,Der Rest kann sparse
+2017-01-18 00:33:56,XanClic,"Sicher, dass die tatsächliche Größe 250 GB sind? Ist das das, was qemu-img info sagt?"
+2017-01-18 00:34:00,Godwine,hpfs == ntfs oder?
+2017-01-18 00:34:05,XanClic,"nein, das Apple-Dateisystem"
+2017-01-18 00:34:12,Svenska,hpfs != hfs
+2017-01-18 00:34:14,XanClic,äh ups
+2017-01-18 00:34:15,Svenska,hpfs ist os/2
+2017-01-18 00:34:30,Godwine,ja und daraus ist ntfs entstanden oder nicht?
+2017-01-18 00:34:33,Svenska,nein
+2017-01-18 00:34:43,XanClic,"Jedenfalls meinte ich also HFS und FAT, ja O:-)"
+2017-01-18 00:34:54,XanClic,bzw. HFS+
+2017-01-18 00:35:00,Svenska,"aber os/2 konnte dateisysteme während des bootens nachinstallieren (""installable file system"")"
+2017-01-18 00:35:12,Svenska,gleiches gilt fuer windows nt
+2017-01-18 00:35:20,XanClic,"Was drin ist, ist jedenfalls erstmal ziemlich egal, wichtig ist, was draußen ist"
+2017-01-18 00:35:22,Svenska,daher haben hpfs und ntfs die gleiche id (weil sie installierbar waren)
+2017-01-18 00:35:49,XanClic,"Und wenn das Host-FS irgendein ext oder XFS oder sowas ist, dann sollte die Größe der qcow2-Datei ohne interne Snapshots nie signifikant die virtuelle Größe überschreiben"
+2017-01-18 00:35:50,Godwine,ich weiß nicht was du mit drinnen und draußen meinst
+2017-01-18 00:35:59,XanClic,"Und mit Größe meine ich, was qemu-img info, ls -s und du anzeigen"
+2017-01-18 00:36:15,Svenska,"in was fuer nem fs liegt die datei (draußen), und was fuer ein fs enthält die datei (drinnen)"
+2017-01-18 00:36:33,XanClic,s/überschreiben/überschreiten/
+2017-01-18 00:36:48,Godwine,draußen liegts in ext4 und drinnen ist ein ntfs
+2017-01-18 00:37:04,XanClic,"Und qemu-img info, ls -s und du sagen alle, die qcow2-Datei braucht 250 GB?"
+2017-01-18 00:37:12,Godwine,jo
+2017-01-18 00:37:19,XanClic,Dann ist in qemu was kaputt
+2017-01-18 00:37:32,XanClic,Was sagt denn qemu-img check?
+2017-01-18 00:37:33,Godwine,ich hab noch die 2.7.0
+2017-01-18 00:38:26,Godwine,23 leaked clusters :s
+2017-01-18 00:38:45,XanClic,"Schade, aber das sind keine 120 GB"
+2017-01-18 00:39:08,Godwine,naja ich hab in der vm halt dateien angelegt und rumgeschoben und updates gezogen und so
+2017-01-18 00:39:32,Godwine,ich dachte das ist halt das cow das da so aufbläht
+2017-01-18 00:39:43,Godwine,daher konvertiere ich das ja
+2017-01-18 00:40:01,Godwine,aber bei dem tempo dauert das bis weihnachten
+2017-01-18 00:40:28,Godwine,da kann ich mir auch gleich ne größere ssd wünschen :D
+2017-01-18 00:40:41,XanClic,das cow in qcow2 steht nur für Unterstützung von Backingdateien und internen Snapshots
+2017-01-18 00:40:47,Svenska,"naja, wenn qemu eine endlosschleife macht und das image aufbläht, dann hilft eine größere platte nur eingeschränkt..."
+2017-01-18 00:41:28,Godwine,soll ich n anderes format nehmen?
+2017-01-18 00:41:56,XanClic,"Wenn du das nicht brauchst, kannst du raw nehmen, aber eigentlich sollte das so ziemlich egal sein"
+2017-01-18 00:42:45,XanClic,Kannst du die Ausgabe von qemu-img info irgendwo pastebinen?
+2017-01-18 00:43:08,Godwine,raw hab ich zuerst auch gemacht aber ich wollte dem nicht die ganze disk geben sondern ne partition und dann passieren lustige dinge mit ner partitionstabelle in der partition
+2017-01-18 00:43:38,XanClic,"An sich wäre das einen Bugreport wert, aber 250-GB-Images sind immer so doof zu untersuchen…"
+2017-01-18 00:43:48,Svenska,hä?
+2017-01-18 00:44:46,Godwine,http://pastebin.com/zHxtJ5Zj
+2017-01-18 00:44:57,Godwine,sagt irgendwie nicht viel aus
+2017-01-18 00:45:08,XanClic,> disk size: 123G
+2017-01-18 00:45:10,XanClic,doch
+2017-01-18 00:45:17,XanClic,"Die Datei ist also nicht 250 GB groß, sondern nur 123 GB"
+2017-01-18 00:45:24,XanClic,"[00:37:04] <XanClic> Und qemu-img info, ls -s und du sagen alle, die qcow2-Datei braucht 250 GB?"
+2017-01-18 00:45:25,Godwine,das snapshot da drin hab ich eigentlich entfernt dachte ich
+2017-01-18 00:45:36,XanClic,"Ja, und, dass ein Snapshot drin ist, das auch :-P"
+2017-01-18 00:45:37,Godwine,aber nur in virtman
+2017-01-18 00:45:57,Godwine,das snapshot kann max 20 gb brauchen
+2017-01-18 00:46:03,XanClic,"Ja, die Datei ist doch nur 123 GB groß"
+2017-01-18 00:46:10,Godwine,ich hab halt windows und treiber installiert das wars
+2017-01-18 00:47:11,Godwine,hä was gehtn da ab
+2017-01-18 00:47:32,Godwine,wär das nur 123 gb wär mir die vm nicht eingefroren
+2017-01-18 00:48:30,XanClic,Es sind nur 123 GB
+2017-01-18 00:48:39,Godwine,ls -sh sagt auch 123gb aber nautilus sagt 251.6 gb
+2017-01-18 00:48:45,XanClic,"Ja, weil das die Dateilänge ist"
+2017-01-18 00:48:58,XanClic,ls -lh sagt vermutlich auch 250G
+2017-01-18 00:49:06,XanClic,Aber Dateilänge ist nicht Dateigröße
+2017-01-18 00:49:25,Godwine,was ist der unterschied?
+2017-01-18 00:49:37,Svenska,sparse files
+2017-01-18 00:49:38,XanClic,Dass in einer Datei nicht alles belegt sein muss
+2017-01-18 00:49:47,Svenska,tausende nullen muss man nicht speichern
+2017-01-18 00:50:11,Godwine,das heißt qemu reseviert immer mehr speicher aber belegt es nicht?
+2017-01-18 00:50:19,XanClic,Das ist ja nicht mal reserviert
+2017-01-18 00:50:32,XanClic,"Die Länge einer Datei ist eigentlich nur eine Zahl, mehr nicht"
+2017-01-18 00:51:17,XanClic,"Die Datei wird jedenfalls länger, wenn man Daten reinschreibt, und normalerweise erstmal auch nicht viel länger als die Datei groß ist, in diesem Fall also 120 GB"
+2017-01-18 00:51:29,XanClic,"Wenn man interne Snapshots benutzt, muss die Datei aber natürlich nocht länger werden"
+2017-01-18 00:51:32,XanClic,*noch
+2017-01-18 00:51:49,XanClic,"Wenn man die dann löscht, wie die Datei aber nicht wieder kürzer, auch wenn der Speicher freigegeben wird"
+2017-01-18 00:51:53,XanClic,s/wie/wird/
+2017-01-18 00:52:02,XanClic,Irgendwie hab ich heute ein Problem zu schreibem…
+2017-01-18 00:52:07,XanClic,argh damnit case in point
+2017-01-18 00:52:25,Godwine,aber das snapshot ist ~20gb groß
+2017-01-18 00:52:56,XanClic,"Vielleicht waren da auch mal andere, oder was weiß ich"
+2017-01-18 00:53:23,XanClic,"Festzuhalten ist jedenfalls, dass qemu sehr verschwenderisch mit der Länge der Datei umgeht, weil es eigentlich egal ist"
+2017-01-18 00:53:31,Godwine,hatte nur das eine weil mir im grunde wurscht is ob die vm von viren zwerfressen wird oder was auch immer die is für gaming
+2017-01-18 00:53:52,Godwine,mir aber nicht weil die vm freezed auf meiner 250gb ssd
+2017-01-18 00:54:01,Svenska,ähm
+2017-01-18 00:54:12,XanClic,"Ich dachte, du hast das Image auf einem Dateisystem?"
+2017-01-18 00:54:16,Svenska,"wenn deine ssd ein ext4 enthält, dann kann ich da trotzdem eine 4 TB lange datei anlegen..."
+2017-01-18 00:54:22,Svenska,...sie belegt trotzdem nur ein paar KB
+2017-01-18 00:55:00,Godwine,aber warum pausiert libvirt meine vm dann mit der meldung auf der partition sei kein platz mehr
+2017-01-18 00:55:18,XanClic,Gute Frage
+2017-01-18 00:55:34,XanClic,Ist denn kein Platz mehr?
+2017-01-18 00:57:01,Godwine,ich meine sogar du -h sagte dass die partition voll ist und nautilus sagte die datei wäre halt ewig groß daher hab ich die auf ne externe platte geschoben die vm gebootet einmal mit sdelete -z die platte mit nullen aufgefüllt und jetzt versuche ich die zu konvertieren
+2017-01-18 00:57:02,Godwine,ja
+2017-01-18 00:57:20,Godwine,weil ich auch keine dateien mehr kopieren konnte und zeug
+2017-01-18 00:58:12,XanClic,"Sagen wir mal so, auf dem Dateisystem, auf dem das Image jetzt liegt, belegt es in jedem Fall nur 123 GB"
+2017-01-18 00:58:42,XanClic,"Mehr kann ich nicht sagen, weil ich dein Setup nicht ganz verstehe"
+2017-01-18 01:00:03,Godwine,naja ich habe eine 1tb hdd und ne 250 gb ssd. Die win vm hat ne 128 gb qcow2 auf der ssd und noch ein 500gb qcow2 auf der hdd
+2017-01-18 01:00:22,Godwine,und die ssd war komplett voll
+2017-01-18 01:00:56,XanClic,"Vorhin hast du noch irgendwas von wegen „raw direkt in einer Partition“ gesagt, deshalb bin ich leicht verwirrt"
+2017-01-18 01:01:10,XanClic,Und es waren auch nicht 120 GB andere Daten auf der SSD?
+2017-01-18 01:02:05,Godwine,nee mein home verzeichnis ist ohne die datei ca 20gb groß
+2017-01-18 01:02:47,Godwine,oh naja schon n bisschen mehr
+2017-01-18 01:02:52,Godwine,hmm
+2017-01-18 01:03:26,Godwine,okay vlt ist da noch ein verramschter ordner irgendwo
+2017-01-18 01:04:51,Godwine,wenn die qcow 123 gb groß ist könnte das ne erklärung sein
+2017-01-18 01:05:21,XanClic,Ach Mensch.
+2017-01-18 01:06:23,Godwine,ich hab halt nur gesehen dass das image immer größer geworden is sry xD
+2017-01-18 01:06:40,XanClic,"Na, besser als wenn ich mich um einen Bug in qemu hätte kümmern müssen *hust*"
+2017-01-18 01:07:52,Godwine,naja da gab es schon n problem wesshalb ich das update auf qemu 2.8 nicht gemacht hab
+2017-01-18 01:07:59,Godwine,:P
+2017-01-18 01:08:12,XanClic,Solang es nichts mit qcow2 zu tun hat…
+2017-01-18 01:08:25,Godwine,ne das hatte mit der iommu zu tun
+2017-01-18 01:08:34,XanClic,"Sehr gut, also nicht mein Problem"
+2017-01-18 01:09:00,Godwine,weiß aber die genaue fehlermeldung gerade nicht mehr weil ich hab halt wieder 2.7 installiert und dann passte das
+2017-01-18 01:11:45,Godwine,mh jetzt hab ich mich mal wieder dümmer angestellt als nötig -.-
+2017-01-18 01:12:45,XanClic,"Keine Sorge, du bist nicht der erste, dem ich mit “Help my qcow2 file is huge” helfen durfte"
+2017-01-18 01:13:18,Godwine,hab wenigstens gelernt dass dateilänge und dateigröße nicht das selbe ist :D
+2017-01-18 01:22:08,Godwine,oha
+2017-01-18 01:22:37,Godwine,ich weiß was mir die platte voll gemacht hat und ich bin noch dümmer als ich dachte
+2017-01-18 01:23:01,Godwine,ich hab ein subvolume auf der 1tb hdd für ca 50 gb musik
+2017-01-18 01:23:21,Godwine,und ich wollte ne verknüpfung auf meinem desktop und hab stattdessen den ordner kopiert
+2017-01-18 01:23:30,Godwine,*giga facepalm*
+2017-01-18 01:28:33,Godwine,zu blöd für linux
+2017-01-18 01:32:33,Godwine,danke dafür :D nächstes projekt ist ein arch image für meinen bananapro zu bauen ^^
+2017-01-18 10:12:33,masterq32,morgen
+2017-01-18 14:19:11,kevin,Hm... Ob ein Refcount von -1441375540 wohl gesund ist?
+2017-01-18 14:20:55,kevin,"Ah, ich bin nur zu blöd, gdb zu bedienen"
+2017-01-18 14:24:27,masterq32,moin Svenska
+2017-01-18 14:24:31,Svenska,moin
+2017-01-18 14:25:28,XanClic,"kevin, zählt das dann als 1441375540 Leaks?"
+2017-01-18 14:25:42,kevin,"Eher das Gegenteil von Leaks, oder?"
+2017-01-18 14:25:57,kevin,"Ich muss 1441375540 leaken bis das Objekt weg ist, oder so"
+2017-01-18 14:26:02,XanClic,Also Überallokation von 86 TB?
+2017-01-18 14:26:23,XanClic,Das wird teuer
+2017-01-18 14:26:26,XanClic,Hoffentlich kannst du das expensen
+2017-01-18 14:26:30,kevin,Unterallokation
+2017-01-18 14:26:37,kevin,Die müssen mich dafür bezahlen
+2017-01-18 14:27:02,XanClic,"Das muss wohl sein, was man als Thin Provisioning bezeichnet"
+2017-01-18 14:27:48,kevin,"Ah, jetzt weiß ich endlich auch mal, was das sein soll ;-)"
+2017-01-18 14:30:21,XanClic,Jetzt bist du bereit für die Cloud
+2017-01-18 14:30:27,XanClic,Dann können wir ja bald zur Blockchain kommen
+2017-01-18 14:30:30,Svenska,...wo man Daten klaut.
+2017-01-18 14:30:40,XanClic,Mit Blockchain kann man doch bestimmt qcow2-COW effizienter machen!
+2017-01-18 14:30:44,masterq32,daten-cloud?
+2017-01-18 14:30:49,XanClic,Ein qcow2-Journal mit Blockchain
+2017-01-18 14:41:38,masterq32,Svenska: ich habe für die Combitron eine übersichtliche Liste an Logik-Gleichungen
+2017-01-18 14:41:44,masterq32,wie würdest du damit einen Simulator bauen?
+2017-01-18 14:42:17,Svenska,"hmm, im augenblick wuerd ich's vermutlich in vhdl oder so hacken"
+2017-01-18 14:42:31,Svenska,"liegt aber daran, dass ich gerade mit vhdl arbeit und daher die toolchain und so hab"
+2017-01-18 14:43:45,masterq32,hm
+2017-01-18 14:43:52,masterq32,dann habe ich vhdl
+2017-01-18 14:43:59,masterq32,"kann ich damit ""live"" simulieren?"
+2017-01-18 14:44:07,Svenska,ansonsten hab ich mir letztens MyHDL angeguckt
+2017-01-18 14:44:26,Svenska,"das basiert auf python, kann vhdl/verilog generieren, und enthält auch nen simulator"
+2017-01-18 14:44:59,Svenska,"nein, live ist bei sowas nichts. du schreibst eine testbench (bzw. ein stimulus-file mit lesefunktion) und simulierst dann die eingaben daraus"
+2017-01-18 14:45:12,masterq32,hm
+2017-01-18 14:45:26,masterq32,das file müsste ich also irgendwie generieren lassen dann
+2017-01-18 14:45:40,masterq32,von hand tippen werd ich das ganz bestimmt nicht :D
+2017-01-18 14:45:45,Svenska,warum nicht?
+2017-01-18 14:45:49,Svenska,...also
+2017-01-18 14:45:54,Svenska,wie bedienst du das combitron?
+2017-01-18 14:46:07,masterq32,aaalso
+2017-01-18 14:46:15,masterq32,jedes mal beim booten muss der RAM beladen werden
+2017-01-18 14:46:41,masterq32,"in dem man den gesamten CPU-Zustand von Band lädt, ausführt, und damit Daten und Code in den RAM schreibt"
+2017-01-18 14:47:27,masterq32,"zudem hab ich 3 output-pins, welche einen drucker steuern (keine ahnung, wie) und 6 input-pins, welche irgendwie die tastatur kodieren"
+2017-01-18 14:48:03,Svenska,"RAM beladen kann die testbench machen, zB aus einem binärfile (dann testest du aber das beladen nicht)"
+2017-01-18 14:48:26,masterq32,"das problem ist, ich kenne den RAM-Inhalt grade nicht :P"
+2017-01-18 14:48:33,masterq32,ich hab nur den boot-code
+2017-01-18 14:48:46,Svenska,wie kommt der ins gerät?
+2017-01-18 14:49:08,masterq32,lochstreifen
+2017-01-18 14:49:13,Svenska,"anders gesagt: mir ist grad nicht klar, was genau du simulieren willst ;)"
+2017-01-18 14:49:31,Svenska,"du kannst die ganze maschine simulieren, du kannst teile davon simulieren, du kannst die rein interne logik simulieren..."
+2017-01-18 14:49:39,masterq32,die ganze maschine
+2017-01-18 14:49:47,Svenska,"...und daraus ergibt sich, was deine ein- und ausgaben sind, und welche signale du begutachten kannst"
+2017-01-18 14:50:12,masterq32,genau
+2017-01-18 14:50:13,Svenska,"die ganze maschine hat ""tastatur"" und ""lochstreifenleser"" als eingabe, und ""lochstreifenschreiber"" und ""drucker"" als ausgabe. :D"
+2017-01-18 14:50:25,masterq32,"ne, sie hat nur ""drucker"" als ausgabe :D"
+2017-01-18 14:50:31,Svenska,okay :D
+2017-01-18 14:51:07,masterq32,wie ist das mit takten simulieren in dem stimulus-file?
+2017-01-18 14:51:37,Svenska,der takt ist keine eingabe
+2017-01-18 14:52:01,masterq32,okay
+2017-01-18 14:52:08,Svenska,"in realen systemen werden deine eingaben auf den systemtakt (ein)synchronisiert, fertig"
+2017-01-18 14:52:17,Svenska,d.h. der takt ist teil des systems :)
+2017-01-18 14:52:27,Svenska,"wie du das stimulus-file baust, bleibt dir ueberlassen"
+2017-01-18 14:52:40,masterq32,hm
+2017-01-18 14:52:47,Svenska,"ich mache im augenblick schlicht vhdl-code in meiner testbench, weil ""dateien lesen"" in vhdl arg umständlich ist"
+2017-01-18 14:52:52,masterq32,:D
+2017-01-18 14:53:01,masterq32,das nervige an der bootsequenz ist:
+2017-01-18 14:53:05,masterq32,sie ist groß
+2017-01-18 14:53:07,masterq32,sehr groß
+2017-01-18 14:53:40,masterq32,"du hast ne bitrate von 1µs in der Maschine und nen bandstreifen, der ca. 30 sekunden lang läuft"
+2017-01-18 14:54:03,Svenska,"im projekt mussten wir einen ps/2-tastaturcontroller bauen, da war die testbench vorgegeben. im stimulus-file stand pro zeile nur ein zeichen, woraus die testbench dann eine vollständige bytesequenz ""keypress""-""keyrelease"" gebaut hat"
+2017-01-18 14:54:14,masterq32,"okay, krass"
+2017-01-18 14:54:34,Svenska,deine bootsequenz braucht also etwa 30 mio takte?
+2017-01-18 14:54:47,masterq32,korrekt :D
+2017-01-18 14:54:52,Svenska,wo ist das problem? :D
+2017-01-18 14:55:00,masterq32,:
+2017-01-18 14:55:00,Svenska,dein simulator ist schneller als 1 kHz ;)
+2017-01-18 14:55:01,masterq32,:P
+2017-01-18 14:55:06,masterq32,na hoffentlich :D
+2017-01-18 14:55:20,masterq32,ich würde halt gerne den simulator mit meinem assembler verkleben
+2017-01-18 14:55:49,Svenska,"naja, das ist ein schaltungssimulator. der simuliert wirklich sämtliche signale, wenn du das willst..."
+2017-01-18 14:56:06,masterq32,"genau, das wäre der schritt 1"
+2017-01-18 14:56:23,masterq32,ähm
+2017-01-18 14:56:29,masterq32,mir fällt grade noch was komisches ein
+2017-01-18 14:56:36,masterq32,wie mach ich nen laufzeitspeicher in VHDL? :D
+2017-01-18 14:56:38,Svenska,"...du kannst auch eine simulation des verhaltens bauen, wo du vorne code reinpumpst und hinten ergebnisse rausbekommst, aber das ist eine völlig andere ebene. da gibt's dann C und so"
+2017-01-18 14:56:46,Svenska,shift-register
+2017-01-18 14:56:52,masterq32,"genau, dazu versteh ich die maschine aber noch nicht gut genug"
+2017-01-18 14:57:08,Svenska,ein laufzeitspeicher ist einfach ein fest getaktetes shiftregister *g*
+2017-01-18 14:57:14,masterq32,:P
+2017-01-18 14:58:03,Svenska,"kannst du python, vhdl oder verilog?"
+2017-01-18 14:58:14,masterq32,vhdl ein bisschen
+2017-01-18 14:58:17,Svenska,ok
+2017-01-18 14:58:19,masterq32,ausreichend für ne kleine CPU
+2017-01-18 14:58:19,masterq32,:D
+2017-01-18 14:58:30,Svenska,dann nimm es
+2017-01-18 14:58:36,masterq32,okay
+2017-01-18 14:58:45,Svenska,"ein guter simulator ist ghdl (bedient sich aber etwas seltsam, was aber vhdl geschuldet ist)"
+2017-01-18 14:58:48,masterq32,"ja, kenn ich"
+2017-01-18 14:59:07,masterq32,"könntest du mir bei zeiten mal helfen, die testbench zu basteln?"
+2017-01-18 14:59:19,Svenska,ich kanns versuchen :)
+2017-01-18 14:59:37,masterq32,"okay, cool"
+2017-01-18 15:00:11,masterq32,"die maschine an sich kann ich umsetzen, das sind nur zwei seiten asynchrone logikgleichungen, taktlos"
+2017-01-18 15:01:20,Svenska,"ich dachte, du hast P als takt?"
+2017-01-18 15:02:12,masterq32,jain :D
+2017-01-18 15:02:21,masterq32,"ich hab um genau zu sein, irgendwie so 5 oder 6 takte :D"
+2017-01-18 15:04:11,masterq32,https://puu.sh/tqz2s/a670b764c7.png
+2017-01-18 15:10:51,masterq32,die maschine hat nen temperaturabhängigen taktgenerator :D
+2017-01-18 16:23:58,Svenska,alle takte sind aber synchron zu P
+2017-01-18 16:24:57,Svenska,"damit hast du nur eine taktdomäne. ob die nun stabil ist oder nicht, ist dabei relativ egal (sie muss ja nur zu sich selbst stabil sein)"
+2017-01-18 16:30:54,masterq32,"hm, okay"
+2017-01-18 16:31:33,Svenska,"interessant wäre, ob du deine simulation synthetisierbar haben möchtest :D"
+2017-01-18 16:32:35,Svenska,ich bau erstmal sämtliche bussysteme von request/ack auf request/ready um -.-
+2017-01-18 16:38:23,masterq32,synthetisierbar wäre lustig
+2017-01-18 16:38:31,masterq32,was würde das ändern?
+2017-01-18 16:38:46,Svenska,"naja, du darfst keine dinge machen, die der fpga nicht kann"
+2017-01-18 16:38:50,Svenska,tristate zB
+2017-01-18 16:39:54,masterq32,:D
+2017-01-18 16:40:11,Svenska,"es gab FPGAs, die das konnten, moderne können das alle nicht mehr"
+2017-01-18 16:41:00,masterq32,wie würde man dann einen Bus im FPGA implementieren?
+2017-01-18 16:41:14,Svenska,"...rate mal, warum ich hier so furchtbar fluche -.-"
+2017-01-18 16:41:21,Svenska,aktives multiplexing
+2017-01-18 16:42:15,Svenska,also statt einem bus mit req/ack zerfaserst du das in req/(viele acks)
+2017-01-18 16:43:00,Svenska,"und weil ein signal nur von einem punkt aus getrieben werden darf, musst du die datenleitungen alle per hand verodern"
+2017-01-18 16:44:33,masterq32,bäh!
+2017-01-18 16:44:47,Svenska,"jedenfalls habe ich ein problem und weiß nciht, wie ich das lösen soll"
+2017-01-18 16:49:23,masterq32,das is nervig
+2017-01-18 17:29:57,Svenska,"wie kann ich einen automaten so gestalten, dass er einen takt VOR der flanke schaltet? :-)"
+2017-01-18 18:13:11,masterq32,wat?
+2017-01-18 18:13:22,masterq32,irgendwie klingt das nich so möglich
+2017-01-18 18:13:37,Svenska,ich weiß.
+2017-01-18 18:15:04,Svenska,"das problem ist, dass ich einen schreibzyklus auf speicher in 0 takten durchfuehren kann, während ein lesezyklus auch 0 takte dauert, die antwort aber einen takt später ankommt"
+2017-01-18 18:16:06,masterq32,wtf? :D
+2017-01-18 18:16:07,Svenska,"jetzt kann ich das natuerlich umdefinieren, aber dann hat schreiben eine latenz von -1 takt"
+2017-01-18 18:16:35,Svenska,"und wenn ich beides auf ""dauert mindestens 1 takt"" umdefiniere, kann ich keine back-to-back-transfers mehr machen (d.h. schreiben ohne pause)"
+2017-01-18 18:16:49,masterq32,hmm
+2017-01-18 18:17:11,Svenska,"das eigentliche problem ist, dass ich lesezugriffe ueberlappen kann"
+2017-01-18 18:17:34,Svenska,"d.h. ""LIES A, keine Antwort"" -> ""LIES B, Antwort A"" -> ""LIES C, Antwort B"""
+2017-01-18 18:17:53,Svenska,"das wird dann pfui, wenn ich ""LIES A, keine Antwort"" -> ""SCHREIB B, Antwort A"" mache"
+2017-01-18 18:18:09,Svenska,weil dann das acknowledgement zweideutig wird (hat das lesen geklappt? hat das schreiben geklappt? hat beides geklappt?)
+2017-01-18 18:19:02,Svenska,"und wenn ich das acknowledgement einen takt vorziehe, dass es fuer lesezugriffe passt, muss es fuer schreibzugriffe einen takt VOR dem zugriff kommen"
+2017-01-18 18:19:10,Svenska,"wenn ich das könnte, wuerd ich lotto oder roulette spielen..."
+2017-01-18 18:29:06,masterq32,"ja, klingt so"
+2017-01-18 18:29:17,masterq32,"aber nein, du solltest deinen FPGA lotto spielen lassen :D"
+2017-01-18 18:29:25,masterq32,kannst du nicht irgendwie nen lookahead fetch oder sowas machen?
+2017-01-18 18:29:31,Svenska,nein
+2017-01-18 18:29:37,Svenska,ich bastel gerade auf papier rum...
+2017-01-18 18:29:48,masterq32,"hm, viel erfolg!"
+2017-01-18 18:29:49,Svenska,"...wenn ich ein ready-signal habe, welches einen takt zu frueh kommt, geht alles auf"
+2017-01-18 18:29:57,masterq32,:D
+2017-01-18 18:30:03,Svenska,"also ""ready"" sagt, dass du im *nächsten* takt einen request schicken darfst"
+2017-01-18 18:30:59,Svenska,"dann kriege ich back-to-back-writes hin, aber keine back-to-back reads... damit kann ich leben, denn damit können reads und writes nicht ueberlappen, was schonmal gut ist"
+2017-01-18 18:36:33,Svenska,jetzt muss ich nur ungefähr 12 busse darauf umstricken und die logik dazwischen anpassen. seufz.
+2017-01-18 18:39:04,masterq32,bäh
+2017-01-18 18:43:48,Svenska,ja.
+2017-01-18 18:44:28,Svenska,"vor allem habe ich in der mitte eine crossbar, und da muss ich genau definieren, wann die von einer verbindung zu einer anderen schalten darf"
+2017-01-18 21:30:44,Svenska,irgendwie triggert mein assert zu frueh
+2017-01-18 21:31:38,Svenska,">> wait until ready = '1'; assert rdata = data report ""error"";"
+2017-01-18 21:31:55,Svenska,"die simulation sagt, dass rdata==data wenn ready==1 an der stelle"
+2017-01-18 21:32:14,Svenska,warum triggert das assert trotzdem -.-
+2017-01-18 21:32:43,Svenska,"(wenn ich da eine sinnloszuweisung zwischenlege, triggert das assert nicht, obwohl zuweisungen in nullzeit passieren!)"

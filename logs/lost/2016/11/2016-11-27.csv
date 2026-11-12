@@ -1,0 +1,41 @@
+date/time,nick,message
+2016-11-27 00:23:31,tyndur,>> Commit in tyndur.git:refs/heads/master 'ext2: Prevent creating second dir entry with same name' (Kevin Wolf)
+2016-11-27 00:23:31,tyndur,A directory isn't supposed to contain multiple entries with the same
+2016-11-27 00:23:32,tyndur,name. Error out when someone tries to create a new directory entry with
+2016-11-27 00:23:32,tyndur,the same name as an existing entry uses.
+2016-11-27 00:23:32,tyndur,>> Commit in tyndur.git:refs/heads/master 'ext2: Handle duplicate dir entries gracefully in unlink' (Kevin Wolf)
+2016-11-27 00:23:32,tyndur,It shouldn't normally happen that there are two directory entries with
+2016-11-27 00:23:32,tyndur,"the same name, but in order to avoid crashes on inconsistent file"
+2016-11-27 00:23:32,tyndur,"systems, let's make sure to free the right resource instead of just one"
+2016-11-27 00:23:32,tyndur,with the same name.
+2016-11-27 00:23:32,tyndur,"Also, remove only one directory entry so that another unlink() request"
+2016-11-27 00:23:32,tyndur,can succeed and fully remove the second entry.
+2016-11-27 00:24:12,Paddy,"Hm, lustig. Ein ""mkdir tmp:/"" erstellt ein Verzeichnis tmp:/tmp."
+2016-11-27 00:25:06,Paddy,"Ich finde das ja sehr passend zu meinen Konventionen für Verzeichnisnamen, aber vielleicht sollte man das Feature doch mal bei Gelegenheit ausbauen *g*"
+2016-11-27 09:53:46,darklink,>mehrere verzeichniseinträge mit gleichem namen
+2016-11-27 09:53:55,darklink,pc? Gehst du mal an?
+2016-11-27 17:28:19,moritz31,Nabend
+2016-11-27 17:28:28,Paddy,Moin
+2016-11-27 21:35:49,moritz31,Jemand anwesned ? :)
+2016-11-27 22:03:39,Paddy,Nein
+2016-11-27 22:09:00,mgottschlag,"kommt drauf an, was du mit ""anwesend"" meinst."
+2016-11-27 22:09:33,Paddy,"Oder sogar ""anwesned"""
+2016-11-27 22:17:22,moritz31,neee anwesend :D ob mir jemand mal kurz ein tipp bezüglich virtueller allokation geben kann stehe gerade mit einer endlosschleife auf dem schlauch 
+2016-11-27 22:17:45,Paddy,Endlosschleife fixen wäre eventuell ein Ansatz
+2016-11-27 22:21:37,moritz31,"ja also das Problem ist eigentlich, wenn ich jetzt über v_alloc ne neue Page erstellen will dann wird die ja allokiert und dann gemappt, wenn jetzt beim mappen auffällt, dass noch keine Pagetable dafür existiert, dann muss die ja auch wieder allokiert und gemappt werden und da ist so mein Problem irgendwie dass dann rekursiv unendlich lang v_alloc aufgerufen wird :/ "
+2016-11-27 22:21:55,moritz31,aber hab nicht wirklich ne Idee wie ich das in den Griff bekommen kann
+2016-11-27 22:22:42,Paddy,"Gibt ein paar verschiedene Ansätze, das in den Griff zu bekommen, auf deswegen mappt auf x86 normal die Pagetables anders als andere Pages"
+2016-11-27 22:23:14,Paddy,"Dafür nimmt man das rekursive Mapping (also einen PD-Eintrag auf das PD selber zeigen lassen), dann sind immer alle Pagetables automatisch gemappt"
+2016-11-27 22:24:14,Paddy,"Das heißt, wenn du eine neue brauchst, allozierst du nur den physischen Speicher, trägst die PT ins PD ein, und schwupp ist sie auch schon gemappt"
+2016-11-27 22:25:17,moritz31,das heißt pd[0] mappe ich quasi auf pd 
+2016-11-27 22:25:47,moritz31,"dadurch ist automatisch pd[0] - pd[1023] gemappt weil das ja dann quasi ""eine pagetable"" ist :)"
+2016-11-27 22:26:05,Paddy,"Ob pd[0] jetzt das geschickteste ist, hängt davon ab, wo dein Kernel läuft"
+2016-11-27 22:26:17,Paddy,"Wenn der Kernel in den untersten 4 MB liegt, wäre das eher eine ungeschickte Wahl"
+2016-11-27 22:26:38,moritz31,also eher PD[1023] 
+2016-11-27 22:26:52,Paddy,Kann man machen
+2016-11-27 22:27:00,moritz31,ja Kernel liegt in den unteren 4MB
+2016-11-27 22:27:06,Paddy,"Hast du dir überlegt, wie du den Speicher zwischen Kernel und Userspace einteilen willst?"
+2016-11-27 22:28:07,moritz31,bis jetzt noch nicht Ziel war erst einmal Paging zum laufen zu bekommen und dann aktuell das virtuelle alloc und free und dann seh ich mal weiter :) eventuell 1 - 3 oder je nachdem wie viel Zeit und lust ich hab 3 - 1 
+2016-11-27 22:29:08,Paddy,"Worauf ich rauswill, ist, dass bei  pd[1023] der Userspace halt nicht bis 4 GB, sondern nur bis 4 GB - 4 MB ginge. Das ist kein Problem, nur was, was man sich dann merken sollte."
+2016-11-27 22:29:38,moritz31,jap hab ich mir ins Kommentar mitgeschrieben :) 
+2016-11-27 22:41:02,mgottschlag,"moritz31: die ander Möglichkeit, die z.B. Linux macht, ist btw einen kleinen Bereich für temporäre Mappings vorzuhalten... dort ist die Pagetable dann immer bereits allokiert, damit entfällt das Problem"

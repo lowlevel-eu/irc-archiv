@@ -1,0 +1,162 @@
+date/time,nick,message
+2014-12-03 00:19:06,BugUser,gibt es eine möglichkeit in einem 32 bit protected mode longjump in den long mode eine 64 bit adresse anzugeben?
+2014-12-03 00:19:17,BugUser,die erweiterten register sind ja nicht verfügbar
+2014-12-03 00:22:01,BugUser,"das problem ist ich habe ein elf32 binary, dass von grub geladen wird und ein elf64 binary, dass als modul mitgeladen wird."
+2014-12-03 00:22:43,BugUser,ich mappe den 64 bit teil aber an 0xFFFFFFFF00000000 aber da kann ich nicht direkt hinspringen
+2014-12-03 00:24:27,BugUser,"ich hab zuerst gedacht ich codiere da halt manuell 2 befehle nämlich: pop rax / jmp rax, was mir von nasm als 64 bit code in 0x58 / 0xFFE0 übersetzt wird"
+2014-12-03 00:25:02,BugUser,aber bei der ausführung in qemu wird da ein pop rax / loopne $+2
+2014-12-03 00:36:10,Jidder,warum kannst du nicht zwei jumps machen?
+2014-12-03 00:36:40,Jidder,"einer der in den 64-bit modus wechselt und einer, der an deine adresse springt"
+2014-12-03 00:37:34,BugUser,ja genau das tue ich gerade indem ich die opcodes direkt einfüge
+2014-12-03 00:37:48,BugUser,sonst könnte ich in ner elf32 keine 64 bit befehle einfügen
+2014-12-03 00:38:25,BugUser,aber aus irgend einem grund wird ja aus dem jmp rax in qemu ein loopne
+2014-12-03 00:38:31,Jidder,geht das nicht einfach mit [bits 64]?
+2014-12-03 00:38:36,Jidder,hab nasm nie für sowas benutzt
+2014-12-03 00:38:43,Jidder,mit gcc mach ich das so: also ich 
+2014-12-03 00:38:48,Jidder,http://codepad.org/AICQnGOO
+2014-12-03 00:38:48,Jidder,so
+2014-12-03 00:38:49,Jidder,^^
+2014-12-03 00:38:54,Jidder,"-""also ich"""
+2014-12-03 00:38:58,BugUser,wenn ich das mache dann gibt nasm ne fehlermeldung aus dass elf 32 keinen 64 bit code unterstützt
+2014-12-03 00:40:45,BugUser,hast du ne flat binary?
+2014-12-03 00:40:48,Jidder,ne
+2014-12-03 00:40:50,Jidder,elf
+2014-12-03 00:40:59,BugUser,elf64 dann aber oder?
+2014-12-03 00:41:24,Jidder,"der bootloader (d.h. das was grub als ""kernel"" kriegt) ist elf32"
+2014-12-03 00:41:29,Jidder,der eigentliche kernel ist elf64
+2014-12-03 00:41:56,BugUser,hmmm
+2014-12-03 00:42:10,SHyx0rmZ,gehts um 64 bit in 32 bit?
+2014-12-03 00:42:19,Jidder,2*32=64
+2014-12-03 00:42:28,SHyx0rmZ,die allerdümmste und einfachste Lösung ist ne ELF64 zu linken und manuell die Binary zu patchen
+2014-12-03 00:42:41,SHyx0rmZ,bit 19 auf 0x84 oder so
+2014-12-03 00:42:44,SHyx0rmZ,*byte
+2014-12-03 00:42:52,BugUser,ja quasi sowas mach ich ja immo
+2014-12-03 00:43:06,Jidder,also einen elf-loader zu bauen sollte auch keine herausforderung sein ^^
+2014-12-03 00:43:18,SHyx0rmZ,"mein aktueller Ansatz ist, den 64er Payload als Binär zu inkludieren"
+2014-12-03 00:43:39,Jidder,ich glaub das werde ich auch bald mal machen
+2014-12-03 00:43:44,BugUser,ja ich hab eig nur 2 befehle die ich benutze un die hab ich in der assembly eingefügt
+2014-12-03 00:43:53,SHyx0rmZ,"per ASM bekommt man auch relativ einfach ELF32 hin, die sowohl 32 als auch 64 Bit Code enthält"
+2014-12-03 00:44:15,SHyx0rmZ,"man kann immer gut ne ELF32 für x86_64 linken, dann meckert der nicht"
+2014-12-03 00:44:29,SHyx0rmZ,"iirc war das ein Bug, aber der ist glaube ich immer noch nicht gefixt"
+2014-12-03 00:44:40,Jidder,"mein letzter ansatz mit genug aufrufen von objcopy eine 32-bit-elf und 64-bit-elf zusammen zu linken, ist daran gescheitert, dass die offsets der enthaltenen objektdateien nacheinander um 0, 4, 8, 12, ... bytes verschoben waren ..."
+2014-12-03 00:45:04,SHyx0rmZ,objcopy wollte ich immer vermeiden
+2014-12-03 00:45:16,BugUser,http://pastebin.com/LQiV5Cgr
+2014-12-03 00:45:27,BugUser,hier da bei z 338 is das
+2014-12-03 00:45:44,Jidder,SHyx0rmZ: das ist auch weise ^^
+2014-12-03 00:46:17,SHyx0rmZ,;-)
+2014-12-03 00:47:43,Jidder,"BugUser: versuch mal db 0xff, 0xe0 "
+2014-12-03 00:47:46,Jidder,oder dw 0xe0ff
+2014-12-03 00:47:52,Jidder,intel ist little endian
+2014-12-03 00:48:09,BugUser,die allerschönste methode wär ein nasm parameter der den max bits check aus stellt :D
+2014-12-03 00:48:14,BugUser,aber wie gesagt das problem bei meinem code ist in qemu wird da draus ein pop rax / loopne $+2
+2014-12-03 00:48:26,BugUser,hm
+2014-12-03 00:48:38,Jidder,hat nasm früher nicht mal gemischten code geschluckt?
+2014-12-03 00:48:39,Jidder,die sau
+2014-12-03 00:49:41,BugUser,daran hab ich nich gedacht :D
+2014-12-03 00:49:44,BugUser,jetz passts
+2014-12-03 00:50:33,BugUser,schmiert zwar immernoch ab aber jetzt ist das ein jmp rax also is wohl das mapping grütze
+2014-12-03 00:51:19,Jidder,"sei froh. irgendwann, wenn dein os nicht mehr abstürzt, wirst du gar nicht wissen, was du als nächstes tun sollst ^^^"
+2014-12-03 00:51:46,BugUser,ich hab vor nem jahr mal an nem pmode kernel gebastelt
+2014-12-03 00:52:03,BugUser,90% der zeit wusst ich nich warums ned klappt 10% hatte ich keine ahnung warum es jetzt geht :D
+2014-12-03 00:53:59,BugUser,ich weiß aber ned wie weit ich diesma komme ich hab viel zu tun eigentlich ^^
+2014-12-03 00:55:19,BugUser,ich hab auch die letzten 2 tage damit verbracht zu verstehen warum qemu meine paging strukturen nich schluckt bis ich drauf gekommen bin dass ich erstmal qemu-system-x86_64 angeben muss weil es sonst garkein longmode erwartet xD
+2014-12-03 00:55:36,Jidder,hehe jo das wäre nicht verkehrt ^^
+2014-12-03 00:56:13,BugUser,ja alternativ einfach vorher mit cpuid checken dann geht qemu automatisch davon aus
+2014-12-03 00:56:21,BugUser,aber da kommt man ja ned direkt drauf
+2014-12-03 00:56:28,BugUser,oder ich bin einfach zu dämlich :D
+2014-12-03 00:59:20,BugUser,hey ich hab da auch grad noch ne lösung für das einfügen von 64 bit code gefunden
+2014-12-03 00:59:40,BugUser,"nasm hat nen befehl incbin""blabla.bin"""
+2014-12-03 01:00:02,BugUser,fügt die binärdatei blabla.bin an der stelle ein
+2014-12-03 01:00:33,BugUser,is glaub ich hübscher als objcopy :D
+2014-12-03 01:00:52,Jidder,schönheit liegt im auge des betrachters ;)
+2014-12-03 01:02:11,BugUser,okay makefiles sind auch ne kunst für sich
+2014-12-03 01:02:32,Jidder,ich bin der picasso der makefiles
+2014-12-03 01:02:53,Jidder,oder dürer?
+2014-12-03 01:03:11,Jidder,vermutlich eher höhlenmaler ^^
+2014-12-03 01:04:42,BugUser,ich hab vorher immer mit vc auf win geschrieben. als ich auf linux umgestiegen bin un make entdeckt hab war ich so WOAAAAHHH! krass digga
+2014-12-03 01:06:33,BugUser,wenn man einzelne programmteile kompilieren lassen kann und die source codes automatisch suchen lassen kann und die sachen automatisch kopieren lassen kann :D
+2014-12-03 01:06:41,Jidder,"bei visual studio muss man immer so viel klicken, ne? ^^"
+2014-12-03 01:07:30,BugUser,ja ne versuch dem zu verklickern dass du keinen managed code schreiben willst
+2014-12-03 01:09:09,BugUser,der linkt in seine programme ja eh rein was der will
+2014-12-03 01:09:47,Jidder,also ich finde ja das XCode ein viel besseres ziel ist um schlecht darüber zu reden
+2014-12-03 01:09:50,Jidder,erst version 6
+2014-12-03 01:10:00,Jidder,visual studio ist 2009 versionen weiter
+2014-12-03 01:10:52,BugUser,naja jetzt juckts mich nicht mehr :D
+2014-12-03 01:11:05,BugUser,jetz wo ich nicht mehr so viel zocke brauch ich kein windoof mehr :3
+2014-12-03 01:11:54,BugUser,un wenn hab ich gesehen dass meine halbe steam bibliothek inzwischen auch nativ für linux verfügbar is :D
+2014-12-03 01:12:40,Jidder,"wenn ich daran denke, dass mein browseralternativen für linux konquerer, firefox und chrome sind ..."
+2014-12-03 01:13:12,BugUser,opera?
+2014-12-03 01:13:17,Jidder,"also ich nehm ja lieber den internet explorer als chrome oder konquerer, wenn firefox mal wieder meint 1051 gb ram verbrauchen zu müssen"
+2014-12-03 01:13:33,Jidder,opera wird noch entwickelt?^^
+2014-12-03 01:14:02,BugUser,jetzt heißts opera next oder so
+2014-12-03 01:15:17,Jidder,werden sachen mit next im namen nicht von apple gekauft?
+2014-12-03 01:15:39,BugUser,un ich versteh nich was man gegen firefox haben kann ich benutz praktisch nix anderes mehr ^^
+2014-12-03 01:15:59,Jidder,ich nutz den auch täglich. das ist vielleicht das problem.
+2014-12-03 01:16:45,BugUser,un der höchste speicherverbrauch den ich bemerkt habe is ~500 mb was ich eing okay finde weil für streaming soll der sich auch seinen platz holen
+2014-12-03 01:16:47,Jidder,"zur zeit hängt der sich gerne einfach mal auf. liegt eventuell mit videowiedergabe/flash zusammen, aber mit chrome wäre das nicht passiert."
+2014-12-03 01:16:52,Jidder,oder internet explorer
+2014-12-03 01:17:04,BugUser,internet explorer.... :D
+2014-12-03 01:17:36,BugUser,wenn du chrome magst probier iron das ist quasi chrome mit ein paar modifikationen und erweiterungen
+2014-12-03 01:17:51,Jidder,ich hätte gerne chrome ohne google
+2014-12-03 01:17:52,Jidder,^^
+2014-12-03 01:17:56,BugUser,zielt glaub ich primär drauf ab dass deine daten ned an google geschickt werden xD
+2014-12-03 01:18:00,BugUser,genau das ist das :P
+2014-12-03 01:18:06,Jidder,ah
+2014-12-03 01:19:13,Jidder,wat es gibt einen trailer zu iron sky 2
+2014-12-03 01:19:28,BugUser,un wenn das ned reicht naja dann gibts ja noch onion
+2014-12-03 01:19:45,BugUser,öhm
+2014-12-03 01:20:28,BugUser,muss ich das kennen? :D
+2014-12-03 01:20:36,Jidder,ne ^^
+2014-12-03 01:22:03,BugUser,omg space nazis und dino armeen?! :D
+2014-12-03 01:22:12,Jidder,wobei dieser trailer vermutlich auch wieder besser ist als der film^^
+2014-12-03 01:22:21,Jidder,scheinbar ^^
+2014-12-03 01:22:39,BugUser,fast so gut wie spaceballs :P
+2014-12-03 01:23:04,Jidder,an spaceballs kommt es nicht ganz ran ^^
+2014-12-03 01:23:22,Jidder,zumindest der erste teil
+2014-12-03 01:23:58,Jidder,"wann kommt eigentlich der zweite teil von spaceballs? jedes mal kündigen die den an, aber dann sieht man da wieder jahrelang nix von"
+2014-12-03 01:24:02,Jidder,hahahaha ...
+2014-12-03 01:24:22,BugUser,na un? ich warte noch auf half life 3
+2014-12-03 01:24:28,BugUser,seit JAHREN
+2014-12-03 01:25:50,Jidder,wenigstens gibt es dafür überall zeichen
+2014-12-03 01:25:54,Jidder,man muss nur genau schauen ^^
+2014-12-03 01:26:08,BugUser,die gab es schon vor 5 jahren
+2014-12-03 01:27:18,BugUser,wie schwer kann denn das sein ursprünglich war das ja als addon für half life 2 geplant. SO viel plot kanns also ned geben oder? :D
+2014-12-03 01:27:44,Jidder,ich hab noch nicht mal die episoden von hl2 gespielt
+2014-12-03 01:27:53,Jidder,also ich bin noch nicht ungeduldig ^^
+2014-12-03 01:28:46,BugUser,naja ich find mich immerwieder damit ab dass es nicht kommen wird und dann erscheinen irgendwo wieder anzeichen für entwicklung xD
+2014-12-03 01:29:10,BugUser,die sich dann als hoax raus stellen und mich wieder enttäuschen :D
+2014-12-03 01:29:47,Jidder,vermutlich ist das genau das ziel ^^
+2014-12-03 01:30:55,BugUser,ein endloser kreislauf an enttäuschungen um mich so hochzuhypen dass ich mir das spiel kaufe und anschließend nach 3 stunden durch bin und meinen pc aus dem fenster befördere? :D
+2014-12-03 01:31:44,Jidder,das fördert auch die pc industrie^^
+2014-12-03 01:32:08,BugUser,vermutlich auch die bestatter branche :P
+2014-12-03 01:32:22,Jidder,nur wenn du hinterspringst ^^
+2014-12-03 01:34:16,BugUser,aber okay valve tut was gutes mit ihrem steamOS
+2014-12-03 01:34:28,BugUser,jetzt werden viele spiele auf linux portiert desswegen
+2014-12-03 01:38:26,Jidder,hm habe ich eben das her vergessen?
+2014-12-03 01:38:33,Jidder,ich muss morgen um 4 uhr aufstehen
+2014-12-03 01:38:51,Jidder,jetzt noch das wetter und die lottozahlen
+2014-12-03 01:38:51,BugUser,dann hast du doch 28 stunden zeit :P
+2014-12-03 01:38:55,Jidder,gn8
+2014-12-03 01:39:12,BugUser,gute nacht^^
+2014-12-03 15:46:19,Svenska,"hat wer spontan ne ahnung, wie man bei xfce4 die compose-taste zuverlässig umdefiniert?"
+2014-12-03 15:49:28,Jonathan,"Svenska: Heute, als ich den Code eines FAT32-Treibers durchgegangen bin, habe ich gemerkt: Mein kernelGate ist offiziell auch scheiße."
+2014-12-03 15:49:48,Svenska,"nein, ernsthaft? :-)"
+2014-12-03 15:49:51,Jonathan,*g*
+2014-12-03 15:50:02,Jonathan,"Naja, äh - semi-scheiße, sozusagen."
+2014-12-03 15:50:08,Jonathan,Teilweise brauchbar.
+2014-12-03 15:50:28,Jonathan,Manche Dinge werden in die Tonne wandern. Zum Beispiel dieser bescheuerte Kernelmode-Stack.
+2014-12-03 15:51:12,Jonathan,"Das Mapping bleibt, geht nicht anders - der FAT32-Treiber ist verdammt groß."
+2014-12-03 15:57:19,kevin,"Oh, FAT. Den Treiber wollte ich auch irgendwann noch fertigstellen."
+2014-12-03 15:57:38,kevin,"Ich glaube, jetzt kann ich dann auch noch abwarten, bis die letzten Patente ausgelaufen sind..."
+2014-12-03 15:58:28,max,"Das ist natürlich clever, wenn die in Deutschland sowieso nie gültig waren"
+2014-12-03 15:58:32,max,Dann können sie auch nicht auslaufen
+2014-12-03 20:35:18,Kluthi,Servus
+2014-12-03 20:35:22,Jonathan,Moin
+2014-12-03 20:35:37,Svenska,guud'naamd
+2014-12-03 20:36:39,Paddy,Moin
+2014-12-03 20:45:08,iksnagreb,nabend
+2014-12-03 21:23:17,XanClic,"Paddy, qcow hat übrigens 1610 Sekunden gebraucht"
+2014-12-03 21:24:44,yayachiken,idealisiert?
+2014-12-03 21:24:50,yayachiken,also spherical qcow in vacuum?
+2014-12-03 21:25:03,XanClic,"Nein, eckiges qcow auf Festplatte"
+2014-12-03 21:51:22,Paddy,Beeindruckend

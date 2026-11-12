@@ -1,0 +1,86 @@
+date/time,nick,message
+2014-09-01 12:38:13,Jonathan,Moin
+2014-09-01 19:46:26,Svenska,moin
+2014-09-01 19:46:35,Svenska,ich hab mal ne evil detail frage...
+2014-09-01 19:46:54,Svenska,"...kann ich in einer c-datei irgendwie definieren, dass bestimmte compiler-interne funktionen in einer bestimmten section liegen sollen?"
+2014-09-01 19:47:39,XanClic,Was sind denn compilerinterne Funktionen?
+2014-09-01 19:47:41,Paddy,Mit compilerintern meinst du libgcc?
+2014-09-01 19:48:00,Svenska,"konkret geht es um funktionen wie __pack_f, __unpack_f, __modsi3 oder so"
+2014-09-01 19:48:04,Paddy,"Falls ja, kann man da sicher irgendwas mit objcopy hinfummeln"
+2014-09-01 19:48:30,XanClic,"Jo, an sich steht in den Objektdateien in der libgcc halt drin, wo die zu liegen haben"
+2014-09-01 19:48:32,Paddy,"Oder mit einem Linkerskript, wenn man die Magie hinkriegt"
+2014-09-01 19:48:42,XanClic,Und dann muss man das eben beim Linken oder vorher rumfummeln
+2014-09-01 19:49:45,Svenska,hm
+2014-09-01 19:49:52,Svenska,das ist doof. sehr doof.
+2014-09-01 19:50:15,Paddy,Weil?
+2014-09-01 19:50:22,Svenska,naja
+2014-09-01 19:50:37,Svenska,"mir ist grad die codegröße explodiert, und ich habe zwei linkerfiles"
+2014-09-01 19:50:48,Svenska,"(a) ""alles im internen speicher"" (gibt linker error weil zuviel)"
+2014-09-01 19:50:54,Svenska,"(b) ""libc in externem speicher"""
+2014-09-01 19:51:02,Svenska,"und, naja..."
+2014-09-01 19:51:19,Svenska,"...aus ""10 sekunden fuer 3000 iterationen"" wurde halt ""nach 5 minuten die erste iteration noch nicht fertig"" ;)"
+2014-09-01 19:52:41,Svenska,"und im augenblick bin ich mir gerade unsicher, wieviel codegröße ich ueberhaupt habe (das ist alles relativ unklar, weil alle zusammenfassungen nicht stimmen)"
+2014-09-01 19:56:16,Svenska,memcpy und memset sind relativ klein... aber was ist _impure_data ?
+2014-09-01 20:00:28,Svenska,"_exit, __call_exitprocs, __impure_data sind zusammen knapp 1500 bytes, also fast 20% vom code-ram."
+2014-09-01 20:18:29,Jonathan,"So, bin auch wieder da"
+2014-09-01 20:18:31,Jonathan,Moin Svenska
+2014-09-01 20:19:24,Jonathan,"Vielleicht tut dein Compiler ja ähnliche Dinge, wie SDCC?"
+2014-09-01 20:20:23,Svenska,grundsätzlich muss er das ja
+2014-09-01 20:20:38,Svenska,der slowdown ist uebrigens extrem
+2014-09-01 20:20:51,Svenska,er rechnet jetzt seit 25min an der ersten iteration *g*
+2014-09-01 20:20:54,Jonathan,lol *g*
+2014-09-01 20:21:00,Svenska,ich hab nur das linkerfile geändert...
+2014-09-01 20:21:29,Jonathan,"Gibt es abgespeckte libc's, die du dafür vielleicht verwenden könntest?"
+2014-09-01 20:21:42,Svenska,ich analysiere gerade das ELF...
+2014-09-01 20:21:53,Svenska,"sieht so aus, als ob ich von der libc nur memcpy() und memset() benutze"
+2014-09-01 20:21:59,Svenska,die krieg ich auch noch selbst implementiert...
+2014-09-01 20:22:07,Jonathan,:)
+2014-09-01 20:22:30,Jonathan,"Oh, btw"
+2014-09-01 20:22:43,Jonathan,Bei meiner nächsten Bestellung beim Kessler muss noch ein AS6C4008 mit
+2014-09-01 20:22:51,Jonathan,Eins hab ich nämlich noch
+2014-09-01 20:23:03,Jonathan,Und dann kann ich dem Systemchen 2M RAM einbauen :D
+2014-09-01 20:24:34,Svenska,was ist das? sram?
+2014-09-01 20:27:16,Svenska,ok... aus der newlib benutze ich die beiden funktionen (456 bytes) und belege dafuer 1932 bytes an speicher. :-(
+2014-09-01 20:28:36,Jonathan,AS6C4008 = 512k x8 SRAM
+2014-09-01 20:28:50,Jonathan,Zwei davon sitzen atm schon im System
+2014-09-01 20:29:21,Jonathan,"Einen hab ich noch hier, mit dem hab ich ein bisschen mit dem Z80 auf einem Steckbrett gespielt"
+2014-09-01 20:29:57,Svenska,"deine pages haben 16k, oder?"
+2014-09-01 20:29:59,Jonathan,Ja
+2014-09-01 20:30:07,Svenska,dann ist das sogar noch verhandelbar bei dir :D
+2014-09-01 20:30:12,Jonathan,Jap :D
+2014-09-01 20:30:17,Jonathan,4M ist maximaler Adressraum
+2014-09-01 20:30:46,Jidder,Svenska: ich habe zu meiner eigenen unterhaltung impure_data gegoogelt und bin dabei auf das stichwort newlib-nano gestoßen: https://devzone.nordicsemi.com/question/4740/how-to-get-rid-of-impure_data/
+2014-09-01 20:31:01,Jidder,falls du das nicht schon hast bzw. es auch nichts bringt ^^
+2014-09-01 20:31:45,Svenska,"oh, das sieht ja mal lustig aus"
+2014-09-01 20:31:47,Svenska,mal probieren
+2014-09-01 20:31:58,Svenska,"btw: noch immer keine iteration gerechnet, ich breche ab ^^"
+2014-09-01 20:33:24,Svenska,"""e-gcc: error: nano.specs: No such file or directory"""
+2014-09-01 20:33:28,Svenska,das wäre auch zu schön gewesen ;)
+2014-09-01 20:34:18,Jidder,hehe jo^^
+2014-09-01 20:37:11,Svenska,"hm, aber im sdk-ordner gibt's auch nur crt0.o, libc.a, libm.a, libstdc++.{l,}a usw"
+2014-09-01 20:37:23,Svenska,ist glaube ich nicht vorgesehen.
+2014-09-01 20:37:31,Svenska,"...wie schwierig ist es, ohne libc zu bauen? :-D"
+2014-09-01 20:39:04,Jidder,"weiß nich. machen wir hier ja die ganze zeit, aber dann geht ja auch immer alles kaputt ^^"
+2014-09-01 20:39:57,Jonathan,Svenska: Mit SDCC geht es ganz gut *g*
+2014-09-01 20:40:09,Svenska,lol
+2014-09-01 20:40:19,Jonathan,Aber eigentlich kann man es ja mal versuchen
+2014-09-01 20:40:30,Jonathan,memcpy und memset selbst basteln und ab dafür
+2014-09-01 20:41:15,Jidder,"scheint leider relativ hohe gcc und newlib versionen zu benötigen. weiß nicht, ob das zu deiner toolchain passt und ob newlib da so einfach entsprechend baubar ist"
+2014-09-01 20:42:06,Jidder,also das nano zeug
+2014-09-01 20:42:26,Svenska,"gcc ist 4.8.2, newlib weiß ich nicht"
+2014-09-01 20:42:39,Svenska,"aber da wird man ein specfile zu brauchen, was nicht mitgeliefert ist"
+2014-09-01 20:42:53,Svenska,"...neu bauen ist im augenblick auch so ein problem, weil die gerade das ganze zeug umstrukturieren"
+2014-09-01 20:43:16,Svenska,"kerneltreiber + userspace-lib ist halt doch schöner als ""wir öffnen in unserer lib /dev/mem und machen dadrin rum"""
+2014-09-01 20:44:05,Jidder,"kann da leider auch keinen guten rat geben, weil ich das auch nur 3 minuten länger kenne als du ^^"
+2014-09-01 20:45:23,Svenska,die ausgabe von objdump -x ist aber auch doof
+2014-09-01 20:45:29,Svenska,"auch, wenn man es durch sort piped"
+2014-09-01 20:45:56,Jidder,was sagst du erst bei objdump -d durch sort gepiped? ^^
+2014-09-01 20:46:01,Svenska,:D
+2014-09-01 20:51:55,Svenska,"ok... 2D-Fall: alles zusammen sollte ca. 5678 bytes ergeben, plus ein paar statische variablen, belegt aber 7976 bytes"
+2014-09-01 21:07:21,iksnagreb,moin
+2014-09-01 21:08:49,Svenska,"weiß wer spontan, was ___pack_f und ___unpack_f tun="
+2014-09-01 21:08:49,Svenska,?
+2014-09-01 21:10:12,Svenska,bzw. warum sind die in dem code drin?
+2014-09-01 21:13:11,Svenska,"ah, sind sie nur, wenn ich nicht mit -ffast-math arbeite. :-)"
+2014-09-01 21:25:52,Svenska,"lol... ""Flush the denormals to zero. In the future, it would be nice to add code to round them correctly."""
+2014-09-01 21:40:24,Svenska,ich geh jetzt weinen und mache feierabend.

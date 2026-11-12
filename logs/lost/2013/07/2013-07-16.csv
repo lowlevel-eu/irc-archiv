@@ -1,0 +1,507 @@
+date/time,nick,message
+2013-07-16 09:44:54,alexander,Juten Morgen kevin 
+2013-07-16 09:45:13,kevin,Moin alexander
+2013-07-16 12:23:29,Jonathan,moin - man sollte nicht halb schlafend noch am OS programmieren. Hab netterweise gleichzeitig Register C als Zähler und BC als Offset nutzen wollen...
+2013-07-16 13:24:26,DesL,"hm, x2x ist schon ne geile sache :D"
+2013-07-16 14:57:56,Jonathan,"O-oh... Jetzt, wo meine IPC geht, muss ich das Treibersystem implementieren. Mag sich mal einer der Experten meine Gedanken antun? :)"
+2013-07-16 15:14:19,kevin,"Wenn du wissen willst, wie ich ein Treibersystem bauen würde/gebaut habe, schau dir CDI an ;-)"
+2013-07-16 15:14:35,kevin,"Aber du darfst auch einfach mal erzählen, was du bisher gedacht hast"
+2013-07-16 15:15:56,Jonathan,"Jo, leg ich einfach mal los:"
+2013-07-16 15:16:25,Jonathan,"Messages werden nicht einfach nur an eine PID adressiert, sondern an eine Kombination aus PID:Interface."
+2013-07-16 15:16:46,Jonathan,Jedem Prozess stehen dabei 256 Interfaces zur Verfügung.
+2013-07-16 15:17:25,Jonathan,"Eine Message sieht also so aus: PID (1 Byte), Interface (1 Byte), Messagetyp (2 Bytes), Daten (12 Bytes)"
+2013-07-16 15:18:16,Jonathan,"Bei den Interfaces habe ich mir gedacht, dass ein einziger (Treiber-)Prozess nicht nur eine Funktion zur Verfügung stellen kann, sondern mehrere unabhängige Funktionen."
+2013-07-16 15:18:51,kevin,So hatte ich mir das auch mal gedacht. Wurde nie wirklich so benutzt. ;-)
+2013-07-16 15:19:17,Jonathan,"Beispielsweise würde auf meine RS232-/PS2-Kombikarte ein zu dieser Karte passender Treiber aufsetzen, welcher dann die RS232-Funktionalität in einem Interface, die Tastatur in einem zweiten und die Maus in einem dritten Interface zur Verfügung stellt."
+2013-07-16 15:20:05,Jonathan,"Im Kernel würde ich dann eine Liste aus Einträgen mit PID:Interface und Treibertyp anlegen, über die vorhandene Treiber dem System bekannt gemacht werden."
+2013-07-16 15:20:32,Jonathan,"Also 1 Byte PID, 1 Byte Interface, 2 Bytes Typ."
+2013-07-16 15:20:33,kevin,"Hm... Wie funktioniert diese Kombikarte? Kommst du wirklich nicht darum herum, einen Treiber für alles zusammen zu schreiben?"
+2013-07-16 15:20:45,kevin,Weil eigentlich willst du damit drei verschiedene Treiber beauftragen
+2013-07-16 15:21:00,Jonathan,"Naja, ich will diese Trennung eben erst im Treiber vornehmen"
+2013-07-16 15:21:06,kevin,Das ist kaputt
+2013-07-16 15:21:24,Jonathan,Wieso? So ist für jede Karte exakt ein Treiberprozess zuständig.
+2013-07-16 15:22:08,Jonathan,"Der Booter-Prozess geht dann beim Systemstart alle Karten durch, liest deren Typ aus und startet für jede einen passenden Treiber."
+2013-07-16 15:22:24,kevin,"Dann hast du am Ende einen Tastaturtreiber für einfach nur Tastaturen, für Kombikarten mit einer seriellen Schnittstelle, für Kombikarten mit zwei seriellen Schnittstellen (kannst du beliebig fortsetzen, auch noch mit anderen Gerätetypen) und alle haben im Prinzip den gleichen Code"
+2013-07-16 15:23:09,kevin,"Du willst einen Tastaturtreiber, der einfach mit allen PS/2-Tastaturen arbeitet, egal auf welcher Karte sie sitzen"
+2013-07-16 15:25:05,Jonathan,"Naja, du musst auch mal bedenken: Wenn später jemand das System nachbaut, wird er wahrscheinlich Karten bauen, die absolut nicht zu meinen kompatibel sind."
+2013-07-16 15:25:25,Jonathan,Und sich dann beispielsweise trotzdem als PS/2-Karte anmelden.
+2013-07-16 15:26:10,kevin,PS/2 sollte eigentlich zu PS/2 kompatibel sein
+2013-07-16 15:26:24,kevin,"Evtl. hast du die Register woanders gemappt, aber mehr dürfte es nicht sein, oder?"
+2013-07-16 15:27:22,Jonathan,Meine Karte stellt beispielsweise eine serielle Kommunikation zur Tastatur/Maus zur Verfügung und Puffert den Datenverkehr
+2013-07-16 15:28:07,Jonathan,"Daher gibt es z.B. auch Register, über die man abfragen kann, wie voll der Puffer ist..."
+2013-07-16 15:28:34,Jonathan,"Andere Karten könnten komplett anders angesteuert werden, mit komplett eigenem Protokoll."
+2013-07-16 15:28:51,kevin,Kann man das dann noch unter PS/2 laufen lassen?
+2013-07-16 15:29:10,Jonathan,"Naja, was am Ende an der Karte angeschlossen wird, ist PS/2 ;)"
+2013-07-16 15:29:48,Jonathan,"Es könnte z.B. auch jemand die Pufferung usw., die bei mir der Controller der Karte durchführt, in den Treiber verlagern."
+2013-07-16 15:30:22,kevin,"Gute Frage, was PS/2 eigentlich genau bezeichnet. Ich dachte immer, der Tastaturcontroller wäre Teil davon."
+2013-07-16 15:30:46,Jonathan,PS/2 bezeichnet meiner Meinung nach nur das Übertragungsprotokoll
+2013-07-16 15:30:58,Jonathan,Zwischen Tastatur und Controller im PC
+2013-07-16 15:31:48,Jonathan,"Und je nachdem, was ein Bastler (der mein System nachbaut) an Teilen für seine Karte da hat, verändert sich die Ansteuerung auch gezwungenermaßen drastisch."
+2013-07-16 15:31:59,kevin,"Na gut, von mir aus"
+2013-07-16 15:32:25,Jonathan,Ich mein ja nur: Kompatibilität unter den Karten kann ich absolut nicht erwarten ;)
+2013-07-16 15:33:00,Jonathan,"Funktionieren würde mein Prinzip doch, oder?"
+2013-07-16 15:33:24,kevin,"Soweit wie du bis jetzt erklärt hast, vermutlich schon"
+2013-07-16 15:34:04,Jonathan,"Jo, es gäbe dann eben noch Funktionen zum Auflisten von Treibern, sodass die Prozesse darauf zugreifen können."
+2013-07-16 15:34:24,Jonathan,"Und wenn sie was von einem Treiber wollen, schicken sie einfach eine Message an das entsprechende Interface."
+2013-07-16 15:34:45,kevin,Du musst dann wohl ein Interface für jede Geräteklasse definieren
+2013-07-16 15:34:52,Jonathan,Genau
+2013-07-16 15:35:24,Jonathan,"Ein Prozess könnte dann einfach nach einem Tastaturtreiber suchen und diesen verwenden, wenn er eine Tastatur braucht."
+2013-07-16 15:36:12,kevin,Sollen deine Programme wirklich direkt mit dem Tastaturtreiber reden?
+2013-07-16 15:36:28,Jonathan,Später wahrscheinlich nicht mehr
+2013-07-16 15:36:45,kevin,"Normal wird das ja wegabstrahiert und man hat Sachen wie stdout, die aussehen wie Dateien"
+2013-07-16 15:37:01,kevin,"Hm, stdin vielleicht eher für die Tastatur ;-)"
+2013-07-16 15:37:10,Jonathan,Da wollte ich dann einfach wieder nen Treiber zwischenschalten ;)
+2013-07-16 15:37:33,Jonathan,"Bzw. einen ""Privattreiber"" für einen Prozess"
+2013-07-16 15:37:38,kevin,"Ein Treiber ohne Hardware, aber trotzdem mit dem gleichem Interface?"
+2013-07-16 15:38:03,Jonathan,"Nee, dazu wird es dann Interfaces wie ""stdin"", ""stdout"" geben"
+2013-07-16 15:38:37,kevin,"Ich meinte jetzt auf ""Serverseite"", nicht für Clients"
+2013-07-16 15:38:45,Jonathan,Achso
+2013-07-16 15:39:35,Jonathan,"Naja, der stdin/stdout-Treiber wird sich wohl auf bestimmte Treibertypen konfigurierbar ""aufschalten"" können."
+2013-07-16 15:40:08,Jonathan,"Z.B. (achtung, Träumereien) auch auf ein Konsolenfenster - wenn es denn irgendwann mal eine GUI gibt."
+2013-07-16 15:40:18,kevin,Oder Stichwort Pipes
+2013-07-16 15:40:46,Jonathan,"Oder das, aber ich bleib erstmal bei meinen Messages ;)"
+2013-07-16 15:41:28,Jonathan,Wird dann am Ende wohl eine kleine Treiberhierarchie geben.
+2013-07-16 15:44:31,Jonathan,"Jeder Prozess, der Eingaben tätigen will, lädt sich dann einfach ""dev09/drivers/stdin.drv"" als privaten Treiber (der sich nicht in der globalen Liste registriert) und konfiguriert ihn so, dass er von seiner gewünschten Eingabequelle Daten bekommt."
+2013-07-16 15:45:46,Jonathan,"stdin.drv schaltet sich dann z.B. auf 01_02.drv (RS232/PS2) auf, wenn der erstellende Prozess ihm das per Message mitteilt."
+2013-07-16 15:46:23,kevin,"Du musst nur aufpassen, was passiert, wenn sich mehrere Prozesse um die Tastatur prügeln"
+2013-07-16 15:46:35,Jonathan,Jep
+2013-07-16 15:46:41,kevin,"Dass jeder abwechselnd ein Zeichen bekommt, ist meistens nicht, was man will"
+2013-07-16 15:47:08,Jonathan,"Am besten bekommen erstmal alle das Zeichen, würd ich sagen"
+2013-07-16 15:47:37,Jonathan,"Und dann muss der Prozess selbst wissen, ob der Nutzer jetzt mit ihm redet, oder jemand anderem."
+2013-07-16 15:48:18,Jonathan,"(z.B. könnte er - Achtung GUI-Träume - das Zeichen nur annehmen, wenn sein Fenster im Vordergrund ist.)"
+2013-07-16 15:48:53,kevin,"Hm, das halte ich nur für bedingt toll"
+2013-07-16 15:49:15,Jonathan,"Du meinst, ich brauch nen zentralen ""Verwalter""?"
+2013-07-16 15:49:22,kevin,"Praktisch ist es natürlich schon, wenn mein Programm selber entscheiden kann, ob es das Passwort, das für das andere Fenster gedacht war, nicht doch auch annehmen und mir zuschicken kann ;-)"
+2013-07-16 15:49:36,Jonathan,"Hey, ich hab nicht mal Speicherschutz! ;P"
+2013-07-16 15:49:46,kevin,"Ach Mist, ich vergess das dauernd..."
+2013-07-16 15:50:06,kevin,"Ich glaube, ich würde trotzdem zentral verwalten"
+2013-07-16 15:50:52,kevin,"Muss allerdings zugeben, dass ich dafür auch noch keine Lösung habe, die ich für perfekt halte"
+2013-07-16 15:50:59,Jonathan,Hmm
+2013-07-16 15:51:15,Jonathan,Windoofs regelt das ja über Windowmessages
+2013-07-16 15:51:16,kevin,"In tyndur haben wir das schon ein paarmal umgebaut und inzwischen weiß ich gar nicht mehr, was da im Moment gemacht wird. Einfach irgendwas halt."
+2013-07-16 15:51:23,Jonathan,xD
+2013-07-16 15:51:50,Jonathan,Ob ich das einfach als Windoofs-Abklatsch durch den Windowmanager schleusen soll?
+2013-07-16 15:52:04,Jonathan,Dazu braucht man halt nur erstmal einen
+2013-07-16 15:52:21,Jonathan,Und dazu erstmal ne Grafikkarte mit all ihren Treibern
+2013-07-16 15:53:05,kevin,Außer vielleicht man interpretiert das ein bisschen allgemeiner
+2013-07-16 15:53:10,kevin,Und macht einen WM ohne Fenster
+2013-07-16 15:53:19,kevin,Dann ist es halt ein Ereignismanager oder so
+2013-07-16 15:53:20,Jonathan,"Oder so, ja"
+2013-07-16 15:54:18,Jonathan,"Hm naja, ich glaub aber irgendwie, darüber brauch ich mir erst Gedanken zu machen, wenn überhaupt mal Treiber und Dateisystem laufen ;)"
+2013-07-16 15:54:40,Jonathan,Das ist ja auch noch so ne Baustelle...
+2013-07-16 15:54:54,Jonathan,"Ach ja, was ich dich noch fragen wollte."
+2013-07-16 15:55:15,Jonathan,"In eurem Wiki kann man ja einfach eine Seite über sein OS anlegen, oder?"
+2013-07-16 15:55:39,kevin,"Jo, sobald es was interessantes drüber zu sagen gibt"
+2013-07-16 15:55:46,kevin,Das dürfte bei dir nicht lange dauern ;-)
+2013-07-16 15:56:26,kevin,"Also, wahrscheinlich hast du schon genug zu beschreiben, dass du das jetzt machen könntest"
+2013-07-16 15:57:13,Jonathan,"Naja, ich denke mal, ich mach das dann, sobald ich am Kernel-Binary nicht mehr allzu viel rütteln muss ;)"
+2013-07-16 15:57:26,Jonathan,Wird dann wohl auf sowas hinauslaufen:
+2013-07-16 15:58:07,Jonathan,"Kernel bestimmt RAM-Größe, vermerkt es in der PMMU, nutzt einen Mini-IDE-Treiber und lädt einen ""Booter Task"" in den Speicher."
+2013-07-16 15:58:36,Jonathan,"Dann übergibt es die Kontrolle komplett an den ""Booter Task"", der dann das eigentliche System (Treiber und UI) startet."
+2013-07-16 16:16:48,Jonathan,"Prozesse sollten sich am besten nur selbst als Treiber registrieren können, oder, kevin?"
+2013-07-16 16:17:38,kevin,"Ich wüsste jedenfalls nicht, wieso man einen anderen Prozess als Treiber registrieren wollte"
+2013-07-16 18:19:15,iksnagreb,tach
+2013-07-16 18:36:16,Jidder,möglicherweise hab ich eine schlechte charge cola erwischt
+2013-07-16 18:36:25,Jidder,war letzte woche im angebot. 2 kisten für 16 euro
+2013-07-16 18:36:31,Jidder,hab heute die erste flasche davon angebrochen
+2013-07-16 18:36:38,Jidder,schmeckt irgendwie komisch
+2013-07-16 18:36:51,Jidder,"und jetzt befürchte ich, dass alle komisch schmecken"
+2013-07-16 18:37:02,Jidder,das halte ich nicht aus ... 2 kisten verpanschte cola
+2013-07-16 18:37:26,Jidder,"es gibt doch so gemeinnützige vereine, wo man lebensmittel abgeben kann. nehmen die auch cola?"
+2013-07-16 18:38:50,Jidder,ich könnte auch einfach jetzt wochenlang whiskey cola trinken
+2013-07-16 20:03:00,DerHartmut,Nabend
+2013-07-16 20:04:12,bluecode,hallöle
+2013-07-16 20:10:34,bluecode,wasup hardö?
+2013-07-16 20:13:32,Jidder,"warum heißen tortenheber tortenheber, wenn sie gar keine ganze torte heben können?"
+2013-07-16 20:13:32,DerHartmut,vaaacääääätioooooon le bleu
+2013-07-16 20:13:35,DerHartmut,und bei diaaa?
+2013-07-16 20:13:52,XanClic,"Jidder, können deine Tortenheber das nicht?"
+2013-07-16 20:13:57,XanClic,Oder können nur deine Torten das nicht?
+2013-07-16 20:14:08,Jidder,oder die schwerkraft nicht?
+2013-07-16 20:14:13,Jidder,achso ich war der angesprochene
+2013-07-16 20:14:14,XanClic,genau
+2013-07-16 20:14:22,XanClic,beides genau
+2013-07-16 20:14:56,Jidder,da muss ich mal in dem kreuzworträtsellösungsbuch nachschlagen
+2013-07-16 20:15:51,iksnagreb,"ich hab inner libc zwei globale variablen zur verwaltung des heap, ich kann jedoch nicht darauf zugreifen, ohne einen pagefault auszulösen, woran kann das liegen?"
+2013-07-16 20:16:09,Jidder,an der linkerdatei
+2013-07-16 20:16:44,iksnagreb,"die von der libc oder vom programm, das sie nutzt?"
+2013-07-16 20:16:49,Jidder,beide
+2013-07-16 20:16:55,Jidder,die libc sollte gar keine haben
+2013-07-16 20:17:02,Jidder,außer es ist eine shared library
+2013-07-16 20:17:07,bluecode,"boah, vaaacääääätioooooon will ich auch"
+2013-07-16 20:17:08,iksnagreb,sry hat sie auch nicht
+2013-07-16 20:17:09,Jidder,aber dann haste noch eine ganze neue dose probleme
+2013-07-16 20:17:13,bluecode,hab ich aber auch demnächst
+2013-07-16 20:17:54,bluecode,"und was geht so im Urlaub, DerHartmut? Strand, Sonne?"
+2013-07-16 20:18:16,bluecode,"oder doch Keller, Kaffee und OSDEV?"
+2013-07-16 20:18:29,iksnagreb,http://pastebin.com/LxgnR10R  damit ist doch alles in ordnung oder
+2013-07-16 20:18:36,DerHartmut,Couch und Buch wird es sein bluecode *g*
+2013-07-16 20:18:52,bluecode,wie lang haste denn frei?
+2013-07-16 20:19:04,Jidder,iksnagreb: kannst ja mal mit objdump die symbole ausgeben lassen und gucken in welcher sektion die globalen variablen landen
+2013-07-16 20:19:12,bluecode,auch: Roman oder Sachbuch?
+2013-07-16 20:19:35,bluecode,oder doch die Zeitschrift mit den Bildern von nackten Menschen :-D
+2013-07-16 20:19:42,bluecode,"""lesen"""
+2013-07-16 20:20:13,bluecode,btw. was ich schreibe darf man erst ab 18 lesen oder mit Unterschrift der Eltern
+2013-07-16 20:20:36,bluecode,gefälschte Unterschriften gelten auch
+2013-07-16 20:20:40,iksnagreb,wie find ich die in sonem objdump und wie genau muss ich den jetzt machen?
+2013-07-16 20:20:41,bluecode,insofern keine Panik Jidder
+2013-07-16 20:20:53,iksnagreb,geht das mit 
+2013-07-16 20:20:54,iksnagreb,objdump -D -b binary -mi386 programm > objdump.txt
+2013-07-16 20:20:58,Jidder,bluecode: da bin ich beruhigt
+2013-07-16 20:21:15,Jidder,ne mach mal objdump -x programm > output.txt
+2013-07-16 20:21:20,DerHartmut,"Bis Montag, mehrere Romana, unter anderen Die Physiker, Splitter und Schändung - und für nackte Abbildung fast realer Taschen gibt es doch einschlägige Internetzwebseiten bluecode "
+2013-07-16 20:21:32,tufel,huhu
+2013-07-16 20:21:56,Jidder,life is too short
+2013-07-16 20:22:07,iksnagreb,dann heißts
+2013-07-16 20:22:08,iksnagreb,objdump: programm: Dateiformat nicht erkannt
+2013-07-16 20:22:20,Jidder,ah
+2013-07-16 20:22:23,Jidder,dann weiß ich was das problem ist
+2013-07-16 20:22:34,Jidder,"wenn du deine programm in binary umwandelst, landet die bss-sektion nicht drin"
+2013-07-16 20:22:47,Jidder,und die variablen landen vermutlich in der bss-sektion
+2013-07-16 20:23:19,Jidder,"die beste lösung ist einen ELF-loader zu schreiben. im ELF-header stehen die informationen drin, wo die bss-sektion ist, und dann kannst du die entsprechenden mappings machen"
+2013-07-16 20:23:37,iksnagreb,"warum landen die in der bss sektion, ich habe in der libc schon anner andern stelle ne variable und die funktioniert"
+2013-07-16 20:23:38,Jidder,die schlechteste lösung ist die binary einfach größer zu machen
+2013-07-16 20:24:00,Jidder,vielleicht ist die eine variable noch auf der letzten page der data-sektion
+2013-07-16 20:24:30,Jidder,"achja und variablen die mit was anderem als 0 initialisiert werden, landen sowieso in data"
+2013-07-16 20:25:03,iksnagreb,also könnt ich sie auch einfach anders initialisieren?
+2013-07-16 20:25:29,Jidder,kannste machen. dann hast du wieder das problem beim nächsten mal wo du das vergisst
+2013-07-16 20:26:46,iksnagreb,"naj, ich hab den elf-loader erst für die nächste ""version"" geplant, ich wollt jetzt erst alles wieder in nen sauberen zustand bringen und dazu fehlt eigentlich nur noch der userspace heap"
+2013-07-16 20:27:03,Jidder,ok
+2013-07-16 20:27:12,Jidder,aber schieb das nicht zu lange auf
+2013-07-16 20:29:28,iksnagreb,"jo, so siehts bei mir im moment aus, haltet ihr diese ziele/pläne für realistisch? http://pastebin.com/b4VALUwE"
+2013-07-16 20:30:22,Jonathan,Ich würd das mit den Treibern gaaaaanz nach vorne nehmen
+2013-07-16 20:31:45,iksnagreb,"ist es ja fast, bin grad an der 0_2, da fehlt eigentlich nur noch der heap, dann gehts an die 0_3, wenn dann ab montag ferien sind"
+2013-07-16 20:33:11,Jonathan,"""Brauchbare Programme"" werden aber ohne funktionierende Kommunikation mit Hardware schwer"
+2013-07-16 20:33:45,iksnagreb,ich habe nen syscall für die zeit
+2013-07-16 20:34:03,XanClic,"Ich finde es gut, sich mit Treibern Zeit zu lassen"
+2013-07-16 20:34:13,Jonathan,Wieso?
+2013-07-16 20:34:15,XanClic,"Sonst schreibt man Treiber, bevor man ordentliche Interfaces dafür hat"
+2013-07-16 20:34:21,Jonathan,Achso ja
+2013-07-16 20:34:29,iksnagreb,"genau, das hab ich mir diesmal gedacht"
+2013-07-16 20:34:34,XanClic,"Wobei ich es am besten finde, erstmal Treiber ohne Interfaces zu schreiben, dann selbst zu merken, wie doof das wird und nochmal von vorne anzufangen"
+2013-07-16 20:34:39,iksnagreb,ich hab nämlich noch nen kbc treiber rumliegen
+2013-07-16 20:34:47,XanClic,"Dann weiß man zumindest, wie die Interfaces aussehen könnten"
+2013-07-16 20:35:07,XanClic,"Im Prinzip finde ich es ja sowieso am besten, immer nur Mist zu machen, das dann zu merken und neu anzufangen"
+2013-07-16 20:35:13,XanClic,Funktioniert bei mir seit Jahren *hust*
+2013-07-16 20:35:22,Jonathan,"Ich hab ja, wie euch bestimmt schon zu den Ohren rauskommt, Messages mit PID:INTF Adressierung *g*"
+2013-07-16 20:35:54,Jonathan,"Ach ja, man kann jetzt inzwischen auch Treiber im System registrieren, suchen und wieder de-registrieren"
+2013-07-16 20:36:09,XanClic,Bei mir ist das ja eine Einbahnstraße
+2013-07-16 20:36:12,XanClic,"Einmal Treiber, immer Treiber!"
+2013-07-16 20:36:19,XanClic,"Das ist nix, was man sich mal eben so einfach aussucht!"
+2013-07-16 20:36:29,XanClic,Das muss man sich halt vorher überlegen!
+2013-07-16 20:36:59,Jonathan,Vielleicht nenn ich meins ja auch AsynchronOS ;P
+2013-07-16 20:38:46,Jonathan,"Ach ja, iksnagreb, nicht nur Kommunikation zwischen Userspace und Treiber vorsehen, sondern (vorallem) auch zwischen zwei Treibern"
+2013-07-16 20:39:30,iksnagreb,"jo, das ist wichtig, für datenträger <-> Dateisystem , oder?"
+2013-07-16 20:39:36,Jonathan,Genau
+2013-07-16 20:40:38,Jonathan,Oder auch wenn der Output von Programmen später nicht unbedingt direkt auf den Textmode-Bildschirm geht
+2013-07-16 20:41:37,Jonathan,(z.B. Programm ---> IO-Manager/sonstwas ---> [G]UI)
+2013-07-16 20:42:43,Jonathan,"Wenn man zur Kommunikation mit z.B. dem Textmodus-Bildschirm auch einen Treiber vorsieht, kann man später auch eigentliche Textmodus-Programme als GUI-Anwendung in einem Konsolenfenster laufen lassen."
+2013-07-16 20:43:34,tufel,huhu
+2013-07-16 20:43:39,Jidder,moin
+2013-07-16 20:43:46,Jonathan,moin²
+2013-07-16 20:44:08,XanClic,Man kann auch einfach Monolithen schreiben
+2013-07-16 20:44:20,XanClic,moin³ = moinnn
+2013-07-16 20:44:38,iksnagreb,ich schreibe einen Monolithen
+2013-07-16 20:44:47,Jonathan,"Kann man auch machen, gefällt mir aber nicht so ;P"
+2013-07-16 20:45:01,Jonathan,(Bzw. ist für meine Hardware auch nicht möglich)
+2013-07-16 20:45:28,iksnagreb,"es ist vielleicht nicht das schönste, aber es ist erstmal einfacher, jedenfalls für mich"
+2013-07-16 20:45:53,Jonathan,Jo
+2013-07-16 20:46:35,Jonathan,"Aber pass auf, dass du nicht versehentlich in deinen Programmen sowas wie ""CALL Kerneladresse"" benutzt"
+2013-07-16 20:47:02,Jonathan,"Dann darfst du jedes mal, wenn du den Kernel kompilierst, auch alle anderen Programme neu kompilieren *g*"
+2013-07-16 20:47:11,XanClic,Das ist unter x86 auch ein bisschen schwer…
+2013-07-16 20:47:28,Jonathan,"Stimmt, ich vergess dauernd den Speicherschutz."
+2013-07-16 20:47:30,XanClic,"Geht höchstens mit Callgates, aber die benutzt außer Solaris und wine ja keiner"
+2013-07-16 20:47:31,XanClic,Oder so
+2013-07-16 20:48:10,Jonathan,"Bei mir heißt ein Syscall halt einfach ""LD IY, Funktionsnummer | CALL 10h"""
+2013-07-16 20:49:00,XanClic,Wäre RST10 nicht kürzer?
+2013-07-16 20:49:21,Jonathan,"Klar, das nutze ich ja auch ;)"
+2013-07-16 20:49:35,Jonathan,"Hab nur der Verständlichkeit halber hier ""CALL"" geschrieben."
+2013-07-16 20:49:47,XanClic,"Ich dachte bei „auch“ schon, du benutzt beide Befehle"
+2013-07-16 20:49:51,XanClic,Damit nicht einer so ausgenutzt wird
+2013-07-16 20:49:56,XanClic,bzw. abgenutzt
+2013-07-16 20:50:15,Jonathan,*g*
+2013-07-16 20:52:16,Jonathan,"Da fällt mir ein, wer möchte, darf sich mal meinen Code ansehen (und natürlich Kritik abgeben): http://j-strobl.dyndns-free.com/Quellcode_OS.zip"
+2013-07-16 20:52:38,tufel,"nun hab debian 7.1 mit der gnome-GUI, wie kann ich jetzt eine andre gui (z.b. XFCE) benutzen ohne debian komplett neuzuinstallieren ?"
+2013-07-16 20:53:07,DerHartmut,sudo apt-get install xfce4
+2013-07-16 20:53:19,DerHartmut,vim .xinitrc und dort dann xfce eintragen
+2013-07-16 20:53:42,DerHartmut,exec startxfce4 --with-ck-launch zum Beispiel
+2013-07-16 20:55:38,tufel,cool so einfach :D 
+2013-07-16 20:58:58,DerHartmut,"Das Metapaket könnte unter Debian anders heißen, apt-cache search hilft dir"
+2013-07-16 20:59:33,DerHartmut,"tufel_: [20:58] <DerHartmut> Das Metapaket könnte unter Debian anders heißen, apt-cache search hilft dir"
+2013-07-16 21:02:16,tufel_,"naja xfce scheint installiert zu sein, kannst du mir nochmal sagen wo ich jetzt was eintragen muss ?"
+2013-07-16 21:04:24,DerHartmut,Trag in deine .xinitrc ein:
+2013-07-16 21:04:35,DerHartmut,exec startxfce4 --with-ck-launch (ggf. ohne --with-ck-launch)
+2013-07-16 21:09:48,tufel_,wo soll dieses .xinitrc sein ? :/
+2013-07-16 21:18:33,DerHartmut,"Ist bei mir im /home/userdir, ich benutze allerdings auch keinen Login-Manager sondern starte via startx meinen Desktop"
+2013-07-16 21:20:11,DerHartmut,"Aber wenn du einen Login-Manager nutzt kannst du zu Beginn auswählen, welche Sitzung du starten möchtest"
+2013-07-16 21:20:11,DerHartmut,"Sprich: Welche Umgebung, KDE, Xfce etc."
+2013-07-16 21:25:38,tufel_,mmh bei mir gibts das verzeichniss home/userdir/ nicht o.O
+2013-07-16 21:26:55,Jidder,"du solltest vermutlich das ""userdir"" durch deinen benutzernamen ersetzen"
+2013-07-16 21:28:42,Paddy,Hæ allir saman
+2013-07-16 21:29:59,tufel_,"mmh ok, das macht sinn :D , naja diese datei, .xinitrc gibts ihrgentwie trotzdem nicht "
+2013-07-16 21:37:17,DerHartmut,"tufel_: Wie startest du denn deinen Desktop, sprich, wie meldest du dich an? Per ""Login-Manager"" (so etwas wie - entschuldigt den Vergleich - die Anmeldemaske bei Windows)?"
+2013-07-16 21:38:02,tufel_,joar glaub schon 
+2013-07-16 21:39:02,DerHartmut,"Dann kannst du in einem Dropdown dort irgendwo Xfce auswählen, nachdem du es installiert hast"
+2013-07-16 21:41:17,tufel,"ah ich habs gefunden :) , danke für deine hilfe und deiner Geduld XD"
+2013-07-16 21:41:58,DerHartmut,Gerne ;-)
+2013-07-16 21:48:07,iksnagreb,"so, mein os jetzt in nem ""sauberen"" zustand, bevor ich also weitermache, wollt ich mal wissen, wie funktioniert das eigentlich mit den lizenzen? kann mir das jemand kurz erklären?"
+2013-07-16 21:48:41,XanClic,"nimm GPLv2, dann kannst du Linuxcode klauen"
+2013-07-16 21:48:41,DerHartmut,Was genau möchtest du denn wissenß
+2013-07-16 21:48:42,XanClic,*duck*
+2013-07-16 21:49:32,iksnagreb,"ich würd gern wissen, wie dass allgemein funktioniert, wo bekomme ich eine lizenz, wie kann ich die dann für mein os verwenden?"
+2013-07-16 21:51:24,XanClic,"Du brauchst ja keine Lizenz in dem Sinne, wie du eine Lizenz für irgendeine fremde Software brauchst"
+2013-07-16 21:51:40,XanClic,"Also wie man bspw. eine Windowslizenz kauft, wenn man es kauft"
+2013-07-16 21:52:04,XanClic,"Sondern du bist für dein OS selbst der „Lizenziere“, das heißt, du legst in der Lizenz fest, wie dein OS verwendet werden kann"
+2013-07-16 21:52:08,XanClic,*Lizenzierer
+2013-07-16 21:52:29,XanClic,Und das musst du halt selbst wissen
+2013-07-16 21:52:55,iksnagreb,"aber woher bekomme ich ie die ich verwenden möchte und was muss ich machen, um mein os zu lizenzieren?"
+2013-07-16 21:53:03,XanClic,"Für Open Source (das heißt, man kann das OS sowohl in Quell- als auch in kompilierer Form so ziemlich frei benutzen) gibt es da schon ein paar fertige"
+2013-07-16 21:53:08,XanClic,"Wie GPL, BSD oder MIT"
+2013-07-16 21:53:18,XanClic,"Was die einzeln auszeichnet, s. WP"
+2013-07-16 21:53:28,XanClic,Die bekommst du im Zweifel von Wikipedia
+2013-07-16 21:53:52,XanClic,"Das ist halt ein langer Text, in dem drinsteht, was man mit der Software (in dem Fall dem OS) machen darf"
+2013-07-16 21:54:16,XanClic,"Normalerweise steht da auch dabei, was der Programmierer tun muss, um der Lizenz Gültigkeit zu verlangen"
+2013-07-16 21:54:48,DerHartmut,"Direkt ""herbekommen"", sprich bei einer offiziellen Stelle beziehen musst du nicht - d.h. je nach Lizenz (musst) du eine Kopie der Lizenz mitliefern"
+2013-07-16 21:54:56,XanClic,"Im Allgemeinen (zumindest bei GPL) ist es so, dass man den gesamten Lizenztext als COPYING-Datei ins Wurzelverzeichnis der Software legen muss und möglichst an den Anfang jeder Quellcodedatei eine Kurzfassung packt"
+2013-07-16 21:55:10,XanClic,"Diese Kurzfassung ist auch das, was direkt auf den WP-Seiten zu den Lizenzen steht"
+2013-07-16 21:55:21,XanClic,"Es ist für dich zumindest nicht schlimm, wenn du erstmal keine Lizenz hast"
+2013-07-16 21:55:40,XanClic,"Wenn man keine Lizenz festlegt, ist das halt komplett geschützt, das heißt, an sich darf das niemand außer dir benutzen"
+2013-07-16 21:55:47,XanClic,Ist dann zumindest nicht dein Problem
+2013-07-16 21:56:24,iksnagreb,"jo, danke, ich arbeite mich dann jetzt erstmal durch die lizenzen, wenns dann noch probleme gibt, meld ich mich wieder hier"
+2013-07-16 21:57:55,Paddy,"Je nach Definition von Benutzen, XanClic"
+2013-07-16 21:58:03,Paddy,"Einfach laufen lassen ist so ziemlich das einzige, was man trotzdem darf"
+2013-07-16 21:59:07,XanClic,Darf man?
+2013-07-16 21:59:33,XanClic,"Wenn mir jetzt jemand einen urheberrechtlich geschützten Film auf die Platte kopiert, müsste ich den rein rechtlich vermutlich auch löschen, ohne ihn anzusehen"
+2013-07-16 22:01:55,Paddy,[Citation needed]
+2013-07-16 22:02:19,XanClic,Ich frag einfach den nächstbesten Abmahnanwalt
+2013-07-16 22:02:37,XanClic,"Wobei, eigentlich musst du ja den Beleg bringen :3"
+2013-07-16 22:02:41,XanClic,Dass man das Recht überhaupt hat :3
+2013-07-16 22:02:53,XanClic,Heißt ja nicht umsonst „Alle Rechte vorbehalten“
+2013-07-16 22:02:58,SHyx0rmZ,http://choosealicense.com/
+2013-07-16 22:03:15,Paddy,Sind aber trotzdem nur alle vorbehaltbaren Rechte ;-)
+2013-07-16 22:03:33,XanClic,Darf man solche Rechte denn nicht vorbehalten?
+2013-07-16 22:04:10,XanClic,"Ich meine, ich kann doch Leuten verbieten, einen Film zu sehen, den ich gemacht hab?"
+2013-07-16 22:04:11,Paddy,"Soweit ich weiß, ist die reine Nutzung zumindest nicht Teil vom Urheberrecht, sondern nur Vervielfältigung, Aufführung und sowas"
+2013-07-16 22:04:31,Paddy,Nachher mal in die Spec schauen ;-)
+2013-07-16 22:04:47,XanClic,"Dann versuch mal Software auszuführen, ohne sie zu vervielfältigen *g*"
+2013-07-16 22:04:48,Paddy,"Hm, ich glaub, ich hab hier gar keinen Checkout vom Gesetzes-git"
+2013-07-16 22:04:56,XanClic,Die wird ja allein schon beim Laden in den RAM vervielfältigt *g*
+2013-07-16 22:05:02,Paddy,...
+2013-07-16 22:05:16,XanClic,"Hey, du weißt, dass Anwälte das auch sagen würden ;-)"
+2013-07-16 22:05:18,Paddy,Vor dem Landgericht Hamburg würdest du damit womöglich sogar durchkommen *g*
+2013-07-16 22:05:36,SHyx0rmZ,dann streamst du die Ausführung halt?
+2013-07-16 22:05:49,XanClic,Das ist dann Aufführung
+2013-07-16 22:06:15,XanClic,Man müsste schon iksnagrebs Rechner klauen und das Programm direkt von der Festplatte ausführen
+2013-07-16 22:06:24,SHyx0rmZ,ich mein keinen Videostream
+2013-07-16 22:06:35,XanClic,"Wenn man Kopieren in den RAM erlaubt, wäre Laden nach qemu vermutlich in Ordnung"
+2013-07-16 22:06:50,XanClic,"SHyx0rmZ, streit dich darüber mal mit Nintendo"
+2013-07-16 22:07:03,XanClic,Ob ein Videostream von laufender Software so komplett frei ist
+2013-07-16 22:07:10,SHyx0rmZ,http://en.wikipedia.org/wiki/Gaikai
+2013-07-16 22:07:34,XanClic,Das ist ja zu einem einzelnen Benutzer
+2013-07-16 22:07:40,XanClic,Der die Lizenz davon haben muss
+2013-07-16 22:15:08,Paddy,"Ich habe übrigens gar nichts davon gesagt, dass ich raubkopiert habe. Wenn iksnagreb ein Image zum Download anbietet (also nicht nur zufällig irgendwo rumliegen hat, sondern explizit sagt, dass man sich das runterladen darf), dann bin ich offensichtlich berechtigt, das runterzuladen."
+2013-07-16 22:15:24,XanClic,"Ach so, ja klar"
+2013-07-16 22:15:28,Paddy,"Und dann meines Erachtens auch, es auszufürhe"
+2013-07-16 22:15:34,Paddy,*auszuführen
+2013-07-16 22:15:39,XanClic,"Ich darf mir auch den Code ansehen, wenn er den zum Download anbietet"
+2013-07-16 22:15:42,XanClic,Nur halt mir nicht merken *g*
+2013-07-16 22:16:18,Paddy,"Merken auch, nur nicht abschreiben"
+2013-07-16 22:16:41,XanClic,"Hm, mag auch sein"
+2013-07-16 22:16:48,XanClic,"Ich dachte, man brauchte da noch einen Mittelsmann"
+2013-07-16 22:16:58,XanClic,bzw. einen anderen
+2013-07-16 22:17:07,XanClic,"Einer liest sich den Code durch und sagt dem anderen dann, was da so drin steht"
+2013-07-16 22:17:41,XanClic,"Hmmmmm, warum hat ReactOS dann eigentlich solche Vorsichtsmaßnahmen? Wegen patentiertem Code?"
+2013-07-16 22:17:48,XanClic,*Wegen patentierten Codes
+2013-07-16 22:19:50,Paddy,"Wegen US-Recht, glaube ich"
+2013-07-16 22:19:58,XanClic,Ah ja *g*
+2013-07-16 22:20:03,XanClic,Ergibt Sinn *g*
+2013-07-16 22:20:04,XanClic,Oder eben keinen
+2013-07-16 22:20:52,Paddy,"Ich glaube, das hier ist der interessante Paragraph, der die verschiedenen Rechte aufzählt: http://www.gesetze-im-internet.de/urhg/__15.html"
+2013-07-16 22:21:33,XanClic,"Hm, gut"
+2013-07-16 22:21:36,Paddy,Und §25 finde ich besonders toll:
+2013-07-16 22:21:39,Paddy,"(1) Der Urheber kann vom Besitzer des Originals oder eines Vervielfältigungsstückes seines Werkes verlangen, daß er ihm das Original oder das Vervielfältigungsstück zugänglich macht, soweit dies zur Herstellung von Vervielfältigungsstücken oder Bearbeitungen des Werkes erforderlich ist und nicht berechtigte Interessen des Besitzers entgegenstehen."
+2013-07-16 22:21:41,Paddy,"(2) Der Besitzer ist nicht verpflichtet, das Original oder das Vervielfältigungsstück dem Urheber herauszugeben."
+2013-07-16 22:21:45,XanClic,"Wenn iksnagreb das zum Download anbietet, wirds ja bei ihm vervielfältigt"
+2013-07-16 22:21:46,Paddy,Hat das ein Mathematiker formuliert? *g*
+2013-07-16 22:21:55,XanClic,"Und private Au[sf]führung ist erlaubt, k"
+2013-07-16 22:21:59,Paddy,"Kann verlangen, aber der muss dann nicht?"
+2013-07-16 22:22:24,XanClic,*lol*
+2013-07-16 22:22:52,XanClic,"Er kann auch nur dann verlangen, wenn der Besitzer keine berechtigten entgegenstehenden Interessen hat"
+2013-07-16 22:23:18,Paddy,Spannend
+2013-07-16 22:23:22,Paddy,"Was, wenn er es einfach trotzdem tut?"
+2013-07-16 22:23:26,XanClic,Vielleicht ist ja „Zugänglich machen“ und „Herausgeben“ was unterschiedliches
+2013-07-16 22:23:30,Paddy,Ist dann ein Axiom kaputt?
+2013-07-16 22:23:38,XanClic,"Paddy, das ist ja nur nicht abgedeckt"
+2013-07-16 22:23:43,XanClic,Kann er ja immer machen
+2013-07-16 22:23:49,XanClic,"Auch, wenn der Urheber das nicht verlangt hat"
+2013-07-16 22:24:07,Paddy,"Hm, stimmt, du hast irreführend formuliert"
+2013-07-16 22:24:13,Paddy,Er kann nämlich immer verlangen
+2013-07-16 22:24:37,Paddy,"Es wird aber nur für einen der Fälle definiert, dass er es kann. Der andere ist unspezifiziert."
+2013-07-16 22:24:48,XanClic,Stimmt
+2013-07-16 22:24:52,XanClic,ist ja kein gdw
+2013-07-16 22:25:05,XanClic,Das muss noch gefixt werden
+2013-07-16 22:25:05,Paddy,Ist das undefined behaviour oder implementation defined behaviour?
+2013-07-16 22:25:17,XanClic,"Ich glaube, undefined"
+2013-07-16 22:25:38,XanClic,Ansonsten müsste ja jeder Richter immer gleich entscheiden
+2013-07-16 22:26:16,Paddy,"Cool, das heißt, wenn ich verlange, obwohl berechtigte Interessen entgegenstehen, gilt das Urheberrecht komplett nicht mehr für mich? *g*"
+2013-07-16 22:26:41,XanClic,Ist auch undefiniert :<
+2013-07-16 22:26:49,XanClic,Aber zumindest ist es denkbar
+2013-07-16 22:27:13,Paddy,"Das heißt, der Richter kann frei entscheiden, was er tun will. Hm."
+2013-07-16 22:27:40,Paddy,"Ich glaube, es ist besser, man legt an Gesetze nicht dieselben Maßstäbe an wie an Programmiersprachen-Standards."
+2013-07-16 22:27:49,XanClic,Schade *g*
+2013-07-16 22:28:08,Paddy,Language Lawyers auf richtige Gesetze loslassen kann nicht gut ausgehen ;-)
+2013-07-16 22:28:19,XanClic,"Das schönste an C ist imo, dass (fast?) alle undefinierten Fälle definiert werden"
+2013-07-16 22:28:36,Paddy,Hm?
+2013-07-16 22:29:34,XanClic,Seite 575 bis 589
+2013-07-16 22:29:38,XanClic,In der C11-PDF
+2013-07-16 22:29:54,XanClic,“The behavior is undefined in the following circumstances:”
+2013-07-16 22:30:01,XanClic,Und dann kommt eine 14 Seiten lange Aufzählung *g*
+2013-07-16 22:31:13,Paddy,Seitenzahlen in der PDF oder auf den Seiten?
+2013-07-16 22:31:17,XanClic,PDF
+2013-07-16 22:31:37,XanClic,Seitenseitenzahl ist 57
+2013-07-16 22:31:38,XanClic,*557
+2013-07-16 22:31:47,Paddy,"Ah, jetzt. Geht bei mir bei 571 los"
+2013-07-16 22:31:55,Paddy,Und Seite 553
+2013-07-16 22:32:02,XanClic,Hmmmmm
+2013-07-16 22:32:06,XanClic,C11?
+2013-07-16 22:32:19,Paddy,Jo. Vielleicht hab ich einen älteren Draft oder so?
+2013-07-16 22:32:29,XanClic,"Hauptsache, bei mir ist mehr drin :3"
+2013-07-16 22:32:31,Paddy,2. Dezember 2010
+2013-07-16 22:32:42,XanClic,12. April 2011
+2013-07-16 22:33:41,Paddy,"""A nonempty source ﬁle does not end in a new-line character"""
+2013-07-16 22:33:46,Paddy,wtf? Das ist undefined?
+2013-07-16 22:33:55,XanClic,Das kann man bestimmt auch nett ausnutzen
+2013-07-16 22:34:24,XanClic,"Einen gcc-Patch einreichen, der das dann zu einer leeren Datei optimiert oder so *g*"
+2013-07-16 22:34:53,Paddy,Zulässig wär's
+2013-07-16 22:35:30,Paddy,"Hm, oder muss das trotzdem wenigstens korrekt bauen?"
+2013-07-16 22:35:41,XanClic,Bei undefined nicht
+2013-07-16 22:35:47,XanClic,Falsche Parameterzahl ist ja auch undefined
+2013-07-16 22:36:12,Paddy,Ist es?
+2013-07-16 22:36:22,Paddy,"Ich glaube, manche Sachen will ich gar nicht so genau wissen..."
+2013-07-16 22:36:29,XanClic,Ich hab das zumindest bei meinem Englischvortrag kürzlich aufgezählt *g*
+2013-07-16 22:36:53,XanClic,"Bei printf mit falscher Parameterzahl sieht man auch einen Fall, wo es durchkompilieren kann, obwohl die Anzahl nicht stimmt"
+2013-07-16 22:37:30,Paddy,Das ist ja auch eine andere Art von falsch
+2013-07-16 22:37:42,XanClic,"For a call to a function without a function prototype in scope, the number of arguments does not equal the number of parameters (6.5.2.2)."
+2013-07-16 22:37:48,XanClic,hmmmk
+2013-07-16 22:38:07,XanClic,"Na, hat keiner gemerkt *g*"
+2013-07-16 22:39:23,Paddy,"Hattest du aber Glück, dass dein Publikum so unkritisch war ;-)"
+2013-07-16 22:39:34,XanClic,"Eher, dass die kein C konnten *g*"
+2013-07-16 22:39:46,Paddy,Sag ich doch *g*
+2013-07-16 22:40:24,XanClic,"also 6.5.2.2, Abs. 2 sagt nur, dass die Zahl der Parameter stimmen soll (“shall”)"
+2013-07-16 22:40:44,XanClic,"Ah, das ist aber Constraint"
+2013-07-16 22:40:44,Paddy,"Hm, na dann"
+2013-07-16 22:40:45,XanClic,Und damit Fehler
+2013-07-16 22:41:01,XanClic,Nur bei “shall” außerhalb von Constraint ist es undefined *g*
+2013-07-16 22:41:09,XanClic,"Wer sich das auch ausgedacht hat, pffff"
+2013-07-16 22:41:28,Paddy,Wir müssen eben doch noch irgendwann selber eine Sprache basteln
+2013-07-16 22:41:54,XanClic,"SHyx0rmZ, mach mal"
+2013-07-16 22:41:57,Paddy,"Wir werden uns zwar nie einigen, aber immerhin wären wir dann selber schuld"
+2013-07-16 22:42:29,SHyx0rmZ,"ok, warte"
+2013-07-16 22:42:49,SHyx0rmZ,"wir orientieren uns am besten an Haskell, Python und Objective-C"
+2013-07-16 22:42:55,SHyx0rmZ,und machen das als C-Lib
+2013-07-16 22:42:56,XanClic,…
+2013-07-16 22:42:58,XanClic,du bist so ein arsch
+2013-07-16 22:42:59,livinskull,würg
+2013-07-16 22:43:01,SHyx0rmZ,:D
+2013-07-16 22:43:32,SHyx0rmZ,"http://libcello.org/ für die, die jetzt nicht wissen, wovon die Rede war"
+2013-07-16 22:45:17,Jonathan,"IsLaughing = true; e1 = new exceptionToThat(new question(new doesNotKnowCase(compilerForMyMotherboard.wantToMakeFirst, IDEController.wantToMakeFirst)));"
+2013-07-16 22:45:42,XanClic,gibts denn keine Z80-C-Compiler?
+2013-07-16 22:45:47,Jonathan,Naja doch
+2013-07-16 22:46:18,Jonathan,Aber das mit meinem Bank Switching werden die wohl leider nicht können
+2013-07-16 22:48:59,Paddy,"Bauen wir zusammen die Sprache, dann kannst du dein eigenes Backend für den Compiler schreiben ;-)"
+2013-07-16 22:49:29,Jonathan,*g*
+2013-07-16 22:49:42,SHyx0rmZ,"wir sollten das so machen, das jeder ein Feature nennt, das auf jeden Fall reinkommt"
+2013-07-16 22:49:46,Jidder,wieviele taktzyklen braucht so ein bankswitch eigentlich?
+2013-07-16 22:49:52,SHyx0rmZ,"stell ich mir lustig vor, wenn sich Dinge überschneiden"
+2013-07-16 22:50:09,Jonathan,"Hm, ich denk mal das eigentliche Switching dauert so 2µS"
+2013-07-16 22:50:09,Paddy,"Okay, ich fange mit COMEFROM an."
+2013-07-16 22:50:13,Jonathan,Xd
+2013-07-16 22:50:34,XanClic,Ich nehme Ausführungswahrscheinlichkeit von 99 % für jeden Befehl
+2013-07-16 22:50:43,Paddy,*lol*
+2013-07-16 22:51:13,Jonathan,Ich will Bankswitching mit Arrays und sonstigen Datenstrukturen über Page-Grenzen *muhaha*
+2013-07-16 22:51:32,Jonathan,Ach ja und Inline-Brainfuck
+2013-07-16 22:51:42,SHyx0rmZ,nur eins!
+2013-07-16 22:51:54,Jonathan,Dann nehm ich... INLINE-BRAINFUCK!!! >:D
+2013-07-16 22:52:04,SHyx0rmZ,ich dachte eher an so Dinge wie Duck-Typing oder so
+2013-07-16 22:52:08,SHyx0rmZ,aber wenn ihr lustig haben wollt
+2013-07-16 22:52:12,SHyx0rmZ,keine Arrays!
+2013-07-16 22:52:22,Paddy,"Naja, wenn ich ernsthaft machen soll, dann wäre ja statische Typisierung das erste"
+2013-07-16 22:52:42,Jonathan,"Ach ja und keinen Heap bitte (merkt ja keiner, dass ich schon was geschrieben habe)"
+2013-07-16 22:52:44,SHyx0rmZ,statisches Ententypisierung :D
+2013-07-16 22:53:53,Paddy,"Ich bin mal gespannt, wie du das implementierst ;-)"
+2013-07-16 22:55:09,SHyx0rmZ,ich auch *g*
+2013-07-16 22:56:02,Paddy,"Vermutlich irgendwie sowas von wegen ""structs sind kompatibel, wenn sie Felder gleichen Typs enthalten"" oder ähnlicher Blödsinn"
+2013-07-16 22:56:36,SHyx0rmZ,"nene, das ist zu wenig C++"
+2013-07-16 22:56:48,Paddy,Aber statisch und entisch
+2013-07-16 22:56:53,SHyx0rmZ,"""structs sind kompatibel, wenn ihre Felder ineinander castbar sind"""
+2013-07-16 22:57:02,Paddy,"Okay, von mir aus"
+2013-07-16 22:57:27,XanClic,Implizites Casten? Das ist doch kaputt
+2013-07-16 22:57:29,XanClic,Das will ich nicht!
+2013-07-16 22:57:50,Paddy,"SHyx0rmZ: Aber dann finde ich, COMEFROM und 99% Wahrscheinlichkeit passen auch gut und konsistent in diese Sprache"
+2013-07-16 22:57:50,XanClic,"(Zum Glück hast du keine Grenzen auferlegt, wie viele Sachen man nicht haben wollen darf)"
+2013-07-16 22:58:27,SHyx0rmZ,auch lustig
+2013-07-16 22:59:18,SHyx0rmZ,"ne, das formulier ich jetzt nicht aus, ist zu kompliziert"
+2013-07-16 22:59:29,SHyx0rmZ,auf jeden Fall kann man die 99% ins COMEFROM packen
+2013-07-16 23:00:07,Paddy,"Hm, das klingt auch lustig, wenn das COMEFROM nur in 99% funktioniert."
+2013-07-16 23:00:23,XanClic,Dann benutzt das doch einfach keiner :(
+2013-07-16 23:00:34,XanClic,Kann man nicht alle Befehle _außer_ COMEFROM zu 99 % funktionieren lassen?
+2013-07-16 23:00:35,Paddy,"Vor allem mit dem Feature aus Multithreaded Intercal, dass mehrere COMEFROMs von der gleichen Stelle mehrere Threads erzeugen"
+2013-07-16 23:00:43,XanClic,"Dann wird man gezwungen, dauernd COMEFROM zu nehmen"
+2013-07-16 23:01:05,SHyx0rmZ,"stell dir vor, du kannst bei COMEFROM beliebig viele Quellen angeben und geht dann durch wie durch nen Ringpuffer"
+2013-07-16 23:01:18,Paddy,XanClic: Dann baust du halt davor noch ein PLEASE DO ABSTAIN FROM MALFUNCTIONING ein ;-)
+2013-07-16 23:01:18,SHyx0rmZ,"und bei jedem Element hat der 99%, es zu wählen"
+2013-07-16 23:01:23,XanClic,"Paddy, xD"
+2013-07-16 23:01:31,XanClic,also
+2013-07-16 23:01:34,XanClic,jetzt wirds lächerlich
+2013-07-16 23:01:38,SHyx0rmZ,und der Programmfluss wird vor Ausführung des Programms von hinten aus festgelegt
+2013-07-16 23:01:39,XanClic,Das muss man ja schon sagen
+2013-07-16 23:04:49,DerHartmut,Außerdem muss der Quellcode immer exakt in der Form einen süßen Kätzchens formatiert werden
+2013-07-16 23:05:07,SHyx0rmZ,wäre die Sprache eigentlich objektorientiert?
+2013-07-16 23:05:27,XanClic,"Nein, funktional natürlich"
+2013-07-16 23:06:31,Paddy,Mit diesen Features wäre sie sicher nicht besonders funktional ;-)
+2013-07-16 23:07:13,XanClic,"Das hindert auch „echte“ funktionale Sprachen nicht daran, sich als solche zu bezeichnen"
+2013-07-16 23:09:30,Paddy,Punkt für dich *g*
+2013-07-16 23:13:41,Jonathan,Hmmmm
+2013-07-16 23:14:18,Jonathan,"C ansich enthält ja nur grundlegendste Funktionen wie z.B. Schleifen und Bedingungen, oder?"
+2013-07-16 23:14:51,XanClic,Das sind keine Funktionen
+2013-07-16 23:14:59,XanClic,C an sich „enthält“ gar keine Funktionen
+2013-07-16 23:15:14,XanClic,"Was bleibt sind alle syntaktischen Konstrukte, wie z. B. Schleifen und Bedingungen, ja :3"
+2013-07-16 23:16:07,Jonathan,"Hmh, dann dürfte es ansich ja gar nicht allzu schwer sein, einen C-Compiler zu schreiben."
+2013-07-16 23:16:28,XanClic,"Es ist vermutlich einer der einfacheren Compiler, das ist richtig"
+2013-07-16 23:16:39,XanClic,"Die Frage ist, ob es generell schwierig ist, Compiler zu schreiben *g*"
+2013-07-16 23:16:48,Jonathan,:P
+2013-07-16 23:17:13,Jonathan,"Naja, ich hab schon einige Interpreter und Compiler hinter mir, just another compiler wird da wohl auch noch drin sein *gg*"
+2013-07-16 23:17:33,XanClic,"Kommt immer drauf an, was man als solches bezeichnet"
+2013-07-16 23:17:42,XanClic,"Und gerade bei C will man schon, dass der auch ordentlich optimiert und so"
+2013-07-16 23:17:48,Jonathan,Stimmt auch wieder
+2013-07-16 23:18:15,Jonathan,Ich hab hier gerade so ein altes Board von mir vor mir liegen
+2013-07-16 23:18:27,Jonathan,"4x4 Tastenmatrix, 20x4 LCD"
+2013-07-16 23:18:37,Jonathan,ATMega328P @ 8 MHz
+2013-07-16 23:18:57,Jonathan,"Mit IDE und BASIC-Interpreter drauf, hihi"
+2013-07-16 23:19:08,Jonathan,Läuft sogar noch! :D
+2013-07-16 23:19:35,Paddy,"Öhm, C als einer der einfacheren Compiler? Sicher?"
+2013-07-16 23:19:47,XanClic,Hab ich mir sagen lassen
+2013-07-16 23:19:55,Jonathan,"Ich würd mal sagen, wenn man von der Optimierung absieht...?"
+2013-07-16 23:19:56,Paddy,"Ich habe in Erinnerung, dass die Sprache ziemlich kaputt und entsprechend schwer zu parsen ist"
+2013-07-16 23:19:58,SHyx0rmZ,der XanClic hat in letzter Zeit zuviel mit Ruby zu tun ;-)
+2013-07-16 23:20:35,XanClic,"Paddy, na ja, was wäre denn einfacher?"
+2013-07-16 23:20:38,XanClic,Außer Brainfuck?
+2013-07-16 23:20:52,XanClic,"Und ich meine, Bellard hat einen in 2 kB hinbekommen, wimre"
+2013-07-16 23:20:53,Jidder,ohne pointer ist c recht einfach
+2013-07-16 23:20:56,XanClic,"Gut, es ist Bellard, aber trotzdem *g*"
+2013-07-16 23:21:13,Paddy,"Ist das auch wirklich vollständiges C, was der TCC kann?"
+2013-07-16 23:21:36,SHyx0rmZ,"""is a tiny but complete ISOC99 C compiler"""
+2013-07-16 23:21:58,XanClic,"Ich weiß jetzt nicht, ob das für den IOCCC, also die 2 kB, wirklich der ganze TCC war"
+2013-07-16 23:22:22,SHyx0rmZ,"""compiler for a subset of C"""
+2013-07-16 23:51:24,Jonathan,"Gehört sowas wie Memory Banking bei C noch mit in die libc, oder ist das fest im Compiler?"
+2013-07-16 23:53:35,Paddy,Spracherweiterung des Compilers wahrscheinlich
+2013-07-16 23:54:36,Jonathan,"Hm, bedeutet wohl: Eigenen Compiler schreiben."
+2013-07-16 23:55:02,Jonathan,48kB wären nämlich nicht gerade allzu viel Speicher für ein Programm...
+2013-07-16 23:56:13,Jonathan,"Aber hey, ich hab hier jetzt ein sau aufwändiges Hardware-Unikat mit eigenem Kernel stehen, das wird jetzt durchgezogen!! :D"
+2013-07-16 23:57:24,Paddy,"Wenn die Programme selber bankswitchen dürfen, dann wird es ähnlich wie Segmentierung, und das können die meisten C-Compiler nicht"
+2013-07-16 23:57:34,Paddy,"Wenn es nur der Kernel macht, wäre es eher wie Paging"
+2013-07-16 23:58:02,Paddy,"Also wenn er es transparent für die Programme macht, meine ich damit"
+2013-07-16 23:58:32,Jonathan,"Transparent für die Programme geht ja nicht, die haben ja nur 48kB Adressraum."
+2013-07-16 23:58:51,Jonathan,"Naja, wenn man >=48kB Speicher nutzt, dann ist es transparent, ja."
+2013-07-16 23:59:25,Jonathan,"Will man mehr, muss man selbst per Syscall andere Speicherseiten einblenden."
+2013-07-16 23:59:51,Jonathan,* <=48kB meine ich natürlich

@@ -1,0 +1,714 @@
+date/time,nick,message
+2012-06-22 12:30:29,Th3Falc0n,hi
+2012-06-22 12:33:45,Th3Falc0n,ich bräuchte mal hilfe zum idt
+2012-06-22 12:33:54,Th3Falc0n,mein code: http://pastebin.com/A25Gy2Xu
+2012-06-22 12:34:01,Th3Falc0n,das ergebnis: restart
+2012-06-22 12:38:19,Th3Falc0n,"kann mir jemand sagen, wo mein fehler liegt?"
+2012-06-22 12:49:03,Th3Falc0n,überhaupt jemand da?
+2012-06-22 12:50:36,Th3Falc0n,"kevin, bluecode : ?"
+2012-06-22 12:50:50,kevin,In der IDT oder in der GDT
+2012-06-22 12:50:52,kevin,Oder in beidem
+2012-06-22 12:51:09,Th3Falc0n,er restartet bei nem interrupt
+2012-06-22 12:51:29,kevin,Bei welchem?
+2012-06-22 12:51:31,bluecode,moin
+2012-06-22 12:51:41,Th3Falc0n,"	asm(""int $0x0"");"
+2012-06-22 12:51:49,kevin,"Okay, und IRQs sind noch aus, oder?"
+2012-06-22 12:52:05,Th3Falc0n,ja
+2012-06-22 12:52:09,bluecode,man kann nicht einfach ne C-Funktion als Interrupthandler definieren
+2012-06-22 12:52:43,kevin,"Hm, ja... Also rein kommt man so schon, nur raus nicht mehr."
+2012-06-22 12:52:59,kevin,"Nachdem da ein while(true); steht, sollte das also eigentlich gehen, oder?"
+2012-06-22 12:53:29,kevin,Th3Falc0n: Wie sieht deine idt.h denn aus?
+2012-06-22 12:53:46,Th3Falc0n,mom
+2012-06-22 12:53:52,kevin,"Oder direkter gefragt, was ist IDT_INTERRUPT_GATE | IDT_DPL_0?"
+2012-06-22 12:54:16,Th3Falc0n,http://pastebin.com/YZ8j8dev
+2012-06-22 12:54:51,Th3Falc0n,IDT_DPL_0 ist einfach 0x00
+2012-06-22 12:55:17,Th3Falc0n,IDT_INTERRUPT GATE ist 110b << 8
+2012-06-22 12:55:35,kevin,"Und ist es Absicht, dass 0b100010000000000 eine Binärzahl mit nur 15 Stellen ist?"
+2012-06-22 12:55:58,kevin,"Ich vermute ja, dass das ein 0x8000 sein soll und du damit das Present-Bit setzen wolltest"
+2012-06-22 12:56:03,kevin,Jetzt aber ein 0x4000 hast
+2012-06-22 12:56:26,kevin,"(Siehst du, warum hex > binär?)"
+2012-06-22 12:56:51,Th3Falc0n,ne gerade nicht
+2012-06-22 12:57:09,oern,moinsen
+2012-06-22 12:57:13,Th3Falc0n,hi
+2012-06-22 12:57:27,kevin,"Th3Falc0n: Aber ist meine Vermutung richtig, dass du damit das Present-Bit setzen willst?"
+2012-06-22 12:57:54,Th3Falc0n,ja Present bit und D für 32bit
+2012-06-22 12:58:26,Th3Falc0n,ABER
+2012-06-22 12:58:29,kevin,"Dann würde ich mal schauen, an welcher Stelle du dich verzählt hast und die Null fehlt"
+2012-06-22 12:58:34,Th3Falc0n,ich habs shiften vergessen
+2012-06-22 12:58:42,Th3Falc0n,achne
+2012-06-22 12:58:50,Th3Falc0n,habs ja auf x
+2012-06-22 12:58:53,Th3Falc0n,ok ich zähl
+2012-06-22 12:59:07,kevin,"Und in Zukunft nimm Hex, da verzählt man sich nicht so leicht..."
+2012-06-22 12:59:27,Th3Falc0n,ok
+2012-06-22 12:59:32,Th3Falc0n,es fehlte eine 0
+2012-06-22 12:59:47,Th3Falc0n,läuft trotzdem nicht
+2012-06-22 13:00:54,Th3Falc0n,hex müsste das 0x8800 sein für 43 und 47 offset oder?
+2012-06-22 13:01:29,Th3Falc0n,aber uint16_t für x passt nicht
+2012-06-22 13:01:38,Th3Falc0n,sind nämlich 32 bit
+2012-06-22 13:02:43,kevin,x & 0xFFLL
+2012-06-22 13:02:52,kevin,"Das ist eher das Problem, da bleiben nämlich nur noch 8 Bit übrig"
+2012-06-22 13:03:02,kevin,"Das heißt, deine frisch gesetzten Flags fliegen gleich wieder raus"
+2012-06-22 13:03:09,Th3Falc0n,oh
+2012-06-22 13:03:29,kevin,"Falls du überhaupt an die richtige Stelle shiftest, das habe ich nicht geprüft"
+2012-06-22 13:03:39,Th3Falc0n,ich habs völlig verpeilt
+2012-06-22 13:03:41,Th3Falc0n,überall
+2012-06-22 13:04:50,kevin,"Stimmt, die Masken sehen überall arg knapp aus"
+2012-06-22 13:09:19,Th3Falc0n,http://pastebin.com/nGsQghKg
+2012-06-22 13:09:40,Th3Falc0n,"so siehts glaub ich besser aus, aber es restartet immer noch kevin "
+2012-06-22 13:10:34,kevin,Deine Konstanten sehen komisch aus
+2012-06-22 13:10:55,kevin,"Ich shifte zwar anders, aber selbst geshiftet ist es nicht dasselbe"
+2012-06-22 13:11:02,kevin,Zum Vergleich aus tutorial.git:
+2012-06-22 13:11:13,kevin, 101 #define IDT_FLAG_INTERRUPT_GATE 0xe
+2012-06-22 13:11:15,kevin, 102 #define IDT_FLAG_PRESENT 0x80
+2012-06-22 13:11:16,kevin, 103 #define IDT_FLAG_RING0 0x00
+2012-06-22 13:11:18,kevin, 104 #define IDT_FLAG_RING3 0x60
+2012-06-22 13:13:12,Th3Falc0n,ich guck mir mal den code ausm git an
+2012-06-22 13:13:59,kevin,"Ich glaube, wenn du deine Konstanten korrigierst, könnte es so hinhauen"
+2012-06-22 13:16:22,Th3Falc0n,ne läuft nicht
+2012-06-22 13:17:30,Th3Falc0n,ich werde mal deine idt_set_entry benutzen
+2012-06-22 13:17:30,Th3Falc0n,;)
+2012-06-22 13:21:15,Th3Falc0n,kevin: ich hasse dieses bit-schubsen
+2012-06-22 13:21:22,kevin,hehe
+2012-06-22 13:21:28,kevin,Tut es mit meiner Version?
+2012-06-22 13:21:36,Th3Falc0n,bin noch nicht so weit
+2012-06-22 13:23:55,Th3Falc0n,kevin: es läuft nicht
+2012-06-22 13:24:04,kevin,Dann steckt der Fehler vermutlich woanders
+2012-06-22 13:25:16,kevin,Deine stdint.h-Typen sind inzwischen alle korrekt?
+2012-06-22 13:25:57,Th3Falc0n,sollten
+2012-06-22 13:26:15,Th3Falc0n,http://pastebin.com/1QesiQZg
+2012-06-22 13:26:40,Th3Falc0n,der gdt funktioniert
+2012-06-22 13:26:47,Th3Falc0n,*die
+2012-06-22 13:26:57,kevin,"Jo, sieht gut aus"
+2012-06-22 13:27:52,kevin,"Ein öffentliches Repo mit dem Gesamtkunstwerk hast du nicht, oder?"
+2012-06-22 13:28:00,Th3Falc0n,noch nicht
+2012-06-22 13:28:25,Th3Falc0n,aber ich könnts dir hochladen
+2012-06-22 13:30:15,kevin,"Ok, dann mach das, wenn ich's debuggen soll"
+2012-06-22 13:30:48,Th3Falc0n,eben filezilla auf der vm installiern...
+2012-06-22 13:31:34,kevin,"Ah, du bist auch einer von denen, die in einer VM entwickeln?"
+2012-06-22 13:31:39,Th3Falc0n,ja
+2012-06-22 13:31:53,Th3Falc0n,wieso?
+2012-06-22 13:31:55,Th3Falc0n,^^
+2012-06-22 13:33:30,Th3Falc0n,achja die vm verweigert gerade das internet -.-
+2012-06-22 13:34:50,oern,seit wann gibt es in c überhaupt binärangabe von zahlen?
+2012-06-22 13:34:58,kevin,"Gar nicht, glaube ich"
+2012-06-22 13:35:11,kevin,gcc macht das seit 4.2 oder so
+2012-06-22 13:35:34,oern,kate highlightet das jedenfalls nicht
+2012-06-22 13:36:16,kevin,Ich finde es auch nicht nützlich
+2012-06-22 13:37:39,Th3Falc0n,die vm tut weder internet noch usb... ein moment bitte ^^
+2012-06-22 13:38:31,kevin,"Eine VM, die weder Internet noch USB kann, kann sicher sowieso keine IDT ;-)"
+2012-06-22 13:38:58,Th3Falc0n,naja das OS läuft beim debugging ja auch auf qemu in der VM
+2012-06-22 13:42:07,Th3Falc0n,mich regt das auf
+2012-06-22 13:43:50,oern,kannst du nicht einfach das festplattenimage im host mounten?
+2012-06-22 13:44:18,Th3Falc0n,host = windows
+2012-06-22 13:44:45,Th3Falc0n,usb läuft
+2012-06-22 13:46:19,Th3Falc0n,kevin: http://213.165.78.19/mikrOS.tar.gz
+2012-06-22 13:47:50,kevin,"""host = windows"" ist natürlich auch ein lösenswertes Problem"
+2012-06-22 13:48:06,Th3Falc0n,aber die spiele laufen nur auf windows...
+2012-06-22 13:48:16,stultus,Dualboot?
+2012-06-22 13:48:23,stultus,Oder Wine.
+2012-06-22 13:48:35,stultus,Wobei Dualboot erheblich einfacher einzurichten wäre.
+2012-06-22 13:48:54,stultus,"Windows installieren, 60gb oder so für ne Linuxinstallation unpartitioniert freilassen. Anschließend Linux nach wahl installieren."
+2012-06-22 13:49:06,stultus,Kriegst beim booten nen Menü und gut ist ;)
+2012-06-22 13:49:28,Th3Falc0n,hmm ja
+2012-06-22 13:49:37,Th3Falc0n,irgendwann mal
+2012-06-22 13:49:49,stultus,Kann nur empfehlen es direkt so zu machen ;)
+2012-06-22 13:49:57,stultus,Macht OS-Dev einfach erheblich einfacher.
+2012-06-22 13:50:22,stultus,"Sonst hantierst du in nen paar Tagen wenn Multitasking läuft und Binaries laden willst entweder mit nem Crosscompiler der ELF kann, oder du verwendest PE."
+2012-06-22 13:50:41,stultus,"Letzterer Fall hält dich auf Windows ziemlich fest, ersterer ist nicht ganz trivial."
+2012-06-22 13:50:57,Th3Falc0n,ich entwickle doch auf ner linux vm!?
+2012-06-22 13:50:58,oern,Th3Falc0n: du musst in init.c beim funktionsaufruf von set_idt_entry den selector 0x08 mit angeben
+2012-06-22 13:51:03,stultus,aso *g*
+2012-06-22 13:51:13,stultus,Dann betrachte die VM als Host? dadrin kannst du doch das image mounten
+2012-06-22 13:51:40,Th3Falc0n,"wenn die vm aber nicht ins internet kommt, kann ich auch nichts aufn server laden"
+2012-06-22 13:52:03,stultus,Wo liegt das Problem der VM internet zu geben? Eigentlich alle Virtualisierungslösungen die ich kenne können NAT.
+2012-06-22 13:52:25,Th3Falc0n,"ja, aber heute funktioniert es aus irgendeinen grund nicht, auch wen NAT aktiv ist"
+2012-06-22 13:52:42,stultus,"VirtualBox, qemu, was läuft?"
+2012-06-22 13:52:59,stultus,ggf. schauen was die Firewall unter Windows anrichtet?
+2012-06-22 13:54:51,Th3Falc0n,"ne, ich glaub es liegt am netzwerk, ich hab hier momentan eh probleme"
+2012-06-22 13:55:00,Th3Falc0n,(Problem liegt zwischen virtual box und der debian vm)
+2012-06-22 13:56:11,stultus,"Das wär natürlich doof. Gibt natürlich da ja auch genügend was man schnell falsch anklicken kann. ""Kabel"" raus ist halt doof. Normalerweise müsste dhclient sofort ne IP liefern :/"
+2012-06-22 13:56:36,Th3Falc0n,oern: thx läuft :)
+2012-06-22 13:57:18,oern,"außerdem solltest du in load_idt nicht die irqs aktivieren, weil du den pic noch nicht umprogrammiert hast"
+2012-06-22 13:57:34,Th3Falc0n,jo das kommt jetzt
+2012-06-22 13:58:10,DesL,moin
+2012-06-22 14:00:24,Th3Falc0n,hi
+2012-06-22 14:04:30,kevin,Th3Falc0n: Du bist doch ein Idiot. :-)
+2012-06-22 14:04:50,kevin,0 ist kein toller Selektor für das cs vom Interrupthandler
+2012-06-22 14:05:31,kevin,"Ah, oern hat das sogar auch schon gefunden"
+2012-06-22 14:05:39,Th3Falc0n,danke fürs kompliment :)
+2012-06-22 14:07:23,kevin,"Und ich bin auch einer, ich hätte nur den Errorcode anschauen müssen :-/"
+2012-06-22 14:07:48,Th3Falc0n,ich bin wieder in ner restart schelife
+2012-06-22 14:07:56,kevin,Glückwunsch ;-)
+2012-06-22 14:08:40,stultus,"Positiv sehn, Stillstand gibts da offensichtlich nicht ;)"
+2012-06-22 14:08:49,kevin,"Hm, was ist denn Exception 11?"
+2012-06-22 14:09:16,Th3Falc0n,?
+2012-06-22 14:09:41,kevin,"Ah, ein #NP hab ich da verursachet (Segment not present)"
+2012-06-22 14:12:21,kevin,"Gut, also nächstes Mal sollte ich einfach nur die qemu.log anständig lesen, Exceptionnummer und Errorcode verraten eigentlich alles..."
+2012-06-22 14:13:48,Th3Falc0n,also
+2012-06-22 14:13:52,Th3Falc0n,ich finde den fehler wieder nicht
+2012-06-22 14:17:30,Th3Falc0n,kevin: wie aktivier ich bei qemu das log?
+2012-06-22 14:17:36,kevin,-d int
+2012-06-22 14:17:45,kevin,Wenn du Interrupts/Exception loggen willst
+2012-06-22 14:18:03,kevin,Das landet dann in /tmp/qemu.log
+2012-06-22 14:18:30,Th3Falc0n,thx
+2012-06-22 14:19:18,Th3Falc0n,und wie such ich da den fehler?
+2012-06-22 14:21:36,Th3Falc0n,kevin: hilfde
+2012-06-22 14:22:04,kevin,Du suchst die erste unerwartete Exception
+2012-06-22 14:22:17,kevin,Vorhin ging die Log so los:
+2012-06-22 14:22:22,Th3Falc0n,check_exception old: 0xffffffff new 0xd
+2012-06-22 14:22:22,Th3Falc0n,?
+2012-06-22 14:22:24,kevin,     0: v=00 e=0000 i=1 cpl=0 IP=0008:0000000000100819 pc=0000000000100819 SP=0010:0000000000104fe0 EAX=0000000000000002
+2012-06-22 14:22:36,kevin,"v=00 heißt Interrupt 0, und e=0000 ist der Error Code"
+2012-06-22 14:23:20,Th3Falc0n,     0: v=20 e=0000 i=0 cpl=0 IP=0008:00100c91 pc=00100c91 SP=0010:00104ff8 EAX=00000002
+2012-06-22 14:23:22,Th3Falc0n,EAX=00000002 EBX=00009500 ECX=000b8000 EDX=00000140
+2012-06-22 14:23:24,Th3Falc0n,sowas?
+2012-06-22 14:23:27,kevin,Genau
+2012-06-22 14:23:42,kevin,"Interrupt 0x20 ist vermutlich der Timer, wenn du den PIC so gemappt hast"
+2012-06-22 14:23:53,kevin,Vorhin kam dann anschließend das hier:
+2012-06-22 14:23:54,kevin,     1: v=0d e=0000 i=0 cpl=0 IP=0008:0000000000100819 pc=0000000000100819 SP=0010:0000000000104fe0 EAX=0000000000000002
+2012-06-22 14:24:07,kevin,"0x0d = 13, das ist ein General Protection Fault (#GP)"
+2012-06-22 14:24:18,Th3Falc0n,     1: v=0d e=0102 i=0 cpl=0 IP=0008:00100c91 pc=00100c91 SP=0010:00104ff8 EAX=00000002
+2012-06-22 14:24:48,kevin,Das Interessante hier ist das e=0102
+2012-06-22 14:25:26,kevin,"Wenn du in der Intel-Doku nachschlägst, was der Error Code für #GP bedeutet, dann siehst du, dass die 2 das Flag ist, dass anzeigt, dass was mit einem IDT-Eintrag nicht stimmt"
+2012-06-22 14:25:33,Th3Falc0n,kann es daran liegen dass ich vergessen hab IDT entries richtig zu setzen?
+2012-06-22 14:25:50,kevin,"Ich vermute, dass du einfach keinen Eintrag für Interrupt 0x20 hast"
+2012-06-22 14:26:18,Th3Falc0n,ich hab nur für interrrupt 0 weil das array nicht länger ist :m
+2012-06-22 14:26:30,kevin,"Die 0x100 aus dem Error Code sagen dir noch, dass es 0x20 war (0x100 >> 3 == 0x20), aber das wissen wir ja schon aus der Logdatei"
+2012-06-22 14:27:09,Th3Falc0n,habs 
+2012-06-22 14:27:19,kevin,"Jo, dann wär es geschickt, wenn du entweder die Hardware-IRQs abschaltest oder halt die IDT vergrößerst"
+2012-06-22 14:27:32,Th3Falc0n,ja hab die IDT richtig gesetzt
+2012-06-22 14:27:43,Th3Falc0n,IDT_ENTRIES war 1
+2012-06-22 14:27:48,Th3Falc0n,habs jetzt auf 64
+2012-06-22 14:30:54,Th3Falc0n,dann werd ich jetzt wohl nen tastaturtreiber schreiben
+2012-06-22 14:34:58,kevin,Wolltest du das nicht schon gestern? ;-)
+2012-06-22 14:35:17,Th3Falc0n,"ja, kam aber nicht so schnell voran mit der IDT"
+2012-06-22 14:35:21,Th3Falc0n,wie man sieht
+2012-06-22 14:38:33,Th3Falc0n,kevin: wenn ich den Artikel richtig versteht funktioniert eine keyboard abfrage auch ohne interrupts?
+2012-06-22 14:39:09,Th3Falc0n,und die interrupts dienen im prinzip nur zum warten auf die antwort?
+2012-06-22 14:40:52,kevin,"Du kannst die Tastatur auch pollen, ja"
+2012-06-22 14:41:06,kevin,Willst du aber nicht ;-)
+2012-06-22 14:41:28,Th3Falc0n,ich... ich will die tastatur nicht pollen.
+2012-06-22 14:41:31,Th3Falc0n,;)
+2012-06-22 14:41:47,kevin,Ansonsten würde ja immer das ganze System stehen während irgendein Programm einen Tastendruck bekommen könnte
+2012-06-22 14:48:52,Th3Falc0n,kevin: wie kann ich die funktion eines funktionpointers aufrufen?
+2012-06-22 14:49:26,kevin,Wie eine Funktion
+2012-06-22 14:49:34,Th3Falc0n,ok
+2012-06-22 15:18:14,micha,Moin
+2012-06-22 15:56:30,Th3Falc0n,kevin: ich bräuchte nochmal hilfe. wie kann ich ein funktionspointerarray definieren
+2012-06-22 15:56:49,kevin,Bin ich ein C-Standard?
+2012-06-22 15:57:07,Th3Falc0n,lol
+2012-06-22 15:57:15,Th3Falc0n,nein du bist mein mentor ^^
+2012-06-22 15:57:39,kevin,"Also ich würde halt mal einen Haufen Klammern draufwerfen und hoffen, dass der Compiler das akzeptiert ;-)"
+2012-06-22 15:57:51,Th3Falc0n,lol
+2012-06-22 15:58:57,Th3Falc0n,hat funktioniert kevin 
+2012-06-22 15:59:04,kevin,*lol*
+2012-06-22 15:59:15,Th3Falc0n,static void (*handlers[IDT_ENTRIES])();
+2012-06-22 15:59:23,kevin,"int (*apfi[3])(int *x, int *y); ist das Beispiel im Standard"
+2012-06-22 15:59:34,kevin,Dürfte also so passen
+2012-06-22 15:59:48,kevin,"Oder um es richtig spaßig zu machen: int (*fpfi(int (*)(long), int))(int, ...);"
+2012-06-22 16:00:02,Th3Falc0n,ja ne is klar
+2012-06-22 16:00:15,kevin,"""declares a function fpfi that returns a pointer to a function returning an int."""
+2012-06-22 16:00:37,Th3Falc0n,also ne funktion die ne funktion zurückgibt
+2012-06-22 16:00:46,kevin,"Jo, wär ja sonst langweilig"
+2012-06-22 16:05:32,Th3Falc0n,"wie alt seid ihr hier eig so, wenn ich fragen darf?"
+2012-06-22 16:09:01,micha,warum?
+2012-06-22 16:11:23,Th3Falc0n,weil ich mich mit 14 fehl am platz fühle? ^^
+2012-06-22 16:12:03,micha,ich mich doch auch? (vielleicht)
+2012-06-22 16:12:27,oern,also ich bin auch 14
+2012-06-22 16:13:15,micha,und wer's wissen will: ich bin 12
+2012-06-22 16:15:50,kevin,"Geht gar nicht, Jidder ist schon zwölf"
+2012-06-22 16:16:07,kevin,"Und zwar schon seit Jahren, also hat der ein Vorrecht"
+2012-06-22 16:16:31,micha,seit vieviel jahren?
+2012-06-22 16:17:31,kevin,Seit mindestens 13.
+2012-06-22 16:18:04,Th3Falc0n,kevin: wo liegt die ports.h?
+2012-06-22 16:18:25,kevin,"In deinem Projektverzeichnis, idealerweise"
+2012-06-22 16:18:39,Th3Falc0n,ich mein in tyndur...
+2012-06-22 16:18:50,micha,in include?
+2012-06-22 16:19:18,micha,die findet man aber wirklich leicht.
+2012-06-22 16:19:33,Th3Falc0n,oh fck
+2012-06-22 16:43:55,micha,vale! 
+2012-06-22 17:08:50,Th3Falc0n,kevin: mein tastatur treiber sagt mir nur unbekannter scancode...
+2012-06-22 17:10:28,kevin,Musst du fixen :-)
+2012-06-22 17:10:38,Th3Falc0n,yeah und wie?
+2012-06-22 17:10:46,kevin,Indem du den Code korrekt machst
+2012-06-22 17:10:55,Th3Falc0n,könntest du helfen?
+2012-06-22 17:10:56,Th3Falc0n,^^
+2012-06-22 17:11:04,kevin,"Ein guter Tastaturtreiber würde auch noch sagen, was für ein Scancode"
+2012-06-22 17:11:11,kevin,Und ein guter Fragensteller würde den Code herzeigen ;-)
+2012-06-22 17:11:38,Th3Falc0n,jeder scancode
+2012-06-22 17:11:39,Th3Falc0n,http://pastebin.com/kieWg7x5
+2012-06-22 17:13:02,kevin,"Ja, ich meine, was der Treiber meint, dass er bekommen hat"
+2012-06-22 17:14:30,Th3Falc0n,"0x1, 0x2 etc"
+2012-06-22 17:15:20,Th3Falc0n,also er bekommt di richtigen scancodes
+2012-06-22 17:15:46,Th3Falc0n,aber aus irgendeinen grund bekommt er immer set 1
+2012-06-22 17:15:48,Th3Falc0n,statt 0
+2012-06-22 17:16:42,Th3Falc0n,und ich hab %%c noch nicht in kprintf inplementiert...
+2012-06-22 17:16:48,Th3Falc0n,*%c
+2012-06-22 17:16:55,oern,e0_code wird nie 0
+2012-06-22 17:17:37,Th3Falc0n,ich habs nur aus der wiki übernommen
+2012-06-22 17:18:18,kevin,Das ist der Fehler
+2012-06-22 17:18:54,Th3Falc0n,ist da absichtlich ein fehler um die aufmerksamkeit der leser zu prüfen? ^^
+2012-06-22 17:19:40,kevin,Keine Ahnung
+2012-06-22 17:20:03,kevin,"Also da steht, der Code sei aus tyndur, aber der tyndur-Code sieht anders aus"
+2012-06-22 17:20:52,kevin,"Der hat da nämlich ein paarmal false stehen, wo im Wiki 1 steht"
+2012-06-22 17:21:07,kevin,Also am besten doch selber überlegen
+2012-06-22 17:25:05,Th3Falc0n,"gut, läuft"
+2012-06-22 17:25:24,Th3Falc0n,dann erweiter ich mein printf mal um %c
+2012-06-22 17:27:59,Th3Falc0n,done
+2012-06-22 17:28:20,Th3Falc0n,"Exception 6, Kernel halt!"
+2012-06-22 17:28:21,Th3Falc0n,:(
+2012-06-22 17:29:22,kevin,Irgendwo ins Leere gesprungen?
+2012-06-22 17:29:43,Th3Falc0n,nicht das ich wüsste
+2012-06-22 17:29:46,Th3Falc0n,das einzige neue ist
+2012-06-22 17:29:54,Th3Falc0n,				case 'c':
+2012-06-22 17:29:55,Th3Falc0n,"					kputc(va_arg(ap, char));"
+2012-06-22 17:29:57,Th3Falc0n,					break;
+2012-06-22 17:30:00,Th3Falc0n,in kprintf
+2012-06-22 17:31:42,oern,versuch mal mit int statt char in der zweiten zeile
+2012-06-22 17:32:36,Th3Falc0n,geht
+2012-06-22 17:33:03,oern,"tja, ich hab halt ne gute glaskugel ;-)"
+2012-06-22 17:33:13,Th3Falc0n,"nur das der keycode scheinbar nicht richtig translated wird, da da die assci symbole rauskommen (smiley etc für esc, 1 ...)"
+2012-06-22 17:34:13,Th3Falc0n,weil das garkein ascii sein soll was da rauskommt...
+2012-06-22 17:35:11,Th3Falc0n,kevin: und wie funktioniert jetzt dynamische speicherverwaltung? ^^... ich glaub jetzt wirds spaßig
+2012-06-22 17:36:58,kevin,In der Regel funktioniert sie nicht *g*
+2012-06-22 17:37:18,Th3Falc0n,kevin: als kernel darf ich mir doch einfach den speicher mit nem zeiger nehmen den ich will oder?
+2012-06-22 17:37:24,kevin,Schon
+2012-06-22 17:37:38,kevin,"Aber es wär besser, wenn der auch wirklich frei ist"
+2012-06-22 17:37:47,Th3Falc0n,xD ja ^^
+2012-06-22 17:38:13,Th3Falc0n,naja ich les erstmal im tutorial weiter mit multitastking
+2012-06-22 17:39:10,PatrickBic,"<oern> tja, ich hab halt ne gute glaskugel ;-)"
+2012-06-22 17:39:14,PatrickBic,andere nennens glueck
+2012-06-22 17:39:14,PatrickBic,xD
+2012-06-22 17:40:20,kevin,"Der oern war so lange nicht mehr wirklich da, das läuft wieder unter Anfängerglück *g*"
+2012-06-22 17:40:24,PatrickBic,;)
+2012-06-22 17:40:48,PatrickBic,sagt mir lieber warum ich immer nen getHostMem vetoed direct read kriege bei ring0=>ring3
+2012-06-22 17:40:59,kevin,Weil du es falsch machst
+2012-06-22 17:41:05,PatrickBic,mit ner speicheradresse dazu 0x0000 (mehr) a0a3a
+2012-06-22 17:41:08,PatrickBic,kevin: danke! :D
+2012-06-22 17:41:08,oern,nur weil ich nicht da war heißt das ja nicht dass ich mich nicht mit os-dev beschäftigt habe ^^
+2012-06-22 17:42:09,kevin,"PatrickBic: Mit bochs-Fehlermeldungen kenne ich mich nicht näher aus, und mit kleingehackten erst recht nicht"
+2012-06-22 17:42:19,kevin,"Ich nehme jedenfalls an, dass das bochs sein soll"
+2012-06-22 17:44:08,PatrickBic,http://i45.tinypic.com/2rmmbn6.png
+2012-06-22 17:44:15,kevin,"Ich schätze mal, dass entweder cs:eip oder ss:esp nach dem iret falsch sind"
+2012-06-22 17:45:00,PatrickBic,"aber warum? ich habs selber gecodet, verglichen mitn tutorial-aehnlichen-code, danach sogar mal testweise diesen genommen usw"
+2012-06-22 17:45:01,kevin,Eventuell will er Code an 0xa0a3a ausführen oder so?
+2012-06-22 17:45:11,kevin,"Und merkt, dass Code im Videospeicher eigentlich Blödsinn ist?"
+2012-06-22 17:45:30,kevin,Kannst du mal einen CPU-Dump machen?
+2012-06-22 17:45:50,kevin,"Da müsste man ja sehen, aus welchem Register das a0a3a kommt"
+2012-06-22 17:46:31,PatrickBic,achja: es ist nicht sofort wenn man die funktion aufruft
+2012-06-22 17:46:43,PatrickBic,"ist in etwa so: ich ruf die auf, es ""haengt"" 2-3-4s dann der fehler"
+2012-06-22 17:47:21,kevin,"Spricht dafür, dass du wild irgendwelchen RAM ausführst und irgendwann kommt er dann in den Videospeicher"
+2012-06-22 17:47:51,kevin,Ich würde den Stack beim iret prüfen
+2012-06-22 17:47:58,kevin,Also mal einen Breakpoint auf das iret und dann schauen
+2012-06-22 17:48:25,PatrickBic,der fehler.. is der eher in der funktion wo es auftritt zu suchen oder vorher wo?
+2012-06-22 17:53:01,kevin,"Ich dachte, wo es auftritt ist beim Ringwechsel?"
+2012-06-22 17:53:28,kevin,Genau da würde ich dann schauen
+2012-06-22 17:54:33,kevin,"Wobei der eigentliche Fehler auch gut früher sein kann, z.B. da wo der Stackframe für den Userspace-Task initialisiert wird"
+2012-06-22 18:03:56,PatrickBic,ja
+2012-06-22 18:04:05,PatrickBic,"<kevin> Ich dachte, wo es auftritt ist beim Ringwechsel? => ja"
+2012-06-22 18:06:25,Th3Falc0n,kevin: ist es praktikabel beim scheduler eine maximal anzahl an tasks zu definieren?
+2012-06-22 18:06:56,Th3Falc0n,oder müssen die unbedingt dynamisch schein?
+2012-06-22 18:07:13,kevin,Maximale Anzahl vorzuschreiben ist kaputt
+2012-06-22 18:07:14,kevin,"Aber wenn man keine Lust hat, es richtig zu machen, kann das vorläufig schon praktikabel sein ;-)"
+2012-06-22 18:07:38,Th3Falc0n,ok
+2012-06-22 18:07:40,Th3Falc0n,:D
+2012-06-22 18:08:43,kevin,"Andererseits kommt man ohne Speicherverwaltung eh nicht weit, egal wie viele Kaputtheiten man einbaut"
+2012-06-22 18:12:14,oern,linux 0.01 konnte afaik (aufgrund der segmentierung) nur 64 tasks
+2012-06-22 18:12:31,oern,aber das war auch kaputt
+2012-06-22 18:14:48,kevin,"Huch, das hat Segmentierung benutzt?"
+2012-06-22 18:15:38,oern,ja
+2012-06-22 18:15:52,oern,die speicherverwaltung versteh ich auch immer noch nicht ganz
+2012-06-22 18:16:43,oern,jeder task hatte 64mib speicher (daher die 64 tasks: 64mib * 64 = 4gib) und am anfang lag ein page directory
+2012-06-22 18:17:10,kevin,Klingt kaputt *g*
+2012-06-22 18:17:15,Th3Falc0n,klingt unmöglich
+2012-06-22 18:18:00,oern,benutzt linux heutzutage eigentlich noch das 386-hardware-multitasking?
+2012-06-22 18:18:18,Th3Falc0n,wo liegt das page directory wenn 4GB von 4GB reserviert sind?
+2012-06-22 18:18:49,kevin,Im Task 0 vermutlich
+2012-06-22 18:18:59,oern,"die 64mib sind ja nur der addressraum des tasks, das heißt nicht, dass sie reserviert sind"
+2012-06-22 18:19:06,Th3Falc0n,aso
+2012-06-22 18:19:20,oern,"task 0 ist der kernel, der hat identity mapping"
+2012-06-22 18:20:45,kevin,"Hm, cool, das ist tatsächlich Hardware-Taskswitching"
+2012-06-22 18:20:58,kevin,"Wusste ich gar nicht, dass Linux das mal benutzt hat"
+2012-06-22 18:21:36,oern,"hat mich auch viel zeit gekostet, herauszufinden wie switch_task funktioniert"
+2012-06-22 18:21:47,oern,* switch_to
+2012-06-22 18:22:11,kevin,Aber Syscalls gehen anscheinend trotzdem über Interrupt Gates
+2012-06-22 18:22:51,oern,die methode von switch_to könnte man mal im hw-multitasking-tutorial anstatt des opcode-hacks anbieten
+2012-06-22 18:23:37,kevin,Was haben wir denn da stehen?
+2012-06-22 18:23:57,kevin,Bzw. was für ein Hardware-Multitasking-Tut? Wir haben sowas?
+2012-06-22 18:24:17,oern,da wird die jmp-instruction überschrieben. problem ist da aber vielleicht ein(e) prefetch-queue
+2012-06-22 18:25:22,kevin,"Okay, und Linux hat da einfach einen Far-Pointer"
+2012-06-22 18:26:02,kevin,"Hm, oder verstehe ich das grad falsch...?"
+2012-06-22 18:26:17,oern,so hab ich das aber auch verstanden
+2012-06-22 18:26:54,kevin,"Ich hätte das _tmp jetzt als Far Pointer verstanden, aber warum übergibt er dann a und b einzeln?"
+2012-06-22 18:27:44,Th3Falc0n,multitasking funktioniert.
+2012-06-22 18:27:54,kevin,oern: Wie tut das? ;-)
+2012-06-22 18:28:08,oern,der offset ist dabei egal
+2012-06-22 18:28:21,kevin,"Ah, das wird komplett ignoriert?"
+2012-06-22 18:28:24,oern,ja
+2012-06-22 18:28:33,oern,aber er muss trotzdem im speicher vorhanden sein
+2012-06-22 18:28:38,kevin,Jo
+2012-06-22 18:29:02,kevin,Dann kann er nach b natürlich irgendwelchen anderen Müll schreiben
+2012-06-22 18:29:28,oern,b ist doch segment und a offset?
+2012-06-22 18:29:52,kevin,"Ach so, dann schreibt er da erst das Segment?"
+2012-06-22 18:30:01,kevin,"Jo, eigentlich sinnvoller sorum"
+2012-06-22 18:30:15,kevin,Mit Far-Pointern hantiere ich nicht so oft ;-)
+2012-06-22 18:31:16,oern,in finnland muss es wohl wirklich kalt sein ;-)
+2012-06-22 18:31:48,kevin,"Meinst du die Kälte wirkt sich auf die Fähigkeit aus, unmittelbar verständlichen Code zu schreiben? *g*"
+2012-06-22 18:32:38,oern,"weiß nicht, ich hab noch keinen code von linus aus kalifornien gelesen"
+2012-06-22 18:34:00,kevin,hehe
+2012-06-22 18:35:47,oern,gibt es eigentlich irgendwo gute dokumentation zu neueren linux-kerneln? fast alles was ich finde ist noch aus 2.4 zeiten
+2012-06-22 18:36:14,kevin,Documentation/ hat nichts?
+2012-06-22 18:39:15,oern,"ich glaub nicht, ich suche eigentlich nach dokumentation über die speicherverwaltung heute"
+2012-06-22 18:40:04,oern,die dateinamen verraten da relativ wenig über den inhalt finde ich
+2012-06-22 18:44:46,kevin,Was willst du denn dort nachschauen?
+2012-06-22 18:44:55,kevin,"Ich glaube, die Speicherverwaltung ist heute _ziemlich_ kompliziert"
+2012-06-22 18:45:27,oern,deswegen ja
+2012-06-22 18:45:44,oern,zum beispiel copy-on-write
+2012-06-22 18:46:28,kevin,"Naja, das Prinzip hinter COW ist einfach. Aber ob ich das im Linuxcode finden und verstehen würde - keine Ahnung."
+2012-06-22 18:47:46,kevin,"Hm, und Documentation/vm/ hat wirklich nichts, was danach aussieht"
+2012-06-22 18:48:08,oern,so wie das auf http://www.tu-chemnitz.de/informatik/RA/publications/p95/pl01_95/subsection3_4_3.html beschrieben wird kann es eigentlich nicht ganz funktionieren
+2012-06-22 18:49:44,kevin,Warum nicht?
+2012-06-22 18:51:36,oern,"irgendwie muss man dazu zum beispiel für jede speicherseite einen counter haben, wie oft sie benutzt wird bzw. von welchen prozessen"
+2012-06-22 18:53:04,oern,"z.b. muss festgestellt werden, von wo beim schreiben kopiert wird"
+2012-06-22 18:53:40,kevin,"Jo, das müsste in Linux die struct page haben. Mal schauen, wo die genau herkommt."
+2012-06-22 18:54:10,kevin,include/linux/mm_types.h
+2012-06-22 18:54:37,oern,ist das nicht sehr viel overhead?
+2012-06-22 18:55:05,kevin,Wie willst du es sonst machen?
+2012-06-22 18:55:12,oern,weiß ich nicht
+2012-06-22 18:55:37,oern,"ich würde wahrscheinlich tagelang nach was besserem suchen, nichts finden und das projekt dann aufgeben (oder auf cow verzichten)"
+2012-06-22 18:56:40,kevin,"Ich hatte mir irgendwann mal was überlegt, was ich vernünftig genug fand, aber ich hab's längst wieder vergessen *g*"
+2012-06-22 18:58:17,oern,mal was anderes: kompiliert bei euch der cross-fpc von lbuilds auf einem 64-bit system?
+2012-06-22 18:58:29,kevin,"Hat er mal, glaube ich"
+2012-06-22 18:58:37,kevin,"Hm, vm_area_struct ist es wohl eher, nicht page"
+2012-06-22 19:00:59,kevin,Blödsinn.
+2012-06-22 19:01:13,kevin,"Ich sollte hier keinen Linuxcode kommentieren, ich mache mich noch zum Affen *g*"
+2012-06-22 19:01:38,kevin,oern: Tut der FPC bei dir denn nicht?
+2012-06-22 19:02:03,oern,ich mach gerade mal make lbuilds-env; noch ist er aber bei [gcc] Kompilieren...
+2012-06-22 19:02:15,oern,aber bisher ging es nicht
+2012-06-22 19:02:29,oern,irgendwas mit ppcx64
+2012-06-22 19:03:01,kevin,Im Zweifelsfall brauchst du einen 32-Bit-Host-FPC
+2012-06-22 19:03:03,PatrickBic,sag mal wer was zwischen 1 und 168
+2012-06-22 19:03:21,kevin,"Aber eigentlich dachte ich, das sei nicht mehr nötig"
+2012-06-22 19:03:23,kevin,PatrickBic: 56
+2012-06-22 19:03:25,oern,brauchst du eine zufallszahl?
+2012-06-22 19:03:34,kevin,"Ah, Mist. Die Zufallszahl war doch 4."
+2012-06-22 19:03:38,PatrickBic,"nein, ich hab kA welche folge ich angucken soll ^^"
+2012-06-22 19:03:41,PatrickBic,danke kevin
+2012-06-22 19:04:08,kevin,"PatrickBic: Gar keine, du sollst an deinem OS weiterhacken ;-)"
+2012-06-22 19:04:21,oern,juhu es gibt einen markt für apps die zufallszahlen ausgeben
+2012-06-22 19:04:37,oern,"ich hatte mal eine für android programmiert (igitt, java)"
+2012-06-22 19:04:57,PatrickBic,kevin: nö ich mach jetzt was zu essen und guck serien =)
+2012-06-22 19:05:24,kevin,"Du legst es wohl darauf an, hier verstoßen zu werden?"
+2012-06-22 19:05:50,bluecode,kevin: benutzt ihr bei qemu eigentlich -flto zum kompilieren/linken?
+2012-06-22 19:06:03,bluecode,bzw. habt ihr es mal versucht
+2012-06-22 19:06:09,PatrickBic,kevin: nö xD
+2012-06-22 19:06:25,oern,ah jetzt hat der den fehler beim cross-fpc
+2012-06-22 19:06:31,oern,"ctypes.pp(179,1) Fatal: Internal error 2010021504"
+2012-06-22 19:06:38,kevin,bluecode: Ich glaube nicht
+2012-06-22 19:06:45,oern,er benutzt aber ppcx64
+2012-06-22 19:06:56,kevin,Nicht gut
+2012-06-22 19:30:45,Th3Falc0n,"kevin: der gdt eintrag der TSS, muss der einmalig oder jedesmal neu eingetragen werden?"
+2012-06-22 19:32:14,Th3Falc0n,ich nehme an einmalig?
+2012-06-22 19:34:16,Th3Falc0n,ach der ist weg xD
+2012-06-22 19:34:21,Th3Falc0n,hi taljeth 
+2012-06-22 19:34:32,Th3Falc0n,:DDD
+2012-06-22 19:36:04,taljeth,"Was ist ""der gdt eintrag der TSS""?"
+2012-06-22 19:36:27,Th3Falc0n,"""Außerdem müssen wir das TSS noch aktivieren. Dazu fügen wir der GDT einen zusätzlichen Eintrag hinzu und laden anschließend auch das Taskregister TR neu (nicht vergessen, das Limit der GDT zu erhöhen, wenn nötig): """
+2012-06-22 19:36:30,Th3Falc0n,aber ist schon gelöst
+2012-06-22 19:37:38,Th3Falc0n,ich glaub es sollte heissen der gdt eintrag des tss ...
+2012-06-22 19:38:31,Th3Falc0n,taljeth: mal ne andere frage: warum werden ring 1 und 2 nicht benutzt?
+2012-06-22 19:38:48,taljeth,"Wenn du einen Nutzen dafür hast, darfst du sie benutzen"
+2012-06-22 19:39:24,taljeth,"Mit Segmentierung kann man das vielleicht wirklich brauchen, aber sonst bringen sie nicht viel"
+2012-06-22 19:39:27,Th3Falc0n,also ich hätte zumindest die speicherverwaltung für die einzelnen tasks auf ring0 und ring1 aufgeteilt...
+2012-06-22 19:39:45,Th3Falc0n,meines verständnisses nach
+2012-06-22 19:39:52,taljeth,"Und was würdest du nach Ring 1 stecken? Und vor allem, warum?"
+2012-06-22 19:40:05,taljeth,Deinem Verständnis nach. Dativ.
+2012-06-22 19:40:26,Th3Falc0n,sry
+2012-06-22 19:40:52,Th3Falc0n,also ich hätte dem task auf ring0 den speicher zugeteilt und die einzelnen threads auf ring1 verwaltet
+2012-06-22 19:41:13,Th3Falc0n,wegen anfälligkeit für sicherheitslücken
+2012-06-22 19:41:45,taljeth,Die Ringe an sich bringen dir noch keine Sicherheit
+2012-06-22 19:41:59,taljeth,"Das tun sie erst dann, wenn sie unterschiedliche Zugriffsrechte auf irgendwas haben"
+2012-06-22 19:42:09,taljeth,Und genau das müsstest du erstmal näher definieren
+2012-06-22 19:42:37,taljeth,"Wenn du ein flaches Speichermodell hast, hast du das Problem, dass Paging bei den Rechten nur zwischen Superuser (Ring 0/1/2) und User (Ring 3) unterscheidet."
+2012-06-22 19:42:50,taljeth,"Das heißt, du kriegst keine unterschieldichen Zugriffsrechte"
+2012-06-22 19:42:59,Th3Falc0n,"ok, das wusste ich nicht"
+2012-06-22 19:43:01,taljeth,"Wenn du davon Gebrauch machen willst, braucht du Segmentierung"
+2012-06-22 19:43:23,taljeth,Und damit würdest du die ausgetretenen Tutorial-Pfade verlassen. Kann aber auch spannend sein.
+2012-06-22 19:43:35,Th3Falc0n,ok
+2012-06-22 19:56:41,oern,"ok, ich hab build_crosstools jetzt dazu gebracht, x86-code zu produzieren. dafür kommt jetzt ein syntax error in irgendeiner objpas-unit"
+2012-06-22 20:00:05,Th3Falc0n,"taljeth: wieso kann mein debian ""~"" nicht? wenn ich das tipp passiert garnichts o.O"
+2012-06-22 20:00:37,Th3Falc0n,taljeth: ok ich muss es 2 mal tippen
+2012-06-22 20:00:38,Th3Falc0n,aber wieso
+2012-06-22 20:01:10,oern,auch wenn ich nicht taljeth bin: das ist ein deadkey
+2012-06-22 20:01:25,oern,das gleiche ist bei den akzenttasten
+2012-06-22 20:01:52,Th3Falc0n,aber warum?
+2012-06-22 20:02:11,oern,damit man sowas wie týndur tippen kann
+2012-06-22 20:02:27,oern,oder español
+2012-06-22 20:02:52,Th3Falc0n,asou dafür (das mit dem akzent war mir klar)
+2012-06-22 20:05:43,taljeth,Irgendjemand sollte übrigens mal in týndur Deadkeys implementierne
+2012-06-22 20:06:06,oern,müsste das in vterm oder kbc?
+2012-06-22 20:07:04,taljeth,"Hm, gute Frage"
+2012-06-22 20:07:17,taljeth,Wahrscheinlich eher vterm
+2012-06-22 20:07:32,taljeth,"Und sie dürfen natürlich nicht Deadkeys heißen, sondern dauðir takkar"
+2012-06-22 20:08:29,oern,google-übersetzer meint bei mir dauður lyklar
+2012-06-22 20:08:47,oern,oder kannst du isländisch?
+2012-06-22 20:11:58,taljeth,dict.cc hat takki für Taste vorgeschlagen
+2012-06-22 20:12:44,taljeth,"Ah, lykill ist ein Schlüssel ;-)"
+2012-06-22 20:16:05,oern,ob deadkeys benutzt werden müsste doch in der keymap festgelegt werden
+2012-06-22 20:16:22,taljeth,Ja
+2012-06-22 20:17:06,oern,"das heißt, sie bekommen zunächst keinen ascii-zeichen zugeordnet"
+2012-06-22 20:17:34,taljeth,"Ja, sondern ändern irgendwie eine Zustandsnummer oder so"
+2012-06-22 20:18:11,oern,oder irgendein zusätzlich gesetztes bit
+2012-06-22 20:18:21,taljeth,Eins wird nicht reichen
+2012-06-22 20:18:29,taljeth,Du hast ja verschiedene Deadkeys
+2012-06-22 20:18:32,oern,in der keymap meine ich
+2012-06-22 20:18:51,taljeth,"Ach so, du meinst bei ~ zum Beispiel ein Bit, das sagt, dass das ein Deadkey ist?"
+2012-06-22 20:19:02,oern,ja
+2012-06-22 20:19:09,taljeth,"Ja, kann man machen"
+2012-06-22 20:19:19,oern,problem ist nur wenn der daraus resultierende wchar schon belegt ist
+2012-06-22 20:19:24,taljeth,Wobei wir wahrscheinlich kein Bit übrig haben
+2012-06-22 20:19:29,taljeth,Aber ein einzelnes Zeichen geht sicher
+2012-06-22 20:19:54,taljeth,Im Zweifelsfall eins von den Steuerzeichen. Escape oder so.
+2012-06-22 20:20:08,oern,"tyndur benutzt doch unicode, oder?"
+2012-06-22 20:20:25,taljeth,Grundsätzlich schon
+2012-06-22 20:20:28,taljeth,"Ich weiß aber nicht, wie die Keymaps sind."
+2012-06-22 20:20:49,oern,ich glaube es wird erst vor der ausgabe in unicode umgewandelt
+2012-06-22 20:20:50,taljeth,wchar_t
+2012-06-22 20:21:10,taljeth,Und das ist ein... *trommelwirbel*
+2012-06-22 20:21:11,taljeth,__WCHAR_TYPE__
+2012-06-22 20:21:20,taljeth,"Ich glaube, das müssten 32 Bit sein"
+2012-06-22 20:22:34,taljeth,"Eine kompilierte Keymap ist 2048 Bytes, 128 * 4 Einträge."
+2012-06-22 20:22:47,taljeth,Also 4 Byte für ein wchar_t
+2012-06-22 20:23:08,oern,"äh, sind nicht vier wchar_t pro taste?"
+2012-06-22 20:23:24,taljeth,Deswegen 128 * 4
+2012-06-22 20:23:52,oern,"ah, ich dachte gerade 128 * 4 soll 2048 sein *g*"
+2012-06-22 20:24:16,taljeth,Wenn es dich tröstet: Ich kann auch nicht kopfrechnen *g*
+2012-06-22 20:24:45,oern,wie codiert eigentlich gcc die strigs?
+2012-06-22 20:24:49,oern,*strings
+2012-06-22 20:25:06,taljeth,Strings sind const char[]
+2012-06-22 20:25:23,oern,und wie wird char codiert?
+2012-06-22 20:25:26,taljeth,"Und dann gibt es noch ""wide strings"", die sind const wchar_t[]"
+2012-06-22 20:25:34,taljeth,char ist ein Byte
+2012-06-22 20:25:44,taljeth,Über die Kodierung sagt das erstmal nicht viel
+2012-06-22 20:25:59,oern,ich meine ist das utf-8 oder unicode oder cp473 oder ascii etc.?
+2012-06-22 20:26:05,taljeth,"gcc nimmt es halt so, wie es in der Sourcedatei drinsteht"
+2012-06-22 20:26:38,DesL,rö
+2012-06-22 20:26:40,taljeth,Beim wchar_t dürfte es UTF-32 sein
+2012-06-22 20:27:08,Th3Falc0n,taljeth: wo finde ich die struct multiboot_info ?
+2012-06-22 20:27:18,taljeth,In tyndur?
+2012-06-22 20:27:26,Th3Falc0n,ja
+2012-06-22 20:27:44,taljeth,"Mach mal ""make cscope"". Und dann ""vi -t multiboot_info"""
+2012-06-22 20:28:13,taljeth,"src/kernel/include/multiboot.h wäre eine Stelle, die er mir anbietet"
+2012-06-22 20:28:37,DesL,Anzahl der Pakete:	11
+2012-06-22 20:28:39,DesL,UPS Service:	EXPRESS
+2012-06-22 20:28:40,DesL,"Gewicht:	283,2 KGS"
+2012-06-22 20:28:43,DesL,wer kann das toppen? :D
+2012-06-22 20:28:54,taljeth,"Nein, so viel wiege ich nicht."
+2012-06-22 20:30:13,DesL,-.-
+2012-06-22 20:30:56,Th3Falc0n,kauf dir nen alten netz-trafo hoch zu niederspannung bei ebay
+2012-06-22 20:31:00,Th3Falc0n,leistung so um die 20kW
+2012-06-22 20:31:03,Th3Falc0n,der sollte mehr wiegn
+2012-06-22 20:31:19,DesL,der kommt aber nicht in elf paketen XD
+2012-06-22 20:31:24,DesL,"obwohl, trafo bausatz? :D"
+2012-06-22 20:31:42,Th3Falc0n,kauf dir einzelverpackte erdnüsse
+2012-06-22 20:31:44,Th3Falc0n,fertig
+2012-06-22 20:31:49,taljeth,"Du meinst, die benutzen PE statt ELF Pakete?"
+2012-06-22 20:32:16,Th3Falc0n,xD
+2012-06-22 20:32:33,DesL,"aua, das tat echt schon weh. irgendwie."
+2012-06-22 20:32:49,taljeth,Ja. Ich weiß.
+2012-06-22 20:32:55,taljeth,Musste trotzdem sein.
+2012-06-22 20:33:13,DesL,Oo UPS ist cool: Ulm->Garching->Münster 
+2012-06-22 20:34:21,Th3Falc0n,also ich arbeite da auf nem deutlich höheren abstraktionslevel: Absender->Haustür
+2012-06-22 20:34:57,oern,guckt von euch jemand fußball?
+2012-06-22 20:35:23,Th3Falc0n,nö ich guck matrix
+2012-06-22 20:35:44,DesL,ich guck IRC *trollface*
+2012-06-22 20:36:00,Th3Falc0n,irc läuft GAAANZ links...
+2012-06-22 20:36:12,Th3Falc0n,*wallofscreens*
+2012-06-22 20:36:18,DesL,"ja, auf dem linken bildschirm :D"
+2012-06-22 20:36:38,Th3Falc0n,meine eltern halten mich für verrückt...
+2012-06-22 20:36:57,Th3Falc0n,aber programme zu minimieren verbraucht so viel zeit ...
+2012-06-22 20:37:27,oern,Th3Falc0n: wenn du irgendwann mal dualboot machst: viel spaß mit der xorg.conf *g*
+2012-06-22 20:37:38,Th3Falc0n,xorg?
+2012-06-22 20:37:41,Th3Falc0n,what?
+2012-06-22 20:38:17,oern,das ist praktisch die gui unter linux (und anderem unix)
+2012-06-22 20:41:08,DesL,"oern: öhm, jede halbwegs aktuelle DE  macht das automatisch"
+2012-06-22 21:14:25,Th3Falc0n,taljeth: stimmt die multiboot.h aus tyndur nicht fürs tutorial?
+2012-06-22 21:14:37,Th3Falc0n,os/pmm.c:35: error: ‘struct multiboot_info’ has no member named ‘mbs_mmap_addr’
+2012-06-22 21:14:38,Th3Falc0n,os/pmm.c:37: error: ‘struct multiboot_info’ has no member named ‘mbs_mmap_addr’
+2012-06-22 21:14:40,Th3Falc0n,os/pmm.c:37: error: ‘struct multiboot_info’ has no member named ‘mbs_mmap_length’
+2012-06-22 21:14:41,Th3Falc0n,os/pmm.c:40: error: ‘struct multiboot_mmap’ has no member named ‘type’
+2012-06-22 21:14:43,Th3Falc0n,os/pmm.c:41: error: ‘struct multiboot_mmap’ has no member named ‘base’
+2012-06-22 21:14:45,Th3Falc0n,os/pmm.c:42: error: ‘struct multiboot_mmap’ has no member named ‘length’
+2012-06-22 21:24:01,DesL,es gibt übrigens ein eigenes tutorial repo :P
+2012-06-22 21:24:14,Th3Falc0n,omg stimmt
+2012-06-22 21:24:16,Th3Falc0n,-.-
+2012-06-22 21:24:18,Th3Falc0n,brainfail
+2012-06-22 21:24:59,DesL,ich höre leute schreien
+2012-06-22 21:25:06,DesL,es scheint es ist ein tor gefallen
+2012-06-22 21:25:14,Th3Falc0n,scheinbar
+2012-06-22 21:41:31,Th3Falc0n,taljeth: os/scheduler.c:5: error: ‘NULL’ undeclared here (not in a function)... ich habe die tutorial datei übernommen
+2012-06-22 21:41:39,Th3Falc0n,wieso ist NULL undeclared?
+2012-06-22 21:42:00,sfan,mach einfach #define NULL 0
+2012-06-22 21:42:12,taljeth,Weil du es nicht deklariert hat
+2012-06-22 21:42:23,taljeth,#define NULL ((void*) 0)
+2012-06-22 21:42:39,Th3Falc0n,k
+2012-06-22 21:42:45,oern,"taljeth: hab gerade mal mit deadkeys angefangen, werd ich wohl machen"
+2012-06-22 21:42:57,taljeth,"Ui, cool :-)"
+2012-06-22 21:43:21,taljeth,"Wie bringst du die ""kombinierten"" Zeichen in der Keymap unter?"
+2012-06-22 21:43:45,oern,"das wollte ich gerade schreiben, dass ich das noch nicht so genau weiß ;-)"
+2012-06-22 21:43:47,taljeth,Einfach noch ein paar zusätzliche wchar_t im keymap_entry_t für Deadkey-Zustände?
+2012-06-22 21:44:12,oern,d.h. einen für ~ und einen für `?
+2012-06-22 21:44:19,taljeth,So in der Art
+2012-06-22 21:44:20,taljeth,"Oder vielleicht muss man das dynmaisch machen, man weiß ja vorher nicht, wie viele Deadkeys es gibt"
+2012-06-22 21:44:26,oern,eben
+2012-06-22 21:44:43,taljeth,"Und vielleicht will man die vielen Nullen, die man dann in der Tabelle hat, irgendwie effizienter speichern"
+2012-06-22 21:44:56,taljeth,Weil die meisten Kombinationen machen ja gar keinen Sinn
+2012-06-22 21:45:02,oern,gibts sowas wie sparse tables?
+2012-06-22 21:45:12,Th3Falc0n,GEIL GEIL GEIL :)
+2012-06-22 21:45:16,taljeth,Wenn du es implementierst? ;-)
+2012-06-22 21:45:20,Th3Falc0n,mein kernel ist fertig
+2012-06-22 21:45:26,Th3Falc0n,also funktionsfähig
+2012-06-22 21:45:32,taljeth,"""fertig""? *g*"
+2012-06-22 21:45:46,sfan,funktionfähig != fertig
+2012-06-22 21:45:59,taljeth,Du hast eine Tastatureingabefunktion und damit bezeichnest du den Kernel als funktionsfähig? ;-)
+2012-06-22 21:46:28,taljeth,"Aber stimmt schon, aber da fängt es an, Spaß zu machen"
+2012-06-22 21:46:47,Th3Falc0n,"#define fertig ""in einem funktionfähigen zustand der es erlaubt externe im arbeitsspeicher existierende programme mit software-multitasking auszuführen und über treiber mit der hardware zu kommunizieren"""
+2012-06-22 21:47:00,sfan,./lbuild.sh: Zeile 208: quilt: Kommando nicht gefunden.
+2012-06-22 21:47:23,taljeth,"Hm, geht lbuilds mittlerweile gar nicht mehr ohne quilt?"
+2012-06-22 21:47:28,taljeth,Im Zweifelsfall halt einfach installieren
+2012-06-22 21:47:33,Th3Falc0n,taljeth: ich bin mit der tastatur lange fertig :)
+2012-06-22 21:47:36,sfan,tu ich grad ^^
+2012-06-22 21:48:02,sfan,checking for C compiler default output... configure: error: C compiler cannot create executables
+2012-06-22 21:48:05,taljeth,Th3Falc0n: Programme über Multiboot-Module?
+2012-06-22 21:48:20,Th3Falc0n,taljeth: WTF?
+2012-06-22 21:48:26,taljeth,sfan: Schau dir die config.log an
+2012-06-22 21:48:51,taljeth,"Die Fehlermeldung gibt es immer dann, wenn ./configure ein Testprogramm kompilieren will und es schiefgeht"
+2012-06-22 21:50:19,taljeth,"Th3Falc0n: Ich wollte nur wissen, was du mit ""externe im arbeitsspeicher existierende programme"" meinst. Was anderes als Multiboot-Module ist mir dafür nicht eingefallen."
+2012-06-22 21:50:48,Th3Falc0n,einfach ne funktion die in der kernel binary ist
+2012-06-22 21:50:50,Th3Falc0n,meinte ich
+2012-06-22 21:51:01,sfan,/home/[...]/i386-pc-tyndur/bin/ld: cannot find crttyndur.o
+2012-06-22 21:51:01,sfan,/home/[...]/i386-pc-tyndur/bin/ld: cannot find -lc
+2012-06-22 21:51:29,taljeth,"Th3Falc0n: Ah, okay. Was auch immer daran extern ist."
+2012-06-22 21:51:44,sfan,hm
+2012-06-22 21:51:45,taljeth,sfan: Hast du update_env gemacht?
+2012-06-22 21:52:08,sfan,anscheinend hab ich mir die anleitung nicht durchgelesen D:
+2012-06-22 21:52:52,sfan,jetz gehts
+2012-06-22 21:53:04,taljeth,Kaum macht man es richtig...
+2012-06-22 21:53:08,sfan,..nicht
+2012-06-22 21:53:15,sfan,../include/term.h:699:3: Fehler: Feld »Nttyb« hat unvollständigen Typen
+2012-06-22 21:53:28,sfan,"das gleiche mit ""Ottyb"""
+2012-06-22 21:54:25,oern,sfan: lost/config.h: #undef CONFIG_LIBC_NO_STUBS
+2012-06-22 21:54:36,Th3Falc0n,taljeth: wie kann man bei find einen bestimmten unterordner ausschliessen?
+2012-06-22 21:56:29,sfan,| grep -v name
+2012-06-22 21:57:28,sfan,lib_setup.c:(.text+0x6d2): undefined reference to `isatty'
+2012-06-22 21:57:37,sfan,ncurses will einfach nicht
+2012-06-22 21:59:09,Th3Falc0n,"ist es normal, das der nicht task part von nem os in ner endlosschleife endet?"
+2012-06-22 22:01:42,DesL,"hm, ich glaube an dem moment kannst du den ""taskzustand"" davon einfach mal fallen lassen"
+2012-06-22 22:01:59,Th3Falc0n,?
+2012-06-22 22:02:51,DesL,??
+2012-06-22 22:03:33,Th3Falc0n,wie meinst du das?
+2012-06-22 22:04:26,DesL,"du hast doch für jeden task/prozess/whatever nen cpu zustand, gell?"
+2012-06-22 22:05:29,Th3Falc0n,ja
+2012-06-22 22:05:44,DesL,"wenn du multitasking initialisierst, hast du zunächst interrupts eigentlich aus, so das dir da kein prozess reinfunkt. am ende der initialisierung des kernels schaltest du ints ein und gehst in ne endlosschleife"
+2012-06-22 22:06:06,Th3Falc0n,ok
+2012-06-22 22:06:13,DesL,"wenn nun der scheduler geschickt implementiert ist, wird der endlosschleifen task einfach fallen gelassen, existiert also nicht mehr"
+2012-06-22 22:06:28,Th3Falc0n,hab ich noch nicht
+2012-06-22 22:06:39,DesL,weil nie ein CPU zustand angelegt wurde
+2012-06-22 22:06:57,Th3Falc0n,hä?
+2012-06-22 22:07:16,DesL,gehts auch etwas genauer?
+2012-06-22 22:08:04,Th3Falc0n,für mich sprichst du in rätseln
+2012-06-22 22:08:12,Th3Falc0n,das mit dem fallenlassen hab ich verstanden
+2012-06-22 22:08:14,Th3Falc0n,aber was soll
+2012-06-22 22:08:16,Th3Falc0n,DesL	weil nie ein CPU zustand angelegt wurde
+2012-06-22 22:08:18,Th3Falc0n,bedeuten?
+2012-06-22 22:08:44,DesL,"du erstelst für jeden neuen task einen neuen cpu zustand, ja?"
+2012-06-22 22:09:04,Th3Falc0n,ja
+2012-06-22 22:09:44,DesL,"für den ""kernel prozess"" also das vom bootloader erstellst du im allgemeinen keinen cpu zustand, klar soweit?"
+2012-06-22 22:10:35,DesL,*das vom bootloader angestossene programm
+2012-06-22 22:11:37,Th3Falc0n,ja
+2012-06-22 22:11:52,Th3Falc0n,jetzt versteh ichs
+2012-06-22 22:11:53,Th3Falc0n,gut
+2012-06-22 22:12:41,DesL,"wenn du die interrupts einschaltest haut dir nach nem moment ein interrupt rein, du schaltest in den scheduler und lädst einen CPU zustand von der liste. beim ret wird der ""kernel prozess"" einfach überschrieben ohne voher gesichert wordne zu sein"
+2012-06-22 22:29:10,Th3Falc0n,DesL: brauch ich noch nen ring0 task oder läuft das alles über die interrupts?
+2012-06-22 22:35:19,Th3Falc0n,hilfe
+2012-06-22 22:35:32,Th3Falc0n,taljeth: multiboot modul laden geht nicht
+2012-06-22 22:38:50,sfan,undefined reference to `isatty'
+2012-06-22 22:38:55,sfan,wie behebe ich das?
+2012-06-22 22:48:51,taljeth,[21:51] <Th3Falc0n> taljeth: wie kann man bei find einen bestimmten unterordner ausschliessen?
+2012-06-22 22:48:56,taljeth,Seh ich aus wie eine Manpage?
+2012-06-22 22:49:15,Th3Falc0n,hmm nö
+2012-06-22 22:49:47,Th3Falc0n,aber du kannst mir doch bestimmt bei den modul problem helfen?
+2012-06-22 22:49:52,Th3Falc0n,http://pastebin.com/cnTLPd0r
+2012-06-22 22:50:09,taljeth,sfan: Hat oern dir doch schon gesagt
+2012-06-22 22:50:16,taljeth,[21:51] <oern> sfan: lost/config.h: #undef CONFIG_LIBC_NO_STUBS
+2012-06-22 22:50:22,taljeth,Und danach nochmal update_env
+2012-06-22 22:50:40,taljeth,"Ach, und make clean; make wäre auch noch gut vor dem update_env"
+2012-06-22 22:50:40,sfan,hab ich gemacht
+2012-06-22 22:50:48,sfan,"ach, make clean"
+2012-06-22 22:51:09,taljeth,Th3Falc0n: Was geht denn schief?
+2012-06-22 22:51:28,Th3Falc0n,er führt den bin code aus dem modul nicht aus
+2012-06-22 22:51:36,taljeth,Sind denn start und end und so richtig?
+2012-06-22 22:51:57,Th3Falc0n,die sind ausm tutorial
+2012-06-22 22:52:52,taljeth,...
+2012-06-22 22:52:57,taljeth,"Du sollst prüfen, ob sie den richtigen Wert haben"
+2012-06-22 22:53:07,taljeth,"Lernt man denn heute gar nicht mehr, wie man debuggt?"
+2012-06-22 22:54:18,Th3Falc0n,woher weiss ich welcher wert richtig ist?
+2012-06-22 22:54:52,taljeth,"Du kannst zumindest mal sehen, ob der Abstand stimmt"
+2012-06-22 22:55:01,taljeth,Oder ob völliger Blödsinn drinsteht
+2012-06-22 22:55:18,Th3Falc0n,Start: 0x127000 End: 0x128004
+2012-06-22 22:55:21,sfan,"Command unknown: 'AUTH' at /usr/lib/git-core/git-send-email line 1140, <STDIN> line 1."
+2012-06-22 22:55:22,sfan,hä?
+2012-06-22 22:55:36,taljeth,"Ok, das könnte realistisch sein"
+2012-06-22 22:55:43,Th3Falc0n,größe von test.bin 4096 byte
+2012-06-22 22:56:23,taljeth,Das sind aber 4100 Bytes.
+2012-06-22 22:56:32,Th3Falc0n,oh
+2012-06-22 22:56:34,Th3Falc0n,die ist 4100
+2012-06-22 22:56:42,Th3Falc0n,:/
+2012-06-22 22:56:55,Th3Falc0n,"4,0KB != 4096 byte"
+2012-06-22 22:57:13,taljeth,Hä?
+2012-06-22 22:57:25,taljeth,"Ach so, gerundet halt"
+2012-06-22 22:57:29,Th3Falc0n,ja
+2012-06-22 22:57:43,taljeth,init_task tut aber grundsätzlich?
+2012-06-22 22:57:52,Th3Falc0n,mit funktionen tuts
+2012-06-22 22:58:06,taljeth,"Und die test.bin ist eine flache Binary, die direkt mit Code anfängt?"
+2012-06-22 22:58:17,taljeth,Also kein ELF?
+2012-06-22 22:58:21,Th3Falc0n,ja
+2012-06-22 22:58:36,taljeth,Was für einen Inhalt hat die?
+2012-06-22 22:58:45,Th3Falc0n,warte mal kurz
+2012-06-22 22:59:35,Th3Falc0n,meinst jetzt die datei an sich oder den code?
+2012-06-22 23:00:29,sfan,ich hab einen patch für lbuilds zlib 1.2.7 gesendet
+2012-06-22 23:01:05,Th3Falc0n,taljeth: nachdem QEMU minimiert war war gerade ne exception 13 ...
+2012-06-22 23:01:09,Th3Falc0n,hat das was zu sagen?
+2012-06-22 23:01:42,Th3Falc0n,kam gerade wieder
+2012-06-22 23:01:47,Th3Falc0n,ca 30sek nach start
+2012-06-22 23:02:22,Th3Falc0n,"kann es sein das da code ausgeführt, der irgendwo liegt?"
+2012-06-22 23:03:06,Th3Falc0n,"taljeth: und wieder, absolut reproduzierbar durch warten"
+2012-06-22 23:05:56,Th3Falc0n,ich bin mal off gn8
+2012-06-22 23:14:13,sfan,wo bekomm ich float.h her?
+2012-06-22 23:14:21,sfan,+für týndur
+2012-06-22 23:21:22,taljeth,Haben wir wohl nicht
+2012-06-22 23:21:24,taljeth,Wofür brauchst du die?
+2012-06-22 23:22:48,sfan,zlib1.2.7
+2012-06-22 23:24:40,taljeth,zlib? Seit wann macht die denn was mit floats? :-/
+2012-06-22 23:24:56,taljeth,"Naja, im Zweifel musst du den Header eben anlegen"
+2012-06-22 23:31:56,sfan,gn8
+2012-06-22 23:32:17,DesL,"ich glaube das heisst ""nein"""
+2012-06-22 23:32:19,DesL,:D
+2012-06-22 23:32:47,taljeth,Möglich ;-)
+2012-06-22 23:40:02,sfan,eine frage noch: ist ssh für tyndur portiert worden?
+2012-06-22 23:40:52,taljeth,"FreakyPenguin hat mal dropbear portiert, aber ob das noch tut, weiß ich nicht"
+2012-06-22 23:44:38,sfan,"hm, ok"
+2012-06-22 23:45:26,sfan,wollte/hat bluecode nicht mal an dhcp gearbeitet?
+2012-06-22 23:47:50,taljeth,Eher wollte
+2012-06-22 23:47:55,taljeth,"Was momentan drin ist, habe ich geschrieben"
+2012-06-22 23:49:13,sfan,funktioniert dhcp denn komplett?
+2012-06-22 23:49:26,taljeth,Mehr oder weniger
+2012-06-22 23:50:07,taljeth,"Ich glaube, beim konfigurieren macht er nicht mehrere Versuche wie er sollte"
+2012-06-22 23:50:13,taljeth,"Und das Lease wird nicht erneuert, wenn es abläuft"
+2012-06-22 23:52:46,sfan,zum glück kann man die lease time bei meinem router auf 2 monate stellen kann ^^
+2012-06-22 23:52:58,taljeth,hehe
+2012-06-22 23:52:59,sfan,-kann
+2012-06-22 23:53:27,taljeth,Was halt noch fehlt ist dass automatisch DHCP versucht wird
+2012-06-22 23:53:42,sfan,ja
+2012-06-22 23:57:41,sfan,lâuft tyndur stbil genug um einen server zu betreiben?
+2012-06-22 23:58:06,sfan,+a

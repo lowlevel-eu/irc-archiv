@@ -1,0 +1,105 @@
+date/time,nick,message
+2013-06-08 13:18:39,mroman,Moin.
+2013-06-08 13:19:14,mroman,Gibt es eine effiziente Methode Lookups zu machen anhand einer Ober- und Untergrenze?
+2013-06-08 13:19:36,mgottschlag,ja.
+2013-06-08 13:19:43,mroman,"Mein Insertkey ist lower_bound, upper_bound"
+2013-06-08 13:19:49,mroman,und mein Lookup key ist halt eine Nummer.
+2013-06-08 13:21:26,mroman,binary trees?
+2013-06-08 13:22:41,mroman,"mit start, end"
+2013-06-08 13:22:56,mroman,aber ich vermute das geht sicher noch kleverer.
+2013-06-08 13:23:28,mgottschlag,"eine Möglichkeit, die mir in den Sinn kommt, wäre ein BVH"
+2013-06-08 13:23:58,mgottschlag,"mit einem ""normalen"" sortierten Binärbaum dürfte es nicht so effektiv gehen"
+2013-06-08 13:24:32,mgottschlag,"BVH = die Intervalle liegen nur in den Blättern, in höheren Baumebenen liegen dann die Intervalle, die alle Kindknoten enthalten"
+2013-06-08 13:24:52,mgottschlag,BVH = bounded volume hierarchy
+2013-06-08 13:25:25,mgottschlag,"wobei bei dir natürlich die Information fehlt, ob die Intervalle sich überlappen"
+2013-06-08 13:31:34,mroman,Ich koennte es O(1) machen
+2013-06-08 13:31:44,mroman,aber das kostet dann viele Megabytes :)
+2013-06-08 13:32:10,mroman,hm
+2013-06-08 13:32:13,mroman,2 MB um genau zu sein.
+2013-06-08 13:32:14,mgottschlag,"wenn das Problem sich in O(1) lösen lässt, dann hast du mit ziemlicher Sicherheit noch irgendetwas wichtiges nicht erzählt :p"
+2013-06-08 13:32:28,mroman,mgottschlag: Es sind Adresslookups
+2013-06-08 13:32:32,mroman,aligned
+2013-06-08 13:32:45,mroman,daher koennte man einfach die oberen Bits als Arrayindex benutzen
+2013-06-08 13:32:57,mgottschlag,was für lookups?
+2013-06-08 13:33:04,mgottschlag,und was hast du eigentlich vor?
+2013-06-08 13:33:08,mroman,moment
+2013-06-08 13:33:15,mroman,https://bitbucket.org/mroman_/emulathor/src/79a430ee334e63d618d87c67037c0226a6eef004/src/memory.c?at=master#cl-122
+2013-06-08 13:33:46,mroman,"^- das ist die Funktion die schaut, ob Zeugs im cache ist oder nicht."
+2013-06-08 13:33:54,mroman,und cache lines sind 64B aligned
+2013-06-08 13:33:59,mroman,daher koennte man fuer 128MB
+2013-06-08 13:34:10,mroman,ein 2MB grosses Array benutzen
+2013-06-08 13:34:17,mgottschlag,"was für ein Cache ist das? direct mapped, n-fach assoziativ, oder...?"
+2013-06-08 13:34:52,mroman,"Er hat 16 Cache-Lines, eine Cache-Line enthaelt die Daten ab cache_start bis cache_start + cache_line_size"
+2013-06-08 13:35:33,mroman,ich koennte die Adresse um 6 nach links shiften und dann als Index benutzen
+2013-06-08 13:35:35,mgottschlag,"okay, das klingt schonmal recht vollassoziativ"
+2013-06-08 13:35:41,mgottschlag,das... wiederum nicht.
+2013-06-08 13:35:57,mroman,return c[addr >> 6u];
+2013-06-08 13:36:04,mroman,das waere dann die Cache-Line in der addr ist.
+2013-06-08 13:36:13,mgottschlag,"insofern, schau dir mal die verschiedenen Cachetypen an, damit zu zumindest formal genau sagen kannst, was du da baust"
+2013-06-08 13:37:08,mroman,Der Hauptseicher ist unterteilt in 64B Bloecke
+2013-06-08 13:37:17,mroman,und eine Cache-Line enthaelt genau einen Block
+2013-06-08 13:37:37,mroman,d.h die Adresse um 6 nach links geshiftet gibt dir den Block index.
+2013-06-08 13:38:12,mroman,eh
+2013-06-08 13:38:13,mroman,nach rechts
+2013-06-08 13:38:16,mgottschlag,"https://de.wikipedia.org/wiki/Cache#Organisation <- les es dir mal durch. Es macht keinen Sinn, Cache emulieren zu wollen, wenn du nicht weißt, was es überhaupt für Cachetypen gibt"
+2013-06-08 13:40:27,mgottschlag,"in jedem Fall lässt sich ein Lookup übrigens in erwartet O(1) implementieren, auch mit wesentlich weniger Speicheraufwand als 2MB"
+2013-06-08 13:40:42,mroman,vollassoziativ
+2013-06-08 13:41:49,mroman,wenn ich das richtig verstehe.
+2013-06-08 13:42:29,mroman,in einem Cacheblock steckt genau immer ein Speicherblock
+2013-06-08 13:42:37,mroman,wobei ein Speicherblock in einem beliebigen Cacheblock sein kann
+2013-06-08 13:42:41,mgottschlag,"dann nimm z.B. eine Hashtable, die zum Tag einer Adresse die Cachezeile sucht"
+2013-06-08 13:43:02,mroman,das ginge ja
+2013-06-08 13:43:07,mgottschlag,"(in der CPU ist das durch n parallele Vergleicher realisiert, das wäre O(n), wenn du es direkt umsetzen würdest)"
+2013-06-08 13:43:14,mroman,der Key ist dann einfach (addr >> 6)
+2013-06-08 13:43:36,mroman,"der code fuer ensure_cache stammt noch aus der Zeit, als kein Alignment erforderlich war :)"
+2013-06-08 13:43:39,mroman,aber ja
+2013-06-08 13:43:46,mroman,mit alignment geht das natuerlich so 
+2013-06-08 13:43:51,mroman,ok. danke fuer deinen Input.
+2013-06-08 13:44:04,mgottschlag,"übrigens wird vollassoziativer Cache eigentlich nur für L1-Cache oder die TLB benutzt, und auch L1 ist in den allermeisten Fällen eher 8fach-assoziativ"
+2013-06-08 13:45:00,mroman,Im Auftrag wird nur ein Cache gewuenscht
+2013-06-08 13:45:06,mroman,also nicht mehrer Caches :)
+2013-06-08 13:45:23,mroman,zumindest im inoffiziellen Auftrag.
+2013-06-08 13:45:31,mroman,die Sache ist noch nicht voll offiziell :)
+2013-06-08 13:45:32,mgottschlag,"die Aussage war auch eher ""vollassoziativ ist unüblich"""
+2013-06-08 13:46:44,mroman,nun
+2013-06-08 13:46:53,mroman,direct mapping?
+2013-06-08 13:46:59,mroman,das liest sich zumindest sehr effizient.
+2013-06-08 13:47:08,mgottschlag,"""cat /sys/devices/system/cpu/cpu*/cache/index*/ways_of_associativity"""
+2013-06-08 13:47:40,mroman,mit Nachteilen jedoch
+2013-06-08 13:47:45,mgottschlag,"wie WP schreibt, ist das immer ein Tradeoff zwischen einfacher Realisierbarkeit (DM) und niedriger Miss-Rate (VA)"
+2013-06-08 13:48:47,mgottschlag,"dieser i5 hat 8fach-assoziativen L1-Cache, 8-fach assoziativen L2-Cache und 12-fach assoziativen L3-Cache"
+2013-06-08 13:48:58,mroman,wofuer steht die 8?
+2013-06-08 13:49:13,mroman,ah
+2013-06-08 13:49:14,mroman,ok
+2013-06-08 13:49:20,mroman,32 Saetze
+2013-06-08 13:49:45,mroman,moment.
+2013-06-08 13:50:03,mgottschlag,32 Saetze?
+2013-06-08 13:50:08,mroman,neh
+2013-06-08 13:50:14,mroman,kommt natuerlich auf die Groesse an
+2013-06-08 14:15:01,mroman,spaetestens beim tlb muss ich mir eh etwas einfalles lassen
+2013-06-08 14:15:22,mroman,mem_translate_address und mem_ensure_cache sind die bottlenecks schlechthin.
+2013-06-08 14:15:46,mgottschlag,warum emulierst du überhaupt caches?
+2013-06-08 14:16:44,mroman,Zwecks Demonstration.
+2013-06-08 14:17:08,mroman,der Emulator ist kein Virtualisierer.
+2013-06-08 14:17:12,mroman,sondern ein Demonstrationstool.
+2013-06-08 14:17:21,mroman,ich meine
+2013-06-08 14:17:30,mroman,cache zu emulieren bremst sowas von aus.
+2013-06-08 14:18:01,mroman,mgottschlag: Wunsch des Auftraggebers
+2013-06-08 14:18:17,mgottschlag,"der ""Auftraggeber"" ist eine Schule, oder?"
+2013-06-08 14:18:28,mgottschlag,weil sonst eigentlich niemand so seltsame Requirements stellen würde :p
+2013-06-08 14:18:28,mroman,Ja :)
+2013-06-08 14:18:59,mroman,im Grunde ist es ja ein visualisierungs Tool
+2013-06-08 14:18:59,mgottschlag,Caches emulieren macht eigentlich nur im Rahmen von entweder Timinganalyse oder Performanceanalyse (Hit/Miss-Verhältnis) Sinn
+2013-06-08 14:19:15,mroman,du siehst spaeter dann quasi wie eine Flashanimation was abgeht
+2013-06-08 14:19:30,mroman,mit aufleuchtenden Linien wenn Daten in den Cache geschoben werden und so
+2013-06-08 14:19:45,mroman,und roten Lampen wenn es einen Cache Miss gibt etc. etc.
+2013-06-08 14:20:25,mroman,also im Endeffekt ist da null performance
+2013-06-08 14:20:44,mroman,aber ich will diese Oberflaeche optional machen
+2013-06-08 14:20:52,mroman,"damit der Emulator trotzdem einigermassen performant ist, wenn man das life tracking nicht will :)"
+2013-06-08 14:23:26,mroman,ohne MMU im Moment etwa 13 MIPS.
+2013-06-08 14:24:03,mroman,der 13bit Prototyp ohne Cache etc. war min. 12 mal schneller
+2013-06-08 14:25:01,mroman,wenn du mir gestattest MIPS zu vergleichen
+2013-06-08 14:25:05,mroman,was immer etwas problematisch ist.
+2013-06-08 14:48:59,mroman,"mgottschlag: Um praezis zu sein: Der Arbeitgeber bin ich, aber die Schule hat Interesse daran, es als Projektarbeit anzunehmen ;)"
+2013-06-08 14:49:05,mroman,um es spaeter im Unterricht einzusetzen.
+2013-06-08 14:49:17,mroman,"und dann waere die Schule der Arbeitgeber, ja ."

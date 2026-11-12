@@ -1,0 +1,383 @@
+date/time,nick,message
+2017-02-18 00:02:47,mgottschlag,"naja, oder alternativ ist es evtl garnicht schlimm, wenn der Empfänger schreiben kann... er kann ja maximal Informationen vernichten, die für ihn selbst bestimmt waren"
+2017-02-18 00:03:08,Svenska,ich find pipes praktisch
+2017-02-18 00:03:27,Godwine,es sei denn man macht pipes mit mehreren enden
+2017-02-18 00:03:42,mgottschlag,"am besten enthält der gemeinsame Speicher aber auch Lese-/Schreibpointer des Ringpuffers, dann reicht zur Synchronisation ein quasi ""Wakeup-Interrupt"" ohne Inhalt, dann spart man sich die Queues im Messaging-System :)"
+2017-02-18 00:03:44,Svenska,kann man semantisch sinnvoll definieren
+2017-02-18 00:03:50,mgottschlag,"Godwine: ok, stimmt"
+2017-02-18 00:05:02,mgottschlag,"ich fürchte, ich bin zu sehr im L4-Umfeld aufgewachsen, um Pipes als grundsätzlich sinnvoll zu erachten :)"
+2017-02-18 00:05:39,Godwine,pipes sind für mich im grunde message queues für einzelne zeichen
+2017-02-18 00:05:45,Godwine,und ohne header
+2017-02-18 00:06:17,mgottschlag,und Message Queues lassen sich genauso durch Shared Memory und einen Notification-Mechanismus implementieren
+2017-02-18 00:06:17,Svenska,mgottschlag: erklär mal?
+2017-02-18 00:06:47,Svenska,"shared memory impliziert cache-kohärenz und so dinge, damit das sinnvoll funktioniert"
+2017-02-18 00:07:11,mgottschlag,"außer wenn mehrere Prozesse gleichzeitig lesen (oder gleichzeitig schreiben) wollen, dann ist ein dritter Prozess sinnvoll"
+2017-02-18 00:07:14,Svenska,"pipes kann man auf shmem implementieren, aber muss es nicht; und sie haben keine timing-abhängigkeiten zum rest des systems"
+2017-02-18 00:07:28,mgottschlag,"ja, außerhalb der Forschung sind Rechner Cache-kohärent :p"
+2017-02-18 00:07:43,Svenska,...aua.
+2017-02-18 00:07:51,Svenska,:(
+2017-02-18 00:07:56,mgottschlag,"okay, Gegenbeispiel? :)"
+2017-02-18 00:08:07,Svenska,ich nenn's mal treffer/versenkt
+2017-02-18 00:08:41,mgottschlag,"das ist natürlich was, was in 10 Jahren vermutlich anders aussehen wird"
+2017-02-18 00:09:36,Godwine,"ich hab aber ein paar konzepte von corey gelesen, einem exokernel der praktisch einen kernel pro cpu kern hat und alle objekte die auf mehr als einem kern sichtbar sein sollen müssen explizit geteilt werden"
+2017-02-18 00:10:33,Godwine,das ganze verbessert die skalierbarkeit und reduziert die notwendigkeit von tlb shootdowns und ändern von mappings für objekte die das nicht brauchen
+2017-02-18 00:10:44,mgottschlag,"Svenska: wobei, ich merke gerade, ich hab letztens auch was gelesen (Titel ""Scale-out Processors""), wo es um Kohärenzinseln ging, und das klang eigentlich recht praxisnah für aktuelle Allzweckrechner"
+2017-02-18 00:11:08,mgottschlag,"also, praxisnah im Sinne von ""könnte man mit aktueller Software benutzen"""
+2017-02-18 00:11:17,Svenska,"naja, sowas hast du ja jetzt schon im big/little-konzept"
+2017-02-18 00:11:27,mgottschlag,"naja, die sind untereinander kohärent"
+2017-02-18 00:11:48,Svenska,"sind sie? die, mit denen die linuxer am anfang spaß hatten, waren es nicht"
+2017-02-18 00:12:05,Svenska,"zumindest nicht, was memory mapping und so angeht, und da vermute ich mal, fehlte die kohärenz ganz"
+2017-02-18 00:12:16,Svenska,auch kommunikation mit quasi-beliebigen beschleunigern ist nicht kohärenz
+2017-02-18 00:12:19,Svenska,*kohärent
+2017-02-18 00:12:52,Svenska,zumindest nicht zwingend
+2017-02-18 00:13:11,mgottschlag,also die üblichen ARM-Hexa-/Octacores sind über irgendein Cache-Kohärenzprotokoll miteinander verbunden
+2017-02-18 00:13:53,mgottschlag,"und klar, sobald man auf PCIe raus geht ist die Cachekohärenz aus Performancegründen recht schnell Geschichte, und wenn man da dann ein gemeinsames System virtuell anbieten will, macht eine entsprechende Abstraktion Sinn"
+2017-02-18 00:13:55,Svenska,das sind normale multicores
+2017-02-18 00:14:09,Svenska,"ich meinte eher ein system von (TI? kA), wo du cortex-a und cortex-m gemischt hattest"
+2017-02-18 00:14:14,Svenska,die waren nicht zueinander kohärent
+2017-02-18 00:14:32,mgottschlag,"wobei dann auch wieder die Frage ist, ob z.B. Pipes da der grundlegende Mechanismus sind (also im OS), oder als Runtime darüber implementiert werden, mit Weiche, jenachdem wohin es geht"
+2017-02-18 00:15:09,Svenska,"naja, ob man das nun als syscall implementiert oder in der runtime, die dann den passenden syscall auswählt, ist nur ein detail"
+2017-02-18 00:15:33,Svenska,innerhalb einer kohärenzebene (oder zumindest innerhalb einer billigen kohärenzebene) kann man das prima als ringbuffer auf shmem lösen
+2017-02-18 00:15:38,mgottschlag,"naja, auf Microkerneldesign hat das riesige Auswirkungen :)"
+2017-02-18 00:15:40,Svenska,darueber hinaus wirds ... bissl pfui
+2017-02-18 00:15:46,mgottschlag,bei Puffern im Kernel braucht man da viel mehr Speicherverwaltung
+2017-02-18 00:16:07,Svenska,"die brauchst du aber sowieso, weil der ort des puffers nicht offensichtlich ist"
+2017-02-18 00:16:20,Svenska,dafuer kannst du die puffer mit fester größe bauen
+2017-02-18 00:17:48,mgottschlag,"wenn der Ort des Puffers nicht offensichtlich ist, gibts zwei Möglichkeiten... entweder der Kernel verwaltet den Puffer, oder teilt dem Sender/Empfänger irgendwie mit, wie er händisch Kohärenz herstellen muss"
+2017-02-18 00:17:57,Svenska,eben
+2017-02-18 00:18:20,mgottschlag,bzw. das muss noch nichtmal der Kernel machen
+2017-02-18 00:18:21,Svenska,"bei der epiphany (und dem system, was ich baue), muss der puffer auf der empfängerseite liegen"
+2017-02-18 00:18:34,Svenska,"aber wenn die leitung vergleichsweise langsam ist, will man den puffer senderseitig haben"
+2017-02-18 00:19:11,Svenska,"aber der kernel ist so ziemlich der einzige, der einen gesamtueberblick ueber das system hat"
+2017-02-18 00:19:12,mgottschlag,"du hast aber auch keine MMU, oder?"
+2017-02-18 00:19:15,Svenska,nein
+2017-02-18 00:19:35,mgottschlag,"das muss nicht der Kernel sein, das kann auch ein Speicherverwaltungsserver sein"
+2017-02-18 00:19:51,Svenska,"hmm, stimmt auch wieder"
+2017-02-18 00:19:53,mgottschlag,dann reichen im Kernel wirklich nur recht minimale Abstraktionen
+2017-02-18 00:20:00,mgottschlag,"btw, vllt für dich interessant:"
+2017-02-18 00:20:12,mgottschlag,Kennst du M3? Das ist ein dresdner (?) Microkernel für Manycore-Systeme
+2017-02-18 00:20:40,Svenska,"nein, sagt mir nichts"
+2017-02-18 00:20:55,mgottschlag,(wobei die eigene Speicherverwaltungshardware vorausgesetzt haben)
+2017-02-18 00:21:16,Svenska,"wir haben kein betriebssystem im engeren sinne, also ueberhaupt nix in der richtung"
+2017-02-18 00:21:21,mgottschlag,http://os.inf.tu-dresden.de/papers_ps/asmussen-m3-asplos16.pdf
+2017-02-18 00:22:15,mgottschlag,"deren Leistung ist im wesentlichen, dass sie recht leichtgewichtige Hardware präsentieren, mit denen ein OS auch Kerne kontrollieren kann, die für klassische Betriebssysteme viel zu klein sind"
+2017-02-18 00:23:24,mgottschlag,"also, ich weiß jetzt nicht, mit welchen Problemen du dich genau beschäftigst, das sind sicherlich andere, aber vielleicht trotzdem interessant ^^"
+2017-02-18 00:23:25,Svenska,hmm
+2017-02-18 00:23:31,Svenska,"darf ich behaupten, dass ich das nie gesehen habe? ^^"
+2017-02-18 00:23:40,Svenska,die haben sowas ähnliches gemacht wie ich
+2017-02-18 00:23:51,mgottschlag,"""oh no, they wrote our paper""? :p"
+2017-02-18 00:23:56,Svenska,:p
+2017-02-18 00:25:01,Svenska,wir arbeiten mit CAL (eine actor-sprache) und haben dafuer nen compiler auf verschiedene architekturen
+2017-02-18 00:25:34,Svenska,"da actors nur per pipes kommunizieren, hab ich fuer die epiphany eine solche abstraktion gebaut und das gab ein paar ergebnisse"
+2017-02-18 00:26:18,Svenska,"unerfreulich war, dass das buffermanagement extrem teuer ist (>100 takte / token, tut bei 4 byte/token richtig weh)"
+2017-02-18 00:26:33,Svenska,daher implementiere ich gerade den teil in vhdl fuer ein ähnliches system
+2017-02-18 00:27:25,Svenska,"ich ziele gerade auf 4-8 KB RAM/Core und etwa 8-10 cores ab, dann duerfte der FPGA voll sein"
+2017-02-18 00:27:31,mgottschlag,"M3 hat Kommunikation explizit ausgeklammert, da geht es v.a. um ""wie mache ich Kontextwechsel"" oder ""wie implementiere ich möglichst billig Isolation"" :)"
+2017-02-18 00:27:50,Svenska,"ja, ich seh gerade, dass die sowas wie MMUs und so machen"
+2017-02-18 00:28:04,Svenska,haben wir alles nicht; isolation/security und so zeugs spielen bei uns keinerlei rolle
+2017-02-18 00:29:02,mgottschlag,"was ist bei dir ""Buffermanagement""? Synchronisierung?"
+2017-02-18 00:29:12,Svenska,ja
+2017-02-18 00:29:26,Svenska,"das problem mit der epiphany ist, dass das ein multitasksystem ist, kein multithreadsystem"
+2017-02-18 00:29:55,Svenska,"und um mit einem fremden task per shared address space zu kommunizieren, musst du das speicherlayout des gegenuebers kennen"
+2017-02-18 00:30:15,Svenska,"du weißt ja nicht, wo der seinen buffer hat"
+2017-02-18 00:30:46,Svenska,dazu kommt dann noch synchronisierung
+2017-02-18 00:32:14,mgottschlag,klingt spaßig :)
+2017-02-18 00:32:19,Svenska,das erzwingt halt handshakes und kostet codesize (meine lib braucht 1 KB fuer init und 1 KB pro channeltyp)
+2017-02-18 00:32:55,mgottschlag,"die Sache mit dem Speicherlayout ist aber im Zweifelsfall nicht im kritischen Pfad, oder?"
+2017-02-18 00:33:27,Svenska,"mein system legt einfach eine struktur in den shared memory (fixed size und daher bekannt), wo sich alle cores fuer ihre pipes die metadaten austauschen, aber da der extrem langsam ist..."
+2017-02-18 00:33:38,Svenska,"nein, das ist ein (großes) init-problem"
+2017-02-18 00:34:30,Svenska,"aber um an einen channel ranzukommen, muss ich 2 strukturen dereferenzieren und eine indirekte funktion aufrufen"
+2017-02-18 00:34:55,Svenska,"und, weil ich in meiner weisheit die tokengröße per-pipe gemacht hab, läuft das ueber memcpy(), was *extrem* langsam ist"
+2017-02-18 00:35:16,Svenska,"ich glaube, allueberalles liegt ein ""sende token""-aufruf bei ~340 takten"
+2017-02-18 00:35:40,Svenska,"dazu kommt dann noch transport und (vermutlich) ähnlicher aufwand auf empfängerseite, um die daten aus dem puffer zu pulen..."
+2017-02-18 00:36:12,Svenska,fuer 4 oder 8 bytes.
+2017-02-18 00:36:39,Godwine,ich wär für einen dma controller dem man den receiver und dessen addresse mitteilt und der kopiert dann während man weiter seine berechnungen macht xD
+2017-02-18 00:36:43,Svenska,"(bei 1K-tokens ist das nicht mehr so schlimm, aber da kriegen wir platzprobleme und verlieren parallelität)"
+2017-02-18 00:36:53,Svenska,"Godwine: rate mal, was ich baue :D"
+2017-02-18 00:36:57,mgottschlag,"hm, aber muss ich das jedes Mal machen, wenn ich in eine Pipe was sende? Nur, wenn mehrere gleichzeitig reinschreiben, oder?"
+2017-02-18 00:37:10,Svenska,"nein, pipes sind bei mir sender-empfänger"
+2017-02-18 00:37:34,mgottschlag,"also, ich stell mir das gerade vor, dass ich da einfach in einen gemeinsamen Speicherbereich schreibe, irgendwo ein Flag oder einen Pointer update, flushe und vielleicht noch was IPI-artiges hinterherschieße"
+2017-02-18 00:37:37,Svenska,"point to point. und ja, das musst du jedesmal machen, wenn du reinschreibst"
+2017-02-18 00:37:49,mgottschlag,weil ein Kern ja nicht beliebig viele Pipes gleichzeitig benutzt
+2017-02-18 00:38:05,Svenska,"den gemeinsamen speicherbereich habe ich nicht, und wenn ich fremden speicher anrufe, ist es nicht kohärent"
+2017-02-18 00:38:12,Svenska,"...macht uebrigens viel spaß, wenn ""i++"" failed ;)"
+2017-02-18 00:38:24,Svenska,bzw. *i++;
+2017-02-18 00:39:04,mgottschlag,"okay, also es ist deshalb so langsam, weil der Puffer in zentralem RAM liegt?"
+2017-02-18 00:39:09,mgottschlag,hab ich glaub ich noch nicht so ganz verstanden
+2017-02-18 00:39:21,Svenska,"nein, weil ich so viel aufwand treiben muss, um die genaue zieladresse rauszukriegen"
+2017-02-18 00:39:21,mgottschlag,"aber dazu ist es glaube ich auch zu spät, ich bewege mich mal Richtung Bett :D"
+2017-02-18 00:39:41,mgottschlag,"ja, aber die kann man ja im Zweifelsfall im Sender cachen"
+2017-02-18 00:39:58,Svenska,"im prinzip muss ich ""token in ringpuffer schreiben und auf wraparound aufpassen"", ""pointer aktualisieren"", gut ist"
+2017-02-18 00:39:59,mgottschlag,"es wird ja zumindest konsekutiv im Speicher liegen und sich nicht bewegen, oder?"
+2017-02-18 00:40:33,Svenska,"die pointer muss ich cachen, aber das teure ist (vom design her) der indirekte function call (jede pipe hat eigene zugriffsfunktionen) und das modulo fuer den wraparound"
+2017-02-18 00:41:18,Svenska,"und die beiden dereferenzierungen, weil ich einen zeiger auf ein pipe-objekt kriege, was dann auf die funktion zeigt"
+2017-02-18 00:41:30,mgottschlag,"ah, hm"
+2017-02-18 00:41:31,Svenska,2x deref + call
+2017-02-18 00:41:54,Svenska,"daher implementiere ich das so, dass ich einen beschleuniger hab, wo ich das token an eine fixe adresse (per channel) schreibe"
+2017-02-18 00:41:58,Godwine,wär es zu viel verschwendung wenn man einen output und einen input buffer pro kern hat und der dma liest die addresse des empfängers und fügt den output buffer da an?
+2017-02-18 00:42:14,Svenska,"und die engine selbst schreibt das an eine weitere fixe, vorher konfigurierte adresse"
+2017-02-18 00:42:27,Svenska,wo dann ein gegenstueck steht und in den ram schreibt
+2017-02-18 00:42:40,Svenska,und beide teile kommunizieren miteinander wegen synchronisierung
+2017-02-18 00:42:50,Svenska,Godwine: das problem ist blocking
+2017-02-18 00:43:26,Svenska,"die epiphany hat 2 dma-kanäle pro kern, und die kann man auf ""slave"" schalten, d.h. ich habe eine bekannte zieladresse und immer, wenn da was reinkommt, wird es auf eine lineare adresse im speicher geschrieben"
+2017-02-18 00:44:07,Godwine,wenn du die hardware direkt schreibst warum machst du diese pipes nicht shared also z.B 256bytes pro verbindung die in die addressbreeiche von beiden kernen eingeblendet werden und die dadurch automatisch kohärent sind?
+2017-02-18 00:44:10,Svenska,"das problem ist, dass ich (a) immer mehr schreiben kann, als platz da ist und ich den sender nicht anhalten kann; (b) ich den interrupt fuer ""buffer voll"" und den wraparound nicht schnell genug machen kann, bis der puffer ueberlaufen ist"
+2017-02-18 00:44:24,Svenska,weil die kerne keine kohärente verbindung haben
+2017-02-18 00:44:33,mgottschlag,auf welchen Konferenzen seid ihr mit dem ganzen so unterwegs?
+2017-02-18 00:44:36,Godwine,aber du hast geteilten ram?
+2017-02-18 00:44:45,Svenska,"nein, ich habe geteilten adressraum"
+2017-02-18 00:44:56,Svenska,"puh, mit der thematik noch nirgends (arbeite dran)"
+2017-02-18 00:45:02,Svenska,ich war auf der ISCA letztes jahr
+2017-02-18 00:45:07,mgottschlag,"ah, ok :D"
+2017-02-18 00:45:12,Godwine,ach dann ist das eher wie numa
+2017-02-18 00:45:23,Svenska,dieses jahr werd ich aber nicht rechtzeitig da sein
+2017-02-18 00:45:25,Svenska,...mom
+2017-02-18 00:46:01,Svenska,ich peile die FPL und einen workshop der ESWEEK an
+2017-02-18 00:46:20,Svenska,2 papers in den nächsten 3 wochen und der kram ist weitab von funktionierend...
+2017-02-18 00:46:37,Svenska,wo bist du so unterwegs? ;)
+2017-02-18 00:46:46,mgottschlag,atm noch garnicht
+2017-02-18 00:47:05,mgottschlag,"letztes Jahr Workshop auf der Europar, das klang so nach einem Event, wo man dich auch hätte finden können :)"
+2017-02-18 00:47:15,Svenska,"gag am rande: ISCA war ja in Seoul, und die ESWEEK wird auch da sein, im gleichen hotel :D"
+2017-02-18 00:47:17,mgottschlag,jetzt im April erstmal Doctoral Workshop der Eurosys
+2017-02-18 00:47:22,mgottschlag,:D
+2017-02-18 00:47:37,Svenska,...sind ja nur 16h flug oder so :D
+2017-02-18 00:47:38,mgottschlag,"aber ich habe noch keinerlei Ergebnisse, nachdem ich vor zwei Wochen mein Konzept nochmal umgeschmissen hab"
+2017-02-18 00:47:44,Svenska,woran arbeitest du?
+2017-02-18 00:48:19,Svenska,"hmm, europar hat schon deadline zu spät"
+2017-02-18 00:48:34,mgottschlag,"ganz grob will ich Serveranwendungen dadurch beschleunigen, dass ich dynamisch im OS Cache-Misses trace, Ausführungsphasen erkenne und dynamisch Prefetching-Code einführe"
+2017-02-18 00:49:07,mgottschlag,"Das dahinterliegende Problem ist, dass Cloud-Workloads riesige Code-Working-Sets haben"
+2017-02-18 00:49:13,Svenska,hmm
+2017-02-18 00:49:23,Svenska,"das gleiche problem haben wir auch, nur auf kleineren skalen"
+2017-02-18 00:49:33,mgottschlag,"dadurch stallt der In-Order-Teil des CPU-Frontends recht häufig, was gerne mal 30% Performance kostet"
+2017-02-18 00:49:50,Svenska,jo
+2017-02-18 00:50:32,Svenska,"auf den architekturen, mit denen ich spiele, ist so ein prefetching zwingend fuer gebrauchbare performance"
+2017-02-18 00:50:46,mgottschlag,"es gibt bereits einiges an Hardwareansätzen (z.B. verbesserte Prefetcher mit besserer Mustererkennung), aber die skalieren nicht unbedingt immer und sind in jedem Fall in aktuellen Serverprozessoren nicht zu finden"
+2017-02-18 00:50:47,Svenska,"bzw. darum machen wir ja actors, weil das da explizit ist :)"
+2017-02-18 00:52:42,mgottschlag,"Was aktuell einem Prototypen im Weg steht, ist, dass sich der Instruction-Prefetcher von Intel-CPUs wohl nicht deaktivieren lässt und 10x so viele Cache Misses produziert, als Cache Misses vom CPU-Frontend für retired instructions aufgezeichnet werden, und das bläst mir viel zu schnell den geladenen Code wieder aus dem Cache \o/"
+2017-02-18 00:53:16,mgottschlag,"naja, so, bin jetzt mal wirklich weg, gn8 :)"
+2017-02-18 00:53:19,Svenska,gn8
+2017-02-18 00:54:00,Godwine,gn8
+2017-02-18 00:56:38,Svenska,"ich seh keine möglichkeit fuer zusammenarbeit, schade"
+2017-02-18 02:09:37,Godwine,Ich hab mich mal wieder doof angestellt
+2017-02-18 02:10:50,Godwine,mein Banana pro hat 2 micro usb anschlüsse einen für OTG und einen für Strom wobei auch der OTG port benutzt werden kann um das board mit strom zu versorgen aber nicht den SATA port
+2017-02-18 02:11:26,Godwine,und ich hab jetzt ne weile versucht ne Festplatte anzuschließen und mich gewundert warum die nicht an geht
+2017-02-18 02:11:28,Godwine,xD
+2017-02-18 02:22:58,Svenska,ich mach mal die augen zu xD
+2017-02-18 02:23:02,Svenska,ssissseit
+2017-02-18 02:23:11,Svenska,gn8
+2017-02-18 13:05:42,Yokuldreki,"vllt kann mir noch mal jemand helfen, der gestern mein problem mitbekommen hat"
+2017-02-18 13:06:26,Yokuldreki,"trilweise funktioniert jz mein kbtreiber, setze ich aber das sti auch nur woanders hin, gibts ne gpf, immernoch mit errcode 0x13B..."
+2017-02-18 13:07:05,Yokuldreki,"wird offenbar extern ausgelöst, eip zeigt auf while loop"
+2017-02-18 13:10:02,mgottschlag,"ich wusste garnicht, dass es extern ausgelöste GPFs gibt :)"
+2017-02-18 13:23:00,Yokuldreki,ka bin da ziemlich nooby
+2017-02-18 13:23:39,Yokuldreki,"ich frage mich halt, wo die gpf herkommt, in ner nichtstuenden while schleife"
+2017-02-18 13:27:26,Paddy,"Ohne deinen Code zu kennen, ist es schwer zu sagen, ob das sti genau dort stehen muss"
+2017-02-18 13:31:28,Yokuldreki,ich kann euch später auszüge schicken
+2017-02-18 13:42:05,Yokuldreki,*facepalm* fehler in der initroutine... grrrrrr
+2017-02-18 13:43:35,Paddy,Der den GPF erklärt?
+2017-02-18 13:46:46,Yokuldreki,"der ersteinmal nur bewirkt hat, dass es nen fehler im KBC gegeben hat? der ka warum nen gpf ausgelödst hat"
+2017-02-18 14:11:09,MasterQ32,ist der PIC initialisiert?
+2017-02-18 14:11:26,MasterQ32,GPF = KBD wenn PIC die INterrupt-Nummer nicht verschiebt
+2017-02-18 14:11:48,MasterQ32,afk
+2017-02-18 14:22:52,Yokuldreki,ja sry
+2017-02-18 14:23:07,Yokuldreki,hab eigentlich den pic remapped
+2017-02-18 14:23:47,Yokuldreki,"jz nach hardreset mit dem knopf funkts wieder, nur softreset und die expection kommt"
+2017-02-18 14:54:05,Yokuldreki,ist eig einer von euch auch auch mikrocontroller.net aktiv?
+2017-02-18 16:07:37,Paddy,"Ich glaube, du willst dir mal ein Internet kaufen, Yokuldreki ;-)"
+2017-02-18 16:07:54,Yokuldreki,^^
+2017-02-18 16:27:52,Yokuldreki,+T
+2017-02-18 16:28:03,Yokuldreki,was sind modes?
+2017-02-18 16:28:29,Jonathan,Welche meinst du denn?
+2017-02-18 16:28:38,Jonathan,Die vom Channel?
+2017-02-18 16:28:51,Yokuldreki,ja
+2017-02-18 16:28:59,Yokuldreki,bin neu im irc
+2017-02-18 16:29:22,Jonathan,"""+t"" auf dem Channel heißt z.B., dass das Thema nicht so einfach geändert werden kann"
+2017-02-18 16:29:39,Jonathan,"""+n"", dass der Channel keine Nachrichten von außerhalb empfängt"
+2017-02-18 16:33:39,Yokuldreki,k danke
+2017-02-18 16:55:13,Svenska,nioM
+2017-02-18 16:55:32,Godwine,hcaT
+2017-02-18 16:56:29,Svenska,"wieso muss hardware eigentlich immer so kompliziert werden, wenn man zusätzlichen kleinkram haben will :-)"
+2017-02-18 16:59:11,Godwine,abgesehen von der codesize? :D
+2017-02-18 16:59:56,Svenska,"nein, die codesize explodiert auch"
+2017-02-18 17:00:44,Godwine,du schreibst halt einen monolitischen SoC *g*
+2017-02-18 17:01:03,Svenska,eben nicht *g*
+2017-02-18 17:01:16,Svenska,"und nein, ich habe nicht eine datei ""SoC.vhdl""..."
+2017-02-18 17:02:07,Godwine,nicht? :D
+2017-02-18 17:02:40,Svenska,"naja, ineinander verzahnte state machines sind halt blöde"
+2017-02-18 22:55:43,Godwine,hm ich glaube ich hab da ein henne-ei problem xD
+2017-02-18 22:57:15,Godwine,"wenn ich über meine scheduling syscalls messages sende muss zuvor festgelegt werden wohin die daten kopiert werden sollen, nur wohin soll kopiert werden wenn der thread das erste mal aufgerufen wird?"
+2017-02-18 23:00:15,Tufel,"Wie sieht eigentlich so üblicherweiße die Struktur und Projekt-Managment von Verilog-Dateien großer Hardware-Projekten aus? Ich hab bei einer meiner großen Projekte eine CellLibrary geschrieben die alle wichtigen Logikbausteine enthält(also AND2_X1, NAND2_X1 , DFF_X1 ...) und daraus dann alle Komponenten des Projekts aufgebaut . Ist sowas auch in der Industrie üblich?"
+2017-02-18 23:00:51,Svenska,nein
+2017-02-18 23:01:43,Svenska,"eine bibliothek mit den grundbausteinen (also FF und basisgatter) ist massive verschwendung von logik, denn diese logik kennt der synthesizer bereits"
+2017-02-18 23:02:16,Svenska,"du kannst (in vhdl) auch einfach ""a <= not and b"" schreiben und bekommst dafuer eine LUT. und wenn du das als register machst, ist das trotzdem nur eine unit, weil das FF da auch mit drin steckt"
+2017-02-18 23:02:43,Svenska,kurz: ein AND4 oder ein DFF ist eine nette fingeruebung und vollkommen wertlos.
+2017-02-18 23:03:06,Svenska,"(außerdem verschwendest du dann deine zeit damit, die dinger zu verdrahten.)"
+2017-02-18 23:03:53,Tufel,Der Gedanke hinter der Idee war ürsprünglich Vorteile bei der Portierung meines Projektes auf eine andere Zileplattform.
+2017-02-18 23:04:19,Tufel,Mann mus jetzt nicht das Projekt um bauen sonder nur die Celllibrary
+2017-02-18 23:05:59,Svenska,"du erreichst damit nur, dass du auf allen plattformen beschissenen code erzeugst"
+2017-02-18 23:06:27,Tufel,Warum soll der Code mit Library beschissener sein als ohne? :D
+2017-02-18 23:06:28,Svenska,das inferieren von hardwareelementen ist relativ wichtig
+2017-02-18 23:06:55,Svenska,"und wenn du dein AND4 nicht exakt nach dem pattern schreibst, dass der synthesizer merkt ""oh, das ist ein AND4, da nehm ich doch den hardwareblock"", dann inferiert der dir logik dafuer"
+2017-02-18 23:07:06,Svenska,und die logik ist deutlich schlechter als der vorhandene hardwareblock.
+2017-02-18 23:08:09,Svenska,"was in der industrie gemacht wird, ist (soweit ich das ueberblicken kann) von firma zu firma unterschiedlich"
+2017-02-18 23:08:15,Tufel,Was meinst du mit Hardwareblock? Meine FPGa besteht doch aus LUTs?
+2017-02-18 23:08:19,Svenska,nein
+2017-02-18 23:08:48,Svenska,"dein fpga besteht aus logikelementen, und die logikelemente bestehen mindestens aus LUTs, FFs und Carry-Logik, außerdem hast du spezielzeugs"
+2017-02-18 23:09:21,Tufel,"Joar, aber eben keine Hardwareblöcke"
+2017-02-18 23:09:36,Svenska,?
+2017-02-18 23:09:43,Svenska,block-ram ist ein hardwareblock
+2017-02-18 23:10:09,Svenska,serdes-teile sind auch hardwareblöcke
+2017-02-18 23:10:32,Tufel,Mhh ich dachte mit Hardware-Block meintest du ein festverdrahtete Logic-Schaltung
+2017-02-18 23:10:46,Svenska,ein blockram ist eine festverdrahtete logikschaltung...
+2017-02-18 23:11:00,Svenska,...genauso wie eventuell vorhandene serdes-blöcke oder hardcores
+2017-02-18 23:12:59,Tufel,"Naja, es ging mir eigentlich um den Hardwareblock den du oben im zusammenhand mit dem and4 genannt hast"
+2017-02-18 23:13:44,Svenska,"ja, aber entweder du kriegst eine LUT (evtl mit carrylogik) dafuer, oder - wenn der synthesizer nicht mitkriegt, was du gebaut hast - kriegst du möglicherweise mehrere LUTs und/oder hässlicheres routing"
+2017-02-18 23:14:18,Tufel,"joar, das stimmt. "
+2017-02-18 23:14:39,Svenska,"was in der industrie gemacht wird, ist (soweit ich das ueberblicken kann) von firma zu firma unterschiedlich"
+2017-02-18 23:15:01,Svenska,"das reicht von ""wir machen alles in vhdl/verilog und lassen alles inferieren"" (wenn du dein bram passend beschreibst, kriegst du es auch inferiert)"
+2017-02-18 23:15:15,Svenska,"bis hin zu ""wir machen blockdesign mit den fertigen IP blocks"""
+2017-02-18 23:15:33,Svenska,"oder sogar ""wir machen HLS (high-level synthesis)"", d.h. die beschreibung in C, C++ u.ä."
+2017-02-18 23:17:33,Tufel,"Mhh ok, ich mach es derzeit immer so das ich zunächst meine Schaltpläne für 4bit Luttabellen optimiere, und dann errechne wie viele LUT-Tabellen für die Schaltung benötigt wird. Und dann programmier ich solange bis dieses Ergebniss erreicht ist :D"
+2017-02-18 23:17:55,Svenska,"wäre auf meinem fpga verschwendung, weil der hat LUT6"
+2017-02-18 23:19:01,Yokuldreki,moin allerseits
+2017-02-18 23:19:04,Tufel,Du hast warscheinlich einer dieser Spartan-FPGA's oder?
+2017-02-18 23:19:06,Tufel,Huhu
+2017-02-18 23:19:13,Svenska,zynq 7000 series
+2017-02-18 23:22:47,Tufel,Warst du eigentlich schon mal an den ganz großen Projekten der Hardware-Industrie beteiligt? Wie hat mans da gehandhabt?
+2017-02-18 23:22:58,Svenska,"nein, ich bin nur popeliger doktorand"
+2017-02-18 23:23:23,Svenska,"wie gesagt, nach dem, was ich in foren und diskussionen so ueberblicken kann, variiert das stark von unternehmen zu unternehmen"
+2017-02-18 23:23:58,Tufel,Warscheinlich dann auch innerhalb der Firma von Projekt zu Projekt.
+2017-02-18 23:24:08,Svenska,wuerd ich nicht sagen
+2017-02-18 23:24:14,Svenska,zumindest nicht allgemeingueltig
+2017-02-18 23:24:28,Svenska,"wer einmal ne infrastruktur und wissen sammelt, wirft das so schnell nicht wieder weg"
+2017-02-18 23:25:00,Svenska,das seh ich an meinen projekten.
+2017-02-18 23:25:58,Tufel,Also mein Projekt-Code unterliegt einer ständigen Revolution XD
+2017-02-18 23:26:10,Svenska,"ja, das ist doof"
+2017-02-18 23:26:22,Svenska,"du willst reformen, keine revolutionen :)"
+2017-02-18 23:26:57,Svenska,"davon abgesehen: du willst testbenches, und da stecken firmen relativ viel arbeit (zeit, geld) rein. hardwareentwicklung - so sie noch in der westlichen welt gemacht wird - hängt viel an zertifizierungen"
+2017-02-18 23:27:13,Svenska,"und um die zettelchen zu kriegen, musst du gewisse dinge nachweisen"
+2017-02-18 23:27:29,Svenska,"das ist nicht unbedingt ""TÜV Süd""-niveau"
+2017-02-18 23:28:31,Tufel,Also von diesen Zettelchen ist mein Projekt noch weit entfehrnt... 
+2017-02-18 23:28:43,Svenska,die sind auch von deinem geldbeutel weit entfernt
+2017-02-18 23:28:56,Svenska,"ich geh mal davon aus, dass du schueler oder student bist ^^"
+2017-02-18 23:29:30,Tufel,Joar 1. Semester
+2017-02-18 23:29:57,Svenska,studiengang?
+2017-02-18 23:30:06,Tufel,Technische Informatik
+2017-02-18 23:30:22,Tufel,Ich dachte das passt am besten zu meine Interessengebieten :D
+2017-02-18 23:30:32,Svenska,"wo, wenn ich fragen darf?"
+2017-02-18 23:30:47,Tufel,An der HS-Esslingen
+2017-02-18 23:30:56,Svenska,kA wo das is ^^
+2017-02-18 23:31:05,Tufel,In Esslingen XD
+2017-02-18 23:31:13,Svenska,echt? :)
+2017-02-18 23:31:38,Svenska,"okay, google sagt ""Esslingen am Neckar är en stad i den tyska delstaten Baden-Württemberg. Den ligger vid floden Neckar, omkring 14 kilometer sydost om Stuttgart."""
+2017-02-18 23:32:02,Tufel,genau :D
+2017-02-18 23:32:12,MasterQ32,Tufel: Wo wohnst du?
+2017-02-18 23:32:19,Svenska,vermutlich da in der nähe :D
+2017-02-18 23:32:21,MasterQ32,ich wohn in Nürtingen und studiere in Stuttgart
+2017-02-18 23:32:48,Tufel,"Oh in wohn in so nem Kleinem Dorf am Neckar, hinter Metzingen"
+2017-02-18 23:33:18,Svenska,seufz... immer alle im sueden
+2017-02-18 23:34:04,Tufel,"Du wohnst warscheinlich irgendwo in Schweden, oder?"
+2017-02-18 23:34:15,MasterQ32,"wait, du wohnst also quasi direkt ums Eck?"
+2017-02-18 23:34:37,Svenska,"jetzt ja, aber als ich in Dtl studiert hab, wär max am nächsten dran gewesen"
+2017-02-18 23:34:44,Svenska,mit 3-4h zugfahrt oder so
+2017-02-18 23:35:45,Tufel,"Naja, das geht noch, ich fahr jeden Tag 3 Stunden Zug, hin und zurück..."
+2017-02-18 23:36:25,MasterQ32,"ich fahr von nürtingen ne 45 minuten nach stuttgart, "
+2017-02-18 23:36:31,MasterQ32,hast du noch so viel busstrecke dazu?
+2017-02-18 23:36:36,Svenska,*schauder*
+2017-02-18 23:37:07,Svenska,"ich war ne stunde zugfahrt von zuhause weg, und je nach hörsaal 5-15min zu fuß von der uni"
+2017-02-18 23:37:30,Svenska,(und ich fand die stunde pendeln im praktikum schon grenzwertig)
+2017-02-18 23:38:13,Tufel,"Joar, ich muss erstmal mit dem Bus zum Bahnhof dann Mit dem Zug nach Esslingen und danach wieder mit dem Bus zur Uni."
+2017-02-18 23:38:28,Svenska,...hinziehen?
+2017-02-18 23:38:29,Paddy,MasterQ32: 45 Minuten bis zum Bahnhof oder an die Uni raus?
+2017-02-18 23:39:01,MasterQ32,an die Uni brauch ich ziemlich genau ne Stunde von Türe bis Fachschaftsraum
+2017-02-18 23:39:16,Paddy,"Bis zum Bahnhof schaffe ich das unter glücklichen Umständen vielleicht auch, aber das bringt ja noch nichts..."
+2017-02-18 23:39:24,Svenska,"...hmm, ich glaub am weitesten weg von mir aus ist antoi*e"
+2017-02-18 23:39:34,MasterQ32,"Svenska: du willst im Raum stuttgart so wenig wie möglich umziehen, die Wohnungssituation ist ne Katastrophe (darum wohn ich jetzt auch so weit von der uni weg)"
+2017-02-18 23:39:39,Paddy,"Seattle? Jo, klingt wahrscheinlich. ;-)"
+2017-02-18 23:39:46,Svenska,"achso, nein heimatlich :D"
+2017-02-18 23:39:49,Svenska,usa zählt nich *g*
+2017-02-18 23:40:00,Svenska,aber er war doch schweizer?
+2017-02-18 23:40:05,Paddy,"Du meinst, der wird sowieso bald rausgeschmissen? ;-)"
+2017-02-18 23:40:13,Paddy,Ist er meines Wissens immer noch *g*
+2017-02-18 23:40:19,Svenska,"die chancen stehen gut, je nach verhandlungsvermögen seiner firma :D"
+2017-02-18 23:40:46,Svenska,das ist mir fuers pendeln definitiv zu weit :D
+2017-02-18 23:40:55,Svenska,wobei
+2017-02-18 23:41:20,Svenska,"...2h bis zum flughafen, dann der flug, dann von da aus weiter... halber tag könnte hinkommen ^^"
+2017-02-18 23:41:40,Svenska,nach hause mitm auto brauch ich länger
+2017-02-18 23:41:55,Svenska,(zu meinen eltern)
+2017-02-18 23:41:56,Paddy,*lol*
+2017-02-18 23:42:17,Svenska,"das schnellste waren 5 stunden, aber die fluglinie gibt's nicht mehr :-("
+2017-02-18 23:42:55,Svenska,"mit zwischenlandung, weil der flieger sonst nicht ueber die ostsee kommt *g*"
+2017-02-18 23:44:04,Svenska,"MasterQ32: ja, die wohnungssituation in allen unistädten ist doof"
+2017-02-18 23:44:17,Svenska,selbst hier (70k-stadt) ist das grausig
+2017-02-18 23:44:31,MasterQ32,stuttgart ist eher industrie- als unistadt
+2017-02-18 23:44:34,Paddy,Ich würde Stuttgart jetzt nicht als typische Unistadt bezeichnen.
+2017-02-18 23:44:47,Paddy,Gibt jedesfalls noch ein bisschen mehr da als die Uni ;-)
+2017-02-18 23:44:51,Svenska,stimmt
+2017-02-18 23:44:56,MasterQ32,ich wohn jetzt weiter auserhalb (Nürtingen ist schon nen gutes Stück weg) und ich zahl für meine 40m² 460€/Monat (was absolut awesome ist)
+2017-02-18 23:44:58,Svenska,die ganzen jobs in der AT und IT -.-
+2017-02-18 23:45:10,Svenska,ich zahl >650€ ...
+2017-02-18 23:45:13,MasterQ32,für?
+2017-02-18 23:45:21,Svenska,"""ca 42 m^2"" laut vertrag"
+2017-02-18 23:45:27,Svenska,"die bude ist grausam, aber die lage nett"
+2017-02-18 23:45:53,Svenska,keine 100m zum strand und so
+2017-02-18 23:46:01,MasterQ32,das is geil :D
+2017-02-18 23:46:09,Svenska,"...dumm nur, dass der voll ist, wenn das wetter einigermaßen strandtauglich ist ;)"
+2017-02-18 23:46:11,Tufel,Ist in der Miete die heizkosten inklusive?
+2017-02-18 23:46:15,MasterQ32,bei mir ja
+2017-02-18 23:46:21,Svenska,"das ist alles inklusive, auch strom und wasser"
+2017-02-18 23:46:36,Svenska,"aber die heizung ist nur eine wärmepumpe ueber der tuer, wenn draußen frost ist, wirds nicht so richtig warm"
+2017-02-18 23:47:06,Svenska,"hab die 2 wochen auf ""powerful"" und 30 grad eingestellt (damit ich wenigstens so 21 hatte), und dann fing sie an zu klappern. suboptimal :D"
+2017-02-18 23:47:41,Tufel,"Naja, wenn der Strom kostenlos ist, kann man sich ja ein paar heizlüfter aus dem Sparmarkt besorgen :D"
+2017-02-18 23:47:51,Paddy,"MasterQ32: Ist Nürtingen (verkehrstechnisch gesehen) eigentlich so extrem viel näher als deine ursprüngliche Heimat? Nicht so richtig deutlich, wenn ich das richtig in Erinnerung habe, oder?"
+2017-02-18 23:48:18,MasterQ32,"doch, massiv"
+2017-02-18 23:48:51,MasterQ32,"von meinen eltern brauch ich 1,5h Zugfahrt bis Stuttgart minimum und hab ne beschissene Anbindung (Zug fährt alle 2 Stunden, nicht jede (halbe) Stunde)"
+2017-02-18 23:48:58,Svenska,"der ist nicht unbegrenzt kostenlos, aber ja - ich hab nen heizluefter neben dem bett stehen und der wandert umher ^^"
+2017-02-18 23:49:02,MasterQ32,"zudem hab ich noch ne busanbindung, die auch ca. 45 minuten bis uni braucht"
+2017-02-18 23:49:29,Paddy,"Hm, dann ist es schon zu lang her, dass ich die Strecke öfters gefahren bin. Oder ich hab nicht richtig aufgepasst, wann die Zwischenhalte sind. ;-)"
+2017-02-18 23:49:30,Svenska,entfernung ist aber ähnlich?
+2017-02-18 23:49:32,MasterQ32,"bei meinen eltern bräuchte ich ein auto, um zur uni fahren zu können :P"
+2017-02-18 23:49:49,MasterQ32,auch nicht wirklich
+2017-02-18 23:50:12,MasterQ32,also gefühlt ist nürtingen total nah an stuttgart (du brauchst auch nur 20 minuten mit dem auto und nicht mindestens 80)
+2017-02-18 23:50:14,Paddy,"Naja, Luftlinie ist Nürtingen relativ nah sogar"
+2017-02-18 23:50:18,MasterQ32,jau
+2017-02-18 23:50:23,MasterQ32,die bahn ist nur har bescheuert :D
+2017-02-18 23:50:26,Paddy,Genau
+2017-02-18 23:50:36,Svenska,beschaff dir ein auto? :D
+2017-02-18 23:50:41,Svenska,gibt's vielleicht ne buslinie oder so?
+2017-02-18 23:50:58,MasterQ32,"ja, buslinie gibts"
+2017-02-18 23:51:06,MasterQ32,zeitersparis: Exakt 0 Minuten
+2017-02-18 23:51:15,Svenska,meh
+2017-02-18 23:51:20,Svenska,also auto
+2017-02-18 23:51:24,MasterQ32,und: für nen auto hab ich kein geld und ich hab kein problem mit ÖPNV
+2017-02-18 23:51:32,MasterQ32,kostet mich ja fast nix
+2017-02-18 23:51:49,Svenska,hmm
+2017-02-18 23:52:11,MasterQ32,ich kann die 45 minuten zugfahrt halt zum arbeiten nutzen
+2017-02-18 23:52:27,Svenska,"das erklärt zumindest, warum du nach dem ""ich fahr nach hause"" immer ewig lange weg bist ^^"
+2017-02-18 23:53:06,MasterQ32,korrekt
+2017-02-18 23:54:05,Svenska,hmm
+2017-02-18 23:54:21,Svenska,der hauptwohnraumeigentuemer hier hat ein warteschlangensystem
+2017-02-18 23:54:37,Svenska,inzwischen hab ich 1600 punkte (man kriegt einen pro tag)
+2017-02-18 23:54:53,Svenska,damit /könnte/ ich ne gebrauchbare mietwohnung kriegen. :-)
+2017-02-18 23:55:16,MasterQ32,aha?
+2017-02-18 23:55:20,MasterQ32,erklär mal auasführlicher
+2017-02-18 23:55:34,Svenska,"naja, HFAB gehören die meisten gebäude in der stadt, ist ein bauunternehmen"
+2017-02-18 23:55:54,Svenska,ansonsten hat schweden fast durchgängig genossenschaftssysteme (d.h. wohnkauf-mietrecht oder so)
+2017-02-18 23:56:15,Svenska,"wenn ich 80k€ auf den tisch lege, kaufe ich mir das recht, in einer wohnung zur miete zu wohnen"
+2017-02-18 23:56:36,Svenska,"die miete ist dann aber relativ nett, fuer ~2raum dann um die 300€"
+2017-02-18 23:56:53,Svenska,habichabernich (und werd ich auch nicht verdienen in der zeit)
+2017-02-18 23:57:07,mgottschlag,interessantes System :D
+2017-02-18 23:57:08,Svenska,"also bleiben nur normale mietwohnungen, und die sind natuerlich heiß begehrt und selten"
+2017-02-18 23:57:19,Svenska,"naja, zentral verwaltetes wohnen eben"
+2017-02-18 23:57:23,Svenska,...wie in der DDR *hust*
+2017-02-18 23:57:36,mgottschlag,"Tufel: btw, falls es dich interessiert, kannst du dir auch mal anschauen, wie im RISC-V-Projekt der Code organisiert wird"
+2017-02-18 23:57:37,Svenska,"also hat HFAB ein warteschlangensystem, wo man sich anmeldet und punkte sammelt"
+2017-02-18 23:57:49,mgottschlag,die haben da irgendein recht interessantes Synthesesystem
+2017-02-18 23:57:56,Svenska,die nutzen CHISEL als programmiersprache
+2017-02-18 23:58:03,Svenska,da fällt hinten dann verilog raus
+2017-02-18 23:58:18,Svenska,kollege hat sich darauf eingeschossen... ich nehm einen kleineren RISC-V core fuer mein projekt
+2017-02-18 23:58:37,Svenska,"MasterQ32: naja, und wenn man sich auf ne wohnung anmeldet, dann sieht man, wieviele punkte der fuenfte in der anmeldeliste hat"
+2017-02-18 23:59:00,Svenska,und fuer ne dreiraumwohnung sind das um die 2000 punkte
+2017-02-18 23:59:28,Svenska,"macht im mittel irgendwas um die fuenfeinhalb jahre wartezeit, bis man da rankommt"
+2017-02-18 23:59:36,Svenska,und die miete liegt dann bei irgendwas um die 500€
+2017-02-18 23:59:41,mgottschlag,"ich habs mir Chisel nie detaillierter angeschaut, aber die Beschreibung klang so als könnte das a) auch einiges im Bereich High-Level-Synthese und b) ganz gute High-Level-Organisation der Funktionalität"

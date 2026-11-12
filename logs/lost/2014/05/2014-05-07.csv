@@ -1,0 +1,310 @@
+date/time,nick,message
+2014-05-07 00:13:57,Svenska^,"wenn ich an eine funktion ein array uebergeben will, und dieses array verändern will, dann reicht func(double ar[5]) aus, oder+"
+2014-05-07 00:13:59,Svenska^,?
+2014-05-07 00:14:15,Svenska^,oder muss ich dazu func(double* ar) deklarieren?
+2014-05-07 00:19:47,XanClic,du fragst kaputte sachen
+2014-05-07 00:20:38,Svenska^,"mir wurde mal erklärt, dass func(double* ar) und func(double ar[]) nicht äquivalent sind"
+2014-05-07 00:21:09,XanClic,"Sind sie auch nicht, bei mir meckert der Compiler immer nur, wenn ich mal in Versuchung gerate, irgendwo [] zu benutzen"
+2014-05-07 00:21:13,XanClic,deshalb lass ich das :-P
+2014-05-07 00:21:52,Svenska^,also ar[9] akzeptiert er
+2014-05-07 00:35:07,Jidder,aber ar[9] ist nicht ar[5]
+2014-05-07 00:35:11,Jidder,das willst du ja machen
+2014-05-07 00:35:26,Svenska^,"void bgk_q2d9(double node[9], double omega)"
+2014-05-07 00:35:45,Svenska^,das will ich machen. frage: kann ich node[4] verändern und es wird in der uebergeordneten instanz bemerkt? :D
+2014-05-07 00:36:38,Jidder,ich weiß nicht. warum nicht zeiger? da wüsste ich das
+2014-05-07 00:36:47,Svenska^,typsicherheit und so :D
+2014-05-07 00:36:48,Jidder,"stell doch bitte nur fragen, auf die ich die antwort weiß"
+2014-05-07 00:38:48,Svenska^,"naja, vorher weiss ichs ja nicht. ich bau gleich mal nen testcase..."
+2014-05-07 00:39:49,Jidder,"sicher, dass es dann typsicher ist?"
+2014-05-07 00:40:12,Svenska^,"ich kann dem ding kein ar[3] ohne warnung uebergeben, oder?"
+2014-05-07 00:40:36,Jidder,mit -Wall -pedantic nimmt mein compiler das noch an
+2014-05-07 00:40:40,Jidder,wenn das array kleiner ist
+2014-05-07 00:40:48,Svenska^,dasjadoof
+2014-05-07 00:42:25,Jidder,also c idiotensicher machen würde ich nicht versuchen
+2014-05-07 00:43:10,Svenska^,"ich frag mich grad, wie gut so ein moderner gcc algebraische ausdruecke vereinfachen kann"
+2014-05-07 00:43:29,Svenska^,"""merkt der, dass in der schleife in der formel der teilausdruck immer gleich ist"""
+2014-05-07 00:43:43,Jidder,das sollte er wohl
+2014-05-07 00:43:55,Jidder,mit einem SSA-basierten optimizer
+2014-05-07 00:45:03,Jidder,"aber es gibt auch registerpressure und ich hab ein paper gelesen, dass es manchmal effizienter sein kann, teilausdrücke neuzuberechnen"
+2014-05-07 00:45:24,Jidder,paper ist schön gesagt. war bestimmt irgendeine schäbige website
+2014-05-07 00:46:00,Svenska^,"ich versuche, die formeln gerade soweit runterzubrechen wie möglich"
+2014-05-07 00:46:17,Jidder,weißte was der knuth dazu sagen würde?
+2014-05-07 00:46:45,Svenska^,sum_i=0^8(population_i) --> double rho = node[0] + node[1] + ... + node[8]
+2014-05-07 00:46:58,Svenska^,"ne, hab den nie gelesen"
+2014-05-07 00:47:17,Jidder,premature optimization is the root of all evil
+2014-05-07 00:47:26,Svenska^,deswegen lass ich das alles weg
+2014-05-07 00:48:23,Svenska^,"in der schleife steht ""double eq = ... * (1. + ... - 1.5 * (ux*ux+uy*uy))"", und die kurze klammer ist in der schleife konstant"
+2014-05-07 00:48:47,Svenska^,"muss ich morgen mal ins assembly gucken, ob er das einmal vor der schleife ausrechnet oder fuer jeden durchlauf wieder"
+2014-05-07 00:49:00,Jidder,wieviele register hat die zielarchitektur?
+2014-05-07 00:49:04,Svenska^,64
+2014-05-07 00:49:15,Jidder,"na dann wird der compiler, das doch in eins der register tun, oder nich?"
+2014-05-07 00:49:26,Svenska^,"kA, ich teste grad auf x86_64 erstmal"
+2014-05-07 00:49:32,Jidder,da haste nicht 64 register
+2014-05-07 00:49:38,Jidder,der compiler funktioniert deswegen anders
+2014-05-07 00:49:46,Svenska^,schon klar
+2014-05-07 00:50:42,Svenska^,"ich hoffe, dass ich im 3D-fall auf der zielarchitektur den knoten (19 floats) in registern halten kann, und nur die konstanten (3*19) einmalig aus dem speicher lesen muss"
+2014-05-07 00:51:00,Svenska^,plus temporaries natuerlich
+2014-05-07 00:51:09,Jidder,warum hoffst du auf so ein spezifisches detail?
+2014-05-07 00:51:24,Jidder,der restliche code hat keine auswirkung auf die erfüllung der zielanforderungen?
+2014-05-07 00:51:37,Svenska^,"weil ich dann genau ausrechnen und nachweisen kann, wieviele FLOPs und speicherzugriffe ich fuer genau einen durchlauf brauche :D"
+2014-05-07 00:51:40,Jidder,"und die zielanforderungen werden nicht erfüllt, wenn diese eine sache nicht läuft?"
+2014-05-07 00:51:56,Jidder,"dass es ein FLOP wird, ist schon klar ^^"
+2014-05-07 00:52:01,Svenska^,ne dann wird die analyse komplizierter
+2014-05-07 00:52:09,Jidder,was musst du da denn analysieren?
+2014-05-07 00:52:17,Svenska^,lattice boltzmann
+2014-05-07 00:52:34,Svenska^,"das das sowieso nicht sinnvoll funktionieren wird, ist mir schon klar, da fehlt der speicher"
+2014-05-07 00:52:47,Svenska^,"(16 kerne, aber jeder nur mit 32K RAM...)"
+2014-05-07 00:53:38,Jidder,au weia 70er jahre high performance computing?
+2014-05-07 00:53:48,Svenska^,ne
+2014-05-07 00:53:56,Svenska^,ne suesse kleine manycore-architektur :-)
+2014-05-07 00:54:16,Svenska^,"ich hab zwar 16 MB externen speicher, aber der ist lahm"
+2014-05-07 00:54:38,Jidder,"also meine annahme, dass dein compiler gcc/icc/msvc ist, stimmt dann gar nicht?"
+2014-05-07 00:54:46,Svenska^,ist ein gcc 4.8
+2014-05-07 00:55:03,Jidder,der macht sowas mit? ist der nicht 32 bit+?
+2014-05-07 00:55:07,Jidder,ist ja verrückt
+2014-05-07 00:55:09,Svenska^,ist ne 32 bit architektur
+2014-05-07 00:55:18,Svenska^,adapteva epiphany
+2014-05-07 00:55:26,Jidder,klingt schon komisch
+2014-05-07 00:55:31,Jidder,nach weniger als 10000 suchergebnissen
+2014-05-07 00:55:49,Svenska^,16.7k :D
+2014-05-07 00:55:53,Jidder,jo
+2014-05-07 00:55:58,Jidder,und sogar mehr in anführungsstrichen
+2014-05-07 00:57:08,Jidder,"also, was ich aus algorithm enginnering mitgenommen habe, ist dass messen > raten"
+2014-05-07 00:57:27,Svenska^,ja
+2014-05-07 00:57:28,Jidder,ich hab so sogar die formel für das skalarprodukt hergeleitet
+2014-05-07 00:57:34,Svenska^,durch messen?
+2014-05-07 00:58:04,Jidder,naja war ursprünglich ein codeschnipsel für die schnittpunktbestimmung zweier linien
+2014-05-07 00:58:17,Jidder,einfach geradengleichung gleichgesetzt und da war noch eine division drin
+2014-05-07 00:58:32,Jidder,"aber ich brauchte eigentlich nur den fakt, ob ein schnittpunkt vorliegt oder nicht"
+2014-05-07 00:58:50,Jidder,und dann kann man das umformen und es sieht im prinzip aus wie das skalarprodukt
+2014-05-07 00:59:06,Svenska^,"hmm, das muesste ich auch gehabt haben :-D"
+2014-05-07 01:00:29,Jidder,algorithm engineering oder schnittpunktbestimmung? ^^
+2014-05-07 01:00:51,Svenska^,"""algorithms"" und schnittpunktbestimmung (mit koordinaten) *g*"
+2014-05-07 01:01:21,Jidder,ah
+2014-05-07 01:02:19,Jidder,bei mir war es im kontext zu ermitteln ob ein oder viele punkte in einem polygon liegen
+2014-05-07 01:02:53,Jidder,viele=mehrere ^^
+2014-05-07 01:03:06,Jidder,war ne lustige übungsaufgabe
+2014-05-07 01:03:14,Jidder,hat mich leider nicht reich und berühmt gemacht
+2014-05-07 01:03:29,Svenska^,"wir hatten *gruebel* wir sollten es jedenfalls ausprogrammieren, mit gtk, mit der maus linien ziehen und die schnittpunkte werden dann ausgerechnet und hervorgehoben"
+2014-05-07 01:04:06,Svenska^,"war ne wahlaufgabe, die ich aber nicht gemacht hatte. ging um computational geometry"
+2014-05-07 01:04:14,Jidder,hehe
+2014-05-07 01:04:52,Svenska^,voronoi-digramme mit einer von oben nach unten laufenden linie auszurechnen ist ... komisch
+2014-05-07 01:05:07,Svenska^,"so richtig begriffen hab ich's nicht, aber fuer huellkurven von polygonen reichte es "
+2014-05-07 01:06:00,Jidder,muss man ja auch nicht
+2014-05-07 01:06:41,Jidder,"bei mir gings vor allem um korrektheit und zwar auch mit all dem floating point zeug, dass da ratzfatz ein paar bits ungenauigkeit reinkommen"
+2014-05-07 01:07:06,Svenska^,hehe
+2014-05-07 01:07:29,Svenska^,"wenn ich korrekte ergebnisse habe, werd ich das so umbauen muessen, dass es mit single precision auskommt"
+2014-05-07 01:07:39,Svenska^,gibt n faktor 2 im platzbedarf... :D
+2014-05-07 01:08:21,Jidder,"d.h. jetzt ist es double, oder wie?"
+2014-05-07 01:08:38,Svenska^,"ich baue gerade code zusammen, den ich hoffentlich nachpruefen kann..."
+2014-05-07 01:09:02,Svenska^,"das ist alles doof, weil ich (a) von der thematik keinen plan habe und (b) ich auf der zielarchitektur nichtmal spielzeuggrosse gitter berechnen kann :D"
+2014-05-07 01:09:18,Svenska^,"zitat mein prof vorhin ""ich dachte ja an einen strohhalm oder so"""
+2014-05-07 01:09:31,Jidder,hehe
+2014-05-07 01:09:47,Svenska^,"als ich meinte ""aquarium in der grösse"" (so 2x2x2 cm)"
+2014-05-07 01:10:27,Jidder,hm da passen aber nicht viele fische rein
+2014-05-07 01:10:35,Jidder,oder wird das dann so wie diese bonsai kitten? ^^
+2014-05-07 01:10:43,Svenska^,aber ein paar hundert wassermölekuele
+2014-05-07 01:10:49,Svenska^,-ö+o
+2014-05-07 01:11:08,Jidder,sind sicherlich ähnlich unterhaltsame haustiere wie fische ^^
+2014-05-07 01:11:15,Svenska^,:-)
+2014-05-07 01:11:20,Svenska^,muss man nicht fuettern
+2014-05-07 01:11:29,Jidder,spart man gleich wieder geld
+2014-05-07 01:11:33,Svenska^,"und wenn man den esoterikern glaubt, haben die trotzdem erinnerungsvermögen"
+2014-05-07 01:11:44,Jidder,"man kann auch mal in den urlaub fahren, ohne dass man sich kümmern muss"
+2014-05-07 01:17:13,Svenska^,:-)
+2014-05-07 01:19:50,Svenska^,"ich fuehl mich, als ob ich mit medizinischen sachverhalten zu tun hätte"
+2014-05-07 01:20:05,Svenska^,alles mögliche wurde mit den namen der erfinder bezeichnet
+2014-05-07 01:21:27,Jidder,"aber lieber der arzt sein, als der patient"
+2014-05-07 01:21:45,Jidder,wobei wie ist das heutzutage mit der bezahlung von ärzten?
+2014-05-07 01:21:52,Jidder,^^
+2014-05-07 01:21:52,Svenska^,keine ahnung
+2014-05-07 01:22:11,Svenska^,"ich hab vor vielen jahren mal nen fernsehbericht aus mecklenburg-vorpommern gesehen, wo sie landärzte gesucht haben"
+2014-05-07 01:22:41,Svenska^,"""wir geben dir ... das doppelte des normalen geldes. und ein haus. und eine putzfrau. und ... die nebenkosten."" - doch es wollte trotzdem keiner :p"
+2014-05-07 01:25:10,Jidder,hehe
+2014-05-07 01:25:12,Jidder,warum nur ^^
+2014-05-07 01:25:28,Svenska^,hausbesuche in 100km radius? ^^
+2014-05-07 01:26:03,Jidder,klingt verlockend ^^
+2014-05-07 01:51:50,Svenska^,*seufz*
+2014-05-07 01:51:54,Svenska^,magische konstanten
+2014-05-07 01:52:06,Jidder,professor dumbledore fragen
+2014-05-07 01:52:13,Svenska^,soeben geschehen. :-D
+2014-05-07 01:52:23,Jidder,spoiler alert
+2014-05-07 01:52:28,Jidder,snape kills dumbledore
+2014-05-07 01:53:05,Svenska^,aber auch nur weil malfoy nicht will
+2014-05-07 01:53:23,Jidder,hey ich hab das noch nicht gelesen
+2014-05-07 01:53:27,Jidder,verrat doch nicht alles ^^
+2014-05-07 15:22:30,Jonathan,Moin
+2014-05-07 15:22:59,tufel,huhu
+2014-05-07 15:23:11,Jonathan,huhu tufel
+2014-05-07 15:23:34,tufel,huhu janathan 
+2014-05-07 15:24:09,tufel,ops *jonathan -.-
+2014-05-07 15:24:24,Jonathan,^^
+2014-05-07 15:26:44,kevin,Ist es nicht eigentlich +Jonathan?
+2014-05-07 15:27:24,tufel,mmh stimmt *+jonathan
+2014-05-07 15:28:33,Jonathan,@Jonathan geht immer :D
+2014-05-07 15:32:36,tufel,"mmh ist dieses ""@"" eine Spezielle funktion im IRC-Chanel?"
+2014-05-07 15:35:08,kevin,"Jonathan: Wie jetzt, bist du nicht mehr zufrieden? ;-)"
+2014-05-07 15:35:16,Jonathan,"Doch, doch *g*"
+2014-05-07 15:35:23,Jonathan,Aber es gibt halt immer noch was Besseres ;P
+2014-05-07 15:37:47,kevin,Hm. Was muss ich denn als nächstes anstreben? �kevin oder so?
+2014-05-07 15:38:33,Jonathan,Du bist ja jetzt beim Ausrufezeichen... Wie wär's mit einem Fragezeichen? :P
+2014-05-07 15:38:51,Jonathan,Moin Svenska
+2014-05-07 15:38:51,Svenska,moin
+2014-05-07 15:38:56,Jonathan,"Ha, schneller! :P"
+2014-05-07 15:38:58,max,�kevin
+2014-05-07 15:39:02,max,"hm, verdammt sei qt"
+2014-05-07 15:39:07,max,dann halt nur ‽kevin
+2014-05-07 15:39:22,Jonathan,§kevin
+2014-05-07 15:39:29,Svenska,…
+2014-05-07 15:39:32,Jonathan,"Nach dem Motto ""er ist Gesetzt"""
+2014-05-07 15:39:33,Jonathan,*-t
+2014-05-07 15:39:34,kevin,"§kevin nehme ich nur, wenn es um C-Standards geht"
+2014-05-07 15:39:39,Svenska,"ich seh nur rote, grüne und gelbe punkte"
+2014-05-07 15:40:17,kevin,max: Hat was
+2014-05-07 15:40:43,Svenska,unterstützt irc eigentlich unicode im namen?
+2014-05-07 15:40:55,max,"ich wollte eigentlich das umgekehrte ‽ haben, aber ich rate mal, dass qt das nicht mag"
+2014-05-07 15:40:59,max,wie auch das große ß nicht
+2014-05-07 15:40:59,kevin,IRC oder übliche IRC-Server?
+2014-05-07 15:41:02,Svenska,nein :)
+2014-05-07 15:41:19,Svenska,irc ist an sich ascii
+2014-05-07 15:41:39,Jonathan,Aber die Server unterstützen auch ANSI
+2014-05-07 15:41:50,Svenska,?
+2014-05-07 15:41:52,max,warum nicht utf-7
+2014-05-07 15:41:54,Jonathan,Naja
+2014-05-07 15:42:00,Jonathan,Sonst würde hier ja kein Ü durchgehen :P
+2014-05-07 15:42:07,Svenska,dat is kain ansi
+2014-05-07 15:42:10,Svenska,:-D
+2014-05-07 15:42:36,Jonathan,"Also ich dachte, ASCII geht von 0...127 und ANSI von 0...255"
+2014-05-07 15:42:38,Svenska,egal. volles unicode im nick ist jedenfalls hier nicht zulässig
+2014-05-07 15:42:39,max,Ich kann hier viel durchschicken
+2014-05-07 15:42:46,max,Leider hat Konversation kein EBDCIC
+2014-05-07 15:42:49,Svenska,Jonathan: und wofür steht 128..255 ?
+2014-05-07 15:43:03,Jonathan,"Svenska: Naja, Sonderzeichen wie Ä, Ö, Ü eben"
+2014-05-07 15:43:20,Svenska,"ja. welche wo sind, beschreibt die codepage- und da gibts viele"
+2014-05-07 15:43:33,Svenska,CP437 nennt man meist ANSI :-þ
+2014-05-07 15:43:41,max,wat
+2014-05-07 15:43:46,Jonathan,"Gut, dann meine ich CP437 :P"
+2014-05-07 15:43:55,max,"ANSI nenn ich entweder ASCII oder das, was Windowsnotepad dadrunter versteht"
+2014-05-07 15:43:55,Jonathan,Da ist Ü auf Position 220
+2014-05-07 15:43:56,Svenska,"üblicher in europa ist aber CP850, oder iso8859-1"
+2014-05-07 15:44:06,kevin,wtf...
+2014-05-07 15:44:11,Jonathan,850?
+2014-05-07 15:44:12,Svenska,max: dann meinst du CP1252
+2014-05-07 15:44:13,Jonathan,Hmmm
+2014-05-07 15:44:13,max,"Und ich glaube nicht, dass der Windowsnotepad unter ANSI CP437 versteht"
+2014-05-07 15:44:14,kevin,"""Because of IRC's Scandinavian origin, the characters {}|^ are   considered to be the lower case equivalents of the characters []\~,   respectively. This is a critical issue when determining the   equivalence of two nicknames or channel names."""
+2014-05-07 15:44:38,Svenska,"kevin: yay, das wäre dann ISO 646 :D"
+2014-05-07 15:44:40,max,dabei ist ^ doch viel höher als ~
+2014-05-07 15:44:40,Jonathan,...ohje xD
+2014-05-07 15:45:03,kevin,Das ist doch krank
+2014-05-07 15:45:05,Jonathan,"Hmmm, was unser Server daraus wohl macht?"
+2014-05-07 15:45:19,tufel,Nun kann man eigentlich hier auch spitze klammern in seinen namen einfügen ? :D
+2014-05-07 15:45:26,Svenska,"Jonathan: ascii ist 0..127 und ziemlich gut definiert. alles darüber ist weniger gut definiert, weil codepage-abhängig, und da gibts viele zur auswahl"
+2014-05-07 15:45:26,Jo[n]athan,[15:45:18] Jo{n}athan: No such nick/channel
+2014-05-07 15:45:28,kevin,"Hm, /kick Jo{n}athan tut nicht"
+2014-05-07 15:45:48,Jonathan,"Immer dieser kevin, der das gleich mit kick probiert, und nicht mit sowas wie whois"
+2014-05-07 15:46:06,max,der beweis musste ja noch erbracht werden
+2014-05-07 15:46:14,Jonathan,w.z.b.w.
+2014-05-07 15:46:23,max,∎
+2014-05-07 15:46:29,max,wo wir gerade bei unicode waren
+2014-05-07 15:46:52,Svenska,kevin: ISO 646 deutsch ersetzt [\] durch ÄÖÜ und {|}~ durch äöüß
+2014-05-07 15:47:15,max,"ui, dann kann ich damit valides C auf der Schreibmaschine tippen?"
+2014-05-07 15:47:25,Svenska,"und ja, aus der zeit kommt das"
+2014-05-07 15:47:50,kevin,"Svenska: Auf jeden Fall ist der Zeichensatz undefiniert und IRC ist nur so definiert, dass es Einheiten von 8 Bits benutzt"
+2014-05-07 15:48:28,Svenska,"ISO 646 finnisch ersetzt u.a. [\]^ durch ÄÖÅÜ und {|}~ durch äöåü, daher ist das mit der groß-kleinschreibung logisch ^^"
+2014-05-07 15:48:31,Svenska,jup
+2014-05-07 15:49:11,max,zum glück gibt es nicht so viele vornamen mit umlauten
+2014-05-07 15:49:18,max,außer vielleicht dörte
+2014-05-07 15:49:20,Svenska,…im finnischen. :-D
+2014-05-07 15:49:45,kevin,Wirst du in den Calls nicht immer Mäx ausgesprochen? ;-)
+2014-05-07 15:50:06,max,"Dazu müsste ich erstmal rausfinden, wie ich in die Cålls überhaupt reinkomme :-P"
+2014-05-07 15:50:16,kevin,Einwählen
+2014-05-07 15:50:20,max,langweilig
+2014-05-07 15:54:03,Svenska,"gabs nicht vor einiger zeit eine sicherheitslücke, die darauf basiert hat, dass im türkischen i-mit-punkt und i-ohne-punkt den gleichen großbuchstaben hatten und darum lower(x) != lower(upper(x)) galt?"
+2014-05-07 15:58:11,kevin,"Öhm, wenn sie den gleichen Großbuchstaben hätten, wär das aber ein Bug"
+2014-05-07 15:58:32,max,"Au ja, lass uns Türkisch fixen"
+2014-05-07 15:58:46,kevin,İ != I
+2014-05-07 15:58:53,kevin,Türkisch macht das schon richtig
+2014-05-07 15:58:59,max,Dann halt Deutsch :-P
+2014-05-07 15:59:09,max,upper('ss') = upper('SS')
+2014-05-07 15:59:12,max,äh
+2014-05-07 15:59:16,max,"ich bin verwirrt, offenbar"
+2014-05-07 15:59:18,max,upper('ss') = upper('s')
+2014-05-07 15:59:20,max,argl
+2014-05-07 15:59:22,max,upper('ss') = upper('ß')
+2014-05-07 15:59:32,max,ich brauch offenbar immer eine v3
+2014-05-07 16:00:41,Svenska,"kevin: wenn die sprache das aber so definiert, ist das kein unicode-bug. vielleicht hab ich das auch nur falsch in erinnerung"
+2014-05-07 16:00:42,kevin,"Kannst ja schauen, ob ein Maintainer wenigstens diese v3 mergt"
+2014-05-07 16:00:59,kevin,Svenska: Tut sie aber nicht
+2014-05-07 16:01:04,yayachiken,upper('ss') = upper('ß')
+2014-05-07 16:01:11,max,"kevin, was soll das denn heißen :-P"
+2014-05-07 16:01:11,yayachiken,wo doch jeder weiß dass SS != ẞ
+2014-05-07 16:01:16,max,"yayachiken, Qt nicht"
+2014-05-07 16:01:54,kevin,max: Dass ich hier grad keinen Deutsch-Maintainer sehe
+2014-05-07 16:02:13,Svenska,kevin: hast recht.
+2014-05-07 16:02:19,max,Ich meinte eher das „wenigstens diese v3“
+2014-05-07 16:02:32,Svenska,"trotzdem schwierig, richtig hinzukriegen"
+2014-05-07 16:02:42,kevin,Und warum geht auf RHEL 7 das � nicht in Konversation? :-/
+2014-05-07 16:02:50,max,Weil Qt
+2014-05-07 16:02:57,kevin,Bzw. das Konversation kommt ja woanders her...
+2014-05-07 16:02:59,max,Sag ich doch schon die ganze Zeit
+2014-05-07 16:03:03,kevin,"Nö, ich hatte das auch schon funktionierend."
+2014-05-07 16:03:07,max,ich auch
+2014-05-07 16:03:11,max,Aber Qt hats kaputtgemacht
+2014-05-07 16:03:17,max,Vor ein paar Jahren mittlerweile aber schon
+2014-05-07 16:03:21,Svenska,bei mir kommt da nur ein fragezeichen
+2014-05-07 16:03:28,max,(wenn es um das große ß geht)
+2014-05-07 16:03:36,max,Das zählt nicht mehr zu den Printable Zeichen
+2014-05-07 16:03:36,kevin,Geht es
+2014-05-07 16:03:50,max,"Und der Bugreport, der schon Jahre existiert, meint nur „Ja, das wird in Qt 5 gefixt“"
+2014-05-07 16:04:07,kevin,"Huch? Wie kommt man auf die Idee, das nicht mehr printable zu machen?"
+2014-05-07 16:04:08,Svenska,das groſse ẞ ?
+2014-05-07 16:04:09,max,"Ich kann das auch hier eingeben, aber wenn ich es absende…"
+2014-05-07 16:04:22,max,�
+2014-05-07 16:04:26,max,blörp
+2014-05-07 16:04:27,kevin,Ich kann's nichtmal eingeben
+2014-05-07 16:04:38,yayachiken,ẞẞẞ
+2014-05-07 16:04:40,yayachiken,na biste mett
+2014-05-07 16:04:40,max,:<
+2014-05-07 16:04:50,kevin,"Also in Konversation jedenfalls, in Konsole geht es"
+2014-05-07 16:04:55,max,jo
+2014-05-07 16:05:20,kevin,"Konqueror stellt es richtig dar, aber man kann es nicht in Formulare eingeben"
+2014-05-07 16:05:23,max,"das umgekehrte ‽ geht bei mir genauso nicht in konversation, wie ich vorhin festgestellt hab"
+2014-05-07 16:06:27,kevin,Also könnten wir alle genausogut auf kirc umsteigen
+2014-05-07 16:06:45,Svenska,*hust* xchat
+2014-05-07 16:06:58,yayachiken,öhm hexchat
+2014-05-07 16:07:06,yayachiken,https://hexchat.github.io/
+2014-05-07 16:07:27,XanClic,Oder neben netcat
+2014-05-07 16:07:36,XanClic,⸘ẞ
+2014-05-07 19:41:25,DerHartmut,Na ihr
+2014-05-07 19:41:27,DerHartmut,Was gehtn so
+2014-05-07 20:43:12,tdotu,lol in der neuen IDE von github ist google analytics dirn 
+2014-05-07 21:07:16,DerHartmut,atom ist so eine schwachsinnige hipster technologie
+2014-05-07 21:19:45,iksnagreb,warum macht eine in nem haeder definierte string konstante solche problemem?
+2014-05-07 21:20:02,iksnagreb,multiple definition of `hal::x86::arch_string'
+2014-05-07 21:20:43,yayachiken,i cannot do that dave
+2014-05-07 21:21:08,XanClic,"iksnagreb, vermutlich, weil die nicht static ist"
+2014-05-07 21:21:16,XanClic,und dann halt in jeder Datei neu definiert wird
+2014-05-07 21:21:22,XanClic,"Man könnte geradezu sagen, mehrfach definiert wird"
+2014-05-07 21:22:15,iksnagreb,mit static bekomm ich: warning: ‘hal::x86::arch_string’ defined but not used
+2014-05-07 21:23:23,XanClic,"ja, und nu"
+2014-05-07 21:23:40,XanClic,"wenn dus richtig machen willst, definierst du das entweder als Macro oder irgendwo in einer Datei und deklarierst es im Header als extern"
+2014-05-07 21:24:33,iksnagreb,"als makro wär nicht so schön, dann wers ja nichtmehr in dem namaspace oder?"
+2014-05-07 21:24:48,XanClic,"irgendwie ja nicht so, aber c++ mag ja eh keiner"
+2014-05-07 21:24:49,XanClic,*duck*
+2014-05-07 21:26:23,iksnagreb,mit extern gibts dann das: error: ‘arch_string’ does not name a type
+2014-05-07 21:27:24,XanClic,"du kannst aber schon c++, oder D:"
+2014-05-07 21:27:57,iksnagreb,"ja, das komische ist, das der code auch bis grad eben so funktionierte, wie er war"
+2014-05-07 21:28:21,iksnagreb,also das ist der ursprüngliche code: http://pastebin.com/iE1aELWv
+2014-05-07 21:29:04,XanClic,"na, dann wird das jetzt extern const char *arch_string;"
+2014-05-07 21:29:20,XanClic,"und in irgendeiner Datei const char *arch_string = ""x86""; im Namespace"
+2014-05-07 21:30:15,iksnagreb,"ah, habs jetzt, so hatte ich auch versucht, hab nur dabei irgendwie vergessen, de typ anzugeben"
+2014-05-07 21:30:27,iksnagreb,danke für die hilfe
+2014-05-07 21:55:02,Hawkeye2k,still hier ...
+2014-05-07 22:40:31,ziut,Irgendwer da?
+2014-05-07 22:40:38,mgottschlag,nein.
+2014-05-07 22:40:49,ziut,okay :D
+2014-05-07 22:41:01,mgottschlag,"zumindest bin ich mal kurz weg, reboot"
+2014-05-07 22:41:10,ziut,okay
+2014-05-07 22:42:51,Paddy,Hi ziut
+2014-05-07 22:43:00,ziut,Hi

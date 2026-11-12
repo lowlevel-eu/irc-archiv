@@ -1,0 +1,66 @@
+date/time,nick,message
+2009-08-22 09:26:24,taljeth,Moin
+2009-08-22 10:05:42,FreakyPenguin,Moin
+2009-08-22 10:07:15,taljeth,"Moin FreakyPenguin, XanClic"
+2009-08-22 10:07:40,XanClic,"Good morning, FreakyPenguin, taljeth"
+2009-08-22 10:08:24,XanClic,I am on it ;-)
+2009-08-22 10:10:18,XanClic,I have already found two mistakes ;-)
+2009-08-22 10:10:41,taljeth,It was late...
+2009-08-22 10:10:52,XanClic,But the second one was none *g*
+2009-08-22 10:11:29,taljeth,Heh. It's not that easy. My mistakes are more subtle. ;-)
+2009-08-22 10:12:13,XanClic,Imagined that.
+2009-08-22 10:13:20,taljeth,"Though I already knew that something was wrong, it's doesn't work this way. Just thought you'd tell me what it is. ;-)"
+2009-08-22 10:13:52,taljeth,-'s
+2009-08-22 10:54:47,taljeth,XanClic: Fixed and pushed
+2009-08-22 10:55:44,XanClic,Have you tested it?
+2009-08-22 10:56:31,taljeth,"Only ls, but seems this was the bug"
+2009-08-22 10:58:35,taljeth,I'm wondering why there are cdi_sleep_ms calls in msd.c. Shouldn't this lowlevel stuff be handled by the UHCI driver?
+2009-08-22 11:00:01,XanClic,"If you send a ""read"" command, the device must read the data first before it can send it, I think - you may try the stuff without sleeping, if you want to, I haven't done yet ;-)"
+2009-08-22 11:00:51,taljeth,I guess you get away with no waiting at all in qemu
+2009-08-22 11:00:57,taljeth,So this isn't a valid test case
+2009-08-22 11:02:59,taljeth,Does the driver even run on real hardware now?
+2009-08-22 11:03:09,XanClic,It runs under Paloxena ;-)
+2009-08-22 11:03:50,XanClic,Haven't tried it on týndur for a week - it takes so much time to copy the image to the hard disk
+2009-08-22 11:03:57,taljeth,Runs? On tyndur it's more like creeping. ;-)
+2009-08-22 11:04:21,XanClic,*g*
+2009-08-22 11:04:37,taljeth,Huh? cp isn't really that difficult...
+2009-08-22 11:09:36,taljeth,"Anyway, even if the sleeps are necessary, conceptually they belong to the hardware driver, not to the user (which is msd)"
+2009-08-22 11:10:21,taljeth,"msd is doing way too much lowlevel stuff, imho"
+2009-08-22 11:10:30,XanClic,"But if any driver knew how long to sleep, it would be the MSC driver, I think"
+2009-08-22 11:11:26,XanClic,"Hm, maybe you get a NAK, if the data is not already there..."
+2009-08-22 11:15:50,XanClic,"I think, that's it. I have a book about USB here and it says: ""Wenn die Function nicht in der Lage ist, Daten zu liefern, wird statt der Datenphase ein NAK-Handshake an den Host gesendet. Dies informiert den Host darüber, dass die Function noch nicht bereit ist, neue Daten zu senden. Dies ist kein Fehler, sondern dient der normalen Ablaufkontrolle bei Interrupt-, Bulk- und Control-Transfer."""
+2009-08-22 11:16:15,XanClic,"That was a quotation, hence I did not translate it ;-)"
+2009-08-22 11:16:19,taljeth,Is this msd specific or generic USB functionality?
+2009-08-22 11:16:26,XanClic,Generic USB
+2009-08-22 11:16:38,taljeth,Great. Let's do it in main.c or uhci.c then
+2009-08-22 11:17:02,taljeth,msd needs to be as dumb as possible
+2009-08-22 11:17:24,XanClic,OK.
+2009-08-22 11:17:32,taljeth,I guess things like write_cmd or read_status are generic as well
+2009-08-22 11:18:21,XanClic,"I like your patch very well, don't worry ;-)"
+2009-08-22 11:18:35,taljeth,"Actually, it seems we don't even want to have a read_status that returns a complete struct, but more something like a bool usb_is_success()"
+2009-08-22 11:19:06,XanClic,That's right
+2009-08-22 11:19:56,taljeth,Care to do some of the refactoring or do you prefer me to do it?
+2009-08-22 11:20:17,XanClic,"I do it and you fix it, OK? *g*"
+2009-08-22 11:21:09,taljeth,Go ahead ;-)
+2009-08-22 14:09:24,XanClic,"Hm, it's not that faster without sleep and with NAK handling"
+2009-08-22 14:15:18,taljeth,I wouldn't have it expected to be faster
+2009-08-22 14:15:32,taljeth,"It results in much cleaner code, though"
+2009-08-22 14:15:58,XanClic,"But I hoped it would be faster, too ;-)"
+2009-08-22 14:27:20,taljeth,Hm... Is there a patch that I missed? ;-)
+2009-08-22 14:27:34,XanClic,"No, it isn't ;-)"
+2009-08-22 14:28:39,taljeth,"So it's only complete enough to know that it's still slow, but not complete enough for sending to the ML?"
+2009-08-22 14:28:57,XanClic,I'm entering the commit message right now ;-)
+2009-08-22 14:36:30,taljeth,"Huch... ""From: Max Reitz <max@??yndur.org>"""
+2009-08-22 14:36:42,XanClic,Hm...
+2009-08-22 14:36:51,XanClic,I sent it via send-email ;-)
+2009-08-22 14:37:37,taljeth,I think it just uses whatever format-patch generates
+2009-08-22 14:38:08,XanClic,"I think it uses the stuff after ""--from"""
+2009-08-22 14:38:22,XanClic,"And I typed ""--from max@tyndur.org"""
+2009-08-22 14:38:41,XanClic,"But I see it here, too..."
+2009-08-22 14:38:55,XanClic,Argh.
+2009-08-22 14:39:00,XanClic,Dead keys are NOT ftw.
+2009-08-22 14:39:03,taljeth,Leave it out next time. send-email figures it out from the patch header by itself.
+2009-08-22 14:39:19,taljeth,No need for --from
+2009-08-22 14:39:27,XanClic,"I set my mail address to ""max@ŧyndur.org""... ><"
+2009-08-22 14:39:33,XanClic,"See the ""ŧ""?"
+2009-08-22 14:40:39,taljeth,Nice domain. ;-)

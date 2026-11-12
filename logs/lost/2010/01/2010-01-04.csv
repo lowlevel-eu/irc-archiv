@@ -1,0 +1,683 @@
+date/time,nick,message
+2010-01-04 00:01:26,taljeth,"Naja, map/unmap reicht ja für's erste"
+2010-01-04 00:01:52,SHyx0rmZ,"Also, wie gesagt:"
+2010-01-04 00:02:23,SHyx0rmZ,"Ich hab PFree / PAlloc / Map / UnMap, aber ich weiß nicht, wie ich das gescheit zu VAlloc / VFree kombinier"
+2010-01-04 00:03:26,SHyx0rmZ,wtf? task.cpp:44: Error: too many memory references for `mov'
+2010-01-04 00:03:46,SHyx0rmZ,"Ist das so falsch? ""movq -0x10(%%rbp), %0 \n"""
+2010-01-04 00:04:37,SHyx0rmZ,achso
+2010-01-04 00:04:49,taljeth,"Naja, für ein VAlloc brauchst du noch ein VFindFreePages, sonst fehlt nichts, oder?"
+2010-01-04 00:05:48,SHyx0rmZ,"Hm, was genau macht das?"
+2010-01-04 00:06:37,SHyx0rmZ,"Manchmal frag ich mich, ob ich noch doch lieber an meiner OpenGL Engine weiterschreiben sollte -.-"
+2010-01-04 00:07:01,SHyx0rmZ,ich bin grad voll übern Haufen
+2010-01-04 00:07:10,SHyx0rmZ,Das Multitasking ist jetzt auch voll kaputt
+2010-01-04 00:07:19,SHyx0rmZ,Am besten lösch ich das alles nochma
+2010-01-04 00:07:19,taljeth,"SHyx0rmZ: Ein paar freie virtuelle Adressen suchen, wo du hinmappen kannst?"
+2010-01-04 00:07:42,taljeth,"VAlloc ist doch letztendlich ein Map(PAlloc(), VFindFreePage())"
+2010-01-04 00:07:54,SHyx0rmZ,Hm
+2010-01-04 00:08:03,SHyx0rmZ,"Ne, das ist nicht das Problem, denk ich mal"
+2010-01-04 00:08:29,SHyx0rmZ,"Schon wieder was, was man für jeden Prozess speichern muss"
+2010-01-04 00:08:35,SHyx0rmZ,Ich werd hier echt bekloppt -.-
+2010-01-04 00:09:13,taljeth, SHyx0rmZ: Was fehlt dir denn sonst?
+2010-01-04 00:09:18,SHyx0rmZ,Ich brauch ein
+2010-01-04 00:09:27,SHyx0rmZ,Split(mappedBlock)
+2010-01-04 00:09:52,SHyx0rmZ,Oder soll ich für jedes new char 4 KiB verbraten?
+2010-01-04 00:10:17,taljeth,VAlloc != malloc
+2010-01-04 00:10:56,SHyx0rmZ,"Hm, ja, bei mir heißt das halt VAlloc, weil das mit dem virtuellen Speicher arbeitet ^^'"
+2010-01-04 00:12:21,taljeth,"Wenn genau dieses Ding bei dir mit Paging rummacht, wundert es mich nicht, dass du Probleme kriegst ;-)"
+2010-01-04 00:12:58,SHyx0rmZ,"Hm, wieso?"
+2010-01-04 00:13:48,SHyx0rmZ,"Ich brauch echt mal ne Anleitung vom PAlloc bis zum malloc -.- Aber sowas gibt's ja nicht, ich hab ja schon ewig gesucht"
+2010-01-04 00:13:55,mastamind,SHyx0rmZ: hast du dir schon was überlegt zum pagemanagment?
+2010-01-04 00:13:56,taljeth,malloc ist eine komplexe Sache
+2010-01-04 00:14:01,taljeth,Paging ist acuh eine komplexe Sachen
+2010-01-04 00:14:02,SHyx0rmZ,Ich hab jetzt schon fast 15 h über MM gelesen und verstehs immer noch nit
+2010-01-04 00:14:09,taljeth,"Wenn du beides in einen Topf wirfst, wird es _zu_ komplex"
+2010-01-04 00:14:15,mastamind,"SHyx0rmZ: ich bin auch gerade dabei, was in der sache zu überlegen. deshalb interessiert mich, was du dir so vorgestellt hast."
+2010-01-04 00:14:26,SHyx0rmZ,"Nehmen wir einfach mal an, dass das Paging funzt, das kann ich von kernel3 übernehmen"
+2010-01-04 00:14:58,SHyx0rmZ,"Also, bis jetzt funzt das Paging, hab halt noch kein MT"
+2010-01-04 00:15:52,mastamind,"ich schreib halt mal, was ich mir denk, vielleicht antwortet einer. :-) also:"
+2010-01-04 00:16:10,taljeth,Dir fehlt also nur das malloc?
+2010-01-04 00:16:25,SHyx0rmZ,Im Endeffekt schon
+2010-01-04 00:16:43,taljeth,Ein einfaches malloc ist in der Theorie ziemlich einfach
+2010-01-04 00:17:13,taljeth,In der Praxis macht man wahrscheinlich trotzdem irgendwelche Kleinigkeiten falsch ;-)
+2010-01-04 00:17:45,taljeth,"Die Idee ist halt, dass du die ersten paar Bytes von jedem freien Block als Header nimmst, der die Größe und einen Pointer auf den nächsten freien Block enthält"
+2010-01-04 00:17:49,taljeth,Also einfach eine Freispeicherliste
+2010-01-04 00:18:09,taljeth,"Beim malloc gehst du solang durch, bis mal ein Block groß genug ist"
+2010-01-04 00:18:14,SHyx0rmZ,"Jo, aber dann ist ja das Problem, wenn ich mehr als BlockSize-HeaderSize haben will"
+2010-01-04 00:18:18,taljeth,Beim free hängst du einfach vorne in die Liste ein
+2010-01-04 00:18:42,taljeth,Du kannst keine zwei aufeinanderfolgenden Pages reservieren?
+2010-01-04 00:18:44,JanDing,"gibts in qemu nicht einen geheimen i/o-port, auf den ich schreiben kann, und der dann auf die hostconsole umgeleitet wird?"
+2010-01-04 00:18:48,taljeth,Das ist dann wieder ein Problem in deinem Pagingcode
+2010-01-04 00:19:00,taljeth,JanDing: Serielle Schnittstelle?
+2010-01-04 00:19:03,mastamind,JanDing: das ist bochs.
+2010-01-04 00:19:16,taljeth,Und dann halt -serial stdio
+2010-01-04 00:19:47,JanDing,hm will der nicht
+2010-01-04 00:19:50,JanDing,ist ihm zu groß
+2010-01-04 00:20:18,SHyx0rmZ,"taljeth, Hm, dann müsste ich halt while(<rsize) (map(block++, palloc()))"
+2010-01-04 00:20:39,taljeth,JanDing: Zu groß?
+2010-01-04 00:20:50,mastamind,"es gibt eine klasse memory::manager. sie ist ein template. der template parameter soll eine struct werden. die structs sollte möglichst klein sein. 4 byte. pro page wird so eine 4 byte große struct gespeichert, die angibt, welchen zweck die page hat. das template deshalb, damit man für zwei arten speicher verwalten kann: virtuellen raum und physischen. der memory manager für den physischen raum hat pro page dann zb die info"
+2010-01-04 00:21:03,taljeth,"SHyx0rmZ: Du musst halt genug freie virtuelle Seiten hintereinander finden, ansonsten ja"
+2010-01-04 00:21:52,SHyx0rmZ,Ich kann eigentlich mit den virtuellen Adressen immer bis anch hinten weiterlaufen
+2010-01-04 00:22:14,SHyx0rmZ,Hab da nämlich erstmal 128 TiB Platz
+2010-01-04 00:22:59,mastamind,"in der struct steht dann drin, von welchen type die page ist. abhängig vom typ stehen andere infos drin. bei mmio zb der eine zahl, die auf den treiber bzw. die hardware deutet. bei prozessen die pid usw."
+2010-01-04 00:24:19,taljeth,SHyx0rmZ: Na ja... *g*
+2010-01-04 00:24:34,SHyx0rmZ,"Tjo, der Luxus der 64 Bit D:"
+2010-01-04 00:24:35,JanDing,"taljeth: naja diese komische meldung mit ""result too large"": http://pastebin.com/d4943029e"
+2010-01-04 00:24:56,JanDing,ich schau mich mal in den sourcen um
+2010-01-04 00:25:08,mastamind,"damit man das nicht für alle pages braucht, sondern nur für eine minimale anzahl, wird das auch hierarchisch verwaltet wie bei den pages tables selbst. man hat zb 4 einträge für die 4 gib. jeder eintrag kann entweder dann den typ angeben und damit das ganze gib beschreiben, oder auch auf recursive gestellt werden, was angibt, dass man eine eben tiefer muss, da das gib nicht komplett einem typ entspricht."
+2010-01-04 00:26:59,SHyx0rmZ,"Hm, das bringt mich vielleicht auf eine Idee"
+2010-01-04 00:27:14,SHyx0rmZ,"Obwohl... Eigentlich auch nicht, das macht nur wieder probleme"
+2010-01-04 00:27:32,JanDing,aaah -serial con: gibt schon mal keinen fehler ... steht nur nix drauf^^
+2010-01-04 00:28:41,JanDing,ah doch^^
+2010-01-04 00:29:47,mastamind,"das template wird verwendet, damit man mit der gleichen klasse auch den virtuellen adressraum eines prozesses verwalten kann. die klasse wird dann von allen höheren apis verwendet, die speicher brauchen. das sind malloc aber auch das erstellen eines neuen speicherbereichs pro thread oder shared memory."
+2010-01-04 00:29:58,mastamind,mmap soll das dann auch verwenden.
+2010-01-04 00:31:32,JanDing,was für funktionen hat das template genau? z.b. alloc_pages(count)?
+2010-01-04 00:32:10,mastamind,diese und das freigeben natürlich.
+2010-01-04 00:32:35,mastamind,mehr sollte die klasse nicht können. das mappen selbst macht dann eine andere klasse bzw eine funktion. die ist dann architekturabhängig.
+2010-01-04 00:33:36,mastamind,es gibt eine zweite funktion zum allokieren. bei ihr gibt man den bereich direkt an. er wird nicht gesucht.
+2010-01-04 00:35:13,mastamind,"für mmio zb. aber auch für den heap im virtuellen adressraum des prozesses. der heap beginnt bei adresse 0 und reicht zu einer beim start definierten adresse. später dann kann das erweitert werden. die klasse, die den heap verwaltet, bekommt eine refrenz auf die memory manager instanz des prozesses und kann sich damit (sofern speicher vorhanden ist) weiteren holen. der heap wächst nach oben."
+2010-01-04 00:36:09,mastamind,nur der heap bekommt eine fixe adresse. alle anderen werden dynamisch vergeben. dazu wird der speicher von ganz oben abgezogen. zb für die stacks neuer threads.
+2010-01-04 00:36:29,mastamind,"oder auch mmio, der in den adressraum eines prozesses gemappt werden muss oder shared memory."
+2010-01-04 00:37:26,JanDing,"ich weiß nicht, ob da ein template so sinnvoll ist"
+2010-01-04 00:37:29,mastamind,in den structs für freie pages oder page bereiche kann man dann eine linked list einbauen. genügend bits sollten dafür noch vorhanden sein. man kann auch eine bessere struktur finden. das muss ich mir noch überlegen.
+2010-01-04 00:38:23,mastamind,"template ist nur eine idee. der vorteil ist, dass die klasse damit wiederverwendet werden könnte. der algorithmus zum finden eines freien pagebereiches bleibt aber in der klasse."
+2010-01-04 00:38:46,mastamind,"naja. sind alles nur ideen. umgesetzt ist davon noch nichts. ist aber zumindest das nächste, was ich bei mir tun muss. :-)"
+2010-01-04 00:39:29,JanDing,"ich hab mir auch mal sowas überlegt, aber ich glaube die anfragen an den physischen speicherverwalter sind anders geartet als die an den virtuellen"
+2010-01-04 00:40:02,JanDing,du brauchst ja meistens nur eine x-beliebige seite im physischen adressraum
+2010-01-04 00:40:32,JanDing,"wenn du mehrere brauchst schadet es meistens auch nicht, wenn du mehrmals fragen musst, weil der speicher fragmentiert ist"
+2010-01-04 00:40:36,mastamind,es gibt bei beiden gebieten beides. *g*
+2010-01-04 00:41:05,taljeth,Wozu bräuchte man denn eine bestimmte virtuelle Adresse?
+2010-01-04 00:41:10,mastamind,mmio
+2010-01-04 00:41:21,mastamind,asop
+2010-01-04 00:41:23,mastamind,sorry
+2010-01-04 00:41:39,mastamind,bei physikalischem is es mmio. bei virtuellen das wachsen des heap von unten nach oben.
+2010-01-04 00:41:49,mastamind,den heap zu fragmentieren ist vielleicht keine so gute idee.
+2010-01-04 00:42:13,taljeth,"Ach so, du hast dieses Konzept vom Heap am Stück"
+2010-01-04 00:42:23,JanDing,für so ein brk/sbrk brauchst du keine so komplexe funktion
+2010-01-04 00:42:29,JanDing,-funktion +klasse
+2010-01-04 00:42:40,taljeth,"Jo, da gibt es nichts zu suchen"
+2010-01-04 00:42:46,taljeth,Entweder es geht größer oder halt nicht
+2010-01-04 00:43:36,mastamind,es gibt eben beides.
+2010-01-04 00:43:50,mastamind,fixe adresse oder dynamisch gefunden.
+2010-01-04 00:44:03,mastamind,und das bei virtuellem wie auch physischem adressraum.
+2010-01-04 00:44:10,mastamind,"zumindest halt bisher. wie gesagt, es sind alles nur ideen."
+2010-01-04 00:44:15,taljeth,"Naja, wenn du das so machen willst, kannst du das ja tun ;-)"
+2010-01-04 00:44:32,mastamind,wie machst du es?
+2010-01-04 00:44:51,taljeth,"Wenn jemand Pages will, fragt er nach Pages und die kriegt er irgendwohin"
+2010-01-04 00:44:56,JanDing,"sbrk ist praktisch zum bootstrappen, aber wenn man sich damit einmal die module und multibootinfo übergebügelt hat lässt man es auch wieder"
+2010-01-04 00:45:36,mastamind,taljeth: das ist bei mir nicht anders. den heap für malloc aber will ich nicht fragmentieren.
+2010-01-04 00:45:58,taljeth,Das ist der Unterschied
+2010-01-04 00:45:59,JanDing,"man kann sich natürlich einen eigenen bootloader schreiben, der sich deterministisch verhält xD"
+2010-01-04 00:46:06,taljeth,malloc ist bei mir auch einfach nur jemand
+2010-01-04 00:46:37,taljeth,"Wenn da ein paar Bytes Verschnitt anfallen, who cares?"
+2010-01-04 00:47:22,mastamind,hmm der virtuelle adressraum wird auch bei mir nur vom programm verwaltet.
+2010-01-04 00:47:56,mastamind,taljeth: wie funktioniert dein malloc?
+2010-01-04 00:48:19,mastamind,wie verwaltest du vor allem die ganzen fragmente?
+2010-01-04 00:48:49,taljeth,"Weiß ich nicht im Detail, das ist eine fertige Bibliothek von irgendwoher kopiert. ;-)"
+2010-01-04 00:48:52,taljeth,Wird ame Ende auch eine Freispeicherliste benutzen.
+2010-01-04 00:50:04,mastamind,ah hmm. ok
+2010-01-04 00:50:34,taljeth,"Jo, sieht einfach nach einer ""verschachtelten"" Liste aus. Einmal die Liste aller Bereiche die es vom OS angefordert hat (jeweils mindestens 64k) und jeder davon enthält eine klassische Freispeicherliste"
+2010-01-04 00:51:05,taljeth,"Doppelt verkettet, wenn du es genau wissen willst ;-)"
+2010-01-04 00:51:11,mastamind,das nehme ich an.
+2010-01-04 00:51:16,mastamind,damit man leichter was freigeben kann.
+2010-01-04 00:51:43,taljeth,"Aus einer Freispeicherliste löschst du nur was, wenn du sie grad durchsucht hast"
+2010-01-04 00:51:56,taljeth,"Nämlich um freien Speicher zu finden, denn du allozieren kannst"
+2010-01-04 00:52:10,taljeth,Also kennst du da theoretisch auch das Vorgängerelement
+2010-01-04 00:52:34,mastamind,"ist wohl kein dogma, das so zumachen, oder? *g+"
+2010-01-04 00:52:36,taljeth,"Aber ich glaube liballoc macht da auch eine ""Belegtliste"" und da ist es wieder sinnvoll"
+2010-01-04 00:52:51,taljeth,mastamind: Wie willst du es sonst machen?
+2010-01-04 00:53:08,taljeth,Per Zufallsgenerator eine freie Speicherstelle raten und dort mal nachschauen? ;-)
+2010-01-04 00:53:12,SHyx0rmZ,"Hm, vielleicht hab ich grad ein Tutorial gefunden, das ich doch noch verstehe :D"
+2010-01-04 00:53:14,mastamind,hmm. ich hab mal sowas implementiert in früheren jahren. da lief das so:
+2010-01-04 00:53:17,JanDing,kurzer c-test: wann läuft diese schleife amok? for (j = num - 1; j >= i; j--) arr[j + 1] = a[j];
+2010-01-04 00:53:47,JanDing,"tip: num = 1, i = 0"
+2010-01-04 00:54:02,JanDing,ich glaub ohne den tip ist es schwer drauf zu kommen
+2010-01-04 00:54:13,taljeth,Datentypen?
+2010-01-04 00:55:27,mastamind,"am beginn ist nichts allokiert. es gibt einen speicherbereich mit start und größe, der verwendet werden. kann. kommt ein auftrag zum allokieren herein, wird der speicher verwendet. es wird einfach die adresse des speichers erhöht und der teil davor zurcükgegeben. jeder an das programm zurückgegebene bereich hat einen kleinen header. der befindet sich an adresse -4, wenn malloc ""adresse"" zurückgibt."
+2010-01-04 00:55:38,JanDing,keine gegenfrage stellen!
+2010-01-04 00:55:53,JanDing,aber ja datentypen
+2010-01-04 00:55:58,taljeth,*g*
+2010-01-04 00:56:00,mastamind,"in diesem bereich steht die größe des speicherbereichs und dass er vergeben ist. außerdem steht drin, dass er der erste ist."
+2010-01-04 00:56:23,mastamind,dann wird halt allokiert und es entstehen mehrer solche stücke.
+2010-01-04 00:56:27,mastamind,alle mit header.
+2010-01-04 00:56:32,taljeth,JanDing:  Darauf hätte ich aber auch ohne den Tip getippt. Oder so.
+2010-01-04 00:56:47,JanDing,hehe
+2010-01-04 00:57:03,mastamind,"bei allen anderen wird aber angegeben, dass der vorherige speicherereich vergeben ist, wenn er das ist. ist er das nicht, steht drin, dass er frei ist. ein bit reicht dazu."
+2010-01-04 00:57:45,mastamind,"wird nunr ein speicherbereich freigegeben, so wird geprüft, ob der speicher davor bzw der danach frei sind."
+2010-01-04 00:57:58,mastamind,"sind sie es, so werden sie zu einem neuen großen stück zusammengenommen."
+2010-01-04 00:58:19,taljeth,"Jo, das sind dann Optimierungen. Kann man natürlich machen, wenn man seinem Code genug vertraut ;-)"
+2010-01-04 00:58:22,mastamind,und diese stück wird in eine sortierte liste eingefügt. die liste ist etwas komplexer.
+2010-01-04 00:58:29,taljeth,Wirklich gebraucht wird nur die Größe
+2010-01-04 00:58:35,JanDing,"sooo ... ich hab die schleife jetzt umgeschrieben, dass sie 5 bytes kürzer ist"
+2010-01-04 00:58:53,mastamind,um das suchen nach einem passenden stück zu beschleunigen wird die liste optimiert.
+2010-01-04 00:59:01,taljeth,JanDing: Leerzeichen zwischen den Operatoren raus? ;-)
+2010-01-04 00:59:11,JanDing,wobei int statt unsigned int schreiben hätte 9 bytes rausgeholt
+2010-01-04 00:59:29,JanDing,das wäre auch noch eine denkbare optimierung
+2010-01-04 00:59:45,mastamind,taljeth: eh. jedenfalls klappt das ganz gut.
+2010-01-04 00:59:53,JanDing,weil es kommt heute beim rapid development und agile programming auch auf die kompilierzeiten an
+2010-01-04 01:00:01,taljeth,mastamind: Dann mach's doch so
+2010-01-04 01:00:28,taljeth,"Klingt nicht kaputt, falls das die Information ist, die du haben willstest"
+2010-01-04 01:00:32,taljeth,-i+o
+2010-01-04 01:00:41,JanDing,jop wars.
+2010-01-04 01:00:45,mastamind,ja eh. hmm ich würd nur eben gern meinungen dazu hören. :-)
+2010-01-04 01:00:47,JanDing,sed s/ // oder wie geht das?
+2010-01-04 01:01:19,SHyx0rmZ,"Ich geh mal ins Bett für heut, dann muss ich mich nicht abärgern und kann mir was tolles überlegen, wie es doch gehen könnte"
+2010-01-04 01:01:22,SHyx0rmZ,gn64 o/
+2010-01-04 01:01:25,taljeth,"mastamind: Passt soweit, würde ich sagen"
+2010-01-04 01:01:32,JanDing,SHyx0rmZ: /8
+2010-01-04 01:01:41,mastamind,"zur suche hab ich an eine skip liste gedacht. man müsste die auch so hinbringen, dass sie perfekt ausgeglichen ist. ohne zufall. der vroteil ist, dass sie recht schnell die möglichkeit bietet, den nächstgrößeren speicher in O(1) zu finden."
+2010-01-04 01:01:50,taljeth,Ich geh auch
+2010-01-04 01:01:51,taljeth,gn8
+2010-01-04 01:01:53,JanDing,gn8
+2010-01-04 01:01:58,mastamind,das braucht man möglicherweise für die richtige ausrichtung.
+2010-01-04 01:02:00,mastamind,gute nacht.
+2010-01-04 01:03:41,JanDing,"was heißt ""den nächstgrößeren speicher"" finden? größer als was?"
+2010-01-04 01:03:52,mastamind,"als das, was man angefordert hat."
+2010-01-04 01:04:14,mastamind,"ein programm fordert 56 bytes an, die an einer bestimmte adresse ausgerichtet sein sollen. zb 16 byte."
+2010-01-04 01:04:56,mastamind,"sich ich nur nach 56 byte, so kann ich zu einem passenden stück kommen, das aber falsch ausgerichtet ist. würde man es ausrichten, würd es aber vielleicht nicht mehr groß genug sein."
+2010-01-04 01:05:18,mastamind,deshalb muss man unter umständen das passende stück suchen. eine besser lösung dafür ist mir noch nicht eingefallen.
+2010-01-04 01:05:26,mastamind,ich bin für vorschläge offen. :-))
+2010-01-04 01:05:56,JanDing,ich glaube ein programm fordert nicht x-beliebige alignments an. die cpu gibt ja die alignments vor
+2010-01-04 01:06:14,JanDing,meistens registergröße
+2010-01-04 01:06:51,mastamind,jein.
+2010-01-04 01:06:59,mastamind,es gibt für verschiedene datentypen verschiedene alignments.
+2010-01-04 01:07:20,JanDing,"und wenn dein allokator ein alignment nicht bedienen kann, dann macht der return align( malloc(size + alignment) , alignment)"
+2010-01-04 01:07:21,mastamind,zb für double sollte man 8 byte nehmen und nicht 4. die gdt sollte auch an 16 byte ausgerichtet sein.
+2010-01-04 01:07:41,JanDing,jo dann machste 16 byte als standardalignment und fertig
+2010-01-04 01:08:30,mastamind,könnte man machen.
+2010-01-04 01:08:44,mastamind,"was natürlich nicht mehr klappt, wenn man zb auf cache lines ausrichten will."
+2010-01-04 01:09:53,JanDing,"hm ich weiß jetzt nicht, was für objekte man auf cachelines ausrichtet. ist das nicht eher so, dass man da versucht große datenmengen konfliktfrei im cache zu halten?"
+2010-01-04 01:11:26,mastamind,"daten, von denen du weißt, dass du sie bald brauchst."
+2010-01-04 01:11:45,mastamind,"es macht sinn, die so auszurichten, dass alle in eine cache line passen."
+2010-01-04 01:11:56,JanDing,es gibt da doch so coloring verfahren. static int color; void *cache_nice_alloc() { color = (color + 16) % CACHE_SIZE; return malloc(size + sizeof(struct foo)) + color } 
+2010-01-04 01:12:05,JanDing,so ungefähr stell ich mir das vor^^
+2010-01-04 01:12:17,JanDing,wobei size = n * sizeof (struct foo);
+2010-01-04 01:12:47,JanDing,also jedes malloc etwas verschieben. oder verwechsel ich das mit page coloring?
+2010-01-04 01:13:19,JanDing,ich glaube das tu ich^^
+2010-01-04 01:14:05,JanDing,"die funktion ist auch irre, wa?^^"
+2010-01-04 01:15:50,JanDing,hm also zurück zum thema^^
+2010-01-04 01:15:56,mastamind,hmm das kenn ich nicht. sorry.
+2010-01-04 01:16:08,JanDing,joar hab ich auch nur in irgendeinem paper aufgeschnappt
+2010-01-04 01:16:11,JanDing,bin experte für nix
+2010-01-04 01:16:22,JanDing,alle daten in eine cache line ... ich weiß nicht ob das die aufgabe das allokators ist
+2010-01-04 01:17:12,mastamind,ist es nicht.
+2010-01-04 01:17:21,mastamind,"aber es is die aufgabe des allocators, das zu ermöglichen."
+2010-01-04 01:18:05,JanDing,"du machst ja nicht int *zucker, *eier; zucker = malloc(sizeof(int)); eier = malloc(sizeof(int)); ... und willst dann zucker und eier in einer cache line haben, sondern machst rezept_t *rezept = malloc(sizeof(rezept_t));"
+2010-01-04 01:18:53,JanDing,also der programmierer tut alles was er gerne in einer cache line haben will einfach in ein struct
+2010-01-04 01:19:02,JanDing,oder verstehe ich das falsch?
+2010-01-04 01:22:04,mastamind,muss grad emergen. hmm ich les schnell.
+2010-01-04 01:22:48,mastamind,"ja, das ist richtig. er tut das. aber ob das komplette rezept in genau einer cache line ist oder nicht, entscheidet die adresse, an der es gespeichert wird."
+2010-01-04 01:23:13,mastamind,"es sollten immer so viele daten in so wenigen cache lines enthalten sein, wie möglich."
+2010-01-04 01:23:48,mastamind,"zum einen, weil damit cache lines gespart werden zum anderen weil das bedeutet, dass für den zugriff auf ein datum schon viele andere in den cache geladen wurden."
+2010-01-04 01:24:44,JanDing,"naja du kannst halt maximal eine cache line sparen, wenn du auf cache lines ausrichtest"
+2010-01-04 01:25:11,JanDing,"wenn ein objekt 6 cache lines groß ist, dann kann es durch ungünstiges ausrichten maximal 7 belegen"
+2010-01-04 01:26:20,JanDing,"und wenn ein objekt nur etwas größer als die halbe cache line ist, und du es immer in eine cache line zwängst, hast du bis zu 50% externe fragmentierung"
+2010-01-04 01:27:20,JanDing,das ist wohl das worst-case szenario. vielleicht kannst du das ja von vornherein ausschließen
+2010-01-04 01:27:44,mastamind,"man sollte halt schon einiges tun, um darauf zu achten."
+2010-01-04 01:27:57,mastamind,caches bringen echt enorm viel. man glaubt das gar nicht.
+2010-01-04 01:28:02,JanDing,"dein allokator kann auch nicht wissen, ob das jetzt wichtig ist oder nicht"
+2010-01-04 01:28:07,mastamind,ich hab das mal an der uni getestet.
+2010-01-04 01:28:13,mastamind,das hat wirklich sehr viel gebracht.
+2010-01-04 01:28:32,mastamind,"das kann er nicht. aber er kann anbieten, dass er eine ausgerichtete adresse findet."
+2010-01-04 01:29:29,JanDing,"uuups womit ich gezeigt habe, dass ich den anfang des gesprächs schon wieder vergessen habe^^"
+2010-01-04 01:29:56,mastamind,:-)
+2010-01-04 01:32:14,JanDing,"cache lines sind meistens 32 oder 64 bytes groß, oder?"
+2010-01-04 01:32:19,mastamind,jep
+2010-01-04 01:32:30,mastamind,ich hab noch keine anderen größe gesehen.
+2010-01-04 01:36:48,mastamind,gute nacht
+2010-01-04 01:36:53,JanDing,gn8
+2010-01-04 01:37:17,JanDing,"also meine mallocs waren bisher nur im user space, und da hab ich nach meinen ersten fehlschlägen auch nur noch dlmalloc benutzt ... ^^"
+2010-01-04 01:37:22,JanDing,so auch gn8
+2010-01-04 08:34:45,bluecode,moin
+2010-01-04 10:46:12,taljeth,Moin
+2010-01-04 10:48:58,FreakyPenguin,Moin
+2010-01-04 10:49:56,Homix,hi
+2010-01-04 10:50:10,bluecode,moin ihr beiden
+2010-01-04 10:50:15,bluecode,bzw. drei
+2010-01-04 11:27:11,taljeth,FreakyPenguin: Hast du das kernel_stack-Zeug mittlerweile umgebaut?
+2010-01-04 11:27:44,taljeth,Oder anders gefragt: Muss ich noch helfen anschauen oder kann ich ein reset --hard machen? ;-)
+2010-01-04 11:27:58,FreakyPenguin, Umgebaut schon... *g*
+2010-01-04 11:28:04,taljeth,*g*
+2010-01-04 11:28:07,FreakyPenguin,Aber das wars wohl noch nicht ;-)
+2010-01-04 11:29:10,FreakyPenguin,"Ich lege den isf halt jetzt in einer lokalen Variable new_isf ab, die ich dann mit thread->kernel_stack überschreibe, wenn task geswitcht wurde"
+2010-01-04 11:30:12,taljeth,"Jo, und old_thread->kernel_stack wird auch nur beim Taskswitch geändert, oder?"
+2010-01-04 11:33:13,FreakyPenguin,"Hm stimmt... Aber da gibts halt noch das Problem, dass das vom Code auch benutzt wird.."
+2010-01-04 11:34:04,taljeth,Dann ist der Code halt falsch ;-)
+2010-01-04 11:36:25,FreakyPenguin,Das kann doch nicht sein ;-)
+2010-01-04 11:36:28,taljeth,"Hm, RPC zu einem Thread, der grad im Kernel ist, ist vielleicht auch nicht so geschickt..."
+2010-01-04 11:38:10,taljeth,"Ich glaube, was der meiste Code macht, ist korrekt, weil er das nur für andere Prozesse benutzt, und da ändert sich ja nichts"
+2010-01-04 11:38:17,taljeth,"Außer eben, dass er jetzt auch im Kernelmode sein könnte"
+2010-01-04 11:38:33,taljeth,"Hm, nein, das ändert auch nichts"
+2010-01-04 11:41:10,FreakyPenguin,Hm muss ich noch irgendwo einen Pointer auf den User-ISF einbauen?
+2010-01-04 11:41:39,taljeth,"Das wollte ich grad vorschlagen, aber an der Stelle, wo ich dachte, es könnte sinnvoll sein, war es Blödsinn"
+2010-01-04 11:42:02,taljeth,Wo brauchst du das denn?
+2010-01-04 11:42:42,FreakyPenguin,Für RPC?
+2010-01-04 11:42:45,taljeth,"Ok, ich glaube, es ist beim RPC doch kein Blödsinn, aber zu aufwendig"
+2010-01-04 11:43:20,FreakyPenguin,Also doch Blödsinn ;-)
+2010-01-04 11:43:21,taljeth,Weil nämlich zwischendurch der Syscall zu Ende ausgeführt wird (hoffentlich benutzt der das ISF nicht!) und dessen Rückgabewert irgendwie in den RPC-Backlink kommen muss
+2010-01-04 11:43:35,taljeth,"Ich glaube, vor allem wegen der Klammer ist es doch Blödsinn ;-)"
+2010-01-04 11:44:10,FreakyPenguin,Hm also RPCs ausschalten im Kernel?
+2010-01-04 11:44:34,taljeth,"Jo, wenn der andere Task grad im Kernel ist, müssen wir halt EAGAIN zurückgeben"
+2010-01-04 11:44:47,taljeth,Oder aber yielden *g*
+2010-01-04 11:45:04,FreakyPenguin,Hm... *g*
+2010-01-04 11:45:14,taljeth,"Hm, besser EAGAIN, dann kann er seinerseits RPCs empfangen. Das andere riecht nach Deadlocks..."
+2010-01-04 11:45:18,FreakyPenguin,Das gibt bestimmt nette Deadlock ?;-)
+2010-01-04 11:45:22,FreakyPenguin,Jo *g*
+2010-01-04 12:13:34,taljeth,"Hm, irgendwann müssen wir mit der libc mal ein paar großflächige Ersetzungen machen"
+2010-01-04 12:24:27,bluecode,?
+2010-01-04 13:06:49,taljeth,"Wow, falsch schedulen scheint ziemlich was auszumachen."
+2010-01-04 13:07:12,taljeth,"Jetzt wüsste ich nur gern, warum es falsch ist, gleich an den RPC-Empfänger abzugeben"
+2010-01-04 13:21:16,Homix,heißt es Real-Mode oder Real Mode? ;)
+2010-01-04 13:21:23,taljeth,Real Mode
+2010-01-04 13:21:43,Homix,dann auch 64-Bit Version statt 64-Bit-Version? ;)
+2010-01-04 13:21:52,XanClic,Nein ;-)
+2010-01-04 13:21:52,taljeth,"Nein, 64-Bit-Version"
+2010-01-04 13:22:10,XanClic,"""Real Mode"" ist schließlich englisch"
+2010-01-04 13:22:16,XanClic,64-Bit-Version aber deutsch
+2010-01-04 13:22:24,taljeth,Auf deutsch wäre es ein Realmodus am Stück und nicht geschnitten
+2010-01-04 13:23:05,Homix,"na ja ""Real Mode"" ist immerhin ein Artikel in der deutschen Wikipedia, deshalb frag ich ;)"
+2010-01-04 13:23:38,XanClic,"""Computer"" auch :-P"
+2010-01-04 13:23:44,taljeth,"Wie gesagt, es ist ein englischer Begriff und war daher halt wie im Englischen geschrieben"
+2010-01-04 13:23:50,taljeth,-war +wird
+2010-01-04 13:23:59,Homix,steht Computer nicht im Duden?
+2010-01-04 13:24:10,XanClic,"Doch, aber es ist ein englisches Wort"
+2010-01-04 13:24:14,taljeth,"Doch, aber ändert das was daran, dass es ein Fremdwort ist?"
+2010-01-04 13:24:25,Homix,ne ;)
+2010-01-04 13:24:47,taljeth,"Nach der nächsten Rechtschreibreform steht da sicher auch Kompjuter drin, aber das hat ja mit dem Thema nichts zu tun ;-)"
+2010-01-04 13:24:52,Homix,"aber wenn es im duden steht, ist es ein deutsches wort mit ursprung aus dem englischen oder so *g*"
+2010-01-04 13:24:59,XanClic,"taljeth: *Kompjuhter, bitte ;-)"
+2010-01-04 13:25:00,Homix,lol
+2010-01-04 13:25:22,taljeth,XanClic: Glaube ich nicht ;-)
+2010-01-04 13:25:36,XanClic,Oder gleich Kommpjuhtr
+2010-01-04 13:25:37,XanClic,+e
+2010-01-04 13:26:04,XanClic,"Hm, wenn man doppelte Buchstaben und so ein Dehnungs-H gleich abschafft, natürlich ohne *g*"
+2010-01-04 13:27:04,taljeth,"Ich glaube, so eine Rechtschreibreform würde nicht ohne Volksaufstand funktionieren ;-)"
+2010-01-04 13:36:31,SHyx0rmZ,Moin
+2010-01-04 13:37:31,taljeth,Moin SHyx0rmZ
+2010-01-04 13:37:39,XanClic,"Moin, moin, SHyx0rmZ"
+2010-01-04 14:44:14,JanDing,moin moin
+2010-01-04 14:44:22,XanClic,"Moinle, JanDing"
+2010-01-04 14:47:09,SHyx0rmZ,Hm
+2010-01-04 14:47:18,SHyx0rmZ,"Hattest Recht, taljeth"
+2010-01-04 14:47:36,SHyx0rmZ,"Wenn man erst mal die richtige Datei gefunden hat, ist Týndurs malloc gar nicht mal so kompliziert"
+2010-01-04 15:12:32,X-Mind,test
+2010-01-04 15:12:33,XanClic,Das wars dann wohl mit der leichten Tabbarkeit *g*
+2010-01-04 15:12:54,X-Mind,ich wollte nur wissen obs funktioniert
+2010-01-04 15:13:06,X-Mind,bin zum ersten mal in nem IRC
+2010-01-04 15:13:20,XanClic,Dann sei herzlich willkommen :-)
+2010-01-04 15:14:30,X-Mind,kennst du das schon http://www.stophiphop.com/modules/news/article.php?storyid=184
+2010-01-04 15:14:49,XanClic,"Das kennt so ziemlich jeder, glaub ich ;-)"
+2010-01-04 15:15:27,X-Mind,also ich starrs schon seit 2 wochen an und finds immer noch lustig
+2010-01-04 15:16:33,X-Mind,kennnst du eigendlich ein gutes tutorial über #VGA
+2010-01-04 15:16:54,XanClic,"Hm, über VESA bzw. VBE kenn ich eins, weiß aber nicht, wo es das gibt"
+2010-01-04 15:17:42,X-Mind,"VBE geht doch nur im RM und VM86, oder??"
+2010-01-04 15:17:46,XanClic,Jup
+2010-01-04 15:18:15,SHyx0rmZ,"Nein, wenn man nen Emulator schreibt auch ohne VM86 und im LM D:"
+2010-01-04 15:18:32,XanClic,*g*
+2010-01-04 15:18:40,X-Mind,^^
+2010-01-04 15:19:16,X-Mind,@SHyx0rmZ das war ne ernstgemeinte frage
+2010-01-04 15:19:30,XanClic,Und das war eine ernstgemeinte Antwort
+2010-01-04 15:19:49,X-Mind,omg
+2010-01-04 15:20:48,X-Mind,jetzt mal ein witz:
+2010-01-04 15:21:39,X-Mind,ein Igel rennt in einer Gärtnerei Alle 30 Min an den gleichen kaktus und sagt
+2010-01-04 15:22:04,X-Mind,bist dus mama
+2010-01-04 15:22:30,X-Mind,nicht lustig?
+2010-01-04 15:22:34,X-Mind,????
+2010-01-04 15:22:38,XanClic,"Doch, kenn ich aber schon"
+2010-01-04 15:22:47,X-Mind,schade
+2010-01-04 15:23:04,X-Mind,"warte, der ist auch gut:"
+2010-01-04 15:23:23,SHyx0rmZ,"X-Mind, war ernstgemeint, ich MUSS das so machen -.-"
+2010-01-04 15:23:34,X-Mind,2 Jungen graben im garten der ersten jungens nach geld
+2010-01-04 15:24:02,X-Mind,Junge1: Wo ist jetzt die kohle???
+2010-01-04 15:24:47,X-Mind,Junge zwei: Ich weis das sie hier ist; mein vater hat gesagt das er dieses jahr viel gel din den garten gesteckt hat
+2010-01-04 15:24:55,SHyx0rmZ,-.-
+2010-01-04 15:25:20,X-Mind,lol??
+2010-01-04 15:25:25,X-Mind,nicht oder
+2010-01-04 15:25:44,SHyx0rmZ,"Hm, darf ich dich mal was fragen?"
+2010-01-04 15:26:02,SHyx0rmZ,nvm
+2010-01-04 15:26:03,X-Mind,Gut ich geh dann besser bevor mein Niveau noch weiter sinkt
+2010-01-04 15:26:08,SHyx0rmZ,:D
+2010-01-04 15:26:14,XanClic,"Hm, #niwohlos ftw"
+2010-01-04 15:26:31,SHyx0rmZ,+1
+2010-01-04 15:27:21,SHyx0rmZ,"Ich kommentier jetzt ""grad mal eben"" meinen Source D: "
+2010-01-04 15:27:54,XanClic,Assembler ohne Kommentare ftw *g*
+2010-01-04 15:28:23,SHyx0rmZ,"C++ mit Kommentaren fdD, ich weiß"
+2010-01-04 15:28:56,XanClic,Für den Daniel?
+2010-01-04 15:30:27,SHyx0rmZ,für die Deppen D:
+2010-01-04 15:30:35,XanClic,Ah
+2010-01-04 15:30:48,XanClic,"Na, so schlimm ist C++ nicht"
+2010-01-04 15:30:57,XanClic,Scratch mit Kommentaren fdD
+2010-01-04 15:32:02,SHyx0rmZ,Hey
+2010-01-04 15:32:10,SHyx0rmZ,Das sieht aus wie Lego mindstorms :D
+2010-01-04 15:32:17,XanClic,"Ne, es ist schlimmer"
+2010-01-04 15:32:23,XanClic,Mindstorms ist voll coolio
+2010-01-04 15:32:28,XanClic,Vor allem das SDK
+2010-01-04 15:33:00,SHyx0rmZ,^^
+2010-01-04 15:33:27,SHyx0rmZ,Ich hätte ja gern mal die Liste fürs Instruction Set von Mindstorms :D
+2010-01-04 15:33:45,XanClic,"Hm, gute Idee *g*"
+2010-01-04 15:34:07,XanClic,niwohlOS für RIS
+2010-01-04 15:34:19,SHyx0rmZ,xD
+2010-01-04 16:43:18,SHyx0rmZ,"Hm, ich glaub ich verzieh mich mal für heut und zock zur Abwechslung mal was oder so"
+2010-01-04 16:43:28,SHyx0rmZ,Bis morgen oder so o/
+2010-01-04 16:43:35,XanClic,"cu, SHyx0rmZ"
+2010-01-04 16:43:40,taljeth,"Oh, dein OS kann kein Multitasking?"
+2010-01-04 16:43:40,taljeth,bd
+2010-01-04 16:44:11,SHyx0rmZ,"taljeth, Ich muss auf Windows :D"
+2010-01-04 16:44:22,XanClic,Müssen muss man gar nix
+2010-01-04 16:44:31,SHyx0rmZ,Zum TF2 zocken schon
+2010-01-04 16:44:39,XanClic,Das muss man aber nicht zocken
+2010-01-04 16:44:48,SHyx0rmZ,"Zumindest solange, bis nach über einer Woche endlich mal einer auf meinen  Bugreport in fglrx antwortet"
+2010-01-04 16:45:04,SHyx0rmZ,Solang die Grafiktreiber kaputt sind muss ich halt ab und zu auf Windows
+2010-01-04 16:45:16,XanClic,Ist bestimmt nur bei Ubuntu so :D
+2010-01-04 16:45:20,SHyx0rmZ,"XanClic, das sagst du nur, weil du es noch nie gespielt hast ;)"
+2010-01-04 16:45:31,SHyx0rmZ,"XanClic, nö, auf dem Laptop tut's das ja :D"
+2010-01-04 16:45:40,SHyx0rmZ,"So, bd o/"
+2010-01-04 16:45:42,XanClic,Ego-Shooter
+2010-01-04 16:45:46,XanClic,Das will ich nie spielen
+2010-01-04 16:45:52,XanClic,"Das weiß ich, ohne es gespielt zu haben"
+2010-01-04 16:46:00,taljeth,"Ach, flgrx braucht doch bald eh keiner mehr ;-)"
+2010-01-04 16:46:58,XanClic,"Hm, wobei, die Grafik sieht ja lustig aus"
+2010-01-04 16:47:01,XanClic,Wie bei Worms 3D
+2010-01-04 16:47:05,XanClic,Und das war coolio
+2010-01-04 16:47:29,XanClic,wtf
+2010-01-04 16:47:35,XanClic,Worms wurde in Blitz Basic entwickelt
+2010-01-04 16:47:39,SHyx0rmZ,wtf
+2010-01-04 16:47:41,XanClic,Nie wieder spiel ich den Schund :D
+2010-01-04 16:47:45,SHyx0rmZ,+1
+2010-01-04 16:48:09,taljeth,Gab es Blitz Basic damals überhaupt schon?
+2010-01-04 16:48:16,XanClic,Laut WP schon *g*
+2010-01-04 16:48:31,XanClic,"""Worms (von englisch worm [wɜ:m], dt. Wurm) ist eine Serie von taktischen rundenbasierten Multiplayer-Computerspielen, welche in der für Spiele spezialisierten Programmiersprache Blitz Basic von der Firma Team17 entwickelt wurde."""
+2010-01-04 16:48:58,XanClic,"Seit Anfang der Neunziger gibts Blitz, wie es aussieht"
+2010-01-04 16:49:46,taljeth,"""Anfang 2000 begann dann die Entwicklung von Blitz Basic für den PC"""
+2010-01-04 16:49:52,XanClic,Hm
+2010-01-04 16:50:06,taljeth,1994 – Worms
+2010-01-04 16:50:11,XanClic,"FAIL, WP"
+2010-01-04 16:50:15,JanDing,das sind wohl unterschiedliche blitz basics
+2010-01-04 16:50:25,JanDing,"Blitz BASIC is a commercial compiler for the BASIC programming language. Originally developed on the Amiga, Blitz BASIC compilers are now available on several platforms."
+2010-01-04 16:50:49,XanClic,"Jo, laut WP gibts Blitz aber erst seit 2000 für PC"
+2010-01-04 16:51:02,XanClic,Und Worms gibts seit 1994 für besagte Computerart
+2010-01-04 16:52:20,XanClic,"WP failt sowieso, wenn ich mir den Blitz-Artikel so durchlese"
+2010-01-04 16:52:21,XanClic,"""Zudem wird der Quelltext komplett in Maschinensprache compiliert. Somit sind BlitzMax-Programme in etwa so schnell wie Anwendungen, die in C geschrieben wurden."""
+2010-01-04 16:52:34,XanClic,"PB kompiliert auch nach Assembler, das Resultat ist trotzdem Käse"
+2010-01-04 16:52:45,JanDing,assembler != maschinencode :P
+2010-01-04 16:52:49,XanClic,"Die sollten mal nach C kompilieren, dann könnte GCC noch was rausholen"
+2010-01-04 16:52:58,XanClic,JanDing: Ändert aber nix an der Grundtatsache
+2010-01-04 16:53:02,JanDing,ja und ^^
+2010-01-04 16:53:08,XanClic,"Außerdem: ""Die Programmiersprache nutzt zum Kompilieren den FASM und kann Assembler Quelltexte sowie GCC kompilierte Module einbinden."""
+2010-01-04 16:53:21,XanClic,"Also muss sie ja nach Assembler kompilieren, wenn FASM noch irgendwas machen soll"
+2010-01-04 16:53:49,XanClic,"""GCC-kompilierte Module"", das kann ich auch mit PB, wenn ich den Linker austrickse"
+2010-01-04 16:54:01,XanClic,"Und Assemblerquelltexte - hm, toll, Inline-Assembler halt"
+2010-01-04 16:54:11,JanDing,ich glaube du überschätzt den optimizer von gcc und unterschätzt die basic programmierer
+2010-01-04 16:54:25,XanClic,Ich weiß zumindest was PureBasic produziert
+2010-01-04 16:54:30,XanClic,Und das ist Käse
+2010-01-04 16:55:32,taljeth,"Jo, was Optimierung angeht, erscheint mir gcc schon schlauer. Allerdings könnte da auch wieder der bekannte Satz zutreffen, dass alles, was kompliziert genug aussieht, als schlau angesehen wird. ;-)"
+2010-01-04 16:55:41,XanClic,*g*
+2010-01-04 16:55:58,taljeth,FPC produziert teilweise auch nicht gerade optimalen Code
+2010-01-04 16:56:20,XanClic,"Auch gcc produziert ""teilweise nicht gerade optimalen Code"", möchte ich mal behaupten *g*"
+2010-01-04 16:56:58,taljeth,"Hm, das mit FPC könnte natürlcih auch daran liegen, dass buildmk.sh da kein -O2 einbaut ;-)"
+2010-01-04 16:57:08,taljeth,"Keine Ahnung, ob das viel ausmacht"
+2010-01-04 17:00:51,Homix,"hm ob es sinnvoll wäre, bei einem kleinen Überblickstutorial über den RealMode auch gleich ein paar Assemblerbeispiele zu geben, wie z.B. das mit der Adressbildung funktioniert?"
+2010-01-04 17:01:20,XanClic,"Du willst auch noch Leute dazu anstiften, den RM zu benutzen? *g*"
+2010-01-04 17:01:36,Homix,ich will eine antwort auf meine frage :)
+2010-01-04 17:01:51,Homix,"ne ich will grundwissen vermitteln, aber beim RM nicht so sehr ins detail gehen ;)"
+2010-01-04 17:02:07,taljeth,"FreakyPenguin: Kann es sein, dass init von servmgr geDoSt wird? ;-)"
+2010-01-04 17:02:21,FreakyPenguin,*g*
+2010-01-04 17:02:36,FreakyPenguin,Also immer oder nur beim Booten? ;-)
+2010-01-04 17:02:38,taljeth,Der pollt bei den Startup-Services nämlich ziemlich aggressiv
+2010-01-04 17:03:12,taljeth,"Weswegen ext2 sein service_get(""pci"") nie beantwortet bekommt udn sich deswegen auch nicht bei init registiert"
+2010-01-04 17:03:44,taljeth,"Dass es für ext2 besonders wichtig ist, pci zu kennen, lassen wir mal außen vor *g*"
+2010-01-04 17:04:15,FreakyPenguin,Wtf? *g*
+2010-01-04 17:04:49,taljeth,"Naja, CDI versucht halt mal, ext2 alle PCI-Devices anzubieten und ext2 sagt jeweils ""nein, danke"" ;-)"
+2010-01-04 17:05:19,FreakyPenguin,"Ah stimmt, das hast du ja kaputtgemacht ;-)"
+2010-01-04 17:05:54,taljeth,Könnte man wohl bei Gelegenheit optimieren
+2010-01-04 17:06:05,taljeth,"Hm, wir hatten da doch mal so einen Bugzilla..."
+2010-01-04 17:06:48,FreakyPenguin,Hm aber das mit dem kernel_stack ist irgendwie auch doof so
+2010-01-04 17:19:06,FreakyPenguin,"Hm die Syscalls müssten wohl vor dem Umschedulen die interrupts ausschalten, oder?"
+2010-01-04 17:21:28,taljeth,"Hm, könnte sein"
+2010-01-04 17:22:13,FreakyPenguin,Das ist jetzt wohl der spassige Teil ;-)
+2010-01-04 17:25:44,taljeth,"Hm, toll, alle Prozesse in TS_WAIT_FOR_RPC"
+2010-01-04 17:30:07,FreakyPenguin,Wtf?
+2010-01-04 17:32:30,taljeth,"Ich sehe, du bist noch nicht ganz so weit wie ich. Ich wundere mich über gar nichts mehr."
+2010-01-04 17:40:22,FreakyPenguin,Oha ohne -d int läuft das ja etwas flotter. *g*
+2010-01-04 17:41:01,taljeth,"Jo, das habe ich heute morgen auch schonmal festgestellt *g*"
+2010-01-04 17:41:26,taljeth,"Aber -d int ist eigentlich gar nicht schlecht, da merkt man sehr deutlich den Unterschied zwischen kernel und kernel2"
+2010-01-04 17:41:52,FreakyPenguin,Was merkt man denn da genau? ;-)
+2010-01-04 17:42:09,taljeth,Dass kernel2 nochmal ein paar Größenordnungen langsamer ist ;-)
+2010-01-04 17:42:30,taljeth,Mti kernel ist das System auch mit -d int fast noch benutzbar
+2010-01-04 17:42:43,FreakyPenguin,Was ist denn so lahm? ;-)
+2010-01-04 17:42:50,taljeth,Weiß ich doch nicht :-/
+2010-01-04 17:43:13,taljeth,Vielleicht müssen wir uns mal den Scheduler genauer anschauen
+2010-01-04 17:43:33,taljeth,Was du ja momentan sowieso indirekt tust *g*
+2010-01-04 17:44:44,taljeth,"Hm... Wie kann ein Sync-RPC einfach verschwinden? init wartet auf eine Antwort von servmgr für das IO_OPEN, aber der hängt halt in seiner Hauptwarteschleife rum"
+2010-01-04 17:45:53,FreakyPenguin,EAGAIN?
+2010-01-04 17:46:05,FreakyPenguin,Oder wird da mehrmals probiert?
+2010-01-04 17:46:24,taljeth,"Das benutzt intern send_message, glaube ich"
+2010-01-04 17:46:43,tecgod,guten Morgen!!!
+2010-01-04 17:46:57,taljeth,"Aber stimmt, wenn es was anderes als EAGAIN wäre, würde es nicht abgefangen werden. Kann man das mittlerweile abfangen?"
+2010-01-04 17:48:13,FreakyPenguin,Hm ein EINVAL vielleicht?
+2010-01-04 17:48:34,taljeth,"Hm, der einzige andere Fehler ist, wenn es den aufgerufenen Task nicht gibt. Das halte ich für unwahrscheinlich, servmgr sieht sehr existent aus ;-)"
+2010-01-04 17:49:00,taljeth,"EINVAL macht erst kernel2, das hier ist grad mit kernel"
+2010-01-04 17:49:37,FreakyPenguin,Ah
+2010-01-04 17:50:07,FreakyPenguin,Ich habe dafür grad ein fastrpc_ret das normal zurückkehrt ;-)
+2010-01-04 17:51:10,taljeth,Normal?
+2010-01-04 17:51:37,FreakyPenguin,Halt dorthin wo es aufgerufen wird
+2010-01-04 17:51:53,taljeth,Ach so. Wie langweilig ;-)
+2010-01-04 17:52:23,FreakyPenguin,"Seltsam ist aber dass er recht weit kommt, setup wird schon gestartet bevor es knallt"
+2010-01-04 17:52:52,taljeth,"Ich glaube, setup macht ein paar komische Sachen. Da hat es bei mir auch recht oft geknallt"
+2010-01-04 17:56:05,FreakyPenguin,"Könnte natürlich auch daran liegen, dass vterm erst da so richtig mit rpcs bombardiert wird"
+2010-01-04 17:57:14,taljeth,Jo
+2010-01-04 18:01:59,tecgod,moin MNemo#
+2010-01-04 18:02:02,tecgod,-#
+2010-01-04 18:07:03,MNemo,moin
+2010-01-04 18:20:08,tecgod,"wie ist das mit dem Commit ,bei einem neuen Programm?"
+2010-01-04 18:20:17,tecgod,was kommt da rein?
+2010-01-04 18:23:37,tecgod,moin CubeOS
+2010-01-04 18:37:44,tecgod,git send-email geht nicht
+2010-01-04 18:38:14,tecgod,",weil send-email laut git kein git command ist"
+2010-01-04 18:38:45,tecgod,was kann ich stattdessen nehmen?
+2010-01-04 18:39:11,XanClic,"Die Paketverwaltung deiner Wahl und damit git-send-email, oder wie das Paket auch immer heißt, runterladen ;-)"
+2010-01-04 18:40:34,tecgod,stimmt ist natürlich ein Ansatz XanClic
+2010-01-04 18:42:46,tecgod,moin Janosch
+2010-01-04 18:43:03,janosch,moin
+2010-01-04 18:51:46,tecgod,"XanClic jetzt kann ich theoretisch das senden ,aber jetzt meckert er rum wegen meiner SMTP Config"
+2010-01-04 18:52:20,XanClic,"Das kann schon sein, da kann ich dir nur leider auch nicht helfen... Du kannst einen anderen Provider versuchen"
+2010-01-04 18:55:43,tecgod,ok jetzt sollte es gehen
+2010-01-04 18:56:04,tecgod,was passiert dann nachdem ich den Patch gesendet habe?
+2010-01-04 18:56:56,taljeth,"Dann kommt er auf die Liste und muss warten, bis er von T...TUM gefressen wird *g*"
+2010-01-04 18:57:18,tecgod,vom was?
+2010-01-04 18:57:46,taljeth,"Ah, du bist kein Leser von Hartmuts tyndur-Sage?"
+2010-01-04 18:58:24,tecgod,nö
+2010-01-04 18:58:27,tecgod,wo gibts die?
+2010-01-04 18:58:28,XanClic,Also bei mir wird er ja von Dribrednuht gefressen
+2010-01-04 18:58:39,XanClic,Kann man sogar aussprechen *g*
+2010-01-04 18:58:40,taljeth,"Naja, entweder irgendjemand bemeckert den Patch, dann darfst du nochmal probieren, oder irgendjemand committet"
+2010-01-04 18:59:15,tecgod,mein Patch ist bestimmt nicht wichtig genug -.-
+2010-01-04 18:59:16,taljeth,"Dribrednuht kann aber nicht so ohne weiteres Patches applien, deswegen nehme ich da dafür nicht"
+2010-01-04 18:59:29,XanClic,Ich muss ja auch keine Patches applien ;-)
+2010-01-04 19:00:13,tecgod,"mir ist aufgefallen ,dass kwolf ziemlich aktiv ist oder?"
+2010-01-04 19:00:18,taljeth,"XanClic: Jo, hat auch seine Vorteile, nicht Maintainer zu sein ;-)"
+2010-01-04 19:00:28,taljeth,tecgod: Das bin ich ;-)
+2010-01-04 19:00:28,FreakyPenguin,"taljeth: Och, der kwolf hat keine Ahnung ;-)"
+2010-01-04 19:00:29,XanClic,"taljeth: Aber der Paddy hängt faul rum, jo"
+2010-01-04 19:00:34,FreakyPenguin,Bäh tecgod ;-)
+2010-01-04 19:00:44,XanClic,FreakyPenguin: +1 *g*
+2010-01-04 19:00:47,FreakyPenguin,*g*
+2010-01-04 19:00:53,taljeth,Aber beide reingefallen *g*
+2010-01-04 19:00:54,tecgod,was FreakyPenguin ?
+2010-01-04 19:01:07,FreakyPenguin,taljeth: Du warst halt zu schnell ;-)
+2010-01-04 19:01:20,taljeth,"tecgod: Nicht auf die hören, die können nichtmal ordentlich tabben ;-)"
+2010-01-04 19:01:34,XanClic,Konversation 1.1+ hat da wenigstens stillgehalten
+2010-01-04 19:01:45,taljeth,KDE 3.5 fdS
+2010-01-04 19:01:45,XanClic,Aber die 1.2 tabbt einfach wild zu ende
+2010-01-04 19:01:45,FreakyPenguin,"tecgod: Du solltest dich vorher auf der Liste registrieren, sonst bekomme nur ich den Patch ;-)"
+2010-01-04 19:01:58,tecgod,bei der Mailingliste?
+2010-01-04 19:02:18,FreakyPenguin,Jo
+2010-01-04 19:02:35,tecgod,ja da bin ich angemeldet
+2010-01-04 19:02:48,FreakyPenguin,Dann gibst du dem git halt eine Vernünftige Mailadresse an ;-)
+2010-01-04 19:03:13,tecgod,hab ich ja eigentlich
+2010-01-04 19:03:21,tecgod,was ist mit meiner Mailadresse?
+2010-01-04 19:04:04,FreakyPenguin,johannes@Jump4Eva. mag der mailman halt nicht so wirklich ;-)
+2010-01-04 19:04:23,tecgod,ok ich versteh schon
+2010-01-04 19:04:34,tecgod,ich schick nochmal
+2010-01-04 19:05:22,tecgod,so nochmal geschickt
+2010-01-04 19:05:28,tecgod,ich hoff jetzt passts
+2010-01-04 19:18:05,XanClic,"Hm, Pfeiffer mit drei F *g*"
+2010-01-04 19:18:19,tecgod,jep so siehts aus
+2010-01-04 19:24:19,Homix,XanClic: kommt die feuerzangenbohle heute im fernsehen? :D
+2010-01-04 19:24:28,XanClic,"Nö, aber auf der Mailingliste *g*"
+2010-01-04 19:58:10,JanDing,hm bluescreen ...
+2010-01-04 19:58:19,XanClic,Hab ich täglich
+2010-01-04 19:58:25,XanClic,Geht nach ein bisschen Mauswackeln vorbei
+2010-01-04 19:58:39,JanDing,haha^^
+2010-01-04 19:58:48,JanDing,"das blöde ist ja nicht, dass das system abstürzt, sondern dass der minuten braucht um danach hochzufahren"
+2010-01-04 19:58:54,JanDing,keine ahnung was der da macht
+2010-01-04 20:08:04,taljeth,*lol*
+2010-01-04 20:08:24,taljeth,"Was man nicht alles findet, wenn man rebast. XanClic schreibt lustigen Code"
+2010-01-04 20:08:39,taljeth,".init          = &init_ohci,"
+2010-01-04 20:08:40,taljeth,".init_device   = &ohci_init,"
+2010-01-04 20:08:56,taljeth,Fehlt noch ohci&init_
+2010-01-04 20:09:01,XanClic,"Tjo, das passiert eben, wenn nachträglich so ein ""init"" hinzugefügt wird ;-)"
+2010-01-04 20:09:02,FreakyPenguin,*g*
+2010-01-04 20:09:17,XanClic,Das ohci_init gabs ja schon immer
+2010-01-04 20:09:47,FreakyPenguin,Also ich würde das ja ohci_init_device nennen ;-)
+2010-01-04 20:09:55,taljeth,Jo ;-)
+2010-01-04 20:10:05,taljeth,"Die anderen Treiber machen das auch so, aber XanClic ist halt was besonderes"
+2010-01-04 20:10:12,XanClic,Hm *g*
+2010-01-04 20:10:20,JanDing,oder die andere ohci_init_but_not_device
+2010-01-04 20:11:24,taljeth,Wenn man es korrigiert heißt die Initfunktion für den Treiber sowieso find_and_init_ohcis ;-)
+2010-01-04 20:11:39,XanClic,Man könnte sie auch init_ohcd nennen ;-)
+2010-01-04 20:13:20,XanClic,"Ich glaub, USB ist im derzeitigen Stadium allgemein tot"
+2010-01-04 20:13:32,XanClic,Das müsste mal mit wirklich sauberem Interface neu aufgebaut werden
+2010-01-04 20:13:55,XanClic,Also mach dir nicht übermäßig viel Mühe ;-)
+2010-01-04 20:14:21,taljeth,"Hm, meinst du?"
+2010-01-04 20:14:50,taljeth,"Ich hab ja keine Ahnung von USB, kann also nicht beurteilen, ob es was taugt"
+2010-01-04 20:14:59,XanClic,Es geht vor allem um das Interface
+2010-01-04 20:15:07,taljeth,Welches Interface?
+2010-01-04 20:15:11,XanClic,CDI.usb
+2010-01-04 20:15:34,taljeth,Das meinte ich doch
+2010-01-04 20:15:39,XanClic,Aso
+2010-01-04 20:15:52,XanClic,Aber du hast Ahnung von Mikrokerneln ;-)
+2010-01-04 20:17:32,taljeth,"Hm, braucht man die da?"
+2010-01-04 20:17:42,XanClic,"Na, für einen Monolithen ist das Interface recht hübsch"
+2010-01-04 20:18:01,taljeth,Aber?
+2010-01-04 20:18:07,XanClic,"Aber wie ich gesehen habe, bröckelt das in verschiedene Adressräume getrennt auseinander"
+2010-01-04 20:18:31,taljeth,Du kannst natürlich nicht Pointer auf die anderen Geräte usw. haben
+2010-01-04 20:18:31,XanClic,"Will sagen, zu viele Funktionspointer ;-)"
+2010-01-04 20:18:34,taljeth,"Keine Ahnung, ob du das hast"
+2010-01-04 20:19:05,XanClic,"Jo, diese Funktionspointer müsste man mal mit vom System gestellten Funktionen ersetzen"
+2010-01-04 20:19:31,taljeth,Das dürft ja kein Aufwand sein
+2010-01-04 20:19:35,XanClic,"Und dann allgemein USB nochmal langsam anfangen, jetzt, wo ich weiß, dass UHCI nur dann funktionieren kann, wenn man den Legacy-Support rauskickt"
+2010-01-04 20:19:48,XanClic,"Nochmal so anfangen, dass es auf echter Hardware auch funktioniert"
+2010-01-04 20:20:11,taljeth,"Hm, okay. also den bisherigen Code wirklich nochmal komplett in die Tonne treten?"
+2010-01-04 20:20:19,XanClic,"Nö, der wird schon übernommen werden ;-)"
+2010-01-04 20:20:22,XanClic,So in Teilen zumindest
+2010-01-04 20:20:31,XanClic,"Aber eben mal langsam nachbauen, um zu sehen, wo es hakt"
+2010-01-04 20:21:16,taljeth,"Also ist es doch halbwegs sinnvoll, den auf das neue Interface umzubauen?"
+2010-01-04 20:21:32,XanClic,Was für ein neues Interface genau?
+2010-01-04 20:21:47,taljeth,Die ganzen CDI-Änderungen halt
+2010-01-04 20:21:51,XanClic,"Aso, ob du das jetzt machen sollst"
+2010-01-04 20:21:57,XanClic,Wenn du Lust hast ;-)
+2010-01-04 20:22:07,taljeth,Lust würde ich es nicht nennen ;-)
+2010-01-04 20:22:19,taljeth,Aber ich will irgendwann in absehbarer Zeit USB haben
+2010-01-04 20:22:24,XanClic,Hm *g*
+2010-01-04 20:22:36,XanClic,"Dann frag fricky, der verspricht dir das zumindest ;-)"
+2010-01-04 20:22:41,taljeth,*g*
+2010-01-04 20:39:40,XanClic,"Hm, Cjreek meldet sich auf osdev.org, aber nicht hier"
+2010-01-04 20:39:53,XanClic,Schweinerei *g*
+2010-01-04 20:41:23,Homix,;)
+2010-01-04 20:56:51,taljeth,"XanClic: So, jetzt kompiliert es wenigstens wieder ;-)"
+2010-01-04 20:57:16,XanClic,Vielleicht ist ja ein Wunder passiert und es tut auch *g*
+2010-01-04 20:57:29,taljeth,Wer weiß *g*
+2010-01-04 21:24:47,Feuermonster,*g* @ init geDoSt ;)
+2010-01-04 21:25:15,taljeth,"Ah, Feuermonster, ist dir zufällig grad langweilig? ;-)"
+2010-01-04 21:25:28,taljeth,Du könntest gethostbyname fixen ;-)
+2010-01-04 21:29:11,Homix,ist das eure dns abfrage? ;)
+2010-01-04 21:29:34,taljeth,Das ist die POSIX-DNS-Abfrage. So ungefähr jedenfalls.
+2010-01-04 21:29:47,taljeth,Und Feuermonster hat die Funktion kaputtgemacht ;-)
+2010-01-04 21:29:47,Homix,bei windows gibts den API aufruf auch ;)
+2010-01-04 21:30:04,Feuermonster,kaputt?
+2010-01-04 21:30:05,Homix,ich hatte auch schon mal ein gethostbyname ;)
+2010-01-04 21:30:07,Feuermonster,Ich hab sie erweitert ;)
+2010-01-04 21:30:17,Homix,um was?
+2010-01-04 21:30:25,taljeth,"Homix: Hm, war da nicht was, dass Windows sich in Sachen Netzwerk bei BSD bedient hat? ;-)"
+2010-01-04 21:30:42,Feuermonster,Homix: Mehrere IP Dinger aufloesen.
+2010-01-04 21:30:52,taljeth,"Feuermonster: Jo, und dabei ist sie leider so buggy geworden, dass lynx nicht mehr funktioniert"
+2010-01-04 21:30:56,Feuermonster,"google.ch hat z.b 3 Adressen. Statt nur einer, bekommt man nun 3."
+2010-01-04 21:30:59,Homix,"jap die BSD sockets oder wie die hießen, irgendwas mit Be.."
+2010-01-04 21:31:06,taljeth,"Bzw. alles, was mehrere DNS-Anfragen macht, dürfte kaputt seibn"
+2010-01-04 21:31:27,Feuermonster,taljeth: kaputt im Sinne von?
+2010-01-04 21:31:34,Feuermonster,Werden die Ressourcen falsch gefreet?
+2010-01-04 21:31:41,taljeth,Page Fault
+2010-01-04 21:31:46,XanClic,UH YEAH
+2010-01-04 21:31:50,Feuermonster,k.
+2010-01-04 21:31:54,Feuermonster,Interessant.
+2010-01-04 21:31:56,XanClic,(In Ermangelung von PageFaultHartmut)
+2010-01-04 21:32:03,Feuermonster,"Dann habt ihr gefixt, dass Dateien von LostIO nie geloescht werden?"
+2010-01-04 21:32:30,taljeth,"Hm? Nein. Der PF ist in der Anwendung, die gethostbyname macht, nicht in tcpip"
+2010-01-04 21:32:54,Feuermonster,hm k.
+2010-01-04 21:33:02,Feuermonster,Kann ich mir mal anschauen ;)
+2010-01-04 21:33:17,taljeth,"Feuermonster: Also zwei Probleme habe ich schon entdeckt, könnten auch noch mehr sein. ;-) Zum einen hast du einen Buffer Overflow, das abschließende NULL in der Liste ist nicht reserviert. Und wenn man es mit einer IP benutzt, dürfte es auch nicht mehr funktionieren."
+2010-01-04 21:33:27,taljeth,"Könnte gut sein, dass der Buffer Overflow schon das Problem ist"
+2010-01-04 21:35:57,bluecode_,XanClic: macht es bei 16bit I/O Ports wirklich sinn die nicht vorhandenen in der mitte aufzulisten (PCNet)?
+2010-01-04 21:36:24,XanClic,Wieso nicht vorhanden?
+2010-01-04 21:36:38,bluecode_,weil 16bit ports?
+2010-01-04 21:36:40,XanClic,Man kann die drei 16-Bit-Ports auch als sechs 8-Bit-Ports auffassen
+2010-01-04 21:36:46,bluecode_,da kann man nicht einfach unaligned lesen...
+2010-01-04 21:36:56,XanClic,"Hm, mist *g*"
+2010-01-04 21:36:59,XanClic,In qemu gings *g*
+2010-01-04 21:37:04,bluecode_,und auch nicht mit der falschen größe...
+2010-01-04 21:37:19,bluecode_,es geht da wirklich nur ein 16bit read/wriite
+2010-01-04 21:37:42,XanClic,Dafür steht der Hinweis oben drüber ;-)
+2010-01-04 21:38:01,bluecode_,das magst du aber bestimmt selbst korrigieren :-)
+2010-01-04 21:38:11,XanClic,Einfach reverten? Ist jetzt nicht so schwierig *g*
+2010-01-04 21:39:00,bluecode_,du hast ja noch was anderes geändert
+2010-01-04 21:40:18,bluecode_,"hm, flash in ReactOS ( http://www.reactos.org/media/screenshots//2009/ros_039_flash_in_firefox2.png ), so langsam wird ReactOS brauchbar ^^"
+2010-01-04 21:41:53,bluecode_,"oh nett, und Diablo 2"
+2010-01-04 21:42:11,taljeth,"Abgesehen halt davon, dass es mühsam zu benutzen wird, wenn es originalgetreu wird ;-)"
+2010-01-04 21:43:35,bluecode_,es wird sicherlich nie so mühsam wie die Vista/7 Systemsteuerung...
+2010-01-04 21:44:07,taljeth,Ich fand ja jede Systemsteuerung nach 98 mühsam ;-)
+2010-01-04 21:45:39,bluecode_,die sind doch gleich geblieben bis inklusive XP
+2010-01-04 21:46:23,taljeth,Kommt auf die Definition von gleich an ;-)
+2010-01-04 21:46:50,bluecode_,schau dir halt mal die neue an
+2010-01-04 21:47:05,bluecode_,da wirst du bestimmt verstehen was ich mit verschieden meine :-)
+2010-01-04 21:47:10,taljeth,Müsste ich in der 7-VM schonmal benutzt haben
+2010-01-04 21:47:19,taljeth,Dürfe im allgemeinen Frust mit diesem OS untergegangen sein
+2010-01-04 21:50:09,tecgod,gnute Nacht
+2010-01-04 21:51:59,ProgrammNoob,Moin
+2010-01-04 22:21:30,JanDing,hm c++ ftw 
+2010-01-04 22:21:42,JanDing,wenn ein paar c-funktionen auch debugausgaben machen sollen: #define dprintf _ZN6PrintfIN2PC3CgaEE6printfEPKcz
+2010-01-04 22:22:42,JanDing,wobei .. ich glaub das klappt gar nicht xD
+2010-01-04 22:22:56,bluecode_,wenn das this braucht dann nicht
+2010-01-04 22:23:44,bluecode_,"und wenn es sonst nicht verwendet wird, wird es sicherlich nicht instanziiert werden"
+2010-01-04 22:24:10,bluecode_,warum machst du überhaupt ein printf in C++
+2010-01-04 22:24:15,JanDing,hm es braucht this ... aber ich hatte dafür auch schon mal ne lösung
+2010-01-04 22:24:38,bluecode_,"statische Methode, this irgendwie herholen"
+2010-01-04 22:24:48,bluecode_,alles andere wäre wohl eher nicht plattformunabhängig
+2010-01-04 22:25:27,JanDing,dann muss ich aber die parameter vorher in va_args verwursten
+2010-01-04 22:25:54,bluecode_,Du kannst die va_args ja weitergeben
+2010-01-04 22:26:20,bluecode_,also die va_list um genau zu sein
+2010-01-04 22:26:41,bluecode_,trotzdem: Warum brauchst du eine printf-style Ausgabe in C++? Das ist einfach nur kaputt
+2010-01-04 22:26:51,JanDing,ich finde sowas lustig
+2010-01-04 22:27:10,JanDing,"ich hab eine klasse Console, die so definiert ist"
+2010-01-04 22:27:11,bluecode_,ich mag dich nicht.
+2010-01-04 22:27:11,JanDing,"class Console : public Printf<PC::Cga>, public PC::Keyboard { };"
+2010-01-04 22:27:44,JanDing,Printf<T> stellt halt die printf() funktion zur verfügung und Keyboard die readline() funktion
+2010-01-04 22:28:16,JanDing,"ich hab das eigentlich nur gemacht, weil ich keine lust auf dieses operator<< gewurschtel hatte"
+2010-01-04 22:29:02,taljeth,Außerdem kann << gar keine positional parameters oder wie die hießen ;-)
+2010-01-04 22:29:13,bluecode_,"das soll was sein, taljeth?"
+2010-01-04 22:29:22,JanDing,"kann das printf, das ich verwende, auch nicht"
+2010-01-04 22:29:45,taljeth,"bluecode_: Das, was der JanDing erst letztens für tyndur implementiert hat"
+2010-01-04 22:29:57,bluecode_,"[22:29] <bluecode_> das soll was sein, taljeth?"
+2010-01-04 22:30:48,taljeth,"""One can also specify explicitly which argument is taken, at each place where an argument is required, by writing ""%m$"" instead of '%' and ""*m$"" instead of '*', where the decimal integer m  denotes  the  position  in  the       argument list of the desired argument, indexed starting from 1."""
+2010-01-04 22:30:56,taljeth,Das Zeug
+2010-01-04 22:32:42,bluecode_,"wenn man das unbedingt möchte, dann macht man in C++ ein typsichere printf mit templates"
+2010-01-04 22:33:25,bluecode_,da geht das bestimmt
+2010-01-04 22:36:54,JanDing,"ich glaube eher dass man da boost::tolle_lib nimmt, und einen parser für eine skriptsprache baut"
+2010-01-04 22:37:33,JanDing,"ich habs jetzt so gemacht, wie bluecode es gesagt hat ... vor allem weil ich bei dem lärm hier nicht denken kann -.-"
+2010-01-04 22:37:41,JanDing,bruder macht bandprobe im keller
+2010-01-04 22:37:50,JanDing,aber da hilft eigentlich kein üben mehr -.-
+2010-01-04 22:39:10,bluecode_,JanDing: boost::spirit
+2010-01-04 22:40:33,JanDing,JanDing::boost
+2010-01-04 22:43:25,Programm_Noob,Moin
+2010-01-04 22:44:42,JanDing,moin
+2010-01-04 23:04:58,taljeth,gn8
+2010-01-04 23:05:33,Homix,gn8

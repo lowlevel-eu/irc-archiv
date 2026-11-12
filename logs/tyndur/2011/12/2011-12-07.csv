@@ -1,0 +1,209 @@
+date/time,nick,message
+2011-12-07 10:49:16,mroman,Frage.
+2011-12-07 10:49:31,mroman,Hat jeder Thread eigentlich einen ganzen eigenen Context?
+2011-12-07 10:49:37,mroman,Stichwort: Register.
+2011-12-07 10:50:06,mroman,Beim Prozessswitchen werden die ja gespeichert und wieder hergestellt.
+2011-12-07 10:50:15,kevin,Eigenen Registersatz natürlich
+2011-12-07 10:50:17,mroman,Das gleiche muss ich doch auch bei Threads tun?
+2011-12-07 10:50:19,kevin,Aber keinen eigenen Speicherkontext
+2011-12-07 11:00:24,mroman,Gibts irgendwo eine Übersicht über atomic instructions?
+2011-12-07 11:01:18,mroman,Oder ist das zu manufacturer & modell dependent?
+2011-12-07 11:01:25,kevin,Müsste im Manual stehen
+2011-12-07 11:05:55,mroman,Ja.
+2011-12-07 11:05:59,mroman,Die Frage ist in welchem :D
+2011-12-07 11:06:33,kevin,Vermutlich sowohl in dem von Intel als auch in dem von AMD
+2011-12-07 11:06:39,kevin,Für die jeweiligen Prozessoren ;-)
+2011-12-07 11:06:57,kevin,"Nicht, dass du versuchst, in einem e1000-Manual eine Antwort darauf zu finden"
+2011-12-07 11:07:27,mroman,:D
+2011-12-07 11:17:41,mroman,Interessant.
+2011-12-07 11:17:55,mroman,"Lesen und Schreiben eines words ist nur atomic, wenn es aligned ist."
+2011-12-07 11:32:41,kevin,"Besser einfach ein lock draufwerfen, oder? ;-)"
+2011-12-07 13:02:06,mroman,Atomicity alleine bringt mir aber auch nichts.
+2011-12-07 13:02:18,mroman,"Wenn zwei Threads nicht atomisch load, inc, store machen"
+2011-12-07 13:02:23,mroman,dann geht das schief.
+2011-12-07 13:02:54,mroman,"Wenn einer davon atomisch {load, inc, store} macht, geht das trotzdem schief."
+2011-12-07 13:03:09,kevin,s/atomisch/atomar/ :-)
+2011-12-07 13:03:11,mroman,"Das geht nur nicht schief, wenn alle Beteiligten atomisch sind."
+2011-12-07 13:03:18,mroman,s/atomisch/atomar
+2011-12-07 13:03:55,mroman,"load a [A], {load a, inc, store a}, inc, store a <- BUUUM"
+2011-12-07 13:03:56,kevin,"lock xchgcmp ist, was du willst, oder?"
+2011-12-07 13:04:03,mroman,Trotzdem nur ein INC statt zwei.
+2011-12-07 13:04:16,kevin,cmpxchg heißt es
+2011-12-07 13:04:32,mroman,"Locks sind nutzlos, wenn ein Thread bereits vor dem lock auf etwas zugreift."
+2011-12-07 13:05:05,kevin,Was willst du denn grad implementieren?
+2011-12-07 13:05:09,kevin,Spinlocks oder sowas?
+2011-12-07 13:05:58,mroman,"Das Problem ist: Ich habe keine Ahnung, ob ein Thread zuvor z.B a gelesen hat"
+2011-12-07 13:06:20,mroman,und das macht alles kaputt.
+2011-12-07 13:06:36,kevin,Ignorierst du meine Frage?
+2011-12-07 13:06:52,mroman,Ich will ein zuverlässiges inc ;)
+2011-12-07 13:07:11,kevin,"""zuverlässig"" kommt immer auf die Umstände an"
+2011-12-07 13:07:27,mroman,Ich kann es atomar tun.
+2011-12-07 13:07:27,kevin,Aber lock inc memory sollte das tun
+2011-12-07 13:07:35,mroman,"Aber ich habe keine Garantier, dass es andere auch tun."
+2011-12-07 13:07:39,mroman,*Garantie
+2011-12-07 13:08:19,kevin,"Wenn du mit anderen Threads zu tun hast, die nicht threadsafe sind, hast du eh verloren"
+2011-12-07 13:08:25,mroman,Das geht wohl nur mit Transactions oder so.
+2011-12-07 13:09:11,mroman,Aber auf dem Level gibt's sowas wohl kaum.
+2011-12-07 13:09:13,kevin,Also nochmal: Was hast du vor? ;-)
+2011-12-07 13:09:21,kevin,Und warum tut lock inc für dich nicht?
+2011-12-07 13:11:41,mroman,Weils nicht x86 ist
+2011-12-07 13:11:57,mroman,und auch nicht x64.
+2011-12-07 13:13:12,kevin,"Ah. Gut, dass so eine nebensächliche Information so spät kommt. :-)"
+2011-12-07 13:14:55,mroman,Gibt's btw. einen 16bit C-Compiler für Linux i386? Ohne dass man irgendeine GCC Version nimmt und irgendwelche hackigen Patches darauf anwendet.
+2011-12-07 13:15:07,mroman,bzw.
+2011-12-07 13:15:10,kevin,bcc?
+2011-12-07 13:15:48,kevin,Springst du gerade zu einem völlig anderen Thema oder was machst du komisches?
+2011-12-07 13:15:58,stultus,"Zur vorherigen Fragestellung, gesucht ist nur ne lock-implementation ohne atomare operationen?"
+2011-12-07 13:16:15,mroman,kevin: Etwas komisches ;)
+2011-12-07 13:16:33,kevin,stultus: Auf einer nicht näher spezifizierten Architektur
+2011-12-07 13:16:37,stultus,http://en.wikipedia.org/wiki/Peterson%27s_algorithm  http://en.wikipedia.org/wiki/Dekker%27s_algorithm
+2011-12-07 13:16:39,mroman,Ein Real Mode OS/Emulator
+2011-12-07 13:16:46,mroman,quasi.
+2011-12-07 13:16:49,stultus,sehn für mich beide so aus als ob die auf jeder turing-vollständigen laufen sollten.
+2011-12-07 13:16:53,kevin,mroman: Aber nicht auf x86.
+2011-12-07 13:17:01,mroman,Doch.
+2011-12-07 13:17:06,mroman,Aber ich emuliere nicht x86 ;)
+2011-12-07 13:17:30,kevin,"Also dein Emulator läuft im RM, nicht du emulierst den RM?"
+2011-12-07 13:17:38,mroman,Ja.
+2011-12-07 13:17:40,kevin,Eindeutige Formulierungen fdS
+2011-12-07 13:18:19,kevin,Und wo genau brauchst du jetzt dieses atomare inc?
+2011-12-07 13:18:53,kevin,Brauchst du selber eins für deinen Code oder musst du eins emulieren?
+2011-12-07 13:19:11,kevin,"*deinen x86-Code (der nicht-x86-Code ist ja nicht von dir, oder?)"
+2011-12-07 13:20:31,mroman,Emulieren.
+2011-12-07 13:20:47,mroman,Wobei das atomare inc zu emulieren ist nicht das Problem.
+2011-12-07 13:21:10,mroman,Das Problem ist ein normales inc und atomares inc paralell.
+2011-12-07 13:21:16,mroman,Ob man dagegen irgendwas tun kann.
+2011-12-07 13:21:19,stultus,nein.
+2011-12-07 13:21:36,kevin,"Wenn der emulierte Code parallel ein inc und ein atomares inc benutzt, dann ist das normale inc halt kaputt"
+2011-12-07 13:21:40,stultus,"Wenn ein Prozess sich nicht an die Spielregeln hält, hast du mehr oder weniger verloren."
+2011-12-07 13:21:48,kevin,Also sollte das im Emulator genauso wie auf echter Hardware schiefgehen
+2011-12-07 13:22:18,kevin,Alternativ emulierst du halt jedes inc als atomar
+2011-12-07 13:22:30,kevin,"Kostet Performance, aber wer Blödsinn will, kriegt halt Blödsinn"
+2011-12-07 13:23:15,kevin,Wart mal...
+2011-12-07 13:23:22,kevin,"Versteh ich das eigentlich richtig, dass du SMP im RM machst? *g*"
+2011-12-07 13:23:50,mroman,Ich emuliere ja nur.
+2011-12-07 13:24:02,mroman,Ich brauche da ja keine echtes Multithreading.
+2011-12-07 13:24:10,kevin,Also läuft in Wirklichkeit gar nichts gleichzeitig
+2011-12-07 13:24:30,kevin,"Deine incs sind also vermutlich eh schon atomar, ob beabsichtigt oder nicht"
+2011-12-07 13:24:35,mroman,Wie in Wirklichkeit auf einem Single Core System halt auch?
+2011-12-07 13:24:55,kevin,Wechselst du präemptiv zwischen den Cores?
+2011-12-07 13:25:23,mroman,Es gibt nicht mehrere Cores.
+2011-12-07 13:25:31,kevin,Emulierte Cores meine ich
+2011-12-07 13:26:31,mroman,Ich emuliere eine hardware mulithreading unterstützdene Maschine.
+2011-12-07 13:26:50,stultus,Also mehrere emulierte Cores.
+2011-12-07 13:27:21,kevin,"Kommt drauf an, was man drunter versteht"
+2011-12-07 13:27:38,kevin,Hardware-Multitasking heißt ja auch nicht SMP
+2011-12-07 13:27:51,kevin,"Sondern nur, dass das Prozessor den Taskswitch maacht"
+2011-12-07 13:27:52,kevin,-a
+2011-12-07 13:28:17,stultus,"Naja, aber anders ergibt das ja noch weniger Sinn."
+2011-12-07 13:28:28,kevin,Ja
+2011-12-07 13:28:32,stultus,"Ich mein, Hardware-Multithreading in dem Sinne, und das ohne atomare operationen...?"
+2011-12-07 13:28:44,kevin,Das hier macht für mich alles keinen Sinn
+2011-12-07 13:28:49,kevin,Es ergibt nichtmal welchen
+2011-12-07 13:30:54,mroman,Die CPU verwaltet die Threads. Und macht auch den Switch zwischen Threads.
+2011-12-07 13:31:27,stultus,kevin: punkt für dich
+2011-12-07 13:31:42,kevin,"mroman: Das heißt, der Taskswitch wird von Gastcode ausgelöst?"
+2011-12-07 13:33:14,mroman,Kann. Aber die CPU switcht selber automatisch.
+2011-12-07 13:33:39,kevin,"Hm, ok"
+2011-12-07 13:34:04,kevin,"Aber wie auch immer, warum ist irgendetwas davon für deine Emulation ein Problem?"
+2011-12-07 13:34:17,mroman,"Du hast ja OpCodes um zu sagen, ""Erzeuge neuen Thread at 0xDEADBEEF"""
+2011-12-07 13:34:22,mroman,und dann macht die CPU das.
+2011-12-07 13:34:37,mroman,und sie wechselt auch automagisch etc.
+2011-12-07 13:35:01,kevin,"Solange du immer komplette Instruktionen auf einmal emulierst (und das solltest du wohl eh, wenn dir deine geistige Gesundheit was wert ist), sehe ich nicht, wie da irgendwas schiefgehen könnte"
+2011-12-07 13:38:05,mroman,"Weil ein atomares inc und ein nicht atomares inc parallel ausgeführt werden müssen, wie zwei Atomare inc."
+2011-12-07 13:38:31,stultus,"was soll da parallel ausgeführt werden, bei einer ausführungseinheit?"
+2011-12-07 13:38:40,mroman,Eben.
+2011-12-07 13:38:52,mroman,In x86 wäre das wohl
+2011-12-07 13:38:54,mroman,pop ax
+2011-12-07 13:38:55,mroman,inc ax
+2011-12-07 13:38:57,mroman,push ax
+2011-12-07 13:38:58,mroman,oder so.
+2011-12-07 13:39:07,mroman,nicht atomares inc.
+2011-12-07 13:39:17,kevin,"Es ist nicht die Aufgabe eines Emulators, kaputten Gastcode zu fixen"
+2011-12-07 13:39:33,kevin,Oder vermeintlich kaputten Gastcode
+2011-12-07 13:39:52,kevin,Sondern den Code genau so zu emulieren wie er auf echter Hardware auch laufen würde
+2011-12-07 13:40:51,mroman,Ja.
+2011-12-07 13:41:30,stultus,"So, wieder weg, bis nachher"
+2011-12-07 13:41:51,mroman,ggf. sie würde dann den einten Thread zurück spulen
+2011-12-07 13:41:58,mroman,wieder zurück auf das load a
+2011-12-07 13:42:06,kevin,Wieso würde sie das machen?
+2011-12-07 13:42:29,mroman,"Weil bemerkt wird, dass eine atomare Operation eine andere Unterbrochen hat?"
+2011-12-07 13:42:48,kevin,"Ich dachte, das war gar nicht atomar?"
+2011-12-07 13:44:31,mroman,*eine andere nicht-atomare Operation.
+2011-12-07 13:45:17,mroman,Hm.
+2011-12-07 13:45:25,mroman,Da fallen mir jetzt zwar gleich zwei Lösungen ein.
+2011-12-07 13:45:49,kevin,Warum ist das überhaupt ein Problem?
+2011-12-07 13:46:00,kevin,Eine nicht-atomare Operation _kann_ unterbrochen werden
+2011-12-07 13:46:03,kevin,So ist sie definiert
+2011-12-07 13:47:13,kevin,"Wenn sie es nicht könnte, wäre sie atomar"
+2011-12-07 13:47:59,mroman,"Und wie nennt man es, wenn sie zwar unterbrochen werden darf, aber das Resultat darf trotzdem nicht kaputt gehen?"
+2011-12-07 13:48:07,mroman,e.g
+2011-12-07 13:48:48,kevin,Das gibt es nicht
+2011-12-07 13:49:10,kevin,"Echte Hardware ""unterbricht"" keine Operationen"
+2011-12-07 13:50:03,kevin,Was für eine Architektur ist das denn? Selber ausgedacht?
+2011-12-07 13:54:42,mroman,Eins meiner Esoprojekte natürlich.
+2011-12-07 13:56:06,kevin,Gibt das eine reine VM-Architektur oder soll das auch mit echter Hardware umsetzbar sein?
+2011-12-07 13:56:28,kevin,"Also meiner Meinung musst du die Architektur fixen, wenn du anders keine atomaren Operationen hinbekommst"
+2011-12-07 13:57:02,mroman,http://codepad.org/k6Z3ZkOv
+2011-12-07 13:57:10,mroman,Das ist eigentlich die Idee.
+2011-12-07 13:57:52,mroman,"Ein OS mit einer VM, die mehrere Multithreading garantien bietet."
+2011-12-07 13:58:31,mroman,"Man kann dann quasi Code für eine ""erfundene Architektur"" schreiben"
+2011-12-07 13:58:50,mroman,"aber es läuft tatsächlich x86, Realmode"
+2011-12-07 14:01:19,kevin,Also das Ding muss nur mit VMs funktionieren?
+2011-12-07 14:01:27,mroman,Joa.
+2011-12-07 14:01:27,kevin,Dann kannst du evtl. Transaktionen basteln
+2011-12-07 14:01:46,mroman,"Die Frage ist halt, was bei"
+2011-12-07 14:01:52,kevin,"Aber einfacher wäre es vermutlich, den ganz normalen Weg zu gehen und eine atomare test-and-set-Operation anzubieten"
+2011-12-07 14:02:07,mroman,"load a, inc, do_some_IO_which_should_never_be_done_twice, store a passiert."
+2011-12-07 14:02:18,mroman,und vieles mehr.
+2011-12-07 14:02:32,kevin,Das mit Zurückspringen ist Blödsinn
+2011-12-07 14:02:47,mroman,Ja.
+2011-12-07 14:02:53,kevin,"Du musst einfach sicherstellen, dass zwischen ATOMICALLY_START und ATOMICALLY_END nichts anderes läuft"
+2011-12-07 14:02:59,kevin,Oder zumindest nicht auf den Speicher zugreift
+2011-12-07 14:03:12,mroman,kevin: Tut auch nichts.
+2011-12-07 14:03:21,kevin,"Das Problem an der Stelle ist, dass sich ein Thread so sozusagen dagegen wehren könnte, preempted zu werden"
+2011-12-07 14:03:26,kevin,Das ist doof.
+2011-12-07 14:03:59,mroman,Eigentlich muss jede Operation atomar sein.
+2011-12-07 14:04:09,kevin,Hm?
+2011-12-07 14:04:45,mroman,siehe Codepad link.
+2011-12-07 14:04:56,mroman,"die CPU hat dafür zu sorgen, dass alles sauber läuft."
+2011-12-07 14:05:04,mroman,Selbst wenn man es nicht sauber programmiert.
+2011-12-07 14:05:22,kevin,Nein
+2011-12-07 14:05:31,kevin,Die CPU hat die dokumentierte Sematik zu bieten
+2011-12-07 14:05:58,mroman,Ja. 
+2011-12-07 14:06:07,kevin,"Woher soll die CPU denn riechen, was der Programmierer gern atomar gehabt hätte, aber zu faul hinzuschreiben war, und was wirklich nicht atomar sein soll?"
+2011-12-07 14:06:50,mroman,Eben. Es gibt zwei Ansätze.
+2011-12-07 14:06:56,mroman,load a lockt immer
+2011-12-07 14:07:11,mroman,load und store haben einen Counter
+2011-12-07 14:07:19,mroman,"und store, store ist nicht möglich."
+2011-12-07 14:07:22,mroman,"Sondern nur load, store"
+2011-12-07 14:07:29,kevin,wtf?
+2011-12-07 14:07:38,kevin,"Das ist total kaputt, sagt mein Gefühl"
+2011-12-07 14:07:45,kevin,Was passiert übrigens bei dir wenn ich sinngemäß das hier mache: atomic_start; jmp .; atomic_end
+2011-12-07 14:08:10,mroman,HCF passiert dann wohl.
+2011-12-07 14:08:35,kevin,HCF?
+2011-12-07 14:08:40,mroman,Halt and Catch Fire
+2011-12-07 14:08:52,kevin,"Nicht gut, wenn ein Userspaceprozess das kann, oder?"
+2011-12-07 14:09:17,kevin,Egal
+2011-12-07 14:09:21,kevin,jmp lunch ;-)
+2011-12-07 14:09:40,mroman,Wer sagt dass es eine Trennung von Kernel/Userspace gibt ;)
+2011-12-07 14:10:29,mroman,"aber was du wohl eigentlich sagen willst: ""Vergiss es, das funzt nie"" ;)"
+2011-12-07 14:11:02,mroman,on an unrelated topic: Gibt's BIOS Interrupts für Sound?
+2011-12-07 14:44:48,kevin,re
+2011-12-07 14:45:15,kevin,"Naja, gut, wenn du nichts nützliches damit machen willst, brauchst du keine Trennung von Kernel- und Userspace ;-)"
+2011-12-07 14:45:33,kevin,Aber meistens will man ja nicht was völlig unnützes machen
+2011-12-07 14:45:48,kevin,"Und nein, BIOS-Interrupts für Sound gibt es nicht. Sonst hätte das unter DOS ja einfach funktioniert. ;-)"
+2011-12-07 14:58:22,mroman,Nützlich ist so eine Sache.
+2011-12-07 14:58:27,mroman,Ich kann eh nichts nützliches tun.
+2011-12-07 15:02:36,mroman,"Gibt nichts, was es noch nicht gibt."
+2011-12-07 15:06:38,kevin,Kommt auf deine Definition von nützlich an
+2011-12-07 15:07:00,kevin,"Ich würde etwas nützlich nennen, wenn ich es für irgendwas benutzen kann."
+2011-12-07 15:07:08,kevin,"Unabhängig davon, ob ich auch andere Möglichkeiten hätte, das zu tun"
+2011-12-07 15:08:53,kevin,"Wenn es grundsätzlich kaputt ist (z.B. weil es keinen Speicherschutz hat), dann wird auch nichts nützliches rauskommen"
+2011-12-07 15:12:49,mroman,Naja.
+2011-12-07 15:12:56,mroman,Wie nützlich ist tyndur?
+2011-12-07 15:17:15,kevin,Nicht besonders
+2011-12-07 15:17:51,kevin,Lynx und kirc machen es ansatzweise nützlich
+2011-12-07 15:18:12,kevin,Zumindest ein Mailclient müsste aber noch sein
+2011-12-07 15:19:59,kevin,"Und native Entwicklung wär auch geschickt, also nicht nur theoretisches Selfhosting"
+2011-12-07 15:20:35,kevin,"Wir bewegen uns in letzter Zeit zwar nur sehr langsam, aber im Prinzip sind wir nah dran"

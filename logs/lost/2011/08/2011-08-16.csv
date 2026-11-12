@@ -1,0 +1,200 @@
+date/time,nick,message
+2011-08-16 00:21:03,ChristianH,"Abend, noch jemand wach? "
+2011-08-16 00:23:28,Jidder,nabend
+2011-08-16 00:23:34,Jidder,wecker hat mich wachgeklingelt
+2011-08-16 00:25:34,Jidder,"aber ich bin nicht so einer, der wieder einschläft, wenn der wecker klingelt ^^"
+2011-08-16 00:25:43,Jidder,außer wenn ich einen termin hab
+2011-08-16 00:26:50,ChristianH,"Also, nehmen wir eine 8-Bit Architektur an, eine 8-Bit Variable. Diese wird nun sagen wir 10 nach << geshiftet und im selben Befehl sagen wir j nach >>, wobei j von 0 inkrementierend ist. Würde ein gcc-Compiler da intern auf 16-Bit erweitern (bei 8-Bit Arch. dann mit zwei Registern arbeiten)?"
+2011-08-16 00:28:31,Jidder,"ich glaube, wenn die 10 ein integer (int) ist, dann ja"
+2011-08-16 00:29:01,Jidder,"die regel ist wohl, dass die operanden zum größeren der beiden datentypen gecastet werden"
+2011-08-16 00:29:28,Jidder,und wenn ein int 16 bit groß ist
+2011-08-16 00:30:31,Jidder,die aussagen waren out of order. 1-3-2 ergibt eher einen sinn ^^
+2011-08-16 00:34:09,Jidder,"ah die eigentlich regel ist wohl anders: a << b. wenn a oder b unsigned sind, werden sie nach unsigned int konvertiert, und wenn sie signed sind, werden sie nach signed konvertiert. aber die antwort bleibt die selbe (wenn int 16 bit groß ist)"
+2011-08-16 00:35:19,Jidder,6.3.1.1 und 6.5.7 von C99 standard draft (6. Mai 2005)
+2011-08-16 00:46:08,ChristianH,"Aber sicher dass es für avr-gcc nicht mehr Sinn macht, dass der Compiler nicht 8-Bit Arithmetik unterstützt?"
+2011-08-16 00:46:39,Jidder,"ich bin nicht sicher, ob ich dich verstehe. bitte den satz ohne doppelte negation"
+2011-08-16 00:48:23,ChristianH,"So, wie ich dich verstanden habe, wird automatisch auf int erweitert?"
+2011-08-16 00:48:38,ChristianH,Bei arithmetischen Befehlen?
+2011-08-16 00:49:09,Jidder,ja
+2011-08-16 00:49:22,Jidder,(außer die zahlen sind unsigned. dann wird auf unsigned int erweitert)
+2011-08-16 00:49:38,XanClic,"Nur bei unsigned int, oder?"
+2011-08-16 00:49:55,XanClic,"Also, wenn ein unsigned short in einen signed int passt, wird doch auch auf int erweitert"
+2011-08-16 00:49:58,Jidder,hm kann auch sein
+2011-08-16 00:50:14,XanClic,"Heute ist so wenig los, da kann man mal ins Detail gehen :3"
+2011-08-16 00:50:23,Jidder,hm ... aber das könnte gerade bei einer 8-bit architektur knapp werden
+2011-08-16 00:50:33,Jidder,falls short auch 16-bit ist
+2011-08-16 00:50:33,XanClic,Vielleicht sind shorts ja 12 Bit lang
+2011-08-16 00:50:37,Jidder,hehe
+2011-08-16 00:50:40,XanClic,Dann werden die Bytes zerhackt
+2011-08-16 00:50:53,ChristianH,"So, und was ich ich mich frage. Es macht doch für AVR (8-Bit Arch.) und dessen avr-gcc mehr Sinn 8-Bit Arithmetik zu unterstützem"
+2011-08-16 00:51:34,XanClic,"Tjo, aber eigentlich wirkt der Standard recht eindeutig"
+2011-08-16 00:51:37,Jidder,und da sollte der shift dann anders aussehen?
+2011-08-16 00:53:20,ChristianH,Also um den heißen Brei und den ich herumrede ist der hier:
+2011-08-16 00:53:35,ChristianH,"Ich arbeite noch immer an meinem Pong und da es eigentlich fertig ist, wollte ich noch ne Startanzeige über die zwei Matrizen laufen lassen, nämlich das Wort Pong. Dafür hab ich mir natürlich eine output_text Funktion gebastelt, welche den Text über die zwei Matrizen scrollen soll. "
+2011-08-16 00:53:41,ChristianH,"Leider ist das alles sehr langsam, und ein Blick in den ASM-Dump zeigt, die output Funktion ist sehr lang und verbraucht sehr viel Zeit, was das Scrolling sehr langsam macht (Attiny45 bei 1Mhz): 1 Scroll-Schritt braucht gut 10 Sekunden."
+2011-08-16 00:53:47,ChristianH,"Da wollte ich gerne wissen, wo ich diese kleine Funktion am besten optimieren kann: http://pastebin.com/mWxhJEfd (C-Code und ASM-Dump)"
+2011-08-16 00:54:16,ChristianH,"Und wenn man sich da den ASM-Dump ansieht, sieht das derbe danach aus, dass dort mit mehreren Registern gerechnet wird"
+2011-08-16 00:54:28,ChristianH,(eine arithmetische Aufgabe)
+2011-08-16 00:55:25,Jidder,also ich seh da (nach 20 sekunden draufgucken) multiplikationen mit 5
+2011-08-16 00:55:38,ChristianH,Mit 5?
+2011-08-16 00:55:40,ChristianH,Zeile?
+2011-08-16 00:55:49,Jidder,"kann man da vielleicht einfach die puffer vergrößer, sodass mit potenzen von 2 multipliziert wird, und das zu einem shift wird?"
+2011-08-16 00:55:58,Jidder,"na die ganzen arrays, die alle 5 breit, lang und hoch sind"
+2011-08-16 00:56:54,Jidder,zeile 124 und 136 im pastebin
+2011-08-16 00:56:57,Jidder,(nur eine annahme ^)
+2011-08-16 00:58:22,Jidder,hm vermutlich ist das nur text_buffer
+2011-08-16 00:58:26,ChristianH,"Tatsächlich, wobei, mir eine Multiplikation mit 5 seltsam vorkommt, "
+2011-08-16 00:58:28,Jidder,die anderen sind ja eindimensional
+2011-08-16 01:00:44,ChristianH,"Besonders gut im ASM Dump sieht man, dass der irgendwo meine 8-Bit vars auf 16 Bit haut, durch die Zweizeiler mit add bla,bla, adc bla bla"
+2011-08-16 01:01:37,Jidder,also mich verwundert die länge des codes. gibt die funktion maximal 5 zeichen aus?
+2011-08-16 01:01:38,ChristianH,Das mit dem Puffer-Vergrößern hab ich übrigens nicht kapiert ^^
+2011-08-16 01:02:11,ChristianH,Variabel viele
+2011-08-16 01:02:32,ChristianH,In der Variable letter steht die Anzahl der Buchstaben
+2011-08-16 01:02:50,ChristianH,Die werden ja gleich in der ersten while-Schleife mitgezählt
+2011-08-16 01:02:52,Jidder,"ich meine damit, dass du char text_buffer[8][5]; statt char text_buffer[5][5]; schreibst. dadurch ist der puffer zwar größer als nötig, aber der assemblercode wird dadurch kürzer, weil die multiplikation durch ein shift ersetzt werden kann. ich versuch das mal zu erklären"
+2011-08-16 01:03:49,Jidder,"wenn du text_buffer[i][j] schreibst muss der compiler ja in der i-ten die j-te spalte lokalisieren. die speicheradresse berechnet sich wie folgt: ((char *)text_buffer + i * 5 + j), wobei die 5 die erste 5 in text_buffer[5][5] ist"
+2011-08-16 01:04:18,Jidder,(ich hoffe ich verdrehe das jetzt nicht)
+2011-08-16 01:05:05,ChristianH,"Achso, nun verstehe ich, wegen 8 und dem Shift"
+2011-08-16 01:05:14,ChristianH,So schlau ist der Compiler?
+2011-08-16 01:05:31,Jidder,wäre traurig wenn nicht
+2011-08-16 01:05:37,ChristianH,"Wow, gut, ungern mache ich das eigentlich nur, weil ich nur 256 Byte RAM hab. Aber ich probier das mal eben"
+2011-08-16 01:05:58,Jidder,"nur macht er das halt nicht von alleine, weil es semantisch schon ein unterschied ist"
+2011-08-16 01:06:23,Jidder,"der zum vorschein kommt, wenn man nicht nur text_buffer[i][j] schreibt, sondern auch mal auf text_buffer[i] oder nur text_buffer zugreift"
+2011-08-16 01:07:53,ChristianH,"Also gebracht hat es nun auch nicht wirklich was, und die muli mit 5 bleiben irgendwie da"
+2011-08-16 01:08:46,Jidder,hm
+2011-08-16 01:09:18,Jidder,dann würde ich das doch erstmal nicht weiter verfolgen. war vielleicht ein schnellschuss
+2011-08-16 01:10:10,Jidder,"also wegen der frage mit der länge: es gibt doch einen buffer overflow in text_buffer, wenn text länger als 5 zeichen ist, oder?"
+2011-08-16 01:10:12,Jidder,zeile 8-11
+2011-08-16 01:10:27,Jidder,"(nicht dass das was mit der performance zu tun hat, solange der text kürzer ist)"
+2011-08-16 01:10:53,ChristianH,"Jo, gibt es."
+2011-08-16 01:11:20,ChristianH,"Das wäre eine Codezeile, if(letter > z.B.5) break;"
+2011-08-16 01:12:15,Jidder,jo
+2011-08-16 01:12:34,Jidder,der func == SCROLLING part ist der langsame?
+2011-08-16 01:13:02,ChristianH,"Jo, in der main wird auch nur der Scrolling Part aufgerufen (per Parameter)"
+2011-08-16 01:13:20,ChristianH,Ich denke es kjommt besonders durch das Shiften dort
+2011-08-16 01:14:35,ChristianH,Obwohl ne
+2011-08-16 01:14:48,Jidder,"also was ich mache, wenn ich so eine theorie habe (und eine halbwegs zuverlässige zeitmessung), dann entferne ich die verdächten codestellen"
+2011-08-16 01:14:50,ChristianH,"Hab die Shifts durch ein einfaches << 2 ersetzt, die langen Sachen bleibe da"
+2011-08-16 01:15:04,Jidder,"ich ignoriere dann die ausgabefehler, und interessiere mich nur für die zeit"
+2011-08-16 01:15:08,Jidder,ah ja genau sowas^^
+2011-08-16 01:15:57,Jidder,"was ich kritisch sehe, ist dass du zwei schleifen hast, die in der abbruchbedingung letter haben"
+2011-08-16 01:16:03,Jidder,zeile 15 und 17
+2011-08-16 01:16:17,ChristianH,"Leider wird es jetzt umso schlimmer, denn der Rest sollte eigentlich Pustekuchen sein und keinen Meterlangen Code erzeugen ^^.  Schau ich mir mal an"
+2011-08-16 01:16:28,Jidder,"ich verstehe nicht genau was die machen und habe den verdacht, dass eine von den beiden unnötig ist"
+2011-08-16 01:16:44,Jidder,aber ich kann mich auch irren
+2011-08-16 01:18:02,ChristianH,"Nun bei der ersten ist es so, dass j ja die einzelnen Pixel darstellt, die gescrollt werden, deswegen wird j ja geshiftet. Und j soll so lange erhöht werden, wie es Pixel auf der X-Achse gibt + die Pixel die am Anfang außerhalb des Bildschirms sind, also die Zeichenbreite 4 * der Zeichenanzahl letter"
+2011-08-16 01:19:11,ChristianH,"Und bei der zweiten For Schleife ja jede Zeile vollständig berechnet werden, indem für jedes der 5 Bytes (5 Zeilen, die Bits sind die aktivierten Spalten) die Bits der Zeichen in den Buffer gORt werden. Das muss für jedes Zeichen wiederholt werden"
+2011-08-16 01:19:43,Jidder,der algorithmus an sich funktioniert korrekt nur ist zu langsam?
+2011-08-16 01:21:02,ChristianH,"Jep. Nun gut, es soll ""PONG"" ausgegeben werden. Funktioniert, Läuft auch auf anderen Bildschirm sauber über, nur nach dem N kommt eine Punktelinie, wobei das wohl eher anders verschuldet ist. (RAM-Overflow o.ä.)"
+2011-08-16 01:21:08,ChristianH,Aber der Algorithmus funktioniert
+2011-08-16 01:21:18,ChristianH,"Eben vieeeeel zu langsam, für 1 Mhz RISC"
+2011-08-16 01:24:50,JidderSport,hm
+2011-08-16 01:25:20,JidderSport,also ich würde den zusammenhang zwischen algorithmus und grafikfehlern nicht leichtfertig ausschließen. aber ich hab auch keine idee was da solange dauern könnte
+2011-08-16 01:26:05,ChristianH,"Schön wäre ja, wenn man irgendwie im Dump kommentare vom Code sehen könnte"
+2011-08-16 01:26:11,ChristianH,Oder irgendwie sich was markieren könnte
+2011-08-16 01:26:25,ChristianH,Aber soviel speichert .elf wohl nicht...
+2011-08-16 01:26:41,JidderSport,"wenn du mit dem debug parameter kompilierst (-g), dann sollte der C Code im dump stehen"
+2011-08-16 01:27:32,JidderSport,wobei du objdump evtl. noch den parameter -S mitgeben musst
+2011-08-16 01:28:05,ChristianH,Fett
+2011-08-16 01:28:08,ChristianH,Dann gehe ich mal auf Suche
+2011-08-16 01:30:02,ChristianH,http://pastebin.com/V481XrA4
+2011-08-16 01:30:08,JidderSport,"was ich auch nochmal versuchen würde, ist zu gucken, ob ein einzelner durchlauf der funktion output_text wirklich 10 sekunden dauert, oder ob das scrollen nur so langsam ist (falls du das nicht von vornherein ausschließen kannst). eine möglichkeit wäre ein pixel nach jedem durchlauf abwechselnd von schwarz auf weiß zu setzen"
+2011-08-16 01:31:47,JidderSport,"alternativ kannst du auch schauen, ob die ausgabe von text, der nur 1 zeichen lang ist, 5x schneller ist"
+2011-08-16 01:31:59,ChristianH,"Nene, einmal einen Pixel scrollen dauert 10 Sekunden"
+2011-08-16 01:32:14,JidderSport,"ich traue nie meinen eigenen messungen, deswegen traue ich messungen anderer leute erst recht nicht^^"
+2011-08-16 01:34:08,JidderSport,"gibt es irgendwelchen generellen aussagen für die dauer von instruktionen auf der cpu? also sowas wie eine normale instruktion (arithmetik, speicherzugriff etc) dauert nicht länger als 8 takte?"
+2011-08-16 01:35:20,ChristianH,"Also AVR ist eigentlich so konstruiert, eine Instruktion 1 Takt"
+2011-08-16 01:35:26,JidderSport,weil da is ja wirklich nicht viel besonderes los. der code in der innersten schleife wird auch nur ((14+(4*letter))*5*letter)-mal durchlaufen
+2011-08-16 01:36:23,JidderSport,was 850 für eine zeichenkette der länge 5 ist
+2011-08-16 01:36:59,JidderSport,da kommt man bei den paar hundert zeilen code nie im leben auf 10 sekunden
+2011-08-16 01:37:21,JidderSport,erste theorie: letter ist gar nicht <= 5
+2011-08-16 01:37:44,JidderSport,aber das ist ein bisschen einfach ^^
+2011-08-16 01:39:08,ChristianH,"Wenn ich letter direkt auf 4 setze, gleich langsam ^^"
+2011-08-16 01:39:38,JidderSport,"und ein adc ist ja nicht wirklich langsamer als ein add. selbst wenn man das vermeiden kann (und von 16-bit irgendwie auf 8-bit arithmetik kommt), verdoppelt sich höchstens die geschwindigkeit"
+2011-08-16 01:39:50,JidderSport,wir suchen aber einen faktor 100 oder 1000
+2011-08-16 01:40:20,ChristianH,"Jop, nun, eine Sache ist da noch."
+2011-08-16 01:41:47,ChristianH,"Ich habe einen Timer der bis 256 zählt (alle 8 Takte einmal). Und dann ein Interrupt auslöst, nachdem alles im VideoBuffer ausgegeben wird, das nimmt auch noch ein wenig Zeit in Anspruch"
+2011-08-16 01:42:47,JidderSport,also rund 500 mal in der sekunde?
+2011-08-16 01:44:29,JidderSport,"oder wird der interrupt nur ausgelöst (d.h. code ausgeführt), ""nachdem alles im VideoBuffer ausgegeben"" wurde?"
+2011-08-16 01:45:02,JidderSport,"also 500 mal in der sekunde code ausführen, der überprüft, ob alles ausgegeben wurde, ist etwas zu oft, würde ich sagen"
+2011-08-16 01:45:47,JidderSport,falls das gemeint ist
+2011-08-16 01:46:17,ChristianH,"Überprüft, ob alles ausgegeben wurde?"
+2011-08-16 01:46:41,ChristianH,"Der nimmt sich jedes mal den VideoBuffer vor, die beiden und berechnet aufwändig die Ausgabe und gibt auch immer aus"
+2011-08-16 01:46:42,ChristianH,In jedem Interrupt
+2011-08-16 01:46:56,ChristianH,"Muss ich aber machen, da ich LED-Matrix-Multiplexing mache"
+2011-08-16 01:47:02,ChristianH,und mindest. 100 Hz erreichen muss
+2011-08-16 01:47:05,JidderSport,d.h. du gibst 500 mal pro sekunde was aus?
+2011-08-16 01:47:11,ChristianH,Jep
+2011-08-16 01:47:28,ChristianH,"Wie gesagt, muss jeder Pixel mindest. 100 Hz erreichen, muss also sein"
+2011-08-16 01:48:14,JidderSport,verbrauchst du dann pro pixel auch einen takt?
+2011-08-16 01:49:14,JidderSport,"bei 500 interrupts pro sekunde hast du 100% cpu auslastung, wenn 2000 takte pro interrupt brauchst"
+2011-08-16 01:49:38,ChristianH,"Nein, ich muss nur sicherstellen, dass beim Multiplexing(wo jeder anzuzeigende Pixel genau einmal ganz kurz leuchtet, eben ein vollständiges Bild mindest. 100 mal die Sekunde erscheint.)"
+2011-08-16 01:50:08,ChristianH,Ansonsten fängt es anzuflackern und es kommt irgendwann zu viel A auf eine LED und die schmiert mir b
+2011-08-16 01:50:08,ChristianH,ab
+2011-08-16 01:50:50,JidderSport,"hm das ist mir zu abstrakt. vermutlich liegt das daran, dass ich damit nie was zu tun habe"
+2011-08-16 01:50:56,JidderSport,gehabt habe
+2011-08-16 01:51:29,ChristianH,Aber deine Tipps sind gut
+2011-08-16 01:51:41,JidderSport,naja immerhin^^
+2011-08-16 01:51:41,ChristianH,Das mit der Auslastung war bei mir bis gerade eben immer nur im Hinterkopf
+2011-08-16 01:54:44,ChristianH,"Tja, nun muss ich irgendwie den Interrupt optimieren und möglichst an den Grenzen des AVR kratzen"
+2011-08-16 01:55:08,ChristianH,"Aber heute nicht mehr, morgen. bzw. heute.    Tschau"
+2011-08-16 01:55:29,JidderSport,gute idee
+2011-08-16 01:55:35,JidderSport,tschüssikowski
+2011-08-16 09:32:17,Naoe-Kanno,Moin
+2011-08-16 12:54:47,Jidder,moin
+2011-08-16 12:58:43,Naoe-Kanno,Moin Jidder 
+2011-08-16 13:35:39,ChristianH,Tag
+2011-08-16 13:55:05,ChristianH,Jidder: Der Text läuft nun recht sauber 
+2011-08-16 13:55:47,Jidder,konntest du das problem irgendwie eingrenzen?
+2011-08-16 13:56:48,ChristianH,"Hab im Interrupt ne Variable, die mit jedem INT inkrementiert wird. Diese Variable prüfe ich bei jedem Interrupt ob sie Modulo 2 wahr ist und so habe ich nur noch 250 INTs die Sekunde (eigentlich 500, aber ausgegeben und somit Rechenzeit verschwendet wird nur noch 250x). Nun läuft der Text sauber, bis auf dass der für 0,5 Sek, vielleicht alle 5 Pixel kurz stoppt, aber das stört nicht weiter."
+2011-08-16 13:57:04,ChristianH,"Das ist natürlich die faule Lösung, aber sie klappt"
+2011-08-16 13:57:16,ChristianH,Und für 100Hz reicht es ja noch immer.
+2011-08-16 13:57:50,Jidder,ah okay
+2011-08-16 13:58:19,ChristianH,"Das Problem ist, dass der Timer eben halt 8-Bit ist, somit immer von 0 bis 255 zählen kann, bzw. muss und die Timer-Prescaler sind nur 8, 16, 32, 64 usw."
+2011-08-16 13:58:42,ChristianH,Aber klappt so ganz gut
+2011-08-16 13:58:50,Jidder,"jo wollte gerade fragen, ob es nicht auch mit 16 statt 8 geht"
+2011-08-16 13:59:49,ChristianH,"Jo, ne, gibt doch nur 8, 64, 128, 256. (Zweierpotenzverwirrung^^)"
+2011-08-16 14:00:20,Jidder,ah nagut ^^
+2011-08-16 14:02:01,ChristianH,"Nun nur noch den Bug beheben, dass bei der Stelle mitten im N danach nur noch eine waagerechte Linie erscheint."
+2011-08-16 14:02:08,ChristianH,Und dann sollte Pong fertig sein
+2011-08-16 18:23:44,billy,moin
+2011-08-16 18:24:10,billy,kennt jemand ein gutes vhdl tut?
+2011-08-16 18:47:50,Svenska,ich nicht.
+2011-08-16 18:51:21,cjuner,"billy, vll hilft dir das: http://www.iss.tu-darmstadt.de/student_area/tgdi/ da sind vorlesungsfolien + übungen, da kommt vhdl wahrscheinlich auch drin vor"
+2011-08-16 18:51:51,cjuner,bzw hier http://www.iss.tu-darmstadt.de/student_area/kv_CompMicroSys/
+2011-08-16 18:52:06,cjuner,"da gibt es ein ""vhdl cookbook"""
+2011-08-16 18:53:13,billy,danke
+2011-08-16 23:29:05,Jidder,na ihr blogger
+2011-08-16 23:30:02,Jidder,vlog?
+2011-08-16 23:30:08,Jidder,podcast?
+2011-08-16 23:30:12,Jidder,janüscht?
+2011-08-16 23:30:41,Svenska,"ich hab mal blog geschrieben, aber da gabs den begriff noch nicht - also janüscht ^^"
+2011-08-16 23:30:54,Svenska,"habs auch gelassen, nachdem ich wieder aus schweden zurück war :)"
+2011-08-16 23:30:59,Jidder,"ich hab mal gebloggt, da war das web schon 2.0"
+2011-08-16 23:31:09,Jidder,naja schweden hat dich offensichtlich verändert^^
+2011-08-16 23:31:42,Svenska,"auch^^, aber da gings mir nur darum, dass ich nicht eltern+großeltern+freunden ständig das gleiche erzählen muss"
+2011-08-16 23:31:52,Svenska,also hab ich denen nen link zum selbst lesen gegeben
+2011-08-16 23:32:20,Jidder,ah optimal
+2011-08-16 23:32:54,Svenska,"anfangs fast täglich, später wurde es dann seltener"
+2011-08-16 23:33:05,Svenska,"irgendwann wurde es äußerst selten, dann irgendwie alle 2 monate mal"
+2011-08-16 23:33:10,Svenska,und dann garnicht mehr…
+2011-08-16 23:33:20,Jidder,ich hab nur jiddersche themen gebloggz0rt
+2011-08-16 23:51:05,Jidder,ich würde ja gerne mal wieder bloggen
+2011-08-16 23:51:23,Jidder,die anforderungen dafür sind ja nicht gerade gestiegen
+2011-08-16 23:51:55,Svenska,"nope, ich bräuchte dafür allerdings mal ne art server oder so :D"
+2011-08-16 23:52:01,Svenska,apropros
+2011-08-16 23:52:17,Svenska,ich wollt mir ja mal einen anschaffen xD
+2011-08-16 23:52:47,XanClic,"apropos bloggen, wo ist denn unser geschätzter Freund und Kollege PNoob?"
+2011-08-16 23:52:59,Jidder,hm ne art server
+2011-08-16 23:53:09,Svenska,"ja, vserver oder sowas"
+2011-08-16 23:53:11,Jidder,ich bräuchte mal einen lehrgang wie man einen server administriert
+2011-08-16 23:53:22,Svenska,"ach, unter linux krieg ich das einigermaßen hin :)"
+2011-08-16 23:53:28,Jidder,"seit ich kein confixx mehr habe, sind meine konfigurationen eher so lala"
+2011-08-16 23:53:48,Jidder,"da schalte ich den ftpd schon mal für ein paar wochen ab, weil ich keine lust habe nach updates zu suchen"
+2011-08-16 23:54:03,Jidder,hab nur einen kunden
+2011-08-16 23:54:09,Jidder,und der beschwert sich in seinem blog darüber -.-
+2011-08-16 23:54:38,Jidder,(nein der kunde bin nicht ich)
+2011-08-16 23:54:46,Svenska,du vermietest server? ^^
+2011-08-16 23:55:16,Jidder,naja nicht ganz. ich hoste die seite von einem schulkameraden
+2011-08-16 23:55:26,Jidder,auf meinem vserver
+2011-08-16 23:56:02,Svenska,achso

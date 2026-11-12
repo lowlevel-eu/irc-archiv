@@ -1,0 +1,237 @@
+date/time,nick,message
+2013-11-11 00:02:08,Tectu,"Darkchaos, hast du eig. in der zwischenzeit ein laufendes vmm_alloc() und so?"
+2013-11-11 00:02:17,Darkchaos,ehmm nein:D
+2013-11-11 00:02:19,Darkchaos,Also ja
+2013-11-11 00:02:40,Darkchaos,"es läuft, ich muss nur schauen, woher die vielen komischen Mappings kommen. Hört sich nach Vergessen des freens an"
+2013-11-11 00:03:03,Tectu,hast mal nen link?
+2013-11-11 00:03:06,Darkchaos,"Dafür habe ich meine API komplett umgebaut, sie nutzt nun funktionierendes malloc/mfree"
+2013-11-11 00:03:25,Darkchaos,"Noch kein push draußen, wenn du aber das vmm meinst, das ist immernoch gleich geblieben"
+2013-11-11 00:03:57,Tectu,"naja, hab mich grad durch die zweite hälfte des Paging artikels gelesen und das könnte en krampf werden das zu implementieren"
+2013-11-11 00:04:00,Tectu,bis es funtzt
+2013-11-11 00:04:15,Darkchaos,https://gitorious.org/tuxmaniac/arctic_revenge/source/78e96488427533c07e1c35a06f395429ba9e7cae:kernel/memorymanager/paging.cpp :)
+2013-11-11 00:07:16,Darkchaos,naja und jetzt versuche ich elf dateien wieder flott zu bekommen
+2013-11-11 00:07:30,Darkchaos,"Paging zerstört alles, daher so früh wie möglich implementieren^^"
+2013-11-11 00:07:35,Tectu,write_str_com() ?
+2013-11-11 00:07:42,Darkchaos,"ja, printf für arme"
+2013-11-11 00:07:59,Darkchaos,Ausgabe auf der Com Konsole^^
+2013-11-11 00:08:16,Tectu,"void vmm_free(struct memory_t* mem, void* mem_addr) { vmm_free(mem, mem_addr, 1); }     <---- LOL WHAT???? "
+2013-11-11 00:08:30,Darkchaos,ersatz für overloading^^
+2013-11-11 00:08:35,Tectu,"achso, das ist C++... überladene funktionen :D"
+2013-11-11 00:08:36,Tectu,sorry
+2013-11-11 00:08:46,Darkchaos,bzw optionale Parameter eigentlich
+2013-11-11 00:08:47,Tectu,bin ein C denker :P
+2013-11-11 00:08:52,Tectu,"jup, sorry"
+2013-11-11 00:08:58,Darkchaos,Ist eigentlich auch C mit .cpp Endung
+2013-11-11 00:09:12,Tectu,ein C compiler wird dir das aber nicht fressen
+2013-11-11 00:09:29,Darkchaos,nur der Compiler hat irgendwie error's gethrowd bei einem optionalen Parameter
+2013-11-11 00:09:42,Darkchaos,Beziehst du das jetzt auf struct memory_t*?
+2013-11-11 00:09:53,Darkchaos,achsoo ne
+2013-11-11 00:10:01,Darkchaos,bei c gibts ja keine gleichnamigen funktionen
+2013-11-11 00:10:07,Darkchaos,mit variablen parametern
+2013-11-11 00:10:29,Tectu,jap
+2013-11-11 00:10:32,Tectu,kein overloading
+2013-11-11 00:12:26,Darkchaos,"Weiß jemand zufällig, ob elf.e_ehsize (HeaderSize) sich auf den Kompletten Header (inklusive Programm-Header) bezieht?"
+2013-11-11 00:12:59,Tectu,http://www.lowlevel.eu/wiki/ELF#e_ehsize
+2013-11-11 00:13:05,Tectu,Größe des ELF-Headers.
+2013-11-11 00:13:07,Darkchaos,Da bin ich auch gerade:D
+2013-11-11 00:13:18,Darkchaos,Aber es gibt ja den Header und den Programmheader
+2013-11-11 00:13:30,Darkchaos,und da der ProgrammHeader eine art eigene Size hat
+2013-11-11 00:14:00,Tectu,"Darkchaos, wikipedia sagt nur der header"
+2013-11-11 00:14:01,Darkchaos,SHyx0rmZ? Hast du eine Ahnung?
+2013-11-11 00:14:23,Darkchaos,Also nur ca 50 Byte
+2013-11-11 00:14:23,Tectu,"""Contains the size of this header, normally 64 bytes for 64-bit and 52 for 32-bit format."""
+2013-11-11 00:14:37,Tectu,wikipedia sagt ja
+2013-11-11 00:14:40,Tectu,52 :P
+2013-11-11 00:15:04,Darkchaos,"okay. Jetzt wäre noch interessant, ob der Programm-Header ziemlich dannach folgt. Dann könnte ich einfach eine Page mappen, die dann mal die kompletten Header drin hat"
+2013-11-11 00:18:51,Tectu,uiuiuuiuiuui
+2013-11-11 00:18:55,Tectu,paging wird ein krampf :)
+2013-11-11 00:19:27,Darkchaos,"Ja, auch später. Ich habe jetzt einen Programmheader der Größe X. Die Größe kann ich aber nur berechnen, wenn ich auf ihn zugreifen kann :D"
+2013-11-11 00:20:13,Tectu,ja?
+2013-11-11 00:20:45,Darkchaos,"naja stimmt nicht ganz. Ich kann ja die ersten 4096 Bytes berechnen, auslesen und dann ggf. weitere mappen"
+2013-11-11 00:20:57,Darkchaos,aber es macht alles schon ein wenig komplexer^^
+2013-11-11 00:21:41,Tectu,"ach, wird schon..."
+2013-11-11 00:21:45,Tectu,haben ja keine deadline
+2013-11-11 00:23:26,Darkchaos,ach ne hab mich sogar vertan^^
+2013-11-11 00:23:30,Darkchaos,alles i.O
+2013-11-11 00:24:38,Tectu,gut
+2013-11-11 00:25:25,Tectu,"vmm_map_page(mem, p_addr + i * PAGE_SIZE, (uint32_t) pmm_alloc(), ring);"
+2013-11-11 00:25:30,Tectu,du bist ein abenteuerlicher programmierer :)
+2013-11-11 00:25:38,Tectu,gleich mal eine funktion im funktionsaufruf aufrufen
+2013-11-11 00:25:40,Tectu,:D
+2013-11-11 00:25:40,Darkchaos,Warum das? :D tut doch
+2013-11-11 00:25:49,Darkchaos,spart Platz und Variablen^^
+2013-11-11 00:26:04,Tectu,"ich kann dir auch beide beine brechen und nacher sagen ""was? er lebst ja noch"""
+2013-11-11 00:26:05,Tectu,:P
+2013-11-11 00:26:24,Darkchaos,"Wenn du vorraussetzt, dass ich keine Beine brauche ja^^"
+2013-11-11 00:26:40,Darkchaos,"pmm_alloc() killt den Kernel, falls kein Physischer Speicher mehr frei ist"
+2013-11-11 00:26:44,Tectu,"nagut, ich hab vorhin bei µGFX grad nen heftigen gefunden:"
+2013-11-11 00:26:45,Tectu,"gfxThreadHandle gfxThreadCreate(void *stackarea, size_t stacksz, threadpriority_t prio, DECLARE_THREAD_FUNCTION((*fn),p), void *param);"
+2013-11-11 00:26:48,Darkchaos,"falls doch, istdie Rückgabe korrekt^^"
+2013-11-11 00:27:09,Darkchaos,also das ist echt verwirrender^^
+2013-11-11 00:27:22,Tectu,Warum das? :D tut doch     *hust*
+2013-11-11 00:27:36,Tectu,"weisst du, du hast massig system ressourcen, ich muss auf jedes byte gucken ;-)"
+2013-11-11 00:27:41,Tectu,"aber das wird gefixt, keine angst."
+2013-11-11 00:28:26,Tectu,"void* vmm_alloc(struct memory_t* mem, size_t pages, bool ring)"
+2013-11-11 00:28:30,Tectu,dein memory_t ist dein vmm context?
+2013-11-11 00:29:58,Darkchaos,y
+2013-11-11 00:30:14,Tectu,hm... ich hätte eine frage bezüglich dazu...
+2013-11-11 00:30:43,Tectu,muss das sein? Der task kriegt ja später in die task struct den context dazu. aber das würde ja bedeuten das ein task nicht mehr als 4MB speicher nutzen kann?
+2013-11-11 00:32:18,Darkchaos,?
+2013-11-11 00:32:28,Darkchaos,Warum nur 4MB?
+2013-11-11 00:32:44,Darkchaos,"Also der Kontext wird angegeben, um fremdallokation zu ermöglichen"
+2013-11-11 00:32:55,Tectu,du meinst zu verhindern
+2013-11-11 00:33:14,Tectu,"ah, hab grad was falsch im kopf gehabt... dachte  pd = context"
+2013-11-11 00:33:37,Darkchaos,"Beispiel hier: Task BASH kann (bzw der Kernel-Stack davon, ein Syscall eben) OHNE den Kontext tatsächlich zu wechseln, Mappings im Task GCC (der gerade gespawned wird), vornehmen"
+2013-11-11 00:33:54,Darkchaos,"Tectu: pd = context, aber memory_t beinhaltet auch noch die ganzen virtuellen zugriffsaddressen"
+2013-11-11 00:34:50,Darkchaos,"Den Kontext zu wechseln wäre zB bei einem neuen noch nicht laufenden Task nicht möglich. Das würde zwar alles erleichtern, aber wie willst du zu einem Kontext wechseln, der noch nichtmal den Kernel gemappt hat, das wäre ein Instant-Crash"
+2013-11-11 00:35:18,Darkchaos,"Und die 4MB sind eh Kernel-Bereich, da hat niemand was zu suchen :)"
+2013-11-11 00:37:09,Tectu,mom
+2013-11-11 00:44:44,Darkchaos,Ich gehe mal in die Haia :)
+2013-11-11 00:48:01,Tectu,viel spass
+2013-11-11 07:58:09,DesL,argl
+2013-11-11 07:58:16,DesL,doooofes git
+2013-11-11 11:16:56,Darkchaos,Guten Morgen Leute :)
+2013-11-11 11:54:56,kevin,Moin
+2013-11-11 12:08:26,Darkchaos,"wuhu, ich habe mein OS um Funktionen erweitert, die nicht aufgerufen werden, aber trotzdem zu einem 0xe führen, sobald der Task aktiv werden möchte"
+2013-11-11 12:08:47,Darkchaos,kevin: Wohin läd GRUB ein module? Einfach hinter kernel_end?
+2013-11-11 12:09:14,kevin,Weiß ich nicht
+2013-11-11 12:09:31,kevin,"Bei einem Kernel an 0x100000 im Allgemeinen wohl schon, aber die Multiboot-Spec garantiert dir nichts"
+2013-11-11 12:09:44,kevin,qemu -kernel könnte es ganz anders machen als GRUB
+2013-11-11 12:10:05,kevin,"Oder syslinux, oder was es sonst noch so gibt und Multiboot booten kann"
+2013-11-11 12:10:18,Darkchaos,"Naja ich habe nur das Gefühl, dass GRUB mir das Modul voll in meinen dynamischen Speicher knallt, der direkt nach 104xxx liegt,"
+2013-11-11 12:10:34,Darkchaos,und ich deswegen den stack zerschieße oder allgemein misaligne
+2013-11-11 12:10:37,kevin,Dann hättest du deinen PMM mal besser richtig initialisiert und die Module als belegt markiert
+2013-11-11 12:12:27,Darkchaos,hmm das mache ich eigentlich
+2013-11-11 12:13:26,Darkchaos,"Dennoch stürzt alles ab, sobald ich module /hello.app in der menu.lst habe"
+2013-11-11 12:14:33,kevin,"Wenn du das machst, warum liegt dort dann dein dynamischer Speicher?"
+2013-11-11 12:23:36,Darkchaos_,"hab mich verdacht, da liegt der dynamische speicher nur virtuell^"
+2013-11-11 12:31:23,Darkchaos,kevin: Noch irgend eine andere Idee? Es muss mit Paging zusammenhängen
+2013-11-11 12:32:09,Darkchaos,"Es geht gut, bis ich versuche einen Task zu erstellen und zu Multitasken"
+2013-11-11 12:32:25,Darkchaos,und zwar nicht das Modul sondern in-Code Methoden
+2013-11-11 12:34:25,Darkchaos,"Ich meine, es passiert ja eigentlich nichts anderes, als dass ein bisschen physischer Speicher benutzt wird"
+2013-11-11 12:42:24,Darkchaos,"kurz afk, uni :D"
+2013-11-11 16:16:23,tufel,huhu
+2013-11-11 16:34:24,kevin,Moin
+2013-11-11 17:19:34,Tectu,mag sich grad jemand mit paging fragen abgeben? ;)
+2013-11-11 17:19:41,Tectu,der gute kevin villeicht? :P
+2013-11-11 17:19:58,mroman,x86 spezifisch?
+2013-11-11 17:20:01,Tectu,jup
+2013-11-11 17:20:08,kevin,Wieso soll ich denn gut sein? ;-)
+2013-11-11 17:20:10,Tectu,also eher implementationsspezifisch
+2013-11-11 17:20:10,mroman,dann kevin
+2013-11-11 17:20:27,Tectu,"kevin, von der implementation her...  jeder task kriegt ja dann seinen eigenen context in die task struct."
+2013-11-11 17:20:39,mroman,kevin: Das Ausrufezeichen vor dem Namen kommt mit einer gewissen Verantwortung ;)
+2013-11-11 17:20:50,Tectu,"beim erstellen eines tasks, sollte dann sowas wie   vmm_create_context() aufgerufen werden, oder wär das so gedacht, dass vmm_alloc() das selbst handelt?"
+2013-11-11 17:21:33,Tectu,ich könnt ja auch den context auf 0 setzten und vmm_alloc() erstellt automatisch einen?
+2013-11-11 17:22:47,kevin,"mroman: Damit wollte ich mich eigentlich verstecken. Das heißt ja dann quasi ""nicht kevin"""
+2013-11-11 17:23:09,mroman,ja
+2013-11-11 17:23:18,mroman,ok
+2013-11-11 17:23:38,kevin,Tectu: Wieso sollte vmm_alloc() einen Kontext erstellen?
+2013-11-11 17:24:02,kevin,"vmm_alloc() bekommt in der Regel einen Kontext als Parameter (außer wenn es nur auf dem aktiven arbeiten soll, aber das könnte unpraktisch sein)"
+2013-11-11 17:24:31,Tectu,"kevin, also beim erstellen eines tasks werde ich vmm_create_context() manuell aufrufen?"
+2013-11-11 17:25:17,kevin,Jo
+2013-11-11 17:25:23,Tectu,okay
+2013-11-11 17:25:45,kevin,"Um alles nochmal zusammenzufassen, so geht Paging: http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/kernel2/src/arch/i386/mm/mm_context.c ;-)"
+2013-11-11 17:26:43,Tectu,"hrhr, danke"
+2013-11-11 17:26:50,Tectu,hätt halt schon gerne gewusst was ich da mache ;-)
+2013-11-11 17:27:16,Tectu,iich bin mir der struktur mit den zwei tabellen und so weiter bewusst - jedoch bin ich mir der konkreten abfolge noch etwas unsicher. 
+2013-11-11 17:27:22,kevin,"Letztendlich gilt alles, was funktioniert ;-)"
+2013-11-11 17:27:51,Tectu,ein alloc() das byteweise funktioniert würde also in einem nächsten schritt auf der task eben implementiert werden?
+2013-11-11 17:27:56,Tectu,das ist quasi kernel unabhängig?
+2013-11-11 17:31:19,kevin,"Hat sich so bewährt, ja"
+2013-11-11 17:31:38,kevin,"Es gibt Leute, die verfrachten malloc() in den Kernel, aber das ist keine gute Idee"
+2013-11-11 17:31:57,kevin,Also außer natürlich als kmalloc() für die kerneleigenen Strukturen
+2013-11-11 17:32:54,mroman,clib sollte das eigentlich machen
+2013-11-11 17:33:05,mroman,aber der Kernel muss ja mindestens etwas anbieten um Speicher zu allozieren
+2013-11-11 17:35:07,Tectu,wodurch hat sich ein byte-wise alloc() im kernel nicht bewährt?
+2013-11-11 17:35:19,Tectu,"ob ich ein byte oder eine page alloziere macht ja sicherheitstechnisch keinen unterschied, oder?"
+2013-11-11 17:36:43,mroman,Also
+2013-11-11 17:36:55,mroman,die maximale granularitaet ist natuerlich eine Page
+2013-11-11 17:37:20,mroman,"d.h wenn ein Userspace Prozess 1 Byte will, musst du wohl erstmal eine Page allozieren"
+2013-11-11 17:37:34,mroman,"wenn er dann nochmals ein Byte will, kannst du theoretisch schon diese Page weiterbenutzen"
+2013-11-11 17:37:59,mroman,"ist halt mehr Aufwand fuer dich, denke ich mal"
+2013-11-11 17:38:08,mroman,und es braucht immer einen syscall
+2013-11-11 17:38:14,mroman,wenn du das auslagerst
+2013-11-11 17:38:23,mroman,dann kann eine userspace lib mal auf Vorrat ein paar Pages holen
+2013-11-11 17:38:31,mroman,und dann intern allozieren ohne immer den Kernel zu nerven
+2013-11-11 17:40:15,mroman,und ist vlt besser fuer realloc
+2013-11-11 17:40:46,kevin,Ein Syscall pro malloc() ist einfach kranker Overhead
+2013-11-11 17:41:03,kevin,"Außerdem kannst du dann nicht direkt vor dem allozierten Bereich die Metadaten speichern, weil Userspace dann keinen Zugriff haben dürfte"
+2013-11-11 17:41:24,kevin,"So, und jetzt Feierabend"
+2013-11-11 17:43:27,Tectu,"danke, gute erklärung"
+2013-11-11 18:48:03,DerAlex,Nabend
+2013-11-11 18:48:10,Tectu,nabend
+2013-11-11 18:48:14,mgottschlag,nabend
+2013-11-11 18:51:11,Tectu,"mgottschlag, wie gut kennst du den tyndur kernel?"
+2013-11-11 19:47:50,Paddy,Hi
+2013-11-11 19:56:42,Tectu,hey Paddy 
+2013-11-11 20:00:00,Tectu,dürfte man zu dieser uhrzeit nicht grundsätzlich svenska erwarten?
+2013-11-11 20:02:06,Paddy,Wofür brauchst du ihn denn?
+2013-11-11 20:03:49,Paddy,"Wenn es um Hardware geht, ist Jonathan sicher ein toller Ersatz-Svenska"
+2013-11-11 20:04:00,Jonathan,Bestimmt
+2013-11-11 20:04:17,Jonathan,"Auch wenn ich natürlich eigentlich keine Ahnung habe, wie sonst auch jeder hier *g*"
+2013-11-11 20:04:19,Paddy,"Ich hoffe, das war jetzt nicht abwertend ;-)"
+2013-11-11 20:04:32,Jonathan,Nö ^^
+2013-11-11 20:04:36,Paddy,"Keine Ahnung haben ist Grundqualifikation, um gefragt zu werden *g*"
+2013-11-11 20:04:49,Jonathan,"Siehste, bin ich ja genau richtig hier *g*"
+2013-11-11 20:05:01,Paddy,Hattest du daran noch Zweifel? ;-)
+2013-11-11 20:05:03,Tectu,"ach, svenska und ich kennen uns halt schon länger, das ist alles ^^"
+2013-11-11 20:05:11,Tectu,zudem ist er sehr gedultvoll :P
+2013-11-11 20:05:18,Tectu,und er kennt meine fähigkeiten -> effizientes erklären :P
+2013-11-11 20:06:05,Tectu,"aber gut, ich frag mal: Ich guck mir die VMM implementierung im tyndur kernel an. sämtliche alloc functionen haben jeweils ein lower und upper limit - ebenso für die pmm_alloc(). Ist das wirklich nötig?"
+2013-11-11 20:06:24,Tectu,ich meine jetzt speziell für den PMM. Wieso sollte es mich interessieren wo meine page im physikalischen speicher liegt?
+2013-11-11 20:06:37,Jonathan,Wahrscheinlich für DMA&co.
+2013-11-11 20:06:37,Tectu,ich dachte ich ruf eifach pmm_alloc() je seite auf und gut ist. tyndur hat da aber pmm_alloc_limits()
+2013-11-11 20:06:59,Jonathan,Aber mit tyndur kenne ich mich jetzt wirklich nicht aus. :P
+2013-11-11 20:07:03,Tectu,http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/kernel2/src/mm/phys.c;h=305041e33adfda74eb7008d32b7a0dc897c5df8c;hb=HEAD#l269
+2013-11-11 20:07:04,Tectu,hrhr
+2013-11-11 20:07:14,Tectu,http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/kernel2/src/arch/i386/mm/mm_context.c#l694
+2013-11-11 20:08:19,Tectu,"wir sind uns aber einig das es egal ist wo meine pages im physikalischen speicher liegen, oder habe ich das ganze falsch verstanden?"
+2013-11-11 20:09:06,Jonathan,"Es ist insofern egal, solange da nur Software drauf zugreift... Wenn Hardware damit z.B. DMA macht, kann sie die Seiten auch in einem bestimmten Bereich benötigen"
+2013-11-11 20:09:16,Tectu,hmm
+2013-11-11 20:09:17,Tectu,das ist doof
+2013-11-11 20:09:31,Tectu,bezüglich dieses artikels hier: http://www.lowlevel.eu/wiki/Teil_9_-_Paging#Aufteilung_des_Adressraums
+2013-11-11 20:09:43,Tectu,es wird ja empfohlen 1GB für kernel und 3GB für user space zu nehmen
+2013-11-11 20:10:01,Tectu,"die aufteilung - ist die jetzt auf physikalischer ebene gemeint, oder? vrituell sinds ja immer die vollen 4GB"
+2013-11-11 20:32:54,mroman,Tectu: Virtuell
+2013-11-11 20:33:15,mroman,du mapst z.b deinen Kernel an die 3GB Marke
+2013-11-11 20:33:26,mroman,und das bei jedem Prozess.
+2013-11-11 20:34:33,mroman,oder reservierst einfach die oberen 1GB fuer Kernelzeugs
+2013-11-11 20:36:18,mroman,obere 3GB hat halt den Nachteil
+2013-11-11 20:36:29,mroman,dass du kein 1:1 phy<->virt mapping machen kannst
+2013-11-11 20:36:37,mroman,ausser du hast soviel physikalischen Speicher
+2013-11-11 20:36:50,mroman,das steht da sogar :)
+2013-11-11 20:49:03,mgottschlag,"einen Vorteil hat es, wenn das Internet so grottenschlecht ist"
+2013-11-11 20:49:21,mgottschlag,"ich kann nichts anderes machen, dadurch komme ich endlich mal wieder einfach so zum Programmieren"
+2013-11-11 20:55:53,Paddy,Was programmierst du denn?
+2013-11-11 20:56:11,Paddy,"Und ist Internet, mit dem IRC geht, nicht immer noch produktivitätshemmend genug?"
+2013-11-11 20:56:21,mgottschlag,"ja, das stimmt :p"
+2013-11-11 20:56:32,mgottschlag,"kP, ich hab mal wieder angefangen, an nem Kernel zu basteln ^^"
+2013-11-11 21:39:31,Guest666,Guest666... was ein toller nickname D:
+2013-11-11 21:48:40,Guest666,weg gegangen nick vergangen
+2013-11-11 21:49:21,mgottschlag,kann man sich Nicks ala Guest* registrieren? :D
+2013-11-11 21:49:55,mgottschlag,"wenn ja, dann wäre ich für ein Skript, das von Guest1 bis Guest99999 alle Nicks registriert, das hätte bestimmt lustige Folgen"
+2013-11-11 22:07:39,mgottschlag,"http://www.lowlevel.eu/wiki/CPUID <- 00000001, EDX, Bit 17, was hat das da mit 36 Bit zu tun?"
+2013-11-11 22:08:20,mgottschlag,"oder ist das tatsächlich PAE, zeigt aber auf den falschen Artikel, und hat damit nichts mit 4MB-Pages zu tun?"
+2013-11-11 22:11:54,mgottschlag,"achso, ne, quatsch, passz"
+2013-11-11 22:11:56,mgottschlag,*passt
+2013-11-11 22:12:57,mgottschlag,(nur der verlinkte Artikel geht nicht darauf ein)
+2013-11-11 22:18:43,Tectu,wtf ist  pushfd / popfd
+2013-11-11 22:18:44,Tectu,fd?
+2013-11-11 22:19:00,Jidder,das gleiche wie pushf pof
+2013-11-11 22:19:01,Jidder,popf
+2013-11-11 22:19:15,Jidder,pusht die flags
+2013-11-11 22:19:58,Tectu,und das  'd'  steht für?
+2013-11-11 22:20:07,Jidder,double
+2013-11-11 22:20:10,Tectu,thanks
+2013-11-11 22:20:40,Jidder,"irgendein assemblerprogrammierer (der programmierer des assemblers) muss gedacht haben, dass der selbe befehl im 32-bit modus ein anderes mnenomic braucht ^^"
+2013-11-11 22:21:17,Tectu,war bestimmt der gute kevin
+2013-11-11 22:21:23,Tectu,auf ihn? :P
+2013-11-11 22:21:31,Jidder,auf ihn!
+2013-11-11 22:21:34,Jidder,du zuerst
+2013-11-11 22:21:49,Tectu,"ich darf nicht zuerst, ich muss mich pseudo-neutral verhalten"
+2013-11-11 22:22:30,Jidder,ich bin gerade beim essen
+2013-11-11 22:22:34,Jidder,ich kann also auch nicht
+2013-11-11 22:24:42,Tectu,aka toblerone
+2013-11-11 22:40:49,mgottschlag,gn8
+2013-11-11 22:41:05,spacer,cde

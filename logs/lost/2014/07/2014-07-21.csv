@@ -1,0 +1,153 @@
+date/time,nick,message
+2014-07-21 11:44:11,Jonathan,Moin
+2014-07-21 11:44:26,Jonathan,Diese letzte Schulwoche vor den Sommerferien macht einen echt fertig...
+2014-07-21 11:44:58,Jonathan,"Heute mal wieder so ein Tag: 2 Stunden Film, 4 Stunden frei, 2 Stunden Deutsch (was auch immer wir da noch machen werden)"
+2014-07-21 11:45:15,Jonathan,Und dafür steht man um 6:30 auf und kommt 8 Stunden in die Schule :D
+2014-07-21 11:52:36,Jonathan,"kevin: Du bist doch IPC-Experte, hab ich gehört? :P"
+2014-07-21 11:52:46,kevin,"Ich kenne ein paar Arten, wie es nicht geht, ja"
+2014-07-21 11:52:59,Jonathan,"Gut, dann schieß ich mal los:"
+2014-07-21 11:53:07,kevin,"Ich vermute, deine ist dabei"
+2014-07-21 11:53:12,Jonathan,*g*
+2014-07-21 11:53:21,kevin,Noch mehr Motivation nötig? *g*
+2014-07-21 11:53:39,Jonathan,Ich hab jetzt noch ein bisschen am IPC-Konzept von meinem Drahthaufen-OS herumgedacht...
+2014-07-21 11:54:24,Jonathan,"Und bin am Ende auf folgende ""Lösung"" gekommen: Synchrone (blockende) RPCs, Signale und Daemons (wobei Signale keine Daten haben können)"
+2014-07-21 11:55:08,Jonathan,Mit ein paar Tricks ließe sich das alles in einem 4k Speicherpool unterbringen und wäre damit sehr effizient
+2014-07-21 11:55:21,Jonathan,(Inklusive Task-Deskriptoren)
+2014-07-21 11:56:06,Jonathan,Implementieren wollte ich es so:
+2014-07-21 11:56:27,Jonathan,"Für jeden Task gibt es im Kernel 16 Byte Speicher, in den sämtliche Infos über den Task reinpassen müssen."
+2014-07-21 11:57:13,Jonathan,"Neben dem normalen Geraffel (Task-Flags, SP, Speicherkonfiguration, und was nicht alles) wollte ich da drin Speicher für exakt eine RPC-Message anbieten."
+2014-07-21 11:57:25,Jonathan,Das sind so 5 Bytes.
+2014-07-21 11:58:00,Jonathan,"Dabei enthält die RPC-Message einen Pointer auf Daten im Userspace, die dann als Message-Body dem Empfänger in einen Puffer rüberkopiert werden."
+2014-07-21 11:58:20,Jonathan,(Wenn er eine Message abholt)
+2014-07-21 11:58:34,Jonathan,"Die Messages werden aber nicht beim Empfänger gepuffert, sondern beim *Sender*."
+2014-07-21 11:59:00,Jonathan,"Sobald ein Task eine RPC-Message in seinen Sendepuffer geschrieben hat, wird er geblockt (sofern der Empfänger erreichbar ist)."
+2014-07-21 11:59:35,Jonathan,"Der Empfänger lässt sich dann vom Kernel aus den Sendepuffern die nächste Message rausfischen, die an ihn gerichtet ist."
+2014-07-21 11:59:58,Jonathan,"Dann bearbeitet er sie, und gibt ein Ergebnis zurück, welches an den Sender durchgereicht wird."
+2014-07-21 12:00:22,Jonathan,Die RPC-Message wird dann aus dem Sendepuffer entfernt und der sendende Task darf weiterlaufen.
+2014-07-21 12:00:54,Jonathan,"So brauche ich nur einen Speicherpool mit Platz für 256 Messages, sodass jeder Task eben ganz normal RPCs machen kann."
+2014-07-21 12:01:08,Jonathan,Und für jeden Task auch nur platz für eine einzige Message.
+2014-07-21 12:01:33,Jonathan,"(Sowas wie ""Daemons können bis zu 32 Messages im Empfangspuffer puffern"" erspare ich mir dadurch)"
+2014-07-21 12:02:18,Jonathan,Und ein Signal ist halt einfach nur ein Bit im Task-Deskriptor.
+2014-07-21 12:02:40,Jonathan,"(Da wollte ich 2 Bytes reservieren, damit jeder Task bis zu 16 Signale empfangen kann)"
+2014-07-21 12:04:07,Jonathan,"kevin: Was meinst du, ist das sinnvoll? :P"
+2014-07-21 12:04:24,Jonathan,*g*
+2014-07-21 12:05:41,Jonathan,"Hmmm... Wenn ich nur 128 Tasks erlaube, könnte ich meinen gesamten Kernel tatsächlich in 4k unterbringen :D"
+2014-07-21 12:05:55,Jonathan,"Aber nee, ich hab ja 16k, also kann ich auch 256 Tasks erlauben"
+2014-07-21 12:06:04,kevin,Wie gibst du das Ergebnis zurück?
+2014-07-21 12:06:21,Jonathan,Genauso wie die Daten hingesendet werden
+2014-07-21 12:06:27,Jonathan,Ein Puffer wird rüberkopiert
+2014-07-21 12:06:42,kevin,Wohin? Brauchst du dann nicht einen zweiten Pointer?
+2014-07-21 12:06:51,kevin,Oder muss Eingabe- und Ausgabelänge gleich sein?
+2014-07-21 12:07:07,Jonathan,"Ja, ich wollte das zunächst mal so machen."
+2014-07-21 12:07:12,kevin,"Weiß der Aufrufer überhaupt, wie viele Daten er bekommt, dass er den Speicher vorher allozieren kann?"
+2014-07-21 12:07:28,Jonathan,Muss er halt wissen :P
+2014-07-21 12:07:39,Jonathan,"Also, z.B. vorher beim Treiber anfragen"
+2014-07-21 12:07:43,kevin,"Hm, das klingt arg eingeschränkt, aber unter deinen Umständen vielleicht das bestmögliche"
+2014-07-21 12:07:57,Jonathan,"Naja, mein System ist ja auch arg eingeschränkt *g*"
+2014-07-21 12:08:23,kevin,"""Rekursion"" geht natürlich mit deinem System auch nicht"
+2014-07-21 12:08:29,Jonathan,Inwiefern?
+2014-07-21 12:08:39,kevin,Also dass Prozess A was von Prozess B will und der ruft dann indirekt wieder A auf
+2014-07-21 12:08:52,Jonathan,"Nein, das wäre ein Deadlock"
+2014-07-21 12:09:19,kevin,"In tyndur kann man mit LIOv2 momentan deadlocken, indem man auf ein ext2-Image auf einem ext2-Dateisystem zugreift"
+2014-07-21 12:09:31,Jonathan,*g*
+2014-07-21 12:09:51,Jonathan,Bei meinem System würde wohl das selbe passieren
+2014-07-21 12:09:57,kevin,LIOv1 kriegt diesen speziellen Fall hin ist aber sonst ziemlich kaputt ;-)
+2014-07-21 12:10:03,Jonathan,:D
+2014-07-21 12:10:08,Jonathan,Hmmmm
+2014-07-21 12:10:22,Jonathan,Zur Not könnte ich den VFS-Daemon threaded machen.
+2014-07-21 12:10:59,kevin,Dann hat jeder Thread seine eigene Queue?
+2014-07-21 12:11:05,Jonathan,Ja
+2014-07-21 12:11:08,kevin,Okay
+2014-07-21 12:14:29,Jonathan,"Ich könnte auch asynchrone RPCs anbieten, aber bei denen kann der Task dann auch keine zwei RPCs gleichzeitig abschicken"
+2014-07-21 12:15:04,Jonathan,"Und ich muss aufpassen, dass Gerätetreiber nichts vom VFSd wollen *g*"
+2014-07-21 12:15:58,Jonathan,"Wird wohl ziemlich ""Top-Down"" werden, aber das soll bei meinem System nicht stören"
+2014-07-21 12:18:44,Jonathan,Womöglich kann ich den VFSd auch in zwei Teile teilen
+2014-07-21 12:19:03,Jonathan,"Einmal Name Resolution, und einmal Dateisystemzugriff"
+2014-07-21 12:19:27,Jonathan,Und die könnten als Threads parallel laufen
+2014-07-21 12:19:53,Jonathan,Guten Hunger :P
+2014-07-21 12:22:00,Jonathan,"So, und ich bin dann mal wieder im Unterricht... Deutsch... Bäh D:"
+2014-07-21 12:22:05,DerAlex,Unterricht
+2014-07-21 14:36:06,iksnagreb,moin
+2014-07-21 15:59:01,Jonathan,Soooo
+2014-07-21 15:59:08,Jonathan,Und wieder da (Deutsch war grauenvoll.)
+2014-07-21 16:00:14,Jonathan,kevin: Ich harre deiner Kritik :P
+2014-07-21 16:00:27,Svenska^,Darf man Sanderson's Second Law in einer Ingeneursarbeit verwursten? :-D
+2014-07-21 16:01:02,kevin,"Jonathan: Naja, wenn du dir der Einschränkungen bewusst bist, was sollte ich sonst noch sagen?"
+2014-07-21 16:01:12,Jonathan,Keine Ahnung?
+2014-07-21 16:01:19,Jonathan,"Vielleicht sowas wie ""Das ist doch eh alles kaputt""?"
+2014-07-21 16:01:30,kevin,Muss man das noch extra sagen?
+2014-07-21 16:01:35,kevin,"Ich dachte, das wäre hier selbstverständlich"
+2014-07-21 16:01:35,Jonathan,*g*
+2014-07-21 18:02:54,Jonathan,"XanClic: Irgendwie ist es lustig, die Second-Level-Hostnames von IRC-Nutzern einfach mal mit dem Browser aufzurufen :P"
+2014-07-21 18:03:24,Jonathan,*g*
+2014-07-21 18:03:32,Jonathan,Dachte ich mir schon :P
+2014-07-21 18:03:42,XanClic,"Und dass die Domain selbst nicht tut, liegt an ddclient und 24-h-Disconnects"
+2014-07-21 18:03:54,Jonathan,Huch wieso?
+2014-07-21 18:04:12,XanClic,"ddclient ist manchmal irgendwie zu doof, die Domain zu aktualisieren"
+2014-07-21 18:04:19,Jonathan,Okay
+2014-07-21 18:04:25,Jonathan,Ich sehe hier ein Base64-Enkodiertes JPEG-Bild
+2014-07-21 18:04:28,Svenska^,"die chefkekse funktionieren jedenfalls, wobei ich base64-codierte bilder in html nur selten sehe"
+2014-07-21 18:04:29,Jonathan,Scheint also irgendwie doch zu gehen
+2014-07-21 18:04:33,XanClic,ich meine xanclic.absolute-chefkekse.de
+2014-07-21 18:04:34,Jonathan,*g*
+2014-07-21 18:04:37,Jonathan,Achso
+2014-07-21 18:04:54,Svenska^,ah
+2014-07-21 18:04:56,Jonathan,"Ja, das Base64 hat mich auch erstmal überrascht"
+2014-07-21 18:06:08,Svenska^,"rechts draufklicken und ""grafik anzeigen"" sieht in der adressleiste dann auch komisch aus"
+2014-07-21 18:06:39,Svenska^,...ob man da nen exploit draus basteln könnte?
+2014-07-21 18:07:14,Jonathan,Hmmmm
+2014-07-21 18:07:16,Jonathan,Keine Ahnung?
+2014-07-21 18:07:41,Jonathan,"Auf jeden Fall weiß ich jetzt, wie man Webseiten vollständig in Links unterbringt *g*"
+2014-07-21 18:07:43,Svenska^,"eine datei in einer url zu codieren, hat jedenfalls schonmal was. *g*"
+2014-07-21 18:07:50,Jonathan,Hehehe
+2014-07-21 18:07:51,Jonathan,Genau
+2014-07-21 18:11:53,Naoe_Kanno,hm
+2014-07-21 18:12:02,Naoe_Kanno,"ich vergess immer, dass die noch auf den Server redirected"
+2014-07-21 18:12:05,Naoe_Kanno,das muss ich auch mal ändern
+2014-07-21 18:12:13,Svenska^,warum?
+2014-07-21 18:12:23,yayachiken,"Jonathan, das macht man mit javascript oft"
+2014-07-21 18:12:36,Naoe_Kanno,"weil das nur ein Test war, weil mein DNS nicht schnell genug war"
+2014-07-21 18:12:49,yayachiken,"bild mit javascript in base64 generieren und dann als <img src=""data:..."" /> setzen"
+2014-07-21 18:13:25,Jonathan,"yayachiken: Ja, trotzdem hab ich es noch nicht gekannt :P"
+2014-07-21 18:13:31,Jonathan,Gleich mal damit rumexperimentieren
+2014-07-21 18:14:09,Svenska^,wozu macht man das? also anwendungsfälle
+2014-07-21 18:14:13,Jonathan,"Svenska^: Scheint zumindest schonmal möglich zu sein, ein Bild in Foren einzubinden, ohne einen externen Bildhoster zu nutzen... Man kann's wohl einfach in IMG-Tags angeben, und das geht"
+2014-07-21 18:14:32,Svenska^,ist doch trafficverschwendung (außer der webserver macht wieder gzip drueber)
+2014-07-21 18:14:45,yayachiken,"Svenska^, wie gesagt, lokal was mit JS generieren"
+2014-07-21 18:14:52,Jonathan,Javascript läuft doch lokal?
+2014-07-21 18:14:54,yayachiken,ja
+2014-07-21 18:14:56,Jonathan,"Oh, zu spät *g*"
+2014-07-21 18:15:19,Svenska^,aah jetzt
+2014-07-21 18:15:21,yayachiken,problem wäre halt dass man sonst storage für ein temporäres bild braucht und das kann ja nicht jeder browser :D
+2014-07-21 18:15:59,Naoe_Kanno,"achwas, wofür gibt es Cookies"
+2014-07-21 18:16:02,Svenska^,"in meinem weltbild ist ein browser halt kein betriebssystem, deswegen will ich an sowas nicht denken :D"
+2014-07-21 18:17:30,Jonathan,"Svenska^: Och, in Googles Weltbild ist er das durchaus *g*"
+2014-07-21 18:17:47,Svenska^,Jonathan: ob man dadrin auch mime/multipart verstecken kann? *g*
+2014-07-21 18:17:49,Naoe_Kanno,das passt doch fast zum Thema: https://stackedit.io/
+2014-07-21 18:17:59,Naoe_Kanno,(das läuft auch komplett lokal)
+2014-07-21 18:17:59,Jonathan,Svenska^: Da drin geht bestimmt jeder Mime-Typ
+2014-07-21 18:23:24,Jonathan,"Svenska^: Hab gerade ""data:application/octet-stream;base64,<daten>"" ausprobiert"
+2014-07-21 18:23:28,Jonathan,Geht...
+2014-07-21 18:23:52,Svenska^,"naja, wenn jpeg geht, sollte auch exe gehen *g*"
+2014-07-21 18:24:33,Jonathan,*g*
+2014-07-21 18:24:54,Jonathan,"Jetzt nur noch ein Forum finden, das sowas versehentlich irgendwie doof in einen Post einbindet... xD"
+2014-07-21 18:25:14,Svenska^,"wie gesagt, mime/multipart wäre aus meiner sicht nochmal das interessanteste, weil du dann sogar viele dateien in einen link packen kannst *g*"
+2014-07-21 18:25:41,Jonathan,*g*
+2014-07-21 18:26:05,Jonathan,Einfach eine HTML-Datei in eine Data-URI packen
+2014-07-21 18:26:29,Jonathan,"Und diese HTML-Datei mit Code füllen, der Dateien aus weiteren Data-URIs ungefragt automatisch downloadet"
+2014-07-21 18:26:35,Jonathan,Oder sowas
+2014-07-21 18:28:41,th3falc0n,bitte setzt das um... bitte das hört sich so genial an XD
+2014-07-21 18:28:58,Svenska^,"hmm, wenn man einem browser mehrere dateien gleichzeitig anbietet... kann man die dann auch gemeinsam runterladen oder unterstuetzt das keiner? :D"
+2014-07-21 18:30:06,Jonathan,Die werden wohl auch gleichzeitig geladen
+2014-07-21 18:30:31,Jidder,das wäre dann ja eine superkompression
+2014-07-21 18:30:32,Jonathan,Hab gerade jemandem eine 4k-Demo (als EXE) per Skype in einer Data-URI geschickt
+2014-07-21 18:30:33,Jonathan,Ging.
+2014-07-21 18:32:23,Svenska^,lol
+2014-07-21 18:32:40,Svenska^,ich hab nem kumpel gestern nur remote das skype abschiessen können
+2014-07-21 18:32:51,Svenska^,einfach ne irc-nachricht schicken. skype im hintergrund = absturz :D
+2014-07-21 18:34:08,Jonathan,"Hä, wie das?"
+2014-07-21 18:34:20,Svenska^,"war nicht irc, sondern icq ^^"
+2014-07-21 18:34:31,Svenska^,"und wenn man da ne nachricht aufs handy schickt, ploppte was auf..."
+2014-07-21 18:34:45,Svenska^,...und dann war das skype-fenster im hintergrund und schmierte weg *g*
+2014-07-21 18:35:13,Jonathan,*g*
+2014-07-21 18:37:42,spacer,n

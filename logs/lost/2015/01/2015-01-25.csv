@@ -1,0 +1,86 @@
+date/time,nick,message
+2015-01-25 00:00:07,Paddy,"Brauchst dich nicht entschuldigen, das ist ja dein eigenes Problem ;-)"
+2015-01-25 00:01:18,_sivizius,gut gekontert
+2015-01-25 10:43:51,Jonathan,Moin
+2015-01-25 10:52:31,Paddy,Moin
+2015-01-25 10:57:48,Jonathan,"Paddy, wo du doch gerade anwesend bist... ;)"
+2015-01-25 10:57:50,Jonathan,"int16_t vfs_create_task(char* path, char* args, FILE stdin, FILE stdout);"
+2015-01-25 10:57:54,Jonathan,^Klingt das soweit sinnvoll?
+2015-01-25 11:01:51,Paddy,"char* args klingt kaputt, uint16_t als Rückgabewert komisch, und FILE statt Filedeskriptoren weitergeben ungewöhnlich, aber ansonsten schon ;-)"
+2015-01-25 11:02:21,Jonathan,Hmmm... ;)
+2015-01-25 11:02:26,Paddy,"Ach, und beide Strings sollten wenigstens const char* sein, wenn du für die Argumente nicht was funktionierenderes nimmst"
+2015-01-25 11:03:23,Jonathan,"Inwiefern ""was funktionierendes""?"
+2015-01-25 11:03:34,Paddy,Ein einziges Argument ist halt irgendwie wenig?
+2015-01-25 11:04:02,Paddy,"Du kannst an Leerzeichen aufsplitten, aber das ist kaputt, sobald ein Argument mal ein Leerzeichen enthalten soll"
+2015-01-25 11:04:33,Jonathan,"Ja, gut"
+2015-01-25 11:05:51,Jonathan,"Dann sagen wir eben mal ""Leerstring-Terminierte Liste von Strings"""
+2015-01-25 11:06:03,Jonathan,Wobei das dann halt keine Leerstrings erlaubt *g*
+2015-01-25 11:06:05,Paddy,Also const char** dann
+2015-01-25 11:06:29,Paddy,"Hm, nein, du meinst wohl was anderes"
+2015-01-25 11:06:31,Jonathan,Ja
+2015-01-25 11:06:34,Paddy,"Wobei ich mir nicht sicher bin, was *g*"
+2015-01-25 11:06:37,Jonathan,*g*
+2015-01-25 11:06:55,Jonathan,"""Blah""\0""Kaputt""\0""Funktioniert eh nicht""\0\0"
+2015-01-25 11:07:01,Paddy,Einen fortlaufenden String mit ein paar \0 drin und am Ende \0\0?
+2015-01-25 11:07:04,Paddy,"Hm, okay"
+2015-01-25 11:07:19,Paddy,"Auf den ersten Blick ist das Kategorie ""kaputt, aber tut"" ;-)"
+2015-01-25 11:07:30,Jonathan,Dann passt das ja zum Rest des OS ;)
+2015-01-25 11:08:18,Paddy,Keine leeren Argumente sind natürlich trotzdem irgendwie schade
+2015-01-25 11:08:33,Jonathan,"Ja, schon"
+2015-01-25 11:08:45,Jonathan,Aber ohne Heap wird ein const char** doch irgendwie doof
+2015-01-25 11:09:31,Paddy,Kann man doch auch auf den Stack legen?
+2015-01-25 11:09:35,Jonathan,Klar
+2015-01-25 11:09:45,Jonathan,Aber dann muss ich das alles zusammenkopieren
+2015-01-25 11:09:48,Jonathan,Und das ist halt auch doof
+2015-01-25 11:09:58,Jonathan,Ich kann ja nur einen Pointer an modsys_invoke übergeben *g*
+2015-01-25 11:10:14,Paddy,Das ist schade ;-)
+2015-01-25 11:10:20,Jonathan,Leider ja ;)
+2015-01-25 11:10:30,Jonathan,Aber das ist hardwarebedingt nicht anders machbar
+2015-01-25 11:11:02,Paddy,"Hm, wie übergebe ich eigentlich Argumente...? Weiß ich gar nicht mehr."
+2015-01-25 11:11:10,Jonathan,"Wobei ich schon reichlich doof bin, path und args separat an die Funktion zu übergeben, die das dann in ein Struct schreibt"
+2015-01-25 11:11:15,Jonathan,Nee ;)
+2015-01-25 11:11:29,Jonathan,"Das liegt daran, dass ich nur sehr begrenzten Adressraum habe"
+2015-01-25 11:11:51,Jonathan,"Und Treiber so durchaus mal über die Daten eines Tasks gemappt werden, wenn sie aufgerufen werden..."
+2015-01-25 11:11:59,Jonathan,Deshalb muss ich Daten und Stack aus dem Weg mappen
+2015-01-25 11:12:24,Jonathan,"Und da ich nur zwei Pageslots dafür habe, kann ich nur zwei Pointer umbiegen, von denen einer der Stackpointer ist"
+2015-01-25 11:13:14,Paddy,Mein syscall_exec nimmt auch nur einen Pointer und eine Länge
+2015-01-25 11:14:28,Paddy,"Hm, okay, mein execv() macht im Prinzip dasselbe wie du, nur halt mit Länge übergeben statt \0\0 zum Abschluss"
+2015-01-25 11:15:01,Jonathan,Gut
+2015-01-25 11:15:08,Jonathan,Und das mit dem Abschluss spare ich mir jetzt einfach mal
+2015-01-25 11:15:47,Jonathan,"Anstelle von vfs_createtask(char*, char*, FILE, FILE) mach ich einfach vfs_createtask(process_info_t*)"
+2015-01-25 11:16:01,Paddy,"Du  meinst, da ist die Kaputtheit besser versteckt? *g*"
+2015-01-25 11:16:10,Jonathan,"Die Funktion würde sowieso nichts anderes tun, als die vier Argumente in so ne Struct stecken..."
+2015-01-25 11:16:12,Jonathan,Neee *g*
+2015-01-25 11:16:33,Jonathan,"So kopiere ich einfach ARGS_MAX Bytes rüber, fertig"
+2015-01-25 11:16:48,Jonathan,"Und kümmer mich nicht drum, was da jetzt eigentlich drin steht"
+2015-01-25 11:16:50,Paddy,Arbeitest du eigentlich immer direkt auif FILE?
+2015-01-25 11:17:08,Jonathan,"Naja, FILE ist auch eine recht kaputte Sache *g*"
+2015-01-25 11:17:21,Paddy,Also theoretisch sollte das puffern und so ;-)
+2015-01-25 11:18:51,Jonathan,"Naja... FILE ist in meinem System ein Filedeskriptor, vielleicht hab ich einfach nur ein paar Bezeichnungen verwechselt. *g*"
+2015-01-25 11:19:13,Jonathan,typedef int32_t FILE;
+2015-01-25 11:19:17,Paddy,Darf ich dich schlagen? *g*
+2015-01-25 11:19:21,Jonathan,Gern *g*
+2015-01-25 11:19:38,Jonathan,"Aber bevor du das tust, will ich dir noch was sagen"
+2015-01-25 11:19:44,Jonathan,Vielleicht willst du mich dann gleich zweimal schlagen
+2015-01-25 11:20:33,Jonathan,"Das höchste Byte davon ist entweder 00 (normaler Deskriptor), 01 (Deskriptor vom VFS selbst), FF (ungültiger Deskriptor)"
+2015-01-25 11:21:04,Jonathan,"Das nächste Byte gibt im ersteren Fall die Nummer des Treibers an, auf den der Deskriptor zeigt"
+2015-01-25 11:21:21,Jonathan,Und die beiden unteren Bytes dürfen vom Treiber verwendet werden
+2015-01-25 11:21:47,Jonathan,"Ach, Paddy, bleib doch noch ein bisschen ;)"
+2015-01-25 11:23:21,Paddy,"Du meinst, es wird noch besser? ;-)"
+2015-01-25 11:24:54,Jonathan,"Hab ich dir schon gesagt, dass das VFS teilweise ein eigenes Kernelmodul verwendet, um die Mapping-Funktionen von modsys_invoke so zu missbrauchen, dass es eventuell benötigte Pages von fremden Treibern/Tasks mappen kann? ;)"
+2015-01-25 11:27:02,Paddy,wtf?
+2015-01-25 11:32:56,Jonathan,"Paddy: Wenn ich einen Task erstelle, hole ich mir zuerst etwas Speicher von der MMU. Und dann muss ich diesen Speicher irgendwo hin in meine 64k Adressraum einblenden... Dummerweise kann überall der Stack sitzen, auf dem ich gerade arbeite. Deshalb muss ich den aus dem Weg schaffen, und das tut modsys_invoke."
+2015-01-25 11:33:43,Jonathan,"Da der Kernel (und somit das VFS) in Pageslot 0 sitzt, und Treiber normalerweise nach Pageslot 1 gemappt werden (welcher in dem Fall dann aber ungenutzt ist), kann ich den zu erstellenden Task/Treiber gefahrlos nach Pageslot 1 mappen."
+2015-01-25 15:49:07,iksnagreb,moin
+2015-01-25 16:38:10,Paddy,Urgs
+2015-01-25 16:38:30,Paddy,waitpid() macht in tyndur ja auch Busy-Waiting :-/
+2015-01-25 20:37:53,Antoine,Paddy: Wer implementiert denn sowas? ;-)
+2015-01-25 20:44:35,Paddy,Antoine: Erinnerst du dich etwa? ;-)
+2015-01-25 20:44:56,Antoine,Jop *g*
+2015-01-25 20:45:11,Paddy,Magst du es nicht zufällig fixen? *g*
+2015-01-25 20:45:39,Paddy,"Ich weiß, den Versuch ist es in diesem Fall eigentlich nicht wert, aber aus Prinzip ;-)"
+2015-01-25 20:48:32,Antoine,Wenn du im Gegenzug den Bug in meinem Treiber fixt... ;-)
+2015-01-25 20:50:48,Paddy,"Ich könnte einen Bug einbauen, dass er crasht, bevor er deinen Bug erreicht. Gilt das? ;-)"
+2015-01-25 20:51:20,Antoine,Das kann ich auch selber *g*
+2015-01-25 20:51:54,Paddy,"Das hat man davon, dass man dir das alles beibringt *g*"
+2015-01-25 20:53:32,Paddy,"Hast du das Query übrigens gesehen? (Wer weiß, mit was für einem Client du wieder unterwegs bist. ;-))"

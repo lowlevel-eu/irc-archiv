@@ -1,0 +1,1814 @@
+date/time,nick,message
+2011-01-05 00:12:20,spacer,re
+2011-01-05 00:12:30,DesL,gnu
+2011-01-05 00:13:23,spacer,bin dann mal weg
+2011-01-05 00:13:29,spacer,bis denn
+2011-01-05 00:25:40,tev,gn8
+2011-01-05 00:32:45,DesL,"ist doch doof, da änder ich was am heap, und dann geht das paging nciht mehr, obwohl die direkt NICHT inreagieren"
+2011-01-05 00:34:53,SHyx0rmZ,ich bekomms nur andersrum hin ^^
+2011-01-05 00:35:03,DesL,"ok, ein KOMPLETTES neubauen wäre sicherlich sinnvoll gewesen -.-"
+2011-01-05 00:37:43,SHyx0rmZ,das ist es meist ^^
+2011-01-05 00:37:54,SHyx0rmZ,nur für die Erfahrung ist die Modifikation besser ;)
+2011-01-05 00:55:48,DesL,"sooo, ich stehe hier mit nem Pagefault auf dem schlauch. Ich habe die gesammten CPU register, und die Disassemblierte kernel.bin. das ganze findet wohl bei einem ""mov    0xc(%eax),%al"" statt. Wie finde ich jetzt herraus was drückt? mein PAging an sich war doch OK, ich wusste bislang bei PEs meisst ungefähr woran es lag, und habe es anhand davon gefixt -  aber so?"
+2011-01-05 00:58:23,Paddy,"Du schaust dir an, zu welcher C-Zeile das mov gehören soll"
+2011-01-05 00:58:34,Paddy,"Und dann rätst du, welcher Pointer in dieser Zeile es sein könnte"
+2011-01-05 00:58:50,DesL,"das bekomme ich wohl am besten durch debug-ausgaben heraus, oder?"
+2011-01-05 00:58:51,Paddy,cr2 und eax und so anschauen schadet natürlich auch nichts
+2011-01-05 00:59:02,Paddy,"Nein, mit -g bauen und objdump -S"
+2011-01-05 00:59:46,DesL,"""-g""?"
+2011-01-05 01:00:50,SHyx0rmZ,"inkludiert Debugzeugs, unter anderem den Sourcecode"
+2011-01-05 01:00:55,SHyx0rmZ,den zeigt dir -S an
+2011-01-05 01:01:19,DesL,ah
+2011-01-05 01:01:21,DesL,ok
+2011-01-05 01:01:32,Paddy,"-O0 ist auch eine gute Idee, wenn man den Assemblercode noch verstehen will"
+2011-01-05 01:01:43,DesL,muss das beim gesamten kernel? oder geht das auch bei einer .cpp datei?
+2011-01-05 01:01:45,Paddy,"Leider ""fixt"" das manchmal die Bugs, dann kann man es nicht nehmen ;-)"
+2011-01-05 01:01:55,SHyx0rmZ,"Paddy, DAS kann man jetzt SO nicht sagen ^^"
+2011-01-05 01:02:07,Paddy,"Wenn du weißt, was du brauchst, reicht es für eine Datei"
+2011-01-05 01:02:19,SHyx0rmZ,"also, das -O0 mein ich ;)"
+2011-01-05 01:02:32,Paddy,-O0 macht es aber in der Regel deutlich einfacher zu lesen
+2011-01-05 01:02:32,DesL,ok
+2011-01-05 01:02:46,SHyx0rmZ,"jo, das unterschreib ich jederzeit"
+2011-01-05 01:02:59,Paddy,Vor allem eine C-Anweisung wird damit immer am Stück abgehandelt und nicht irgendwie quer über die Funktion verteilt.
+2011-01-05 01:03:01,DesL,"ich habe hier c++ code, ist der in ASM nicht eh ziemlich schlecht zu lesen?"
+2011-01-05 01:03:14,Paddy,"Nö, sind auch nur ein paar Funktionspointer mehr"
+2011-01-05 01:03:17,DesL,ok
+2011-01-05 01:04:04,SHyx0rmZ,warum sollte der auch ^^
+2011-01-05 01:05:13,DesL,"ist ""-g"" ne linker option?"
+2011-01-05 01:05:27,Paddy,Compiler
+2011-01-05 01:06:11,DesL,"Options starting with -g, -f, -m, -O, -W, or --param are automatically passed on to the various sub-processes invoked by gcc.  In order to pass other options on to these processes the -W<letter> options must be used."
+2011-01-05 01:07:07,Paddy,cc1 ist auch ein Subprozess
+2011-01-05 01:07:34,DesL,"es kommt jedenfalls bei ""objdump -S"" nur ASM code raus"
+2011-01-05 01:07:45,Paddy,Du machst aber nicht noch ein strip oder so?
+2011-01-05 01:07:56,DesL,nö
+2011-01-05 01:08:31,Paddy,"Oder ein böses Linkerskript, das die Debugsections wieder rauswirft?"
+2011-01-05 01:08:40,DesL,"ich habe neulich den ""man"" eintrag zu ""strip"" googlen wollen ""man gcc"" etc funtzen ja immer gut bei google, ""man strip"" nicht -.-"
+2011-01-05 01:08:42,Paddy,Bzw. ld -s
+2011-01-05 01:08:44,DesL,warte mal
+2011-01-05 01:10:38,DesL,und immernoch nur asm code
+2011-01-05 01:10:49,DesL,"aber ich probier mal ""-O0"""
+2011-01-05 01:37:38,DesL,wtf? die funktion dürfte eigentlich gar nicht aufgerufen werden
+2011-01-05 01:38:28,SHyx0rmZ,tjo
+2011-01-05 01:39:00,DesL,ich habe mir den code 4 mal durchgeschaut - nix 
+2011-01-05 01:40:14,SHyx0rmZ,"du sollst auch nich schaun, sondern Breakpoints setzen"
+2011-01-05 01:41:09,DesL,"ich suche jetzt erstmal, WO die aufgerufen wird - vlt ja mit random params"
+2011-01-05 01:41:56,SHyx0rmZ,öhm
+2011-01-05 01:42:04,SHyx0rmZ,"also, entweder grep oder stack angucken"
+2011-01-05 01:42:21,DesL,grep auf den source?
+2011-01-05 01:42:42,SHyx0rmZ,jo
+2011-01-05 01:42:53,SHyx0rmZ,oder auf objdump ^^
+2011-01-05 01:43:18,DesL,"was macht ""imul""?"
+2011-01-05 01:43:35,SHyx0rmZ,multiplizieren
+2011-01-05 01:43:38,SHyx0rmZ,mit signed
+2011-01-05 01:43:47,DesL,ah
+2011-01-05 01:44:08,DesL,öhm
+2011-01-05 01:44:39,DesL,"""_ZdlPv"" in gcc-C++-ABI-Gedöns Oo"
+2011-01-05 01:45:02,SHyx0rmZ,jo
+2011-01-05 01:45:07,SHyx0rmZ,ist richtig
+2011-01-05 01:45:24,DesL,was ist das denn für ne Funktion?
+2011-01-05 01:45:27,SHyx0rmZ,das ist dann wohl delete[]
+2011-01-05 01:45:37,SHyx0rmZ,öhm wait
+2011-01-05 01:45:41,SHyx0rmZ,das könnte auch delete sein
+2011-01-05 01:45:48,SHyx0rmZ,will mich da grad nicht festlegen
+2011-01-05 01:46:14,DesL,"""_Znwm"" ist dann wohl new"
+2011-01-05 01:46:17,SHyx0rmZ,jo
+2011-01-05 01:46:22,DesL,"""delete"" ist korrekt"
+2011-01-05 01:46:36,SHyx0rmZ,"das Name-Mangling ist gar nicht mal so kompliziert, imho"
+2011-01-05 01:46:42,DesL,wird aber in der funktion nicht aufgerufen -.-
+2011-01-05 01:47:06,DesL,"naja, bei dem build-in sachen aber nicht sofort ersichtlich"
+2011-01-05 01:48:00,SHyx0rmZ,"dann sei froh, dass du noch keine Operatorüberladungen hast ^^"
+2011-01-05 01:48:09,DesL,XD
+2011-01-05 01:48:10,DesL,habe ich
+2011-01-05 01:48:28,SHyx0rmZ,dann such die mal ;)
+2011-01-05 01:48:41,DesL,"obwohl, nee. Also nur bei ""System::Video operator<<"""
+2011-01-05 01:48:48,DesL,also doch m(
+2011-01-05 01:49:02,DesL,lass mich mal raten 
+2011-01-05 01:49:50,SHyx0rmZ,_ZN6System5VideoslEv oder so
+2011-01-05 01:50:00,DesL,hm
+2011-01-05 01:50:28,DesL,"ich hätte ja ""_ZN6System5videoXoperator..."" oder so gedacht"
+2011-01-05 01:50:45,SHyx0rmZ,nope ^^
+2011-01-05 01:51:36,DesL,_ZN6SystemC1Ev
+2011-01-05 01:51:37,DesL,Oo
+2011-01-05 01:51:47,SHyx0rmZ,System::System()
+2011-01-05 01:52:05,DesL,ach
+2011-01-05 01:52:06,DesL,m(
+2011-01-05 01:52:13,DesL,_ZN5video....
+2011-01-05 01:52:32,DesL,_ZN5VideolsEPKc
+2011-01-05 01:52:42,SHyx0rmZ,^^
+2011-01-05 01:52:47,SHyx0rmZ,was ist denn K lol
+2011-01-05 01:52:55,SHyx0rmZ,aber auf jeden Fall nen Zeiger
+2011-01-05 01:53:03,DesL,char* wimr
+2011-01-05 01:55:25,DesL,jo
+2011-01-05 02:00:09,DesL,*
+2011-01-05 02:00:20,DesL,*dummDummDumm*
+2011-01-05 02:01:01,DesL,"""new"" ruft System.heap.malloc auf -.-"
+2011-01-05 02:14:13,SHyx0rmZ,wenn du das so definiert hast
+2011-01-05 02:14:53,DesL,"jaaaa, und das ruft dann wiederum heap.free auf..."
+2011-01-05 02:16:24,DesL,"bleiben einige fehlerquellen: paging(map), pmm(alloc), heap(alloc/free)..."
+2011-01-05 02:25:39,SHyx0rmZ,"hört sich an, wie kernel4 :D"
+2011-01-05 02:26:05,DesL,XD
+2011-01-05 02:31:59,DesL,"hm, naja. Fehler indentifiziert, aber nciht lokalisiert oder gefixt -  ich gehe trotzdem ins bett, darf morgen mal mit der drehbank spielen^^ "
+2011-01-05 02:32:00,DesL,gn8
+2011-01-05 07:53:58,AGGROStar1991,moin
+2011-01-05 09:11:53,Svenska,moin
+2011-01-05 10:26:19,Homix,moin
+2011-01-05 10:26:25,Svenska,moin
+2011-01-05 10:27:07,AGGROStar1991,moin
+2011-01-05 10:27:39,Svenska,"wenn sich jemand mit dateisystemkonzepten beschäftigen möchte, ich habe eben ein paper zum WAFL-dateisystem gefunden"
+2011-01-05 10:28:04,Svenska,das ist ein copy-on-write-dateisystem mit starker zentrierung auf nfs-server
+2011-01-05 10:28:20,Svenska,und wird von NetApp für deren NFS-server entwickelt
+2011-01-05 10:28:33,Svenska,das paper beschreibt aber das zugrundeliegende konzept recht angenehm.
+2011-01-05 10:28:44,Svenska,http://www.netapp.com/library/tr/3002.pdf
+2011-01-05 10:29:27,Svenska,ist verwandt mit FFS und den üblichen unix-dateisystemen und läuft unter dem ONTAP-betriebssystem von NetApp
+2011-01-05 10:48:29,Homix,"hm vor nem jahr hab ich über dateisysteme was geschrieben, aber derzeit ... hm ;)"
+2011-01-05 10:49:02,Homix,"ich ärger mich eher über grub2 auf, weil die module nicht mehr schön linear an 0x100000ff geladen werden"
+2011-01-05 10:49:23,Svenska,es werden alle module an die gleiche adresse geladen?
+2011-01-05 10:49:37,Homix,ne zum glück nicht *g* 
+2011-01-05 10:49:46,Homix,aber kreuz und quer in dem ARbeitsspeicher^^
+2011-01-05 10:50:31,Homix,"eher in die High memory regions, aber wer weiß, was sonst noch so alles passieren kann :/"
+2011-01-05 10:50:39,Svenska,"solange an den stellen auch wirklich ram ist, ist es ja egal"
+2011-01-05 10:51:41,Homix,"naja, jetzt müsste ich theoretisch überprüfen, an welche stelle ich meinen kernel hinladen darf bzw die strukturen für meine speicherverwaltung"
+2011-01-05 10:52:12,Svenska,lädt nicht der grub auch deinen kernel selbst?
+2011-01-05 10:52:32,Homix,"nö, nur nen zwischenloader, der meinen PE Kernel lädt"
+2011-01-05 10:53:15,Svenska,"achso, dein kernel liegt vom grub2 im speicher, entpackt/zerpflückt sich selbst an eine bestimmte speicheradresse und dann gehts weiter?"
+2011-01-05 10:53:40,Homix,mein kernel.dll wird als module mitgeladen
+2011-01-05 10:54:01,Homix,"und vom zwischenloader (als elf, der bei grub als kernel geladen wird) aufbereitet"
+2011-01-05 10:54:16,Svenska,hmm
+2011-01-05 10:54:52,Svenska,"dann bleibt dir wohl nichts anderes übrig, als deine kernel-zieladresse von modulen leerzuräumen :-)"
+2011-01-05 10:55:39,Svenska,warum realisierst du deinen kernel eigentlich als modul und den 2nd-stage-bootloader als kernel? weil du unbedingt pe möchtest?
+2011-01-05 10:55:55,Homix,jap ;)
+2011-01-05 10:56:02,Svenska,ok ;)
+2011-01-05 10:56:04,Svenska,selbst schuld ;)
+2011-01-05 10:56:09,Homix,*g*
+2011-01-05 10:56:42,Homix,"naja den hätte ich eh gebraucht, um meinen kernel an 0xC000000 (im virtuellen Speicher) hinzubekommen"
+2011-01-05 10:57:14,Homix,oder einen 64 bit kernel zu laden
+2011-01-05 10:57:18,Svenska,du meinst 0xc000 0000 ?
+2011-01-05 10:58:42,Svenska,"ich hätte dem kernel wahrscheinlich beigebracht, sich selbst zu reloziieren"
+2011-01-05 10:59:15,Homix,"joa, aber im zwischenloader setz ich auch ne einfache form von paging auf"
+2011-01-05 10:59:50,Svenska,"eben, das hätte ich dem kernel selbst beigebracht ;-)"
+2011-01-05 11:00:10,Svenska,"aber wahrscheinlich wär ich auch einfach bei elf geblieben für den kernel, damit es einfach geht"
+2011-01-05 11:00:12,Svenska,keine ahnung
+2011-01-05 11:00:13,Homix,naja wär wahrscheinlich aufwendiger geworden als ein einfacher zwischenloader ;)
+2011-01-05 11:00:33,Svenska,COPY zwischenloader.elf + kernel.bin neukernel.bin ?
+2011-01-05 11:00:36,Svenska,:d
+2011-01-05 11:00:38,Svenska,:D
+2011-01-05 11:01:13,Homix,das würde in meinem fall nicht so gut gehen oder?
+2011-01-05 11:01:35,Svenska,ich meinte das auch nur im übertragenen sinne... d.h. den zwischenloader-code in den kernel kopieren
+2011-01-05 11:01:49,Svenska,so ählich ist es jedenfalls bei linux
+2011-01-05 11:01:50,Homix,aso
+2011-01-05 11:02:12,Svenska,weil der kernel ja komprimiert ist und sich selbst entpacken kann
+2011-01-05 11:02:34,Svenska,zumindest auf x86 :) bei MIPS muss das der bootloader tun oder du hast einen extra-entpacker im image
+2011-01-05 11:07:52,Svenska,"was ist eigentlich der unterschied zwischen PE und ELF, bzw. warum willst du PE?"
+2011-01-05 11:16:20,Homix,"Svenska: weil ich windows nutzer bin, schon seit ewiger zeit damit arbeite, und ich mich mit den import/export/relocs auskenne ;)"
+2011-01-05 11:16:51,Svenska,"achso, das ist ein valider grund :D"
+2011-01-05 11:29:06,Jidder,moin
+2011-01-05 11:29:14,AGGROStar1991,moin Jidder
+2011-01-05 11:29:19,Svenska,moin du provokateur
+2011-01-05 11:29:23,Svenska,:-)
+2011-01-05 11:29:47,AGGROStar1991,ich dacht er wollt dich promovieren? xD
+2011-01-05 11:30:21,Svenska,ich möchte noch eine anmerkung machen: tippen auf dem tablet ist unglaublich langsam und hat dazu noch extrem hohen jitter ;-)
+2011-01-05 11:36:20,AGGROStar1991,ich dacht jiter is ein just-in-time compiler :P
+2011-01-05 11:36:24,AGGROStar1991,man lernt nie aus^^
+2011-01-05 11:36:38,Svenska,jitter mit zwei t
+2011-01-05 11:37:12,AGGROStar1991,^^
+2011-01-05 11:37:30,AGGROStar1991,und was is nu ein jitter? xD
+2011-01-05 11:38:03,Svenska,schwankung
+2011-01-05 11:38:24,Svenska,"wenn du einen konstanten ping von 500ms hast, ist das weniger schlimm, als wenn er zwischen 20 und 6000 schwankt"
+2011-01-05 11:38:29,AGGROStar1991,neologismus oder gabs das schon?^^
+2011-01-05 11:38:58,Svenska,jitter kommt aus dem audiobereich
+2011-01-05 11:44:13,AGGROStar1991,ok wieder was gelernt ;)
+2011-01-05 11:50:00,Jidder,okay was gibt es zum mittag
+2011-01-05 11:50:00,Jidder,?
+2011-01-05 11:50:17,Svenska,"ich denke, ich werd wieder in die mensa gehen"
+2011-01-05 11:52:00,Jidder,hm für mich kommt das nicht in frage
+2011-01-05 11:52:09,Jidder,"wenn ich jetzt losfahre, bin ich erst um 14 uhr da"
+2011-01-05 11:52:18,Jidder,dann ist da schon wieder zu
+2011-01-05 11:52:22,Jidder,glaube ich
+2011-01-05 11:52:28,Svenska,ich brauch < 5min
+2011-01-05 12:27:59,taljeth,Moin
+2011-01-05 12:30:35,Svenska,moin
+2011-01-05 12:32:08,Homix,hm ok ich bau mir jetzt wohl wirklich nen grub2 -> grub multiboot-structure converter ;)
+2011-01-05 12:32:24,Svenska,?
+2011-01-05 12:32:42,Homix,"kann doch ned sein, dass er die module quer im arbeitsspeicher verteilt und v.a., die module namen nicht mehr mit reinschreibt!"
+2011-01-05 12:33:13,taljeth,"Wie kannst du Information herkonvierteren, die du nicht hast?"
+2011-01-05 12:33:32,Svenska,eigenes headerfeld mit den namen? :-)
+2011-01-05 12:33:33,taljeth,"Ups, das i ist an die falsche Stelle gerutscht"
+2011-01-05 12:33:56,Homix,"ok bei den module names muss ich extra parameter angeben^^ aber wegen der adressen, die module kann ich ja ""richtig hinkopieren"" ;)"
+2011-01-05 12:33:59,PNoob,Moin
+2011-01-05 12:34:13,Svenska,moin
+2011-01-05 12:34:14,AGGROStar1991,moin
+2011-01-05 12:34:31,taljeth,"Was ist denn das Problem mit ""quer im Arbeitsspeicher verteilten"" Modulen?"
+2011-01-05 12:34:53,Homix,"dass ich im zwischenloader testen müsste, ob ich an position x meinen kernel hinladen darf ;)"
+2011-01-05 12:35:02,Homix,"nicht dass das ein problem wär, aber es ist halt wieder zusätzlicher aufwand :/"
+2011-01-05 12:35:16,taljeth,"Ah, du hast dort noch keinen richtigen PMM"
+2011-01-05 12:36:35,Homix,genau^^
+2011-01-05 12:37:23,Homix,"hm ok, grub2 lädt anscheinend immer an hohen adressen seine module hin, das ist schon mal gut^^"
+2011-01-05 12:37:28,Homix,aber immer random? *g*
+2011-01-05 12:40:53,Homix,hm es gibt noch dieses andere zeug .. initrd oder? was ist das genau?
+2011-01-05 12:43:05,PNoob,"das ist so eine art virtuelle Festplatte, auf der man eine Grun Konfiguration drauf hat."
+2011-01-05 12:43:14,PNoob,meistens auch Treiber und so
+2011-01-05 12:45:36,Homix,und wohin springt grub bei der codeausführung? an den anfang? oder hat das ein festes format?
+2011-01-05 12:46:07,PNoob,die Initrd wird wie ein Modul geladen
+2011-01-05 12:46:13,PNoob,da springt GRUB nicht hin
+2011-01-05 12:46:24,Homix,"achso, und was ist der unterschied zw. initrd und module?"
+2011-01-05 12:46:47,PNoob,afaik keiner ;)
+2011-01-05 12:49:05,PNoob,taljeth: Hast du schon gesehen: sfan möchte den aktellen stand von Tyndur haben
+2011-01-05 12:50:06,taljeth2,[12:48] <taljeth> Seit wann kann man denn initrd mit Multiboot benutzen?
+2011-01-05 12:51:01,Homix,taljeth2: keine ahnung? ;) ich hab mich nur bzgl alternativen erkundigt ;)
+2011-01-05 12:54:29,PNoob,taljeth2: (12:49:04) PNoob: taljeth: Hast du schon gesehen: sfan möchte den aktellen stand von Tyndur haben
+2011-01-05 13:04:39,taljeth2,PNoob: Ich hab grad ein bisschen was dazu geschrieben
+2011-01-05 13:04:53,PNoob,OK
+2011-01-05 13:09:26,Papierkorb,Moin
+2011-01-05 13:09:57,AGGROStar1991,moin
+2011-01-05 13:14:30,tev,moin
+2011-01-05 13:15:54,AGGROStar1991,moin
+2011-01-05 13:21:18,Jidder,"was ist eigentlich eure meinung zu den ganzen toten vögeln und fischen, die jetzt auftauchen?"
+2011-01-05 13:21:39,Jidder,jemand in diesem raum ist dafür verantwortlich
+2011-01-05 13:21:43,Jidder,"ich weiß nur, dass ich es nicht bin"
+2011-01-05 13:21:56,AGGROStar1991,was für tote fische? xD
+2011-01-05 13:22:13,Jidder,na diese panierten quader
+2011-01-05 13:22:33,AGGROStar1991,ich sag mal das ichs auch nicht bin.... also tot mein ich xD
+2011-01-05 13:22:52,Jidder,du bist ganz oben auf meiner liste der verdächtigen
+2011-01-05 13:22:55,Jidder,weil sie alphabetisch ist
+2011-01-05 13:23:05,AGGROStar1991,LOOOL^^
+2011-01-05 13:23:13,tev,dann bin ich weit hinten^^
+2011-01-05 13:23:45,Jidder,ja aber fühl dich nicht zu sehr in sicherheit
+2011-01-05 13:24:27,Jidder,"ganz schnell kann es passieren, dass die leute parten und schon rückste nach oben"
+2011-01-05 13:24:45,tev,hmm
+2011-01-05 13:24:55,Svenska,*.net *.split :F
+2011-01-05 13:24:56,Svenska,:D
+2011-01-05 13:25:25,AGGROStar1991,hmz ^^
+2011-01-05 13:25:33,AGGROStar1991,rm -rf /*
+2011-01-05 13:25:34,AGGROStar1991,^^
+2011-01-05 13:25:42,Jidder,cls
+2011-01-05 13:25:44,Svenska,sudo rm -rf /
+2011-01-05 13:25:45,tev,sudo rm -rf /*
+2011-01-05 13:25:46,Svenska,das reicht ;)
+2011-01-05 13:26:01,Jidder,aber das löscht doch nur alles auf laufwerk c:
+2011-01-05 13:26:11,Svenska,exakt
+2011-01-05 13:26:21,AGGROStar1991,naja liegt da nich deine liste jidder? xD
+2011-01-05 13:26:36,Jidder,"ja, aber ich kann mir jederzeit eine neue ausdenken"
+2011-01-05 13:26:47,Svenska,DEL C:\BOOT.INI
+2011-01-05 13:26:50,Svenska,DEL C:\BOOTMGR
+2011-01-05 13:27:07,Jidder,404
+2011-01-05 13:32:47,PNoob,Jidder: was hast du heute eigentlich schon wieder geraucht?
+2011-01-05 13:32:58,Svenska,keine ahnung
+2011-01-05 13:33:04,Svenska,er bringt alles durcheinander und freut sich
+2011-01-05 13:33:08,Svenska,klingt nach grüner wiese
+2011-01-05 13:33:12,tev,Hardware raucht er soch
+2011-01-05 13:33:19,tev,-s +d
+2011-01-05 13:33:26,tev,moin sfan
+2011-01-05 13:33:28,AGGROStar1991,der hat den hut aus alufolie vergessen und nu kontrolliert ihn die CIA :D
+2011-01-05 13:33:32,PNoob,Moin sfan
+2011-01-05 13:33:33,sfan,moin
+2011-01-05 13:33:36,Svenska,moin
+2011-01-05 13:33:57,AGGROStar1991,moin
+2011-01-05 13:34:05,PNoob,sfan: hat das mit netzwerk jetzt geklappt?
+2011-01-05 13:34:26,sfan,habs noch nicht getestet
+2011-01-05 13:35:14,taljeth2,Hi sfan
+2011-01-05 13:35:25,sfan,hallo
+2011-01-05 13:35:42,tev,taljeth2: ich glaub du wolltest doch gestern noch wissen wie ich mit GRUB 2 vorankomme oder?
+2011-01-05 13:35:54,tev,weil XChat ist dann abgeschmiert
+2011-01-05 13:36:23,PNoob,tev: nimm pidgin das ist noch nie abgestürtzt unter Linux
+2011-01-05 13:36:35,Svenska,ich mag pidgins irc client nicht.
+2011-01-05 13:36:43,Svenska,xchat ist mir auch noch nie abgestürzt.
+2011-01-05 13:36:52,AGGROStar1991,dito svenska
+2011-01-05 13:37:01,taljeth2,"tev: Ja. Weil ich habe GRUB 2 von Hand zum Booten bekommen, und wenn du keine Fortschritte gemacht hast, würde ich das Skript eifnach selber schreiben"
+2011-01-05 13:37:23,tev,taljeth2: ich muss GRUB 2 nur noch auf das HD Image bekommen
+2011-01-05 13:37:40,taljeth2,"Okay, das ist der aufwendige Teil ;-)"
+2011-01-05 13:37:44,tev,"das Image ist erstellt, partitioniert und ext2 ist auch drauf"
+2011-01-05 13:38:04,taljeth2,Image erstellen und partitionieren kann das alte Skript ja auch schon
+2011-01-05 13:38:04,tev,eine grub.cfg ist auch schon da :)
+2011-01-05 13:38:23,tev,"aber ich hab ein eigenes geschrieben, eben für GRUB2"
+2011-01-05 13:38:33,taljeth2,Das braucht doch aber nichts besonderes?
+2011-01-05 13:38:35,PNoob,tev: könntest du mir das script zum ersdtellen des Pltten images geben?
+2011-01-05 13:38:39,taljeth2,"Naja, ich schau nachher danach"
+2011-01-05 13:38:47,taljeth2,PNoob: build/scripts/image_hd in tyndur
+2011-01-05 13:39:11,PNoob,"taljeth2: das problem ist, das ich das nicht verstehe"
+2011-01-05 13:39:16,PNoob,tev: oder benutzt du das auch?
+2011-01-05 13:39:26,tev,ich benutz ein eigenes einfacheres
+2011-01-05 13:39:33,tev,es ist weniger komplex
+2011-01-05 13:39:43,PNoob,tev: könntest du das pasten?
+2011-01-05 13:40:04,PNoob,köttur soll nämlich auch HD images bekommen. ich scheiterte jedoch immer am partitionieren
+2011-01-05 13:40:25,tev,dafür hat Tyndur auch ein Script
+2011-01-05 13:41:27,tev,http://pastebin.com/Y87DUFZM
+2011-01-05 13:41:37,sfan,zu dem letzten eintrag aus netzwerk? : wie find ich das heraus?
+2011-01-05 13:41:38,tev,taljeth2: kannst ja auch mal schauen
+2011-01-05 13:43:27,Jidder,PNoob: du korrigierst rechtschreibfehler von anderen auf diskussionsseiten?
+2011-01-05 13:45:14,DerHartmut,Frohes neues und Hallo und Grüezi und Servus und Heidiho und Huhu und Hallo
+2011-01-05 13:45:24,Jidder,Hallo
+2011-01-05 13:45:27,Jidder,war doppelt
+2011-01-05 13:45:30,Jidder,ich hab mal eins genommen
+2011-01-05 13:45:32,AGGROStar1991,hi
+2011-01-05 13:45:36,AGGROStar1991,frohes neues ;)
+2011-01-05 13:45:39,DerHartmut,:-)
+2011-01-05 13:45:49,Svenska,moin fehlt
+2011-01-05 13:46:00,tev,moin Hartmut
+2011-01-05 13:46:01,DerHartmut,"PNoob: Weißt du, was FAIL ist? Rechtschreibefehler anderer korrigieren in dem man selber welche macht"
+2011-01-05 13:46:02,PNoob,Moin DerHartmut
+2011-01-05 13:46:22,PNoob,DerHartmut: ich weiß das ich auch welche mache. 
+2011-01-05 13:46:22,sfan,moin
+2011-01-05 13:46:23,AGGROStar1991,öhm joa stimmt hartmut xD
+2011-01-05 13:46:35,DerHartmut,Verzeichnis_s_ und so
+2011-01-05 13:46:59,sfan,sfan> zu dem letzten forumeintrag aus netzwerk?: wie find ich das heraus?
+2011-01-05 13:47:26,PNoob,was willst du jetzt herrausfinden? das Gateway?
+2011-01-05 13:48:06,DerHartmut,Sagt mal ehrlich: Wer von euch ist Edox?
+2011-01-05 13:48:54,sfan,PNoob:jetzt schon zum vorvorletzten eintrag
+2011-01-05 13:48:56,PNoob,"Es könnte Jidder sein, der hat heute wieder irgendwas geraucht. "
+2011-01-05 13:49:19,PNoob,ach welche Netzwerkkarten du hast?
+2011-01-05 13:49:25,sfan,ja
+2011-01-05 13:49:27,PNoob,sag doch einfach direkt ws du willt
+2011-01-05 13:49:30,PNoob,Linux?
+2011-01-05 13:49:32,PNoob,Windows?
+2011-01-05 13:49:35,sfan,ja ubuntu
+2011-01-05 13:49:40,PNoob,lspci
+2011-01-05 13:50:03,sfan,00:00.0 RAM memory: nVidia Corporation MCP67 Memory Controller (rev a2)
+2011-01-05 13:50:03,sfan,00:01.0 ISA bridge: nVidia Corporation MCP67 ISA Bridge (rev a2)
+2011-01-05 13:50:03,sfan,00:01.1 SMBus: nVidia Corporation MCP67 SMBus (rev a2)
+2011-01-05 13:50:03,sfan,00:01.2 RAM memory: nVidia Corporation MCP67 Memory Controller (rev a2)
+2011-01-05 13:50:03,sfan,00:01.3 Co-processor: nVidia Corporation MCP67 Co-processor (rev a2)
+2011-01-05 13:50:04,sfan,00:02.0 USB Controller: nVidia Corporation MCP67 OHCI USB 1.1 Controller (rev a2)
+2011-01-05 13:50:06,sfan,00:02.1 USB Controller: nVidia Corporation MCP67 EHCI USB 2.0 Controller (rev a2)
+2011-01-05 13:50:07,PNoob,doch hier
+2011-01-05 13:50:08,DerHartmut,m(
+2011-01-05 13:50:08,sfan,00:04.0 USB Controller: nVidia Corporation MCP67 OHCI USB 1.1 Controller (rev a2)
+2011-01-05 13:50:10,sfan,00:04.1 USB Controller: nVidia Corporation MCP67 EHCI USB 2.0 Controller (rev a2)
+2011-01-05 13:50:12,sfan,00:06.0 IDE interface: nVidia Corporation MCP67 IDE Controller (rev a1)
+2011-01-05 13:50:13,PNoob,+ nicht
+2011-01-05 13:50:14,sfan,00:07.0 Audio device: nVidia Corporation MCP67 High Definition Audio (rev a1)
+2011-01-05 13:50:16,sfan,00:08.0 PCI bridge: nVidia Corporation MCP67 PCI Bridge (rev a2)
+2011-01-05 13:50:20,PNoob,sfan: stop
+2011-01-05 13:50:20,sfan,00:09.0 IDE interface: nVidia Corporation MCP67 AHCI Controller (rev a2)
+2011-01-05 13:50:22,sfan,00:0a.0 Ethernet controller: nVidia Corporation MCP67 Ethernet (rev a2)
+2011-01-05 13:50:24,sfan,00:0b.0 PCI bridge: nVidia Corporation MCP67 PCI Express Bridge (rev a2)
+2011-01-05 13:50:26,sfan,00:0c.0 PCI bridge: nVidia Corporation MCP67 PCI Express Bridge (rev a2)
+2011-01-05 13:50:28,sfan,00:0d.0 PCI bridge: nVidia Corporation MCP67 PCI Express Bridge (rev a2)
+2011-01-05 13:50:30,sfan,00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] HyperTransport Technology Configuration
+2011-01-05 13:50:31,Svenska,"wie wäre es mit ""lspci | grep Net"" ?"
+2011-01-05 13:50:33,sfan,00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Address Map
+2011-01-05 13:50:34,Svenska,-.-
+2011-01-05 13:50:35,sfan,00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] DRAM Controller
+2011-01-05 13:50:37,sfan,00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] Miscellaneous Control
+2011-01-05 13:50:39,sfan,01:04.0 FireWire (IEEE 1394): Ricoh Co Ltd R5C832 IEEE 1394 Controller (rev 05)
+2011-01-05 13:50:41,sfan,01:04.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
+2011-01-05 13:50:43,sfan,01:04.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
+2011-01-05 13:50:45,sfan,01:04.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 12)
+2011-01-05 13:50:49,sfan,01:04.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev ff)
+2011-01-05 13:50:51,sfan,02:00.0 VGA compatibl
+2011-01-05 13:51:00,tev,ganz schön spammig hier ;)
+2011-01-05 13:51:00,sfan,05:00.0 Ethernet controller: Atheros Communications Inc. AR5001 Wireless Network Adapter (rev 01)
+2011-01-05 13:51:10,DerHartmut,sfan: pastebin.com
+2011-01-05 13:51:17,PNoob,pastebin.org
+2011-01-05 13:51:22,PNoob,nopaste.info
+2011-01-05 13:51:27,sfan,oh hätt ich dran denken können
+2011-01-05 13:51:29,DerHartmut,Normalerweise wärst du schon seit der 5. Zeile gekickt worden
+2011-01-05 13:51:35,tev,taljeth2 : wie hast du das mit GRUB2 gemacht?
+2011-01-05 13:51:48,Svenska,sfan: du willst einfach einen onboard-nvidia-ethernet-baustein
+2011-01-05 13:52:02,Svenska,mcp67 laut deinem mordspaste
+2011-01-05 13:52:11,Svenska,"wäre schön, wenn du die numerische id rauskriegst..."
+2011-01-05 13:52:26,PNoob,lspci -x war das glaube ich
+2011-01-05 13:52:28,Svenska,"""lspci -n"", und bitte NUR das gerät 00:0a.0"
+2011-01-05 13:52:54,sfan,00:0a.0 0200: 10de:054c (rev a2)
+2011-01-05 13:52:59,PNoob,"den WLAN Adapter, wird tyndur noch ganz lange nicht unterstützen."
+2011-01-05 13:53:11,Svenska,den meinte ich auch nicht
+2011-01-05 13:53:25,PNoob,MCP67 Ethernet
+2011-01-05 13:53:37,PNoob,laut pcidatabase.com
+2011-01-05 13:53:39,Svenska,"gut, also schreibst du jetzt ins forum, dass du gerne ""nVidia MCP67 [10de:054c]"" in tyndur hättest."
+2011-01-05 13:53:55,PNoob,bzw auf die tyndur Wunschliste
+2011-01-05 13:54:01,Svenska,"und ich behaupte, das wird schwierig."
+2011-01-05 13:54:06,Svenska,ja
+2011-01-05 13:54:18,tev,ich hätte auch noch Wünsche^^
+2011-01-05 13:54:24,Svenska,welche?
+2011-01-05 13:54:37,tev,irgendwas um torrents zu downloaden
+2011-01-05 13:54:49,tev,und etwas zum entpacken von archiven
+2011-01-05 13:54:56,Svenska,du willst lostio umbringen? :D
+2011-01-05 13:55:18,Svenska,also unzip und unrar sollten sich theoretisch leicht portieren lassen
+2011-01-05 13:55:32,PNoob,gibt es die nicht schon?
+2011-01-05 13:55:33,AGGROStar1991,"oh mein gott, er hat lostio getötet^^"
+2011-01-05 13:55:43,AGGROStar1991,ich hätte gern g++^^
+2011-01-05 13:55:45,PNoob,ich glaube gzip ist schon portiert oder nicht?
+2011-01-05 13:56:02,Svenska,torrent + archive = rar||zip||7z||ace||...
+2011-01-05 13:56:08,Svenska,aber sicher nicht tar und gzip ^^
+2011-01-05 13:56:08,sfan,für torrents man könnte CTorrent portieren
+2011-01-05 13:56:30,tev,ich weiß nicht genau wie es mit rtorrent aussieht
+2011-01-05 13:56:37,tev,ob der Open Source ist
+2011-01-05 13:57:15,sfan,cTorrent ist open source
+2011-01-05 13:57:19,sfan,ich muss weg
+2011-01-05 13:57:23,Svenska,sei weg :-)
+2011-01-05 13:57:52,tev,rtorrent ist laut Wikipedia unter der GPL
+2011-01-05 13:58:38,tev,"dann hol ich mir nen alten PC mit ner Netzwerkkarte, die von Tyndur unterstützt wird und lade alle möglichen Linuxdistris :)"
+2011-01-05 13:58:59,AGGROStar1991,und warum? xD
+2011-01-05 13:59:12,tev,"keine Ahnung, damit ich sie irgendwann testen kann"
+2011-01-05 13:59:14,PNoob,Ich hätte da auch noch Treiber Wunsch Atheros AR8132 PCI-E Fast Ethernet Controller [1969:1062]
+2011-01-05 13:59:24,tev,Debian will ich mal testen
+2011-01-05 13:59:34,tev,und Backtrack und so
+2011-01-05 13:59:57,AGGROStar1991,"backtrack is cool, es sei denn man will arbeiten xD"
+2011-01-05 14:00:00,Svenska,"ich hab für beide wünsche keine ahnung, inwieweit sie unterstützbar sind"
+2011-01-05 14:01:14,PNoob,"und natürlich ""PCIe Gigabit Ethernet Family Controller [10EC:8168]"" darf nicht fehlen"
+2011-01-05 14:01:41,PNoob,dann wären mein PC und mein Netbook Netzwerktechnisch unterstützt
+2011-01-05 14:01:49,PNoob,von WLAN beim Netbook mal abgesehen
+2011-01-05 14:02:13,Svenska,bei intel dürftest du uU glück haben
+2011-01-05 14:02:35,Svenska,da gibts doku
+2011-01-05 14:03:00,tev,                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+2011-01-05 14:03:00,tev,                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+2011-01-05 14:03:00,tev,                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+2011-01-05 14:03:06,tev,                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+2011-01-05 14:03:11,tev,                                                                           
+2011-01-05 14:03:14,tev,sry
+2011-01-05 14:03:33,tev,"Svenska: meine Wünsche finde ich sind nichts abartiges, was überhaupt nicht machbar wäre :)"
+2011-01-05 14:03:56,PNoob,was war das denn gerade?
+2011-01-05 14:04:17,tev,ich weiß nicht genau
+2011-01-05 14:04:27,tev,ich hab eigentlich gar nichts gemacht
+2011-01-05 14:04:43,AGGROStar1991,mitter nase auffer leertaste eingepennt^^
+2011-01-05 14:05:56,PNoob,*g*
+2011-01-05 14:06:26,bluecode,moin
+2011-01-05 14:06:47,PNoob,"Ich bin mal aufgewacht, mit einem schönem Muster auf der einen gesichtshälfte. Die Nacht hat für mich irgendwann beim PC spielen begonnen ohne das ich das gemerkt habe *g*"
+2011-01-05 14:06:53,PNoob,Moin bluecode
+2011-01-05 14:07:36,tev,moin blkuecode
+2011-01-05 14:08:00,PNoob,tev: blu<tab> wird zu bluecode
+2011-01-05 14:08:24,Svenska,tev: atheros weiß ich nicht und nvidia auch nicht
+2011-01-05 14:08:32,Svenska,bei intel gibt es eigentlich immer doku
+2011-01-05 14:08:53,taljeth2,Moin bluecode
+2011-01-05 14:09:02,tev,Svenska: meine Wünsche waren nur ein Torrentclient und ein Archivprogramm ;)
+2011-01-05 14:09:27,Svenska,"unzip und unrar finde ich machbar, torrent-clients für console kenne ich nicht"
+2011-01-05 14:09:35,Svenska,"aber ich weiß nicht, ob LostIOv2 das mag :D"
+2011-01-05 14:09:38,PNoob,"also beides wird von Linux nativ unterstützt, ohne eingeschränkte Treiber runterzuladen. also müsste es gehen"
+2011-01-05 14:09:43,tev,rtorrent nutzt ncurses
+2011-01-05 14:09:51,Svenska,PNoob: beides wurde von linux ewig lange nicht unterstützt
+2011-01-05 14:10:17,PNoob,also seit einem jahr auf jedenfall
+2011-01-05 14:10:31,PNoob,solange habe ich das Mainboard in meinem PC schon und es ging von anfang an
+2011-01-05 14:10:34,Svenska,"ja, aber die hardware gab es ewig ohne treiber"
+2011-01-05 14:10:38,tev,naja ich bin erstmal essen
+2011-01-05 14:10:44,PNoob,essen?
+2011-01-05 14:10:46,PNoob,oh
+2011-01-05 14:10:54,PNoob,ich glaube ich sollte mal essen machen
+2011-01-05 14:11:02,Svenska,"das klingt für mich dann immer nach community ohne hersteller-support, aber so ein datenblatt finde ich immer gut"
+2011-01-05 14:11:06,taljeth2,"Oh, und moin DerHartmut"
+2011-01-05 14:12:17,PNoob,Was ich ja schade finde ist das man Specs nicht Zentral sammeln darf
+2011-01-05 14:12:30,PNoob,um die anderen zugänglich zu machen
+2011-01-05 14:13:23,PNoob,12a0oläpßü#
+2011-01-05 14:13:25,Svenska,du darfst alle specs zentral sammeln
+2011-01-05 14:13:37,Svenska,sofern sie offen und frei verfügbar sind und nicht unter nda stehen
+2011-01-05 14:14:01,PNoob,ich dachte man darf das nicht
+2011-01-05 14:14:10,PNoob,irgendwie sowas sagte taljeth2 auch mal
+2011-01-05 14:14:15,Svenska,frei verfügbar darf man doch?
+2011-01-05 14:14:34,Svenska,"das problem ist, dass da meistens ein copyright-vermerk mit weitergabe-verboten ist :)"
+2011-01-05 14:14:59,PNoob,also auf gut Deutsch die meisten darf man nicht weitergeben
+2011-01-05 14:15:40,Svenska,ja
+2011-01-05 14:15:54,Svenska,weil die meiste nicht offen und frei verfügbar ist
+2011-01-05 14:16:11,PNoob,naja ich habe alle Specs und Manuals die ich so gesammelt habe bisher in ein git repo gepackt und das befindet sich auf meinem Server. da kommt auch keiner mal eben so ran
+2011-01-05 14:16:27,PNoob,aber ich kann mir halt jederzeit alles gesammelt runterziehen
+2011-01-05 14:17:13,Svenska,"du bist eine privatperson, das kommt noch dazu :)"
+2011-01-05 14:17:20,Svenska,du willst damit kommerziell nichts anfangen
+2011-01-05 14:17:57,AGGROStar1991,"hm aber gibt er sie weiter wenn er uns das pw für den server gibt? oder is das nur ""zugänglich machen"" was man vllt shcon wieder darf?"
+2011-01-05 14:18:50,Svenska,"wenn ich es ausdrucke und dir den papierstapel gebe, kann das keiner kontrollieren"
+2011-01-05 14:18:55,Svenska,aber pw = schutzmaßnahme
+2011-01-05 14:19:06,Svenska,"damit nicht mehr für jeden frei veröffentlicht, solange er das pw nicht daneben schreibt..."
+2011-01-05 14:19:35,taljeth2,"Ich vermute ja, dass PNoob die Specs schon nicht alle legal besitzt ;-)"
+2011-01-05 14:19:41,AGGROStar1991,genau das war auch mein gedankengang
+2011-01-05 14:19:49,AGGROStar1991,also svenskas^^
+2011-01-05 14:20:02,Svenska,:-)
+2011-01-05 14:20:11,taljeth2,"Die PCI-Spec hat zwar jeder, dürfte aber theoretisch so gut wie keiner haben ;-)"
+2011-01-05 14:20:36,bluecode,"DerHartmut: siehe Wiki, ich nehme an du weißt warum"
+2011-01-05 14:21:26,DerHartmut,"Ui, 2 Wochen"
+2011-01-05 14:21:29,DerHartmut,Super Sache
+2011-01-05 14:22:15,bluecode,"kannst ja mal versuchen zu erklären, was der Mist soll"
+2011-01-05 14:22:35,Svenska,?
+2011-01-05 14:22:59,DerHartmut,Oder einfach die Strafe hinnehmen
+2011-01-05 14:31:32,bluecode,DerHartmut: hast du an UDP/DHCP gearbeitet?
+2011-01-05 14:31:40,bluecode,für tyndur
+2011-01-05 14:32:13,DerHartmut,"Ja, ist aber defacto nichts bei zustande gekommen weil ich scheinbar zu dämlich bin simpelste Sachen zu implementieren"
+2011-01-05 14:32:20,DerHartmut,Wohl nicht nur scheinbar
+2011-01-05 14:32:43,bluecode,und du willst das auch nicht weitermachen?
+2011-01-05 14:33:23,DerHartmut,"Nope, weil ich es eh nicht checke und bevor ich noch 2000 Mal verspreche eine Mail mit Ergebnissen zu schicken werf' ich das Handtuch und bade seicht in Selbstmitleid"
+2011-01-05 14:33:57,tev,"pass auf, dass du nicht ertrinkst^^"
+2011-01-05 14:34:06,DerHartmut,"Ich bade, nicht tauche"
+2011-01-05 14:36:25,tev,taljeth : wie hst du das mit GRUB 2 gemacht
+2011-01-05 14:36:40,tev,ich finde nichts wie man das auf ein HD Image installieren kann
+2011-01-05 14:36:47,taljeth,Mit grub-setup
+2011-01-05 14:36:55,taljeth,"Das man offiziell nicht benutzen soll, weil es zu lowlevel ist"
+2011-01-05 14:37:23,taljeth,"Entsprechend gibt es auch keine gescheiten Fehlermeldungen, wenn man was fasch macht, was die Sache nicht vereinfacht hat ;-)"
+2011-01-05 14:37:36,tev,hmm
+2011-01-05 14:37:56,tev,ich hab schon mehrmals die manpage zu grub-setup gelesen
+2011-01-05 14:38:04,tev,aber ich schau weiter :)
+2011-01-05 14:38:06,bluecode,"taljeth: udp gibts noch nicht, oder was genau soll da gemacht werden?"
+2011-01-05 14:38:12,bluecode,oder meintest du nur DHCP über UDP?
+2011-01-05 14:38:17,taljeth,"tev: Wie gesagt, ich bau das kurz zusammen"
+2011-01-05 14:38:33,taljeth,"bluecode: UDP gibt es noch nicht, aber das sollte ja kein größeres Problem sein"
+2011-01-05 14:38:35,tev,"mein schöner patch -.-"""
+2011-01-05 14:40:02,bluecode,"wahrscheinlich muss man auch ne ebene tiefer was schrauben, dhcp verwendet ja doofe broadcasts"
+2011-01-05 14:41:35,tev,taljeth: lass mich bitte weiter probieren ok?
+2011-01-05 14:42:37,taljeth,Hindern kann ich dich nicht daran
+2011-01-05 14:42:45,tev,:)
+2011-01-05 14:42:59,bluecode,"dns über tcp, ah :-D"
+2011-01-05 14:43:13,taljeth,Genau *g*
+2011-01-05 14:43:15,tev,"ich will das zu ende machen, weil ich jetzt grad ne geniale Idee hab, die wahrscheinlich gar nicht genial ist^^"
+2011-01-05 14:44:39,bluecode,"taljeth: wie war denn bei Netzwerk das bigpicture? Netzwerktreiber & tcpip sind jeweils eigene Prozesse und der tcp/ip stack (inklusive ethernet und arp) sind mittlerweile in tcpip, oder?"
+2011-01-05 14:45:03,taljeth,"Ethernet müsste im Netzwerktreiber sind, ARP hast du mal nach tcpip verschoben"
+2011-01-05 14:45:11,taljeth,s/sind/sein/
+2011-01-05 14:46:18,bluecode,"hm, wo finde ich denn den teil von ethernet den der treiber macht? cdi?"
+2011-01-05 14:46:40,taljeth,"Hm, ich glaube, du hast doch recht"
+2011-01-05 14:46:47,taljeth,"Ich schau gerade selber, wo das steckt ;-)"
+2011-01-05 14:47:07,taljeth,"Jo, Ethernet ist doch auch in tcpip"
+2011-01-05 14:49:38,bluecode,habt ihr eigentlich ein ping oder so?
+2011-01-05 14:49:50,taljeth,ICMP gibt es auch nicht
+2011-01-05 14:50:14,PNoob,baut ICMP nicht auf UDP auf?
+2011-01-05 14:50:20,bluecode,nein
+2011-01-05 14:50:23,taljeth,"Also wenn du willst, kannst du das gleich noch mitmachen ;-)"
+2011-01-05 14:50:23,PNoob,oder ist das was eigenes
+2011-01-05 14:50:35,bluecode,das liegt eher darunter
+2011-01-05 14:50:42,bluecode,bzw. unterhalb von TCP/UDP
+2011-01-05 14:50:47,taljeth,Daneben eher
+2011-01-05 14:50:54,bluecode,nicht neben IP?
+2011-01-05 14:51:01,Svenska,nein
+2011-01-05 14:51:03,taljeth,"Nein, ICMP baut auf IP auf"
+2011-01-05 14:51:06,Homix,"afaik ist es überhalt von IP, also auf gleicher ebene wie TCP/UDP"
+2011-01-05 14:51:08,Svenska,"ping läuft mit ip-adressen, also nutzt es ip"
+2011-01-05 14:51:15,Homix,weil ICMP ja IP pakete sind oder?
+2011-01-05 14:51:22,bluecode,"schon klar, dachte aber es gehört zu IP"
+2011-01-05 14:51:27,Svenska,icmp liegt neben udp und tcp
+2011-01-05 14:51:58,bluecode,"neben erscheint mir falsch, weil TCP doch ICMP zwingend braucht, wenn man das ganz korrekt machen will"
+2011-01-05 14:52:08,bluecode,"*""neben"""
+2011-01-05 14:52:40,Svenska,laut wikipedia ist es daneben
+2011-01-05 14:52:44,PNoob,Wikipedia sagt es liegt genau auf IP und TCP und UDP liegen auch direkt auf IP
+2011-01-05 14:52:45,Homix,hm ja wahrscheinlich dann dazwischen ;)
+2011-01-05 14:52:52,Svenska,nein
+2011-01-05 14:52:54,PNoob,also ist es ein und die selbe stufe
+2011-01-05 14:53:15,Svenska,hmm
+2011-01-05 14:53:18,Svenska,das ist verwirrend
+2011-01-05 14:53:19,bluecode,wikipedia lügt doch :-P
+2011-01-05 14:53:29,Svenska,im tcp/ip-referenzmodell ist es auf der internetschicht = osi 3
+2011-01-05 14:53:34,Svenska,neben ip
+2011-01-05 14:53:58,bluecode,"""ICMP ist Bestandteil von IPv4, wird aber wie ein eigenständiges Protokoll behandelt."" sagt wikipedia unter ICMP"
+2011-01-05 14:54:03,PNoob,bluecode: wikipedia lügt nie
+2011-01-05 14:54:24,Homix,lol
+2011-01-05 14:54:36,Svenska,"sage nie nie, denn dann lügst du D"
+2011-01-05 14:54:37,Svenska,:D
+2011-01-05 14:54:49,PNoob,OK
+2011-01-05 14:55:08,bluecode,du lügst doch Svenska ;-)
+2011-01-05 14:55:16,Svenska,;-)
+2011-01-05 14:55:30,bluecode,oder hebt sich das beim double negative wieder auf? *g*
+2011-01-05 14:56:11,PNoob,bluecode: Svenska lügt genauso selten wie Wikipedia
+2011-01-05 14:56:19,Svenska,"""Auch wenn ICMPv6 auf derselben Netzwerkschicht ist wie IPv6, werden die ICMPv6-Nachrichten vor dem Versenden in IPv6-Pakete eingepackt und so verschickt."""
+2011-01-05 14:56:29,bluecode,"sch klar, Svenska"
+2011-01-05 14:56:39,Svenska,bei ipv4 ist das anders
+2011-01-05 14:57:08,Svenska,ne ist es doch nicht
+2011-01-05 14:57:10,Svenska,*verwirrt*
+2011-01-05 14:57:20,bluecode,was soll da anders sein?
+2011-01-05 14:57:28,taljeth,"Hm, Ubuntu installiert nichtmal einen vim per Default? :-/"
+2011-01-05 14:57:40,Svenska,"nein, der installiert vim-tiny, du möchtest vim-full"
+2011-01-05 14:57:49,Svenska,da ist nichts anders.
+2011-01-05 14:58:06,Svenska,"ICMP ist ein eigenes protokoll, wird aber wie UDP versendet"
+2011-01-05 14:58:06,Svenska,so
+2011-01-05 14:58:49,bluecode,taljeth: hat das fehlen von Ping irgendeinen fundamentalen Grund?
+2011-01-05 14:58:55,taljeth,Faulheit?
+2011-01-05 14:59:01,Svenska,kein udp/icmp? :D
+2011-01-05 14:59:10,taljeth,Das läuft unter Faulheit ;-)
+2011-01-05 14:59:34,bluecode,hm
+2011-01-05 14:59:54,bluecode,"ich weiß nicht, irgendwie erinner ich mich, dass Broadcasts irgendwie doof waren"
+2011-01-05 15:01:21,Svenska,broadcasts sind eifnacher als multicast
+2011-01-05 15:04:20,bluecode,"möglich, die hab ich noch nie implementiert"
+2011-01-05 15:10:53,PNoob,Jetzt fängt die Arbeit an
+2011-01-05 15:11:02,PNoob,ich hab 22 GB Musik hier als MP3
+2011-01-05 15:11:14,PNoob,die soll nacher ogg/vorbis sein
+2011-01-05 15:17:36,DerHartmut,mencoder und gut
+2011-01-05 15:20:26,PNoob,die Tags sollen aber erhalten bleiben
+2011-01-05 15:20:35,PNoob,bzw. in die ogg Dateien eingetragen werden
+2011-01-05 15:20:58,PNoob,"ich baste mir gerade nen kleines script, was mir das ganze etwas vereinfach soll"
+2011-01-05 15:29:33,tev,PNoob: das gehört hier nicht rein^^
+2011-01-05 15:30:06,tev,"weil du regst dich ja auch auf wegen meinen Torrentversuchen, also lass mich meins machen ok?"
+2011-01-05 15:32:29,PNoob,du hast hier mehrere Tagen den Mist hier reingeschrieben
+2011-01-05 15:32:35,PNoob,ich habe jetzt einmal was geschrieben
+2011-01-05 15:32:57,Svenska,würdet ihr eure probleme bitte mit fäusten oder zumindest in einem qry regeln? danke.
+2011-01-05 15:33:17,tev,bin grad dabei^^
+2011-01-05 15:34:02,PNoob,Ist Geklärt
+2011-01-05 15:51:03,taljeth,"Ui, er bootet :-)"
+2011-01-05 15:51:22,tev,wer?
+2011-01-05 15:51:35,taljeth,Der GRUB 2
+2011-01-05 15:52:58,tev,als HD Image oder?
+2011-01-05 15:53:00,taljeth,Ja
+2011-01-05 15:53:47,tev,taljeth: na gut dann mach du das
+2011-01-05 15:54:08,tev,"wäre ja sinnlos, wenn du das einmal machst und ich auch noch"
+2011-01-05 15:55:38,tev,taljeth: dann mach ich lieber was anderes dann oder?
+2011-01-05 15:55:56,taljeth,"bluecode: Falls du es mal ausprobieren willst, http://pastebin.com/55v933Fd"
+2011-01-05 15:56:09,taljeth,Und tev darf es sich natürlich als Komplettlösung anschauen ;-)
+2011-01-05 15:56:24,bluecode,tev darf was ins wiki dazu schreiben :-)
+2011-01-05 15:57:06,tev,was soll ich da dann schreiben?^^
+2011-01-05 15:57:10,taljeth,Am meisten mag ich an diesem Patch die convert_menu_lst() ;-)
+2011-01-05 15:58:21,tev,"taljeth: dann kann ich ja irgendwas anderes machen an tyndur, weil der Teil ist ja jetzt auch abgeschlossen"
+2011-01-05 15:58:40,taljeth,Nur zu :-)
+2011-01-05 15:58:53,bluecode,taljeth: make clean entfernt src/modules/c/mousetest/mtest und src/modules/c/shell/sh nicht?
+2011-01-05 15:59:02,tev,ich muss bloß noch was suchen
+2011-01-05 15:59:09,taljeth,"bluecode: Öhm, sollte es"
+2011-01-05 15:59:10,tev,was ich machen kann
+2011-01-05 15:59:20,taljeth,Oder löscht der nur *.mod?
+2011-01-05 15:59:52,PNoob,taljeth: das script benutzt ja gar nicht euer create_partition script
+2011-01-05 15:59:55,PNoob,oder gucke ich falsch?
+2011-01-05 16:00:01,taljeth,Aber die Binaries werden ja eh jedesmal neu gelinkt
+2011-01-05 16:00:06,taljeth,"PNoob: Ich glaube, du übersiehst was"
+2011-01-05 16:00:20,taljeth,Ich habe das normale image_hd-Skript angepasst
+2011-01-05 16:00:32,taljeth,Zeile 104
+2011-01-05 16:01:56,PNoob,mist
+2011-01-05 16:15:27,tev,taljeth: was gäbe es denn zu tun?
+2011-01-05 16:15:56,AGGROStar1991,GUI ;)
+2011-01-05 16:16:22,tev,die kann ich ja in Assembler schreiben ;)
+2011-01-05 16:16:40,AGGROStar1991,klar
+2011-01-05 16:16:53,AGGROStar1991,"oder noch toller, in maschinencode"
+2011-01-05 16:17:02,AGGROStar1991,"aber nich etwa hex, sondern mit dualzahlen :D"
+2011-01-05 16:17:50,Svenska,sinnvoll wäre eine abstraktion von 2D-grafik
+2011-01-05 16:18:31,tev,"du meinst, damit man einfach nen Kreis malen könnte zum Beispiel oder?"
+2011-01-05 16:18:39,Homix,kennt sich hier jemand mit Qt aus?
+2011-01-05 16:18:54,Homix,oder würde es jemand (nicht) empfehlen?
+2011-01-05 16:19:10,AGGROStar1991,ich nehm immer TK :P
+2011-01-05 16:19:22,AGGROStar1991,aber soll wohl brauchbar sein^^
+2011-01-05 16:19:25,Svenska,naja
+2011-01-05 16:19:50,Svenska,"im einfachsten fall definierst du die abstraktion als ""[X|Y] = 32bit Farbwert"""
+2011-01-05 16:20:07,Svenska,"damit kannst du einen VESA-treiber machen, aber du kannst damit keine beschleunigung ins CDI einbringen"
+2011-01-05 16:20:40,Svenska,"das heißt, du könntest dich mal informieren, welche 2D-beschleunigungsfunktionen übliche grafikkarten mitbringen"
+2011-01-05 16:21:20,Svenska,"und daraus eine sinnvolle cdi-api basteln, sodaß man dann eine grafikkarte mitsamt 2d-beschleunigung als cdi-treiber haben kann"
+2011-01-05 16:21:35,Svenska,"= menge arbeit, aber wenig programmieren :D"
+2011-01-05 16:22:20,tev,hmm
+2011-01-05 16:22:30,tev,"ich schau mich erstmal um, was ich noch so machen kann^^"
+2011-01-05 16:22:36,Homix,*g*
+2011-01-05 16:32:30,Svenska,du könntest tyndur englisch beibringen :)
+2011-01-05 16:32:44,tev,"das wäre was, was ich tun könnte^^"
+2011-01-05 16:37:12,taljeth,Einen Grafiktreiber haben wir doch mehr oder weniger. Nur noch nicht gemergt und teilweise buggy. ;-)
+2011-01-05 16:37:44,taljeth,"Stimmt, die Shell braucht noch Übersetzungen und servmgr kann noch gar nicht ausländisch"
+2011-01-05 16:38:39,AGGROStar1991,was is denn da alles zu übersetzen?
+2011-01-05 16:39:45,SHyx0rmZ,$ strings servmgr ;)
+2011-01-05 16:41:18,Svenska,ist der grafiktreiber cdifiziert?
+2011-01-05 16:44:44,PNoob,für welche Karte ist der Treiber denn?
+2011-01-05 16:44:54,PNoob,oder ist das VESA?
+2011-01-05 16:44:56,tev,der wird VESA sein oder?
+2011-01-05 16:45:46,tev,wie ist das denn mit diesen Übersetzungen?
+2011-01-05 16:46:08,Svenska,"ich vermute vesa, weil ist am sinnvollsten"
+2011-01-05 16:46:26,Svenska,"nur wenn du die treiber-api auf vesa zuschneidest, kannst du damit kein bitblt beschleunigen :)"
+2011-01-05 16:47:55,FreakyPenguin,Svenska: Schau dir den Kram doch einfach an? ;-)
+2011-01-05 16:48:29,Svenska,wo ist das? :)
+2011-01-05 16:49:05,AGGROStar1991,"sagt mal, warum ham die jungs vom Ansi-Komittee eig überall bei den memcpy... funktionen voidpointer genommen?"
+2011-01-05 16:49:28,FreakyPenguin,Ich nehme mal an das ist der aktuellste Branch dazu: http://git.tyndur.org/?p=tyndur/kevin.git;a=shortlog;h=refs/heads/video
+2011-01-05 16:49:40,Svenska,weil ein voidpointer ein pointer ohne datentyp ist. das ist für speicher schon angemessen.
+2011-01-05 16:49:43,oern,hallo
+2011-01-05 16:49:49,Svenska,hi
+2011-01-05 16:49:58,tev,moin oern
+2011-01-05 16:50:14,AGGROStar1991,moin
+2011-01-05 16:50:28,AGGROStar1991,"naja aber wenn ich letztendlich byteweise vergleichen will, warum net char?"
+2011-01-05 16:50:30,AGGROStar1991,^^
+2011-01-05 16:50:53,Svenska,weil du nicht unbedingt mit chars arbeiten möchtest. ;-)
+2011-01-05 16:51:12,AGGROStar1991,ok isn argument^^
+2011-01-05 16:51:29,DickHuuhn,"Als K&R C entworfen haben gabs noch keine void* Pointer, da hat man dann für Pointer standardmäßig immer int* genommen afaik"
+2011-01-05 16:51:34,AGGROStar1991,"stimmt, man könnte den speicher ja auch intweise oder so vergleichen wollen"
+2011-01-05 16:51:56,DickHuuhn,weiß zwar nicht was ich damit jetzt aussagen will aber das werfe ich mal so ein lol
+2011-01-05 16:52:04,Svenska,und auf arm/sparc muss alles auf 4bytes aligned sein
+2011-01-05 16:52:12,Svenska,da geht char schonmal prinzipiell nicht :)
+2011-01-05 16:52:25,PNoob,re
+2011-01-05 16:52:40,AGGROStar1991,ok das isn argument^^
+2011-01-05 16:53:11,bluecode,Svenska: natürlich geht das (in C)
+2011-01-05 16:53:29,Svenska,"ja, aber du hast in dem moment große performanceverluste"
+2011-01-05 16:53:36,bluecode,natürlich
+2011-01-05 16:53:41,bluecode,hast du aber auf x86 auch
+2011-01-05 16:53:46,DickHuuhn,performance ist überbewertet :3
+2011-01-05 16:53:48,Svenska,aber nicht so schlimm
+2011-01-05 16:53:50,DickHuuhn,darum sag ich gute nacht
+2011-01-05 16:53:54,Svenska,gn8
+2011-01-05 16:54:09,bluecode,huch? Schon wieder so spät? :-)
+2011-01-05 16:54:43,taljeth,"AGGROStar1991: Für void* braucht man keine Casts, für char* schon"
+2011-01-05 16:54:54,bluecode,wollt ich auch grad hinzufügen :-)
+2011-01-05 16:56:21,bluecode,"hm, was sagt strict aliasing eigentlich dazu, dass man außerhalb von memcpy zB einen short-Pointer hat und innerhalb der zu einem int-Pointer gecastet wird?"
+2011-01-05 16:57:14,bluecode,"äh ja, grammatik!"
+2011-01-05 16:57:55,taljeth,bluecode: Tut das Plattenimage bei dir übrigens?
+2011-01-05 16:58:10,XanClic,"Svenska: Hm? Bei ARM kann man mit LDR auch Bytes von unalignten Adressen lesen, afaik"
+2011-01-05 16:58:35,Svenska,"dann zieh ich die aussage zurück. ich weiß nur, dass debian-arm damit große, große probleme hatte"
+2011-01-05 17:00:01,Svenska,FreakyPenguin: da fehlt bitblt :-)
+2011-01-05 17:00:33,taljeth,Sicher?
+2011-01-05 17:00:42,Svenska,ich hab es nicht gefunden
+2011-01-05 17:00:51,bluecode,taljeth: ich bin zu doof zum anwenden des patches
+2011-01-05 17:01:15,taljeth,git am foo.patch tut nicht?
+2011-01-05 17:01:30,bluecode,"""previous rebase directory /home/bluecode/tyndur/.git/rebase-apply still exists but mbox given."" sagt das"
+2011-01-05 17:02:30,bluecode,"naja, verzeichnis gelöscht, scheint zu tun"
+2011-01-05 17:02:36,Svenska,taljeth: also ich hab in der src/modules/cdi/include/video.h nachgeguckt
+2011-01-05 17:02:37,bluecode,also das git am
+2011-01-05 17:04:37,bluecode,"taljeth: öhm, welchen make-target soll das haben?"
+2011-01-05 17:04:44,taljeth,"Svenska: Hm, draw_bitmap_part sollte nah dran sein, oder?"
+2011-01-05 17:05:09,taljeth,"bluecode: Ah, das hab ich noch vergessen *g* Dann build/scripts/grub2_hd von Hand ausführen"
+2011-01-05 17:05:48,taljeth,Oder besser build/scripts/updateroot && build/scripts/grub2_hd
+2011-01-05 17:06:34,Svenska,taljeth: damit liegt die bitmap aber nicht in der grafikkarte und das ist der unterschied
+2011-01-05 17:06:50,taljeth,"Hm, wieso nicht?"
+2011-01-05 17:06:55,bluecode,"hm, tutet nicht"
+2011-01-05 17:07:10,taljeth,Was kommt denn raus?
+2011-01-05 17:07:50,bluecode,"es ist zwar grub2 auf dem image, grub2 wird auch gestartet, aber er sagt beim booten des OS dann ""error: unknown command 'multiboot'"" und ""error: unknown command 'module'"""
+2011-01-05 17:08:13,taljeth,"Das heißt, du bekommst eine GRUB-Shell?"
+2011-01-05 17:08:20,bluecode,"nein, schon das menü"
+2011-01-05 17:08:26,Svenska,"taljeth: hmm, stimmt. die bitmap liegt im gerät."
+2011-01-05 17:08:30,bluecode,aber wenn man dort dann eins der tyndurs auswählt kommt der fehler
+2011-01-05 17:08:49,taljeth,"Hm, geh mal in die Shell, mach ein insmod multiboot und dann nochmal"
+2011-01-05 17:11:30,bluecode,kommt man dann irgendwie wieder zurück ins Menü? *g*
+2011-01-05 17:12:00,bluecode,"danach hat zumindest ein ""multiboot bla\nboot"" getan, aber Lust alles einzugeben hab ich nur bedingt"
+2011-01-05 17:13:22,taljeth,Dann müssen wir das insmod halt noch an den Anfang der grub.cfg schreiben
+2011-01-05 17:13:41,taljeth,"Ich frag mich nur, warum er das Modul bei mir automagisch geladen hat"
+2011-01-05 17:13:44,bluecode,fragt sich warum das beim cdrom image nicht notwendig war
+2011-01-05 17:14:11,taljeth,"Das benutzt doch grub-mkrescue, was sowieso alle mögliche Magie macht, oder?"
+2011-01-05 17:14:20,bluecode,achso
+2011-01-05 17:14:32,bluecode,wo ist denn die grub.cfg die du atm nutzt?
+2011-01-05 17:14:45,taljeth,Die wird von grub2_hd generiert
+2011-01-05 17:15:31,bluecode,"ah, das convert_menu_lst auf das du so stolz bist *g*"
+2011-01-05 17:15:41,taljeth,hehe ;-)
+2011-01-05 17:15:52,bluecode,das darfst du machen :-)
+2011-01-05 17:16:17,taljeth,"Unterhalb von ""# GRUB-Konfiguration kopieren"" wird die Datei erzeugt"
+2011-01-05 17:16:39,taljeth,"Wenn du nach dem rm ein ""echo insmod multiboot > $MOUNT/boot/grub/grub.cfg"" reinbaust, sollte das reichen"
+2011-01-05 17:17:28,bluecode,joa tütet
+2011-01-05 17:17:43,taljeth,"Was für eine Ubuntu-Version benutzt du denn, dass das bei dir anders läuft als bei mir?"
+2011-01-05 17:18:02,bluecode,10.10
+2011-01-05 17:18:25,bluecode,"ihr habt kein ""less"" unter tyndur?"
+2011-01-05 17:18:45,bluecode,"achso, mit lbuilds wahrscheinlich erst"
+2011-01-05 17:18:58,taljeth,"Hm, ich glaube auch mit lbuilds nicht"
+2011-01-05 17:19:09,taljeth,Wo gehört less denn rein?
+2011-01-05 17:19:22,taljeth,"Ah, eigenes Paket?"
+2011-01-05 17:19:27,bluecode,kA
+2011-01-05 17:20:00,bluecode,hmjo
+2011-01-05 17:20:08,taljeth,"Hm, aber 10.10 hat meine VM auch und da tut es ohne das insmod. Seltsam."
+2011-01-05 17:20:43,bluecode,"ist bei mir keine neuinstallation, insofern kann das bei mir leicht mal kaputt sein"
+2011-01-05 17:22:46,PNoob,"wenn mir das mal einer fertig gepätscht als tar.z geben kann, kann ich das auf meinem PC testen"
+2011-01-05 17:23:04,PNoob,der ist von Ubuntu 9.04 hoch geupdatet
+2011-01-05 17:23:47,Papierkorb,"Hat jemand ein Dokument, wo drin steht, wie C std mäßig (gcc/mingw zumindest) parameter übergibt auf 64bit maschinen?"
+2011-01-05 17:24:49,taljeth,Unser Wiki verlinkt auf http://www.x86-64.org/documentation.html
+2011-01-05 17:24:58,PNoob,Ich glaube bei Wiki Pedia setht dazu was
+2011-01-05 17:25:09,bluecode,es macht keinen Spaß Papierkorb ;-)
+2011-01-05 17:25:31,bluecode,"falls du es nicht weißt, es gibt für stdarg.h gcc-builtin-Makros dafür"
+2011-01-05 17:26:07,Svenska,ich verabschiede mich dann mal für jetzt
+2011-01-05 17:26:11,Papierkorb,"Eigtl wollte ich mein Event System mal auf 64bit porten, aber das kann man dann wohl mal schön vergessen ^^"
+2011-01-05 17:26:20,Svenska,"mal schauen, wieviel verspätung der zug heute hat"
+2011-01-05 17:26:34,Papierkorb,hf & gl
+2011-01-05 17:26:35,Svenska,unter 10 minuten wär top
+2011-01-05 17:26:48,Svenska,etwas über 45 minuten wär auch okay
+2011-01-05 17:26:51,Svenska,dazwischen ist scheiße.
+2011-01-05 17:27:04,Svenska,die welt ist so ungeheizt.
+2011-01-05 17:27:16,bluecode,*g*
+2011-01-05 17:27:37,AGGROStar1991,xD
+2011-01-05 17:27:53,AGGROStar1991,svenska ich hatte sonntag 4 stunden verspätung ;)
+2011-01-05 17:28:02,Svenska,"ja, ich hab anschluss per regionalzug, straßenbahn, notfalls bus"
+2011-01-05 17:28:08,Papierkorb,"gibts für gcc eine flag vor einer funktion oder so, womit man die übergabe wie bei 32bit erzwingen kann?"
+2011-01-05 17:28:24,Svenska,die fahren aber gleichzeitig. die straßenbahntaktung (alle 30min) ist das mindeste...
+2011-01-05 17:28:49,Papierkorb,mein schulbus fährt nach der schule exakt 64mins nach schulschluss. 30mins wären ein traum...
+2011-01-05 17:28:54,Papierkorb,*60mins
+2011-01-05 17:29:01,tev,ich kann keine Crosscompiler für lbuilds bauen mit dem build_crosstoll script
+2011-01-05 17:29:02,Svenska,nett
+2011-01-05 17:29:05,Svenska,"so, cya"
+2011-01-05 17:29:09,taljeth,bd
+2011-01-05 17:29:09,Svenska,büro wird abgeschlossen ^^
+2011-01-05 17:30:46,tev,gibts eigentlich schon nen grafiktreiber für tyndur?
+2011-01-05 17:31:10,taljeth,"Halbfertig, ja"
+2011-01-05 17:31:11,Papierkorb,"80x25 sind alles, was der mann braucht"
+2011-01-05 17:32:11,Papierkorb,s/sind/ist/
+2011-01-05 17:32:30,tev,weil AGGROStar1991 und ich könnten uns ansonsten um ne GUI kümmern
+2011-01-05 17:32:32,bluecode,Papierkorb: unwahrscheinlich
+2011-01-05 17:34:16,taljeth,"tev: Sagt Bescheid, wenn ihr meine GUI-Anfänge haben wollt. Aber wahrscheinlich wollt ihr lieber von null anfangen, oder?"
+2011-01-05 17:34:38,AGGROStar1991,nö kannste schonmal herzeigen^^
+2011-01-05 17:34:55,AGGROStar1991,und ne schnittstelle für den graka treiber bräuchten wir iwie mal
+2011-01-05 17:34:58,taljeth,"Hm, das ist die Frage, inwieweit es herzeigbar ist *g*"
+2011-01-05 17:35:12,AGGROStar1991,wie schlimm kann es schon sein :D
+2011-01-05 17:35:45,taljeth,"Was die Treiber betrifft, hat Freaky ja oben den Branch verlinkt: http://git.tyndur.org/?p=tyndur/kevin.git;a=shortlog;h=refs/heads/video"
+2011-01-05 17:35:58,oern,"wenn es einen grafiktreiber gibt, würde ich auch bei der gui mitmachen"
+2011-01-05 17:36:10,tev,dann wären wir zu dritt :)
+2011-01-05 17:36:39,taljeth,Dann hätte das GUI-Team ja fast wieder die ursprüngliche Größe ;-)
+2011-01-05 17:39:33,oern,wie kann man diesen grafiktreiber runterladen?
+2011-01-05 17:40:07,tev,der ist ja nicht im Masterrepo
+2011-01-05 17:40:19,taljeth,"Ich nehme an, ihr habt alle das normale Repo geklont, oder?"
+2011-01-05 17:40:29,tev,ich schon
+2011-01-05 17:40:30,oern,ja
+2011-01-05 17:40:40,tev,AGGROStar1991 hast noch gar nichts^^
+2011-01-05 17:40:42,AGGROStar1991,nö xD
+2011-01-05 17:41:06,taljeth,Dann git remote add gto-kevin git://git.tyndur.org/tyndur/kevin.git; git fetch gto-kevin
+2011-01-05 17:41:07,PNoob,ihr müst taljeth's repo clonen und dabei achten das ihr den vieo brachnch clont
+2011-01-05 17:41:15,PNoob,dann sollte das tun
+2011-01-05 17:41:20,oern,und wie geht das?
+2011-01-05 17:41:46,taljeth,"Und wenn ihr das Repo damit runtergeladen habt, könnte ihr z.B. mit git checkout gto-kevin/video den Branch auschecken"
+2011-01-05 17:41:59,tev,"taljeth: der Treiber ist noch nicht so weit, dass man ihn ins normale Repo packen könnte oder?"
+2011-01-05 17:42:19,taljeth,"Hm, nah dran, aber nicht ganz"
+2011-01-05 17:42:33,taljeth,"Zumindest in den Textmodus zurückwechseln können wär nett, bevor wir das machen"
+2011-01-05 17:46:42,tev,taljeth: ne GUI ist ja was größeres
+2011-01-05 17:46:58,taljeth,Kommt drauf an ;-)
+2011-01-05 17:47:17,tev,wohin sollen wir unsere commits committen ? ^^
+2011-01-05 17:47:58,taljeth,"Hm, ein neues Repo wäre wohl das geschickteste"
+2011-01-05 17:48:09,taljeth,Und über lbuilds bauen
+2011-01-05 17:51:25,PNoob,taljeth: richtest du bei euch eins ein oder wollte ihr sonst nen repo auf meinem git server haben?
+2011-01-05 17:51:52,taljeth,Können wir schon auch auf tyndur.org machen
+2011-01-05 17:52:07,PNoob,OK
+2011-01-05 17:52:13,PNoob,war auch nur ein angebot
+2011-01-05 17:52:25,taljeth,"Ansonsten gäbe es immer noch repo.or.cz, Github usw."
+2011-01-05 17:52:42,PNoob,repo.org.cz geht nicht
+2011-01-05 17:53:01,taljeth,Du hast ein zusätzliches g eingebaut
+2011-01-05 17:53:25,PNoob,ich kenne die seite
+2011-01-05 17:53:30,taljeth,"Und es tut garantiert, da hab ich seit Ewigkeiten mein qemu-Repo dort"
+2011-01-05 17:53:50,bluecode,"inwiefern soll es denn nicht tun, PNoob?"
+2011-01-05 17:53:51,PNoob,"wenn ich etwas commiten will, soll ich immer ein passwort eingeben"
+2011-01-05 17:53:59,PNoob,und welches passwort ist es?
+2011-01-05 17:54:03,taljeth,Du musst deinen Public Key hochladen
+2011-01-05 17:54:09,PNoob,hab ich gemacht
+2011-01-05 17:54:16,PNoob,trotzdem soll ich nen passwort eingeben
+2011-01-05 17:55:29,bluecode,"könnte es ssh sein, dass ein Passwort will?"
+2011-01-05 17:55:37,bluecode,"weil ""SSH is used for pushing (the ssh protocol), your SSH key authenticates you - there is no password (though we recommend that your SSH key is password-protected;"" hört sich so an"
+2011-01-05 17:56:16,bluecode,also das tool ssh meinte ich oben
+2011-01-05 17:56:25,bluecode,um an den privkey zu kommen
+2011-01-05 17:58:52,PNoob,ne
+2011-01-05 17:58:54,PNoob,kann nicht sein
+2011-01-05 17:59:06,PNoob,weil gitorious mit den gleichen lkey nämlich geht
+2011-01-05 18:04:37,PNoob,das einrichten einer tyndur build umgebung dauert ein wenig lange
+2011-01-05 18:04:55,PNoob,die binutils werden noch kompiliert
+2011-01-05 18:05:36,taljeth,"Deswegen bauen wir das Kernsystem ohne Crosscompiler, obwohl das eigenlich unsauber ist"
+2011-01-05 18:06:00,PNoob,muss man nach build_crosstools einmal das kernsystem bauen?
+2011-01-05 18:06:17,taljeth,"Nein, das benutzt die Crosstools nicht"
+2011-01-05 18:06:46,PNoob,"naja aber danach wird ja mit ""scripts/update_env"" die libc rüberkopiert ode rnicht?"
+2011-01-05 18:06:55,PNoob,also muss die doch einmal gebaut sein oder?
+2011-01-05 18:07:30,AGGROStar1991,http://pastebin.com/EGQubFNf
+2011-01-05 18:07:58,PNoob,libgcc fehlt
+2011-01-05 18:08:03,AGGROStar1991,"kann mir mal wer verraten wo der fehler liegt? hab 32bit libc drauf, nur das repo laut der seite geclont und make"
+2011-01-05 18:08:11,AGGROStar1991,aber an sich sitz ich vor 64 bit
+2011-01-05 18:08:23,PNoob,steht da sogar auf der seite
+2011-01-05 18:08:28,taljeth,"PNoob: Ach so, ja einmal bauen ist nötig"
+2011-01-05 18:08:33,PNoob,hab ich da selber mal hingeschrieben
+2011-01-05 18:08:37,PNoob,taljeth: danke
+2011-01-05 18:08:47,taljeth,PNoob: Am besten mit aktivierten libc-Stubs
+2011-01-05 18:08:50,PNoob,AGGROStar1991: du musst eine 32 Bit libgcc installieren
+2011-01-05 18:08:55,AGGROStar1991,habe ich
+2011-01-05 18:09:02,PNoob,taljeth: das mache ich wie?
+2011-01-05 18:09:04,taljeth,AGGROStar1991: Offenbar nicht ;-)
+2011-01-05 18:09:16,AGGROStar1991,synaptic sagt das aber xD
+2011-01-05 18:09:20,taljeth,PNoob: src/include/lost/config.h
+2011-01-05 18:09:25,PNoob,AGGROStar1991: nicht die libc die _libgcc_
+2011-01-05 18:09:30,taljeth,AGGROStar1991: Was sagt gcc -m32 -print-libgcc-file-name?
+2011-01-05 18:09:43,PNoob,AGGROStar1991: du hast eine 64 Bit libgcc installiert
+2011-01-05 18:09:50,PNoob,du benötigst aber eine 32 Bit version
+2011-01-05 18:10:38,AGGROStar1991,oh :D
+2011-01-05 18:11:12,tev,hat týndur unterstützung für Unicode?
+2011-01-05 18:11:50,AGGROStar1991,ich brauch echt mal ne brille^^
+2011-01-05 18:12:02,taljeth,tev: Ja
+2011-01-05 18:12:10,PNoob,AGGROStar1991: 2 mal lesen hilft meistens auch
+2011-01-05 18:12:20,AGGROStar1991,nein ich meine im paketmanager
+2011-01-05 18:12:47,PNoob,auch da reicht es die sachen sich 2 mal durchzulesen bis man die Beschreibungen versteht
+2011-01-05 18:13:21,PNoob,nasm : command not found
+2011-01-05 18:13:26,AGGROStar1991,nein ich werde jetzt nicht verraten was ich denke
+2011-01-05 18:13:44,PNoob,wurde mein patch nicht angenommen?
+2011-01-05 18:13:46,PNoob,taljeth: ?
+2011-01-05 18:15:24,tev,PNoob: was für ein Patch?
+2011-01-05 18:15:34,ChristianH,Abend
+2011-01-05 18:15:42,tev,moin
+2011-01-05 18:15:43,PNoob,der alle .asm Dateien ersetzt hat
+2011-01-05 18:15:48,PNoob,Moin ChristianH
+2011-01-05 18:16:06,PNoob,so das alles mit gcc/as assembiliert werden konnte
+2011-01-05 18:16:14,AGGROStar1991,moin
+2011-01-05 18:16:17,PNoob,man benötigte dann kein nasm mehr
+2011-01-05 18:17:08,AGGROStar1991,is nasm so schlimm?
+2011-01-05 18:20:31,PNoob,naja der gehört nicht zu den standard programmen
+2011-01-05 18:20:43,PNoob,und je weniger abhängkeiten man hat umso besser oder?
+2011-01-05 18:20:55,PNoob,und vor allem ist dadurch der asm synta einheitlich
+2011-01-05 18:21:10,tev,nasm ist doch kein Problem zu installieren
+2011-01-05 18:21:24,PNoob,trotzdem bruach man dann ein Programm weniger
+2011-01-05 18:21:34,PNoob,und ich hatte da mal nen schönen patch gemacht
+2011-01-05 18:21:42,PNoob,schade das der nicht angenommen wurde
+2011-01-05 18:21:55,AGGROStar1991,und wenn ich gerne mit nasm software schreiben möchte?
+2011-01-05 18:22:28,PNoob,AGGROStar1991: das ist was anders 
+2011-01-05 18:22:39,PNoob,das bauen des tyndur Kernels ist was anders als lbuilds
+2011-01-05 18:22:46,PNoob,aber egal
+2011-01-05 18:22:57,PNoob,der patch wurde nicht angenommen. dann ist es eben so
+2011-01-05 18:23:16,PNoob,taljeth: muss man den gebauten fpc in config.sh eintragen oder kann man auch einfach den normalen fpc da stehen lassen?
+2011-01-05 18:23:34,taljeth,"Nein, das muss ein Crosscompiler sein"
+2011-01-05 18:23:41,taljeth,Dein normaler FPC kann kein -Ttyndur
+2011-01-05 18:23:58,PNoob,und warum steht dann dort standartmäßig fpc?
+2011-01-05 18:24:03,taljeth,"Es sei denn natürlcih, du hast den Crosscompiler wie ich richtig installiert"
+2011-01-05 18:24:20,PNoob,ok wie mache ich das?
+2011-01-05 18:24:30,taljeth,Also nach /usr/local und das Distributionspaket deinstalliert
+2011-01-05 18:24:46,taljeth,"Du gehst in das Sourceverzeichnis und machst make install, denke ich"
+2011-01-05 18:24:49,PNoob,ich hab noch keinen fpc installiert
+2011-01-05 18:24:50,taljeth,Aber schon lang nicht mehr gemacht
+2011-01-05 18:26:10,PNoob,welches sourceverzeichniss meinst du?
+2011-01-05 18:26:24,PNoob,ich finde nirgends die fpc source
+2011-01-05 18:26:44,taljeth,tmp/cross-fpc/... oder sowas
+2011-01-05 18:27:02,PNoob,tmp cross-fpc ist leer
+2011-01-05 18:27:26,PNoob,nur binutils ist was drin
+2011-01-05 18:28:10,PNoob,der hat auch nur die binutils gebaut
+2011-01-05 18:28:35,PNoob,ich hab alles nach anleitung gemacht
+2011-01-05 18:29:19,PNoob,wo kann der fehler liegen?
+2011-01-05 18:30:21,DerHartmut,Tschüss zusammen
+2011-01-05 18:30:44,bluecode,taljeth: geht der grub2-patch nach master?
+2011-01-05 18:32:12,taljeth,bluecode: Wenn du ein Acked-by für die aktuelle Version sendest? ;-)
+2011-01-05 18:32:24,bluecode,was ist die aktuelle version?
+2011-01-05 18:32:29,stultus,moin
+2011-01-05 18:32:37,taljeth,Die auf der Mailingliste
+2011-01-05 18:32:39,bluecode,ah
+2011-01-05 18:32:44,taljeth,Mit Makefile-Target und so
+2011-01-05 18:34:37,PNoob,kann mir keiner helfen?
+2011-01-05 18:35:50,bluecode,taljeth: ich find das BUILD_ROOT in Makefile bescheuert :-)
+2011-01-05 18:35:59,taljeth,Ist es auch :-)
+2011-01-05 18:36:07,PNoob,so alle cross tools weg
+2011-01-05 18:36:19,PNoob,mal sehen was passiert wenn ich das ganze einfach nochmal aufrufe
+2011-01-05 18:36:20,taljeth,PNoob: Eigentlich sollte er auch gcc und FPC bauen
+2011-01-05 18:36:20,bluecode,wieso nicht in Makefile.config (die nicht ins repo kommt) auslagern?
+2011-01-05 18:36:35,taljeth,"Ja, könnte man machen"
+2011-01-05 18:37:01,PNoob,er hat bei mir nach binutils kompilieren aufgehört
+2011-01-05 18:37:15,stultus,dann hat er dabei nen fehler gehabt
+2011-01-05 18:37:30,PNoob,es wurde aber nichts ausgegeben
+2011-01-05 18:37:37,stultus,in tmp/ müsste nen entsprechendes logfile sein wo die details drinstehen
+2011-01-05 18:38:13,PNoob,ich hab da eben alles raus gelöscht
+2011-01-05 18:38:19,PNoob,es kann sein das da nen log war
+2011-01-05 18:38:28,stultus,"tjo. neu bauen versuchen, log lesen. "
+2011-01-05 18:38:30,PNoob,mal sehen was jetzt nach den erneuten bau passiert
+2011-01-05 18:38:56,taljeth,"Du brauchst übrigens einen Host-FPC, wenn er einen Cross-FPC bauen soll"
+2011-01-05 18:39:04,PNoob,oh
+2011-01-05 18:39:14,stultus,und die architektur sollte auch passen.
+2011-01-05 18:39:29,stultus,"d.h. wenn 64-bit-linux, per hand die 32-bit-pakete laden und zwanginstallieren."
+2011-01-05 18:39:44,stultus,oder wurde das mittlerweile behoben? ^^
+2011-01-05 18:39:52,PNoob,ich hab nen 32 Bit linux auf meinem Netbook das sollte so gehen
+2011-01-05 18:39:58,stultus,wunderbar
+2011-01-05 18:40:08,bluecode,"ui, moin stultus :-)"
+2011-01-05 18:40:21,PNoob,auf meinem PC hab ich gestern abend mein schönes loinux zerschossen
+2011-01-05 18:40:56,PNoob,der hat sich beim updaten aufgehänt. dann hab ich den stumpf ausgemacht und vorhin hab ich den angemacht und dann wollte ubuntu nicht mehr tun
+2011-01-05 18:41:11,Papierkorb,"das muss etwa das 5te os sein, dass du auf einen deiner rechner zerschiesst"
+2011-01-05 18:41:17,stultus,_sollte_ nicht passieren sowas.
+2011-01-05 18:41:38,Papierkorb,und ausmachen bei linux. aua
+2011-01-05 18:41:49,Papierkorb,"wenn der X mal einpennt, gibts die TTy"
+2011-01-05 18:42:10,Papierkorb,"dort startet man dann am besten das update neu, der repariert dann meistens das ganze auch"
+2011-01-05 18:42:20,stultus,"bei grub eingreifen, bootkonfiguration ändern. beim kernel als option anhängen ""init=/bin/bash"". dannach reparieren *g*"
+2011-01-05 18:42:49,stultus,"Papierkorb: ist nicht ganz so einfach bei nem aktuellen Ubuntu, das hat ne ganze menge vom Grafikkram fester verdrahtet als gut ist."
+2011-01-05 18:42:58,Papierkorb,"Naja, Ubuntu halt"
+2011-01-05 18:43:09,PNoob,Papierkorb: sonst ist das immer Windows was ich zerlege. ich glaube das ist das zweite zerlegte Linux in 3 jahren
+2011-01-05 18:43:20,stultus,Qualitätsmerkmal? ^^
+2011-01-05 18:43:28,PNoob,dazwischen immer mal das eine oder andere Windows
+2011-01-05 18:43:39,Papierkorb,öhm
+2011-01-05 18:43:46,Papierkorb,du benutzt also angeblich seit 3j Linux
+2011-01-05 18:43:58,PNoob,ja
+2011-01-05 18:44:01,Papierkorb,"und hast immer noch nicht mitbekommen, wie man unschöne Situationen handelt?"
+2011-01-05 18:44:11,PNoob,aber die ersten 2 jahre noch viel Windows dazu
+2011-01-05 18:44:14,bluecode,"taljeth: ist es möglich, dass der Patch auf dem momentanen master nicht anwendbar ist? Bei mir mag der zumindest Makefile (und den buildmk.sh Teil mit Makefile) nicht pätschen"
+2011-01-05 18:44:22,PNoob,das letzte jahr fast nur Linux
+2011-01-05 18:44:26,PNoob,nur zum spielen Windows
+2011-01-05 18:44:37,taljeth,bluecode: Aktuelles master oder master mit dem Patch von vorhin? ;-)
+2011-01-05 18:44:46,Papierkorb,"Wow, das muss eine sache von Linux an, drauf schauen linux aus gewesen sein"
+2011-01-05 18:44:53,taljeth,Bei mir sitzt er direkt auf master
+2011-01-05 18:44:53,bluecode,"akteulles master, ich hab ein reset --hard bla gemacht"
+2011-01-05 18:45:40,bluecode,"wobei beim Makefile da ja eh kein unterschied ist, das wurde ja vorher nicht gepätscht"
+2011-01-05 18:46:02,bluecode,"ich seh aber ehrlich gesagt am patch nicht, warum das nicht geht"
+2011-01-05 18:46:09,taljeth,"Ah, beim Makefile? Komisch"
+2011-01-05 18:46:56,AGGROStar1991,mit dem ham ich und tev auch grad probleme ;)
+2011-01-05 18:47:21,bluecode,taljeth: und wieviele commits ist dein master dem offiziellen voraus? *g*
+2011-01-05 18:47:55,PNoob,http://pnoob.pastebin.com/Qr0KQTsA
+2011-01-05 18:47:57,taljeth,Your branch is ahead of 'origin/master' by 1 commit.
+2011-01-05 18:48:03,taljeth,Und das ist eben besagter Patch ;-)
+2011-01-05 18:48:30,bluecode,"dann push doch einfach, kriegst von mir ein virtuellen Ack *g*"
+2011-01-05 18:48:56,PNoob,irgendwie hab ich tatsächlich nen fehler
+2011-01-05 18:49:00,tyndur,>> Commit in tyndur.git:refs/heads/master
+2011-01-05 18:49:00,tyndur,Autor: Kevin Wolf
+2011-01-05 18:49:00,tyndur,Bauen von Festplattenimages mit GRUB 2
+2011-01-05 18:49:00,tyndur,+ Neues Makefile-Target grub2-hd
+2011-01-05 18:49:04,taljeth,Was soll's...
+2011-01-05 18:49:08,PNoob,aber ich verstehe nicht was denn nun kaputt ist
+2011-01-05 18:49:18,stultus,PNoob: steht da doch
+2011-01-05 18:49:19,stultus,makeinfo fehlt
+2011-01-05 18:49:30,PNoob,und was ist das?
+2011-01-05 18:49:36,PNoob,wo soll das sein?
+2011-01-05 18:49:36,taljeth,Ein Paket
+2011-01-05 18:49:45,PNoob,taljeth: danke
+2011-01-05 18:50:19,PNoob,taljeth: ne doch nicht danke
+2011-01-05 18:50:24,taljeth,texinfo heißt das Paket
+2011-01-05 18:50:35,PNoob,jetzt gehört das Danke dir
+2011-01-05 18:50:38,bluecode,taljeth: commit policies sind doch was für Anfänger *g*
+2011-01-05 18:50:38,taljeth,hehe
+2011-01-05 18:50:55,taljeth,"Seit FreakyPenguin nicht mehr ackt, halte ich mich eh nicht mehr richtig dran ;-)"
+2011-01-05 18:52:57,bluecode,also es tutet bei mir immernoch
+2011-01-05 18:52:58,PNoob,taljeth: weiß FreakyPenguin das?
+2011-01-05 18:53:08,bluecode,warum auch immer das pullen dann problemlos ging...
+2011-01-05 18:53:17,bluecode,ich glaub ich bin einfach zu blöd für git am
+2011-01-05 18:53:31,PNoob,ich hab auch häufig Probleme mit git am
+2011-01-05 18:53:46,PNoob,vor allem mit diesen scheiß leerzeichen am ende der Zeilen
+2011-01-05 18:54:02,PNoob,taljeth: wie lößt ihr solche Probleme mit den leerzeichen am ende?
+2011-01-05 18:54:19,taljeth,Keine benutzen? ;-)
+2011-01-05 18:54:21,stultus,nicht machen.
+2011-01-05 18:54:31,bluecode,sind eh hässlich
+2011-01-05 18:54:33,stultus,"oder wegmachen, falls eingeschlichen."
+2011-01-05 18:54:44,stultus,etliche editoren können das auf wunsch sogar automatisiert ;)
+2011-01-05 18:54:45,taljeth,Mein mutt-Makro hat ein --whitespace=fix drin
+2011-01-05 18:54:56,taljeth,git am kann das nämlich auch ;-)
+2011-01-05 18:54:58,PNoob,ah
+2011-01-05 18:55:06,PNoob,git am kann das?
+2011-01-05 18:55:07,PNoob,wie?
+2011-01-05 18:55:20,PNoob,ich werde deswegen immer mit Fehlermldungen volgespammt
+2011-01-05 18:55:23,taljeth,[18:54] <taljeth> Mein mutt-Makro hat ein --w
+2011-01-05 18:55:27,taljeth,[18:54] <taljeth> Mein mutt-Makro hat ein --whitespace=fix drin
+2011-01-05 18:55:47,PNoob,taljeth: (18:54:56) taljeth: git am kann das nämlich auch ;-) << und was ist damit?
+2011-01-05 18:56:06,taljeth,Red ich chinesisch?
+2011-01-05 18:56:34,PNoob,ne aber ich glaube ich bin heute ein wenig verpeilt
+2011-01-05 18:56:36,taljeth,git am --whitespace=fix 0001-pnoob-ist-schwer-von-begriff.patch
+2011-01-05 18:56:43,tev,re
+2011-01-05 18:56:46,PNoob,ah
+2011-01-05 18:56:54,PNoob,jetzt leuchtet das lämpchem
+2011-01-05 18:57:10,PNoob,wb tev
+2011-01-05 18:57:20,PNoob,oh gcc wird entpackt
+2011-01-05 18:57:50,stultus,erstaunlich wie einfach das geht wenn man die fehler beseitigt :)
+2011-01-05 18:58:13,PNoob,gcc wird sogar kompiliert
+2011-01-05 18:58:32,taljeth,"Vielleicht sollten wir mal ein which makeinfo || die ""Installier gefälligst texinfo"" oder sowas einbauen"
+2011-01-05 18:58:40,taljeth,Darüber stolpern viele
+2011-01-05 18:59:12,bluecode,ich auch regelmäßig bei meinen eigenen build-Skripten :-)
+2011-01-05 19:04:16,stultus,Kleine Umfrage. Wer hat schonmal gesehen wie eine Schleife kontrolliert bzw beabsichtigt mit einer Exception verlassen wird?
+2011-01-05 19:04:39,stultus,"_ohne_ das ein Fehler an sich vorliegt. Wirklich nur als ""Variante"" des Abbruchs."
+2011-01-05 19:05:00,bluecode,C++/Java-Exceptions?
+2011-01-05 19:05:18,stultus,Java.
+2011-01-05 19:06:02,bluecode,"hab ich noch nicht gesehen, find ich auch nicht so doll"
+2011-01-05 19:06:12,bluecode,das verlässt ja auch nicht nur die Schleife...
+2011-01-05 19:06:20,stultus,Naja.
+2011-01-05 19:06:32,stultus,Das ist jedenfalls eines der Konstrukte die anner Uni hier gelehrt werden :)
+2011-01-05 19:06:43,ChristianH,Warum die Schleife nicht einfach mit break abbrechen?
+2011-01-05 19:07:38,stultus,Frag ich mich ja auch. Aber das wäre halt keine Exception. ^^
+2011-01-05 19:08:49,ChristianH,"Da wird einem gelehrt, etwas zu missbrauchen, obwohl es eine eindeutige und elegante Lösung gibt? :D"
+2011-01-05 19:09:07,stultus,"Soweit ich das sehe, offensichtlich."
+2011-01-05 19:09:45,bluecode,stultus: das throw ist noch nichtmal in ner Funktion versteckt oder so?
+2011-01-05 19:09:46,stultus,Andernfalls wäre es jedenfalls mindestens genauso kontraproduktiv das ganze als Übungsbeispiel vorzugeben.
+2011-01-05 19:09:54,bluecode,sondern da ist wirklich in der Schleife ein throw?
+2011-01-05 19:10:13,stultus,Wird so gefordert. Übungsaufgabe. ^^
+2011-01-05 19:11:08,bluecode,"ist irgendwie mist, vielleicht sollte man das ja als solchen entlarven"
+2011-01-05 19:11:37,PNoob,wofür benutzt man eigentlich dieses makeinfo?
+2011-01-05 19:12:44,stultus,"Der Prof ist, sagen wir, unumgänglich, und erweckt nicht immer den Eindruck dasser Ahnung von realem Quelltext hat *g*"
+2011-01-05 19:12:44,bluecode,`man makeinfo`
+2011-01-05 19:22:34,SHyx0rmZ,"spricht eigentlich irgendwas dagegen, den Fix für die SSE-Ops ins Repo aufzunehmen?"
+2011-01-05 19:22:55,bluecode,was wird denn da gefixt?
+2011-01-05 19:23:09,taljeth,"stultus: Hm, uns hat man beigebracht, dass wir sowas ja nicht machen sollen"
+2011-01-05 19:23:21,SHyx0rmZ,ich bekomm nach dem Bauen immer #UD
+2011-01-05 19:23:33,taljeth,Und break und return mitten in der Funktion waren auch böse
+2011-01-05 19:23:33,SHyx0rmZ,"also, beim booten von Tyndur, nicht auf dem Host ^^"
+2011-01-05 19:23:58,SHyx0rmZ,"bluecode, und das liegt daran, dass mein Compiler da munter SSE-Ops reinoptimiert"
+2011-01-05 19:23:59,stultus,oO
+2011-01-05 19:24:18,stultus,"wieso sind break und return denn böse? oder ""nur so"", prof hats gesagt? ^^"
+2011-01-05 19:24:33,taljeth,Weil das verkappte gotos sind
+2011-01-05 19:24:44,taljeth,Und goto ist aus Prinzip böse
+2011-01-05 19:25:06,SHyx0rmZ,"nein, goto ist eigentlich was sehr wichtiges"
+2011-01-05 19:25:14,SHyx0rmZ,wo hab ich gleich den Artikel...
+2011-01-05 19:25:21,taljeth,"Kommt auf die Sprache an, würde ich sagen"
+2011-01-05 19:25:24,taljeth,C ohne goto ist Mist
+2011-01-05 19:25:29,SHyx0rmZ,jo
+2011-01-05 19:25:38,stultus,"hm, das geb ich an die etechniker weiter"
+2011-01-05 19:25:45,stultus,ich glaub denen fehlt das goto noch *g*
+2011-01-05 19:25:49,SHyx0rmZ,^^
+2011-01-05 19:26:01,stultus,"(weiß der teufel wieso nen Elektrotechniker C lernt, der Informatiker Java)"
+2011-01-05 19:26:02,bluecode,"SHyx0rmZ: achso, jo das kommt vor"
+2011-01-05 19:26:04,taljeth,"Was an der Uni keinen stören wird, Sprachen zu bevorzugen, die kein goto brauchen"
+2011-01-05 19:26:12,taljeth,Was ja auch seinen Sinn hat
+2011-01-05 19:26:15,SHyx0rmZ,"bluecode, den Fix kenn ich ja selbst"
+2011-01-05 19:26:24,SHyx0rmZ,"mich wundert nur, dass das nicht im Repo ist"
+2011-01-05 19:26:40,bluecode,-mno-sse halt oder so
+2011-01-05 19:26:43,SHyx0rmZ,jo
+2011-01-05 19:26:47,taljeth,SHyx0rmZ: War der auf der Liste?
+2011-01-05 19:27:12,SHyx0rmZ,nein
+2011-01-05 19:27:15,SHyx0rmZ,ich send den gleich
+2011-01-05 19:27:23,SHyx0rmZ,"sobald ich mich davon überzeugt hab, dass der tut ;)"
+2011-01-05 19:28:41,bluecode,"ich glaub du hast im channel letztlich alle -mno-sse* optionen reingepackt, reicht nicht -mno-see?"
+2011-01-05 19:28:41,bluecode,*sse
+2011-01-05 19:28:45,taljeth,"Hm, zu viele Patricks auf tyndur-devel, das dauert ja ewig, bis ich die Mails durchhabe ;-)"
+2011-01-05 19:29:14,SHyx0rmZ,"hm, ext2 hat immer noch SSE ><"
+2011-01-05 19:43:38,spacer,ich werd dann gleich mal weg sein
+2011-01-05 19:58:01,taljeth,"So, Zeit, einen jahrealten Patch zu commiten..."
+2011-01-05 19:58:11,bluecode,say what? *g*
+2011-01-05 19:58:12,SHyx0rmZ,"meh, ich bekomm das SSE Zeugs nicht weg"
+2011-01-05 19:58:21,tyndur,>> Commit in tyndur.git:refs/heads/master
+2011-01-05 19:58:21,tyndur,Autor: Patrick Kaufmann
+2011-01-05 19:58:21,tyndur,shell: Erweiterte Optionen für rm
+2011-01-05 19:58:21,tyndur,"+ shell: rm folgende flags hinzugefügt: recursive, verbose, interactive"
+2011-01-05 19:58:23,SHyx0rmZ,"sogar, wenn ich GCC sage, dass die CPU das gar nicht kann"
+2011-01-05 19:58:40,taljeth,"bluecode: Du müsstest wissen, wie alt der ist ;-)"
+2011-01-05 19:58:52,bluecode,klingt nach erstem hackathon dann?
+2011-01-05 19:58:57,taljeth,"Zweiter, oder?"
+2011-01-05 19:59:03,bluecode,weiß ich doch nicht ;-)
+2011-01-05 19:59:16,taljeth,"Beim ersten war der Patrick nicht da, glaube ich"
+2011-01-05 19:59:21,bluecode,wo lag der denn solange rum?
+2011-01-05 19:59:27,bluecode,"jo, stimmt"
+2011-01-05 19:59:38,bluecode,"garnicht aufgefallen, dass es nicht der FreakyPenguin ist"
+2011-01-05 20:00:43,taljeth,Ich war nicht ganz zufrieden und er hat den Patch nie gefixt
+2011-01-05 20:00:51,taljeth,Jetzt hab ich das halt selber gemacht ;-)
+2011-01-05 20:01:11,bluecode,"ja aber,.... wo lag der solange rum?"
+2011-01-05 20:01:15,taljeth,"Im Channel war er auch schon ewig nicht mehr, oder?"
+2011-01-05 20:01:17,taljeth,Auf der Mailingliste
+2011-01-05 20:01:22,bluecode,"nicht, dass ich wüsste"
+2011-01-05 20:01:26,taljeth,"Und in irgendeinem git-Branch, den ich nie anschaue"
+2011-01-05 20:01:45,bluecode,ist in dem vielleicht ein funktionierendes liov2 versteckt? *g*
+2011-01-05 20:02:13,taljeth,"Ist mir nur aufgefallen, weil ich vorhin schauen wollte, ob ich einen Patch von SHyx0rmZ übersehen habe. Und da habe ich halt in mutt nach Patrick gesucht ;-)"
+2011-01-05 20:02:19,SHyx0rmZ,^^
+2011-01-05 20:02:38,SHyx0rmZ,"jemand ne Idee, wie man ext2 ohne xmm0 hinbekommt? liegt wohl an dem uint64_t"
+2011-01-05 20:02:50,taljeth,wtf?
+2011-01-05 20:04:04,SHyx0rmZ,$ objdump -S build/output/modules/ext2 | grep xmm
+2011-01-05 20:04:04,SHyx0rmZ,"40000684:	66 0f 6e 43 64       	movd   0x64(%ebx),%xmm0"
+2011-01-05 20:04:04,SHyx0rmZ,"4000068c:	66 0f d6 44 24 04    	movq   %xmm0,0x4(%esp)"
+2011-01-05 20:04:11,taljeth,Was für Optionen benutzt du denn?
+2011-01-05 20:04:14,bluecode,"hm, könnte das die libgcc sein?"
+2011-01-05 20:04:18,taljeth,"Kannst du ihm nicht einfach sagen ""ich hab einen 486er""?"
+2011-01-05 20:04:25,Homix,amd64?
+2011-01-05 20:04:28,SHyx0rmZ,"und dass trotz ""-mno-sse -mno-sse -mno-sse3 -mno-mmx -mtune=i386"""
+2011-01-05 20:04:34,taljeth,"Hm, libgcc wär auch noch eine Option..."
+2011-01-05 20:04:51,taljeth,Homix: Aber -m32
+2011-01-05 20:05:23,bluecode,"hä, taljeth?"
+2011-01-05 20:05:25,SHyx0rmZ,"das ist die Parameterübergabe von if(!ext2_inode_read(öhm, uint64_t, öhm));"
+2011-01-05 20:05:50,taljeth,SHyx0rmZ: -march=pentium?
+2011-01-05 20:06:09,bluecode,ist das jetzt x86 oder x64?
+2011-01-05 20:06:15,taljeth,-mtune ist mehr eine Empfehlung
+2011-01-05 20:06:20,Homix,vlt -mno-sse -mno-sse2 ? ;)
+2011-01-05 20:07:19,SHyx0rmZ,"Homix, ?"
+2011-01-05 20:07:27,SHyx0rmZ,"<SHyx0rmZ> und dass trotz ""-mno-sse -mno-sse -mno-sse3 -mno-mmx -mtune=i386"""
+2011-01-05 20:07:30,SHyx0rmZ,-s btw
+2011-01-05 20:07:44,bluecode,SHyx0rmZ: da fehlt die 2
+2011-01-05 20:07:50,Homix,;)
+2011-01-05 20:08:10,Homix,"wobei ich ja nicht davon ausgehe, dass GCC dann sse2 hernimmt, wenn man mmx,sse und ss3 ausgeschlossen hat :D"
+2011-01-05 20:08:16,taljeth,Sollte -march das nicht alles mitsetzen?
+2011-01-05 20:08:21,bluecode,"hab ich ja oben schonmal gesagt, Homix"
+2011-01-05 20:08:27,SHyx0rmZ,im Script ist das richtig ^^
+2011-01-05 20:08:34,bluecode,"aber kA ehrlich gesagt, es steht nicht iwrklich was im Manual dazu"
+2011-01-05 20:08:45,SHyx0rmZ,"eigentlich schon, nehme ich an"
+2011-01-05 20:08:53,Homix,bluecode: wie weit iben? ;)
+2011-01-05 20:08:56,Homix,oben*
+2011-01-05 20:09:06,SHyx0rmZ,ich nehm mal eben nen älteren gcc
+2011-01-05 20:09:07,taljeth,SHyx0rmZ: Ändert arch statt tune nichts?
+2011-01-05 20:09:23,SHyx0rmZ,nein
+2011-01-05 20:09:28,SHyx0rmZ,"also, ja, es ändert nicht"
+2011-01-05 20:10:08,bluecode,Homix: vor deinem join wohl :-)
+2011-01-05 20:10:08,Homix,hm für C++ platform unabhängige Netzwerk sockets brauch ich Boost!?
+2011-01-05 20:10:22,bluecode,"""brauchen"" ist falsch"
+2011-01-05 20:10:36,taljeth,"SHyx0rmZ: Hm, in welcher Funktion steckt das Problem denn? Könnte das tatsächlich über eine Lib reinkommen?"
+2011-01-05 20:10:48,bluecode,"du brauchst eine platformunabhängige lib, welche das ist, kannst du dir wohl selbst aussuchen"
+2011-01-05 20:11:19,SHyx0rmZ,"Sekunde, kompilier grad neu"
+2011-01-05 20:11:23,Homix,"naja ich will am liebsten die lib, die am bekanntesten und ""typischten"" dafür ist und nicht irgeine von der hintesten ecke des internets ;)"
+2011-01-05 20:11:29,SHyx0rmZ,"taljeth, sieht nach ext2_inode_read aus"
+2011-01-05 20:11:36,bluecode,dann nimm boost
+2011-01-05 20:11:38,SHyx0rmZ,"das ist aber ein Fehler des Compilers, imho"
+2011-01-05 20:11:46,taljeth,Kann schon sein
+2011-01-05 20:11:55,taljeth,Oder vielleicht benutzen wir irgendwo was undefiniertes *g*
+2011-01-05 20:12:08,SHyx0rmZ,mit altem Compiler ist es auch drin
+2011-01-05 20:12:13,bluecode,"""irgendwo"" ist gut *g*"
+2011-01-05 20:12:59,SHyx0rmZ,das ist in int ext2_fs_res_load(struct cdi_fs_stream* stream)
+2011-01-05 20:13:16,SHyx0rmZ,"if (!ext2_inode_read(fs, res->inode_num, res->inode)) {"
+2011-01-05 20:13:20,SHyx0rmZ,bei dem Aufruf
+2011-01-05 20:14:02,taljeth,"bluecode: So ist doch C definiert. Wenn ich irgendwo was undefiniertes benutze, darf mir der Compiler an völlig anderer Stelle eine den Benutzer beleidigende Ausgabe einbauen und wäre immer noch konform."
+2011-01-05 20:14:51,taljeth,SHyx0rmZ: Ist inode_num uint64_t oder wie?
+2011-01-05 20:15:27,SHyx0rmZ,"zumindest steht in inode.c: int ext2_inode_read(ext2_fs_t* fs, uint64_t inode_nr, ext2_inode_t* inode)"
+2011-01-05 20:15:46,taljeth,"Jo, uint64_t inode_nr"
+2011-01-05 20:16:04,SHyx0rmZ,"aber ich find auch kein Flag, um das abzustellen"
+2011-01-05 20:16:05,Homix,ist doch cool wenn er optimiert
+2011-01-05 20:16:07,SHyx0rmZ,nein
+2011-01-05 20:16:10,SHyx0rmZ,das gibt #UD
+2011-01-05 20:16:20,Homix,warum baust du nicht einfach MMX/SEE Support ein? ;)
+2011-01-05 20:16:25,SHyx0rmZ,...
+2011-01-05 20:16:37,SHyx0rmZ,wäre vielleicht echt einfacher :D
+2011-01-05 20:16:47,bluecode,"taljeth: jo natürlich, ich freu mich doch gerade weil du den C Standard verstanden hast :-)"
+2011-01-05 20:17:02,taljeth,"SHyx0rmZ: Was für einen Compiler hast du eigentlich, dass der solchen Mist macht? ;-)"
+2011-01-05 20:17:06,SHyx0rmZ,"das kostet nur 4 Befehle, ich patch das eben"
+2011-01-05 20:17:13,SHyx0rmZ,"taljeth, gcc ^^"
+2011-01-05 20:17:37,taljeth,Von welcher Distribution in welcher Version kaputtgepatcht und so ;-)
+2011-01-05 20:17:47,SHyx0rmZ,von der Originalseite ungepatcht
+2011-01-05 20:17:50,SHyx0rmZ,selbst gebaut
+2011-01-05 20:17:56,bluecode,"oha, nichtmal ubuntu ist schlud"
+2011-01-05 20:17:58,bluecode,*schuld
+2011-01-05 20:18:16,bluecode,liegts dann wenigstens an kde 4.x? *g*
+2011-01-05 20:18:17,Homix,in ein paar wochen werd ich meinen ganzen code auf AVX optimieren *g*
+2011-01-05 20:18:37,SHyx0rmZ,KDE hab ich auch nicht ^^
+2011-01-05 20:18:39,taljeth,gcc-4.7-cvs20110105 oder sowas? ;-)
+2011-01-05 20:18:45,SHyx0rmZ,gcc-4.5.1
+2011-01-05 20:19:09,SHyx0rmZ,ich guck doch nicht selbst nach Updates
+2011-01-05 20:19:17,SHyx0rmZ,aber wenns im Wiki in den News steht ^^
+2011-01-05 20:20:00,bluecode,"demnächst kommt 4.6, da kann man dann wieder was in die news schreiben"
+2011-01-05 20:20:07,SHyx0rmZ,^^
+2011-01-05 20:20:56,bluecode,"""# The options -b <machine> and -V <version> have been removed because they were unreliable. Instead, users should directly run <machine>-gcc when cross-compiling, or <machine>-gcc-<version> to run a different version of gcc. "" sagt das changelog zu 4.6"
+2011-01-05 20:21:37,PNoob,re
+2011-01-05 20:21:38,Homix,*dreaming of sandy bridge cpus*
+2011-01-05 20:26:47,PNoob,Homix: was ist los?
+2011-01-05 20:27:12,stultus,steht da doch
+2011-01-05 20:27:19,stultus,träumt von sandy bridge cpus.
+2011-01-05 20:27:23,PNoob,Homix: hast du von dem zeug genommen was Jidder raucht?
+2011-01-05 20:27:26,stultus,google erklärts ;)
+2011-01-05 20:27:33,stultus,"alternativ, das sind die neuen Intel-CPU's"
+2011-01-05 20:27:33,tev,es kann jetzt jeder nen Namen für die GUI abgeben im Forum
+2011-01-05 20:27:53,PNoob,die GUI braucht doch keinen namen
+2011-01-05 20:27:55,stultus,wo Grafik und PCI direkt integriert sind.
+2011-01-05 20:28:35,stultus,tev: es gibt wichtigeres als namen ;)
+2011-01-05 20:28:47,PNoob,stultus: also mal wieder nen stück Chipsatz in den cpu verlegt. nichts neues
+2011-01-05 20:28:48,Jidder,"nicht, wenn man nichts anderes hat"
+2011-01-05 20:28:50,tev,stultus: ich weiß ;)
+2011-01-05 20:28:53,stultus,"Design (also, Softwaremäßig, _NICHT_ aussehen) und so ;)"
+2011-01-05 20:29:03,stultus,Demos laufen soweit?
+2011-01-05 20:29:23,tev,stultus: meinst du mich?
+2011-01-05 20:29:29,PNoob,Jidder: hast du Homix was von dem Zeug das du rauchst abgegeben?
+2011-01-05 20:29:33,stultus,jo
+2011-01-05 20:29:49,Jidder,PNoob: warum sollte ich das tun?
+2011-01-05 20:29:55,tev,stultus: wir haben immer noch technische Probleme
+2011-01-05 20:29:57,SHyx0rmZ,jetzt bin ich ja mal gespannt...
+2011-01-05 20:30:03,tev,wir bekommen es nicht zum kompilieren und so
+2011-01-05 20:30:17,AGGROStar1991,"nicht die gui, tyndur xD"
+2011-01-05 20:30:32,PNoob,"tev: es kompiliert nicht, aber über einen namen macht ihr euch gedanken?"
+2011-01-05 20:30:36,stultus,"also, tyndur _ohne_ jede grafikkomponente, oder gibts die probleme erst mit? ^^"
+2011-01-05 20:30:37,SHyx0rmZ,"btw sagt mir mein make image-hd immer: ""/home/shyxormz/Development/tyndur/build/mnt"" を見つけられませんでした。"
+2011-01-05 20:30:42,bluecode,[20:29:52] <Jidder> PNoob: warum sollte ich das tun? // Weil wir alle dringend davon brauchen!
+2011-01-05 20:30:50,PNoob,Jidder: weil Homix von CPU's träummt?
+2011-01-05 20:31:00,taljeth,SHyx0rmZ: Das ist schön für dich ;-)
+2011-01-05 20:31:28,stultus,"hm, was ist das? japanisch?"
+2011-01-05 20:31:39,stultus,sieht irgendwie merkwürdig aus :/
+2011-01-05 20:31:41,tev,stultus: wir haben Probleme mit dem kompilieren von taljeths Repo
+2011-01-05 20:31:50,SHyx0rmZ,KVM internal error. Suberror: 1
+2011-01-05 20:31:50,SHyx0rmZ, <- öhm
+2011-01-05 20:32:09,SHyx0rmZ,wie bekomm ich qemu ohne kvm?
+2011-01-05 20:32:22,stultus,qemu nutzt kvm eigentlich nur wenn da.
+2011-01-05 20:32:26,PNoob,qemu selber bauen
+2011-01-05 20:32:33,tev,und ich habe Probleme das lbuilds build_crosstools script durchlaufen zu lassen
+2011-01-05 20:32:36,stultus,ansonsten dürfte es nen schalter geben um es nicht zu verwenden.
+2011-01-05 20:32:49,stultus,"lbuilds sind sekundär, erstmal tyndur ans kompilieren bringen *g*"
+2011-01-05 20:32:53,PNoob,stultus: ich glaube aber nur zur compilezeit
+2011-01-05 20:33:04,Jidder,sudo pacman -S qemu
+2011-01-05 20:33:10,Jidder,sollte qemu-kvm runterwerfern
+2011-01-05 20:33:17,PNoob,stultus: die gui ist in lbuilds soweit ich weiß
+2011-01-05 20:33:23,stultus,Jidder: welche Distro ist das?
+2011-01-05 20:33:34,PNoob,tev: woran hackts denn bei build_crosstols?
+2011-01-05 20:33:39,PNoob,makeinfo zufällig?
+2011-01-05 20:33:40,stultus,"PNoob: wird da reinkommen triffts wohl eher. bringt aber nix, wenn kein Testsystem läuft *g*"
+2011-01-05 20:33:41,Jidder,arch
+2011-01-05 20:33:49,tev,zeile 20 PNoob
+2011-01-05 20:33:50,taljeth,SHyx0rmZ: -no-kvm
+2011-01-05 20:33:55,SHyx0rmZ,"hm, mein Patch bringts anscheinend zum endgültigen abschmieren"
+2011-01-05 20:34:01,PNoob,tev: welcher fehler
+2011-01-05 20:34:08,PNoob,"nicht ""Zeile20"""
+2011-01-05 20:34:11,tev,build_crosstools: 20: cannot open /home/johannes/Programme/Tyndur/lbuilds/scripts/patches/binutils/2.18/binutils-2.18.patch: No such file
+2011-01-05 20:34:11,tev,exit: 20: Illegal number: -1
+2011-01-05 20:34:34,PNoob,dann hast du lbuilds wohl nicht richtig geclont
+2011-01-05 20:34:34,taljeth,"Hm, und warum ist die Datei da nicht?"
+2011-01-05 20:34:56,taljeth,Weil sie nicht in scripts sein sollte
+2011-01-05 20:35:00,taljeth,cd ..
+2011-01-05 20:35:05,taljeth,scripts/build_crosstools
+2011-01-05 20:35:05,SHyx0rmZ,http://shyxormz.pastebin.com/wjPsnDax
+2011-01-05 20:35:29,PNoob,tev: ach am besten alles so wie es in der Anleitung steht
+2011-01-05 20:35:34,PNoob,dann kann eigentlich nicht schiefgehen
+2011-01-05 20:35:40,PNoob,es sei denn es fehlen pakete
+2011-01-05 20:35:53,stultus,oder es wurde irgendwas aktualisiert.
+2011-01-05 20:35:55,SHyx0rmZ,ich ess jetzt erst mal was
+2011-01-05 20:36:20,SHyx0rmZ,"ich hab ja eigentlich auch kein Problem damit, meine Patches ungetestet zu schicken ;)"
+2011-01-05 20:36:28,stultus,insbesondere fpc hat da immer ärger mit gemacht. kann natürlich auch sein das der aktuell bei ner fixen version steht *g*
+2011-01-05 20:36:45,stultus,PNoob: lief das mit fpc bei dir auch durch?
+2011-01-05 20:36:46,taljeth,"AGGROStar1991 hat es hinbekommen, müsste also momentan tun"
+2011-01-05 20:36:52,stultus,ok
+2011-01-05 20:37:08,taljeth,"Wir bauen im Moment auch einen 2.4.0, da sollte sich nicht viel ändern ;-)"
+2011-01-05 20:37:14,PNoob,stultus: der Akku war vorher lehr
+2011-01-05 20:37:21,taljeth,Das war anders mit den 2.3.x-Nightly-Snapshots
+2011-01-05 20:37:23,PNoob,leer natürlicht
+2011-01-05 20:37:27,stultus,jo *g*
+2011-01-05 20:38:01,stultus,als die da auf einmal die bibliothekseinbindung erweitert hatten...
+2011-01-05 20:38:08,PNoob,ich musste alles nochmal löschen und das script durchlaufen lassen
+2011-01-05 20:38:17,stultus,PNoob: dumm.
+2011-01-05 20:38:25,PNoob,jetzt baut er gerade den gcc
+2011-01-05 20:38:27,PNoob,stultus: warum dumm?
+2011-01-05 20:38:29,stultus,rm -rf tmp/cross-fpc
+2011-01-05 20:38:49,stultus,"und selbst das ist noch ineffizient, weil er dann den fpc jedes mal neu lädt"
+2011-01-05 20:38:58,PNoob,stultus: das script hat immer bei den binutils dann gestoppt.
+2011-01-05 20:39:03,PNoob,weil die schon da waren
+2011-01-05 20:39:13,stultus,"hu, sollte nicht."
+2011-01-05 20:39:16,PNoob,der hat nach dem pactchen aufgehört
+2011-01-05 20:39:21,PNoob,tut das script aber
+2011-01-05 20:39:25,stultus,"und im zweifelsfall kommentiert man dann am script rum, geht immernoch schneller ;)"
+2011-01-05 20:39:39,PNoob,joar
+2011-01-05 20:39:46,PNoob,ich wusste aber nicht wie weit er gekommen war
+2011-01-05 20:40:07,PNoob,weil fpc war noch nichts drin soll heißen er war wohl noch beim gcc
+2011-01-05 20:40:13,PNoob,und da ist er jetzt auch
+2011-01-05 20:40:13,stultus,hm
+2011-01-05 20:40:22,stultus,"schau dir das script an, und dann überleg haarscharf wo er war."
+2011-01-05 20:40:31,stultus,_normalerweise_ sollte das gehen ;)
+2011-01-05 20:41:23,PNoob,der gcc ist vor dem fpc
+2011-01-05 20:41:44,PNoob,"da fpc noch leer war, und binutils schon fertig waren, muss er wohl beim gcc gewesen sein."
+2011-01-05 20:43:05,PNoob,taljeth: OS_TARGET=linux  << warum baut ihr den fpc für Linux
+2011-01-05 20:43:17,taljeth,Damit du ihn ausführen kannst
+2011-01-05 20:43:23,PNoob,ah stimmt
+2011-01-05 20:43:35,PNoob,target ist ja das wo er drauf läuft
+2011-01-05 20:43:58,taljeth,"Hm, eigentlich nicht..."
+2011-01-05 20:44:08,PNoob,nicht?
+2011-01-05 20:44:25,SHyx0rmZ,das wäre ja HOST
+2011-01-05 20:44:31,taljeth,"Target ist, wofür Code erzeugt wird, Host ist wo er läuft, und Build ist wo der Compiler gebaut wird"
+2011-01-05 20:44:53,taljeth,Aber vielleicht sieht FPC das alles etwas anders
+2011-01-05 20:45:02,PNoob,salso müsste Target doch LOSt sein und HOST linux
+2011-01-05 20:45:10,PNoob,ach es scheint ja zu laufen
+2011-01-05 20:45:21,PNoob,also denke ich da lieber nicht zuviel nach
+2011-01-05 20:45:24,stultus,"PNoob: tyndur und linux sind sich relativ ähnlich, was das meiste angeht."
+2011-01-05 20:45:41,PNoob,das ist mir klar
+2011-01-05 20:45:41,stultus,"und wenn du da tyndur haben wolltest, könnte das mitunter ne ganze batterie an konfigurationen sein die man nachtragen muss *g*"
+2011-01-05 20:47:22,taljeth,"Naja, lbuilds will ja aber schon einen richtigen Crosscompiler bauen"
+2011-01-05 20:50:59,PNoob,der fpc wird gerade runtergeladen
+2011-01-05 20:53:02,PNoob,"taljeth: wenn ich jetzt nochmal einen patch einreichen würde, wer alle .asm Dateien zu .S Dateien macht und der inhalt gcc freundlich gemacht wird, und alles noch funktioniert, wie hoch ist die Chance das er diesesmal angenommen wirdß"
+2011-01-05 20:53:05,PNoob,-ß +?
+2011-01-05 20:57:32,PNoob,taljeth: oder kannst du darüber keine Aussage machen?
+2011-01-05 20:59:23,taljeth,Was hast du denn für ein Problem mit nasm?
+2011-01-05 20:59:59,PNoob,ich vergesse jedesmal nasm zu installieren
+2011-01-05 21:00:29,PNoob,außerdem hat man dann eine Abhängigkeit weniger
+2011-01-05 21:00:50,PNoob,"was ich ja auch mal machen wollte, sind die nötigen libgcc methoden nachzubauen"
+2011-01-05 21:01:01,PNoob,so das die 64 bit leute wieder ein problem weniger haben
+2011-01-05 21:01:13,taljeth,Das wär für pcc nützlich
+2011-01-05 21:01:21,taljeth,"Ist nämlich doof, wenn man für den libgcc miteinbinden muss"
+2011-01-05 21:02:11,PNoob,"mir wurde das letzesmal als ich gefragt hatte verboten, so indirekt"
+2011-01-05 21:02:17,PNoob,taljeth: aber was ist pcc?
+2011-01-05 21:03:14,DesL,moin
+2011-01-05 21:03:19,taljeth,Portable C Compiler
+2011-01-05 21:03:29,PNoob,ah
+2011-01-05 21:03:30,PNoob,Moin DesL
+2011-01-05 21:03:43,PNoob,taljeth: also darf ich libgcc Methoden nachbauen?
+2011-01-05 21:03:58,PNoob,kann ich irgendwo nachsehen welche verwendet werden?
+2011-01-05 21:04:09,PNoob,ohne die libgcc deinstalliern zu müssen
+2011-01-05 21:06:35,PNoob,taljeth: der cross fpc installiert sich gerade auf meinem System. der kann aber auch noch normale anwendungen bauen oder?
+2011-01-05 21:08:11,PNoob,heißt der zufällig auch anders?
+2011-01-05 21:08:29,PNoob,weil irgendwie tut der scheinbar Ttyndur nicht zu mögen
+2011-01-05 21:08:29,taljeth,Nö
+2011-01-05 21:08:47,PNoob,ich hab aber make install ausgeführt und das wurde auch erfolgreich beendet
+2011-01-05 21:09:13,PNoob,was für ein Pfad muss ich denn in der config.sh eintragen?
+2011-01-05 21:09:18,PNoob,relativ oder absolut?
+2011-01-05 21:11:18,taljeth,Absolut
+2011-01-05 21:11:29,PNoob,Ok hab ich auch eingetragen
+2011-01-05 21:11:32,PNoob,mal sehen was passiert
+2011-01-05 21:11:53,PNoob,PPC  system.pas
+2011-01-05 21:11:53,PNoob,"system.pas(11,2) Fatal: Can't open include file ""systemh.inc"""
+2011-01-05 21:11:53,PNoob,Fatal: Compilation aborted
+2011-01-05 21:12:22,PNoob,was soll das denn jetzt?
+2011-01-05 21:14:14,taljeth,Wiki lesen
+2011-01-05 21:14:18,taljeth,Dir fehlt ein Link
+2011-01-05 21:14:32,PNoob,den hab ich aber gesetzt
+2011-01-05 21:15:11,PNoob,muss der pfad zum tyndur repo auch absolut sein?
+2011-01-05 21:15:11,taljeth,Offenbar nicht
+2011-01-05 21:15:28,taljeth,Wo?
+2011-01-05 21:15:29,tyndur,>> Commit in lbuilds.git:refs/heads/master
+2011-01-05 21:15:29,tyndur,Autor: Kevin Wolf
+2011-01-05 21:15:29,tyndur,* build_crosstools: Zwei beliebte Fehler abfangen
+2011-01-05 21:15:41,PNoob,ln -s tmp/cross-fpc/fpc/rtl/ /pfad/zum/tyndur/repository/src/modules/pas/lib/rtl/include
+2011-01-05 21:15:43,PNoob,da der Pfad?
+2011-01-05 21:16:28,taljeth,"Könnte sein, dass der erste Pfad absolut sein muss"
+2011-01-05 21:16:32,taljeth,"Schau dir halt mit ls -l an, wo der Link hinzeigt"
+2011-01-05 21:17:23,PNoob,ich hab ihn jetzt einfach nochmal mit nem absolutem pfad gesetzt
+2011-01-05 21:17:53,PNoob,glöeicher Fehler
+2011-01-05 21:18:14,PNoob,wo soll ich ls -l ausführen?
+2011-01-05 21:19:17,taljeth,ls -l /pfad/zum/tyndur/repository/src/modules/pas/lib/rtl/include
+2011-01-05 21:19:29,PNoob,ja hab ich jetzt gemacht
+2011-01-05 21:19:29,PNoob,christian@Christian-Laptop:~/tyndur$ ls -l src/modules/pas/lib/rtl/include
+2011-01-05 21:19:29,PNoob,lrwxrwxrwx 1 christian christian 22 2011-01-05 21:16 src/modules/pas/lib/rtl/include -> tmp/cross-fpc/fpc/rtl/
+2011-01-05 21:19:43,PNoob,was bitteschön soll das sein?
+2011-01-05 21:19:49,taljeth,Ein Symlink
+2011-01-05 21:19:54,taljeth,Aber ein relativer
+2011-01-05 21:20:35,PNoob,das habe ich im lbuild ordner ausgeführt
+2011-01-05 21:20:35,PNoob,ln -s tmp/cross-fpc/fpc/rtl/ /home/christian/tyndur/src/modules/pas/lib/rtl/include
+2011-01-05 21:20:47,PNoob,laut Wiki ist das richtig
+2011-01-05 21:21:27,taljeth,"Hab ich nicht oben gesagt, du könntest den absoluten Pfad brauchen?"
+2011-01-05 21:22:23,PNoob,hab ich doch auch gemacht
+2011-01-05 21:22:41,PNoob,das pfad zum tyndurrepo ist doch absolut
+2011-01-05 21:22:45,taljeth, tmp/cross-fpc/fpc/rtl/  ist nicht sehr absolut
+2011-01-05 21:22:54,PNoob,das hast du aber nicht gesagt
+2011-01-05 21:23:00,PNoob,und es steht auch nicht im Wiki
+2011-01-05 21:23:06,PNoob,das sollte da vieleicht dazu?
+2011-01-05 21:23:24,taljeth,"[21:16] <taljeth> Könnte sein, dass der erste Pfad absolut sein muss"
+2011-01-05 21:23:30,PNoob,ah
+2011-01-05 21:23:32,PNoob,OK
+2011-01-05 21:23:37,taljeth,"Welcher Pfad in ""ln -s tmp/cross-fpc/fpc/rtl/ /home/christian/tyndur/src/modules/pas/lib/rtl/include"" ist wohl der erste?"
+2011-01-05 21:23:46,taljeth,Der erste oder der zweite?
+2011-01-05 21:23:56,PNoob,"der zweite ist der erste, das weißt du doch"
+2011-01-05 21:24:11,PNoob,mensch taljeth denk doch mal ein wenig mit *g*
+2011-01-05 21:25:28,PNoob,es geht immer noch nicht
+2011-01-05 21:25:44,stultus,kennt hier grad jemand nen Windows-CLI-Äquivalent für nen *NIX time ?
+2011-01-05 21:26:14,PNoob,christian@Christian-Laptop:~/tyndur$ ls -l /home/christian/tyndur/src/modules/pas/lib/rtl/include
+2011-01-05 21:26:14,PNoob,lrwxrwxrwx 1 christian christian 46 2011-01-05 21:24 /home/christian/tyndur/src/modules/pas/lib/rtl/include -> /home/christian/lbuilds/tmp/cross-fpc/fpc/rtl/
+2011-01-05 21:26:22,PNoob,stultus: ne
+2011-01-05 21:27:14,PNoob,ich glaube Windows hat soetwas nicht
+2011-01-05 21:27:29,PNoob,taljeth: weißt du wo der Fehler sein kann?
+2011-01-05 21:28:39,taljeth,Inner noch der gleiche Fehler?
+2011-01-05 21:28:42,taljeth,*Immer
+2011-01-05 21:28:44,PNoob,Das gibt es auch gar nicht /tmp/cross-fpc/fpc/rtl/
+2011-01-05 21:28:48,PNoob,ja der Fehler ist de rgleiche
+2011-01-05 21:29:02,PNoob,in cross-fpc liegt kein Ordner namens fpc
+2011-01-05 21:29:41,PNoob,der einige Ordner heißt fpc-2.4.0
+2011-01-05 21:29:46,PNoob,*einzigste
+2011-01-05 21:29:57,taljeth,Dann wird das der Fehler sein
+2011-01-05 21:30:03,PNoob,ist der Fehler bei mir oder auch bei anderen?
+2011-01-05 21:30:16,taljeth,Wahrscheinlich kopieren die anderen nur sinngemäß und nicht wörtlich...
+2011-01-05 21:34:48,stultus,"PNoob: FAIL. ""einzige"" wäre korrektes Deutsch."
+2011-01-05 21:35:02,stultus,"Übrigens, kommst du zufällig aus NRW?"
+2011-01-05 21:35:38,taljeth,Würdest du dann auswandern? ;-)
+2011-01-05 21:35:45,DesL,*lol*
+2011-01-05 21:36:17,DesL,"ich hau bald eh ab, also von daher schockt mich ncihts mehr"
+2011-01-05 21:40:36,stultus,"nein, das nicht"
+2011-01-05 21:40:50,stultus,"interessierte mich grade nur, weil ich ""einzigste"" bislang eigentlich nur hier in der gegend gehört hab"
+2011-01-05 21:41:02,DesL,und du bist woher?
+2011-01-05 21:41:16,taljeth,"Nö, damit seid ihr definitiv nicht die einzigsten ;-)"
+2011-01-05 21:41:25,DesL,XD
+2011-01-05 21:41:56,taljeth,Bei uns dann auch mit korrekter Aussprache des st als scht ;-)
+2011-01-05 21:42:09,sfan,Moin
+2011-01-05 21:42:19,DesL,moin sfan
+2011-01-05 21:42:36,taljeth,Moin
+2011-01-05 21:45:11,stultus,"DesL: NRW, OWL"
+2011-01-05 21:45:20,stultus,"Momentan in Paderborn, ca. nen km vonner Uni ^^"
+2011-01-05 21:51:15,PNoob,http://img524.imageshack.us/i/grub2isotest05012011214.png/
+2011-01-05 21:51:27,PNoob,was macht das [INIT] da unten noch?
+2011-01-05 21:51:38,DesL,idlen
+2011-01-05 21:52:26,sfan,das init passiert bei meinem pc auch
+2011-01-05 21:52:33,PNoob,aber warum?
+2011-01-05 21:52:38,stultus,race condition.
+2011-01-05 21:52:43,PNoob,warum idled es da noch
+2011-01-05 21:53:05,PNoob,"stultus: dann sollte man die mal beheben, ehe die wirklich Probleme macht, wenn es denn wirklich eine sein sollte"
+2011-01-05 21:53:22,sfan,Wird wohl ein clear_screen Fehler sein
+2011-01-05 21:53:39,PNoob,sfan: glaube ich auch
+2011-01-05 21:53:46,PNoob,da wird wohl eine Zeile vergessen
+2011-01-05 21:53:47,stultus,"ist eine. und nein, die dürfte keine fehler machen können."
+2011-01-05 21:53:57,stultus,"wobei, eigtl. nichtmal."
+2011-01-05 21:54:05,PNoob,stultus: warum wird die denn nicht behoben?
+2011-01-05 21:54:10,stultus,"das Problem ist halt, das init einfach schreibt."
+2011-01-05 21:54:28,stultus,und sich nicht um den dienst console/vterm schert was die ausgabe angeht
+2011-01-05 21:55:01,PNoob,also muss man INIT nur console/vterm beibringen oder?
+2011-01-05 21:55:09,stultus,"""nur"" ist gut."
+2011-01-05 21:55:13,taljeth,"Außer dass vterm noch nicht läuft, wenn init gestartet wird"
+2011-01-05 21:55:22,PNoob,"aber trotzdem stellt sich die frage, warum bleibt nur die letzte Zeile stehen?"
+2011-01-05 21:55:29,stultus,race condition. ^^
+2011-01-05 21:55:43,stultus,"das passiert jedesmal wenn init ausgibt, nachdem console läuft."
+2011-01-05 21:55:52,taljeth,"vterm löscht den Bildschirm, wenn es sich registriert"
+2011-01-05 21:56:01,taljeth,"Äh, wenn es startet, meine ich"
+2011-01-05 21:56:05,stultus,lässt sich wunderbar beobachten wenn man z.b. start vesa ausführt. *g*
+2011-01-05 21:56:05,taljeth,Und dann registiert es sich
+2011-01-05 21:56:09,PNoob,und init gibt das danach aus?
+2011-01-05 21:56:13,stultus,"registriert bei init, gibt ne neue zeile. "
+2011-01-05 21:56:15,stultus,jo
+2011-01-05 21:56:56,stultus,"taljeth: wäre das zu kriminell, den namen von vterm in init fest einzubauen?"
+2011-01-05 21:56:56,PNoob,"vielleicht hilft es ja, wenn man vterm sich erst registrieren lässt und danach den Bildschirm löschen"
+2011-01-05 21:57:16,stultus,PNoob: das löst das Problem ja nicht.
+2011-01-05 21:57:19,sfan,vielleicht
+2011-01-05 21:57:30,PNoob,stultus: warum nicht?
+2011-01-05 21:57:40,stultus,hab ich eben erklärt.
+2011-01-05 21:57:40,PNoob,weil dann löscht vterm ja die ausgabe auch
+2011-01-05 21:57:48,stultus,init macht ausgabe wenn es nen dienst registriert bekommt.
+2011-01-05 21:57:55,stultus,"vterm löscht, wenn es bereit ist."
+2011-01-05 21:58:11,PNoob,danach registrieren sich doch keine Dienste mehr oder?
+2011-01-05 21:58:17,stultus,im laufenden betrieb nen dienst nachstarten der sich bei init registriert führt zu ner weiteren zeile.
+2011-01-05 21:58:21,stultus,das ist nicht sicher.
+2011-01-05 21:58:33,stultus,"faktisch sogar eher unwahrscheinlich, wenn man von nem weiteren ausbau ausgeht."
+2011-01-05 21:58:43,stultus,"schlussendlich sollten treiber ja bei bedarf geladen werden, nicht von vorneherein."
+2011-01-05 21:58:59,stultus,falls es also z.b. tatsächlich mal zu usb kommen sollte... 
+2011-01-05 21:59:03,stultus,wäre nur so ein beispiel.
+2011-01-05 21:59:11,stultus,lässt aber halt generell eben _nicht_ ausschließen.
+2011-01-05 21:59:33,PNoob,"dann sollte init in einen eigenen speicher/datei/wasweißich schreiben, dann ist das so ähnlich wie dmesg"
+2011-01-05 21:59:53,stultus,"Tjo, dann sieht man aber nix, wenn beim booten was schiefgeht. *g*"
+2011-01-05 22:00:19,XanClic,start modules/usb1 geht doch? ;-)
+2011-01-05 22:00:39,stultus,XanClic: hab ich persönlich nie ausprobiert.
+2011-01-05 22:00:49,XanClic,Besser so *g*
+2011-01-05 22:01:03,stultus,würde aber für die demo des bugs sogar reichen ^^
+2011-01-05 22:01:31,stultus,"der beste fix der mir auf die schnelle einfällt, wäre beim registrieren den namen zu vergleichen. wenn vterm, dann ausgabe umschalten."
+2011-01-05 22:01:42,PNoob,"ich meine das so, das am anfang die init ausgaben gemacht werden, aber sobaltvterm aktiv wird, sollte man alles was dort im Speicher an text stand in eine eigene virtuelle Konsole packen. dnn ist eben die erste Konsole die von init"
+2011-01-05 22:01:53,stultus,"alternativ, init nen rpc spendieren um die ausgabe umzustellen. müsste von vterm aufgerufen werden. wäre noch sauberer."
+2011-01-05 22:02:43,PNoob,mein letzer Vorschlag würde doch auch gehen oder nicht?
+2011-01-05 22:02:54,PNoob,"dann hat man eine Konsole, auf der alle init ausgaben sind"
+2011-01-05 22:03:03,stultus,läuft aufs gleiche hinaus.
+2011-01-05 22:03:24,PNoob,läuft aufs gleiche wie was hinaus?
+2011-01-05 22:03:34,stultus,die lösungen sind identisch.
+2011-01-05 22:03:45,XanClic,"Oh, nett, dank kernel2 geht USB auch gar nicht mehr, das find ich nicht mal so schlecht *g*"
+2011-01-05 22:03:45,PNoob,wie deine?
+2011-01-05 22:03:50,stultus,es wird halt unter bedingung (X) (die sinnvoll zu finden wäre) die ausgabe umgebogen.
+2011-01-05 22:03:53,stultus,jo
+2011-01-05 22:04:05,sfan,ja
+2011-01-05 22:04:13,PNoob,aber man sollte trotzdem den inhalt rüberkoperen
+2011-01-05 22:04:26,PNoob,so das die ersten einträge nicht verloren gehen
+2011-01-05 22:04:28,taljeth,stultus: Wir haben da schon irgendwelche Magie
+2011-01-05 22:04:32,taljeth,Die involviert auch noch servmgr und so
+2011-01-05 22:04:37,stultus,"ah, ok"
+2011-01-05 22:04:39,taljeth,Aber anscheinend ist es noch nicht gneug
+2011-01-05 22:04:45,stultus,das erklärt natürlich wieso das kaputt ist *g*
+2011-01-05 22:04:51,taljeth,*g*
+2011-01-05 22:04:53,stultus,"njo, servmgr halt"
+2011-01-05 22:05:04,PNoob,"wollte ich gerade sagen, die Magie läuft aber noch nicht ganz so magisch"
+2011-01-05 22:05:05,taljeth,Was ist das entscheidende Stichwort? Magie oder servmgr? ;-)
+2011-01-05 22:05:17,stultus,siehe oben ;) servmgr
+2011-01-05 22:05:26,stultus,Magie is da überall im Spiel.
+2011-01-05 22:05:29,stultus,ich sag nur vesa *g*
+2011-01-05 22:05:30,PNoob,taljeth: was war jetzt eigentlich mit den grub2 hd images?
+2011-01-05 22:05:36,PNoob,gehen die jetzt?
+2011-01-05 22:05:50,taljeth,"Hm, wir könnten unser ENOSYS ja EMAGIC nennen, wenn eh überall Magie im Spiel ist *G*"
+2011-01-05 22:06:05,DesL,Oo
+2011-01-05 22:06:12,taljeth,PNoob: Bei bluecode tun sie angeblich
+2011-01-05 22:06:22,taljeth,Ich hab die committete Version nicht getestet
+2011-01-05 22:06:29,taljeth,Aber sowas äjhnliches hat auch bei mir funktinoerit
+2011-01-05 22:06:35,taljeth,-fkrauthan
+2011-01-05 22:07:04,PNoob,was ist mit fkrauhan?
+2011-01-05 22:07:47,PNoob,taljeth: die änderungen an config.sh und makefile sind beschissen
+2011-01-05 22:07:50,taljeth,"Wer die Anspielung versteht, versteht sie, wer nicht, nicht"
+2011-01-05 22:07:55,SHyx0rmZ,:3
+2011-01-05 22:07:57,taljeth,Weil?
+2011-01-05 22:08:07,PNoob,weil ich nicht git pull machen kann
+2011-01-05 22:08:27,PNoob,oder reicht auch git fetch?
+2011-01-05 22:08:31,SHyx0rmZ,Weil?
+2011-01-05 22:08:36,taljeth,git fetch  fetcht nur
+2011-01-05 22:08:45,SHyx0rmZ,warum kannst du nicht pullen?
+2011-01-05 22:08:56,PNoob,SHyx0rmZ: weil in beiden Dateien änderungen sind
+2011-01-05 22:08:59,stultus,weil er config.sh geändert hat statt myconf.sh
+2011-01-05 22:09:11,stultus,"und Makefile macht immer stress, da gibt es nur eine Lösung. git stash save. *g*"
+2011-01-05 22:09:13,SHyx0rmZ,"ah, myconf.sh gibt es auch? :3"
+2011-01-05 22:09:17,SHyx0rmZ,"stultus, nö"
+2011-01-05 22:09:21,SHyx0rmZ,git reset --hard ^^
+2011-01-05 22:09:30,stultus,myconf.sh gibt es nicht.
+2011-01-05 22:09:34,stultus,die wird aber eingebunden wenn es die gibt.
+2011-01-05 22:09:37,SHyx0rmZ,ah
+2011-01-05 22:09:40,PNoob,ah
+2011-01-05 22:09:40,stultus,"für vorlage, siehe config.sh"
+2011-01-05 22:09:46,PNoob,aha
+2011-01-05 22:10:12,taljeth,"bluecode wollte Makefile fixen, wenn ich das vorhin richtig verstanden habe *g*"
+2011-01-05 22:12:02,PNoob,ich hab jetzt das makefile einfach gelöscht un des durch git pull herzaubern lassen
+2011-01-05 22:12:12,PNoob,bisher tut alles noch
+2011-01-05 22:13:41,PNoob,es tut alles
+2011-01-05 22:13:58,PNoob,ok doch nicht alles
+2011-01-05 22:14:29,PNoob,was muss beim buildroot stehen?
+2011-01-05 22:14:59,PNoob,ah ne
+2011-01-05 22:15:06,PNoob,das hat damit gar nichts zu tun
+2011-01-05 22:15:17,PNoob,das Problem hatte ich mit meinen auch immer
+2011-01-05 22:15:23,PNoob,das umount läuft schief
+2011-01-05 22:15:28,PNoob,ich fixe das mal eben
+2011-01-05 22:17:15,taljeth,"Jawohl, eddyb"
+2011-01-05 22:18:50,PNoob,es gibt Probleme mit schnellen/langsamen rechnern
+2011-01-05 22:19:00,PNoob,ich weiß nicht genau welches von beiden das problem sind
+2011-01-05 22:19:17,PNoob,"aber es wird schon geumounted, wenn der letzte zugriff noch nicht beendet ist"
+2011-01-05 22:19:33,PNoob,und dann wird nicht geumounted und somit kann der mountpoint nicht gelöscht werden
+2011-01-05 22:19:37,PNoob,und das gibt nen fehler
+2011-01-05 22:21:29,PNoob,"kann mir mal schnell einer sagen, wie ich name und email in die git config bekomme?"
+2011-01-05 22:22:18,stultus,man git-config
+2011-01-05 22:23:04,Jidder,sind im long mode die daten segment register auf 0 festverdrahtet?
+2011-01-05 22:23:28,Jidder,"qemu gibt mir nämlich die werte dafür aus, und ich wüsste nicht, wie die da reinkommen sollten"
+2011-01-05 22:23:58,PNoob,user.mail=Christian.Klahn@Live.de
+2011-01-05 22:23:58,PNoob,user.name=Christian Klahn
+2011-01-05 22:24:06,PNoob,das steht jetzt in der git config Datei
+2011-01-05 22:24:09,PNoob,passt das so?
+2011-01-05 22:24:57,taljeth,Sollte
+2011-01-05 22:25:10,stultus,muss da nicht noch ne sektion zu?
+2011-01-05 22:25:34,stultus,oder nimmt er das automatisch als global anß
+2011-01-05 22:26:48,taljeth,"Hm, ach so"
+2011-01-05 22:27:16,taljeth,Normal ist das [user]\nname=foo
+2011-01-05 22:28:05,DerHartmut,Nabend
+2011-01-05 22:28:06,stultus,im zweifelsfall git config als prog benutzen. sollte das jedenfalls zufriedenstellend lösen *g*
+2011-01-05 22:28:09,stultus,nabend DerHartmut 
+2011-01-05 22:28:22,taljeth,Genau
+2011-01-05 22:28:25,taljeth,Zu beidem ;-)
+2011-01-05 22:28:27,DesL,moin DerHartmut
+2011-01-05 22:28:34,DerHartmut,:-)
+2011-01-05 22:29:05,sfan,moin
+2011-01-05 22:29:20,stultus,"so, und gute nacht"
+2011-01-05 22:29:31,taljeth,gn8 stultus
+2011-01-05 22:29:38,DesL,bb
+2011-01-05 22:29:56,DerHartmut,Gute Nacht
+2011-01-05 22:30:07,DerHartmut,Litur finde ich übrigens gut
+2011-01-05 22:30:15,PNoob,öhm
+2011-01-05 22:30:22,DesL,Litur?
+2011-01-05 22:30:23,taljeth,Guggi gefällt mir eigentlich besser
+2011-01-05 22:30:33,DerHartmut,Wobei Gluggi auch was hat
+2011-01-05 22:30:34,PNoob,warum geht git send-email nicht?
+2011-01-05 22:30:46,DerHartmut,"PNoob: DAUige Beschreibung, nich"
+2011-01-05 22:30:50,taljeth,Weil du es falsch machst
+2011-01-05 22:30:55,PNoob,git versucht mir zui erzählen das es das nicht gibt
+2011-01-05 22:31:05,DesL,tjaaa
+2011-01-05 22:31:12,PNoob,DerHartmut: darf ich auch meinen zweitensatz noch zuende schreiben?
+2011-01-05 22:31:14,PNoob,danke
+2011-01-05 22:31:26,DesL,was passiert wenn er nein sagt?
+2011-01-05 22:31:38,taljeth,Wie wär's mit installieren?
+2011-01-05 22:31:39,PNoob,DesL: ist mir egal
+2011-01-05 22:31:55,DesL,/ignore ftw
+2011-01-05 22:32:20,PNoob,taljeth: achso
+2011-01-05 22:32:25,PNoob,ich dachte das wäre schon drauf
+2011-01-05 22:32:46,PNoob,Ich shchick mal eben netn patch raus
+2011-01-05 22:32:52,taljeth,Dein System solltest du eigentlich besser kennen als ich...
+2011-01-05 22:32:53,DerHartmut,Top top
+2011-01-05 22:33:07,DerHartmut,"Gut, ich wollte nur hallo sagen, bin wieder off. Guts Nächtle miteinand"
+2011-01-05 22:36:33,PNoob,Unable to initialize SMTP properly. Check config and use --smtp-debug. VALUES: server=localhost encryption= maildomain=Christian-Laptop at /usr/lib/git-core/git-send-email line 1040.
+2011-01-05 22:36:43,PNoob,ich glaube da ist was schiefgelaufen oder?
+2011-01-05 22:36:56,taljeth,server=localhost ist doof
+2011-01-05 22:37:09,taljeth,"Du willst git konfigurieren, dass er den SMTP-Server deines Providers benutzt"
+2011-01-05 22:37:26,PNoob,wie mache ich das?
+2011-01-05 22:37:34,PNoob,bitte sagt es mir einfach
+2011-01-05 22:37:50,PNoob,eigentlich soll der PC seit 7 minuten aus sein.
+2011-01-05 22:37:52,taljeth,man git-send-email
+2011-01-05 22:37:54,PNoob,",morgen ist wieder schule"
+2011-01-05 22:38:06,sfan,Wann kommt Tyndur 0.3 raus?
+2011-01-05 22:38:17,taljeth,Wenn es fertig ist
+2011-01-05 22:38:38,sfan,und wann ungefähr?
+2011-01-05 22:38:53,taljeth,"Mehr oder weniger dann, wenn LIOv2 stabil ist"
+2011-01-05 22:39:05,taljeth,"Und wie lange es dauert, Bug zu finden und zu fixen kann man nie sagen"
+2011-01-05 22:39:22,Jidder,apropos
+2011-01-05 22:40:37,Jidder,http://codepad.org/AZWuWGjR
+2011-01-05 22:41:07,Jidder,"das eax auf den anfang der funktion zeigt, deute ich dahingehend, dass dorthin ein sprung erfolgt ist"
+2011-01-05 22:41:14,Jidder,mit call *%rax
+2011-01-05 22:41:26,PNoob,so ich will die mail über web de versenden
+2011-01-05 22:41:29,Jidder,aber wie krieg ich denn jetzt da diese krumme adresse raus?
+2011-01-05 22:41:36,Jidder,für den #UD
+2011-01-05 22:41:39,PNoob,smtp.web.de
+2011-01-05 22:41:41,Jidder,ist doch verrückt
+2011-01-05 22:41:47,PNoob,und als passwort mein passwort
+2011-01-05 22:42:43,taljeth,Jidder: Würde dann nicht 0x20 in rax stehen?
+2011-01-05 22:42:55,Jidder,hm stimmt
+2011-01-05 22:42:56,taljeth,Wenn er die Funktion von Anfang an ausführt
+2011-01-05 22:43:21,taljeth,Wo ist der Dump her?
+2011-01-05 22:43:22,Jidder,"ich glaube ich reverte einfach wieder soweit, dass ich einen page fault habe"
+2011-01-05 22:43:26,Jidder,von JidderOS 4.0
+2011-01-05 22:43:27,taljeth,Laufender Code der objdump?
+2011-01-05 22:43:35,taljeth,Wenn letzteres tippe ich auf selbstmodifizierenden Code
+2011-01-05 22:43:41,PNoob,"Keine Authentifizierung, oder POP3-Anmeldung zu weit in der Vergangenheit . / Authentification failed, or POP3 logon too old. "
+2011-01-05 22:43:45,PNoob,was mach ich falsch
+2011-01-05 22:43:48,Jidder,taljeth: hm das ist eine gute idee
+2011-01-05 22:44:00,Jidder,aber noch blöder zu debuggen als page faults^^
+2011-01-05 22:44:10,taljeth,"PNoob: Erstmal deine Mails abholen, dann git-send-email"
+2011-01-05 22:44:14,taljeth,SMTP-after-POP und so
+2011-01-05 22:44:28,PNoob,wie soll ich die mails abholen?
+2011-01-05 22:44:46,PNoob,ich nutze die adresse kaum und wenn dann mache ich alles über deren webseite
+2011-01-05 22:44:47,taljeth,Weil SMTP keine Anmeldung kann nehmen manche Provider einen POP-Login von derselben IP davon her
+2011-01-05 22:44:51,taljeth,Mit deinem Mailprogramm
+2011-01-05 22:44:59,taljeth,"Hm, ja dann..."
+2011-01-05 22:45:27,PNoob,kann ich den Patch auch anders an die Mailingliste senden?
+2011-01-05 22:45:40,PNoob,also direct über den webmil dienst den ich nutze?
+2011-01-05 22:46:17,PNoob,oder taljeth kann ich dir den direkt geben zum commiten
+2011-01-05 22:46:21,taljeth,Solange der Webmailer den Patch nicjht kaputtmacht
+2011-01-05 22:46:27,taljeth,Üblciherweise machen sie ihn kaputt
+2011-01-05 22:46:34,PNoob,warum?
+2011-01-05 22:46:42,taljeth,Zeilenumbrüche einfügen und sowas
+2011-01-05 22:46:45,PNoob,und wenn ich ihn als Dateianhang mitsende?
+2011-01-05 22:46:53,taljeth,"Jo, das könnte gehen"
+2011-01-05 22:47:00,PNoob,ich versuchs einfach mal
+2011-01-05 22:47:09,taljeth,Aber bitte als text/plain
+2011-01-05 22:47:27,taljeth,"Oder diff oder so, nicht als application/octet-stream"
+2011-01-05 22:48:15,taljeth,Jidder: Zumidnest zu verifizieren ist das mit qemu einfach
+2011-01-05 22:48:28,taljeth,x /20i <adresse>
+2011-01-05 22:49:56,markus111_,tachchen
+2011-01-05 22:50:10,DesL,moin markus111_
+2011-01-05 22:50:28,markus111_,"PNoob: http://osar.it-livetalk.de/index.php/Wer_macht_mit - das bist nicht wirklich du, oder? :D"
+2011-01-05 22:50:50,taljeth,Na der XanClic ist mal einer
+2011-01-05 22:51:07,taljeth,"Da will ich grad einen Tippfehler wegeditieren, da ist der plötzlich in der Textbox nicht mehr zu finden"
+2011-01-05 22:51:26,markus111_,"habs grad gefunden, als ich eigentlich gucken wollte warum msvc kein 0b000 nimmt"
+2011-01-05 22:51:58,taljeth,Weil das kein C ist
+2011-01-05 22:52:07,taljeth,Sondern eine gcc-Erweiterung von zweifelhaftem Nutzen
+2011-01-05 22:52:14,XanClic,Da war der Clici schnell wie die Feuerwehr
+2011-01-05 22:52:23,taljeth,markus111_: 0x00 ist eh besser
+2011-01-05 22:52:40,markus111_,aber ich hab nur 3 bits^^
+2011-01-05 22:52:48,taljeth,XanClic: Bei euch möchte ich kein brennendes Haus haben ;-)
+2011-01-05 22:53:00,taljeth,Dann reicht auch 0x0 ;-)
+2011-01-05 22:53:09,XanClic,Aber sonst schon? Ich komm dann mal vorbei *g*
+2011-01-05 22:53:33,taljeth,"Hm, so bekommt man euch als dazu, hierher zu kommen"
+2011-01-05 22:53:47,taljeth,"Nur mit der Aussicht auf eine Möglichkeit, terroristische Akte zu verüben"
+2011-01-05 22:53:49,XanClic,Tja
+2011-01-05 22:53:54,markus111_,PNoob1?
+2011-01-05 22:53:57,taljeth,Wir sollten die Mauer doch wieder aufbauen
+2011-01-05 22:54:00,XanClic,Oder mit der Aussicht auf ein bisschen Geld
+2011-01-05 22:54:03,PNoob1,ja
+2011-01-05 22:54:13,PNoob1,markus111_: was isß
+2011-01-05 22:54:26,markus111_,http://osar.it-livetalk.de/index.php/Hauptseite => hab ich da grad ein geheimes projekt von dir entdeckt? :D
+2011-01-05 22:55:24,XanClic,"Oh, apropos geheime Projekte"
+2011-01-05 22:55:35,Jidder,taljeth: danke. da stehen ja lauter pointer :(
+2011-01-05 22:55:35,XanClic,Im Aerisforum hat ja mal wieder jemand geschrieben… xD
+2011-01-05 22:55:50,XanClic,"Ah, nur Spam, wär sonst auch komisch gewesen"
+2011-01-05 22:55:58,PNoob1,"Ich wollte da erst mktmachen, aber irgendwie hab ichs dann sein gelassen"
+2011-01-05 22:56:13,PNoob1,markus111_: mtmachen tu ich da nicht aber löschensollte ich mich mal
+2011-01-05 22:56:16,PNoob1,gn8
+2011-01-05 22:57:05,Jidder,hm der stack scheint dort zu besuch zu sein -.-
+2011-01-05 22:59:59,tev,ich seh grad bei der Beschreibung von nano bei lpt
+2011-01-05 23:00:06,tev,nano ein Texteditor
+2011-01-05 23:00:07,sfan,bb
+2011-01-05 23:00:17,tev,vim der Texteditor
+2011-01-05 23:00:18,tev,bb
+2011-01-05 23:00:25,tev,ich finds lustig :)
+2011-01-05 23:00:49,taljeth,PNoob: Du wolltest bei Aeris mitmachen?
+2011-01-05 23:01:12,taljeth,tev: Stimmt doch aber *g*
+2011-01-05 23:01:19,PNoob,wann hab ich das gesagt?
+2011-01-05 23:01:25,tev,taljeth: ich hab lieber nano benutzt^^
+2011-01-05 23:02:27,taljeth,vim tut auch nicht vernüntig ;-)
+2011-01-05 23:02:41,taljeth,Unter tyndur nehme ich eh immer kedit
+2011-01-05 23:03:41,bluecode,morgen wieder schule? huch? Da ist bei uns Feiertag
+2011-01-05 23:03:58,DesL,Montag <3
+2011-01-05 23:04:08,Jidder,oh mann immer dieses iretq -.- das will auch bei ring0->ring0 ein ss/esp auf dem stack
+2011-01-05 23:04:33,taljeth,Ist ja fies
+2011-01-05 23:04:38,bluecode,pusht der int dann auch ss/esp?
+2011-01-05 23:04:46,PNoob,wir müssen morgen wieder hin
+2011-01-05 23:05:13,PNoob,mal sehen ob ich das mit dem aufstehen hinbekomme
+2011-01-05 23:05:30,PNoob,heute wars trotz wecker 10:Uhr
+2011-01-05 23:05:35,Jidder,bluecode: müsste er vermutlich
+2011-01-05 23:05:56,bluecode,sonst wärs ja mal so richtig unintuitiv *g*
+2011-01-05 23:06:13,PNoob,damit würde ich die ersten 2 stunden verpassen und einen teil der dritten.
+2011-01-05 23:06:15,SHyx0rmZ,"Jidder, jo"
+2011-01-05 23:06:40,PNoob,taljeth ist der patch so OK?
+2011-01-05 23:07:05,Jidder,und folgende erkenntnis habe ich gewonnen: lambda
+2011-01-05 23:07:15,PNoob,oder soll ich morgen mal in ruhe gucken wie ich das mit git auf die reihe bekomme?
+2011-01-05 23:07:20,bluecode,epsilon!
+2011-01-05 23:07:28,taljeth,PNoob: Sieht nicht nach einem Fix aus
+2011-01-05 23:07:28,Jidder,das problem sind die page faults -.-
+2011-01-05 23:07:39,taljeth,Races mit sleep zu fixen ist jedenfalls immer verdächtig ;-)
+2011-01-05 23:08:03,PNoob,taljeth: wie meinst du das?
+2011-01-05 23:08:13,PNoob,und?
+2011-01-05 23:08:22,PNoob,hauptsache es geht
+2011-01-05 23:08:29,taljeth,"Naja, weißt du, was den Mount noch unter Beschlag hat?"
+2011-01-05 23:08:33,taljeth,Dann sollte man eher darauf warten
+2011-01-05 23:08:37,PNoob,und so habe ich das immer gelöst
+2011-01-05 23:09:04,taljeth,"""gelöst"""
+2011-01-05 23:09:13,PNoob,wäre aber nett wenn er es trotzdem bis ins repo schaffen würde
+2011-01-05 23:09:43,taljeth,Er ist halt falsch...
+2011-01-05 23:10:01,PNoob,sonst ändere meinetwegen den Text zu symtom behoben um
+2011-01-05 23:10:16,PNoob,dann wäre der patch wieder richtig
+2011-01-05 23:10:17,bluecode,wieso unmountet der denn zu früh?
+2011-01-05 23:10:17,taljeth,Symptom manchmal behoben
+2011-01-05 23:10:30,taljeth,Das ist die eigentliche Frage
+2011-01-05 23:10:54,PNoob,taljeth ändere den Text einfach um
+2011-01-05 23:11:08,Jidder,"kann ich qemu sagen, dass er nicht neustarten soll, sondern wieder zum monitor zurückkehren soll? -no-reboot macht immer die maschine aus ..."
+2011-01-05 23:11:22,SHyx0rmZ,dann mach nen ordentlichen Patch
+2011-01-05 23:11:53,PNoob,SHyx0rmZ ich dachte das ist ein anständiger
+2011-01-05 23:11:59,taljeth,"Hm, ist das möglicherweise irgendeine d00fer Daemon, der entweder das Verzeichnis indizieren oder der GUI sagen will, dass da was neues ist?"
+2011-01-05 23:12:05,PNoob,weil er funktioniert
+2011-01-05 23:12:44,PNoob,ich benutze den patch/hack schon lange in meinen scripts.die haben bisher immer getan
+2011-01-05 23:13:32,taljeth,"Und du hast dir nie die Mühe gemacht rauszufinden, wer eigentlich noch darauf zugreift?"
+2011-01-05 23:13:44,PNoob,lass es doch mit dem sleep hack. Hauptsache es geht. Grub2 ist doch eh ein großer dreckiger hack
+2011-01-05 23:13:50,Jidder,mit fuser soll man das laut google rauskriegen können
+2011-01-05 23:13:52,PNoob,nö
+2011-01-05 23:14:07,taljeth,"Jo, fuser oder lsof"
+2011-01-05 23:14:10,PNoob,weil auch nicht wüsste wonach ich suchen soll
+2011-01-05 23:14:22,taljeth,fuser /mnt
+2011-01-05 23:14:30,taljeth,Oder was auch immer der Mountpoint ist
+2011-01-05 23:14:46,taljeth,Ein sleep 1 verdoppelt jedenfalls ungefähr die Ausführungszeit des Skripts
+2011-01-05 23:14:47,PNoob,ich mach das morgen in der mittagspause
+2011-01-05 23:14:48,PNoob,ok
+2011-01-05 23:14:57,PNoob,bitte noch nicht patchen
+2011-01-05 23:15:03,PNoob,das möchte ich tun
+2011-01-05 23:16:11,PNoob,taljeth diese eine sekunde merkt man bei dem buildsystem auch nicht
+2011-01-05 23:16:41,Jidder,PNoob so zu argumentieren nützt nichts
+2011-01-05 23:16:49,taljeth,Man baut nicht jedesmal alles neu
+2011-01-05 23:16:55,PNoob,warum wird alles jedesmal gelinkt und warum werden alle pascal sachen neucompiliert bei jedem durchlauf?
+2011-01-05 23:17:02,taljeth,"Und außerdem ist ""der Rest ist auch falsch"" kein gutes Argument"
+2011-01-05 23:17:20,taljeth,Weil es falsch ist
+2011-01-05 23:18:01,PNoob,"ich sag ja nicht das es falsch ist, sondern das das eh ne weile läufz und daher die sekunde nicht auffält"
+2011-01-05 23:18:10,taljeth,"(Guck mal erik, ich habe nicht ""kaputt"" gesagt!)"
+2011-01-05 23:18:23,Jidder,-no-reboot -no-shutdown
+2011-01-05 23:18:27,taljeth,PNoob: In der Regel baue ich nur ein einziges Verzeichnis neu
+2011-01-05 23:18:32,Jidder,das wird ja immer besser
+2011-01-05 23:18:40,DesL,was bezweckt denn das sleep?
+2011-01-05 23:18:44,PNoob,"taljeth es ist nicht falsch, es ist suboptimal, weil es schware magie ist"
+2011-01-05 23:18:48,taljeth,DesL: Ein Race umgehen
+2011-01-05 23:18:53,DesL,hm
+2011-01-05 23:18:58,DesL,"das ist iwie kaputt, oder?"
+2011-01-05 23:19:04,taljeth,Genau
+2011-01-05 23:19:09,DesL,"JA, ICH BENUTZE DIESE WORT^^"
+2011-01-05 23:19:22,PNoob,da greift noch irgendwas auf den mountpoint zu und dann kann man nicht löschen
+2011-01-05 23:19:33,taljeth,DesL: Und wenn du diesem Grammatik dann auch noch benutzt... ;-)
+2011-01-05 23:19:42,DesL,-.-
+2011-01-05 23:19:42,PNoob,mit dem sleep wartet man eine sekunde und dann gehts
+2011-01-05 23:20:02,Jidder,qemu ist auch ein scherzkeks. info mem interpretiert die page tables als 32-bit page tables
+2011-01-05 23:20:24,taljeth,Raum für mehr lokale Patches ;-)
+2011-01-05 23:20:44,PNoob,ich werde mich morgen mal um ne anständige lösung bemühen
+2011-01-05 23:20:44,Jidder,denke ich auch
+2011-01-05 23:20:54,Jidder,dann jetzt also 40 minuten pause?
+2011-01-05 23:21:03,taljeth,"Hm, aber eigentlich kann der das"
+2011-01-05 23:21:05,SHyx0rmZ,"Jidder, bochs kanns ^^"
+2011-01-05 23:21:07,taljeth,Behauptet der Code
+2011-01-05 23:21:33,SHyx0rmZ,"Jidder, vielleicht schaltest du nicht in den LM?"
+2011-01-05 23:21:37,taljeth,Vielleicht bist du ja versehentlich gar nicht im LM? ;-)
+2011-01-05 23:21:46,taljeth,"Hehe, zwei d00fe, ein Gedanke"
+2011-01-05 23:21:52,PNoob,Jidder die 40 Minuten habe ich morgen erst um 13:25
+2011-01-05 23:22:11,taljeth,Date:   Sat Dec 11 18:56:27 2010 +0000
+2011-01-05 23:22:12,taljeth,    monitor: implement x86 info mem for PAE and long modes
+2011-01-05 23:22:16,taljeth,Daran liegt es wohl eher ;-)
+2011-01-05 23:22:19,Jidder,ui
+2011-01-05 23:22:22,Jidder,gleich mal saugen
+2011-01-05 23:22:29,Jidder,und wieder cygwin starten ...
+2011-01-05 23:22:37,Jidder,wir sehen uns in einer halben stunde
+2011-01-05 23:22:43,taljeth,"Ah, du entwickelst wieder unter Windows?"
+2011-01-05 23:22:54,PNoob,Jidder du benutzt cygwin um die qemu zu bauen?
+2011-01-05 23:23:16,Jidder,PNoob: nein für git
+2011-01-05 23:23:30,DesL,da gibt es auch nen port ohne cygwin drumrum
+2011-01-05 23:23:38,Jidder,und der ist auch entsprechend
+2011-01-05 23:23:42,PNoob,wie baust du denn qemu?
+2011-01-05 23:23:51,Jidder,mingw
+2011-01-05 23:24:02,PNoob,DesL der port ist Müll
+2011-01-05 23:24:17,PNoob,das hab ich bisher nicht geschafft
+2011-01-05 23:24:40,PNoob,kannst du das mal als Anleitung zu Wiki bringen?
+2011-01-05 23:24:44,DesL,bei mit ging das super
+2011-01-05 23:25:02,PNoob,was? Das git schrott zug?
+2011-01-05 23:25:03,DesL,"meinst du ""downloaden->pfad in %PATH% packen->starten""?"
+2011-01-05 23:25:22,PNoob,im übrigen waren die anderen beiden zeilen für jidder
+2011-01-05 23:26:09,DesL,"tja, tut mir leid, aber ""NICK:"" hat seine daseins berechtigung^^"
+2011-01-05 23:26:17,Jidder,oh meine änderungen waren mal wieder nicht kommittiert
+2011-01-05 23:26:25,PNoob,"das mit dem""Das habe ich bisher geschafft bezog sich in keinster weise auf das git schrott zeug"""
+2011-01-05 23:26:50,DesL,war wohl nciht ganz so ersichtlich
+2011-01-05 23:27:20,PNoob,DesL ich schreibe aber momentan am Handy und da sind Nicknames schreiben nervig
+2011-01-05 23:27:36,DesL,ist das mein problem?
+2011-01-05 23:27:53,PNoob,Jidder ich wäre dir für eine entsprechende anleitung sehr dankbar
+2011-01-05 23:28:05,Jidder,./configure --target-list=x86_64-softmmu
+2011-01-05 23:28:05,Jidder,fertig
+2011-01-05 23:28:13,Jidder,ach ne make und dann als administrator make install
+2011-01-05 23:28:18,PNoob,DesL vieleicht ein wenig Gehirn einschalten
+2011-01-05 23:28:35,DesL,PNoob: vlt mal klappe halten?
+2011-01-05 23:28:55,tyndur,>> Commit in tyndur.git:refs/heads/master
+2011-01-05 23:28:55,tyndur,Autor: Kevin Wolf
+2011-01-05 23:28:55,tyndur,grub2_hd: grub.cfg statt menu.lst löschen
+2011-01-05 23:28:55,tyndur,"! grub2_hd: Das Skript hat die falsche Datei versucht zu löschen, so"
+2011-01-05 23:28:55,tyndur,  dass das richtige Bootmenü mit jedem Build länger geworden ist
+2011-01-05 23:29:06,PNoob,"wenn ich vorherJidder frage wie er qemu baut, dann sollte ersichtlichseindas das mit der anleitung auf jedenfall dazugehört."
+2011-01-05 23:29:54,DesL,"es war nciht ersichtlich, reicht das nicht einfach aus? musst du dich da jetzt dran hochziehen?"
+2011-01-05 23:29:59,PNoob,DesL: Wiso soll ich mir von einemdummen etwassagen lassen?
+2011-01-05 23:30:02,PNoob,egal
+2011-01-05 23:30:40,PNoob,taljeth: das war unfair
+2011-01-05 23:31:00,taljeth,"Das musst du dir überlegen, bevor du dich danebenbenimmst"
+2011-01-05 23:31:12,PNoob,der komische Linus Klon muss auch raus
+2011-01-05 23:31:29,PNoob,er hat sich auch daneben benommen
+2011-01-05 23:31:34,DesL,habe ich das?
+2011-01-05 23:31:41,PNoob,ja
+2011-01-05 23:31:52,DesL,ich bin nicht persönlich geworden
+2011-01-05 23:33:17,PNoob,gn8 @ (all - DesL)
+2011-01-05 23:33:29,taljeth,gn64
+2011-01-05 23:33:35,Jidder,gn8
+2011-01-05 23:34:18,DesL,gn8 PNoob
+2011-01-05 23:34:59,Jidder,oha erstmal wieder 8x multisampling einschalten
+2011-01-05 23:34:59,bluecode,"taljeth: gut, dass ich nur ein virtuelle acked-by verteilt habe *g*"
+2011-01-05 23:35:02,Jidder,jaha ich hab eine grafikkarte

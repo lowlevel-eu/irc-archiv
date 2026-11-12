@@ -1,0 +1,363 @@
+date/time,nick,message
+2015-02-27 15:17:29,Jonathan,Es leeeeebt! :D
+2015-02-27 15:17:37,Jonathan,Mein i8042 antwortet 0x55 auf den Befehl 0xAA :D
+2015-02-27 15:22:35,kevin,Glückwunsch
+2015-02-27 15:23:09,Jonathan,Danke :D
+2015-02-27 15:31:28,Jonathan,"Oh, lol"
+2015-02-27 15:31:42,Jonathan,Habe einen disassemblierten ROM-Dump vom i8042 KBC gefunden
+2015-02-27 15:32:21,Jonathan,Offenbar erwartet das Ding nach dem Reset zwingend einen 0xAA-Befehl (Selbsttest) und startet sich erst dann komplett
+2015-02-27 15:32:42,Jonathan,Dabei hält es CLK low und hält somit die Tastatur an
+2015-02-27 15:33:06,Jonathan,"Das erklärt, wieso sich mein i8042 so ""komisch"" verhalten hat... Das, was sonst das BIOS im x86-PC schon getan hat, hab ich ja hier noch garnicht gemacht"
+2015-02-27 15:33:24,Jonathan,kevin: Vielleicht wäre das eine nette Ergänzung zum KBC-Artikel im Wiki? ;)
+2015-02-27 15:33:42,Jonathan,http://www.halicery.com/8042/8042_1503033.TXT <---
+2015-02-27 15:33:50,kevin,"Jo, pack's rein"
+2015-02-27 15:34:04,kevin,Hm... Und macht tyndur das?
+2015-02-27 15:34:13,Jonathan,Nee
+2015-02-27 15:34:27,Jonathan,"Bevor tyndur startet, ist ja schon das BIOS durchgelaufen"
+2015-02-27 15:34:29,Jonathan,Und das tut das ;)
+2015-02-27 15:34:42,Jonathan,Um ehrlich zu sein hab ich übrigens keinen Wiki-Account *g*
+2015-02-27 15:35:04,kevin,"Aber der OS-Treiber resettet doch? Oder resettet der nur die Tastatur, aber nicht den KBC?"
+2015-02-27 15:35:20,kevin,Das mit dem Wikiaccount lässt sich ändern
+2015-02-27 15:35:25,Jonathan,Der KBC tut das nur beim Power-on Reset
+2015-02-27 15:35:31,Jonathan,Also direkt bevor das BIOS losläuft
+2015-02-27 15:35:41,Jonathan,Das OS hat darauf dann keinen Einfluss mehr
+2015-02-27 15:35:45,kevin,Ach so
+2015-02-27 15:36:06,Jonathan,"(Der KBC springt seine Mainloop erst an, nachdem er 0xAA empfangen und mit 0x55 beantwortet hat)"
+2015-02-27 15:36:37,kevin,Also ist die Information für den durchschnittlichen OS-Dever eher wertlos
+2015-02-27 15:36:45,Jonathan,"Deshalb hat sich mein KBC also so anders verhalten, als auf Lowlevel/Osdev steht *g*"
+2015-02-27 15:36:46,Jonathan,Joa
+2015-02-27 15:36:51,Jonathan,Aber durchaus interessant :D
+2015-02-27 15:36:54,kevin,"Aber macht nix, kann trotzdem in den Artikel, wenn dabeisteht, wann man das genau braucht"
+2015-02-27 15:56:48,Svenska,moin
+2015-02-27 15:56:50,Jonathan,Huhu Svenska
+2015-02-27 15:56:56,Svenska,ich hab mal ne bitte
+2015-02-27 15:57:00,Jonathan,"Ich weiß jetzt, wieso mein i8042 tat, was er so tat *g*"
+2015-02-27 15:57:04,Svenska,kannst du mal eine messung fuer mich machen? *g*
+2015-02-27 15:57:06,Svenska,"oh, sag mal"
+2015-02-27 15:57:23,Jonathan,Der i8042 wird vom BIOS erstmal initialisiert
+2015-02-27 15:57:47,Jonathan,"Davon stand natürlich auf Lowlevel und Osdev nichts, weil sich ein ""normaler"" OS-Programmierer damit nicht beschäftigen muss :D"
+2015-02-27 15:58:00,Svenska,ok.. wie wird er initialisiert?
+2015-02-27 15:58:14,Jonathan,"Der i8042 startet seine Mainloop erst, wenn er einen 0xAA-Befehl (Selbsttest) empfangen, durchgeführt und mit 0x55 (kein Fehler) bestätigt hat"
+2015-02-27 15:58:23,Svenska,oh kay
+2015-02-27 15:58:27,Jonathan,Das tut meiner auch brav :D
+2015-02-27 15:58:28,Svenska,wie hast rausgefunden? *g*
+2015-02-27 15:58:39,Jonathan,Hab ein Disassembly vom ROM eines KBCs gefunden *g*
+2015-02-27 15:58:45,Svenska,*g*
+2015-02-27 15:58:58,Jonathan,Hab das mal spaßeshalber in den Wiki-Artikel zum KBC geschrieben :P
+2015-02-27 15:59:06,Svenska,prima :D
+2015-02-27 15:59:08,Jonathan,Und den Quellcode vom KBC verlinkt :D
+2015-02-27 15:59:17,Jonathan,Was soll ich denn für dich messen?
+2015-02-27 15:59:37,Svenska,unterschiedliche quellen geben fuer das timing vom z80 unterschiedliche zeiten an
+2015-02-27 16:00:07,Svenska,"und zwar geht nach einem M1-MREQ-zyklus ja /MREQ irgendwann wieder auf high, während /RFSH auf low geht"
+2015-02-27 16:00:23,Svenska,"ueberlappen sich diese beiden phasen, und wenn nein, wie lange nicht? :-)"
+2015-02-27 16:00:41,Svenska,"kurz: wenn ich ""/MREQ & /RFSH"" nehme, glitcht das? D:"
+2015-02-27 16:00:46,Svenska,:D
+2015-02-27 16:01:17,Jonathan,Ich halt mal kurz mein Oszi rein :P
+2015-02-27 16:01:24,Svenska,au fein :P
+2015-02-27 16:02:07,Jonathan,Aber wieso willst du /MREQ & /RFSH nehmen?
+2015-02-27 16:02:33,Svenska,weil ich dann statt CBR (/CAS-before-/RAS) refresh einen hidden refresh einbauen könnte
+2015-02-27 16:02:58,Svenska,"und ich statt einem muxer dann nur noch ein halbes 7400 bräuchte, um den zu implementieren"
+2015-02-27 16:03:21,Jonathan,Hmmm ^^
+2015-02-27 16:03:26,Jonathan,"Nagut, ich verkabel das kurz mal"
+2015-02-27 16:03:38,Svenska,"und der liegt da gerade rum, weil ich fuer die mmu aus 2 NANDs einen RS-FF bauen muss"
+2015-02-27 16:10:36,Jonathan,Svenska: http://s24.postimg.org/bnxfev2kl/mreq_rfsh.png
+2015-02-27 16:10:43,Jonathan,"Gelb: /RFSH, Blau: /MREQ"
+2015-02-27 16:10:58,Svenska,also gleichzeitig
+2015-02-27 16:11:08,Svenska,dankeschön
+2015-02-27 16:11:13,Svenska,dann kann ich das also machen
+2015-02-27 16:11:44,Jonathan,Kannst du? :D
+2015-02-27 16:11:47,Svenska,"(ich verzögere /MREQ um etwa 1/4 takt, also 70ns)"
+2015-02-27 16:11:59,Jonathan,"Das klingt nach ""ugly hack"" *g*"
+2015-02-27 16:12:09,Svenska,"(das ist dann /CAS, und wenn ich /CAS & /RFSH nehme, halte ich /CAS im refreshzyklus unten"
+2015-02-27 16:12:28,Svenska, während /RAS = /MREQ noch einmal pulst = hidden refresh nach read cycle)
+2015-02-27 16:12:53,Jonathan,Hmmmm :)
+2015-02-27 16:13:13,Jonathan,Klingt eigentlich recht ausgeklügelt
+2015-02-27 16:13:15,Svenska,"die verzögerung mache ich aber sauber, mit einer delay line"
+2015-02-27 16:13:45,Jonathan,"Jo, dann ist das imo kein Problem"
+2015-02-27 16:14:00,Jonathan,"Begrenzt nur die maximale Taktfrequenz, aber das tun die DRAMs vermutlich auch *g*"
+2015-02-27 16:14:00,Svenska,"ich muss noch schauen, ob ich early write implementieren muss und wenn ja, wie"
+2015-02-27 16:14:14,Svenska,"das system ist auf 4 mhz ausgelegt, weil der z80 eh nicht besser ist *g*"
+2015-02-27 16:14:18,Jonathan,Joa *g*
+2015-02-27 16:14:34,Jonathan,"Also, wie genau bastelst du dir da jetzt die Signale?"
+2015-02-27 16:14:59,Svenska,"also /MREQ geht direkt an /RAS, und an die delay line"
+2015-02-27 16:15:17,Svenska,"nach der halben delay zeit geht das dann an einen muxer, der 9 adressbit (...) wechselt"
+2015-02-27 16:15:31,Svenska,und nach der ganzen delay zeit ist das signal dann /CAS
+2015-02-27 16:15:33,Jonathan,Jo
+2015-02-27 16:15:37,Jonathan,Das klingt logisch
+2015-02-27 16:15:52,Svenska,damit halte ich alle setup/hold times ein (auch wenn die lt datenblatt tlws 0 sind)
+2015-02-27 16:16:14,Svenska,"und dann kann ich /CAS & /RFSH verknoten, um /CAS im refreshzyklus unten zu halten"
+2015-02-27 16:16:35,Svenska,"da /CAS einen vierteltakt verzögert ist, buegle ich den glitch locker weg"
+2015-02-27 16:16:40,Jonathan,Stimmt
+2015-02-27 16:16:52,Jonathan,D.h. während Refreshzyklen hast du damit schonmal länger /CAS
+2015-02-27 16:17:14,Svenska,"(ich hatte andere infos, wonach /RFSH einen halben takt verzögert ist, und dann ginge das nicht mehr. /CAS darf max 80ns verzögert werden, aber ein halber takt hat 125ns)"
+2015-02-27 16:17:42,Svenska,"richtig, und während das /CAS im refreshzyklus low bleibt, pulst /RAS nochmal nach, was fuer den chip ein hidden refresh ist"
+2015-02-27 16:17:44,Jonathan,"Laut Zilog-Datenblatt ist es so, wie es auf dem Oszi-Screenshot zu sehen ist"
+2015-02-27 16:17:48,Svenska,jap
+2015-02-27 16:17:59,Jonathan,Stimmt
+2015-02-27 16:18:02,Svenska,"das datenblatt hat recht, ich wollt's nur nochmal bestätigt haben :D"
+2015-02-27 16:18:05,Jonathan,Das ist ziemlich clever :D
+2015-02-27 16:18:30,Svenska,"das einzige, was mich gerade stört ist das mit dem early write"
+2015-02-27 16:18:55,Svenska,das peile ich noch nicht ganz
+2015-02-27 16:19:10,Svenska,der z80 wirft /WR ja erst ziemlich spät aus
+2015-02-27 16:19:34,Svenska,"aber der dram will das /WR haben, _bevor_ /CAS fällt"
+2015-02-27 16:20:04,Jonathan,Hmmm
+2015-02-27 16:20:10,Svenska,"da muss ich mich nochmal in die timings einlesen, evtl. knoten ich da ein invertiertes /RD an"
+2015-02-27 16:20:42,Svenska,"was kein read zyklus ist, wird wohl ein write zyklus sein..."
+2015-02-27 16:20:42,Svenska,...muss ich mit der MMU genauso machen
+2015-02-27 16:20:42,Svenska,"(nur gilt da: was kein write zyklus ist, wird wohl ein read-zyklus sein...)"
+2015-02-27 16:20:46,Jonathan,Wie viel ns vor /CAS muss /WR fallen?
+2015-02-27 16:20:55,Svenska,weiß nicht
+2015-02-27 16:21:05,Svenska,entweer 0 oder 20ns
+2015-02-27 16:22:33,Svenska,"auf jeden fall bin ich fuer den dram bei 10,5 ICs"
+2015-02-27 16:22:53,Jonathan,Wie wäre es mit: /CAS_DRAM = /CAS OR (/RD AND /WR)
+2015-02-27 16:23:26,Svenska,"6 ram-bausteine, 3 muxer, 1 adressdekoder (fuer die bank) und ein halber 7400"
+2015-02-27 16:23:56,Svenska,hmm
+2015-02-27 16:24:15,Svenska,geht nicht
+2015-02-27 16:24:41,Svenska,weil dann in refresh-zyklen /CAS nicht aktiv wäre
+2015-02-27 16:27:05,Svenska,"lol, ""/WR muss -10 ns vor /CAS fallen"" :D"
+2015-02-27 16:27:25,Jonathan,xD
+2015-02-27 16:27:35,Svenska,steht so in nem ähnlichen datenblatt -.-
+2015-02-27 16:28:28,Svenska,aber das gilt fuer 64Kx1 ram und der ist mir zu primitiv
+2015-02-27 16:28:41,Svenska,"da kann man sogar RMW-zyklen mit machen, weil der getrennte DI/DO hat"
+2015-02-27 16:31:25,Svenska,andererseits hat mein dram getrennte /OE und /WR eingänge...
+2015-02-27 16:31:38,Jonathan,Hmmm
+2015-02-27 16:31:47,Jonathan,Was hast du denn für nen DRAM?
+2015-02-27 16:32:04,Svenska,"panasonic, MNirgendwas"
+2015-02-27 16:32:11,Svenska,da gibts kein datasheet zu
+2015-02-27 16:32:16,Jonathan,Blöd
+2015-02-27 16:32:31,Jonathan,Kannst du mir vllt trotzdem die Nummer geben?
+2015-02-27 16:32:33,Svenska,ich hab ne chinesische vergleichsliste mit den wichtigsten timings gefunden
+2015-02-27 16:32:37,Svenska,"mom, muss ich kurz nachgucken"
+2015-02-27 16:33:02,Svenska,MN41C4256
+2015-02-27 16:33:54,Svenska,"das ist ein 256Kx4 baustein, 80 ns ras-access-time, fpm, 512/8 Cyc/ms refresh"
+2015-02-27 16:35:01,Jonathan,"""C4256"" ist eine herstellerübergreifende Standardbezeichnung für DRAM mit diesen Funktionen"
+2015-02-27 16:35:24,Svenska,so die theorie :-)
+2015-02-27 16:35:24,Jonathan,Ich schau mal Datenblätter von anderen Herstellern durch
+2015-02-27 16:35:35,Svenska,es gibt auch 44256
+2015-02-27 16:35:38,Jonathan,Sind alles 256kx4 FPM DRAMS :)
+2015-02-27 16:36:24,Svenska,"also mir bekannt sind 4256 44256 und C4256 in der größe, aber die genauen timings sind eh verschieden"
+2015-02-27 16:36:24,Jonathan,"Es hat 20 Pins, richtig?"
+2015-02-27 16:36:26,Svenska,ja
+2015-02-27 16:36:52,Jonathan,"Refresh: RAS-only, CBR, Hidden"
+2015-02-27 16:37:00,Svenska,jup
+2015-02-27 16:37:01,Jonathan,512/8 Refresh
+2015-02-27 16:37:25,Jonathan,"Pinout und Timing sind für alle ""C4256"" standardisiert, laut diesem Datenblatt."
+2015-02-27 16:37:38,Jonathan,80ns Access Time
+2015-02-27 16:37:47,Svenska,ne das ist unterschiedlich
+2015-02-27 16:37:59,Jonathan,Echt? :P
+2015-02-27 16:38:00,Svenska,den gleichen chip gibts als -8 -6 -10
+2015-02-27 16:38:02,Jonathan,Ja
+2015-02-27 16:38:07,Svenska,ich hab -8
+2015-02-27 16:38:14,Jonathan,Aber alle -8 haben die selben Timings
+2015-02-27 16:38:25,Jonathan,"Dieses Datenblatt listet -8, -10, -12"
+2015-02-27 16:38:28,Svenska,laut der vergleichsliste nicht :-D
+2015-02-27 16:38:33,Jonathan,Hmmm :P
+2015-02-27 16:38:45,Jonathan,"Wir gehen einfach mal davon aus, dass die Timings in diesem DB auf deinen DRAM zutreffen. ;)"
+2015-02-27 16:38:50,Svenska,"verschiedene hersteller haben verschiedene setup/hold anforderungen, aber ich im großen und ganzen ist es richtig"
+2015-02-27 16:38:54,Svenska,die genauen zahlen hab ich da :-D
+2015-02-27 16:40:45,Jonathan,Also
+2015-02-27 16:40:50,Svenska,verdammt. hidden refresh verlangt /WE high
+2015-02-27 16:40:52,Jonathan,Early Write ist nicht zwingend
+2015-02-27 16:41:35,Jonathan,"Du kannst auch einen normalen Late Write machen, wo /CAS vor /WE fällt."
+2015-02-27 16:42:01,Jonathan,Außerdem wolltest du doch einen CBR-Refresh machen?
+2015-02-27 16:42:04,Svenska,wie heißt der zyklus?
+2015-02-27 16:42:19,Svenska,"hidden refresh geht mit weniger chips, wenn ich das hinkriege :D"
+2015-02-27 16:42:22,Jonathan,Inwiefern wie heißt er?
+2015-02-27 16:42:37,Svenska,meinst du mit late write einen RMW-zyklus?
+2015-02-27 16:42:41,Jonathan,Nein
+2015-02-27 16:42:46,Jonathan,./OE high
+2015-02-27 16:42:55,Jonathan,"Und /CAS geht low, danach /WE"
+2015-02-27 16:43:35,Jonathan,Das ist eigentlich die normale Betriebsart von DRAMs
+2015-02-27 16:43:54,Svenska,hmm
+2015-02-27 16:44:05,Svenska,zumindest fuer neuere
+2015-02-27 16:44:16,Jonathan,Nein
+2015-02-27 16:44:18,Svenska,"es gibt 64Kx1, die haben getrennte DI/DO"
+2015-02-27 16:44:28,Jonathan,Die ganz alten konnten keinen early write afaik
+2015-02-27 16:44:51,Jonathan,"Naja, auf jeden Fall sollte dein DRAM ganz normale late writes können"
+2015-02-27 16:44:58,Svenska,"die konnten nicht im zyklus umschalten zwischen read und write, deswegen musstest du ganz am anfang des zyklus ansagen, ob du lesen oder schreiben willst"
+2015-02-27 16:45:09,Jonathan,Hmmmm
+2015-02-27 16:45:19,Jonathan,Deins kann es :P
+2015-02-27 16:45:22,Svenska,"das ist ja der sinn von early write, die daten selbst bleiben lange aktiv"
+2015-02-27 16:45:24,Svenska,gut :p
+2015-02-27 16:45:56,Jonathan,"Aber so, wie du das mit deinem 7400-Gatter und der Verwurstung von /CAS und /RFSH beschrieben hast, bekommst du CBR-Refresh"
+2015-02-27 16:46:06,Svenska,der unterschied ist minimal
+2015-02-27 16:46:19,Svenska,bei CBR geht /CAS nochmal hoch nach dem lesezugriff
+2015-02-27 16:46:23,Svenska,bei hidden bleibt es unten
+2015-02-27 16:46:33,Jonathan,Stimmt
+2015-02-27 16:46:34,Svenska,"wenn ein ram CBR kann, kann es auch hidden"
+2015-02-27 16:46:52,Jonathan,Braucht hidden refresh eine Adresse?
+2015-02-27 16:46:58,Svenska,nope
+2015-02-27 16:47:03,Jonathan,Gut
+2015-02-27 16:47:06,Svenska,hauptvorteil gegenueber ras-only-refresh
+2015-02-27 16:47:10,Jonathan,Dann sollte das ja eigentlich funktionieren :D
+2015-02-27 16:47:14,Svenska,sonst bräuchte ich noch einen counter :D
+2015-02-27 16:47:21,Jonathan,Nicht unbedingt
+2015-02-27 16:47:29,Jonathan,Der Z80 selbst enthält doch schon einen 8-Bit-Counter
+2015-02-27 16:47:33,Svenska,nope
+2015-02-27 16:47:38,Svenska,"7-bit counter, ich brauch aber 9 :D"
+2015-02-27 16:47:46,Jonathan,"Gut, okay :P"
+2015-02-27 16:48:01,Svenska,btw: du kannst ja R lesen und schreiben
+2015-02-27 16:48:07,Jonathan,Also auf jeden Fall sollte das mit dem hidden refresh gehen
+2015-02-27 16:48:16,Jonathan,Und RD/WR kannst du direkt mit dem DRAM verkabeln
+2015-02-27 16:48:23,Svenska,"wenn du R liest, kriegst du ungefähr eine zufallszahl"
+2015-02-27 16:48:36,Svenska,"und wenn du R schreibst, ist es ein 7-bit-counter, wobei das 8. bit erhalten bleibt:D"
+2015-02-27 16:49:01,Jonathan,Joa :D
+2015-02-27 16:49:30,Svenska,das ist doch mal ein lustiger i/o pin... /RFSH & A7
+2015-02-27 16:49:35,Jonathan,*g*
+2015-02-27 16:50:25,Svenska,"mit late write ist das design damit fertig (/WR an /WE, und /RD an /OE)"
+2015-02-27 16:50:31,Jonathan,Jo :D
+2015-02-27 16:50:41,Svenska,"dann sinds tatsächlich nur 10,5 ICs"
+2015-02-27 16:50:48,Svenska,plus einer fuers flash :D
+2015-02-27 16:50:57,Jonathan,Bei mir sind es 3 ICs *g*
+2015-02-27 16:51:02,Jonathan,2x SRAM + 1x '00
+2015-02-27 16:51:19,Svenska,das wird bei der grafik dann witzig
+2015-02-27 16:51:35,Jonathan,Ja
+2015-02-27 16:51:41,Svenska,"da kommt ein gemuetlicher 32k-sram ran, von dem nur 16k genutzt werden"
+2015-02-27 16:51:44,Jonathan,Nimmst du jetzt den TMS?
+2015-02-27 16:51:53,Svenska,wenn er irgendwann mal geliefert wird...
+2015-02-27 16:52:01,Jonathan,Hmmm *g*
+2015-02-27 16:52:02,Jonathan,"Oh, btw"
+2015-02-27 16:52:03,Svenska,umbauen kann man später ja immernoch ;)
+2015-02-27 16:52:19,Jonathan,Wieso hängst du das oberste Adressbit vom 32k-SRAM nicht an ein Register?
+2015-02-27 16:52:21,Svenska,"genauso der '612, muss auch geliefert werden, ist aber ne volle mmu in 2 chips"
+2015-02-27 16:52:32,Svenska,weils nichts bringt
+2015-02-27 16:52:37,Jonathan,Dann kannst du ziemlich einfach zwei umschaltbare Grafikbildschirme machen
+2015-02-27 16:53:33,Svenska,"ja, aber damit kann ich keine besseren effekte erreichen als ohne"
+2015-02-27 16:53:40,Jonathan,Klar
+2015-02-27 16:53:46,Svenska,hast du dir das datenblatt von dem mal angeguckt btw?
+2015-02-27 16:53:50,Jonathan,Noch nicht
+2015-02-27 16:53:52,Jonathan,Welcher Chip war das?
+2015-02-27 16:54:00,Svenska,"tms9929, oder tms9918a oder so"
+2015-02-27 16:54:11,Svenska,"der hat 4 modi: text, grafik 1, grafik 2 und multicolor"
+2015-02-27 16:54:33,Svenska,"text ist 40x24, die beiden grafiken sind 32x24 und multicolor ist ziemlich blockig"
+2015-02-27 16:54:58,Svenska,"aber man kann die modi wohl mischen, zumindest bei den älteren generationen"
+2015-02-27 16:55:17,Svenska,dann lädt er statt einer pattern table fuer je 8 zeilen eine andere
+2015-02-27 16:55:31,Svenska,"""oben text, unten text, mitte bild"" oder so"
+2015-02-27 16:55:38,Jonathan,"Ich denke mal, du hast den TMS9918a"
+2015-02-27 16:55:47,Jonathan,Der hat nämlich keinen RF-Modulator integriert
+2015-02-27 16:55:55,Svenska,"nein, der tms9929 ist einer mit bunt und pal"
+2015-02-27 16:56:04,Jonathan,Stimmt
+2015-02-27 16:56:07,Svenska,"rf-modulator hat keiner, weil die alle videosignal ausgeben, kein antennensignal"
+2015-02-27 16:56:25,Svenska,"schade eigentlich, der '29 gibt drei signale aus, der '18 nur eins"
+2015-02-27 16:56:31,Svenska,aber der '18 hat einen video_eingang_ ;)
+2015-02-27 16:57:28,Jonathan,Hmm
+2015-02-27 16:57:36,Jonathan,Die können ja sogar Sprites :P
+2015-02-27 16:57:40,Jonathan,War das der aus dem C64?
+2015-02-27 16:57:45,Jonathan,"Wobei, nee"
+2015-02-27 16:57:45,Svenska,glaube nicht
+2015-02-27 16:57:48,Svenska,eher msx
+2015-02-27 16:57:50,Jonathan,Ja
+2015-02-27 16:57:53,Jonathan,Deiner hat 32 Sprites
+2015-02-27 16:57:55,Svenska,ja
+2015-02-27 16:57:56,Jonathan,Der C64 nur 8
+2015-02-27 16:59:41,Jonathan,Bekommst dann offenbar composite video.
+2015-02-27 16:59:44,Svenska,die bunt-unterstuetzung ist ziemlich kaputt ;)
+2015-02-27 17:00:00,Jonathan,Wieso das? ;)
+2015-02-27 17:00:10,Svenska,"also ich kann zwar alle 256x192 pixel monochrom ansteuern, aber ich habe nur 2 farben pro 8x8 block"
+2015-02-27 17:00:35,Jonathan,... *g*
+2015-02-27 17:00:54,Jonathan,"Wenn du den 9929 hast, kannst du den recht gut auf VGA zurechtknüppeln, denk ich"
+2015-02-27 17:00:55,Svenska,"außer im textmodus, da kann ich jedem buchstaben ne eigene vordergrundfarbe geben"
+2015-02-27 17:01:26,Svenska,"und im multicolor-modus, da kann ich jedem block eine eigene farbe geben"
+2015-02-27 17:01:44,Svenska,inwiefern auf vga?
+2015-02-27 17:02:09,Svenska,dazu muesste ich erstmal yuv nach rgb konvertieren und das timing zerpfluecken
+2015-02-27 17:02:32,Jonathan,Das Timing kannst du vermutlich auch mit ner anderen Taktfrequenz für den 9929 basteln
+2015-02-27 17:02:45,Jonathan,"Konvertieren musst du allerdings noch, ja"
+2015-02-27 17:02:51,Svenska,lol
+2015-02-27 17:03:05,Svenska,"ich glaube, der hat nur ein sync-signal"
+2015-02-27 17:03:16,Svenska,"aber... puh, den muesste ich gut doppelt so schnell takten"
+2015-02-27 17:04:21,Jonathan,...what
+2015-02-27 17:04:29,Jonathan,Die geben als absolute maximum rating für Vcc 20V an?!
+2015-02-27 17:05:26,Jonathan,XTAL1/XTAL2 sind da übrigens auch nicht TTL-kompatibel
+2015-02-27 17:05:50,Jonathan,Sofern du das extern versorgen willst
+2015-02-27 17:06:08,Svenska,LOL guck mal im datasheet nach A-5
+2015-02-27 17:06:12,Svenska,die kleinbuchstaben ;)
+2015-02-27 17:06:57,Jonathan,"Ich guck erstmal nach den Timings, dann mach ich das ;)"
+2015-02-27 17:07:22,Svenska,"ok, du gewinnst. der chip macht late write"
+2015-02-27 17:07:45,Jonathan,:P
+2015-02-27 17:07:49,Jonathan,Und ohje
+2015-02-27 17:08:00,Jonathan,Der TMS ist genau so kacke zu takten wie der i8042
+2015-02-27 17:08:24,Svenska,"aber hey, im gegensatz zum 8042 braucht er - ueberraschung! - einen genauen takt :D"
+2015-02-27 17:08:33,Jonathan,:P
+2015-02-27 17:08:45,Jonathan,Leider ja
+2015-02-27 17:08:55,Jonathan,Dann bleibt wohl nur ein Fernseher als Ausgabegerät
+2015-02-27 17:09:09,Svenska,ist ja kein problem
+2015-02-27 17:09:33,Jonathan,lol
+2015-02-27 17:09:35,Svenska,"aber wenn die beide gleich doof zu takten sind, und 10,7 mhz vertragen, kann ich die ja auf die gleiche platine kleben"
+2015-02-27 17:09:44,Jonathan,Die Kleinbuchstaben...sind wirklich einfach nur klein *g*
+2015-02-27 17:09:46,Jonathan,Und ja
+2015-02-27 17:09:54,Svenska,"das wäre dann die ""terminal""-karte ;)"
+2015-02-27 17:10:01,Jonathan,"Sofern du die H-Version vom 8042 hast, kannst du den mit 10,7MHz versorgen"
+2015-02-27 17:10:18,Svenska,öh...
+2015-02-27 17:10:21,Jonathan,Sag mal den genauen Aufdruck von dem Chip :P
+2015-02-27 17:10:23,Svenska,die andere verkraftet nur 8 ?
+2015-02-27 17:10:25,Jonathan,6
+2015-02-27 17:10:27,Svenska,"hab nicht, bin im buero"
+2015-02-27 17:10:30,Jonathan,Achso
+2015-02-27 17:10:40,Svenska,american megatrends irgendwas
+2015-02-27 17:10:45,Jonathan,Dann ist es die H
+2015-02-27 17:10:58,Svenska,ok
+2015-02-27 17:12:34,Jonathan,Was hast du denn eigentlich gegen eine diskrete Drahthaufengrafikkarte? *g*
+2015-02-27 17:12:38,Svenska,nix
+2015-02-27 17:12:50,Svenska,"aber der gleiche shop, der den '612 hatte, hatte auch den tms"
+2015-02-27 17:13:03,Jonathan,Achso
+2015-02-27 17:13:19,Svenska,öh kacke
+2015-02-27 17:13:23,Jonathan,...lol
+2015-02-27 17:13:35,Jonathan,Mein i8042 hat eben 0xFC auf den Selbsttest geantwortet
+2015-02-27 17:13:46,Svenska,"der tms wirft nur /ras und /cas fuer den ram raus, aber nicht /oe"
+2015-02-27 17:14:32,Jonathan,"Hm, doof?"
+2015-02-27 17:15:20,Svenska,"weißt du, warum vcc so hoch sein darf?"
+2015-02-27 17:15:28,Svenska,... /RESET ist ein trilevel-pin
+2015-02-27 17:15:59,Svenska,"0..0,8V: reset, 0.8..9V: betrieb, 9V+ : externes sync signal"
+2015-02-27 17:17:03,Jonathan,Aber wieso dann Vcc?!
+2015-02-27 17:17:10,Svenska,der chip ist designed fuer 64Kx1 chips
+2015-02-27 17:17:41,Svenska,"der hat kein /OE, weil die chips das nicht hatten, dafuer hat er getrennte RD0..RD7 (VRAM Read Data bus) und AD0..AD7 (VRAM Address/Data Bus)"
+2015-02-27 17:19:28,Svenska,quarzoszillator: 10.738635 (+- 0.005%) MHz
+2015-02-27 17:20:35,Svenska,"wobei, guck mal fig 4-5, kap 4.2.3, s. 60"
+2015-02-27 17:20:55,Svenska,das ist erträglich :D
+2015-02-27 17:21:31,Svenska,"ich korrigiere, der chip ist designed fuer 16Kx1 dram :/"
+2015-02-27 17:23:19,Jonathan,Ach scheiße :(
+2015-02-27 17:23:34,Jonathan,Mein i8042 gibt aus unerklärlichen Gründen plötzlich nur noch 0xFC zurück
+2015-02-27 17:23:40,Jonathan,Und das heißt: Selbsttest fehlgeschlagen
+2015-02-27 17:24:03,Jonathan,"Ich hab ihn nur aus dem System rausgezogen, um zu messen, und dann unverändert wieder reingesteckt"
+2015-02-27 17:30:36,Jonathan,Oh achso *g*
+2015-02-27 17:30:39,Jonathan,Ich bin ja auch blöd
+2015-02-27 17:30:50,Jonathan,Ich sende ja gar nicht 0xAA... xD
+2015-02-27 17:31:56,Jonathan,Jetzt kommt wieder 0x55 zurück und alle sind glücklich... :D
+2015-02-27 17:33:20,Jonathan,Svenska: Der i8042 scheint mir auch für andere Module recht gut geeignet zu sein
+2015-02-27 17:33:38,Jonathan,Mit nem externen ROM kann der bestimmt ein paar nette Sachen erledigen
+2015-02-27 17:34:16,Svenska,kann gut sein
+2015-02-27 17:37:57,Jonathan,Ich will nen AVR mit Slave-Interface :)
+2015-02-27 18:02:35,Svenska,nicht nur du :/
+2015-02-27 18:14:20,Jidder,was ich mich gerade frage: gibt es eine flüssigkeit mit geringerer dichte als ein gas?
+2015-02-27 18:14:43,Svenska,gute frage
+2015-02-27 18:16:19,max,Klar
+2015-02-27 18:16:33,max,Theoretisch bekommt man Atomkerne beliebig schwer hin
+2015-02-27 18:16:36,max,Nur sind sie dann sehr instabil
+2015-02-27 18:16:48,max,Aber für sehr kurze Zeit kann man so bestimmt ein beliebig dichtes Gas erzeugen
+2015-02-27 18:28:50,ehenkes,schau mal nach superfluidem Helium
+2015-02-27 18:29:28,ehenkes,ein gas bei 1 bar sollte aber immer eine geringere Dichte haben.
+2015-02-27 18:32:18,ehenkes,Spock ist tot
+2015-02-27 18:33:39,Jonathan,Svenska: Es liefert Scancodes!! :D
+2015-02-27 18:40:28,Svenska,uund was wars?
+2015-02-27 18:40:43,Jonathan,Hab's nur nicht richtig initialisiert *g*
+2015-02-27 18:41:06,Jonathan,"KBD_INH muss auf high sein, damit das PS/2-Interface freigegeben wird"
+2015-02-27 18:41:23,Jonathan,Außerdem muss man das Interface noch extra aktivieren
+2015-02-27 18:42:03,Jonathan,"Also, man muss zuerst 0xAA senden, abwarten bis mit 0x55 bestätigt wird, dann 0xAE senden"
+2015-02-27 18:42:18,Jonathan,Dann ist das Interface freigeschaltet und betriebsbereit
+2015-02-27 19:52:00,Jonathan,Hm... Welches Scancode-Set nutze ich für meinen Tastaturtreiber am besten?
+2015-02-27 19:52:18,Svenska,du kannst die tastatur fragen :-)
+2015-02-27 19:52:54,Svenska,"soweit ich das verstanden habe, senden alle modernen tastaturen scancode set 2"
+2015-02-27 19:53:17,Jonathan,Unterstützen moderne Tastaturen auch noch Set 1? ;)
+2015-02-27 19:53:32,Svenska,weiß ich nicht
+2015-02-27 19:54:00,Svenska,"ich glaube aber mal gelesen zu haben, dass manche antiken unixe mit neuen tastaturen probleme haben"
+2015-02-27 19:54:16,Svenska,"kann also gut sein, dass die antwort ""manchmal nicht"" ist"
+2015-02-27 19:54:22,Jonathan,Hmm
+2015-02-27 19:55:10,Svenska,"wobei natuerlich die hauptfrage ist, warum dich das interessiert ;)"
+2015-02-27 19:55:43,Jonathan,Weil Set 1 vermutlich einfacher zu dekodieren ist ;)
+2015-02-27 19:55:47,Svenska,ist es?
+2015-02-27 19:56:28,Jonathan,Besitzt kaum multi-byte-codes
+2015-02-27 21:34:12,max,"Paddy, wofür ist denn die Makefile.objs.rej?"
+2015-02-27 22:21:27,Paddy,"max: Die erzeugen gelangweilte Maintainer, um Reviewer zu verwirren"
+2015-02-27 22:22:04,Paddy,"Ich vermute, Mirek hatte damals beim applyen irgendeinen Konflikt händisch aufgelöst und dann die .rej versehentlich committet"
+2015-02-27 22:22:16,max,*g*
+2015-02-27 22:22:32,max,"Ja, ich hab dann gesehen, dass die in einem späteren Patch ganz raus kommt"

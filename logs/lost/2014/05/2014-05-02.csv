@@ -1,0 +1,86 @@
+date/time,nick,message
+2014-05-02 08:50:09,DerHartmut,Moin
+2014-05-02 10:01:11,ehenkes,hallo!
+2014-05-02 10:01:42,DerHartmut,Servus
+2014-05-02 10:02:21,ehenkes,endlich habe ich xhci im griff ^^
+2014-05-02 13:35:35,Jonathan,"(""roMnhäg""):gsub(""^(.-M)(.+)"", ""%2%1""):reverse()"
+2014-05-02 13:40:05,Paddy,Moin
+2014-05-02 14:50:35,Darkchaos_,Hey Leute :) kurze Frage zu va_args: Brauche ich dazu funktionierende Heapverwaltung? und kommt va_args überhaupt mit C oder muss ich das irgendwie selbst als libc implementieren?
+2014-05-02 14:52:11,ehenkes,"#define va_arg(ap, type)   __builtin_va_arg(ap, type)"
+2014-05-02 14:53:34,Darkchaos_,ja hab ich auch gerade gefunden. Kommt dann GCC damit klar? aber braucht es da nicht malloc und so?
+2014-05-02 14:54:00,Darkchaos_,(Also das nutzt ja die GCC Bultins dann)
+2014-05-02 14:54:17,ehenkes,malloc/heap brauchst Du sowieso
+2014-05-02 14:57:06,mgottschlag,"nein, va_args ist komplett auf dem Stack"
+2014-05-02 14:57:10,Darkchaos_,ja aber ich habe situationen wo er kaputt ist momentan und da würde ich gerne printf debuggen
+2014-05-02 14:57:43,Darkchaos_,"okay, dann kann ich das ja mal bedenkenlos ausprobieren"
+2014-05-02 14:58:48,Darkchaos_,"Die Grub Multibootmodule machen nämlich noch irgendetwas komisches, denn Interrupts sind aus, aber der code übefspringt ein while(true) { asm volatile(""nop; hlt"");"
+2014-05-02 15:17:47,Darkchaos_,"ehenkes,  mgottschlag : Brauche ich denn den zweiten Parameter bei va_start()? Weil ich im Vorraus nicht weiß, wie viele Parameter kommen und ich einfach on the fly durchloopen würde"
+2014-05-02 15:17:58,Darkchaos_,wenn nicht muss ich das ganze parsing zwei mal machen
+2014-05-02 15:23:48,Paddy,"Darkchaos: Der zweite Parameter für va_start() ist der letzte Parameter, der _nicht_ variabel ist"
+2014-05-02 15:24:01,Paddy,"Für printf willst du also ein va_start(ap, fmt) oder so"
+2014-05-02 15:24:35,Darkchaos,"Hier steht aber: ""This first argument describes the number of parameters being passed"" also va_start(argptr, num);"
+2014-05-02 15:24:56,Paddy,Dann ist das falsch
+2014-05-02 15:25:00,Darkchaos,okay danke
+2014-05-02 15:25:26,Paddy,"Wo ist ""hier"" denn, wenn man fragen darf?"
+2014-05-02 15:29:41,Darkchaos,http:((www.elook.org/programming/c/va_arg.html
+2014-05-02 15:32:35,Darkchaos_,"was passiert eigentlich bei printf(""%s"", 0x42); ? Castet er es zu nem a oder sowas?"
+2014-05-02 15:35:42,Paddy,Was ist ein a?
+2014-05-02 15:36:11,Darkchaos,ASCII 41 oder?
+2014-05-02 15:36:19,Paddy,Ach so
+2014-05-02 15:36:23,Paddy,%s ist nicht %c
+2014-05-02 15:36:27,Darkchaos,"Ich meine nur: bricht er ab, wenn ich va_arg(list, char*) mache und es kommt ein int an oder castet er gnadenlos"
+2014-05-02 15:36:28,Paddy,Das Ergebnis dürfte laut C undefiniert sein
+2014-05-02 15:36:51,Paddy,"In der Praxis versucht er, einen String an Adresse 0x42 auszugeben und segfaultet dann"
+2014-05-02 15:37:13,Paddy,Und mit vernünftigen Compilerflags baut es gar nicht erst ;-)
+2014-05-02 15:37:44,Darkchaos,wieso vernünftige compilerflags? Einer der den Format parst und die parametertypen?
+2014-05-02 15:37:57,Paddy,Ja
+2014-05-02 15:38:25,Darkchaos,Das gibts mittlerweile?
+2014-05-02 15:38:51,Paddy,"-Wformat, ist Teil von -Wall und gibt es schon so ziemlich immer"
+2014-05-02 15:39:58,Darkchaos,"hmm okay,"
+2014-05-02 15:40:22,Darkchaos,"fehler bei va_arg(list,char); char wird auf int erweitert und bricht dann ab beim Programmanruf, so der errortext."
+2014-05-02 15:40:27,yayachiken_,seit wann kann paddy so gut c
+2014-05-02 15:40:38,yayachiken_,lernt man das auf diesen neuen underground parties
+2014-05-02 15:40:49,Darkchaos,"Soll ich also einfach va_arg(list, int); und dann (char)(arg & 0xFF);"
+2014-05-02 15:41:14,Darkchaos,doofe Frage eigentlich
+2014-05-02 15:41:24,Darkchaos,Also gehen nur 32bit Typen?
+2014-05-02 15:42:31,Paddy,64 Bit gehen auch
+2014-05-02 15:42:38,Paddy,"Aber was kleiner als int ist, wird zu int promotet"
+2014-05-02 15:42:51,Darkchaos_,ja aber halt mindestens 32bit
+2014-05-02 15:43:00,Paddy,Auf i386 mit gcc ja
+2014-05-02 15:43:20,Darkchaos_,"soo jetzt die Frage, warum mein Code die endlosschleife mit asm volatile(""nop""); überspringt"
+2014-05-02 15:43:47,Paddy,yayachiken_: Der Paddy hat immerhin ein halbes OS in C
+2014-05-02 15:43:57,Darkchaos_,"interupts zwar an, aber pit noch nichtmal an"
+2014-05-02 15:46:02,XanClic,[15:37:13] <Paddy> Und mit vernünftigen Compilerflags baut es gar nicht erst ;-)
+2014-05-02 15:46:17,XanClic,"Ob -Werror vernünftig ist, na ja :-P"
+2014-05-02 15:49:27,Darkchaos,"Die whileschleife wird genau einmal ausgeführt, obwohl ""while(true)"", was könnte das nur sein?"
+2014-05-02 15:51:03,XanClic,Du hast eine zu schnelle CPU
+2014-05-02 15:51:12,XanClic,Die kann eine Endlosschleife halt sehr schnell ausführen
+2014-05-02 15:51:19,Darkchaos,:D in Endlicher Zeit
+2014-05-02 15:51:22,yayachiken_,wo ist denn der code
+2014-05-02 15:51:25,XanClic,"Das kommt davon, weil C halt schon älter ist"
+2014-05-02 15:51:29,XanClic,Und damit andere CPUs gewohnt ist
+2014-05-02 15:52:30,Darkchaos,https://gitorious.org/tuxmaniac/arctic_revenge/source/aef086c434c3b77c0e98748d6046d75cc34098f5:kernel/boot.cpp#L186
+2014-05-02 15:52:47,Darkchaos,"eigentlich ist die Schleife egal, aber ich glaube das hat was mit meinem Crash bei Multiboot Modulen zu tun"
+2014-05-02 15:53:23,Darkchaos,", denn da crasht paging nach der Schleife irgendwie, obwohl sie normal initalisieren müsste"
+2014-05-02 16:14:27,Paddy,XanClic: Für die Entwicklung finde ich -Werror sehr vernünftig. Beim Release kann man sich drum streiten. ;-)
+2014-05-02 16:20:35,XanClic,"Ich persönlich finde Warnungen beim Kompilieren irritierend genug, dass ich sie auch so fixe"
+2014-05-02 16:21:01,Paddy,"Ich finde Compilerausgaben lang genug, dass ich die Warnungen nicht immer sehe"
+2014-05-02 16:21:11,Paddy,s/Compiler/Makefile/
+2014-05-02 16:21:20,XanClic,Dafür hat man ja ein ordentliches Buildsystem :-P
+2014-05-02 16:21:40,XanClic,Und týndur hat das sogar
+2014-05-02 16:21:46,XanClic,"Also, zumindest, was die Ausgaben angeht *g*"
+2014-05-02 16:22:23,Paddy,"Ja, die Warnungen scrollen trotzdem ziemlich schnell raus"
+2014-05-02 16:22:38,XanClic,make clean && make -j 4 > /dev/null
+2014-05-02 16:23:23,Paddy,Machst du das wirklich?
+2014-05-02 16:23:30,XanClic,"Selten, meistens scroll ich hoch"
+2014-05-02 16:23:33,XanClic,"Aber passiert durchaus, ja"
+2014-05-02 16:23:42,XanClic,"Und wenn ich gerade erst den Code geschrieben hab, der die Warnungen wirft, dann ist da eh meistens ein Fehler dabei :-P"
+2014-05-02 16:23:46,Paddy,"Also in tyndur, Paddygree und qemu scrollen sie ja sowieso nicht raus, weil -Werror"
+2014-05-02 16:23:59,XanClic,in týndur hab ich -Werror meistens deaktiviert
+2014-05-02 16:24:07,XanClic,und qemus Warnungen…
+2014-05-02 16:24:09,XanClic,Na ja
+2014-05-02 16:24:40,XanClic,"Bei qemu wünsche ich mir oft, dass der vor Dingen warnen würde, vor denen nicht gewarnt wird, und Dinge, bei denen gewarnt wird, nicht anmeckern würde"
+2014-05-02 16:25:28,Paddy,Ist doch in tyndur nicht anders
+2014-05-02 16:25:40,XanClic,in týndur mach ich aber nicht so viel :-P
+2014-05-02 16:25:54,Paddy,"Hm, ist ein Argument *g*"
+2014-05-02 16:47:08,DerHartmut,"Ja huch, Paddy ist ja da"

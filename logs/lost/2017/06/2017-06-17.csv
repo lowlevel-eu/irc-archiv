@@ -1,0 +1,205 @@
+date/time,nick,message
+2017-06-17 11:34:14,MasterQ32,morgen
+2017-06-17 18:48:17,MasterQ32,hey Paddy
+2017-06-17 19:29:16,Paddy,Hey MasterQ32
+2017-06-17 19:42:04,MasterQ32,es geht voran mit QUI
+2017-06-17 19:44:02,MasterQ32,"hast du ne ahnung, wie ich mit dem keyboard-treiber reden kann?"
+2017-06-17 20:10:34,Paddy,"Wenn ich das richtig weiß, kann man sich bei dem per RPC registrieren und kriegt dann für jeden Tastendruck einen RPC mit dem Keycode oder so"
+2017-06-17 20:10:56,MasterQ32,"okay, klingt soweit gut"
+2017-06-17 20:11:07,MasterQ32,"keycode ist aber nen scancode oder sowas in die richtung, right?"
+2017-06-17 20:11:51,Paddy,Sowas in der Richtung trifft es gut
+2017-06-17 20:13:32,MasterQ32,Tastaturunabhängier Scancode quasi
+2017-06-17 20:13:40,MasterQ32,wie kann ich die in Unicode überstezen?
+2017-06-17 20:14:00,Paddy,"SDL macht das mit der keymap von vterm, das hattest du doch schon gesehen, oder?"
+2017-06-17 20:14:22,MasterQ32,"ja, aber nur so grob"
+2017-06-17 20:14:27,MasterQ32,zudem tuts ja scheinbar nicht
+2017-06-17 20:15:30,Paddy,"Wäre die Frage, warum"
+2017-06-17 20:15:52,MasterQ32,kann man ja gleich mal rausfinden
+2017-06-17 20:16:06,Paddy,"Weil an sich würde ich schon sagen, dass die jeweils aktuelle Keymap zu nehmen, der richtige Ansatz ist"
+2017-06-17 20:16:19,MasterQ32,jop
+2017-06-17 20:16:32,MasterQ32,"ich find das bei X11 so dämlich, dass die keymap von vterm != keymap von X"
+2017-06-17 20:20:21,MasterQ32,"vterm:/keymap enthält binärdaten, oder?"
+2017-06-17 20:22:21,MasterQ32,"okay, ja tut es :D"
+2017-06-17 20:23:12,Paddy,Es ist das Kompilat von z.B. src/modules/vterm/keymaps/de.c
+2017-06-17 20:24:09,MasterQ32,kurze frage:
+2017-06-17 20:24:09,MasterQ32,was genau bedeutet L'ü' ?
+2017-06-17 20:24:23,MasterQ32,Unicode-Codepoint von 'ü' ? oder welches encoding wird verwendet?
+2017-06-17 20:24:24,Paddy,"'ü' geht nicht, weil es nicht in einen char passt"
+2017-06-17 20:24:32,Paddy,Das ist ein wchar_t-Literal
+2017-06-17 20:24:59,Paddy,"Jo, das ist der Unicode-Codepoint"
+2017-06-17 20:25:04,MasterQ32,"okay, thx"
+2017-06-17 20:25:32,Paddy,"Das einzige, was nicht komplett trivial daran ist, sind die Deadkeys"
+2017-06-17 20:25:47,Paddy,Und die Modifier musst du halt auch selber tracken
+2017-06-17 20:25:57,MasterQ32,"ja gut, das bekomm ich glaube ich hin :D"
+2017-06-17 20:26:30,Paddy,Sollte definitiv machbar sein ;-)
+2017-06-17 20:27:32,MasterQ32,ich probier mal n bisschen rum :)
+2017-06-17 20:27:55,MasterQ32,einfach mal straight von vterm/input.c abgucken
+2017-06-17 20:29:06,Paddy,"Und vermutlich wird deins noch einfacher, weil du dich nicht mit vt100 abplagen musst ;-)"
+2017-06-17 20:29:10,MasterQ32,:D
+2017-06-17 20:29:54,MasterQ32,"was passiert, wenn ich zwei mal den selben RPC-Handler registriere?"
+2017-06-17 20:30:01,MasterQ32,(weil SDL ja im Moment schon den Input holt)
+2017-06-17 20:31:06,Paddy,Gute Frage
+2017-06-17 20:31:10,Paddy,Vielleicht doch lieber SDL fixen? ;-)
+2017-06-17 20:31:22,MasterQ32,ich probier das jetzt einfach aus :D
+2017-06-17 20:31:28,Paddy,"Ich vermute, entweder der erste oder der letzte gewinnt. 50:50-Chance. *g*"
+2017-06-17 20:31:32,MasterQ32,joar :D
+2017-06-17 20:31:44,MasterQ32,"wie stehts um maus? auch service-basiert, oder?"
+2017-06-17 20:32:52,darklink,aber wchar_t kann ja auch 8 bit breit sein
+2017-06-17 20:33:06,darklink,dann passt es auch nicht rein
+2017-06-17 20:33:14,MasterQ32,würde aber der compiler sagen ^^
+2017-06-17 20:33:40,darklink,ja
+2017-06-17 20:36:01,MasterQ32,ROFL
+2017-06-17 20:36:11,MasterQ32,"okay, callback ist gesetzt und tut "
+2017-06-17 20:36:12,MasterQ32,doppelt :P
+2017-06-17 20:36:39,Paddy,"Jo, Maus müsste gleich gehen"
+2017-06-17 20:36:39,MasterQ32,Got keyhit: 35 0
+2017-06-17 20:36:39,MasterQ32,Got keyhit: 35 0
+2017-06-17 20:36:39,MasterQ32,Got keyhit: 35 1
+2017-06-17 20:36:39,MasterQ32,Got keyhit: 35 1
+2017-06-17 20:36:43,MasterQ32,"okay, cool"
+2017-06-17 20:36:59,Paddy,Außer dass sie eher keine Keycodes liefert ;-)
+2017-06-17 20:37:09,MasterQ32,"ach was, das sind auch alles keycodes! :P"
+2017-06-17 20:38:22,MasterQ32,"hm, das is wirklich merkwürdig so :D"
+2017-06-17 20:38:23,Paddy,"Hm, ne, sieht anders aus"
+2017-06-17 20:39:18,Paddy,Du musst wohl Events aus kbc:/mouse/data lesen
+2017-06-17 20:39:29,MasterQ32,"oh, okay"
+2017-06-17 20:39:30,darklink,welches os?
+2017-06-17 20:39:32,MasterQ32,tyndur: 
+2017-06-17 20:39:35,darklink,oh ok
+2017-06-17 20:40:11,MasterQ32,"darklink, du hast doch erfahrung mit x86_64 und kernel, right?"
+2017-06-17 20:40:15,Paddy,"kbc:/mouse/callback scheint es auch zu geben, aber frag mich nicht, wie das geht"
+2017-06-17 20:40:22,darklink,MasterQ32: ja
+2017-06-17 20:40:33,MasterQ32,wie viel addressspace hab ich bei virtual memory?
+2017-06-17 20:40:41,darklink,kommt auf die CPU an
+2017-06-17 20:40:50,Paddy,"Mindestens 48, oder?"
+2017-06-17 20:41:08,Paddy,Also Bit
+2017-06-17 20:41:13,darklink,also meine CPU hat zumindest 48 bits
+2017-06-17 20:41:59,MasterQ32,"okay, dass heißt ich kann theoretisch 256 TB in den Speicher einblenden "
+2017-06-17 20:42:39,darklink,minimum is 48
+2017-06-17 20:42:45,darklink,und derzeitig auch maximum
+2017-06-17 20:42:47,MasterQ32,:D
+2017-06-17 20:42:57,MasterQ32,"aber okay, damit kann man was anfangen ^^"
+2017-06-17 20:43:00,MasterQ32,brb
+2017-06-17 20:45:45,MasterQ32,re
+2017-06-17 20:46:17,MasterQ32,"jetzt mal zu meinem gedanken: ich könnte ja denn nen system basteln, welches einfach ab >=1TB die primäre Festplatte in den RAM mappt, oder?"
+2017-06-17 20:47:57,darklink,2
+2017-06-17 20:48:19,MasterQ32,2 was?
+2017-06-17 20:48:45,darklink,"Ich glaube mit ""einfach reinmappen"" ist keine gute idee"
+2017-06-17 20:49:08,darklink,"weil programme, die keinen zugriff auf die geräte haben sollten, können darauf zugreifen"
+2017-06-17 20:49:13,darklink,oder redest du vom Kernel?
+2017-06-17 20:49:15,MasterQ32,das ist ja erst mal wurst
+2017-06-17 20:49:20,MasterQ32,geht erst mal nur um die technisk
+2017-06-17 20:53:23,MasterQ32,"Paddy: wie dreckig fändest du es, wenn ich tyndur-SDL noch ein paar initflägs gäbe?"
+2017-06-17 20:59:33,Paddy,"""initflägs""?"
+2017-06-17 21:00:22,Paddy,"Ah, du meinst für SDL_Init(), oder wie?"
+2017-06-17 21:00:36,MasterQ32,ja genau
+2017-06-17 21:00:44,Paddy,Was brauchst du denn da noch?
+2017-06-17 21:00:57,MasterQ32,SDL_INIT_NOKEYBOARD und SDL_INIT_NOMOUSE
+2017-06-17 21:01:39,Paddy,Hm... :-/
+2017-06-17 21:02:00,Paddy,"Und du kannst das, was du brauchst, wirklich nicht über die SDL-APIs abbilden?"
+2017-06-17 21:02:19,MasterQ32,ich hab grade noch was entdeckt
+2017-06-17 21:04:16,MasterQ32,"keysym.scancode = sdl-keycode, keysym.sym = sdl-keycode, keysym.unicode = 0 außer SDL_EnableUNICODE(1) wurde aufgerufen, dann keysym.unicode = sdl-keycode"
+2017-06-17 21:04:21,MasterQ32,irgendwie scheint mir das ein wenig unkreativ .D
+2017-06-17 21:09:26,MasterQ32,"ich könnte mal versuchen, den teil etwas aufzupolieren"
+2017-06-17 21:12:15,MasterQ32,"keysym.scancode = tyndur-keycode, keysym.sym = sdl-keycode, keysym.unicode = wchar_t-rep für sym mit current modifiers"
+2017-06-17 21:18:16,MasterQ32,was meinst du dazu?
+2017-06-17 21:37:41,MasterQ32,"und mal noch was anderes: wie kann ich eigentlich nen patch-file erstellen, wenn ich jetzt an kram in SDL rumbastel?"
+2017-06-17 21:50:30,Paddy,"Ich müsste die SDL-Doku nachlesen, ob das so stimmt, aber klingt grundsätzlich nicht falsch"
+2017-06-17 21:51:00,MasterQ32,"scancode ist dokumentiert als ""lass die finger davon, außer du weißt was du tust"" :D"
+2017-06-17 21:51:07,Paddy,"lbuilds bearbeiten geht am besten wenn du von Hand ./lbuild.sh unpack  ... machst, dann evtl. auch configure und compile"
+2017-06-17 21:51:23,MasterQ32,"joar, das hab ich schon rausgefunden"
+2017-06-17 21:51:28,Paddy,Und dann mit ./lbuild sh fix  ... in eine Shell im Arbeitsverzeichnis des Pakets gehst
+2017-06-17 21:51:28,MasterQ32,bin auch schon am tippseln
+2017-06-17 21:51:47,Paddy,"Die Patches da sind mit quilt angewandt, wenn du das installiert hast"
+2017-06-17 21:51:53,MasterQ32,AltGraph > Ctrl > Shift ?
+2017-06-17 21:51:55,MasterQ32,"ja, müsste ich haben"
+2017-06-17 21:52:05,MasterQ32,werden aber schon bei unpack angewandet
+2017-06-17 21:52:12,Paddy,"Jo, ich weiß"
+2017-06-17 21:52:22,Paddy,"Aber du willst vielleicht testkompilieren, dafür ist configure dann schon sinnvoll"
+2017-06-17 21:52:39,Paddy,"Wenn das einmal gelaufen ist, kannst du auch einfach von der fix-Shell aus make machen"
+2017-06-17 21:53:45,Paddy,"Wenn du quilt noch nie benutzt hast, am besten mal die Manpage überfliegen. Kurzfassung ist, dass du Dateien mit quilt edit bearbeiten solltest (oder vorher mit quilt add hinzufügen) und nach dem Editieren dann quilt refresh, um die Änderungen in den obersten angewandten Patch zu übernehmen."
+2017-06-17 21:53:55,Paddy,"quilt push/pop, um Patches anzuwenden bzw. wegzunehmen"
+2017-06-17 21:57:02,MasterQ32,"okay, das hab ich schon verkackt :D"
+2017-06-17 21:57:22,MasterQ32,"aber das bekomm ich ja ohne probleme nochmal hin, muss ja nur vor dem reset meine changes wegsaven und jut"
+2017-06-17 21:58:48,MasterQ32,https://pastebin.com/iRNctfDP i'd call that a successful change
+2017-06-17 22:00:28,Paddy,:-)
+2017-06-17 22:00:42,MasterQ32,damit kann man auf jeden Fall mal was anfangen
+2017-06-17 22:00:58,MasterQ32,vorallem kommt man auch an die orginal-keycodes von tyndur noch ran
+2017-06-17 22:01:12,Paddy,Sind die von SDL wesentlich schlechter?
+2017-06-17 22:01:53,MasterQ32,"ne, das nicht"
+2017-06-17 22:02:17,MasterQ32,"aber es kann vorkommen (tut es im moment nicht), dass zwei scancodes auf einen keycode mappen"
+2017-06-17 22:02:27,Paddy,Ah
+2017-06-17 22:03:40,MasterQ32,"ein beispiel sind so sachen wie ein keycode für shift, aber zwei scancodes für shift left und shift right"
+2017-06-17 22:10:06,MasterQ32,"so, wie erstell ich jetzt nochmal nen patch mit git? :D"
+2017-06-17 22:10:12,MasterQ32,hab nen commit über den patch-diff
+2017-06-17 22:34:11,Godwine,"wie greift man aus asm auf einen in c global definierten pointer zu? also in c 'void* ptr;' und in asm dann 'mov eax, ptr'? eigentlich müsste ptr doch das symbol sein das anzeigt wo ptr zu finden ist also doch 'mov eax, [ptr]'?"
+2017-06-17 22:34:29,MasterQ32,_ptr kann es auch sein
+2017-06-17 22:34:40,MasterQ32,und du musst das symbol als global markieren
+2017-06-17 22:35:03,MasterQ32,.extern ptr
+2017-06-17 22:35:07,MasterQ32,brauchst du auch noch
+2017-06-17 22:37:22,Godwine,"der pointer ist schon verlinkbar, meine frage ist nur ob das was man dann in der asm datei als 'ptr' hat nur das symbol oder der eigentliche pointer ist bei einem 'mov eax, ptr'?"
+2017-06-17 22:37:40,MasterQ32,"örm, dann ist das natürlich nur das symbol"
+2017-06-17 22:37:46,MasterQ32,"müsste dann ja mov eax, [ptr] sein, oder?"
+2017-06-17 22:38:22,MasterQ32,Paddy: ich habs hinbekommen! :D
+2017-06-17 22:38:44,Godwine,ja müsste
+2017-06-17 22:53:45,Paddy,MasterQ32: Yay! Dann musst jetzt nur auch noch git-send-email hinkriegen. ;-)
+2017-06-17 23:01:52,MasterQ32,"ich meinte: das es ist es, das funktioniert"
+2017-06-17 23:01:55,MasterQ32,oder hab ich das verkackt? :D
+2017-06-17 23:02:14,MasterQ32,"ah, git-send-email hat funktioniert"
+2017-06-17 23:02:24,MasterQ32," Ihre Mail an 'tyndur-devel' mit dem Subject/Betreff      [PATCH] Improves SDL input processing.  wird zurueckgehalten, bis der Listenmoderator Ihre E-Mail genehmigt."
+2017-06-17 23:04:41,MasterQ32,"hast du ne Idee, wie ich nen Terminal-Emulator basteln könnte?"
+2017-06-17 23:05:45,Paddy,"Ah, dann ist das einfachste wohl, dass du tyndur-devel selber abonnierst, dann wird das nicht mehr moderiert"
+2017-06-17 23:05:58,Paddy,"Weil ich glaube, nur Antoine kann moderieren und ob das so schnell passiert, weiß ich nicht ;-)"
+2017-06-17 23:07:24,Paddy,"Naja, ein Terminal-Emulator muss ja an sich ""nur"" eine Pipe an stdin/out/err hägen und da entsprechend vt100-Code reinschreiben bzw. rauslesen, odeR?"
+2017-06-17 23:09:32,MasterQ32,"klingt logisch, wie mach ich das mit dieser komischen Röhre?"
+2017-06-17 23:09:43,MasterQ32,code für vterm lesen?
+2017-06-17 23:10:05,MasterQ32,"so, ich schick nochmal nen patsch"
+2017-06-17 23:10:07,Paddy,Also jeweils ein lio_pipe() für stdin und stdout
+2017-06-17 23:10:36,Paddy,"Und dann ein lio_composite_stream(), um beides zu stderr zu verknoten"
+2017-06-17 23:11:21,Paddy,"Jo, Code für vterm lesen klingt sinnvoll, das ist ja auch ein Terminalemulator"
+2017-06-17 23:11:39,Paddy,"Und getterm vielleicht, um das Öffnen und Vererben der Streams abzuschreiben"
+2017-06-17 23:11:55,Paddy,"Jap, Patch ist da"
+2017-06-17 23:12:14,MasterQ32,noice
+2017-06-17 23:12:31,MasterQ32,"okay, dann werd ich das nacher mal noch ausprobieren"
+2017-06-17 23:12:35,MasterQ32,aber erst mal Stronghold zocken :D
+2017-06-17 23:12:43,Paddy,"Wenn du ihn jetzt noch mit deutscher Commitmessage und Signed-off-by machst, sind zumindest die Äußerlichkeiten perfekt ;-)"
+2017-06-17 23:12:57,MasterQ32,signed-off-by?
+2017-06-17 23:13:16,MasterQ32,"und deutsch, okay :D"
+2017-06-17 23:13:26,MasterQ32,"ich bin entwickler, für mich ist bei coding-kram english-first"
+2017-06-17 23:13:36,MasterQ32,"aber klar, ist nen deutsches projekt, da mcaht das irendwie auch sinn"
+2017-06-17 23:13:58,Paddy,tyndur ist halt Beispielprojekt für eine deutsche OS-Dev-Community
+2017-06-17 23:15:12,MasterQ32,alles klar
+2017-06-17 23:15:45,Paddy,Hatten wir das mit Signed-off-by nicht schonmal?
+2017-06-17 23:15:47,Paddy,https://developercertificate.org/
+2017-06-17 23:16:59,Paddy,"Wird bestätigt durch eine Zeile am Ende der Commitmessage wie ""Signed-off-by: Name <mailadresse>"""
+2017-06-17 23:17:11,Paddy,"git fügt das automatisch ein, wenn man commit -s benutzt"
+2017-06-17 23:22:41,MasterQ32,"ah, okay"
+2017-06-17 23:22:47,MasterQ32,ich versuchs mir zu merken
+2017-06-17 23:23:29,Paddy,"Falls du jemals zu Linux, qemu oder ähnlichen Projekten beitragen willst, läuft das dann genauso ;-)"
+2017-06-17 23:23:36,MasterQ32,dachte ich mir
+2017-06-17 23:24:05,MasterQ32,hmm
+2017-06-17 23:24:15,MasterQ32,ich sollte mein projekt jetzt mal ordentlich strukturieren
+2017-06-17 23:24:56,Paddy,Du hast aber auch komische Einfälle *g*
+2017-06-17 23:25:24,MasterQ32,"naja, im moment enthält der lbuild clientlibrary+guiserver (soweit ist es ja auch sinnvoll)"
+2017-06-17 23:25:38,MasterQ32,aber es sind eben auch die demos drin (die da imho nix verloren haben)
+2017-06-17 23:30:26,Paddy,"Hm, aber vielleicht wäre es dann sinnvoller, aus einem Source-Tree mehrere Binärpakete zu bauen?"
+2017-06-17 23:30:45,Paddy,Weil auf längere Sicht für jedes GUI-Paket ein eigenes Repo anlegen fände ich übertrieben
+2017-06-17 23:30:54,MasterQ32,stimmt schon
+2017-06-17 23:31:18,MasterQ32,ich würde halt sagen clientlib+server+term+filebrowser+appstarter in ein paket
+2017-06-17 23:31:25,Paddy,Was natürlich trotzdem nicht gegen eine vernünftige Verzeichnisstruktur innerhalb des einen Repos spricht
+2017-06-17 23:31:31,MasterQ32,korrekt :D
+2017-06-17 23:31:40,MasterQ32,wohin pack ich eigentlich resourcen-dateien?
+2017-06-17 23:31:48,MasterQ32,also sowas wie bilder und ähnliches?
+2017-06-17 23:33:05,Paddy,Unix-Standard wäre wohl share/
+2017-06-17 23:33:21,MasterQ32,gibts noch keinen ordner dafür? ^^
+2017-06-17 23:33:47,Paddy,"Naja, das komplett Paket landet in file:/packages/<name>/<version>/"
+2017-06-17 23:33:59,MasterQ32,bekomm ich die infos beim build?
+2017-06-17 23:34:01,Paddy,Und in globale Verzeichnisse werden nur die Binaries gesymlinkt
+2017-06-17 23:34:09,MasterQ32,damit ich die ordner eincompilieren kann?
+2017-06-17 23:34:31,Paddy,In der *.lbuild hast du das alles als Variablen
+2017-06-17 23:34:44,Paddy,"Kannst dir in der lbuild.sh anschauen, wie die gesetzt werden"
+2017-06-17 23:35:07,Paddy,In init_env()
+2017-06-17 23:35:09,MasterQ32,jop
+2017-06-17 23:35:12,MasterQ32,schon gefunden
+2017-06-17 23:36:23,Paddy,"Naja, ich muss gehen"
+2017-06-17 23:36:24,Paddy,bd

@@ -1,0 +1,244 @@
+date/time,nick,message
+2016-07-12 11:17:33,tyndur,*test*
+2016-07-12 11:17:46,tyndur,"Ok, Logs tun wieder"
+2016-07-12 11:18:11,kevin,Quantenmagier: ^
+2016-07-12 12:40:56,Quantenmagier,"kevin, joa irgendwie hab ich das mit den clobber registern nicht richtig hinbekommen"
+2016-07-12 12:41:45,Quantenmagier,er meinte immer register a existiert nicht oder sowas wenn ich das mit ins clobber geschriben habe
+2016-07-12 12:45:43,kevin,"Da musst du den richtigen Registernamen nehmen, also ""eax"""
+2016-07-12 12:46:00,kevin,"Aber eigentlich musst du gar nicht clobbern, sondern das Register als Eingabeparameter benutzen"
+2016-07-12 12:47:17,kevin,Also statt dem mov in Assembler
+2016-07-12 12:47:39,Quantenmagier,hm als eingabeparameter? aber es bekommt doch nen festwert und keine variable zugewiesen?!?
+2016-07-12 12:50:57,kevin,Und?
+2016-07-12 12:51:33,kevin,"Ich kenn deinen konkreten Code nicht mehr, aber asm(""int $0x80"" : : ""a"" (42)) ist kein Problem"
+2016-07-12 12:51:59,Quantenmagier,aso
+2016-07-12 12:52:33,MasterQ32,gibts für den inline assembler eigentlich irgendwo ein gutes tutorial oder eine sinnvolle(verständliche) doku
+2016-07-12 12:52:45,Quantenmagier,"krass, aber muß der wert nicht dann eh zugewiesen werden? der compiler macht dann da doch eh nen mov drauß?"
+2016-07-12 12:53:10,kevin,"Ja schon, aber dein Assemblercode wird einfacher"
+2016-07-12 12:53:26,kevin,"Das mov wirst du im Endergebnis nicht los in diesem Fall, aber das push/pop womöglich scho"
+2016-07-12 12:53:29,kevin,*schon
+2016-07-12 12:53:42,kevin,"Das kommt drauf an, ob der Compiler den alten Wert noch braucht, und das weiß er halt nur selber"
+2016-07-12 12:53:49,Quantenmagier,ok
+2016-07-12 12:54:15,Quantenmagier,und warum muß man beim clobbern das eay schreiben statt a wie bei eingabe ausgabe? das is ja voll verwirrend?
+2016-07-12 12:54:22,Quantenmagier,*eax
+2016-07-12 12:54:32,kevin,Aber ein Syscall ist bei mir normal nur eine einzige int-Instruktion und Parameter und Rückgabewerte laufen komplett über die Constraints
+2016-07-12 12:54:41,kevin,"Keine Ahnung, ist halt so :-)"
+2016-07-12 12:54:50,Quantenmagier,ok
+2016-07-12 12:55:50,Quantenmagier,joa viele meiner syscalls sind ja im prinzip auch nur nen int bis auf ein paar ausnahmen. ^^
+2016-07-12 12:56:19,Quantenmagier,dann werd ich die werte mal rausschreiben.. ^^
+2016-07-12 12:56:49,Quantenmagier,auch wenn ich nicht glaube daß das das problem von heute nacht mit dem -Os lößt aber das finde ich auch noch raus ^^
+2016-07-12 12:58:14,Quantenmagier,"achso und muß ich eax nicht trotzdem clobbern auch wenn es eingabeparameter ist, wenn is in dem syscall selber verändert wird? weil sonst denkt er nacher das hätte am ende noch den wert den man als eingabe zugewiesen hat?"
+2016-07-12 12:58:29,Quantenmagier,*wenn es
+2016-07-12 12:59:21,kevin,"Hm, clobbern kannst du es dann nicht, glaube ich"
+2016-07-12 12:59:31,kevin,"Kann aber sein, dass du es als Ausgabeparameter machen musst"
+2016-07-12 12:59:58,kevin,"Also asm(""int $0x80"" : ""=a"" (dummy) : ""0"" (42)); oder sowas"
+2016-07-12 13:00:13,kevin,"Oder irgendwas mit + gab es noch, da weiß ich die Details aber nicht auswendig"
+2016-07-12 13:04:21,kevin,"asm(""int $0x80"" : ""+a"" (var)) könnte gehen"
+2016-07-12 13:12:24,Quantenmagier,"hm dann ist es aber ein und ausgabeparameter zugleich, also clobbern wäre irgendwie logischer, wenn ich es nicht als ausgabeparameter brauche finde ich?"
+2016-07-12 13:20:29,kevin,Findet der Compiler aber nicht
+2016-07-12 13:20:47,kevin,"Ich bin mir ziemlich sicher, dass Eingabeparameter und Clobber gleichzeitig einen Fehler gibt"
+2016-07-12 13:23:50,Quantenmagier,hm mov und clobber gibt schonmal keinen fehler damit hätt ich das push pop dann schonmal gespart ^^
+2016-07-12 13:25:53,Quantenmagier,"hm aber hast recht eingabe und clobbe rgibt nen fehler, dann bleib ich wohl bei mov und clobber"
+2016-07-12 13:33:43,Quantenmagier,hm kann man ds nicht clobbern?
+2016-07-12 13:34:47,Quantenmagier,"""unbekannter Registername »ds« in »asm«"""
+2016-07-12 13:42:34,kevin,ds? Was tust du?
+2016-07-12 13:42:49,kevin,"gcc kann keine Segmentierung, falls dir das nicht bewusst war"
+2016-07-12 13:43:41,Quantenmagier,ok dann lass ich das als push pop
+2016-07-12 13:44:28,Quantenmagier,joa doch wußte daß er keine segmentierung kann aber dachte er kann das segmentregister vllt trotzdem clobbern
+2016-07-12 13:44:58,Quantenmagier,"weil das ja ehr asm ist als gcc, dachte der inlineassmebler könne wenigstens damit umgehen."
+2016-07-12 13:45:40,Quantenmagier,kann er ja auch irgendwie also das push pop akzeptiert er zumindest ^^
+2016-07-12 13:51:07,Quantenmagier,ok einige syscalls hatten pusha popa das konnte ich genau wie ds natürlich nicht clobbern aber die anderen sehen jetzt etwas schöner aus danke. ^^
+2016-07-12 13:52:04,Quantenmagier,"das problem mit -Os besteht aber weiter, ich werd mal testen ob er den syscall überhaupt aufruft oder schon vorher wegkürzt.."
+2016-07-12 13:52:43,kevin,"Die Frage wäre eher, warum sich ds bei dir ändert, wenn der Compiler nicht damit umgehen kann"
+2016-07-12 13:53:12,Quantenmagier,"weil mein os damit umgehen kann, das programm hat die ganze zeit das selbe segment aber in den syscalls werden halt auch andere benutzt ;)"
+2016-07-12 13:53:14,kevin,"Ist das nicht ein eher kaputtes Syscallinterface, wenn ds nicht bleibt wie es war?"
+2016-07-12 13:53:28,kevin,"Naja, aber das interessiert das Programm doch nicht"
+2016-07-12 13:53:42,kevin,"Wenn vorher und nachher der gleiche Wert drinsteht, gibt es keinen Grund, irgendwas zu sichern"
+2016-07-12 13:55:11,Quantenmagier,"jein der wert ändert sich ja, weil man kann den syscall auch über asm aufrufen und dann ist das theoretisch sinnvoll, aber ich könnte natürlich nen eigenen syscall für c machen der es im syscall pushpoped, aber das dann im aufruf zu machen erscheint mir einfacher"
+2016-07-12 14:02:14,Quantenmagier,"boah verflixt, jetzt hab ich printf-debugging gemacht und dann geht es auf einmal mit -Os  -.-"
+2016-07-12 14:02:40,Quantenmagier,aber warum zur hölle kürzt er ein volatile asm weg wenn ich kein printf davor mache? o.O
+2016-07-12 14:03:01,Quantenmagier,void sur_Eingabe_registriereTaste(unsigned char keycode){
+2016-07-12 14:03:01,Quantenmagier, sur_io_com1_send('r');
+2016-07-12 14:03:01,Quantenmagier, __asm__ volatile (
+2016-07-12 14:03:01,Quantenmagier," ""mov $0x04000111,%%eax\n\t"""
+2016-07-12 14:03:01,Quantenmagier," ""int $0x35\n\t"""
+2016-07-12 14:03:02,Quantenmagier," ::""b""(keycode):""memory"",""eax"");"
+2016-07-12 14:03:04,Quantenmagier,}
+2016-07-12 14:03:20,Quantenmagier,mit dem send(r)  geht es ohne kürzt er die funktion weg.. -.-
+2016-07-12 14:11:05,Quantenmagier,"oder muß ich das volatile auch in den header schreiben, das wäre irgendwie unlogisch!?"
+2016-07-12 14:13:47,kevin,"Quantenmagier: Wieso ändert sich der Selektor, wenn der Syscall von Assemblercode aufgerufen wird? Das interessiert doch den Syscall nicht, ob er von C- oder Assemblercode aufgerufen wird?"
+2016-07-12 14:14:47,Quantenmagier,"nein er ändert sich immer, ich umgehe das nur in der c library mit einem push ds / pop ds, weil c nicht damit umgehen kann."
+2016-07-12 14:15:01,kevin,Aber wieso ändert er sich? Das macht doch keinen Sinn?
+2016-07-12 14:15:22,kevin,Von welchem Wert zu welchem neuen Wert ändert er sich denn?
+2016-07-12 14:15:27,Quantenmagier,weil man in assembler dann noch auf dem neuen grafiksegment operieren kann und so
+2016-07-12 14:16:02,kevin,Machen deine Syscalls also grundsätzlich den kompletten Registerzustand kaputt anstatt den _im Kernel_ zu sichern?
+2016-07-12 14:17:49,Quantenmagier,"jein nur manche, also hab zb grad mal nachgesehn das mit dem ds segment in dem fall war ne malloc routine und die erzeugt eben für den angeforderten ram ein datensegment und gibt das in ds zurück und da c damit nicht umgehen kann schmeiße ich das neue datensegment weg"
+2016-07-12 14:19:39,kevin,"Du hast also für jedes allozierte Objekt ein eigenes Segment, und zusätzlich noch ein Flat-Memory-Segment?"
+2016-07-12 14:19:52,kevin,Und in der Praxis ignorierst du die individuellen Segmente und benutzt nur das letzte?
+2016-07-12 14:19:58,kevin,*letzere
+2016-07-12 14:20:03,kevin,*letztere
+2016-07-12 14:20:05,kevin,Bäh
+2016-07-12 14:20:08,Quantenmagier,jein
+2016-07-12 14:21:06,Quantenmagier,"also im prinzip stimmt das schon was du sagst mit dem unterschied daß das flat modell ein paging ist, ich muß das segment dann anstelle es über dasensegment zu übergeben auf die pagetable von dem programm mappen"
+2016-07-12 14:22:19,kevin,Das will man eh
+2016-07-12 14:22:30,kevin,Sonst fragmentiert dir ja der Speicher sofort
+2016-07-12 14:23:07,Quantenmagier,der speicher fragmentiert so oder so das paging kaschiert das ja nur.. :D
+2016-07-12 14:23:10,kevin,"Aber das heißt, dass du dann bei den Nicht-Flat-Segmenten ein 1:1-Mapping benutzt?"
+2016-07-12 14:23:24,kevin,"Ob er physisch fragmentiert, ist ja aber wurscht ;-)"
+2016-07-12 14:23:55,Quantenmagier,jop bei den nicht flat ist es momentan 1:1 eventuell änder ich das aber auch noch wenn ich mit dem paging weiter bin das paging ist noch ganz am anfang
+2016-07-12 14:24:06,kevin,Das klingt alles sehr kaputt
+2016-07-12 14:24:07,Quantenmagier,öhm bzw
+2016-07-12 14:24:36,Quantenmagier,"nein was ist 1:1 also die datensegmente geben ja einen bestimmten speicherbereich vor, dadurch ist es dann segmetiert und nicht wirklich 1 zu 1"
+2016-07-12 14:28:55,kevin,"1:1-Mapping bezieht sich offensichtlich auf Paging, nicht auf Segmentierung"
+2016-07-12 14:29:10,kevin,Einen zweidimensionalen Wert kann man nicht 1:1 auf einen eindimensionalen mappen
+2016-07-12 14:30:28,Quantenmagier,"aso joa das paging ist momentan 1:1 aber das soll noch geändert werden, daß jedes programm seine eigene pagetable bekommt, so weit bin ich noch nicht"
+2016-07-12 14:46:37,Quantenmagier,warum er den volatile asm wegkürzt hast du auch keine idee oder?
+2016-07-12 14:49:58,Quantenmagier,kannst vllt sein daß er volatile wegen -fno-builtin nicht richtig deuten kann?
+2016-07-12 14:57:44,kevin,Hast du denn die Binary disassembliert und da fehlt der Code tatsächlich?
+2016-07-12 15:07:00,Quantenmagier,"jein, also mit dem send(r) geht es ja und wenn ich das weglasse wird die taste nicht registriert daraus folger ich daß der code dann ausgelassen wird, dissassembliert hab ich nicht"
+2016-07-12 15:13:45,Quantenmagier,hm ok der code scheint tatsächlich im programm drin zu sein..
+2016-07-12 15:14:42,Quantenmagier,"hab grad mal disassmebliert und die routine ist drin und es gibt auch nen sprung dahin, dann muß der fehler wohl wo anders liegen.."
+2016-07-12 15:16:25,Quantenmagier,"ok danke dann bin ich shconmal weiter, kann nicht mehr lange dauern den fehler zu finden ^^"
+2016-07-12 15:16:59,Quantenmagier,hoffe ich
+2016-07-12 15:22:00,Quantenmagier,ah das könnte der fehler sein
+2016-07-12 15:23:26,Quantenmagier,"er macht aus der eingabe :""b""(keycode): ein mov bl,[ebp+0x8], weil keycode ein unsigned char ist, aber da fehlt ne zero extension, die der syscall braucht"
+2016-07-12 15:24:06,kevin,"Tja, dann musst du ihm das wohl sagen"
+2016-07-12 15:24:06,Quantenmagier,dachte der würde automatisch ne zero extension machen wenn man nen register angibt
+2016-07-12 15:24:36,Quantenmagier,wie mach ich das denn muß ich den char dann zu nem int casten als eingaberegister?
+2016-07-12 15:24:44,kevin,"Wenn du ihm einen char gibst, geht er halt davon aus, dass du auch nur die unteren 8 Bit davon benutzt"
+2016-07-12 15:25:01,kevin,"Ja, mit einem Cast sollte er dann das breite Register nehmen"
+2016-07-12 15:25:11,Quantenmagier,k thx
+2016-07-12 15:27:16,Quantenmagier,"das ding ist keycodes sind ja normal nur nen char breit, aber der syscall soll später mal keys die aus mehreren keycodes bestehen unterscheiden können deswegen benutzt der syscall die oberen bytes mit obwohld der keycode der übergeben wird bisher eigentlich nur ein char sein kann. ^^"
+2016-07-12 15:27:35,MasterQ32,macht schon sinn
+2016-07-12 15:27:45,MasterQ32,gleiches gilt ja auch bei codepoints
+2016-07-12 15:27:51,MasterQ32,bei ascii/ansi haste halt 8 bit
+2016-07-12 15:28:03,MasterQ32,aber wenn dein putc mal auch unicode können soll brauchste mehr
+2016-07-12 15:29:09,Quantenmagier,jop
+2016-07-12 15:29:23,Quantenmagier,genau das war die idee warum der syscall mit der vollen länge arbeitet ^^
+2016-07-12 15:29:52,Quantenmagier,aber momentan wird halt nur ein char übergeben weil er mit anderen werten noch nicht umgehen kann. ^^
+2016-07-12 15:34:53,Quantenmagier,ok schien auch die einzige stelle in den syscalls zu sein wo die zero extension fehlte. ^^
+2016-07-12 15:35:18,MasterQ32,:)
+2016-07-12 15:36:16,Quantenmagier,so dann kompiliern wir mal mit -Os und sparen ein paar kilobytes und hoffen daß es jetzt geht ^^
+2016-07-12 15:40:53,Quantenmagier,ok läuft und das schachprogramm ist jetzt 40kB kleiner und nicht wesentlich langsamer ^^
+2016-07-12 15:42:37,MasterQ32,:)
+2016-07-12 15:42:54,Quantenmagier,"also hat jetzt 25kB das schachprogramm, ist damit aber immernoch fast doppelt so groß wie mein mandelbrotmengenbrowser :D"
+2016-07-12 15:43:36,MasterQ32,"ich bin mal gespannt, wie das bei mir am ende aussieht :D"
+2016-07-12 15:44:11,Quantenmagier,hast du die beiden screenshots im wiki shcon gesehn? http://www.lowlevel.eu/wiki/SurO
+2016-07-12 15:44:31,MasterQ32,cool
+2016-07-12 15:44:55,MasterQ32,http://puu.sh/pXdq9/1fe0ac04a6.png
+2016-07-12 15:45:01,MasterQ32,so siehts bei mir grade aus :P
+2016-07-12 15:45:03,Quantenmagier,dieses bunte im ersten screenshot ist mein mandelbrotprogrmam hab das shcon stundenlang drin gezoomed das macht süchtig :D
+2016-07-12 15:45:27,Quantenmagier,ach cool auch nicht schlecht sieht ein bsichen aus wie ein rpg?
+2016-07-12 15:45:37,Quantenmagier,oder echtzeit strategie?
+2016-07-12 15:46:17,MasterQ32,joar is nen freies tileset von opengameart.org
+2016-07-12 15:46:27,MasterQ32,aber ist nur zum grafikblitting.test gedacht :D
+2016-07-12 15:46:43,Quantenmagier,"theoretisch beherrscht mein schachprogramm das cecp protokoll aber ich befürchte xboard werde ich nicht als oberflläche kompilieren können, da werd ich wohl mal ne eigene grafische oberfläche für das schachprogramm schreiben bei gelegenheit ^^"
+2016-07-12 15:47:02,Quantenmagier,aso dachte du schreibst das spiel wirklich :D
+2016-07-12 15:47:31,MasterQ32,noch nicht :D
+2016-07-12 15:47:45,MasterQ32,der blit braucht noch viel zu lange
+2016-07-12 15:48:03,Quantenmagier,"oh ok, hast du zeit gemessen?"
+2016-07-12 15:48:26,Quantenmagier,oder siehst du wie es sich aufbaut?
+2016-07-12 15:48:29,MasterQ32,ich sehe den aufbau :D
+2016-07-12 15:48:32,Quantenmagier,oha
+2016-07-12 15:48:34,MasterQ32,-> zu lahm :D
+2016-07-12 15:48:47,MasterQ32,mit was kann ich gut profiling in C machen-ß
+2016-07-12 15:48:48,MasterQ32,?
+2016-07-12 15:48:56,Quantenmagier,benutzt du den rep movsd?
+2016-07-12 15:49:42,Quantenmagier,ich hatte überlegt mal blitting über dma zu implementieren weiß einer ob das ne akzeptable geschwindigkeit verglichen mit rep movsd hat?
+2016-07-12 15:50:19,MasterQ32,"ich nutze einen emulator ,der meine eigene CPU emuliert :D"
+2016-07-12 15:50:25,MasterQ32,ansonste wäre ich schnell unterwegs
+2016-07-12 15:51:38,MasterQ32,der compiliert ist auch noch nicht am optimieren und die sprites liegen einem zu konvertierenden format for
+2016-07-12 15:51:41,MasterQ32,*vor
+2016-07-12 15:51:46,Quantenmagier,aso ist das diese ein bit cpu über die wir mal gesprochen hatten? :D
+2016-07-12 15:52:20,MasterQ32,ein-bit-cpu? :D
+2016-07-12 15:52:29,Quantenmagier,ok dann war das wer anders
+2016-07-12 15:52:33,MasterQ32,https://github.com/MasterQ32/SuperVM/tree/master/documentation
+2016-07-12 15:52:38,MasterQ32,das hier ist sie
+2016-07-12 15:52:42,MasterQ32,bzw. die abstrakte doku dazu
+2016-07-12 15:53:49,kevin,"MasterQ32: Bist du etwa überrascht, dass das langsam ist?"
+2016-07-12 15:54:02,MasterQ32,ja und nein
+2016-07-12 15:54:43,kevin,"Ich glaube, heute ist der Tag, an dem ich die meisten Jeins hier als Antwort bekommen habe *g*"
+2016-07-12 15:54:58,MasterQ32,:D
+2016-07-12 15:55:06,MasterQ32,"also ich bin nicht überrascht, dass es langsam ist"
+2016-07-12 15:55:15,MasterQ32,"ich bin nur überrascht, dass der blit-algo so sacklahm ist"
+2016-07-12 15:55:22,MasterQ32,mein screen-clear läuft in 60 FPS
+2016-07-12 15:56:04,Quantenmagier,60 FPS? ist doch ne gute rate
+2016-07-12 15:56:13,MasterQ32,joar
+2016-07-12 15:56:21,kevin,"Hm, das ist dann aber wirklich +spannend"
+2016-07-12 15:56:27,MasterQ32,nur der blit braucht halt für 160x120 pixel >1 sekunde :D
+2016-07-12 15:56:34,MasterQ32,"naja, ich hab auch massiv weniger zyklen"
+2016-07-12 15:56:34,Quantenmagier,oh
+2016-07-12 15:56:37,kevin,"Hätte nicht gedacht, dass du mit einem reinen Interpreter so schnell clearen kannst"
+2016-07-12 15:56:41,MasterQ32,hehe
+2016-07-12 15:57:03,kevin,"Sowas wie rep hast du nicht, oder? Also handgecodete Schleife sowohl für Clear als auch Blit?"
+2016-07-12 15:57:07,Quantenmagier,ich hatte früher mal ne kernelversion meines OS die unter qemu schneller lief als nativ :D
+2016-07-12 15:57:19,MasterQ32,ja
+2016-07-12 15:57:27,Quantenmagier,das war als ich noch hardware taskswitch benutzt hab :D
+2016-07-12 15:57:28,kevin,tyndur mit Grafik läuft bei mir in qemu auch schneller als nativ
+2016-07-12 15:57:30,MasterQ32,Quantenmagier: Frag mal Darklink :P
+2016-07-12 15:57:48,MasterQ32,bei dem ist irgendwas im busch :D
+2016-07-12 15:57:56,MasterQ32,der hatte auch mal nen sacklahmen bildaufbau
+2016-07-12 15:58:03,Quantenmagier,ok krass
+2016-07-12 15:58:11,kevin,MasterQ32: Wie sieht denn der Code für beides im Vergleich aus?
+2016-07-12 15:58:22,Quantenmagier,ich wunder mich eigentlich daß mein hyperebenenprojektionstreiber recht shcnell läuft ^^
+2016-07-12 15:59:00,Quantenmagier,weil im prinzip zeichnet der jeden pixel zweimal und geht über mehrere ebenen um zu gucken ob er ihn überhaupt zeichnen darf oder ob ne andere ebene drüber liegt ^^
+2016-07-12 15:59:04,MasterQ32,"hab den alten code nicht mehr, leider"
+2016-07-12 15:59:47,Quantenmagier,aber anders konnte ich überlappende ebenen (fenster) und transparenz nicht implementieren
+2016-07-12 16:03:33,Quantenmagier,und das wollte ich unbedingt in meinem os haben :D
+2016-07-12 16:04:24,MasterQ32,:)
+2016-07-12 16:04:45,MasterQ32,"ich frag mich, wo Svenska in letzter Zeit steckt.... :D"
+2016-07-12 16:04:56,Quantenmagier,kp ich war ja auch lang nicht mehr da ^^
+2016-07-12 16:05:03,MasterQ32,wollte da nochmal was mit dem banking-gedanken quatschen.... :D
+2016-07-12 16:05:13,Quantenmagier,muß auch gleich mal los morgen klausur und bildung erziehung und gesellschaft ^^
+2016-07-12 16:05:29,Quantenmagier,*klausur in
+2016-07-12 16:05:34,MasterQ32,"ouha, dann viel spaß"
+2016-07-12 16:06:01,Quantenmagier,danke
+2016-07-12 16:06:04,Quantenmagier,denne
+2016-07-12 17:39:14,darklink,Hey
+2016-07-12 17:39:34,darklink,gcc 4.7 ist jetzt auf der wii drauf
+2016-07-12 17:39:59,darklink,bauzeit von 1d
+2016-07-12 17:41:21,darklink,hätte der wesentlich mehr ram wäre er ca. 4x so schnell wie ein pentium 2
+2016-07-12 17:41:24,darklink,theoretisch
+2016-07-12 17:42:01,darklink,file i/o und und die größe des RAMs macht das kaputt
+2016-07-12 18:09:34,SHyx0rmZ,Ramen oder Curry
+2016-07-12 18:09:55,XanClic,Curry
+2016-07-12 18:11:44,SHyx0rmZ,:D
+2016-07-12 21:08:44,MasterQ32,ich sollte noch eine modulnamenfunktion in meinen compiler einbauen :D
+2016-07-12 21:25:42,darklink,Hey MasterQ32 
+2016-07-12 22:14:31,MasterQ32,bin gleich daheim :D
+2016-07-12 23:03:57,darklink,Damn.
+2016-07-12 23:04:21,darklink,Schon wieder nested screen instanzen über 3 systeme
+2016-07-12 23:06:11,darklink,"Oder 4, glaube ich"
+2016-07-12 23:09:35,darklink,Handy -> PC -> morten@pi -> morten@pi -> { morten@pi -> lfs@pi; root@wii}
+2016-07-12 23:10:24,darklink,das zweite morten@pi soll ein morten@wii sein
+2016-07-12 23:25:11,MasterQ32,re
+2016-07-12 23:25:57,darklink,Weba
+2016-07-12 23:26:30,MasterQ32,thx
+2016-07-12 23:29:28,darklink,^^
+2016-07-12 23:30:00,darklink,Mein interface bleibt so. Mit kernelobjekten und so
+2016-07-12 23:30:43,MasterQ32,ich meinte eher die Benutzeroberfläche :D
+2016-07-12 23:30:51,MasterQ32,also das User Interface
+2016-07-12 23:32:14,darklink,Ah
+2016-07-12 23:32:19,MasterQ32,jau
+2016-07-12 23:32:32,MasterQ32,"frag mich grade nur, mit was ich das prototypen könnte :D"
+2016-07-12 23:33:33,Paddy,Erstmal einfach ein Bild pinseln?
+2016-07-12 23:33:47,MasterQ32,"ja, genau das mein ich :D"
+2016-07-12 23:34:08,darklink,Ich habe ein textmode objekt und könnte einen 2D renderer in den kernel einbauen
+2016-07-12 23:34:32,MasterQ32,"ich bin nur am überlegen, ob ich nen eigenen ""textmodus"" über VBE drüber klebe..."
+2016-07-12 23:34:41,darklink,Also 2D renderer im sinne von RGBA bilder in einen LFB blitten
+2016-07-12 23:35:26,MasterQ32,joar
+2016-07-12 23:35:28,MasterQ32,hab ich ja grade auch
+2016-07-12 23:35:39,darklink,Mit alphachannel?
+2016-07-12 23:35:43,MasterQ32,aber ich blitte grade 24bpp nach 32 bpp und es tut so gar nicht :P
+2016-07-12 23:36:22,darklink,Dann würde ich auch noch integer scaling einfügen
+2016-07-12 23:36:36,darklink,Also sowas wie 8x oder 1/4x
+2016-07-12 23:40:12,darklink,Also integer scales und downscales der form 2^-x
+2016-07-12 23:40:53,darklink,Oder x^-2 *
+2016-07-12 23:46:35,MasterQ32,joar macht ja auch sinn
+2016-07-12 23:46:41,MasterQ32,obwohl du keine downscales haben willst
+2016-07-12 23:50:48,darklink,"Doch. Für konsistenz. Wenn man upscalen kann, warum kann man dann nicht downscalen?"
+2016-07-12 23:51:15,MasterQ32,weil das ein völlig anderer prozess ist ;)
+2016-07-12 23:51:42,MasterQ32,"upscaling ist eine bijektive abbilding, downscaling ist eine reduktion"
+2016-07-12 23:52:00,MasterQ32,"damit du ein ordentliches ergebnis bekommst, musst du massig aufwand betreiben"
+2016-07-12 23:52:20,darklink,Das ist ein einfacher renderer
+2016-07-12 23:52:50,darklink,Also wird halt die ecke oben links genommen ;D
+2016-07-12 23:58:03,MasterQ32,http://www.4p8.com/eric.brasseur/gamma.html

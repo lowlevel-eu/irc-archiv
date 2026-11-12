@@ -1,0 +1,116 @@
+date/time,nick,message
+2011-11-30 11:16:42,max,Moin
+2011-11-30 11:26:19,kevin,Moin max
+2011-11-30 12:30:38,max,bd
+2011-11-30 13:05:20,stultus,moin
+2011-11-30 13:35:08,kevin,Moin stultus
+2011-11-30 13:35:35,kevin,"Hoppla, da müssen zwei Bits in der Uhrzeit gekippt sein :-)"
+2011-11-30 13:44:17,bluecode,"http://arstechnica.com/business/news/2011/11/hp-printers-can-be-remotely-controlled-and-set-on-fire-researchers-claim.ars ""printer on fire""  *hehe*"
+2011-11-30 13:45:13,DerHartmut,Grüezi wohl
+2011-11-30 13:48:28,max,*lol*
+2011-11-30 13:53:15,kevin,Moin DerHartmut
+2011-11-30 14:00:47,DesL,moin
+2011-11-30 15:11:38,tibor,"Hatte irgendwer schon mal die Idee, eine Virtuelle Maschine dahingehend zu verändern, dass man für seinen Kernel Unit-Tests schreiben kann? Ist sowas praktikabel?"
+2011-11-30 15:11:46,Svenska,moin
+2011-11-30 15:11:53,tibor,Tach Svenska 
+2011-11-30 15:11:53,DerHartmut,moin Svenska #
+2011-11-30 15:11:56,DesL,re
+2011-11-30 15:12:10,tibor,wb DesL 
+2011-11-30 15:13:44,stultus,tibor: kommt drauf an was du genau testen willst
+2011-11-30 15:14:28,stultus,"Je nachdem wie modular dein Code ist lässt sich sowas wie memorymanagment wohl im Rahmen testen, wenn das alles  so gestrickt ist das du dem ohne weiteres einfach nen Speicherbereich zuweisen kannst aus dem er arbeitet"
+2011-11-30 15:14:56,stultus,"wenn jetzt natürlich an sowas wie scheduler geht, wirds komplizierter ;)"
+2011-11-30 15:15:30,stultus,"Wenn du wirklich _in_ einer VM testen willst, musst du an sich nur passend die Programme herrichten, ne Ausgabemöglichkeit auf die serielle haben, und die dann von qemu aus lesen"
+2011-11-30 15:15:49,stultus,"via -kernel / -multiboot booten lassen, module reinpacken, fertig."
+2011-11-30 15:16:12,stultus,"(mit ordentlichem hd-image und grub wird wohl auch gehn, sofern der grub timeout hat und/oder direkt weiterbootet)"
+2011-11-30 15:16:41,stultus,"aber ich glaube wirklich gemacht wurd das noch nicht, jedenfalls nicht umfassend."
+2011-11-30 15:16:50,kevin,Siehe tests/ in tyndur
+2011-11-30 15:17:03,kevin,"Ist zwar ziemlich leer, aber der Ansatz ist da ;-)"
+2011-11-30 15:17:35,stultus,hatte ich das sogar richtig im kopf *g*
+2011-11-30 15:18:27,Svenska,"also ""boote den kernel mit debug-flag und er schreibt alles mögliche auf die serielle raus"""
+2011-11-30 15:18:27,stultus,aber auch alles nur libc/userspace?
+2011-11-30 15:18:34,kevin,"Hm, jo, stimmt"
+2011-11-30 15:18:52,stultus,"aber naja, fürn kernel sollte sich da ja nicht viel dran ändern"
+2011-11-30 15:18:55,kevin,"Ansatz für Kerneltest wäre, dass die Makefile zusätzliche Dateien reinlinkt"
+2011-11-30 15:19:11,kevin,"Und der Kernel sucht dann, was so an Tests da ist und führt die aus"
+2011-11-30 15:20:06,kevin,"Wird ein bisschen unschöner (um nicht zu sagen krimineller) als für Userspace, aber gehen müsste es mit relativ wenig Aufwand"
+2011-11-30 15:21:09,stultus,"Naja, kriminell ist vieles was sich in dem Code so findet *g*"
+2011-11-30 15:21:34,stultus,"note to self, vor jeder variante eines vesa-merges aufjedenfall das device-init noch reparieren."
+2011-11-30 15:21:38,kevin,Der Testcode ist bisher relativ sauber ;-)
+2011-11-30 15:21:49,kevin,stultus: Was ist daran denn kaputt?
+2011-11-30 15:21:56,tibor,"Hmm, ich wird mir das die Tage mal weiter durch den Kopf gehen lassen. Weil Unit-Tests sind übelst geil"
+2011-11-30 15:22:09,stultus,der stammt noch aus zeiten wo es init_device() nicht gab und in init_driver gescannt wird... *g*
+2011-11-30 15:23:06,kevin,"init_device wird aber nur aufgerufen, wenn jemand ein Gerät bereitstellt"
+2011-11-30 15:23:12,kevin,Was eigentlich nur bei PCI der Fall ist
+2011-11-30 15:23:25,stultus,"naja, für was anderes als pci interessier ich mich ja nicht"
+2011-11-30 15:23:32,kevin,VESA ist doch nicht PCI?
+2011-11-30 15:23:39,stultus,an sich nicht
+2011-11-30 15:23:58,stultus,"aber er krallt sich die erste graka die er findet, einfach damit niemand anders die wegnimmt."
+2011-11-30 15:24:09,kevin,"Theoretisch sollte init_driver() irgendwann mal cdi_provide_device() aufrufen, und das führt dann indirekt zum init_device()"
+2011-11-30 15:24:13,Svenska,"das ist doch schon logisch falsch, oder?"
+2011-11-30 15:24:15,stultus,Doppelzugriff auf grafik könnte potentiell böse sein *g*
+2011-11-30 15:24:33,Svenska,vesa funktioniert nur mit der primären grafikkarte (nur die wurde vom VBIOS initialisiert)
+2011-11-30 15:25:00,stultus,"hm, stimmt das auch so uneingeschränkt?"
+2011-11-30 15:25:13,Svenska,"alle anderen müsstest du zu fuß booten, ohne hilfe des VBIOS"
+2011-11-30 15:25:19,stultus,"Ich meine in Xorg mal Code gesehn zu haben der das vbios auch auf andere karten anpasst, bzw passend aufruft."
+2011-11-30 15:25:52,stultus,"njo, wird ja nicht gemacht"
+2011-11-30 15:26:49,Svenska,wie willst du das vbios auf andere karten anpassen?
+2011-11-30 15:27:11,Svenska,"entweder, du kannst int 10h benutzen, das ist dann garantiert die primäre karte, oder du kannst es nicht"
+2011-11-30 15:27:22,Svenska,im letzteren fall hast du erstmal keinen zugriff aufs vbios der graka
+2011-11-30 15:27:26,stultus,ich habs mir nicht im detail angesehn was da angestellt wird
+2011-11-30 15:28:09,Svenska,"m.W. nutzt xorg für alle alten karten (u.a. S3, Western Digital) das int10h-modul, um die karte zu initialisieren"
+2011-11-30 15:28:21,Svenska,"diese karten müssen per se primär sein, sonst funktionieren sie garnicht"
+2011-11-30 15:28:52,Svenska,"und nur die moderneren treiber wie nouveau, radeon und intel können sekundäre grafikkarten aktivieren"
+2011-11-30 15:29:00,Svenska,weiß nicht - hattest du schonmal ein multi-grafikkarten-setup?
+2011-11-30 15:31:00,stultus,keins mit so alten *g*
+2011-11-30 15:31:18,Svenska,bezog sich auf PCI-grafikkarten *g*
+2011-11-30 15:31:24,stultus,"wobei, hm"
+2011-11-30 15:31:38,stultus,"einmal hab ich ne voodoo rush dazugepackt, aber KA ob die lief oder nicht"
+2011-11-30 15:31:41,Svenska,"alle PCIe-karten können sekundär eingesetzt werden, weil treiber und hardware dazu fähig sind"
+2011-11-30 15:32:26,Svenska,"du kannst im bios oft einstellen, welche grafikkarte primär sein soll (ISA, PCI, AGP, PCIe, je nach generation) und nur diese wird vom bios aktiviert"
+2011-11-30 15:34:12,stultus,soweit bekannt *g*
+2011-11-30 15:39:26,Svenska,die anderen fasst das bios nicht an
+2011-11-30 15:40:01,Svenska,"und wenn eine grafikkarte von ihrem eigenen vbios nicht initialisiert wurde, geht auch kein vesa (mal abgesehen davon, dass du das vbios ja nicht wirklich aufrufen kannst)"
+2011-11-30 15:40:27,stultus,jo
+2011-11-30 15:40:45,stultus,"njo, wollte nochmal raus, bis nachher *g*"
+2011-11-30 16:18:40,Svenska,"http://www.phoronix.com/scan.php?page=news_item&px=MTAyMTI << oh, hardware-virtualisierung für ARM"
+2011-11-30 16:41:53,stultus,re
+2011-11-30 16:45:43,kevin,wz
+2011-11-30 22:48:20,Jidder,hey ya
+2011-11-30 22:48:28,Jidder,in 72 minuten ist es soweit
+2011-11-30 22:48:33,Paddy,Hi
+2011-11-30 22:48:37,XanClic,IOCCC?
+2011-11-30 22:48:39,Jidder,1.0
+2011-11-30 22:48:41,XanClic,"Hæ, Paddy"
+2011-11-30 22:48:55,Jidder,"hm IOCCC ist noch nicht zu ende, oder?"
+2011-11-30 22:49:03,XanClic,Fängt morgen erst an ^^
+2011-11-30 22:49:14,Jidder,dann hab ich ja schon einen vorsprung ^^
+2011-11-30 22:49:14,XanClic,"Ach, doch nicht?"
+2011-11-30 22:49:20,XanClic,12-Nov-2011 11:00 UTC to 12-Jan-2012 12:12 UTC
+2011-11-30 22:49:25,XanClic,Da hab ich wohl was durcheinander gebracht
+2011-11-30 22:49:31,XanClic,"Ah, doch"
+2011-11-30 22:49:34,XanClic,Morgen kann man erst einsenden
+2011-11-30 22:49:40,Jidder,ah
+2011-11-30 22:50:10,Jidder,wird bei euch im qemu-büro eigentlich 1.0 ordentlich begossen?
+2011-11-30 22:50:14,Jidder,kann man da vorbeikommen?
+2011-11-30 22:56:13,tibor,Kommt qemu 1.0 raus?
+2011-11-30 22:56:36,Jidder,ja
+2011-11-30 22:56:38,Jidder,bin schon ganz aufgeregt
+2011-11-30 22:57:38,tibor,"Ändert sich denn groß was? Oder haben die nur festgestellt, dass eigentlich schon die letzte Version fast 1.0 verdient hätte?"
+2011-11-30 22:57:50,stultus,"qemu ist qemu, das läuft doch an sich immer rund?"
+2011-11-30 22:58:04,stultus,Probleme gibts erst wenn man ne alte Version verwendet. Die jeweils aktuelle war irgendwie immer gut. *g*
+2011-11-30 22:59:18,XanClic,"qemu läuft immer rund? Soll ich der Code geben, der auf 0.15.1 nicht rund läuft? :3"
+2011-11-30 22:59:30,XanClic,http://git-xanclic.is-a-geek.org/cgit.cgi/3D/tree/3d.asm there you are :3
+2011-11-30 22:59:32,Jidder,bestimmt irgendwas mit sse
+2011-11-30 22:59:38,XanClic,"Jo, SSE3 *g*"
+2011-11-30 22:59:43,Jidder,:D
+2011-11-30 22:59:55,XanClic,KVM nutzen gilt btw nicht
+2011-11-30 23:03:13,stultus,:(
+2011-11-30 23:03:33,stultus,Wozu hat mans dann
+2011-11-30 23:07:25,EinandererUser,zum angeben
+2011-11-30 23:07:47,XanClic,Zum 512-Byte-Zeugs-das-den-Grafikspeicher-ständig-neuschreibt-verlangsamen
+2011-11-30 23:23:39,Jidder,alpha = tan(x/y) macht den jidder traurig
+2011-11-30 23:25:08,Jidder,vor allem ist das ziemlich gemein
+2011-11-30 23:25:19,Jidder,weil ich finde y/x besser
+2011-11-30 23:25:39,Jidder,dann schmiegt sich das / so schön ans y
+2011-11-30 23:45:27,tibor,SMP ist ja echt nicht ohne
+2011-11-30 23:54:05,Jidder,"""ich nehm mindestens schriftgröße 20, sonst kann man comic sans ms kaum von arial unterscheiden"""

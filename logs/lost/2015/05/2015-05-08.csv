@@ -1,0 +1,77 @@
+date/time,nick,message
+2015-05-08 12:14:32,Jonathan,Moin
+2015-05-08 14:19:22,iksnagreb,moin
+2015-05-08 15:31:40,kevin,XanClic: Zusätzliche Caches machen Flushes sicher nicht weniger nötig ;-)
+2015-05-08 15:31:52,XanClic,"Na ja, aber reduzieren die Zahl"
+2015-05-08 15:32:46,kevin,"Sein Argument geht ja aber in die Richtung, dass geschriebene Daten ohne die Metadaten dazu böse sind"
+2015-05-08 15:32:51,kevin,Dass er also nichts gecacht haben will
+2015-05-08 15:33:10,XanClic,"Tja, dann wirds wohl noch komplizierter, die Flushes zu reduzieren ;-)"
+2015-05-08 15:33:13,kevin,Weil sonst kann es Leaks geben
+2015-05-08 15:33:35,kevin,"Ich halte das noch wesentlich weniger für Problem für ein Format, das nur für qemu-img convert da ist als die Performance"
+2015-05-08 15:33:59,XanClic,"Na ja, die drei Zeilen…"
+2015-05-08 15:34:43,kevin,"Es geht mir nicht um die drei Zeilen, sondern um das effektive cache=writethrough solange man alloziert..."
+2015-05-08 15:35:10,XanClic,"Tja, dann bräuchten wir wohl mal ein ordentliches bdrv_pwrite_sync"
+2015-05-08 15:35:15,XanClic,"Das nur den Bereich synct, der geschrieben wird"
+2015-05-08 15:35:39,kevin,"Das blöde ist nur, das kann die Platte nicht ;-)"
+2015-05-08 15:35:55,XanClic,muss ja auch nur Linux können
+2015-05-08 15:36:28,kevin,"Zumindest bei ATA muss Linux halt ein FLUSH CACHE senden, um irgendwas geflusht zu bekommen"
+2015-05-08 15:36:37,XanClic,Kann man da nicht was mit mmap() und SHM machen?
+2015-05-08 15:36:49,kevin,wtf?
+2015-05-08 15:36:53,XanClic,"So den Teil der Datei mmap()-en, dann SHM-en und den FD fsync()-en? *g*"
+2015-05-08 15:37:17,Svenska,klingt... interessant. :-)
+2015-05-08 15:37:20,kevin,Und was soll Linux daraus dann schnelles für die Platte basteln? ;-)
+2015-05-08 15:37:32,XanClic,"Ich dachte, es geht primär darum, dass Linux seinen eigenen Cache flusht"
+2015-05-08 15:37:35,kevin,"Mal abgesehen, dass mmap() mit O_DIRECT eh ein interessantes Konzept ist *g*"
+2015-05-08 15:38:01,XanClic,"Na, mit O_DIRECT brauchen wir den SHM-Teil ja gar nicht mehr"
+2015-05-08 15:38:47,kevin,"Es geht um alle Caches, also sowohl der Pagecache im Kernel als auch der Plattencache"
+2015-05-08 15:38:55,XanClic,"Eigentlich fühl ich mich ja nur schlecht, drei Versionen gesagt zu haben „Ja, das ist okay, aber der Patch sieht doof aus“ (Eric auch), und jetzt sagen „Ach ne, die drei Zeilen brauchen wir doch nicht“"
+2015-05-08 15:39:04,kevin,*g*
+2015-05-08 15:39:29,XanClic,"Ja, richtig, aber wenn es um den Unterschied zu cache=writethrough geht, ist das Problem wohl eher Linux' Cache"
+2015-05-08 15:39:38,XanClic,"Und da meinte ich, den halt nur teilweise zu flushen"
+2015-05-08 15:39:52,XanClic,"Ob Linux nach diesem Flush dann noch ein Platten-Flush durchjagt, von mir aus"
+2015-05-08 15:40:04,kevin,Das teure ist der Plattenflush
+2015-05-08 15:40:09,XanClic,"Hm, okay…"
+2015-05-08 15:40:20,kevin,"Und zwar nicht ein bisschen, sondern richtig teuer"
+2015-05-08 15:40:35,kevin,"Falls du mal qcow1 benutzt hast, weißt du, was ich meine ;-)"
+2015-05-08 15:40:44,XanClic,"Na ja, ich hätte gedacht, das ist richtig richtig teuer, wenn man mehrere Zugriffe drin hat"
+2015-05-08 15:40:52,XanClic,"Weil man eben Daten und Metadaten flusht, also das ganze Image"
+2015-05-08 15:40:59,XanClic,"Und nur so ein bisschen richtig teuer, wenn es nur ein Sektor ist"
+2015-05-08 15:41:24,XanClic,"Es sei denn, man hat Glück, dass Daten und Metadaten im gleichen Zylinder sind"
+2015-05-08 15:41:47,XanClic,"Aber Benoît hat doch gesagt, dass niemand mehr Festplatten benutzt *g*"
+2015-05-08 15:42:01,kevin,In der Praxis scheint das anders zu sein
+2015-05-08 15:42:08,XanClic,Das ist ja doof ;-)
+2015-05-08 15:42:11,kevin,cache=writethrough sollte immer nur ganz wenig Daten flushen
+2015-05-08 15:42:16,kevin,Ist aber trotzdem scheiße lahm ;-)
+2015-05-08 15:42:27,XanClic,"Na ja, vdi…"
+2015-05-08 15:42:35,XanClic,"Wie gesagt, da ist sogar ein #ifdef um den Writesupport"
+2015-05-08 15:42:49,Svenska,"was ist denn schnell und gut? ich nehm immer cache=none, aber das ist vmtl nicht das beste?"
+2015-05-08 15:42:50,XanClic,Und ich persönlich hätte das lieber scheißelahm als kaputt
+2015-05-08 15:43:06,XanClic,"Svenska, cache=unsafe lazy-refcounts=on natürlich"
+2015-05-08 15:43:07,XanClic,*duck*
+2015-05-08 15:43:20,Svenska,das ist nicht gut...
+2015-05-08 15:43:34,kevin,"Wie gefällt dir ""kommt drauf an""? ;-)"
+2015-05-08 15:44:09,kevin,"Für kurzlebige VMs nehme ich normal writeback (den Default), aber für was ernsthafteres ist none in der Regel nicht so verkehrt"
+2015-05-08 15:44:34,Svenska,"ok, danke :-)"
+2015-05-08 15:44:37,kevin,Und alles andere ist eh nur für Spezialfälle
+2015-05-08 15:44:53,XanClic,"Ich dachte, man benutzt eh virt-manager"
+2015-05-08 15:45:02,kevin,"Installieren kann man zum Beispiel ohne weiteres mit cache=unsafe. Wenn's schief geht, wirft man das Image eh weg."
+2015-05-08 15:45:08,XanClic,"Und wenn der was falsches nimmt, ist Eric schuld"
+2015-05-08 15:45:52,Svenska,"XanClic: du weißt doch, dass ich den virt-manager nicht nehme :-)"
+2015-05-08 15:46:03,XanClic,"Weiß nicht, ob ich das weiß"
+2015-05-08 15:46:04,Svenska,ich hab ein klitzekleines shellscript
+2015-05-08 15:46:16,XanClic,Dann kanns ja nicht so ernsthaft sein :-P
+2015-05-08 15:46:34,Svenska,fuer die dämlich arm-entwicklungsumgebung reichts
+2015-05-08 15:47:03,Svenska,"""usb_add host:1366:0101"" kann ich mir noch merken, mehr brauchts dann nicht"
+2015-05-08 15:55:31,kevin,"So, Problem gelöst. Einfach die Verantwortung weiterschieben *g*"
+2015-05-08 15:55:41,XanClic,"Hätte ich auch fast geschrieben, ja ;-)"
+2015-05-08 16:07:43,kevin,"Ach, Patches splitten ist irgendwie doof"
+2015-05-08 16:07:54,kevin,"Egal wierum ich es mache, immer bleibt irgendwas, was in der Mitte unlogisch aussieht"
+2015-05-08 18:13:04,kevin,"So... It compiles, let's ship it!"
+2015-05-08 18:13:42,kevin,"Ich glaube, erstmal rausschicken und dann selber nochmal anschauen ist gut genug ;-)"
+2015-05-08 19:24:04,kevin,XanClic: So... Dass dir am Wochenende nicht langweilig wird *g*
+2015-05-08 19:24:14,XanClic,Ich hab schon meine 12 h voll :-P
+2015-05-08 19:24:24,XanClic,hatte ich eigentlich schon vor der Floppygeschichte
+2015-05-08 19:24:34,XanClic,ich warte gerade nur noch auf die Timesheets von Ademar
+2015-05-08 19:25:25,kevin,"Ach so, das Wochenende ist dann für die nächste USB-Version da? ;-)"
+2015-05-08 19:25:37,XanClic,"Die Kommentare hab ich schon übersetzt, ja ;-)"
+2015-05-08 19:26:07,kevin,*g*

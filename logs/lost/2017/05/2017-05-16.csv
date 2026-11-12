@@ -1,0 +1,116 @@
+date/time,nick,message
+2017-05-16 18:43:24,dietzi,Guten Abend @all
+2017-05-16 18:43:26,MasterQ32,heyhey
+2017-05-16 18:43:32,Svenska,namd
+2017-05-16 18:43:39,dietzi,Die beiden Dauergäste ;)
+2017-05-16 18:43:42,MasterQ32,klar
+2017-05-16 18:43:52,MasterQ32,wobei ich grade kein dauergast bin
+2017-05-16 18:43:54,MasterQ32,LOL
+2017-05-16 18:43:58,dietzi,Mein Motto: sch***** Paging.....
+2017-05-16 18:44:02,MasterQ32,:D
+2017-05-16 18:44:07,Svenska,"naja, dauergast... war bei mir auch mal mehr ;)"
+2017-05-16 18:44:12,MasterQ32,stimmt
+2017-05-16 18:44:17,MasterQ32,dietzi: mein OS kann ohne Paging
+2017-05-16 18:44:27,dietzi,Ihr seid aber irgendwie immer da wenn ich on komme
+2017-05-16 18:44:39,MasterQ32,tja :D
+2017-05-16 18:44:52,dietzi,"Wir hatten uns ja die Tage darauf geeinigt, dass ich Paging mit rein nehme"
+2017-05-16 18:45:34,XanClic,"weiß auch nicht, was alle immer gegen Paging haben"
+2017-05-16 18:45:45,XanClic,"als ich mit Paging angefangen hab, war ich so begeistert davon"
+2017-05-16 18:45:53,dietzi,"Im Moment scheitert es an einer Verständnisfrage.... Wenn ich einen neuen Task initialisiere - aus welcher Sicht muss ich Speicher reservieren? Bzw. in welchen Adressraum? In den Adressraum des neuen Task, des Kernels oder weder noch?"
+2017-05-16 18:46:04,XanClic,"kann aber daran liegen, dass ich vorher mindestens ein Jahr versucht hab, irgendwas mit der GDT hinzubekommen."
+2017-05-16 18:46:08,dietzi,Paging an sich ist ne tolle Sache.... Wenn man weiß wie's geht
+2017-05-16 18:46:21,XanClic,"Weiß nicht, ich fands auch toll, als ichs noch nicht wusste"
+2017-05-16 18:46:30,Svenska,dito hier
+2017-05-16 18:47:15,dietzi,Konkreter Punkt meiner Frage ist das hier:
+2017-05-16 18:47:28,dietzi,uint8_t* stack = pmm_alloc();
+2017-05-16 18:47:28,dietzi,    struct cpu_state* state = (void*) (stack + 4096 - sizeof(new_state));
+2017-05-16 18:47:28,dietzi,    *state = new_state;
+2017-05-16 18:47:50,dietzi,Bei der letzten Zeile kommt 0xe
+2017-05-16 18:47:51,MasterQ32,"pmm_alloc muss weg, wenn du paging verwendest"
+2017-05-16 18:48:01,MasterQ32,dein speicher ist ja nicht mehr gemappt
+2017-05-16 18:48:20,dietzi,Soweit habe ich das schon verstanden. Aber wie muss ich was wohin mappen? Habe noch nicht ganz durchgeblicktt
+2017-05-16 18:48:33,dietzi,pmm_alloc muss durch vmm_alloc ersetzt werden
+2017-05-16 18:48:43,dietzi,Diese Funktion muss ich aber erst noch bauen.....
+2017-05-16 18:49:35,dietzi,"Ich glaube, dass ich wieder mal falsch denke...."
+2017-05-16 18:50:11,Svenska,"wohin du deinen speicher mappst, ist dir ueberlassen"
+2017-05-16 18:50:19,dietzi,"Ich muss ja irgendeinen Context aktivieren um auf den ""neuen Speicher"" zu zugreifen oder?"
+2017-05-16 18:50:43,Svenska,"nein, du kannst einen kontext auch extern zusammenbauen"
+2017-05-16 18:51:05,dietzi,OK. Dann mache ich mir jetzt noch ein paar Gedanken und melde mich dann nochmal
+2017-05-16 18:51:17,MasterQ32,"mal ne ganz blöde frage, aber ich kann ja die struktur und den stack ja einfach hardcoden, an welcher stelle der steht"
+2017-05-16 18:51:25,MasterQ32,allokie den physischen speicher und mappe die passenden stellen
+2017-05-16 18:52:02,MasterQ32,also userstack bei 0xFFFFFFFFF und kernelspace bei 0x3FFFFFFF
+2017-05-16 18:52:10,MasterQ32,oder wäre das unpraktisch?
+2017-05-16 18:52:14,dietzi,"Könnte man sicherlich so machen, aber vmm_alloc brauche ich so oder so"
+2017-05-16 18:52:29,MasterQ32,bin ich mir grade gar nicht so sicher
+2017-05-16 18:52:38,XanClic,"MasterQ32, weiß nicht, was du machen willst oder was dir das bringt, aber mit mehreren Threads gehts auf jeden Fall kaputt"
+2017-05-16 18:52:47,MasterQ32,why?
+2017-05-16 18:52:49,dietzi,MasterQ32: ich glaube das wäre zusätzliche / sinnfreie Arbeit
+2017-05-16 18:52:54,XanClic,"MasterQ32, weil jeder Thread einen eigenen Stack will?"
+2017-05-16 18:53:07,MasterQ32,stimmt
+2017-05-16 18:53:18,MasterQ32,aber eigentlich ist doch dann userspace stack position userspace-sache :P
+2017-05-16 18:53:24,XanClic,"Jo, klar"
+2017-05-16 18:53:34,XanClic,"Wie gesagt, keine Ahnung, was dir das bringen soll"
+2017-05-16 18:53:34,MasterQ32,"darum muss ""ich"" mich ja nicht kümmern"
+2017-05-16 18:53:42,Svenska,ich wuerde den stack zudem noch ausrichten
+2017-05-16 18:53:43,XanClic,Mein Kernelstack ist einfach irgendein 8-kB-BSS-Bereich im ELF
+2017-05-16 18:53:54,Svenska,"zumindest auf controllern fängt der nicht bei 0xFFFF an, sondern bei 0x10000"
+2017-05-16 18:54:07,XanClic,Nicht 0x0000? ;-)
+2017-05-16 18:54:22,Svenska,"nein, weil bei 2^32-1 meist kein speicher ist"
+2017-05-16 18:54:32,MasterQ32,"ja, ich meinte halt das ende des virtuellen speichers"
+2017-05-16 18:54:36,XanClic,"Ach so, ich dachte 16-Bit-Controller"
+2017-05-16 18:55:08,XanClic,"Jedenfalls, normalerweise hat man auch noch irgendwelche speziellen Datenstrukturen für den Stack und irgendwo muss das initiale esp ja auch hin zeigen, wenn man den ersten Prozess erstellt"
+2017-05-16 18:55:14,dietzi,Nochmal zu meiner Frage: wenn ich den Speicher reserviere und mappe muss ich das doch aber in ein Register (cr3) schreiben oder nicht? 
+2017-05-16 18:55:37,XanClic,"Also mit Datenstrukturen meine ich, man sagt halt esp zeigt auf 0xc0000000 oder was auch immer, und dann hab ich da halt 16 MB drunter Lazy Mapping"
+2017-05-16 18:56:07,XanClic,"dietzi, nein, wenn du es in eine Page Table schreibst, die aktuell aktiv ist, dann kannst du das sofort benutzen"
+2017-05-16 18:56:25,dietzi,Also hängt es doch mit dem context zusammen
+2017-05-16 18:56:29,MasterQ32,was passiert
+2017-05-16 18:56:47,MasterQ32,"muss ich wegen caches o.ä. die page table invalidieren, wenn ich nen neuen wert eintrage?"
+2017-05-16 18:56:49,XanClic,"Schon, aber irgendein Kontext ist ja sowieso immer aktiv"
+2017-05-16 18:56:59,XanClic,„Kommt drauf an“ ist die richtige Antwort
+2017-05-16 18:57:12,XanClic,Kurze Antwort: Ja
+2017-05-16 18:57:16,XanClic,Lange Antwort: s. Intelmanual
+2017-05-16 18:57:23,MasterQ32,:D
+2017-05-16 18:57:33,MasterQ32,kurze antwort ist ausreichend
+2017-05-16 18:57:42,XanClic,"Letzten Endes ist es so, dass halt alles gecachet wird, bis auf Seiten, die nicht present sind"
+2017-05-16 18:57:51,dietzi,"Dementsprechend müsste ich doch aber bei jedem ""abarbeiten"" des jeweiligen Task den Context dazu aktivieren weil die CPU sonst nicht weiß wo die virtuelle Adresse hinzeigt oder?"
+2017-05-16 18:57:55,MasterQ32,"joar, hatte ich mir gedacht"
+2017-05-16 18:58:05,XanClic,"Und wenn man auf was zugreift und der TLB einen Page Fault meldet, dann wird aber erstmal kein Page Fault ausgelöst"
+2017-05-16 18:58:24,XanClic,"Sondern die CPU verwirft den TLB-Eintrag, guckt nochmal in der Page-Table-Hierarchie nach, und löst erst dann einen Page Fault aus, wenn das dann immer noch nicht passt"
+2017-05-16 18:58:40,XanClic,"Man muss also immer invlpg oder was auch immer benutzen, wenn man Rechte einschränkt, aber normalerweise nicht, wenn man sie erweitert"
+2017-05-16 18:58:48,dietzi,Aha..... Das hilft mir schon weiter
+2017-05-16 18:59:01,MasterQ32,irgendwie klingt das logisch :D
+2017-05-16 18:59:02,Svenska,wer hat sich das nur ausgedacht :)
+2017-05-16 18:59:22,XanClic,"Man kann ja auch SPARC benutzen, wo es historisch gar keine Page Tables gibt…"
+2017-05-16 18:59:26,XanClic,Sondern nur einen TLB
+2017-05-16 18:59:37,Svenska,dafuer gibt's da register-windows
+2017-05-16 18:59:46,Svenska,"oder man nimmt mips, da hat's dann branch delays"
+2017-05-16 18:59:50,XanClic,"Aber spezielle Instruktionen, die manuell einen Page-Table-Walk benutzen, mit denen man den TLB füllen kann *g*"
+2017-05-16 18:59:59,XanClic,s/benutzen/ausführen/
+2017-05-16 19:01:05,MasterQ32,Ich hab hier ne interessante Instruktion: dec <addr>
+2017-05-16 19:01:17,MasterQ32,"Dekrementiert einen Wert im Hauptspeicher, verändert in der CPU aber nur Carry"
+2017-05-16 19:01:30,MasterQ32,"super für Zählschleifen, wenn mich mein Zählwert nicht interessiert"
+2017-05-16 19:01:41,XanClic,"Ja, außer, dass es halt langsam ist"
+2017-05-16 19:01:46,XanClic,"Auch wenn ich wieder keine Ahnung hab, was du willst"
+2017-05-16 19:02:00,MasterQ32,XanClic: nicht langsamer als eine addition :D
+2017-05-16 19:02:03,XanClic,Doch
+2017-05-16 19:02:10,MasterQ32,(ich rede grade über die Combitron-Architektur)
+2017-05-16 19:02:13,XanClic,"Ach so, na dann"
+2017-05-16 19:02:32,XanClic,"Weil inc/dec bei x86 auch diese Eigenschaft haben, nur eine Teilmenge der Flags zu verändern"
+2017-05-16 19:02:55,MasterQ32,"ist die gleiche operation wie subtraktion, nur mit konstante 0 und carry vorher gesetzt und ein paar routen anders gelegt"
+2017-05-16 19:04:26,Svenska,"so, neue skymap vor ein paar tagen angefangen"
+2017-05-16 19:04:40,Svenska,und nach 2h20 ein crucible gebaut xD
+2017-05-16 19:04:47,MasterQ32,:)
+2017-05-16 19:04:49,MasterQ32,gz
+2017-05-16 19:06:35,Svenska,"so, weiter stein farmen fuer den cobblestone-generator... :)"
+2017-05-16 19:07:14,MasterQ32,viel spaß
+2017-05-16 19:07:22,Svenska,"joa, geht einigermaßen"
+2017-05-16 19:08:26,MasterQ32,:D
+2017-05-16 19:08:28,MasterQ32,automatisieren
+2017-05-16 19:09:06,Svenska,"ja, dazu brauch ich nur ... nen cobblestone-generator xD"
+2017-05-16 19:11:53,Svenska,auf der 1.10 ist das n bisschen härter geworden
+2017-05-16 22:02:49,MasterQ32,Paddy: hast du erfahrung im assembler coden?
+2017-05-16 22:57:05,Paddy,"MasterQ32: Bei dir muss ich wohl erstmal fragen, was für Assembler denn?"
+2017-05-16 22:59:39,MasterQ32,:D
+2017-05-16 22:59:46,MasterQ32,"hat sich erledigt, ist jetzt etwas overkill geworden"
+2017-05-16 22:59:52,MasterQ32,bis denne
+2017-05-16 23:00:52,Paddy,"Du meinst, das will ich lieber nicht genauer wissen? *g*"

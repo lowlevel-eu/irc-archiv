@@ -1,0 +1,227 @@
+date/time,nick,message
+2016-05-11 09:31:47,kevin,Moin
+2016-05-11 09:33:16,masterq32,huhu
+2016-05-11 09:33:30,masterq32,du bist gestern zu einem taktisch klugen zeitpunkt verschwunden :D
+2016-05-11 09:35:24,masterq32,darum auch nochmal die frage an dich:
+2016-05-11 09:35:27,masterq32,"""Task erstellen ist dann: speicher für Task-Struktur allokieren (in meinem fall auf meinem Heap eine Page allokieren), danach ein neues Page Directory anlegen, den kernel reinmappen, die ELF an das erste gigabyte laden"""
+2016-05-11 09:36:03,masterq32,habe ich etwas essentielles vergessen? :D
+2016-05-11 09:44:51,masterq32,"ich verschwinde mal ne weile, ich guck nacher im log, ob du mir ne antwort geschrieben hast :P"
+2016-05-11 09:52:58,kevin,"Erstmal: Ein anständiger Heap ist eine dritte Speicherverwaltungsschicht auf dem VMM oben drauf, die nicht komplette Pages, sondern beliebige Größen alloziert"
+2016-05-11 09:53:20,kevin,"Ansonsten kriegst du ziemlich viel Verschnitt, wenn du für jede 20-Byte-Struktur komplette 4k verbrauchst"
+2016-05-11 09:55:11,kevin,"Was du noch brauchst, ist einen Stack für den neuen Task"
+2016-05-11 09:55:36,kevin,"Und irgendwo musst du den anfänglichen Registerzustand des Tasks festlegen, wobei das davon abhängt, wie dein Multitasking funktioniert"
+2016-05-11 09:55:53,kevin,"Wenn so wie im LL-Tutorial, dann musst du den auf den Stack packen"
+2016-05-11 10:29:12,darklink,Ich glaube ich werde eine rekursive pointertabelle für malloc_t verwenden
+2016-05-11 10:39:25,kevin,Was ist denn eine rekursive Pointertabelle?
+2016-05-11 10:42:45,darklink,malloc_t **(...)
+2016-05-11 10:45:19,darklink,malloc_t *** table[2];
+2016-05-11 10:47:34,kevin,"Ach so, einfach Mehrfachpointer? Da sehe ich noch keine Rekursion."
+2016-05-11 10:48:04,kevin,"Was du damit für die Speicherverwaltung willst, erschließt sich mir natürlich ohne weitere Erklärung trotzdem nicht"
+2016-05-11 10:51:00,masterq32,huhu
+2016-05-11 10:51:03,masterq32,danke für die ausführung
+2016-05-11 10:51:10,darklink,"einfacher als linked lists mit meiner speicherverwaltung, die nur vielfache von 4096 unterstützt"
+2016-05-11 10:51:16,darklink,hi masterq
+2016-05-11 10:51:35,darklink,bin gerade irgendwo in mecklenburg-vorpommern
+2016-05-11 10:51:50,darklink,(kurz vor wittenberge
+2016-05-11 10:52:07,masterq32,und kevin: heap ist hier vielleicht ein wenig übertrieben.... :D
+2016-05-11 10:56:09,kevin,masterq32: Wieso?
+2016-05-11 10:57:07,masterq32,"naja, ich kann schon einen heap implementieren"
+2016-05-11 10:57:12,masterq32,aber vorerst reichen mir auch pages :D
+2016-05-11 10:57:20,masterq32,"hauptsache, es geht erst mal :P"
+2016-05-11 10:57:47,kevin,Du schaust dir zu viel bei den falschen ab *g*
+2016-05-11 10:58:02,masterq32,hm? :D
+2016-05-11 10:58:15,masterq32,"ich hab keine lust, nen heap zu implementieren, wenn ich erst mal tasking haben will"
+2016-05-11 10:58:20,masterq32,und wenn das tut
+2016-05-11 10:58:28,masterq32,kann ich den heap irgendwann(TM) mal implementieren
+2016-05-11 10:58:28,masterq32,:D
+2016-05-11 10:58:31,masterq32,darum ja auch die bitmap bzw. der page-table/directory allocator
+2016-05-11 10:59:39,kevin,"Ich glaube, µxoµcota und Paddygree benutzen auch immer komplette Pages für jedes malloc"
+2016-05-11 10:59:55,kevin,Weil reicht ja im Moment
+2016-05-11 11:00:37,masterq32,genau :D
+2016-05-11 11:00:43,masterq32,seh ich auch so
+2016-05-11 11:01:06,kevin,Der Moment dauert glaube ich in beiden Fällen schon ziemlich lang *g*
+2016-05-11 11:02:35,masterq32,ich hab übrigens mittlerweile auch ein konzept zu der shared-memory-sache
+2016-05-11 11:03:09,kevin,Worum ging es denn da?
+2016-05-11 11:03:23,masterq32,das programme speicher zwischen einzelnen instanzen teilen können
+2016-05-11 11:05:40,kevin,Ach diese automagisch zwischen allen Instanzen geteilten Daten?
+2016-05-11 11:06:06,kevin,"Oder hast du inzwischen eingesehen, dass es sinnvoller ist, wenn die Prozesse den SHM explizit zur Laufzeit aufbauen?"
+2016-05-11 11:07:59,darklink,kevin: und bei malloc(4097);?
+2016-05-11 11:09:15,kevin,darklink: Werden 4104 Bytes vom Heap alloziert (und noch ein bisschen mehr wird für Metadaten verbraucht)
+2016-05-11 11:09:23,masterq32,"ne, immer noch automatisch :D"
+2016-05-11 11:09:29,darklink,OK
+2016-05-11 11:09:54,masterq32,ich finde das (noch) gut
+2016-05-11 11:10:00,kevin,"Angenommen, dein malloc() hat grad gar keinen freien Speicher im Heap mehr, wenn du das malloc() machst"
+2016-05-11 11:10:21,kevin,"Dann geht das malloc() zum VMM und verlangt mindestens zwei Pages, tendenziell eher mehr"
+2016-05-11 11:10:35,kevin,Und der Rest der zweiten Page wird halt beim nächsten malloc() mitbenutzt
+2016-05-11 11:10:38,darklink,"also ich plane, dass VMM_2 zum user exportiert wird, während VMM nur vom kernel verwendet wird"
+2016-05-11 11:11:33,darklink,OK
+2016-05-11 11:12:31,darklink,die metadaten speicher ich in dem mehrfachpointer
+2016-05-11 11:13:46,darklink,"also, vier sterne sollten reichen, sofern ich die einzelnen strukturen in der größe nicht 512x so groß mache"
+2016-05-11 11:14:04,masterq32,wtf? :D
+2016-05-11 11:14:53,darklink,das mache ich also genauso wie mit PMM_2
+2016-05-11 11:17:23,darklink,vielleicht sollte ich dann die größe auf 16 bytes verdoppeln
+2016-05-11 11:17:42,darklink,dann kommt da auch noch PID und flags rein
+2016-05-11 11:20:27,darklink,YUV420p zu RGB24
+2016-05-11 11:20:43,darklink,warum nutzt jpeg YUV?
+2016-05-11 11:21:01,kevin,"Ich verstehe immer noch nicht, was du mit einem Vierfachpointer willst"
+2016-05-11 11:22:47,kevin,Hm... Soll das etwa ein auf Höhe vier festgelegter B-Tree sein? :-)
+2016-05-11 11:27:58,darklink,Nein
+2016-05-11 11:28:19,darklink,es soll eine fragmentierte tabelle sein
+2016-05-11 11:28:46,masterq32,kevin: warum genau ist SHM blöd? :D
+2016-05-11 11:29:02,kevin,"masterq32: Ich habe nie gesagt, dass SHM blöd ist"
+2016-05-11 11:29:05,masterq32,:D
+2016-05-11 11:29:11,masterq32,also meine lösung :D
+2016-05-11 11:29:20,kevin,"Ich habe gesagt, dass SHM, das automatisch aufgesetzt wird, nur weil zweimal dieselbe Binary beteiligt ist, Blödsinn ist"
+2016-05-11 11:29:29,darklink,zu pfingsten soll es kälter als zu weihnachten werden
+2016-05-11 11:29:38,kevin,Weil diese zwei Aufrufe überhaupt nichts miteinander zu tun haben müssen
+2016-05-11 11:29:55,masterq32,"ja, das ist ja auch nicht zwingendermaßen"
+2016-05-11 11:30:05,masterq32,es gibt auch klassische shm und ipc sachen
+2016-05-11 11:30:47,kevin,"Ich sage mal voraus, dass du am Ende nur die klassischen benutzt ;-)"
+2016-05-11 11:31:13,kevin,"Oder vielleicht aus Trotz deine speziellen an ein, zwei Stellen, wo es eigentlich keinen Sinn macht"
+2016-05-11 11:40:31,masterq32,"ich hab da schon gedanken, wo ich das verwenden werde (treiber + library für den treiber)"
+2016-05-11 11:40:37,masterq32,beispiel keyboard:
+2016-05-11 11:40:52,masterq32,der keyboard-treiber speichert alle erkannten scancodes in einen ringpuffer
+2016-05-11 11:41:08,masterq32,und die treiberlibrary kann dann eben auf diesen ringpuffer zugreifen
+2016-05-11 11:41:39,masterq32,gleiches gilt für den grafischen Videotreiber usw
+2016-05-11 11:44:28,darklink,ffmpeg ist keine gute idee aufm handy
+2016-05-11 11:45:31,kevin,masterq32: Wieso hast du zwei Keyboardtreiber laufen?
+2016-05-11 11:45:43,masterq32,hab ich nicht :D
+2016-05-11 11:45:55,masterq32,"aber dazu fehlt dir noch wissen, damit das ganze sinn macht :D"
+2016-05-11 11:45:58,kevin,"Dann ist das doch nicht das automatische Setup, das du erwähnt hast?"
+2016-05-11 11:46:01,masterq32,doch :D
+2016-05-11 11:47:09,masterq32,denn:
+2016-05-11 11:47:19,masterq32,"mein betriebssystem kennt nur ""artefakte"""
+2016-05-11 11:47:27,darklink,"mein keyboardtreiber funktioniert, außer capslock"
+2016-05-11 11:47:33,masterq32,wer braucht shcon caps lock?
+2016-05-11 11:47:47,masterq32,"ein artefakt ist eine mischung aus executable und shared library, kann also auch von anderen programmen eingebunden werden"
+2016-05-11 11:47:48,darklink,ICH BRAUCHE CAPSLOCK
+2016-05-11 11:48:05,darklink,rundll32.exe
+2016-05-11 11:48:25,masterq32,:D
+2016-05-11 11:49:53,mgottschlag,"""<darklink> warum nutzt jpeg YUV?"" - weil man die einzelnen Komponenten sehr gut unabhängig voneinander komprimieren kann"
+2016-05-11 11:50:03,darklink,ja gut
+2016-05-11 11:50:15,mgottschlag,"z.B. können U und V einfach in niedrigerer Auflösung (oder mit höherem Komprimierungsgrad) gespeichert werden, ohne dass das Auge das mitbekommt"
+2016-05-11 11:50:45,darklink,"Ist halt blöd auf nem monitor mit RGB, muss erst konvertiert werden"
+2016-05-11 11:50:57,masterq32,yep
+2016-05-11 11:56:11,darklink,Na ich hoffe die nachbarn haben das paket angenommen
+2016-05-11 12:02:46,masterq32,"ich bin gespannt, wie viel aufwand es wird, TinyGL auf meinem OS zum laufen zu bekommen"
+2016-05-11 12:03:18,darklink,^^
+2016-05-11 12:03:53,darklink,hast du überhaupt schon nen VESA treiber?
+2016-05-11 12:05:01,masterq33,"ich hatte mal das schöne file von mgottschlag, das ich auch irgendwann mal wieder bräuchte, ich habs verlegt *schäm* "
+2016-05-11 12:05:12,masterq33,"und nein, ich werde VGA supporten, nicht vesa :D"
+2016-05-11 12:05:23,masterq33,"aber mein ziel ist es, eine OpenGL-Cubes-Demo am laufen zu haben"
+2016-05-11 12:07:14,darklink,Test?/
+2016-05-11 12:07:42,masterq32,test bestätigt
+2016-05-11 12:07:52,darklink,warum ist vor Tangerhütte kein netz?
+2016-05-11 12:07:55,darklink,lol
+2016-05-11 12:10:27,darklink,Die zugsteckdosen liefern nur 0.6A? Das ist wenig
+2016-05-11 12:16:17,masterq32,mahlzeit!
+2016-05-11 12:26:36,mgottschlag,"masterq32: erinner mich nochmal heute Abend oder so, ich hab gerade keine Zeit zum suchen :)"
+2016-05-11 12:54:09,darklink,"Oh toll, das paket ist mal wieder nen kilometer weit von mir weg, in hausnummer 1"
+2016-05-11 13:03:31,masterq32,jou mach ich
+2016-05-11 14:05:17,darklink,sudo mount /dev/sdb1 /boot && sudo pacman -Syu
+2016-05-11 14:07:12,darklink,Ups
+2016-05-11 14:07:16,kevin,Password for darklink:
+2016-05-11 14:07:29,darklink,1234
+2016-05-11 14:07:49,kevin,"Sorry, try again."
+2016-05-11 14:08:02,darklink,qwertzuiopü
+2016-05-11 14:09:17,kevin,"Ts, als ob sich mein sudo veräppeln ließe!"
+2016-05-11 14:09:49,masterq32,drowssap
+2016-05-11 14:10:19,darklink,dritterjuni2009
+2016-05-11 14:10:38,kevin,Sieht fast schon beängstigend plausibel aus ;-)
+2016-05-11 14:11:41,darklink,Allerdings nehme ich immer modellnummern oder lizensschlüssel
+2016-05-11 14:11:55,masterq32,ich hab mich für code entschieden :D
+2016-05-11 14:12:39,darklink,für einige zeit hatte ich LEH28478860-1 als passwort
+2016-05-11 14:12:46,kevin,Ein Hello-World-Programm als Passwort?
+2016-05-11 14:13:12,masterq32,:D
+2016-05-11 14:13:21,kevin,Am besten in Perl geschrieben
+2016-05-11 14:13:25,masterq32,"int main() { printf(""Hello World!\n""); return 0; }"
+2016-05-11 14:13:44,kevin,main(void) bitte
+2016-05-11 14:13:50,masterq32,okay .D
+2016-05-11 14:13:51,masterq32,das erfüllt alle passwort-anforderungen die ich kenne
+2016-05-11 14:14:03,XanClic,Dafür kann man ja das return 0; weglassen
+2016-05-11 14:14:06,kevin,"Auch ""nur Buchstaben und Zahlen erlaubt""? ;-)"
+2016-05-11 14:14:22,XanClic,Ich hatte mal „Chateau Disaster 000550899-XK/0“
+2016-05-11 14:14:29,darklink,"main, hello, world und return sind aber ih wörterbüchern"
+2016-05-11 14:14:33,masterq32,hm :D
+2016-05-11 14:15:11,kevin,"darklink: Ich glaube, das hilft in diesem Fall auch nicht viel"
+2016-05-11 14:16:10,darklink,AK1T-E6BA-TPDH-R6YQ-A9QX ist auch ein ehemaliges passwort
+2016-05-11 14:16:15,kevin,"Aber man kann natürlich schön týndur-konform auch ""Halló heimur"" ausgeben, dann müsste das Wörterbuch schon eher umfangreich sein, um das noch abzudecken"
+2016-05-11 14:16:36,darklink,kam von nem google play aufladecodr
+2016-05-11 14:17:07,kevin,Findest du das merkbar?
+2016-05-11 14:17:16,darklink,Ja
+2016-05-11 14:17:53,darklink,ich habe ja die karte nicht mehr und benutze auch das passwort seit nem monat oder so nicht mehr
+2016-05-11 14:23:07,masterq32,m
+2016-05-11 14:23:14,masterq32,ich kenn auch meinen alten XP-Key auswändig
+2016-05-11 14:23:19,masterq32,was viel über das betriebssystem aussagt
+2016-05-11 14:24:58,darklink,Ja
+2016-05-11 14:27:36,darklink,Hatte xp auch seitdem es draußen ist
+2016-05-11 14:28:29,darklink,Jetzt gehts weiter mit der PMM!
+2016-05-11 14:29:41,Jonathan,Moin :)
+2016-05-11 14:29:45,masterq32,huhu
+2016-05-11 14:29:48,Jonathan,Hat jemand von euch schon mal einen Linker geschrieben? kevin vielleicht? *g*
+2016-05-11 14:30:10,kevin,"Ihr traut mir auch jede Schweinerei zu, oder? ;-)"
+2016-05-11 14:30:25,Jonathan,Sicher ;)
+2016-05-11 14:30:33,Jonathan,"Moment, war das nicht eigentlich meine Aufgabe? *g*"
+2016-05-11 14:30:37,kevin,"Ne, hab ich noch nicht, obwohl Shared Libs in tyndur mal eine nette Sache wären (okay, ist kein kompletter Linker, aber trotzdem...)"
+2016-05-11 14:31:19,Jonathan,"Joa... Aber ein einfacher, kleiner Linker ohne allzu viele Features ist sicher nicht so schwer"
+2016-05-11 14:31:25,mgottschlag,"ich hab mal einen Assembler geschrieben, der je nach Distanz des Symbols eine andere Instruktion verwendet hat, aber das wars bis jetzt."
+2016-05-11 14:31:46,Jonathan,Hmmm ;)
+2016-05-11 14:32:02,Jonathan,Bzw. anders gefragt:
+2016-05-11 14:32:08,XanClic,"Ich hab einen Relocatable-Lader geschrieben, und das wars bei mir"
+2016-05-11 14:32:24,Jonathan,"Bin ich nur zu blöd, oder finde ich die Dokumentation zum OMF-Format (.obj) nirgends?"
+2016-05-11 14:33:00,mgottschlag,im Zweifelsfall ist menschliche Dummheit immer die richtige Erklärung.
+2016-05-11 14:33:13,XanClic,Kaputtheit des Formats zählt manchmal auch
+2016-05-11 14:33:28,masterq32,@jonathan: http://bellard.org/tcc/ vielleicht hilft dir der source hier
+2016-05-11 14:33:41,masterq32,um einen linker zu bauen :D
+2016-05-11 14:33:52,mgottschlag,"hm, interessant, ich dachte, .obj wäre immer COFF"
+2016-05-11 14:34:08,masterq32,falls der überhaupt oss sit :D
+2016-05-11 14:34:27,mgottschlag,Jonathan: http://www.azillionmonkeys.com/qed/Omfg.pdf
+2016-05-11 14:34:39,mgottschlag,omfg.pdf ftw
+2016-05-11 14:34:44,masterq32,"ja, ist er :D"
+2016-05-11 14:34:49,Jonathan,lol
+2016-05-11 14:34:56,Jonathan,Ich dachte bei dem Dateinamen erst mal an nen Troll *g*
+2016-05-11 14:34:59,masterq32,geiles file :D
+2016-05-11 14:35:00,Jonathan,Danke! :)
+2016-05-11 14:35:17,mgottschlag,"ich hab btw ""Intel Object Module Format"" gegoogelt."
+2016-05-11 14:36:24,Jonathan,"Hmm, vermutlich sollte ich Google erst mal lernen. ;)"
+2016-05-11 14:36:26,mgottschlag,"http://plit.de/asem-51/omfspec.htm sieht auch nicht ganz falsch aus... aber, 1982. Hilfe."
+2016-05-11 14:36:36,Jonathan,1982 könnte hinkommen. *g*
+2016-05-11 14:36:48,Jonathan,OMF ist wohl noch älter
+2016-05-11 14:39:23,Jonathan,"""they reinstalled the server at that IP from what I assume was their most recent backup, and that's how 11 months of messages vanished out of the archive."""
+2016-05-11 14:39:24,Jonathan,lolz.
+2016-05-11 14:43:18,masterq32,huch
+2016-05-11 15:06:44,kevin,Jonathan: Doch kein 16-Bit-ELF mehr?
+2016-05-11 15:10:44,iksnagreb,moin
+2016-05-11 15:11:19,masterq32,huhu
+2016-05-11 15:21:50,masterq32,"so, ich mach feierabend"
+2016-05-11 15:24:54,Jonathan,"kevin: Naja, Open Watcom produziert mir OMF-Dateien, die will ich linken"
+2016-05-11 15:25:23,Jonathan,"Der Watcom-Linker kann nur DOS- und Win16-Executables aus 16-Bit-Code bauen, beides ist blöd"
+2016-05-11 15:25:45,Jonathan,Bei ELF mit 16-Bit-Code spuckt er nur Fehler (obwohl das gültig sein sollte)
+2016-05-11 15:26:19,Jonathan,"Der unterstützt es nicht, die 16-Bit-Adressen auf 32 Bit zu zero-extenden, obwohl das eigentlich gültiges ELF sein sollte"
+2016-05-11 15:26:39,Jonathan,ld unterstützt keine 16-Bit-Targets mehr
+2016-05-11 15:26:56,Jonathan,"Und sonst finde ich einfach keinen Linker, der das tut, was ich will :D"
+2016-05-11 15:35:45,kevin,Was ist denn das Problem mit DOS-EXEs?
+2016-05-11 15:52:46,XanClic,001 2s ...        [15:50:49] [15:50:50]
+2016-05-11 15:52:51,XanClic,eigentlich ist vmdk gar nicht mal so langsam
+2016-05-11 16:07:32,kevin,tmpfs?
+2016-05-11 16:07:37,XanClic,Klar
+2016-05-11 16:07:47,kevin,Dann flusht es wohl ein bisschen oft
+2016-05-11 16:08:03,XanClic,"Wenn ich es das auf der Festplatte laufen lasse, verliert qcow2 sowieso, wegen Test 26 ;-)"
+2016-05-11 16:08:20,kevin,"Traust du dich auch nicht, auf Deutsch in #qemu-block zu schreiben? ;-)"
+2016-05-11 16:08:28,XanClic,Du warst ja nicht in #qemu-de ;-)
+2016-05-11 16:08:59,kevin,"Ich muss in #qemu-de sein, damit du in #qemu-block schreibst? ;-)"
+2016-05-11 16:09:16,XanClic,Fang du halt an :-P
+2016-05-11 16:09:25,XanClic,"Wenn ich dem Vorbild meines Mentors folge, kann keiner meckern"
+2016-05-11 16:09:39,XanClic,Zumindest nicht über mich
+2016-05-11 16:11:35,kevin,"Klappt halt nicht so gut, wenn du den Kommentar hast ;-)"
+2016-05-11 16:14:53,XanClic,Immer diese Ausreden
+2016-05-11 19:03:52,darklink,habs jetzt
+2016-05-11 19:04:24,masterq32,aha? :D
+2016-05-11 19:04:51,darklink,Zeit für stock-fotos die im RL zu verbrennungen dritten grades führen würden :P
+2016-05-11 19:05:42,darklink,habe ich überhaupt AAA batterien?
+2016-05-11 19:41:22,Paddy,Moin
+2016-05-11 19:42:19,darklink,Jetzt wurde der geruch vom abgefackelten gummi süß
+2016-05-11 19:42:20,darklink,igitt
+2016-05-11 23:35:03,Paddy,Alles kaputt
+2016-05-11 23:35:08,Paddy,Nur falls ihr das noch nicht wusstet
+2016-05-11 23:35:33,Paddy,"Ich glaube, ich lass es für heute"

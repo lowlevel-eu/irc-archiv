@@ -1,0 +1,715 @@
+date/time,nick,message
+2012-06-24 02:30:37,DesL,moin
+2012-06-24 11:08:21,micha,Moin
+2012-06-24 11:14:00,bluecode,moin²
+2012-06-24 11:22:23,Tectu,moin³
+2012-06-24 11:22:29,Tectu,"(ja, mich gibts auch noch ;-))"
+2012-06-24 11:22:34,Tectu,"hier wie immer die üblichen verdächtigen, was"
+2012-06-24 11:32:51,micha,³√moin
+2012-06-24 12:24:31,Th3Falc0n,stultus: bist du da?
+2012-06-24 12:26:16,Th3Falc0n,hi taljeth 
+2012-06-24 12:26:51,micha,hi ŧæłŧħ
+2012-06-24 12:27:05,taljeth,Moin
+2012-06-24 12:27:14,micha,ทนรื
+2012-06-24 12:27:49,Th3Falc0n,"du kannst mir doch bestimmt helfen paging in meinen kernel einzubauen, oder? ich bin gestern dran gescheitert und zum zustand ""funktioniert ohne paging"" zurück..."
+2012-06-24 12:28:44,taljeth,Versuch dich selber durchzubeißen
+2012-06-24 12:28:51,noonex,moin^^
+2012-06-24 12:29:01,taljeth,"Paging ist elementar, das musst du verstanden haben, sonst wird alles nix"
+2012-06-24 12:29:40,micha,ich habs auch noch nicht hinbekommen^^
+2012-06-24 12:29:43,Th3Falc0n,"also was paging ist hab ich verstanden, nur ich bekomms iwie nicht hin"
+2012-06-24 12:30:07,taljeth,Letztendlich gibt es genau eine Fehlerquelle: Deine Mappings sind falsch
+2012-06-24 12:30:31,Th3Falc0n,-.-
+2012-06-24 12:30:35,Th3Falc0n,ich leg gleich erstmal git repo an
+2012-06-24 12:30:36,taljeth,"Wenn du dir die Page Faults anschaust, siehst du, welche virtuelle Adresse schuld ist"
+2012-06-24 12:30:54,taljeth,Und dann kannst du ganz konkret das Mapping für diese eine Adresse überprüfen
+2012-06-24 12:31:14,Th3Falc0n,ich geh jetzt erstmal essen
+2012-06-24 12:31:14,noonex,hat hier jemand erfahrung mit nem higher-half kernel per gdt?
+2012-06-24 12:31:16,Th3Falc0n,:)
+2012-06-24 12:31:21,noonex,:D
+2012-06-24 12:31:53,micha,bei mir kommt nie ein PageFault nur ein Reset
+2012-06-24 12:32:25,noonex,"wenn du qemu mit -d int aufrufst, kannst du das im logfile nachlesen"
+2012-06-24 12:32:56,noonex,das logfile liegt unter linux standartmäßig in /tmp/
+2012-06-24 12:33:08,taljeth,"micha: Ein Triple Fault wird - wie der Name sagt - dadurch ausgelöst, dass dreimal was schiefgeht"
+2012-06-24 12:33:12,noonex,vorausgesetzt du nutzt qemu :D
+2012-06-24 12:33:20,taljeth,micha: Das interessante ist normal der erste Fault
+2012-06-24 12:33:41,taljeth,"Und wenn dein Faulthandler es nicht abfängt, musst du halt deinen Emulator befragen, was passiert ist (siehe NoOneX)"
+2012-06-24 12:35:01,micha,der reset kommt aber erst nach der IDT
+2012-06-24 12:35:38,taljeth,Und was willst du uns damit sagen?
+2012-06-24 12:35:48,noonex,"dann hast du deine handler nicht mitgemappt, bzw. den kernel an sich nicht"
+2012-06-24 12:36:04,micha,eigentlich schon
+2012-06-24 12:36:17,taljeth,"Und ""nach der IDT"" heißt nach ihrer Initiailisierung? Weil die Lebensdauer der IDT sollte ja die gleiche wie die vom Kernel sein"
+2012-06-24 12:36:39,noonex,du kannst ja im qemu-logfile bei dem pagefault auf den eip schauen und dann mit objdump überprüfen wo und wann der pagefault auftritt
+2012-06-24 12:37:35,taljeth,Exceptions können mehr oder weniger an jeder Stelle auftreten. Gewöhn dich dran und debug es einfach.
+2012-06-24 12:38:00,taljeth,"""Kann gar nicht sein"" zu rufen löst das Problem jedenfalls nicht ;-)"
+2012-06-24 12:38:34,noonex,hat sich jemand bereits mit dem artikel auseinandergesetzt? http://wiki.osdev.org/Higher_Half_With_GDT
+2012-06-24 12:38:57,taljeth,Higher Half war mir bisher immer zu wenig Nutzen für zu viel Aufwand
+2012-06-24 12:39:19,micha,hab jetzt aber keine zeit muss jetzt gehen
+2012-06-24 12:40:01,taljeth,NoOneX: Aber hast du eine konkrete Frage dazu?
+2012-06-24 12:40:21,taljeth,Das Prinzip erscheint mir eigentlich klar genug
+2012-06-24 12:41:26,Th3Falc0n,wieder da
+2012-06-24 12:42:28,noonex,"mir eigentlich auch...aber es kann so wie es da steht nicht funktionieren, weil mit dem linker-script das dort steht der entrypoint des kernel nach 0xC0100000 gelinkt wird, und beim start durch grub versucht wird zu dieser adresse zu springen ohne vorher die gdt aufgesetzt zu haben und mit 128mb ram funktioniert es nicht ganz so gut :D"
+2012-06-24 12:43:07,taljeth,Liegt der Entrypoint nicht in .setup?
+2012-06-24 12:43:11,taljeth,Sonst macht es ja überhaupt keinen Sinn
+2012-06-24 12:43:40,noonex,ne der liegt dort in .text
+2012-06-24 12:44:14,taljeth,"Hm, aber physische Adresse wird doch mit dem AT(...) trotzdem richtig gesetzt, oder?"
+2012-06-24 12:44:37,noonex,stimmt...
+2012-06-24 12:44:55,taljeth,"Nicht, dass ich mich mit ld wirklich auskenne, aber physisch und virtuell wird jedenfals beides gespeichert und es klingt logisch, dass die Anweisung das ist"
+2012-06-24 12:45:46,noonex,readelf gibt die physische und virtuelle adresse auch richtig aus
+2012-06-24 12:46:02,taljeth,Dann wird's wohl so sein
+2012-06-24 12:46:03,noonex,"wieso versucht qemu, bzw. grub von 0xC0100000 zu starten?"
+2012-06-24 12:46:16,taljeth,Tun sie das?
+2012-06-24 12:48:05,Th3Falc0n,taljeth: ich werde jetzt nochmal versuchen paging einzubauen.
+2012-06-24 12:48:56,noonex,"jop: qemu: fatal: Trying to execute code outside RAM or ROM at 0x00000000c010392c, an der adresse liegt mein _start-label"
+2012-06-24 12:49:27,taljeth,Mit GRUB oder qemu?
+2012-06-24 12:49:33,taljeth,"Dass der qemu-Loader buggy ist, kann gut sein"
+2012-06-24 12:49:40,Th3Falc0n,NoOneX: kann es sein das qemu einfach nicht genug RAM hat?
+2012-06-24 12:49:48,taljeth,Nein.
+2012-06-24 12:49:55,Th3Falc0n,k
+2012-06-24 12:50:03,Th3Falc0n,war nur mein erster gedanke
+2012-06-24 12:52:00,noonex,"hmm, über virtualbox/grub hängt er sich einfach beim booten des kernels auf, aber es wird noch der entrypoint mit 0xc... angezeigt"
+2012-06-24 12:52:28,noonex,ich versuche es mal mit bochs
+2012-06-24 12:52:31,DesL,moin
+2012-06-24 12:53:29,Th3Falc0n,hi
+2012-06-24 12:53:35,noonex,moin
+2012-06-24 12:54:28,noonex,merkwürdig
+2012-06-24 12:55:43,noonex,bei bochs führt springt er auf jeden fall auf die richtige physische adresse
+2012-06-24 12:56:51,noonex,und resettet beim laden des datensegments...dann habe ich wohl i-was beim übersetzen von intel- nach at&t syntax falsch gemacht
+2012-06-24 12:57:12,noonex,wenigstens hab ich jetzt einen anhaltspunkt...gibt es für qemu irgendeinen bugfix?
+2012-06-24 12:58:06,noonex,"ah, ich kann dort ja auch von der iso booten :D"
+2012-06-24 13:03:40,Th3Falc0n,taljeth: wie genau soll ich das ganze jetzt mappen?
+2012-06-24 13:03:52,noonex,"oke..quellcode: mov %ax, %ds und kompiliert/objdump mov %eax, %ds"
+2012-06-24 13:04:10,Th3Falc0n,kernel + multiboot_module + videospeicher an gleiche virtuelle adresse wie physische adresse
+2012-06-24 13:04:20,noonex,jop
+2012-06-24 13:04:34,Th3Falc0n,und den programmcode z.B. ab 0x200000
+2012-06-24 13:04:53,Th3Falc0n,nach den programmcode map ich dann die dynamischen sachen? (vmm_alloc)
+2012-06-24 13:05:24,noonex,was meinst du genau mit dem programmcode?
+2012-06-24 13:06:11,Th3Falc0n,den programmcode vom task zu dem das aktuelle mapping gehört
+2012-06-24 13:07:00,noonex,du folgst dem tutorial aus der wiki oder?
+2012-06-24 13:07:08,Th3Falc0n,jo
+2012-06-24 13:07:46,noonex,"erstmal würde ich nur den kernel, multiboot und videospeicher mappen und dann schauen ob es noch funktioniert"
+2012-06-24 13:08:01,Th3Falc0n,ohne externe programme?
+2012-06-24 13:08:07,Th3Falc0n,bzw multiboot-module
+2012-06-24 13:09:13,noonex,"jo..also grundlegendes paging aufsetzen und sich um externe programme bzw. multitasking erst gedanken machen, wenn es funktioniert"
+2012-06-24 13:10:46,Th3Falc0n,ÖHM
+2012-06-24 13:10:50,Th3Falc0n,das ist seltsam
+2012-06-24 13:11:17,Th3Falc0n,"er tuts ein paar mal (ich geb abc in ner endlosschleife aus nach dem vmm_init), dann meldet er sich mit nem Page-Fault"
+2012-06-24 13:11:26,Th3Falc0n,(Exception 14 ist doch page-fault oder?)
+2012-06-24 13:11:48,noonex,jop
+2012-06-24 13:11:58,Th3Falc0n,wie kann das sein?
+2012-06-24 13:12:12,Th3Falc0n,ich mein es kann doch nicht erst funktionieren und dann nicht mehr?
+2012-06-24 13:12:34,Th3Falc0n,oder..
+2012-06-24 13:12:38,Th3Falc0n,wenn der videospeicher voll
+2012-06-24 13:12:40,Th3Falc0n,ist
+2012-06-24 13:12:45,Th3Falc0n,nach genug abc's
+2012-06-24 13:13:09,noonex,"dann schreibst du ja in speicher, der noch nicht gemappt ist"
+2012-06-24 13:14:21,noonex,also gnu-gas macht mir gerade probleme...
+2012-06-24 13:14:49,noonex,"quellcode: movw %ax, %ds"
+2012-06-24 13:15:21,noonex,"laut objdump kommt an der selben stelle aber ""mov %eax, %ds"" heraus"
+2012-06-24 13:16:37,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS
+2012-06-24 13:16:49,Th3Falc0n,könnte ja mal vllt jemand reingucken ^^
+2012-06-24 13:17:12,SHyx0rmZ,du disassemblierst auch in 16 bit?
+2012-06-24 13:17:22,SHyx0rmZ,das sind nämlich exakt die gleichen Opcodes
+2012-06-24 13:18:02,noonex,"nein :D .. habe mich gerade gewundert, als ich mir den teil zu meiner normalen gdt angeschaut habe "
+2012-06-24 13:18:18,noonex,danke..dann ist es nicht das problem
+2012-06-24 13:22:56,Th3Falc0n,"NoOneX: Exception 14 sagt mir ja den page fault, wo genau finde ich jetzt die adresse?"
+2012-06-24 13:23:05,taljeth,Im Register cr2
+2012-06-24 13:23:30,noonex,dort ist die adresse auf die versucht wurde zuzugreifen
+2012-06-24 13:24:30,noonex,wie groß ist ein dd in nasm/intel-syntax?
+2012-06-24 13:24:48,taljeth,Vier Bytes würde ich sagen
+2012-06-24 13:25:11,taljeth,"Und das ist nasm, nicht Intel, glaube ich"
+2012-06-24 13:25:22,noonex,oke danke
+2012-06-24 13:25:47,Th3Falc0n,taljeth: wie mov ich cr2 in ne variable mit gcc inline assembler?
+2012-06-24 13:26:10,noonex,"asm volatile(""mov %%cr2, %0"" : ""=r"" (cr2)); ;)"
+2012-06-24 13:26:19,Th3Falc0n,thx
+2012-06-24 13:26:31,Th3Falc0n,warum eig immer das volatile?
+2012-06-24 13:27:48,noonex,"wenn ich mich recht erinnere, damit der compiler da nichts wegoptimiert"
+2012-06-24 13:28:28,Th3Falc0n,öhm cr2: 0x0
+2012-06-24 13:28:36,noonex,:D
+2012-06-24 13:29:07,Th3Falc0n,hmm pmm_alloc...
+2012-06-24 13:29:08,taljeth,"Ja, dann solltest du NULL wohl nicht dereferenzieren"
+2012-06-24 13:29:26,taljeth,Oder liegt das irgendwas nützliches bei dir? Vielleicht die Bitmap?
+2012-06-24 13:29:55,taljeth,"Th3Falc0n: Du kannst auch eip noch anschauen, dann weißt du, welcher Code darauf zugreifen will"
+2012-06-24 13:29:58,Th3Falc0n,bei 0x00 liegt ein vom pmm_alloc allozierter speicherbereich
+2012-06-24 13:30:07,Th3Falc0n,und zwar
+2012-06-24 13:30:20,Th3Falc0n,der buffer für den keyboard driver wenn ich mich nicht irre
+2012-06-24 13:30:44,noonex,"wenn du paging aufgesetzt hast, musst du vmm_alloc benutzen"
+2012-06-24 13:31:01,taljeth,"Es gibt keinen Grund, den Tastaturtreiber vor Paging zu initialisieren"
+2012-06-24 13:31:11,Th3Falc0n,das tue ich aber leider
+2012-06-24 13:31:17,taljeth,Dann änder es
+2012-06-24 13:31:23,Th3Falc0n,init_drivers ist die letzte funktion vorm paging
+2012-06-24 13:31:24,taljeth,Du könntest natürlich auch manuell mappen
+2012-06-24 13:31:43,taljeth,"Aber langfristig gesehen bringt dir das nur Ärger, wenn du viel machst, bevor du Paging anschaltest"
+2012-06-24 13:32:16,Th3Falc0n,naja
+2012-06-24 13:32:18,Th3Falc0n,es liegt nicht am tastaturtreiber
+2012-06-24 13:32:32,Th3Falc0n,ich hab gerade gesehen das der nicht benutzt wird weil ichs auskommentiert hatte
+2012-06-24 13:32:39,Th3Falc0n,also das speichern in den puffer
+2012-06-24 13:33:30,taljeth,Und das Auslesen des Puffers?
+2012-06-24 13:33:43,taljeth,"Aber wie gesagt, schau eip an, das erspart dir viel Raterei"
+2012-06-24 13:33:50,noonex,http://mibpaste.com/4vgvzF : ist das in so weit richtig übersetzt .. langsam verzeifle ich hier :D
+2012-06-24 13:34:43,Th3Falc0n,der puffer wird nie ausgelesen
+2012-06-24 13:34:45,noonex,ups habe das .section bei gas nicht mitkopiert
+2012-06-24 13:34:49,Th3Falc0n,eip = 1006c8
+2012-06-24 13:34:57,Th3Falc0n,wie finde ich heraus welcher c-code das ist?
+2012-06-24 13:35:26,noonex,"über objdump -dS kernel, du musst deinen kernel aber mit den -g flag bei gcc kompilieren"
+2012-06-24 13:35:28,taljeth,Den Kernel disassemblieren
+2012-06-24 13:35:57,taljeth,"Wird in Teil 3 vom Tutorial erklärt, glaube ich"
+2012-06-24 13:36:37,Th3Falc0n,-g ist drin
+2012-06-24 13:37:18,Th3Falc0n,so
+2012-06-24 13:37:20,Th3Falc0n,hab den objdump
+2012-06-24 13:37:47,taljeth,Dann suchst du dort nach der Adresse
+2012-06-24 13:37:53,Th3Falc0n,und der fehler liegt darin
+2012-06-24 13:38:03,Th3Falc0n,dass der scheduler versucht auf den task bei 0x00 zu wechseln
+2012-06-24 13:38:21,Th3Falc0n,der wie ihr wahrscheinlich vermutet nicht existiert
+2012-06-24 13:38:28,Th3Falc0n,^^
+2012-06-24 13:38:41,noonex,"dann hast du den speicher für den task wohl mit pmm_alloc geholt, aber nicht gemappt"
+2012-06-24 13:38:52,Th3Falc0n,es existiert einfach kein task
+2012-06-24 13:38:59,taljeth,"Siehst du, so einfach ist es. Einfach mal die Fehlermeldung anschauen, dann brauchst du uns nicht zu fragen. ;-)"
+2012-06-24 13:39:02,Th3Falc0n,und deswegen gibt er nen nullpointer zurück
+2012-06-24 13:39:32,Th3Falc0n,und der interrupt handler versucht von nullpointer aus den cpu_state zu rekonstruieren
+2012-06-24 13:39:59,bluecode,neeeeeeeeeeeeiiiiiiiiiinnnnnnnnnnnnnnn!
+2012-06-24 13:40:04,bluecode,nicht der null-pointer!?
+2012-06-24 13:40:32,Th3Falc0n,was wo?
+2012-06-24 13:41:46,bluecode,exactly
+2012-06-24 14:00:37,Th3Falc0n,ich weiss wo mein fehler liegt...
+2012-06-24 14:00:43,Th3Falc0n,glaub ich
+2012-06-24 14:00:51,Th3Falc0n,aber ich weiss nicht wie ichs lösen soll
+2012-06-24 14:02:20,bluecode,dann erklär mal
+2012-06-24 14:02:22,Th3Falc0n,taljeth: könntest du einmal gucken ob mein vmm_alloc prinzipiell richtig ist?
+2012-06-24 14:02:43,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS/blob/master/kernel/os/vmm.c
+2012-06-24 14:02:50,Th3Falc0n,code ^^
+2012-06-24 14:04:19,bluecode,"ui schick, ich als programmierer hätte ja sowas von lust jedesmal den rückgabewert von vmm_map_page zu überprüfen"
+2012-06-24 14:04:38,taljeth,"Th3Falc0n: Ich dachte, du weißt schon, wo der Fehler liegt?"
+2012-06-24 14:04:52,taljeth,"Wieso sollte ich Lust haben, Code zu prüfen, von dem du schon weißt, dass er kaput ist?"
+2012-06-24 14:05:10,Th3Falc0n,das ist nicht der kaputte code
+2012-06-24 14:05:16,Th3Falc0n,der kaputte code ist der der vmm_alloc NICHT benutzt ...
+2012-06-24 14:05:22,Th3Falc0n,sondern pmm_alloc
+2012-06-24 14:05:31,Th3Falc0n,aber ich wollte wissen ob mein vmm_alloc stimmt bevors ichs nehm
+2012-06-24 14:07:57,bluecode,"taljeth, verifying your code since 2006"
+2012-06-24 14:08:43,taljeth,"Th3Falc0n: Probier es, dann siehst du es"
+2012-06-24 14:08:56,Th3Falc0n,werd ich gleich machen
+2012-06-24 14:08:58,taljeth,Ich kann nicht jeden Kernel von vorne bis hinten reviewen
+2012-06-24 14:09:01,Th3Falc0n,ich gönn mir erstmal ne runde minecraft...
+2012-06-24 14:23:53,SHyx0rmZ,"taljeths Kernel-Review-Magazin, das wär doch mal ne Idee *g*"
+2012-06-24 14:24:36,Darkchaos,Kennt sich wer von euch nen bisschen mit After Effects aus?
+2012-06-24 14:27:33,bluecode,was soll denn das sein SHyx0rmZ?
+2012-06-24 14:28:14,SHyx0rmZ,die Redaktion berät noch über das Format ^^
+2012-06-24 14:39:42,taljeth,"SHyx0rmZ: Ich glaube, da käme ein unerträgliches Geläster dabei raus. Lieber nicht. ;-)"
+2012-06-24 14:39:54,SHyx0rmZ,*g*
+2012-06-24 14:40:36,bluecode,wenn ihr Tanenbaum noch anheuern könnt bestimmt
+2012-06-24 14:41:38,taljeth,ehenkes sollte es doch tun als Ersatz
+2012-06-24 14:42:03,taljeth,Und Toaster wäre natürlich noch toll ;-)
+2012-06-24 14:44:16,Th3Falc0n,taljeth: ich bin zu dumm dazu
+2012-06-24 14:44:47,Th3Falc0n,oder
+2012-06-24 14:44:49,Th3Falc0n,vllt sollte ich auch
+2012-06-24 14:44:50,Th3Falc0n,... wrate
+2012-06-24 14:46:58,Th3Falc0n,ich muss im aktuellen context doch auch immer den aktuellen context mappen oder?
+2012-06-24 14:47:14,bluecode,wär gut
+2012-06-24 14:48:02,bluecode,"(streng genommen musst du nicht, du kannst auch zu nem anderen kontext zuerst wechseln dann dort die änderungen an den betreffenden pagetables machen und zurück wechseln, ist aber performance-wise keine tolle idee)"
+2012-06-24 15:09:38,Th3Falc0n,könnte vllt jemand mal in den code gucken?
+2012-06-24 15:10:02,Th3Falc0n,inzwischen bin ich soweit dass er code außerhalb des RAM ausführen will...
+2012-06-24 15:11:27,Th3Falc0n,"bluecode, taljeth ?"
+2012-06-24 15:18:49,Th3Falc0n,SHyx0rmZ: ß
+2012-06-24 15:18:52,Th3Falc0n,*?
+2012-06-24 15:20:32,Th3Falc0n,NoOneX: ?
+2012-06-24 15:21:18,SHyx0rmZ,dann fehlt da wohl ein jmp .
+2012-06-24 15:21:27,SHyx0rmZ,bzw ein while(1);
+2012-06-24 15:22:37,Th3Falc0n,"öhm ja fehlte, aber es hat das problem nicht gelöst"
+2012-06-24 15:26:52,Th3Falc0n,SHyx0rmZ: Exception 13 war was?
+2012-06-24 15:28:52,Th3Falc0n,protection fault...
+2012-06-24 15:47:48,SHyx0rmZ,"sry, ich räum grad die Bude auf ^^"
+2012-06-24 15:48:22,bluecode,klausurzeit?
+2012-06-24 15:48:33,bluecode,oder wirds beim gameprojekt eng?
+2012-06-24 15:48:34,bluecode,*g*
+2012-06-24 15:49:43,SHyx0rmZ,ersteres gibt's bei uns ja nicht *g*
+2012-06-24 15:49:52,SHyx0rmZ,"ne, gestern meine Kommilitonen hier gehabt ;-)"
+2012-06-24 15:50:07,SHyx0rmZ,"also, heute auch noch ^^"
+2012-06-24 15:50:12,bluecode,monumentales Besäufnis?
+2012-06-24 15:50:17,SHyx0rmZ,nicht wirklich
+2012-06-24 15:50:25,SHyx0rmZ,eher wieder monumentales Bezocknis
+2012-06-24 15:51:33,SHyx0rmZ,"dann geh ich mal Müll und Leergut entsorgen, dann hab ich das Aufräumen nämlich auch hinter mir"
+2012-06-24 15:53:13,taljeth,"Ah, war das dein sogenannter Minihackathon? ;-)"
+2012-06-24 16:04:33,SHyx0rmZ,von Freitag auf Samstag schon
+2012-06-24 16:05:00,SHyx0rmZ,"Samstag kam dann Personalnachschub und dann haben wir einfach nur mal wieder ""studiert"" ^^"
+2012-06-24 16:07:22,DesL,"lol, heute wäre ne ein schulweitest fusball turnier gewesen, wir 13er sind geschlossen nicht angetreten - zurecht, am tag nach dem abiball ist pause angesagt :D"
+2012-06-24 16:07:23,taljeth,"Ah, ja *g*"
+2012-06-24 16:07:49,taljeth,"DesL: Hm, ist das nicht wie Pause?"
+2012-06-24 16:07:59,SHyx0rmZ,Nach dem Abiball ist man doch eh von der Schule runter :D
+2012-06-24 16:08:00,DesL,fussball turnier? wieso das?
+2012-06-24 16:08:08,taljeth,Ist jedenfalls kein Unterricht
+2012-06-24 16:08:30,DesL,"SHyx0rmZ: das ja auch, aber in erster linie sind die meisten ziemlich am boden"
+2012-06-24 16:08:38,SHyx0rmZ,^^
+2012-06-24 16:10:07,taljeth,Selber schuld? ;-)
+2012-06-24 16:10:20,DesL,ja und? wir hatten spass dabei :D
+2012-06-24 16:10:44,taljeth,Jeder wie er's braucht
+2012-06-24 16:11:27,taljeth,SHyx0rmZ: Was habt ihr denn gehackathont?
+2012-06-24 16:12:21,SHyx0rmZ,theoretisch hätten wir den Leveleditor für unser 2D-Projekt fertigstellen sollen
+2012-06-24 16:14:05,taljeth,Und praktisch?
+2012-06-24 16:15:06,SHyx0rmZ,"naja, praktisch haben wir nur die ganzen Planungen auf Papier und dann doch lieber gezockt *g*"
+2012-06-24 16:15:38,SHyx0rmZ,"Donnerstag hatten wir ja Zwischenpräsentation, da war schon ein wenig Stress angesagt, da waren die drei Tage jetzt doch ganz nett"
+2012-06-24 16:15:50,SHyx0rmZ,"aber jetzt hab ich auch Lust, das gleich eben runterzuprogrammieren"
+2012-06-24 16:16:01,taljeth,"Hm, also ist der Unterschied zwischen Freitag und Samstag auch eher theoretischer Natur gewesen, oder? ;-)"
+2012-06-24 16:16:16,SHyx0rmZ,PC vs. Konsole *g*
+2012-06-24 16:16:20,taljeth,*lol*
+2012-06-24 17:25:33,micha,Moin
+2012-06-24 17:28:58,micha,hat eig. jemand Erfahrung mit HTML5?
+2012-06-24 17:29:42,SHyx0rmZ,ja
+2012-06-24 17:30:31,micha,was gibts denn da neues?
+2012-06-24 17:32:26,taljeth,http://de.wikipedia.org/wiki/HTML5
+2012-06-24 17:32:42,micha,"<video>, <details> fällt mir gard ein mehr nicht"
+2012-06-24 17:33:11,noonex,ist <canvas> nicht auch neu?
+2012-06-24 17:33:22,micha,glaub schon
+2012-06-24 17:33:44,SHyx0rmZ,<article><section><footer>...
+2012-06-24 17:33:53,SHyx0rmZ,"viel Zeug, um's besser sinnvoll parsen zu können"
+2012-06-24 17:34:11,SHyx0rmZ,ansonsten ist das hier wirklich der falsche Channel ^^
+2012-06-24 18:38:52,micha,"taljeth, in welchem kontext soll denn vmm_alloc den Speicher mappen?"
+2012-06-24 18:39:02,taljeth,In den richtigen
+2012-06-24 18:39:23,Th3Falc0n,lol
+2012-06-24 18:39:26,SHyx0rmZ,genauer lesen ;-)
+2012-06-24 18:39:34,SHyx0rmZ,m != n
+2012-06-24 18:39:45,micha,und woher weiß ich welcher der richtige ist?
+2012-06-24 18:39:48,Th3Falc0n,micha: auch am paging am verzweifeln am tuen?
+2012-06-24 18:40:06,SHyx0rmZ,"Th3Falc0n, du bist Rheinländer, oder? *g*"
+2012-06-24 18:40:19,Th3Falc0n,ruhrpott
+2012-06-24 18:40:35,taljeth,Halbe Holländer dürfen das
+2012-06-24 18:40:45,Th3Falc0n,^^
+2012-06-24 18:42:23,Th3Falc0n,taljeth: mein kernel hängt sich mit ner exception 13 auf
+2012-06-24 18:42:40,SHyx0rmZ,meinte ich eigentlich auch ^^'
+2012-06-24 18:45:14,micha,und vmm_alloc mappt die virtuelle addr. an die phys. addr.?
+2012-06-24 18:45:44,micha,ich meine sind phys. und virt. gleich?
+2012-06-24 18:45:53,Th3Falc0n,nicht zwingend
+2012-06-24 18:46:31,micha,und welche addr. nimmt dann vmm_alloc()?
+2012-06-24 18:46:32,Th3Falc0n,es geht ja darum dehm programm virtuell immer nen speicher bei 0x200000 zu geben z.B. obwohl der physisch bei 0x3f9000 steht
+2012-06-24 18:47:17,Th3Falc0n,vmm_alloc nimmt ne physische adresse aus pmm_alloc und mappt sie. wohin ist dabei dir überlassen
+2012-06-24 18:47:32,Th3Falc0n,taljeth: ist doch richtig so oder?
+2012-06-24 18:47:39,bluecode,"yay, paging!"
+2012-06-24 18:47:41,taljeth,Jo
+2012-06-24 18:47:50,micha,pseudo-zufallsfunktion?
+2012-06-24 18:47:57,Th3Falc0n,nö
+2012-06-24 18:48:02,taljeth,Wenn du das für sinnvoll hältst
+2012-06-24 18:48:10,taljeth,Die meisten anderen nehmen einfach die erstbeste freie Adresse
+2012-06-24 18:48:11,micha,funktionsparameter?
+2012-06-24 18:48:30,Th3Falc0n,"ich hab mir vorgenommen den kernel zu mappen, das programm ab 0x200000 und dahinter den dynamischen alloc"
+2012-06-24 18:49:10,Th3Falc0n,"wobei ich das so gelöst hab, dass ich nen pointer auf die nächste vmm_alloc adresse hab, und bei jeden alloc wird der um 0x1000 erhöht"
+2012-06-24 18:49:18,taljeth,2 MB für den Kernel finde ich knapp
+2012-06-24 18:49:23,Th3Falc0n,somit kann ich den auf 0x200000 setzen und dann den speicher für das programm allozieren
+2012-06-24 18:49:35,Th3Falc0n,taljeth: soll ja auch erstmal nur funktionieren
+2012-06-24 18:49:47,taljeth,Ok
+2012-06-24 18:49:53,Th3Falc0n,außerdem les ich die programm adresse eh aus der elf
+2012-06-24 18:49:57,Th3Falc0n,(ich weiss unsicher)
+2012-06-24 18:50:21,taljeth,"Hab ich übrigens schonmal erwähnt, dass die tui-Unit von tyndur ziemlicher Mist ist?"
+2012-06-24 18:50:45,taljeth,"Jetzt habe ich so viel Zeit damit verbracht, die DHCP-Option ins Formular einzubauen, dass ich für die Implementierung keine Lust mehr habe *g*"
+2012-06-24 18:50:52,SHyx0rmZ,*g*
+2012-06-24 18:50:58,Th3Falc0n,hab ich erwähnt dass sich mein kernel bei   100415:	cf                   	iret   mit nem protection fault verabschiedet
+2012-06-24 18:51:04,Th3Falc0n,(nach dem laden des programms...)
+2012-06-24 18:51:08,taljeth,Dann fix ihn
+2012-06-24 18:51:18,Th3Falc0n,ich glaub vmm_alloc mappt alles auf nicht user
+2012-06-24 18:51:27,SHyx0rmZ,"bah, jetzt denk ich wieder über YAML und Codegeneration nach, danke >_<"
+2012-06-24 18:51:36,taljeth,Hm?
+2012-06-24 18:51:41,bluecode,YAML?
+2012-06-24 18:51:53,Th3Falc0n,Yet another markup language ^^
+2012-06-24 18:52:05,bluecode,"uh, webstuff"
+2012-06-24 18:52:13,SHyx0rmZ,ne
+2012-06-24 18:52:16,SHyx0rmZ,ähnlich JSON
+2012-06-24 18:52:24,Th3Falc0n,hauptsächlich als konfigurationsspeicher
+2012-06-24 18:52:26,SHyx0rmZ,eher generell für's Speichern von Daten
+2012-06-24 18:52:39,bluecode,warum nicht xml?
+2012-06-24 18:52:41,taljeth,Und wie haben wir dich darauf gebracht?
+2012-06-24 18:52:44,SHyx0rmZ,weil das doof ist ^^
+2012-06-24 18:52:45,taljeth,Weil XML bäh ist
+2012-06-24 18:52:48,Th3Falc0n,bluecode: wollt ich gerade schreiben
+2012-06-24 18:52:57,SHyx0rmZ,"weil du dich beschwert hast, dass das Interface zu lang braucht"
+2012-06-24 18:53:02,Th3Falc0n,aber YAML und JSON sind besser lesbar
+2012-06-24 18:53:10,SHyx0rmZ,"also könnte man das ja einfach in YAML zurechtdefinieren, dachte ich mir *g*"
+2012-06-24 18:53:29,bluecode,und was soll da für code generiert werden?
+2012-06-24 18:53:47,taljeth,"Der TUI-Setupcode, nehme ich an"
+2012-06-24 18:53:57,SHyx0rmZ,ich auch ^^
+2012-06-24 18:54:03,Th3Falc0n,"yaml ist doch nur ""fensterxyz"": { X: 15, Y: 25, W: 250, H:100 } :D"
+2012-06-24 18:54:07,taljeth,"Also Generator nimmt YAML-Beschreibung und spuckt Pascalcode aus, der die ganzen TUI-Objekte erzeugt"
+2012-06-24 18:54:13,bluecode,ah
+2012-06-24 18:54:23,SHyx0rmZ,"zumal YAML das Problem von JSON nicht hat, nicht alles abbilden zu können"
+2012-06-24 18:54:31,Th3Falc0n,?
+2012-06-24 18:54:31,bluecode,wind00fs XAML hat mich schon angekotzt
+2012-06-24 18:54:49,taljeth,SHyx0rmZ: Was meinst du damit genau?
+2012-06-24 18:54:59,Th3Falc0n,wüsste ich auch gerne
+2012-06-24 18:55:00,taljeth,"Ich kenne YAML nicht, nur JSON so einigermaßen"
+2012-06-24 18:55:06,SHyx0rmZ,"naja, versuch mal in JSON Referenzen gescheit zu machen"
+2012-06-24 18:55:22,SHyx0rmZ,oder Pointer
+2012-06-24 18:55:39,taljeth,"Naja, sind halt am Ende Strings mit Namen eines anderen Objekts..."
+2012-06-24 18:55:58,Th3Falc0n,jo und die müssen softwareseitig implementiert werden
+2012-06-24 18:56:00,SHyx0rmZ,in YAML kann man halt einfach ne Referenz auf ein anderes Objekt setzen
+2012-06-24 18:56:09,Th3Falc0n,aber das ist ja auch nicht der sinn von JSOM und YAML
+2012-06-24 18:56:13,taljeth,"(Meine Vorstellung von JSON ist übrigens entscheidend durch QMP geprägt, falls das irgendwelche Einschränkungen bedeutet ;-))"
+2012-06-24 18:56:40,Th3Falc0n,JSON ist für webanfragen und YAML als konfigurationsspeicher gedacht
+2012-06-24 18:56:55,SHyx0rmZ,so kann man das zusammenfassen
+2012-06-24 18:57:47,taljeth,"Und wo ist der Unterschied zwischen diesen Anwendungsfällen, wenn ich mal ganz blöd fragen darf?"
+2012-06-24 18:58:06,Th3Falc0n,fürs web galt die anforderung gültigen javascript code zu senden
+2012-06-24 18:58:27,Th3Falc0n,um den clientanwendungen keine neuen programme aufzuzwingen
+2012-06-24 18:58:44,taljeth,"Naja, das ist mir letztendlich wurscht, wenn ich es in anderem Kontext benutze"
+2012-06-24 18:58:50,taljeth,"Kann trotzdem gut sein, obwohl JS es parsen könnte"
+2012-06-24 18:59:19,Th3Falc0n,"nur json wurde speziell dafür entwickelt, yaml nicht"
+2012-06-24 18:59:33,Th3Falc0n,"		vmm_map_page(context, context->alloc_offset, (uintptr_t) pmm_alloc(), PTE_PRESENT | PTE_WRITE | PTE_USER); << FUCK"
+2012-06-24 18:59:49,SHyx0rmZ,"naja, wichtig ist eh nur, dass beide für Menschen geschaffen wurden"
+2012-06-24 19:00:14,taljeth,JSON zu tippen kann ganz schön mühsam sein
+2012-06-24 19:00:22,Th3Falc0n,warum können prozessoren nicht über JSON gesteuert werden
+2012-06-24 19:00:27,Th3Falc0n,das wär so viel lesbarer ^^
+2012-06-24 19:00:41,taljeth,Können sie doch mehr oder weniger in qemu *g*
+2012-06-24 19:00:42,SHyx0rmZ,das wäre viel zu viel
+2012-06-24 19:00:45,SHyx0rmZ,*g*
+2012-06-24 19:00:51,taljeth,Also jedenfalls anhalten und weiterlaufen lassen ;-)
+2012-06-24 19:01:13,taljeth,Und NMIs injecten
+2012-06-24 19:01:22,Th3Falc0n,"ich meinte eher gdt, idt und page-dir"
+2012-06-24 19:01:31,SHyx0rmZ,"hat hier btw schon mal jemand von Architekturen gehört, die nur mit einer einzigen Instruktion arbeiten? ^^"
+2012-06-24 19:01:41,taljeth,Weil wir dann hier lauter Möchtegerns hätten
+2012-06-24 19:01:58,taljeth,"SHyx0rmZ: Jo, ich glaube schon."
+2012-06-24 19:02:05,Th3Falc0n,gdt und idt find ich noch akzeptabel aber das paging geht mir aufn sack
+2012-06-24 19:02:20,SHyx0rmZ,Ich hab mich da auch letztens mal reingelesen; würde ja gerne mal so nen Teil vor mir haben
+2012-06-24 19:02:25,Th3Falc0n,und nur eine einzige instruction ist doch niemals turingkomplett ?
+2012-06-24 19:02:35,SHyx0rmZ,Paging ist eigentlich auch total simpel
+2012-06-24 19:02:35,taljeth,Th3Falc0n: Das ist wie mit den Prüfungen an der Uni. Irgendwo muss gesiebt werden.
+2012-06-24 19:02:43,SHyx0rmZ,man muss nur seinen Denkprozess ändern ^^
+2012-06-24 19:02:52,Th3Falc0n,SHyx0rmZ: pagin an sich ist simpel ja
+2012-06-24 19:03:01,SHyx0rmZ,"Th3Falc0n, doch, ist trotzdem turingkomplett"
+2012-06-24 19:03:02,Th3Falc0n,aber es zum laufen zu kriegen iwie nicht
+2012-06-24 19:03:14,Th3Falc0n,SHyx0rmZ: ich hab die parameter vergessen
+2012-06-24 19:03:18,taljeth,"Die Frage ist nur, welchen praktischen Nutzen es hätte.."
+2012-06-24 19:03:43,Th3Falc0n,1 instruction mit parametern kannn natürlich turingkomplett sein
+2012-06-24 19:04:04,Th3Falc0n,was mich an brainfuck erinnert...
+2012-06-24 19:04:11,SHyx0rmZ,"gibt z.B. ne CPU, die nur mov kann"
+2012-06-24 19:04:13,taljeth,Brainfuck hat mehr als eine Instruktion
+2012-06-24 19:04:23,Th3Falc0n,aber trotzdem erinnert es mich daran
+2012-06-24 19:04:41,taljeth,"SHyx0rmZ: Was heißt ""nur mov""?"
+2012-06-24 19:04:48,taljeth,Was tut dieses mov genau?
+2012-06-24 19:05:02,Th3Falc0n,aus quelle in ziel schreiben
+2012-06-24 19:05:04,Th3Falc0n,fertig
+2012-06-24 19:05:06,SHyx0rmZ,"genau das, wonach es sich anhört, dafür gibt's dann z.B. spezielle Register"
+2012-06-24 19:05:07,SHyx0rmZ,http://en.wikipedia.org/wiki/Transport_triggered_architecture
+2012-06-24 19:05:38,taljeth,"Hm, ok"
+2012-06-24 19:05:39,Th3Falc0n,hast dann halt immer 2 register die ihre addition in ein anderes schreiben
+2012-06-24 19:05:46,Th3Falc0n,und addieren von 5 + 8 wär dann
+2012-06-24 19:05:50,Th3Falc0n,"mov 8, ax"
+2012-06-24 19:05:52,Th3Falc0n,"mov 5, bx"
+2012-06-24 19:05:53,taljeth,"Ich dachte, da käme jetzt was interessantes"
+2012-06-24 19:06:02,Th3Falc0n,"mov abadd, ax"
+2012-06-24 19:06:04,Th3Falc0n,voila 
+2012-06-24 19:06:06,Th3Falc0n,richtig?
+2012-06-24 19:06:33,SHyx0rmZ,"als Anwendung für OISC steht auf Wikipedia auch grad nur, dass es ideal ist, um die Funktionsweise von Computern zu vermitteln"
+2012-06-24 19:07:08,taljeth,"Öhm, weil so realitätsnah?"
+2012-06-24 19:07:17,Th3Falc0n,OISC wär was für ne selbstbau cpu
+2012-06-24 19:07:37,Th3Falc0n,mov ist so schön einfach ^^
+2012-06-24 19:07:39,taljeth,"Apropos... Erik war schon ewig nicht mehr hier, oder?"
+2012-06-24 19:08:05,SHyx0rmZ,kann mich zumindest nicht an seinen letzten Besuch erinnern
+2012-06-24 19:10:03,Th3Falc0n,ich raff nicht was an meinem kernel schiefläuft
+2012-06-24 19:10:19,SHyx0rmZ,ging mir auch immer so ^^
+2012-06-24 19:10:42,SHyx0rmZ,"im Zweifelsfall trifft man falsche Annahmen, das durfte ich erst Donnerstag wieder erleben"
+2012-06-24 19:11:28,Th3Falc0n,"SHyx0rmZ: könntest du einmal so nett sein und nach dem protection fault gucken, bitte?"
+2012-06-24 19:11:42,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS
+2012-06-24 19:12:13,bluecode,taljeth: 11.4
+2012-06-24 19:12:25,SHyx0rmZ,"wenn ich mich nicht total täusch, liegt's daran, dass die Pages keine Leserechte haben"
+2012-06-24 19:12:52,Th3Falc0n,fehler liegt bei 0x100415
+2012-06-24 19:13:40,Th3Falc0n,was genau meinst du mit leserechten? und wo?
+2012-06-24 19:13:57,SHyx0rmZ,"<Th3Falc0n>   vmm_map_page(context, context->alloc_offset, (uintptr_t) pmm_alloc(), PTE_PRESENT | PTE_WRITE | PTE_USER); << FUCK"
+2012-06-24 19:14:12,taljeth,Th3Falc0n: Was sagt qemu.log?
+2012-06-24 19:14:14,SHyx0rmZ,"da hätte ich ein PTE_READ erwartet, aber ich kenn den Zusammenhang ja auch nicht"
+2012-06-24 19:14:41,taljeth,Pages haben meines Wissens kein Readable-Bit...
+2012-06-24 19:14:49,Th3Falc0n,"das sind die Page directory einträge, da gibts garkein readable bit"
+2012-06-24 19:16:07,Th3Falc0n,taljeth: was soll ich ins log schreiben lassen?
+2012-06-24 19:16:44,taljeth,Ich will die Exception sehen
+2012-06-24 19:18:00,SHyx0rmZ,"da seht ihr mal wieder, wie lang ich da nix mehr gemacht habe *duck*"
+2012-06-24 19:18:49,taljeth,"Ich glaube, du musst dich auch erst nochmal für den Hackathon qualifizieren *g*"
+2012-06-24 19:18:49,Th3Falc0n,http://pastebin.com/pTHPQxau
+2012-06-24 19:19:19,SHyx0rmZ,"hm, kann das sein, dass die Berechtigungen für Userspace fehlen?"
+2012-06-24 19:19:43,SHyx0rmZ,"dann wird es wohl Zeit für kernel6 mit Strukturen, die nicht immer mit SMP kaputtgehen ^^"
+2012-06-24 19:20:03,taljeth,Th3Falc0n: 100415 war das iret?
+2012-06-24 19:20:10,Th3Falc0n,jo
+2012-06-24 19:20:15,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS/blob/master/kernel/kernel.objdump#L16
+2012-06-24 19:20:26,Th3Falc0n,da kannst nochmal nachgucken wenn du willst
+2012-06-24 19:20:53,taljeth,"#GP(0) heißt vermutlich, dass das cs auf dem Stack nichts taugt"
+2012-06-24 19:21:39,taljeth,Oder ss
+2012-06-24 19:22:25,Th3Falc0n,"ich benutzt die gleich konfiguration wie ohne paging, ohne ne neue page table zu laden, und ohne paging hats funktioniert..."
+2012-06-24 19:22:50,taljeth,Mit Paging kann man toll zwei virtuelle Adressen auf die gleiche physische mappen
+2012-06-24 19:22:56,taljeth,Vielleicht machst du ja sowas
+2012-06-24 19:23:25,Th3Falc0n,oh
+2012-06-24 19:23:28,taljeth,"Hm, oder... Ist die GDT auch gemappt?"
+2012-06-24 19:23:44,Th3Falc0n,GDT kann ich gerade nicht sagen
+2012-06-24 19:23:46,Th3Falc0n,aber
+2012-06-24 19:23:59,micha,aber?
+2012-06-24 19:24:01,Th3Falc0n,ich setzte das offset zum mappen von amm_alloc nirgendwo
+2012-06-24 19:24:03,taljeth,"Doch, müsste eigentlich, sonst hättest du ds/es nicht neu laden könen"
+2012-06-24 19:27:04,Th3Falc0n,öhm ja
+2012-06-24 19:27:22,Th3Falc0n,Exception I:13 E:3630 EIP: fffffff0
+2012-06-24 19:27:22,Th3Falc0n,:D
+2012-06-24 19:27:26,Th3Falc0n,wir freuen uns
+2012-06-24 19:29:37,Th3Falc0n,taljeth: jetzt bin ich volkommen am ende mit meinen debug fähigkeiten
+2012-06-24 19:31:01,Th3Falc0n,wärst du nochmal so nett? http://pastebin.com/Wp1vzt5W
+2012-06-24 19:31:44,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS/blob/master/kernel/kernel.objdump < auch aktuell
+2012-06-24 19:32:31,taljeth,Dein Prozessorzustand ist FUBAR
+2012-06-24 19:33:30,taljeth,"Wie eip=fffffff0 kommt, musst du selber wissen"
+2012-06-24 19:34:20,Th3Falc0n,nö
+2012-06-24 19:34:20,Th3Falc0n,weiss ich nicht
+2012-06-24 19:35:58,micha,ein TSS falsch? - war bei mir so...
+2012-06-24 19:35:59,taljeth,Dann musst du es rausfinden
+2012-06-24 19:36:01,Th3Falc0n,"laut scheduler.c wird eip auf entry gesetzt was in diesem fall die funktion ""void task()"" wär (0x100562)"
+2012-06-24 19:36:25,taljeth,"Bau ein printf ein, um das zu prüfen"
+2012-06-24 19:38:56,Th3Falc0n,super
+2012-06-24 19:39:35,Th3Falc0n,das kprintf endet mit: qemu: fatal: trying to execute code outside RAM or ROM at 0x7e1ff07d
+2012-06-24 19:39:43,micha,"du willst nicht wissen, wie kaputt mein printf ist^^"
+2012-06-24 19:41:04,micha,besser gesagt das sprintf ;)
+2012-06-24 19:41:08,Th3Falc0n,ähm jetzt hab ich aus meinem pmm_alloc das printf rausgenommen und jetzt startet der kernel einfach neu
+2012-06-24 19:41:32,Th3Falc0n,ist das normal?
+2012-06-24 19:41:41,SHyx0rmZ,wenn du es so geschrieben hast schon 
+2012-06-24 19:42:11,Th3Falc0n,ich habs nicht so geschrieben
+2012-06-24 19:42:18,Th3Falc0n,mein kernel fängt normalerweise alle exception ab
+2012-06-24 19:42:37,micha,"meiner auch, trotzdem ein reset"
+2012-06-24 19:42:45,Th3Falc0n,http://pastebin.com/Ytzg2pXr << HILFE
+2012-06-24 19:43:16,Th3Falc0n,die einzige änderung ist ein rausgenommenes printf
+2012-06-24 19:44:00,micha,sicher?
+2012-06-24 19:44:10,Th3Falc0n,ich gucks gerade auf git nach moment
+2012-06-24 19:46:10,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS/commit/a8015ec3d2354364f767f419feeb7051bcd81211
+2012-06-24 19:46:23,Th3Falc0n,micha: nur das kprintf rausgenommen und auskommentiert in scheduler.c
+2012-06-24 19:46:48,Th3Falc0n,also rausgenommen in pmm.c und auskommentiert eingefügt in scheduler.c
+2012-06-24 19:47:59,Th3Falc0n,also entweder da wird irgendwelcher kernelcode als pointer nach jwd interpretiert und deswegen die komischen adressen oder irgendwas ist völlig im arsch
+2012-06-24 19:48:33,micha,das kprintf ist von tyndur?
+2012-06-24 19:48:56,Th3Falc0n,das kprintf is ausm tutorial und ich hab char ausgabe als zeichen eingefügt
+2012-06-24 19:49:13,micha,achso
+2012-06-24 19:50:23,micha,Th3Falc0n: ich hab ähnliche probleme ;)
+2012-06-24 19:51:01,Th3Falc0n,ich nehm an du wirst auch nicht schlauer darus taljeth ?
+2012-06-24 19:54:24,rsoft,hallo!
+2012-06-24 19:54:31,Th3Falc0n,hi
+2012-06-24 19:54:50,micha,moin
+2012-06-24 19:55:24,rsoft,"bin noch recht neu beim entwickeln von betriebssystemen, habe aber schon etwas zusammengebastelt :)"
+2012-06-24 19:55:25,Th3Falc0n,ich bin kurz davor das ganze paging nochmal zu löschen und von vorne zu machen
+2012-06-24 19:55:33,rsoft,aha
+2012-06-24 19:55:37,Th3Falc0n,rsoft: dann bin ich ja nicht mehr alleine
+2012-06-24 19:55:49,Th3Falc0n,^^
+2012-06-24 19:56:00,Th3Falc0n,ich verzweifle gerade am letzten tutorial part
+2012-06-24 19:56:05,rsoft,http://home.rsoft.tk/~rsoft/viewgit
+2012-06-24 19:56:07,rsoft,aha
+2012-06-24 19:56:15,micha,bist auch so nicht alleine
+2012-06-24 19:56:16,rsoft,ich bin noch nicht so weit
+2012-06-24 19:56:37,Th3Falc0n,micha: stimmt dich hab ich ja fast vergessen :P
+2012-06-24 19:56:56,rsoft,ihr könnt euch den quellcode gerne mal durchlesen
+2012-06-24 19:57:07,Th3Falc0n,schon dabei
+2012-06-24 19:57:09,rsoft,:)
+2012-06-24 19:57:20,Th3Falc0n,wenn du willst rsoft https://github.com/Th3Falc0n/mikrOS
+2012-06-24 19:57:26,rsoft,"ah, danke"
+2012-06-24 19:57:49,rsoft,hahaha :)
+2012-06-24 19:58:08,Th3Falc0n,"ähm du bist vllt noch nicht soweit rsoft , aber wir machen das hier immer so"
+2012-06-24 19:58:32,rsoft,ahso
+2012-06-24 19:58:45,rsoft,da sind nadeldrucker empfehlenswert :)
+2012-06-24 19:59:52,Th3Falc0n,kernel.c ist spannend
+2012-06-24 20:00:03,Th3Falc0n,dieser ascii art höhepunkt
+2012-06-24 20:00:04,rsoft,falcon: deine?
+2012-06-24 20:00:12,Th3Falc0n,ne deine
+2012-06-24 20:00:12,rsoft,ach du meinst meine :)
+2012-06-24 20:00:18,rsoft,danke :D
+2012-06-24 20:00:28,rsoft,kann ja mal eben nen screenshot machen
+2012-06-24 20:00:32,Th3Falc0n,"schade, dass der user da nicht viel von sieht"
+2012-06-24 20:00:43,rsoft,wirklich?
+2012-06-24 20:00:45,Th3Falc0n,wenn du so viel noch später drunterprintest
+2012-06-24 20:00:53,rsoft,so viel ist das aber nicht
+2012-06-24 20:01:12,Th3Falc0n,spätestens wenn du wirklich debuggen musst ist das schnell oben raus
+2012-06-24 20:01:21,rsoft,dann auf jeden fall
+2012-06-24 20:01:28,Th3Falc0n,^^
+2012-06-24 20:01:33,rsoft,vllt debugging per serial port? :)
+2012-06-24 20:01:49,Th3Falc0n,dann musste das später alles rauslöschen
+2012-06-24 20:02:05,Th3Falc0n,und debugging auf physischen systemem wird schwierig
+2012-06-24 20:02:20,rsoft,"nee, könnte printk einfach nach serialport umleiten und später auf den bildschirm"
+2012-06-24 20:03:15,micha,"printf(""\n \t\t::::.    .::::.   ::    ::  ::::::\n"""
+2012-06-24 20:03:15,micha,"	   "" \t\t::  ::  ::    ::  ::::. ::  ::    \n"""
+2012-06-24 20:03:15,micha,"	   "" \t\t::  ::  ::    ::  :: ::.::  ::::  \n"""
+2012-06-24 20:03:15,micha,"	   "" \t\t::  ::  ::    ::  ::   :::  ::    \n"""
+2012-06-24 20:03:15,micha,"	   "" \t\t:::::    ::::::   ::    ::  ::::::\n\n"""
+2012-06-24 20:03:17,micha,"	   "" \t\t  K E R N E L   L O A D E D . \n\n"");"
+2012-06-24 20:03:58,Th3Falc0n,rofl
+2012-06-24 20:04:14,rsoft,:)
+2012-06-24 20:04:15,micha,"das verschwindet sofort wieder, weil die multiboot-module gestartet werden."
+2012-06-24 20:04:21,rsoft,tja
+2012-06-24 20:04:22,Th3Falc0n,| achja es gibt hier auch code code :) |
+2012-06-24 20:04:30,Th3Falc0n,"| 	printf(""\n \t\t::::. .::::. :: :: ::::::\n""|"
+2012-06-24 20:04:47,Th3Falc0n,"| 	"" \t\t:: :: :: :: ::::. :: :: \n""|"
+2012-06-24 20:04:52,Th3Falc0n,usw...
+2012-06-24 20:04:59,Th3Falc0n,hab gerade kein bock das weiter zu kopiern ..
+2012-06-24 20:05:39,Th3Falc0n,naja ich bin mal off
+2012-06-24 20:05:43,Th3Falc0n,hab kein bock mehr auf die scheisse
+2012-06-24 20:05:45,Th3Falc0n,gn8
+2012-06-24 20:06:02,rsoft,bis dann
+2012-06-24 20:06:24,Th3Falc0n,rofl debian fail beim ausschalten
+2012-06-24 20:06:29,rsoft,hmm
+2012-06-24 20:06:49,Th3Falc0n,dumme vm
+2012-06-24 20:06:56,Th3Falc0n,naja bb
+2012-06-24 20:06:59,rsoft,falcon: aber nettes os!
+2012-06-24 20:07:01,rsoft,bye
+2012-06-24 20:10:47,rsoft,http://home.rsoft.tk/~rsoft/ros_screen.png
+2012-06-24 20:10:50,rsoft,ein screenshot
+2012-06-24 20:11:33,rsoft,micha: was hältst du von meinen anfang?
+2012-06-24 20:12:21,micha,nette sache
+2012-06-24 20:12:25,rsoft,danke :)
+2012-06-24 20:12:45,rsoft,hat leider bis jetzt kaum features :/
+2012-06-24 20:12:53,micha,hast du sonst noch was außer debug?
+2012-06-24 20:13:34,micha,http://www.lowlevel.eu/wiki/OrangePalm
+2012-06-24 20:13:35,rsoft,"nee, das ganze besteht bis jetzt nur aus einem kernel. keine interrupts, kein file i/o, kein userspace, kein keyboard input."
+2012-06-24 20:13:45,rsoft,noch nicht mal ne sleep-funktion :/
+2012-06-24 20:14:12,micha,homepage baue ich noch - jetzt nur auf lowlevelwiki
+2012-06-24 20:14:17,rsoft,:)
+2012-06-24 20:14:18,rsoft,nett
+2012-06-24 20:14:24,micha,tolles logo?
+2012-06-24 20:14:30,rsoft,ja!
+2012-06-24 20:15:40,micha,"du weißt ja, ich hänge am paging…"
+2012-06-24 20:15:53,rsoft,"hast du eine sleep-routine? ich versuche, eine zu implementieren, habs bis jetzt aber noch nicht geschafft :/"
+2012-06-24 20:16:15,rsoft,leider kann ich dir mit dem paging nicht helfen :(
+2012-06-24 20:16:48,micha,sleep - für multiasking?
+2012-06-24 20:16:51,rsoft,nee
+2012-06-24 20:16:58,rsoft,nur zum warten
+2012-06-24 20:17:13,micha,für den kernel ziemlich sinnlos
+2012-06-24 20:17:16,Tdotu,Hallo
+2012-06-24 20:17:20,rsoft,hallo!
+2012-06-24 20:17:39,rsoft,"ja, aber ein nettes feature, um musik per beeper abzuspielen :P"
+2012-06-24 20:17:52,Tdotu,was gibts?
+2012-06-24 20:18:09,micha,rsoft: dazu brauchst du interrupts
+2012-06-24 20:18:29,rsoft,"micha: ja, und genau da hänge ich gerade fest :/"
+2012-06-24 20:18:56,micha,und was ist dein Problem?
+2012-06-24 20:18:58,rsoft,Tdotu: ich habe einen anfang eines betriebssystems gebastelt
+2012-06-24 20:19:46,Tdotu,ok. Da bin ich schon ein wenig weiter. Leider Hänge ich gerade und siche jetzt ein paar Mitstreiter :D
+2012-06-24 20:19:56,Tdotu,*suche
+2012-06-24 20:20:13,micha,"wo hängst du, Tdotu?"
+2012-06-24 20:20:27,rsoft,"micha: ich versuche, das ganze zu verstehen, aber x86-assembler bereitet mir schmerzen ;) 6502 asm ist für mich kein problem, aber x88 :/"
+2012-06-24 20:20:37,rsoft,*x86
+2012-06-24 20:21:04,micha,http://www.lowlevel.eu/wiki/Assembler
+2012-06-24 20:21:13,rsoft,jau
+2012-06-24 20:23:26,Tdotu,"micha: Es ist so, ich habe das System eigentlich ganz gut hinbekommen, aber irgendwie habe ich bei der Generalüberholung des systems Mist gebaut. Der Scheduler schmiert bei Ring 3 ab (der Fehler Hängt mit dem Paging und Heap system zusammen)"
+2012-06-24 20:24:22,Tdotu,"Ich suche jetzt einfach Leute die Bock haben mit zu coden, da ich selber leider nicht mehr so viel Zeit habe"
+2012-06-24 20:25:10,Tdotu,http://www.infinitycoding.de/index.php?inhalt=Universe
+2012-06-24 20:25:25,rsoft,"Tdotu: ich würde dir geren helfen, fühle mich aber für solche aufgaben noch nicht bereit :/"
+2012-06-24 20:26:16,Tdotu,ok.
+2012-06-24 20:26:55,micha,ich hab selber genug probleme
+2012-06-24 20:27:08,Tdotu,ok^^ wer hat das nicht :)
+2012-06-24 20:27:43,rsoft,"Tdotu: so weit bin ich: http://saraserver/~rsoft/ros_screen.png kein interrupt handling, benutze grub, keine eingabemöglichkeit, kein filesystem, kein garnichts :/"
+2012-06-24 20:28:31,rsoft,Tdotu: http://home.rsoft.tk/~rsoft/viewgit/?a=summary&p=rOS
+2012-06-24 20:29:00,Tdotu,oh... Bis auf das FS habe ich alles :D 
+2012-06-24 20:29:12,rsoft,Tdotu: :)
+2012-06-24 20:29:19,micha,ich hab nur vfs
+2012-06-24 20:29:29,rsoft,micha: immerhin
+2012-06-24 20:29:46,Tdotu,"das habe ich auch schon, aber ein VFS ohne hardware Layer ist irgendwie Blöd"
+2012-06-24 20:30:08,Tdotu,(bzw. ohne einhängbare Hardware Layer)
+2012-06-24 20:30:46,Tdotu,kanst ja mal auf meiner Seite mal angucken was bis Mitte Juli so geplant ist
+2012-06-24 20:31:40,Tdotu,"wtf, ich sollte ein bischen langsamer tippen damit nicht so viel Müll herauskommt. (Sorry)"
+2012-06-24 20:32:17,rsoft,"ich bin erst 15, also erwartet bitte nicht zu viel von mir. hab immerhin schon für nen c64 das eine oder andere programm in 6502 assember geschrieben"
+2012-06-24 20:32:57,micha,man ich bin 12.
+2012-06-24 20:33:08,rsoft,micha: wirklich?
+2012-06-24 20:33:12,micha,ja
+2012-06-24 20:33:19,Tdotu,Ich bin 16 und Arbeite schon seit 3 Jahren im OSdev bereich 
+2012-06-24 20:33:19,rsoft,hmm
+2012-06-24 20:33:35,rsoft,Tdotu: ich erst seit ein paar tagen
+2012-06-24 20:33:52,Tdotu,ok^^ Alles hat mal einen Anfang :D
+2012-06-24 20:33:58,rsoft,:)
+2012-06-24 20:34:07,micha,ich seit wieviel monaten?
+2012-06-24 20:34:27,Tdotu,Wundert mich das ich jetzt erst auf diesen IRC Chatt gestoßen bin
+2012-06-24 20:34:34,micha,letztes jahr im november
+2012-06-24 20:34:40,rsoft,aha
+2012-06-24 20:35:43,rsoft,und weg ist er :(
+2012-06-24 20:36:30,Tdotu,Wer ist eigentlich alles gerade Online?
+2012-06-24 20:37:06,rsoft,online wie in aktiv oder online wie in angemeldet?
+2012-06-24 20:37:25,Tdotu,aktiv Online
+2012-06-24 20:37:43,rsoft,dann schätzungsweise nur noch wir beide
+2012-06-24 20:38:53,Tdotu,programmierst du eigentlich sonstnoch was?
+2012-06-24 20:39:08,rsoft,joa
+2012-06-24 20:39:22,rsoft,"mal ein bisschen bash, dann was perl"
+2012-06-24 20:39:26,rsoft,oder c
+2012-06-24 20:39:49,rsoft,6502 assembler
+2012-06-24 20:40:19,rsoft,und du?
+2012-06-24 20:40:29,Tdotu,Ich entwickle nebenher einige Tools die es bald auf meiner Seite zum Download geben wird. Meine Zwei Hauptprojekte sind das Universe Kernel und das IC-CMS
+2012-06-24 20:40:40,rsoft,"ah, nett :)"
+2012-06-24 20:41:23,rsoft,"nur mal so aus neugier: kannst du bestätigen, dass micha 12 ist?"
+2012-06-24 20:41:33,Tdotu,woher denn?
+2012-06-24 20:42:20,rsoft,"na, vielleicht hat er ja mal etwas anderes gesagt"
+2012-06-24 20:42:30,Tdotu,Ich kann nur mein Alter bestätigen. 
+2012-06-24 20:42:32,Tdotu,:D
+2012-06-24 20:42:35,rsoft,:D
+2012-06-24 20:42:46,DesL,"rsoft: frag jidder, der ist auch 12, der muss das wissen"
+2012-06-24 20:42:54,rsoft,aha
+2012-06-24 20:43:02,Tdotu,hi DesL
+2012-06-24 20:43:15,rsoft,"genau, hi DesL! :D"
+2012-06-24 20:43:50,Tdotu,rsoft: du findest Infos zu meinen aktuellen und wichtigen Projekten auf http://infinitycoding.de
+2012-06-24 20:43:58,rsoft,"ah, danke"
+2012-06-24 20:44:11,Tdotu,das kleinzeugs kommt erst in ein Paar monaten drauf
+2012-06-24 20:44:25,rsoft,schickes design :P
+2012-06-24 20:44:25,Tdotu,"(Kleinzeugs= Tools, Spiele und Scripte)"
+2012-06-24 20:44:35,Tdotu,danke
+2012-06-24 20:45:13,Tdotu,die Seite basiert auf dem IC-CMS
+2012-06-24 20:45:23,rsoft,"ich weiss echt nicht, wo ich bei meinem kernel zuerst weiterbasteln soll :/"
+2012-06-24 20:45:41,rsoft,"ah, das hatte ich mir schon gedacht. wirklich schönes cms!"
+2012-06-24 20:45:43,Tdotu,folg doch dem Tutorial auf Lowlevel.eu
+2012-06-24 20:45:50,Tdotu,danke
+2012-06-24 20:45:54,rsoft,"ja, da binn ich grad bei"
+2012-06-24 20:46:11,rsoft,-n
+2012-06-24 20:46:51,Tdotu,DesL? An was arbeitest du zur Zeit?
+2012-06-24 20:47:05,rsoft,Tdotu: ich mag die 6502-architektur viel lieber als x86
+2012-06-24 20:48:20,DesL,"epOS liegt seit nem jahr weitesgehend auf eis und ich bastel ab und zu an dem java kernel weiter. für epos ist aber im herbst mal ein kompletter neuanfang geplant, weil ich doch sehr viele unschöne stellen habe die einem den spass versauen."
+2012-06-24 20:48:58,Tdotu,ich suche noch mitstreiter für das Universe Kernel
+2012-06-24 20:49:30,Tdotu,seit der Generalüberholung gings irgendwie berg ab
+2012-06-24 20:49:52,Tdotu,und Ich habe eh nicht mehr so viel Zeit...
+2012-06-24 20:49:52,rsoft,"Tdotu: ich würde dir wie gesagt gerne helfen, kann das aber wohl eher nicht :("
+2012-06-24 20:50:44,Tdotu,lerne erst mal ein wenig und dann kannst dich gerne bei mir melden. (e-mal Adresse findest du im Impressum)
+2012-06-24 20:50:56,DesL,"""ld: cannot find -lstdc++"" booooarg, was will der eigentlich :D"
+2012-06-24 20:51:05,Tdotu,:D
+2012-06-24 20:51:41,rsoft,ich drucke mir erstmal den pmode-artikel aus
+2012-06-24 20:51:48,rsoft,was ist noch empfehlenswert?
+2012-06-24 20:52:00,Tdotu,das Komplette Wiki!?
+2012-06-24 20:52:05,rsoft,hahaha
+2012-06-24 20:52:23,Tdotu,(bis auf ein paar spärliche Artikel ist das echt klasse
+2012-06-24 20:52:28,rsoft,ja
+2012-06-24 20:52:35,DesL,irgendwer hat sich doch mal intelmanuals ausdrucken wollen. ich glaube das entweder bluecode oder jidder :D
+2012-06-24 20:52:44,rsoft,aber ich meine für meine jetzige entwicklungsstufe
+2012-06-24 20:52:48,rsoft,aua
+2012-06-24 20:53:02,Tdotu,Ich arbeite ausschließlich mit den Manuals von AMD
+2012-06-24 20:53:17,rsoft,aha
+2012-06-24 20:53:22,Tdotu,die von Intel nehme ich nur wenn sie Wirklich erforderlich sind
+2012-06-24 20:55:00,Tdotu,Ich mache jetzt dann mal im Lowlevel Forum ein wenig Werbung. Ich brauche echt ein paar entwickler. 
+2012-06-24 20:55:17,rsoft,"da solltest du aber auf sowas wie den bei amd nicht existierenden program counter rollover aufpassen(wenn der pc max erreicht, stoppen amd cpus, intel dagegen fangen bei 0 an.)"
+2012-06-24 20:55:33,rsoft,(beim datenblätter-lesen)
+2012-06-24 20:56:01,Tdotu,:D
+2012-06-24 20:56:01,DesL,"""sudo ln /usr/lib64/libstdc++.so.6 /usr/lib64/libstdc++.so "" des rätsels lösung"
+2012-06-24 20:56:20,SHyx0rmZ,wer setzt denn auch RIP auf 0xffffffffffffffff
+2012-06-24 20:57:16,Tdotu,:D
+2012-06-24 20:57:47,bluecode,"DesL: wollte ich ganz sicher nicht, aber ich wollte, dass mir intel welche kostenlos zuschickt (das hatten die irgendwann mal als service, stand zumindest auf osdev.org)"
+2012-06-24 20:58:24,bluecode,DesL: g++ linkt automagisch gegen die stl
+2012-06-24 20:58:49,Tdotu,"bluecode, an welchem Projekt arbeitest du gerade?"
+2012-06-24 20:59:06,DesL,"bluecode: aber nicht wenn man ""g++ -c ..."" hat und das seperat linkt"
+2012-06-24 20:59:21,bluecode,man kann auch mit g++ anschließend linken ;-)
+2012-06-24 20:59:47,bluecode,"Tdotu: du meinst bezogen auf osdev? An garkeinem, ich hab osdev vor einigen Jahren aufgegeben"
+2012-06-24 21:00:04,DesL,"bluecode: okaay, aber trotzdem :D"
+2012-06-24 21:00:11,Tdotu,ok. 
+2012-06-24 21:00:40,bluecode,davor an pedigree und davor an lightOS
+2012-06-24 21:01:05,rsoft,bin dann mal weg
+2012-06-24 21:01:12,Tdotu,bd
+2012-06-24 21:05:02,Tdotu,meine Werbung mache ich Morgen. Ich muss noch ein paar kleinigketen patchen
+2012-06-24 21:06:04,Tdotu,ach... Ich muss den Artikel vom Universe Kernel im Wiki überarbeiten. 
+2012-06-24 21:08:04,Tdotu,tschau 
+2012-06-24 21:54:04,taljeth,"Warum macht hier eigentlich keiner Werbung für tyndur, wenn mal lauter orientierungslose hier rumrennen?"
+2012-06-24 22:02:04,bluecode,niemand will dir den job klauen ;-)
+2012-06-24 22:11:15,stultus,"taljeth: bunt und LIOv2 über die Bühne, dann hat man genügend Basis um effektiv zu ködern ;)"
+2012-06-24 22:12:03,Naoe-Kanno,ich war vorhin kurz davor *duck*
+2012-06-24 22:12:10,Naoe-Kanno,aber leider war ich dann grad nicht am Rechner
+2012-06-24 22:12:25,Naoe-Kanno,FULL-ACK @ stultus
+2012-06-24 22:12:37,stultus,"ehm, widerspruch? oder hast du ne irc-lautsprecherdurchsage das du das nicht am rechner mitbekommen hast? ;)"
+2012-06-24 22:12:49,Naoe-Kanno,genau :D
+2012-06-24 22:13:04,stultus,(gute idee eigentlich. jemand ne empfehlung für die TTS-Engine?)
+2012-06-24 22:36:49,taljeth,stultus: Am Hackathon ;-)
+2012-06-24 22:55:45,DesL,"ich habe irgendwann mal spasseshalber ein ""TTS-Script"" geschrieben, leo.org hat gigabytes an sprachsamples. das script hat den satz auseinander genommen, geguckt ob alle samples da waren, wenn nicht die nötigen runtergeladen und dann alle nacheinader abgespielt :D"
+2012-06-24 22:55:57,DesL,oder hat es sogar eine mp3 draus gemacht? weiss ich gar nicht mehr
+2012-06-24 22:57:34,stultus,Aktuell ist da wohl die Google-Translate-Version noch ganz in
+2012-06-24 22:57:40,stultus,der generiert auch nen sample vom satz ^^
+2012-06-24 22:58:01,DesL,"jo, aber wie schauts da api mäßig aus?"
+2012-06-24 22:58:19,stultus,"inexistent, das geht nur übers parsen"
+2012-06-24 22:58:36,stultus,Aber da dann halt nur mp3-link suchen und freude haben
+2012-06-24 22:59:49,DesL,"der macht das irgendwie anders, zumindest mein browser plugin das sonst alle mediendaten in den filestreams entdeckt findet da keine datei "
+2012-06-24 23:01:09,stultus,hm
+2012-06-24 23:01:18,stultus,ham die vielleicht geändert damit das nicht mehr passiert ^^
+2012-06-24 23:01:18,DesL,ich schau mal mit wireshark
+2012-06-24 23:02:04,DesL,"och, wenn man mit jeder datei nen neue IP hat kann man auch google maps sehr gut via script saugen :D"
+2012-06-24 23:03:03,DesL,okay
+2012-06-24 23:03:05,DesL,habs :D
+2012-06-24 23:03:14,DesL,http://translate.google.com/translate_tts?ie=UTF-8&q=ja%2C%20aber%20wie%20schaut%20es%20da%20mit%20der%20API%20aus%3F&tl=de&total=1&idx=0&textlen=42&prev=input
+2012-06-24 23:03:24,DesL,wieso auch immer als mpeg :D
+2012-06-24 23:04:05,DesL,http://translate.google.com/translate_tts?ie=UTF-8&q=ja%2C%20aber%20wie%20schaut%20es%20da%20mit%20der%20API%20aus%3F&tl=en ROFL
+2012-06-24 23:05:50,DesL,lääst sich problemlos auf http://translate.google.com/translate_tts?ie=UTF-8&it=<lang>&q=<text> kürzen

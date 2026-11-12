@@ -1,0 +1,192 @@
+date/time,nick,message
+2010-04-06 13:16:05,eddyb,XanClic: started to revive my ehci driver
+2010-04-06 13:16:19,eddyb,no irq on virtualbox :((
+2010-04-06 13:16:28,XanClic,VBox has a bug there
+2010-04-06 13:16:36,eddyb,it has?
+2010-04-06 13:16:36,XanClic,Try the IRQ below
+2010-04-06 13:16:47,eddyb,like 10 instead of 11?
+2010-04-06 13:16:50,XanClic,Exactly
+2010-04-06 13:17:51,eddyb,in vmware it goes pretty well
+2010-04-06 13:18:01,eddyb,i get an irq when a device connects...
+2010-04-06 13:18:22,eddyb,but the schedule won't start
+2010-04-06 13:18:54,eddyb,"also, it reports frame list rollover, but i got periodic schedule disabled(maybe i've switched the bits by mistake???)"
+2010-04-06 13:19:47,eddyb,the interrupt thing makes no difference :|
+2010-04-06 13:19:58,XanClic,"Well, for me it did ;-)"
+2010-04-06 13:20:03,XanClic,"And for some others I know, too"
+2010-04-06 13:20:54,eddyb,wtf?
+2010-04-06 13:21:15,eddyb,3 pci devices report interrupt number 11 :O
+2010-04-06 13:21:35,XanClic,Never heard of IRQ sharing?
+2010-04-06 13:21:39,eddyb,how much memory space OHCI uses?
+2010-04-06 13:21:51,XanClic,"Hm, 4 kB, I think"
+2010-04-06 13:22:03,eddyb,s/memory/mmio\/io/
+2010-04-06 13:22:11,eddyb,0x1000
+2010-04-06 13:23:12,eddyb,exactly the number of mmio space one of the other devices with irq 11 got
+2010-04-06 13:25:29,eddyb,"the device with irq 10 got 0x20 of io, 0x40000 of mmio and another 0x4000 of mmio"
+2010-04-06 13:25:39,XanClic,It's a network device
+2010-04-06 13:25:43,XanClic,I already checked tha
+2010-04-06 13:25:44,XanClic,t
+2010-04-06 13:26:19,eddyb,"but i don't get any irq, even if i add ""-1"" :("
+2010-04-06 13:27:53,eddyb,"oh, and also ""<eddyb> okey, this is really stupid. but the beggining of my memory region i use in ehci driver got ""SQLite format 3"" :|"" << this is quite strange and i think it's related to pedigree"
+2010-04-06 13:30:23,eddyb,don't tell me...
+2010-04-06 13:30:45,eddyb,there's only a handler/irq allowed in pedigree
+2010-04-06 13:31:06,XanClic,"That's what I'd call a ""fail"" *g*"
+2010-04-06 13:31:10,eddyb,which can be == fail
+2010-04-06 13:31:21,eddyb,"heh, in the same time :P"
+2010-04-06 13:31:34,eddyb,the problem is...
+2010-04-06 13:32:08,eddyb,"from the handler registration and first request, there's just a couple of instructions :|"
+2010-04-06 13:33:07,eddyb,BINGO
+2010-04-06 13:33:55,eddyb,"+1 means 12, which is mouse irq. the good thing is that i can move the mouse and make it complete transactions :P"
+2010-04-06 13:40:35,eddyb,damn non-working irq...
+2010-04-06 13:41:12,eddyb,"it does set the connect status changed bit, and i can see new devices"
+2010-04-06 13:46:15,eddyb,"XanClic: afaik, you haven't touched ehci yet... you had problems with ohci, then?"
+2010-04-06 13:46:41,eddyb,"btw, no unhandled irq showed up"
+2010-04-06 13:47:32,XanClic,"No, I've also touched EHCI"
+2010-04-06 13:47:40,eddyb,aah
+2010-04-06 13:48:17,eddyb,no irqs at all
+2010-04-06 13:48:43,eddyb,== nothing reached the ISR
+2010-04-06 13:49:02,eddyb,"so it's more internal, if there is a problem"
+2010-04-06 14:01:53,eddyb,"argh, linux can ahdnle it"
+2010-04-06 14:01:55,eddyb,*handle
+2010-04-06 14:02:01,XanClic,Of course
+2010-04-06 14:02:07,XanClic,Linux remaps the IRQs
+2010-04-06 14:03:53,eddyb,xD
+2010-04-06 14:04:06,eddyb,"via some PCI nifty config stuff, i suppose?"
+2010-04-06 14:04:14,XanClic,Via APIC
+2010-04-06 14:04:21,eddyb,"ah, ok"
+2010-04-06 14:04:49,eddyb,apic is kinda unfunctional in pedigree
+2010-04-06 14:12:06,eddyb,hmm...
+2010-04-06 14:12:54,eddyb,"so it can be that without that remapping you say linux is doing, no interrupt from ehci will reach even the ISR ?"
+2010-04-06 14:14:40,XanClic,"Yes, because VBox gives you the wrong IRQ number"
+2010-04-06 14:14:53,XanClic,"And it is 10 for sure, it's not just me who detected that *g*"
+2010-04-06 14:15:13,eddyb,"but as i said, no interrupt reach PIC driver"
+2010-04-06 14:15:23,eddyb,*reaches
+2010-04-06 14:15:58,XanClic,Pedigree's got a driver for VBox' network card?
+2010-04-06 14:16:07,kwolf,e1000
+2010-04-06 14:16:31,eddyb,"sorry, afaik, i've enabled no network card"
+2010-04-06 14:16:43,kwolf,XanClic: Paloxena has the same driver once you apply Matt's latest patch
+2010-04-06 14:16:48,eddyb,and i made PIC driver print every irq(except 0 and 8)
+2010-04-06 14:17:01,XanClic,"kwolf: And once I've implemented CDI, yes ;-)"
+2010-04-06 14:18:15,eddyb,"XanClic: so, what now? i told you it doesn't even reach ISRs"
+2010-04-06 14:18:28,XanClic,"Well, I don't know."
+2010-04-06 14:18:46,XanClic,"You have several problems to which I just answer ""works for me"" ;-)"
+2010-04-06 14:19:00,kwolf,XanClic: I was talking about one of the Paloxena versions that have CDI ;-)
+2010-04-06 14:19:16,XanClic,kwolf: But those don't have USB ;-)
+2010-04-06 14:19:50,kwolf,Until you finish USB for CDI. ;-)
+2010-04-06 14:20:20,XanClic,"I guess, that's no repeat-until but a repeat-forever *g*"
+2010-04-06 14:20:34,XanClic,"i.e., I doubt it'll be ever finished"
+2010-04-06 14:21:03,eddyb,good
+2010-04-06 14:21:21,eddyb,otherwise i'd have to throw my work into trash://
+2010-04-06 14:21:22,kwolf,"Well, yes, wrong word. An OS is never finished. ;-)"
+2010-04-06 14:21:42,XanClic,"No, I meant I think I continue with my CDI.storage attempts ;-)"
+2010-04-06 14:21:49,XanClic,"(Triple I, yeah)"
+2010-04-06 14:21:58,kwolf,*sigh* Why that?
+2010-04-06 14:22:30,XanClic,I don't know how to implement USB efficient when using different address spaces
+2010-04-06 14:23:35,XanClic,I don't even know how to implement it inefficiently *g*
+2010-04-06 14:24:28,kwolf,We probably need to have you around at the next hackathon to sort things out
+2010-04-06 14:24:41,kwolf,"Shouldn't be all that hard, though"
+2010-04-06 14:24:53,XanClic,You won't accomplish that *g*
+2010-04-06 14:25:04,eddyb,"XanClic: OOI, on which version of virtualbox irq 10 works for you?"
+2010-04-06 14:25:13,XanClic,"eddyb: 3.1.4, afair"
+2010-04-06 14:25:47,eddyb,that's quite recent :(((
+2010-04-06 14:25:56,kwolf,XanClic: I meant the implementation. I'm afraid getting you there is too hard indeed. ;-)
+2010-04-06 14:26:08,eddyb,damn poor radio internet :((
+2010-04-06 14:29:26,eddyb,3.1.2 r56127 here
+2010-04-06 14:29:45,XanClic,"I had the same problem in 3.1.2, too ;-)"
+2010-04-06 14:35:09,eddyb,XanClic: do you have any source code for reference?
+2010-04-06 14:35:25,eddyb,i'm getting sick of vm bugs
+2010-04-06 14:35:54,XanClic,http://gitorious.org/paloxena/kernel3/blobs/master/src/kernel/drivers/network-controller/ehci.c maybe
+2010-04-06 14:36:12,XanClic,And http://gitorious.org/paloxena/kernel3/blobs/master/src/kernel/drivers/network-controller/ehci.c#line140 in particular for VBox *g*
+2010-04-06 14:36:17,eddyb,"""(NN) e1000: Fuehre Reset der Karte durch"" << stuck at there :|"
+2010-04-06 14:36:27,eddyb,why is it in network controllers?
+2010-04-06 14:36:50,XanClic,Because all my USB HCs are network controllers for the OS
+2010-04-06 14:36:59,XanClic,"They send packets, just as a network card does *g*"
+2010-04-06 14:37:45,Homix,hm funny^^ ;)
+2010-04-06 14:38:26,eddyb,"pci_outw(pci->bus, pci->dev, pci->func, 0x04, 0x06); << what does this do?"
+2010-04-06 14:38:46,XanClic,It writes 0x06 into the PCI configuration space at offset 0x04
+2010-04-06 14:38:47,XanClic,A word
+2010-04-06 14:39:04,eddyb,"ok, but what's the effect?"
+2010-04-06 14:39:08,XanClic,=> Enabling bus master capability and MMIO
+2010-04-06 14:39:21,eddyb,"ah, k"
+2010-04-06 14:43:14,eddyb,delay() does delay in ms?
+2010-04-06 14:43:25,XanClic,"No, in µs, afair"
+2010-04-06 14:43:52,XanClic,And heart_beat_count is the system timer which is incremented every ns
+2010-04-06 14:43:53,eddyb,are those waits really necessary?
+2010-04-06 14:44:16,XanClic,Why not?
+2010-04-06 14:44:20,XanClic,Those are done just once
+2010-04-06 14:45:48,eddyb,"no, i mean not having them can cause problems?"
+2010-04-06 14:46:05,XanClic,"Well, I don't know"
+2010-04-06 14:46:18,eddyb,"if you'd see my code, you'd say C++ makes things go water shrink :P"
+2010-04-06 14:58:52,eddyb,"except for the waits and the big C stuff, i see nothing different"
+2010-04-06 15:05:32,eddyb,hmm...
+2010-04-06 15:05:42,eddyb,do waits do wonders?
+2010-04-06 15:06:12,eddyb,but still no irq :((
+2010-04-06 15:23:53,Jarvix,hi
+2010-04-06 15:25:38,XanClic,"moin, Jarvix"
+2010-04-06 16:58:56,quok,moin :)
+2010-04-06 16:59:04,XanClic,"moin, quok"
+2010-04-06 17:03:20,kwolf,Moin quok
+2010-04-06 18:03:38,eddyb,"great, manually waiting, i get XactErr set :("
+2010-04-06 18:03:51,XanClic,"Nice, I get that one, too ;-)"
+2010-04-06 18:03:59,eddyb,lol?
+2010-04-06 18:04:04,eddyb,VirtualBox?
+2010-04-06 18:04:08,XanClic,Ye
+2010-04-06 18:04:10,XanClic,s
+2010-04-06 18:04:16,XanClic,Though I receive an interrupt
+2010-04-06 18:04:32,eddyb,which i don't :/
+2010-04-06 18:04:56,eddyb,"hmm, maybe i can make pedigree boot from this usb stick..."
+2010-04-06 18:05:04,eddyb,it would really help :|
+2010-04-06 18:05:29,eddyb,"(considered now we have on screen log - half of it, actually - :P)"
+2010-04-06 18:06:38,eddyb,"btw, what ping really does in ehci? it's like instead sending a real packet, it sends just something small to see if the device responds?"
+2010-04-06 18:07:10,XanClic,http://wiki.osdev.org/USB#PING_Transaction_Protocol
+2010-04-06 18:07:25,eddyb,i have specfobia :P
+2010-04-06 18:07:37,XanClic,That's no spec
+2010-04-06 18:08:38,eddyb,"okey, i've read it before"
+2010-04-06 18:08:56,eddyb,i just wanted to see if my understanding of it is accurate :P
+2010-04-06 18:09:43,XanClic,"Well, it's not whether the device responds but whether it's able to accept (or send) data"
+2010-04-06 18:10:47,eddyb,but can it be used as a ping facillity? as in test if the device can be reached
+2010-04-06 18:11:11,XanClic,No
+2010-04-06 18:11:41,XanClic,"Well, you could, if you were able to send raw USB packets, but you aren't"
+2010-04-06 18:12:11,eddyb,"ah, so it's just a protection mechanism :("
+2010-04-06 18:12:37,XanClic,Protection?
+2010-04-06 18:12:52,XanClic,It's been introduced to remove useless traffic
+2010-04-06 18:26:13,Jarvix,hi
+2010-04-06 18:31:23,eddyb,"brb, testing a bootable pedigree"
+2010-04-06 18:31:29,eddyb,*usb stick with pedigree
+2010-04-06 18:55:28,eddyb,well
+2010-04-06 18:55:42,eddyb,I can boot pedigree from usb stick
+2010-04-06 18:55:44,eddyb,but
+2010-04-06 18:56:35,eddyb,all UHCIs and the EHCIs got IRQ 255 :((
+2010-04-06 18:57:17,eddyb,XanClic: does that mean I need APIC driver to make it work?
+2010-04-06 18:57:35,XanClic,Don't know
+2010-04-06 18:58:01,eddyb,"pedigree got some unused LAPIC routines, but it looks like they're just for IPI :|"
+2010-04-06 18:58:19,XanClic,You'd need I/O APIC for PCI
+2010-04-06 18:59:20,eddyb,"great, IoApic.cc got only the license header and the #include ""IoApic.h"" :("
+2010-04-06 19:07:25,eddyb,"did ""<eddyb> great, IoApic.cc got only the license header and the #include ""IoApic.h"" :("" reached the channel?"
+2010-04-06 19:07:35,XanClic,Yes
+2010-04-06 19:07:40,eddyb,or did anyone say anything while i left?
+2010-04-06 19:07:46,XanClic,No
+2010-04-06 19:09:31,eddyb,okey
+2010-04-06 19:09:45,eddyb,i've just read http://markmail.org/message/hjmwydqx6bk2jm6e
+2010-04-06 19:10:07,eddyb,maybe it'd help playing with the BIOS?
+2010-04-06 20:30:49,eddyb,heh
+2010-04-06 20:31:00,eddyb,BIOS update on this crap really did wonders
+2010-04-06 20:31:25,eddyb,it now assigns irqs properly
+2010-04-06 20:31:46,eddyb,but pedigree still hangs after some EHCI message :|
+2010-04-06 20:32:19,eddyb,i mean freeze
+2010-04-06 20:33:38,eddyb,"i got a while(portStatus&PORT_RESET); in my code, can it freeze pedigree so not even a F12(used to get into debugger) will get thru?"
+2010-04-06 20:33:49,eddyb,"dammit, i sound like a total n00b"
+2010-04-06 20:36:51,eddyb,sure it can. at that point interrupts are disabled by something in ata and i enable them only after XD
+2010-04-06 20:37:19,eddyb,"which means there's a problem at port reset, btw"
+2010-04-06 20:38:04,XanClic,"Sorry to ask those questions, but you marked portStatus as volatile and the MMIO is uncachable?"
+2010-04-06 20:38:43,eddyb,ask matt/james
+2010-04-06 20:38:54,eddyb,-EWORKSINEMULATORS
+2010-04-06 20:39:02,eddyb,so i guess yes
+2010-04-06 20:39:06,XanClic,So it's at least volatile
+2010-04-06 20:40:03,eddyb,"ah, and FYI, empty ports always return 0xffffffff, so it sounds like some other error"
+2010-04-06 20:42:18,eddyb,"looking over my usb-hcd/main.cc file, i saw probeXhci and it made me laught :))"
+2010-04-06 20:47:13,taljeth,"XanClic: How are you sure that it's volatile? Emulators usually reset that bit immediately, so it might just have the right value from the beginning. (Well, qemu usually does, no idea for the rest of them)"
+2010-04-06 20:47:23,XanClic,"Hm, well"
+2010-04-06 20:47:30,XanClic,Right
+2010-04-06 20:51:34,eddyb,"i added some more debugging, brb"
+2010-04-06 21:16:45,eddyb,my second guess
+2010-04-06 21:17:16,eddyb,the second port (with the usb stick) got 0x1803

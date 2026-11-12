@@ -1,0 +1,639 @@
+date/time,nick,message
+2011-06-04 00:55:50,DesL,gn8
+2011-06-04 00:56:12,Paddy,gn64
+2011-06-04 00:56:24,XanClic,gn8
+2011-06-04 01:08:25,Jidder,gn8
+2011-06-04 09:05:34,DesL,moin
+2011-06-04 10:44:53,PNoob,Moin
+2011-06-04 13:52:42,DesL,afk
+2011-06-04 14:09:19,Paddy,"Gut zu wissen, nach stundenlangem Schweigen"
+2011-06-04 14:10:39,Homix,lol *g*
+2011-06-04 14:32:04,DesL,re
+2011-06-04 14:32:30,DesL,Paddy: mein client schreibt das automatisch in allen chans
+2011-06-04 14:32:59,Paddy,"Ah, unpersönlich ist es also auch noch"
+2011-06-04 14:33:33,DesL,hm
+2011-06-04 14:33:34,DesL,jo^^
+2011-06-04 14:44:31,DesL,"dann breche ich das schweigen halt: habe michgrade nach ner weile mal wieder zu OS-Dev aufgerafft, und habe einen blöden fehler: ich erzeuge einen neuen task (aus einer flat binary), und setzte für den neuen task ESP auf 0x215FF8 (es soll ein parameter auf den stack). das programm hat den aufbau ""void main(int i){//ausgabe von &i; while(true);}"" die addresse von i liegt aber bei 0x214FB4 - also "
+2011-06-04 14:44:31,DesL,gut eine page daneben. Und am ESO des neuen task ändere ich explizit nichts mehr.
+2011-06-04 14:45:19,DesL,s/eso/esp/
+2011-06-04 14:47:22,DesL,jemand ne idee was da noch passiert sein könnte?
+2011-06-04 14:51:13,Paddy,Was kommt vor dem main? Also macht _start noch irgendwas interessantes?
+2011-06-04 14:51:18,Paddy,"Und schon Userspace, oder?"
+2011-06-04 14:51:23,DesL,ne
+2011-06-04 14:51:31,DesL,läuft im kernelspace im moment
+2011-06-04 14:51:55,Paddy,"Das heißt, dieses esp ist gleichzeitig auch der Kernelstack?"
+2011-06-04 14:52:07,Paddy,Mit Prozessorzustand und so?
+2011-06-04 14:52:40,Paddy,"Oder wechselst du einfach nie auf das esp, das du gesetzt hast?"
+2011-06-04 14:52:45,DesL,arw
+2011-06-04 14:52:50,DesL,da könntest du recht haben
+2011-06-04 14:53:14,DesL,mal eben neukompilieren
+2011-06-04 14:53:42,DesL,hast recht :D
+2011-06-04 14:55:27,DesL,thx
+2011-06-04 15:12:27,CreativeOS,"hi ich habe eine frage zu den Interrupts: Wie kann ich jetzt meinen Tastaturtreiber, wenn ich einen hätte in der IDT registrieren? In den schon fertigen Tastaturtreibern, finde ich immer wieder die funktion register_interrupt"
+2011-06-04 15:12:40,Svenska,RM oder PM?
+2011-06-04 15:12:46,CreativeOS,PM
+2011-06-04 15:13:33,Svenska,naja im tutorial-kernel definierst du einen interrupt handler für jeden möglichen interrupt
+2011-06-04 15:13:51,Svenska,der ist in assembler geschrieben und ruft am ende eine c-funktion mit der nummer des interrupts auf
+2011-06-04 15:14:31,Svenska,"du musst jetzt dieser funktion sagen, wie sie reagieren soll, wenn der tastatur-interrupt schreit"
+2011-06-04 15:14:41,Svenska,z.B. indem du dir deine eigene vektortabelle schreibst oder so
+2011-06-04 15:14:55,CreativeOS,"und dann muss ich zum beispiel für den int 1 nur einen zeiger auf die funktion machen und die wird aufgerufen, wenn ich eine taste drücke?"
+2011-06-04 15:15:43,Svenska,deine allgemeine handler-funktion ruft dann den definierten handler manuell auf
+2011-06-04 15:16:07,Svenska,"also alle interrupts rufen die allgemeine handler-funktion auf, und die ruft dann die ereignisse auf"
+2011-06-04 15:16:16,Svenska,die eigentlichen spezifischen interruptfunktionen
+2011-06-04 15:16:33,CreativeOS,und wie weiß die tastatur welchen interrupt sie aufrufen muss?
+2011-06-04 15:16:39,Svenska,das ist verdrahtet
+2011-06-04 15:16:50,CreativeOS,muss ich da nur im treiber asm volatil (int Nummer)?
+2011-06-04 15:17:02,Svenska,?
+2011-06-04 15:17:20,CreativeOS,ich kapier das mit den ints irgendiwie nicht richtig...
+2011-06-04 15:17:23,Svenska,also bei mir ruft die tastatur den int 33 auf
+2011-06-04 15:17:32,Svenska,bastelst du am tutorial-kernel?
+2011-06-04 15:17:38,CreativeOS,^^ja
+2011-06-04 15:18:20,CreativeOS,und wie ruft die tastatur den int 33 auf?
+2011-06-04 15:18:22,Svenska,"da gibts eine funktion ""void handle_interrupt(struct cpu_state *cpu)"""
+2011-06-04 15:18:32,CreativeOS,ja^^ die habe ich
+2011-06-04 15:18:53,Svenska,"da in *cpu steht die interrupt-nummer drin, die gerade aufgerufen wurde"
+2011-06-04 15:19:04,CreativeOS,ja^^
+2011-06-04 15:19:24,CreativeOS,aber welchen interrupt ruft die tastatur denn auf?
+2011-06-04 15:19:25,Svenska,du musst diese funktion nur abhängig vom interrupt deinen tastaturtreiber aufrufen lassen ^^
+2011-06-04 15:19:32,Svenska,"bei mir 33, aber das muss nicht so sein :D"
+2011-06-04 15:19:40,Svenska,das stellst du beim PIC ein
+2011-06-04 15:19:59,CreativeOS,hmm und wie ?
+2011-06-04 15:20:37,Homix,"hm lieg ich richtig in der annahme, dass man bei zeitkritischem Code, zB möglichst schnell irgwelche primzahlen berechnen, möglichst wenig C++ Klassen verwenden sollte (u.a. die aus std:: wie std::vector) ?"
+2011-06-04 15:20:49,DesL,jop
+2011-06-04 15:20:55,Svenska,"ich hab das so: int 0..31 sind Exceptions, int 32..47 sind IRQs und int 48..255 sind Interrupts"
+2011-06-04 15:21:04,DesL,Homix: zumindest wenn dein kram mehr performant ist :D
+2011-06-04 15:21:09,CreativeOS,ja^^
+2011-06-04 15:21:28,CreativeOS,soweit bin ich schon
+2011-06-04 15:21:49,Svenska,das sind ein paar outb()-dinge
+2011-06-04 15:22:26,CreativeOS,"ich kapier im algemeinen diese funktion nicht ""register_intr_handler(0x21, &kbd_irq_handler);"" (bsp tyndur-treiber)"
+2011-06-04 15:22:28,Svenska,"outb(0x20, 0x11); outb(0x21, 0x20); outb(0x21, 0x04); outb(0x21, 0x01); mappen die IRQs von PIC 1 (also IRQ 0..7) nach int 0x20..0x27"
+2011-06-04 15:22:50,CreativeOS,"also ist es standart, dass die tastatur den int 1 aufruft?"
+2011-06-04 15:23:18,Svenska,"outb(0xa0, 0x11); outb(0xa1, 0x28); outb(0xa1, 0x02); outb(0xa1, 0x01); mappen die IRQs von PIC 2 (also IRQ 8..15) nach int 0x28..0x2f"
+2011-06-04 15:23:25,Svenska,sie ruft IRQ 1 auf
+2011-06-04 15:23:31,Svenska,"welcher interrupt das ist, hängt vom PIC ab"
+2011-06-04 15:23:58,Svenska,register_intr_handler() musst du dir selbst ausdenken ;)
+2011-06-04 15:24:01,CreativeOS,"also für was ist dann diese register interrupt funktion, wenn man das in der IDT ändern kann?"
+2011-06-04 15:24:08,Svenska,die ändert nicht die idt
+2011-06-04 15:24:29,Svenska,"die sagt handle_interrupt() nur, was bei welchem interrupt zu erledigen ist ;)"
+2011-06-04 15:24:38,CreativeOS,jetzt kapier ichgar nichts mehr:(
+2011-06-04 15:24:45,Svenska,also
+2011-06-04 15:25:05,Svenska,im tutorial-kernel definierst du eine IDT und ganz viele assembler-stubs
+2011-06-04 15:25:16,Svenska,jeder assembler-stub für einen softwareinterrupt
+2011-06-04 15:25:16,CreativeOS,ja^^
+2011-06-04 15:25:31,Svenska,alle pushen ihre eigene nummer auf den stack (und den cpu-zustand) und rufen dann handle_interrupt() auf
+2011-06-04 15:25:39,Svenska,d.h. ALLE interrupts landen dort
+2011-06-04 15:26:16,Svenska,"dein tastaturtreiber registriert also nicht seinen handler bei IDT & Co, sondern nur dort"
+2011-06-04 15:26:27,Svenska,da die funktion für alle handler zuständig ist *g*
+2011-06-04 15:26:44,Svenska,"bei mir ist das derzeit nur ne meldung ""guck mal, ich hab interrupt %i bekommen"""
+2011-06-04 15:27:09,CreativeOS,"ah ok danke für die erklärung, gut dann versuchs ich mal so mit einer meldung :D"
+2011-06-04 15:27:11,Svenska,register_interrupt() ändert also nicht die IDT
+2011-06-04 15:28:14,CreativeOS,k^^
+2011-06-04 15:30:24,Paddy,Svenska: Bei dir? Du hast ein OS?
+2011-06-04 15:30:37,Svenska,"naja, es sagt halt ""hey ich hab nen interrupt"", mehr nicht..."
+2011-06-04 15:30:46,Svenska,...hab das tutorial bis knapp vor paging durchgespielt :D
+2011-06-04 15:30:48,Paddy,Immerhin ;-
+2011-06-04 15:31:01,Svenska,CreativeOS: hast meinen code gekriegt?
+2011-06-04 15:31:32,CreativeOS,ja^^
+2011-06-04 15:31:46,Svenska,ok
+2011-06-04 15:32:35,CreativeOS,"ich schaus mir mal, dann habe ich es glaub ich kapiert :D danke"
+2011-06-04 15:32:38,DesL,:/ meine flat binary scheint 0x4 von esp abzuziehen
+2011-06-04 15:33:06,DesL,klaut der sich da die rücksprungaddresse? weil mein parameter laut stun 4 bytes weiter liegt
+2011-06-04 15:33:10,DesL,s/tun/stub/
+2011-06-04 15:34:23,Paddy,"Eigentlich solltest du derjenige sein, der weiß, was dein Code macht"
+2011-06-04 15:34:36,DesL,s/code/gcc/ :D
+2011-06-04 15:34:46,DesL,ich disassemblier den kram mal
+2011-06-04 15:34:52,Paddy,"Ah, du springst direkt in eine C-Funktion?"
+2011-06-04 15:35:05,DesL,ja. schlimm? *g*
+2011-06-04 15:35:23,Paddy,"Nö, ich war nur in Gedanken wieder beim Userspace, wo erstmal _start kommt ;-)"
+2011-06-04 15:35:47,DesL,C:\MINGW\BIN\objdump.exe: .\test.bin: File format not recognized 
+2011-06-04 15:35:53,DesL,BAM
+2011-06-04 15:36:00,Paddy,"Aber ja, gcc erwartet natürlich, dass da eine Rücksprungadresse auf dem Stack liegt"
+2011-06-04 15:36:11,DesL,tut sie
+2011-06-04 15:36:25,DesL,aber ich dachte die müsste HINTER den parameter?
+2011-06-04 15:36:36,Paddy,Was heißt hinter?
+2011-06-04 15:37:03,Paddy,(%ebp + 4) ist in der Regel die Rücksprungadresse und (%ebp + 8) der erste Parameter
+2011-06-04 15:37:18,Paddy,*lol* Was hab ich denn da für eine Syntax produziert
+2011-06-04 15:37:32,DesL,at&t + intel? :D
+2011-06-04 15:37:35,Paddy,"Kommt davon, wenn man sich nicht  entscheiden kann ;-)"
+2011-06-04 15:38:01,Paddy,"Ich nehme an, du verstehst trotzdem, was ich meine"
+2011-06-04 15:38:12,DesL,joa
+2011-06-04 15:39:10,Homix,"Paddy: wäre PCI-passthrough zu ner VM eig möglich, wenn die VM direkt die ersten 512 MB physischen Speicher bekommt? oder gibts da noch irgwelche hindernisse?"
+2011-06-04 15:39:27,DesL,wieso aber ebp und nicht esp?
+2011-06-04 15:39:50,Paddy,Weil ich den typischen gcc-Stackframe berücksichtigt habe
+2011-06-04 15:40:04,Paddy,Bevor gcc den aufbaut ist es esp und esp + 4
+2011-06-04 15:40:29,DesL,es scheint noch esp zu sein
+2011-06-04 15:40:29,Paddy,"Als erstes kommt ja in der Regel push ebp; mov ebp, esp"
+2011-06-04 15:41:08,Paddy,Homix: Was bringt der physische Speicher?
+2011-06-04 15:41:23,Paddy,Willst du dir die IOMMU sparen?
+2011-06-04 15:42:01,Homix,"naja ohne VT-d, nur VT-x"
+2011-06-04 15:42:13,Homix,bzw theoretisch ohne hardware-vm-sachen
+2011-06-04 15:42:27,DesL,00000000  55                push ebp
+2011-06-04 15:42:27,DesL,"00000001  89E5              mov ebp,esp"
+2011-06-04 15:42:27,DesL,00000003  56                push esi
+2011-06-04 15:42:27,DesL,00000004  53                push ebx
+2011-06-04 15:42:45,Paddy,"Homix: VT-d ist Intels Marketingname für eine IOMMU, bleiben wir beim allgemeinen Begriff ;-)"
+2011-06-04 15:42:55,Homix,ok *g*
+2011-06-04 15:43:03,Paddy,"Wenn du dem Gast vertraust, könnte das schon tun"
+2011-06-04 15:43:14,Paddy,"Aber mit Abschottung ist dann nichts mehr, der Gast hat auf alles Zugriff"
+2011-06-04 15:44:13,Homix,"naja das hauptproblem ist ja, dass man die speicheradressen, die die VM/Treiber dem gerät gibt, VM-relativ und nicht absolut sind, das würde man damit beheben"
+2011-06-04 15:44:52,Paddy,"Du kriegst damit das ""Mapping"" richtig hin (weil das dann 1:1 ist), aber nicht den Speicherschutz"
+2011-06-04 15:45:16,Homix,d.h. die geräte könnten das host-os kaputt machen?
+2011-06-04 15:45:29,Paddy,Jo
+2011-06-04 15:45:39,Paddy,Oder andere Gäste
+2011-06-04 15:46:31,Homix,"naja ich hab mir bisschen was zu der treiberproblematik überlegt und geh die option durch, ein linux kernel nebenbei in einer vm laufen zu lassen und die treiber davon dann zu nutzen"
+2011-06-04 15:46:55,Homix,"per kommunikation zw der vm und dem host dann sound, netzwerk, evtl auch grafik zu nutzen"
+2011-06-04 15:47:06,Paddy,"Ich bin mir nicht sicher, ob das nicht mehr Probleme schafft als es löst ;-)"
+2011-06-04 15:47:40,Homix,"hehe ja, das bezweifle ich auch noch, aber vom prinzip her wäre das cool"
+2011-06-04 15:49:57,Svenska,"also ndis, nur mit linux-treibern und allgemein auch noch"
+2011-06-04 15:50:23,Svenska,krass wäre ein abgespeckter linux-kernel für jeden einzelnen nichtnativen treiber :D
+2011-06-04 15:51:07,DesL,Oo
+2011-06-04 15:51:48,Svenska,und natürlich auf der anderen seite eine CDI-Api
+2011-06-04 15:51:51,Svenska,:D
+2011-06-04 15:52:13,Paddy,"Und das ganze läuft in diesem Javascript-Emulator, oder? ;-)"
+2011-06-04 15:52:21,Svenska,nein
+2011-06-04 15:52:21,DesL,"wenn damit mein neuralinterface läuft, mache ich mit :D"
+2011-06-04 15:52:32,Svenska,soll ja performant sein ^^
+2011-06-04 15:54:52,stultus,"Wenn schon so ein riesen Aufwand, wär es dann nicht leichter einfach die benötigten funktionen rüberzuschaffen das man nen Linuxtreiber einfach durchkompilieren kann? ;)"
+2011-06-04 15:55:18,DesL,das wäre ja langweilig
+2011-06-04 15:55:20,Svenska,"ja, aber du müsstest fast die gesamte linux-api portieren"
+2011-06-04 15:55:24,Svenska,und die ändert sich ständig
+2011-06-04 15:55:30,Svenska,da kämpft selbst nvidia mit ^^
+2011-06-04 15:57:10,Svenska,"so, stromversorgung ist gesichert. jetzt der µC…"
+2011-06-04 16:05:37,Svenska,"nicht unbedingt, eventuell ist der einfach nur so lahm ^^"
+2011-06-04 16:05:54,PNoob,"856kb/s beim Schreiben auf den STick, und das lesen scheint augenscheinlich nicht schneller"
+2011-06-04 16:06:35,PNoob,Svenska: das ist eigentlich auch kein USB-STick sondenr ein MP3 Player im USB Stick Format mit sage und schreibe einem GB Platz
+2011-06-04 16:06:52,Svenska,"guck ins log, da steht ""Full-Speed"" oder ""High-Speed"""
+2011-06-04 16:07:01,Svenska,in den mp3-playern ist meistens nicht der schnellste flash verbaut
+2011-06-04 16:08:04,PNoob,[16070.99000064] usb 1-1: new full speed USB device using uhci_hcd and adress 3
+2011-06-04 16:08:26,Svenska,dann ist es usb 1.1 ^^
+2011-06-04 16:08:49,PNoob,dann kann das was ich vorhabe ja noch eine weile dauern.........
+2011-06-04 16:08:58,Svenska,linux drauf installieren? :D
+2011-06-04 16:09:04,PNoob,nö
+2011-06-04 16:09:08,DesL,"hm, dafällt mir ein das ich heute eigentlichnoch zu aldi wollte, denne mal den mp3.player an den kopf schmeissen"
+2011-06-04 16:10:05,PNoob,"dadrauf liegt ne Ubuntu ISO, und die ist gemountet auf meinem Server, und der Server kopiert grad den Inhalt der iso nach /srv/install/ubuntu/11.04/amd64/"
+2011-06-04 16:10:29,Svenska,hm
+2011-06-04 16:10:34,Svenska,neu downloaden könnte schneller sein
+2011-06-04 16:10:35,Svenska,:D
+2011-06-04 16:10:50,Svenska,aber die geschwindigkeit hätte dir ja beim draufkopieren auffallen können *g*
+2011-06-04 16:11:02,PNoob,"Svenska: ich bringe meinem Server grad bei, Clients dabei zu helfen, ohne CD/DVD/USB-Stick oder so ein Linux auf ihrer Platte zu installieren"
+2011-06-04 16:11:13,Svenska,also ein PXE-Boot
+2011-06-04 16:11:19,PNoob,genau
+2011-06-04 16:11:30,Svenska,"jo, mach ich schon länger, aber nur per hand"
+2011-06-04 16:11:35,PNoob,Das kopieren auf den Stick habe ich heute nacht gemacht
+2011-06-04 16:12:22,PNoob,naja ich will halt keine CD/DVD's mehr brennen. und übrs Netzwerk geht das recht komfortabel
+2011-06-04 16:12:40,PNoob,den Server habe ich auch per PXE gebootet und dann installiert
+2011-06-04 16:12:41,Svenska,du kannst auch LOADLIN nehmen
+2011-06-04 16:12:42,ErikV,Guten Abend
+2011-06-04 16:12:51,Svenska,"oder syslinux/extlinux vom usb-stick, das nutze ich"
+2011-06-04 16:12:52,PNoob,Moin ErikV 
+2011-06-04 16:13:04,Svenska,"ubuntu und debian haben nämlich funktionierende pxe-images, da braucht man keine CD mehr für"
+2011-06-04 16:13:17,PNoob,Svenska: dann muss ich ja trotzdem wieder mit einem Speichermedium zum PC
+2011-06-04 16:13:18,Svenska,"das sind kernel+initrd, die hab ich auf meinem stick und der kann die per syslinux starten"
+2011-06-04 16:13:29,Svenska,und?
+2011-06-04 16:13:41,Svenska,"vom usb-stick finde ich recht angenehm, sofern möglich ^^"
+2011-06-04 16:13:52,PNoob,Das ist ncht do komfortabel wie nen schönen pxe server
+2011-06-04 16:13:54,Svenska,rechner ohne usb und mit pxe hab ich nicht mehr (und das rpl-terminal hab ich entlötet)
+2011-06-04 16:14:06,PNoob,einfach 12 beim booten drücken und fertig
+2011-06-04 16:14:18,PNoob,*F12
+2011-06-04 16:14:21,Svenska,"stick reinstecken, f12 beim booten drücken und fertig ^^"
+2011-06-04 16:14:49,PNoob,bei meiner Lösung kann ich das Stick vorbereiten und das reinstecken des Sticks sparen :P
+2011-06-04 16:15:07,Svenska,dafür musst du den server vorbereiten - wesentlich aufwändiger :D
+2011-06-04 16:15:25,PNoob,das ist garnicht so aufwändig
+2011-06-04 16:15:40,PNoob,dauert nur wegen des Scheiß USB Sticks ein wenig
+2011-06-04 16:15:44,Svenska,"ich habs jedenfalls für die zweite netzwerkkarte eingerichtet, mit udhcpd"
+2011-06-04 16:15:57,Svenska,s/habs/hatte\ es/
+2011-06-04 16:17:07,PNoob,oh es ist fertig
+2011-06-04 16:17:22,PNoob,zumindest leutet das Display jetzt die ganze Zeit
+2011-06-04 16:17:38,PNoob,und eben ist es immer nur kurz angesprungen und dann wars längere Zeit aus
+2011-06-04 16:17:54,XanClic,Ein Display kann läuten? Dann würde ich es reparieren lassen
+2011-06-04 16:18:07,PNoob,und laut terminal tuts auch ferig zu sein
+2011-06-04 16:18:17,Svenska,XanClic: visual bell? ^^
+2011-06-04 16:18:29,XanClic,Hmmm…
+2011-06-04 16:18:50,PNoob,so mal testen obs auch richtig tut
+2011-06-04 16:22:54,CreativeOS,kennt sich jemand mit dem dd command von linux aus?
+2011-06-04 16:23:44,ErikV,man dd
+2011-06-04 16:23:53,Svenska,dd if=eingabedatei of=ausgabedatei bs=blockgröße count=blockanzahl skip=offset_in_eingabe seek=offset_in_ausgabe
+2011-06-04 16:23:56,Svenska,was willst du sonst? ^^
+2011-06-04 16:24:01,CreativeOS,ja ich habe da einen fehler seit heute und der ist nicht in man drin
+2011-06-04 16:24:33,CreativeOS,bei mir kommt dd: schreiben in /dev7fd0: Eingabe/Ausgabefehler
+2011-06-04 16:24:54,Svenska,dmesg
+2011-06-04 16:25:01,Svenska,die diskette ist im eimer ^^
+2011-06-04 16:25:11,CreativeOS,ah ok :D^^
+2011-06-04 16:25:21,Svenska,"mach n neues terminal auf mit folgendem befehl: ""sudo tail -f /var/log/syslog"", dann siehst du kernel- und sonstige meldungen mitlaufen"
+2011-06-04 16:25:24,Svenska,sehr hilfreich
+2011-06-04 16:25:35,Svenska,"""Eingabe-/Ausgabefehler"" kommt vom kernel, nicht vom dd -.-"
+2011-06-04 16:25:59,CreativeOS,ah k^^
+2011-06-04 16:30:57,Jidder,hai
+2011-06-04 16:31:21,PNoob,Moin Jidder 
+2011-06-04 16:31:49,DesL,wal
+2011-06-04 16:31:50,PNoob,kommt der Eingabe/Augabefehler nicht auch wenn man /dev7fd0 benutzt anstatt /dev/fd0 ?
+2011-06-04 16:32:24,CreativeOS,kA hab aber alles richtig eingegeben
+2011-06-04 16:33:32,DesL,und?
+2011-06-04 16:33:48,CreativeOS,windows formatiert gerade noch
+2011-06-04 16:34:10,Svenska,PNoob: dann kommt file not found
+2011-06-04 16:34:26,PNoob,ah ok ich war mir da nicht mehr ganz sicher
+2011-06-04 16:34:29,XanClic,"Nö, dann werden da einfach 1474560 Bytes in die Datei /dev7fd0 geschrieben"
+2011-06-04 16:34:45,CreativeOS,ok ich glaub jetzt geht es wieder
+2011-06-04 16:34:51,XanClic,"(Unter der Annahme, dass man eh root ist, wenn man /dev/fd0 beschreiben möchte)"
+2011-06-04 16:36:32,CreativeOS,jop geht
+2011-06-04 17:06:03,DesL,"ich brauche ein minimalistisches linux für ein ur-alt system: CPU 133 Mhz, 16MB RAM, ~1.5GB HDD, brauche nicht zwingend ne GUI. Laufen sollte ein Git-Repo und das Floppy als netzwerkfreigabe, nicht mehr. Muss ich mich da mit LFS rumschlagen?"
+2011-06-04 17:06:26,Svenska,debian 2.0 ?
+2011-06-04 17:06:55,Paddy,Das wird aber nicht mehr so richtig supportet ;-)
+2011-06-04 17:06:57,Svenska,"das größte problem ist der ram, 16mb sind zuwenig. steck lieber noch ein paar riegel nach, sollte gehen"
+2011-06-04 17:07:05,Svenska,ansonsten debian ;-)
+2011-06-04 17:07:06,DesL,habe aber keine ;D
+2011-06-04 17:07:24,DesL,könnten auch 32MB sein :D
+2011-06-04 17:07:32,Svenska,32mb sind fast schon benutzbar
+2011-06-04 17:07:42,Svenska,"installier ein normales debian, aber im expertenmodus"
+2011-06-04 17:07:50,DesL,OO
+2011-06-04 17:08:01,Svenska,stelle zwingend iso8859-1 als charset ein
+2011-06-04 17:08:06,DesL,"""normal"" != ""aktuell"" oder?"
+2011-06-04 17:08:15,Svenska,squeeze
+2011-06-04 17:08:18,Svenska,die utf8-generierung braucht ~64mb ram
+2011-06-04 17:08:28,Svenska,"das dauert >>2h, wenn du die nicht freimachen kannst ;)"
+2011-06-04 17:09:02,Jidder,jupp_da_stimme_ich_dir_zu
+2011-06-04 17:09:09,Svenska,"ich hab auf ner kiste mit 64mb ram (ibm thinkpad) mal debian eingerichtet, icewm+iceweasel (mit google) passten exakt in den ram rein, ohne swap"
+2011-06-04 17:09:10,DesL,2.0 sagst du?
+2011-06-04 17:09:13,Svenska,nein
+2011-06-04 17:09:15,Svenska,squeeze ist 6.0
+2011-06-04 17:09:27,Svenska,also das aktuelle stable
+2011-06-04 17:09:34,DesL,warum nicht 2.0? :
+2011-06-04 17:09:37,Svenska,kein git ^^
+2011-06-04 17:09:50,Paddy,Kann man sicher statisch kompilieren ;-)
+2011-06-04 17:10:06,Paddy,"Oder direkt auf der Kiste, wenn man sich das antun möchte"
+2011-06-04 17:10:12,DesL,öhm
+2011-06-04 17:10:13,Paddy,Kompatibel genug sollte es doch wohl sein
+2011-06-04 17:10:13,DesL,naja
+2011-06-04 17:10:31,Jidder,reichen 16 mb für git?
+2011-06-04 17:10:44,Paddy,"DesL: Hey, auf solchen Kisten hat man früher einen ganzen Kernel kompiliert, da wird doch git auch noch gehen ;-)"
+2011-06-04 17:10:48,Svenska,"Paddy: debian 2.0 hat einen 2.0er kernel, das ist ""zu"" alt"
+2011-06-04 17:10:56,Svenska,debian 2.1/2.2 nutzen schon den 2.2er kernel
+2011-06-04 17:10:58,Paddy,Was benutzt git denn tolles?
+2011-06-04 17:10:59,DesL,Für Squeeze brauche ich ja zig CDs
+2011-06-04 17:11:04,Svenska,hä?
+2011-06-04 17:11:07,Svenska,nicht wirklich
+2011-06-04 17:11:07,Jidder,es ist teilweise in einer skriptsprache geschrieben
+2011-06-04 17:11:18,DesL,2.1 oder 2.2 würden auch reichen?
+2011-06-04 17:11:19,Paddy,Die interessanten Teile sind C
+2011-06-04 17:11:31,Svenska,DesL: einfach das netboot-image ziehen (kernel+initrd) und die starten
+2011-06-04 17:11:35,Svenska,loadlin oder syslinux
+2011-06-04 17:11:46,Jidder,ich werds einfach mal ausprobieren ^^
+2011-06-04 17:11:48,Svenska,rest sollte automatisch gehen und es müsste ne i486-variante geben
+2011-06-04 17:12:05,DesL,netboot von squeeze?
+2011-06-04 17:12:34,Svenska,ja
+2011-06-04 17:13:03,Svenska,http://ftp.nl.debian.org/debian/dists/squeeze/main/installer-i386/current/images/netboot/debian-installer/i386/linux (kernel)
+2011-06-04 17:13:10,Svenska,http://ftp.nl.debian.org/debian/dists/squeeze/main/installer-i386/current/images/netboot/debian-installer/i386/initrd.gz (initrd)
+2011-06-04 17:13:31,DesL,und wie lade ich das?
+2011-06-04 17:13:35,DesL,mit grub?
+2011-06-04 17:13:39,Svenska,ja oder loadlin
+2011-06-04 17:13:51,Svenska,"boote mit den parametern ""debian-installer/framebuffer=false priority=low"" oder so"
+2011-06-04 17:14:22,stultus,wtf?
+2011-06-04 17:14:25,DesL,"ertsmal aufräumen, dann kann ich die alte kiste ans netzwerk bringen, und DANN installier ich mal :D"
+2011-06-04 17:14:30,stultus,die netboot-images kommen mittlerweile mit fbdev-installer?
+2011-06-04 17:14:41,Svenska,"ja, für chinesisch und so"
+2011-06-04 17:14:52,stultus,"ah, ok"
+2011-06-04 17:14:56,stultus,das ist ne sinnvolle argumentation
+2011-06-04 17:15:36,Svenska,"du wirst folgendes brauchen: ""debian-installer/framebuffer=false debconf/priority=low lowmem"""
+2011-06-04 17:15:50,Svenska,"und du brauchst ne swappartition, etwa 64 MB+"
+2011-06-04 17:16:10,DesL,kann ich die im installer erstellenß
+2011-06-04 17:16:12,DesL,?
+2011-06-04 17:16:16,Svenska,ja
+2011-06-04 17:16:19,Svenska,sollte gehen
+2011-06-04 17:21:43,ErikV,"kann es sein das bei SODIMMs (die Speichermodule für Schlepptops) gar keine Parity-Daten dabei sind, ich finde nur D0...D63 aber nicht D64..D71"
+2011-06-04 17:24:19,Jidder,hm qemu bootet den kernel gar nicht mit 16M sondern schmiert fein ab
+2011-06-04 17:26:07,Jidder,erst mit 32 MB gehts
+2011-06-04 17:26:54,Jidder,ah ne da gibts auch nen oom
+2011-06-04 18:00:24,DesL,Oo
+2011-06-04 18:00:54,DesL,wieso braucht die alte kiste zum booten eigentlich das KB? man KÖNNTE ja mal ne switch im BIOS einbauen
+2011-06-04 18:02:42,Jidder,ich vermute das is in assembler geschrieben
+2011-06-04 18:03:35,DesL,"ah, kann man doch einstellen :D"
+2011-06-04 18:10:48,Jidder,hast du schon versucht squeeze zu booten?
+2011-06-04 18:11:03,DesL,muss erstma die olle kiste ins netzwerk bringen
+2011-06-04 18:11:07,DesL,geht grade wohl nicht
+2011-06-04 18:11:45,Jidder,kabel zu kurz? ^^
+2011-06-04 18:12:40,DesL,nee ;D
+2011-06-04 18:23:58,stultus,re
+2011-06-04 18:27:55,ErikV,kannst Du nicht mal wenigstens die Tiere im Wald lassen?
+2011-06-04 18:31:24,stultus,Nö :P
+2011-06-04 18:32:55,ErikV,"warum?  ich sach immer Viecher drausen, Menschen drin!!"
+2011-06-04 18:38:26,DesL,"WTF? ich schraube hier grade ne ollen WLAN-Router auf, guckt mich da modul mit der fetten aufschrift ""Mini-PCI"" an - /leicht/ overkill"
+2011-06-04 18:38:53,Jidder,was? das router aufschrauben?
+2011-06-04 18:39:02,Svenska,DesL: was für ein router?
+2011-06-04 18:39:27,DesL,"""Sinus 1054 DSL"" mit /dickem/ T-Com schild drauf :"
+2011-06-04 18:40:05,ErikV,"was is an ""Mini-PCI"" overkill?  is doch handelsübliche Ware"
+2011-06-04 18:40:24,Homix,"overkill bei einer ""Mini"" variante? ;)"
+2011-06-04 18:40:52,ErikV,das mini bezieht sich auf den Form-Faktor (also den Stecker)
+2011-06-04 18:41:04,Homix,jo ich weiß ;)
+2011-06-04 18:41:11,DesL,overkill weil das teil sonst nichts kann
+2011-06-04 18:41:15,ErikV,da ist trotzdem normales PCI drin
+2011-06-04 18:41:22,Homix,ErikV: ich weiß ;)
+2011-06-04 18:41:29,Homix,gibts ja bei PCI-E genauso
+2011-06-04 18:42:01,DesL,Hier gucken mich grade vier pinne neben einander an - ich würde zugerne wissen ob das USB ist :D
+2011-06-04 18:42:17,ErikV,DesL: wenn das Teil ein WLAN-Modul ist dann muss es doch auch nichts weiter können
+2011-06-04 18:42:46,DesL,die neueren geräte können alle USB etc
+2011-06-04 18:43:20,Svenska,wenn die cpu von texas instruments ist
+2011-06-04 18:43:23,ErikV,USB sollte sich recht leicht ausmessen lassen
+2011-06-04 18:43:37,Svenska,"ein TNETD*** und der wlan-chip ein TNETW***, dann ist das kein richtiges mini-pci routerseitig"
+2011-06-04 18:43:53,DesL,broadcom
+2011-06-04 18:44:00,Svenska,dann ist das normales mini-pci
+2011-06-04 18:44:15,Svenska,du kannst die wlan-karte also auch in deinem mini-pc einsetzen xD
+2011-06-04 18:44:21,DesL,\o/
+2011-06-04 18:44:49,Svenska,"oder in nem NAS, wenn du eins hast"
+2011-06-04 18:45:03,ErikV,oder in einen Laptop
+2011-06-04 18:45:22,Svenska,"ja, aber da steckt meist schon eine - und bei nem neueren laptop ist es mini-PCIe"
+2011-06-04 18:45:25,ErikV,die nutzen für sowas auch gern Mini-PCI
+2011-06-04 18:46:16,ErikV,in meinem Laptop steckt leider kein WLAN drin  :(   war mir damals zu teuer und hatte keinen Nutzen dafür in aussicht
+2011-06-04 18:46:29,Svenska,du hast aber ne mini-pci-schnittstelle?
+2011-06-04 18:46:35,ErikV,ja
+2011-06-04 18:46:42,Svenska,ich hab 2 module rumfliegen ;)
+2011-06-04 18:46:53,ErikV,und die Antennen sind auch vorhanden
+2011-06-04 18:47:25,Svenska,"ich glaub, ich hab eine intel 2200bg und eine realtek 8180 (müsste b sein)"
+2011-06-04 18:47:34,Svenska,ansonsten gibts die teile billig bei ebay
+2011-06-04 18:47:41,ErikV,theoretisch müsste nach dem einstecken eines WLAN-Moduls alles speilen
+2011-06-04 18:47:45,Svenska,praktisch auch
+2011-06-04 18:48:02,Svenska,oder lass dir DesLs schicken ;-)
+2011-06-04 18:48:31,DesL,"der router spackt, das könnte grade DARAN leigen :D"
+2011-06-04 18:48:41,ErikV,ich hab aber trotzdem keine echte Gegenstelle dafür und nur dafür das ich auf kosten der Nachbarn surfen kann ist mir das zu aufwendig
+2011-06-04 18:48:41,Svenska,aber mein avr hat jetzt ein nokia-3310-display angesteuert ;)
+2011-06-04 18:48:52,Svenska,funktioniert.
+2011-06-04 18:49:45,ErikV,"ich glaube das Display auf meiner Karte lass ich lieber ungenutzt, hat so nen doofen 4Bit-BUS"
+2011-06-04 18:50:19,ErikV,und eh nur 2*16 Zeichen
+2011-06-04 18:51:45,Svenska,auf der fpga-pci-karte?
+2011-06-04 18:51:58,ErikV,"so, mein Nachwuchs schreit nach Futter, jetzt muss ich erst mal ausfliegen und ein paar Würmer sammeln, tschüß"
+2011-06-04 18:52:09,ErikV,"Svenska: ja, auf der ML605"
+2011-06-04 18:53:46,DesL,"hier sind ja diverse chips auf der platine drauf, ich wüsste nun gerne ob einer davon auf USB gerichtet ist, kann ich das iwo nachgucken?"
+2011-06-04 18:55:43,Svenska,ja
+2011-06-04 18:55:45,Svenska,im internet ^^
+2011-06-04 18:55:49,DesL,-.-
+2011-06-04 18:55:57,Svenska,"wenn das teil usb kann, und das nicht rausgeführt ist, dann wird es on-cpu sein"
+2011-06-04 18:56:04,Svenska,gucke also nach dem cpu-datenblatt
+2011-06-04 18:56:06,DesL,ok
+2011-06-04 18:56:26,Svenska,"und dann kann es sein, dass du an die pins nicht rankommst oder sie nur auf testpins rausgeführt sind, dann hast du ebenfalls verloren"
+2011-06-04 18:58:38,DesL,"""Configurable USB host and device interface with integrated"
+2011-06-04 18:58:38,DesL,"transceiver"""
+2011-06-04 18:59:02,DesL,"gar nicht wahr, das steht bei ""BCM6348"" ich suche aber ""BCM6345""  -.-"
+2011-06-04 19:00:33,Svenska,aber du könntest wahrscheinlich openwrt draufmachen
+2011-06-04 19:02:19,Svenska,http://www.mikrocontroller.net/attachment/8326/Bild005.jpg << und sowas kann man mit dem display machen ;)
+2011-06-04 19:03:07,DesL,openwrt->Sinus 1054 DSL->unsopperted
+2011-06-04 19:03:11,Svenska,schade
+2011-06-04 19:03:36,DesL,"http://wiki.openwrt.org/oldwiki/openwrtdocs/hardware/t_com/sinus1054?s[]=sinus&s[]=1054 hier, unterhalb des miniPCI stecks sind die 4 pinne"
+2011-06-04 19:03:45,Svenska,wird wohl eher JTAG sein
+2011-06-04 19:03:48,Svenska,oder seriell
+2011-06-04 19:04:11,DesL,"""Serial connector is marked with J502 name. Location is following """
+2011-06-04 19:05:02,Svenska,"ok, grund gefunden: nur 8 MB RAM"
+2011-06-04 19:06:55,DesL,was ist das denn wohl für ein interface?
+2011-06-04 19:07:03,Svenska,?
+2011-06-04 19:07:19,Svenska,welches?
+2011-06-04 19:07:26,DesL,dieses an j502
+2011-06-04 19:07:42,Svenska,"serielle schnittstelle, wahrscheinlich TTL oder LVTTL"
+2011-06-04 19:20:19,DesL,"ich kriege das teil nicht resettet, und die IP kriege ich auch nicht mehr raus -.-"
+2011-06-04 19:20:47,Svenska,nmap?
+2011-06-04 19:20:50,DesL,?
+2011-06-04 19:20:58,Svenska,sudo nmap -sP 192.168.x.0/24
+2011-06-04 19:21:09,DesL,windoof
+2011-06-04 19:21:13,Svenska,"sagt dir alle aktiven rechner im netzwerk x, solange deine eigene netzwerkkarte dazugehört"
+2011-06-04 19:21:16,Svenska,nmap gibts auch für windows
+2011-06-04 19:21:38,Svenska,"du kannst dir auch ne batchdatei schreiben, die x von 0..254 durchgeht, die ip setzt und dann durchweg anpingt"
+2011-06-04 19:21:42,DesL,habe ich sogar :D
+2011-06-04 19:24:27,DesL,nope
+2011-06-04 19:24:50,Svenska,"er findet in 192.168.5.1 nichts, wenn deine eigene netzwerkkarte die ip 192.168.1.25 hat"
+2011-06-04 19:24:57,DesL,"findet nichtmal den DOS rechner. Ich sitzer hier an 192.168.13.37, der DOS rechner eigentlich an 192.168.13.23 oO"
+2011-06-04 19:25:02,DesL,anpingen kann ich den auch nicht
+2011-06-04 19:25:06,Svenska,antwortet DOS auf Pings? :D
+2011-06-04 19:25:10,stultus,Sicher das der zurückpingt?
+2011-06-04 19:25:12,DesL,jo
+2011-06-04 19:25:14,DesL,mit patch :D
+2011-06-04 19:25:19,Svenska,"wahrscheinlich nicht, es sei denn, du hast gerade eine TCP/IP-Anwendung aktiv"
+2011-06-04 19:25:24,Svenska,die auf pings reagiert
+2011-06-04 19:25:35,DesL,er antwortet definitiv
+2011-06-04 19:25:49,DesL,hat er die letzten 5 monate ja auch
+2011-06-04 19:25:57,Svenska,was läuft denn da drauf?
+2011-06-04 19:26:05,DesL,WFW 3.11 :D
+2011-06-04 19:26:22,Svenska,hm
+2011-06-04 19:26:25,stultus,Multitasking Coop. Yay :D
+2011-06-04 19:26:26,Svenska,"kann sein, dass das antwortet"
+2011-06-04 19:26:35,DesL,tut es
+2011-06-04 19:26:47,DesL,und andersherum kommt im moment ja auch kein ping durch
+2011-06-04 19:27:29,Svenska,seltsam
+2011-06-04 19:28:10,DesL,"bin mal afk, kümmer mich gleich mal um den scheiss"
+2011-06-04 19:28:34,Svenska,"ansonsten schnell ne serielle anklemmen, booten, ""ifconfig -a"" machen fertig"
+2011-06-04 19:29:02,DesL,"das problem ist, das ich keine gegenseite für seriell hab"
+2011-06-04 19:29:22,Svenska,da sind wahrscheinlich sowieso keine +-12V drauf
+2011-06-04 19:29:28,Svenska,"sondern eher 5V=1, 0V=0"
+2011-06-04 19:29:36,Svenska,ich hab dafür ein altes handy-datenkabel
+2011-06-04 19:29:37,DesL,kabel liese sich notfalls schnell zusammenlöten :/
+2011-06-04 19:29:45,DesL,:D
+2011-06-04 19:29:47,Svenska,"auf der einen seite ttl-seriell, auf der anderen seite usb ;)"
+2011-06-04 19:30:15,Svenska,mal zwei stück bei ebay für 3€ oder so geschossen
+2011-06-04 22:26:47,DesL,re
+2011-06-04 22:48:24,DesL,"Wer sich bei der IP Addresse vertippt, kann ja lange auf ICMP-Respond warten -.-"
+2011-06-04 22:48:34,Svenska,im router? ^^
+2011-06-04 22:48:43,DesL,"neh, im OS"
+2011-06-04 22:48:49,DesL,der router geht nicht
+2011-06-04 22:49:29,DesL,"yay, ich kann die DOS mühle anpingen :D"
+2011-06-04 22:49:54,Svenska,:-)
+2011-06-04 22:50:17,DesL,"HDD remote mounten, kernel rüber kopieren und installieren :D"
+2011-06-04 22:50:32,Svenska,ja
+2011-06-04 22:51:22,DesL,"""<10ms""  - die ping implementation nimmt es aber enorm präzise"
+2011-06-04 22:52:41,Jidder,unter DOS?
+2011-06-04 22:52:59,DesL,DOS 6.22 / WFW 3.11
+2011-06-04 22:53:05,Svenska,also WfW 3.11
+2011-06-04 22:53:07,Jidder,hat vermutlich keinen zeitgeber der genauer ist
+2011-06-04 22:53:08,Svenska,TCP32b
+2011-06-04 22:53:11,DesL,jo
+2011-06-04 22:53:30,DesL,"wie muss ich den nun grub bearbeiten? ""root (hd0,0)"" ""kernel linux"" und wie weiter?"
+2011-06-04 22:53:32,Svenska,"das ist übrigens ein eingekaufter tcp-stack, der auf bsd-sourcen basiert"
+2011-06-04 22:53:39,Svenska,du willst grub nehmen?
+2011-06-04 22:53:42,Svenska,:)
+2011-06-04 22:53:45,DesL,ja
+2011-06-04 22:53:50,Svenska,nimm doch loadlin :D
+2011-06-04 22:53:51,DesL,DOS wird eh von GRUb geladen
+2011-06-04 22:53:55,Svenska,aso
+2011-06-04 22:53:57,DesL,GRUB ist aber schon drauf S:
+2011-06-04 22:54:01,Svenska,"keine ahnung, ich mag grub nicht *g*"
+2011-06-04 22:54:05,DesL,:D
+2011-06-04 22:54:37,Lutoma_,oO
+2011-06-04 22:54:41,Lutoma_,wie kann man grub nicht mögen
+2011-06-04 22:54:56,Jidder,gruber war der bösewicht aus stirb langsam
+2011-06-04 22:54:58,Svenska,"zu komplex, nicht well-behaved und komisch"
+2011-06-04 22:55:02,DesL,"dann kannst du mir ja helfen, Lutoma"
+2011-06-04 22:55:07,Lutoma,ichhabkeinezeit.
+2011-06-04 22:55:11,Lutoma,aber was ist denn?
+2011-06-04 22:55:11,DesL,...
+2011-06-04 22:55:56,DesL,"kernel: ""linux"" ""initrd.gz"", param: ""debian-installer/framebuffer=false debconf/priority=low lowmem"" wie muss das nun in der menu.lst aussehen? ""r00t (hd0,0)"" denke ich, wie weiter?"
+2011-06-04 22:56:09,Lutoma,grub 1 oder 2?
+2011-06-04 22:56:40,DesL,dürfte noch 1 sein 
+2011-06-04 22:56:59,Svenska,wie hast du grub eigentlich auf das dos gekriegt? von linux aus?
+2011-06-04 22:57:04,DesL,öhm
+2011-06-04 22:57:05,Lutoma,"root(hd0,0)"
+2011-06-04 22:57:07,DesL,GRUB4DOS :D
+2011-06-04 22:57:11,Lutoma,kernel linux
+2011-06-04 22:57:11,Svenska,-.-
+2011-06-04 22:57:13,XanClic,kernel linux debian-installer/framebuffer=false debconf/priority=low lowmem
+2011-06-04 22:57:21,Lutoma,jau
+2011-06-04 22:57:32,DesL,und die initrd krallt der sich automatisch?
+2011-06-04 22:57:33,XanClic,"Jup, willst du, oder darf ich die letzte Zeile? *g*"
+2011-06-04 22:57:37,XanClic,"Nö, initrd initrd.gz"
+2011-06-04 22:57:37,Lutoma,mach du ;)
+2011-06-04 22:57:38,DesL,boot
+2011-06-04 22:57:53,Lutoma,voila
+2011-06-04 22:57:56,DesL,GRUB ist einfach zu.. einfach :D
+2011-06-04 22:58:10,Lutoma,aber echt!
+2011-06-04 22:58:25,DesL,"Ich finds schön, das der affengriff noch zum rebooten geht :D"
+2011-06-04 22:58:44,Svenska,"wenn du smartdrv benutzt, wird der auch abgefangen :D"
+2011-06-04 22:59:12,DesL,"""Error 1: Filename must be either an absolute pathname or blocklist""...."
+2011-06-04 22:59:19,XanClic,/linux
+2011-06-04 22:59:20,Svenska,nimm die bootkonsole
+2011-06-04 22:59:20,XanClic,/initrd.gz
+2011-06-04 22:59:21,Svenska,:)
+2011-06-04 22:59:31,Svenska,XanClic: du bist zu schnell
+2011-06-04 22:59:41,XanClic,Hoffentlich wurde ich nicht geblitzt
+2011-06-04 22:59:43,DesL,"jetzt läd DOS schon, naja wayne"
+2011-06-04 23:01:59,Svenska,wozu nutzt du den rechner eigentlich?
+2011-06-04 23:02:28,Jidder,vermutlich für DOS und GRUB und LINUX und SO
+2011-06-04 23:02:45,DesL,"""Filesystem type is fat, partition type 0x06"" ""[Linux-bzImage, setup=0x3600, size=0x2130a0]"" ""Linux-initrd @ 0x9a4000, 0x64b291 bytes]"" ""Probing EDD (edd=off to disable)... ok"" jetzt mukt nichts mehr. oom?"
+2011-06-04 23:03:02,Svenska,"häng mal noch ""noquiet"" ran"
+2011-06-04 23:03:04,Jidder,unter qemu haben 16mb sofort zum crash geführt
+2011-06-04 23:03:14,Svenska,"siehst du in dos mit ""MEM"""
+2011-06-04 23:03:15,Jidder,und auch bei 32mb gabs vom kernel noch einen oom
+2011-06-04 23:03:28,DesL,"Svenska: es ist der einzige Rechner hier, der Floppys kann - und als epOS testrechner"
+2011-06-04 23:03:29,Jidder,wenn es der sqeeze kernel ist
+2011-06-04 23:03:38,DesL,noquit?
+2011-06-04 23:03:42,Svenska,noquiet
+2011-06-04 23:03:49,DesL,:D
+2011-06-04 23:03:51,Svenska,nicht ruhig - sei verbose
+2011-06-04 23:03:57,Svenska,:D
+2011-06-04 23:04:04,XanClic,dont quiet
+2011-06-04 23:04:06,XanClic,be verbose
+2011-06-04 23:04:15,XanClic,Könnte man ein Lied draus machen
+2011-06-04 23:05:03,DesL,kein unterschied.
+2011-06-04 23:05:05,Jidder,hallo squeeze braucht 64MB wie auch dokumentiert. wird das jetzt ignoriert oder was?
+2011-06-04 23:05:10,DesL,jo
+2011-06-04 23:05:13,XanClic,ja :3
+2011-06-04 23:05:23,Jidder,ja dann kann ich ja weiterreden
+2011-06-04 23:05:25,Jidder,stört ja keinen
+2011-06-04 23:05:27,Svenska,"ersetze im link von oben dann ""squeeze"" durch ""lenny"" und probier es nochmal"
+2011-06-04 23:05:43,DesL,*scroll* *scrool* ... *grep*
+2011-06-04 23:05:47,DesL,k
+2011-06-04 23:05:49,Jidder,ja und lies am besten nicht die dokumentation
+2011-06-04 23:06:13,DesL,k
+2011-06-04 23:06:31,Svenska,"Jidder: es gibt einen unterschied zwischen angegebenen mindestanforderungen und dem minimum, was funktioniert ;)"
+2011-06-04 23:06:36,Jidder,hast du jetzt eigentlich 16 oder 32MB?
+2011-06-04 23:07:04,DesL,Svenska: XP ging auch mit 8 MB noch :D
+2011-06-04 23:07:08,DesL,16
+2011-06-04 23:07:15,Svenska,hm
+2011-06-04 23:07:18,Jidder,"sarge: ""Sie müssen mindestens 32MB Arbeitsspeicher und 110MB freien Festplattenspeicher haben"""
+2011-06-04 23:07:22,Svenska,"wenn der lenny-kernel nicht geht, musst du dich reduzieren"
+2011-06-04 23:07:26,Jidder,das ist ein müssen
+2011-06-04 23:07:31,Jidder,woody braucht 12
+2011-06-04 23:07:47,Svenska,"sarge ist doch älter als woody, oder?"
+2011-06-04 23:08:04,Jidder,laut versionsnummer nicht
+2011-06-04 23:08:07,Svenska,ok
+2011-06-04 23:09:23,Jidder,"""Einige Netzwerkkarten werden von den meisten Debian Instllationsdisketten nicht unterstützt"""
+2011-06-04 23:09:24,Jidder,lollilops er hat disketten gesagt
+2011-06-04 23:10:39,Svenska,DesL: du könntest dich mit debootstrap durchhangeln
+2011-06-04 23:10:55,Svenska,und du wirst einen eigenen kernel haben wollen
+2011-06-04 23:11:00,DesL,jetzt ist ertsmal lenny fertig
+2011-06-04 23:11:08,Svenska,"btw: das ist ein pentium oder k5/k6, richtig?"
+2011-06-04 23:11:35,DesL,"müsste pentium, 450VX chipsatz afaik"
+2011-06-04 23:11:47,Svenska,ok
+2011-06-04 23:11:55,Svenska,aktuelle kernel booten nämlich auf 486ern nicht
+2011-06-04 23:12:03,Svenska,"bzw. ich habs nie geschafft, einen solchen zu basteln"
+2011-06-04 23:16:13,DesL,"2error 27: Unrecognized command"" MÖP"
+2011-06-04 23:16:56,DesL,lenny geht schon besser
+2011-06-04 23:17:02,DesL,OOM FUUUUUUUUUUU
+2011-06-04 23:17:56,DesL,was als nächstes? woody?
+2011-06-04 23:18:04,Svenska,"ein 6502 besteht aus 3610 transistoren, mehr nicht. süß."
+2011-06-04 23:18:10,Svenska,ja
+2011-06-04 23:18:10,Svenska,^^
+2011-06-04 23:20:33,DesL,http://ftp.nl.debian.org/debian-archive/dists/woody/main/ -> kein installer-i386
+2011-06-04 23:20:36,DesL,was nu nnehmen?
+2011-06-04 23:20:54,Svenska,http://ftp.nl.debian.org/debian-archive/dists/woody/main/disks-i386/3.0.23-2002-05-21/
+2011-06-04 23:21:01,Svenska,http://ftp.nl.debian.org/debian-archive/dists/woody/main/disks-i386/current/
+2011-06-04 23:21:04,Svenska,letzteres
+2011-06-04 23:21:29,Svenska,"den installierst du von FAT ausgehend, d.h. du brauchst ""linux"" (kernel) und ""drivers.tgz"" auf der FAT-partition"
+2011-06-04 23:22:01,DesL,linux.bin?
+2011-06-04 23:22:11,Svenska,ja
+2011-06-04 23:22:46,Svenska,du kannst dir auch die install.bat noch dazu genehmigen ;)
+2011-06-04 23:23:02,Svenska,"achso, und images-1.44/root.bin brauchst du auch noch, das ist die initrd"
+2011-06-04 23:23:47,Svenska,"und es gibt sogar 1.2 MB; 5,25""-images ;)"
+2011-06-04 23:25:11,DesL,was mache ich mit der drivers.tgz ?
+2011-06-04 23:25:19,Svenska,nach C:\ kopieren
+2011-06-04 23:25:48,Svenska,"die braucht der installer später, da sind m.W. die netzwerktreiber drin"
+2011-06-04 23:26:01,Svenska,"ich kenn mich jetzt nicht mehr sooo gut damit aus, hab sowas schon länger nicht mehr installiert ^^"
+2011-06-04 23:26:02,DesL,die muss ich also NCIHT bei GRUB angeben?
+2011-06-04 23:26:05,Svenska,nein
+2011-06-04 23:26:12,Svenska,du solltest die INSTALL.BAT benutzen
+2011-06-04 23:26:40,Svenska,dann ists einfacher ;)
+2011-06-04 23:26:40,DesL,loadlin für DOS 6.22 suchen? yay \o/
+2011-06-04 23:26:51,Svenska,http://ftp.nl.debian.org/debian-archive/dists/woody/main/disks-i386/current/dosutils/loadlin.exe
+2011-06-04 23:26:56,DesL,:D
+2011-06-04 23:26:58,Svenska,loadlin gibts immer nur für dos
+2011-06-04 23:27:34,DesL,"tötet der grub, oder startet der linux aus DOS heraus?"
+2011-06-04 23:27:42,Svenska,"ja, der startet linux aus dos heraus"
+2011-06-04 23:27:47,Svenska,geht sogar mit HIMEM
+2011-06-04 23:27:49,DesL,WIN
+2011-06-04 23:27:56,Jidder,"woody is aus einer zeit, in der es noch kein internet gab"
+2011-06-04 23:27:59,Svenska,"wie, win?"
+2011-06-04 23:28:06,Svenska,loadlin ist äußerst antik
+2011-06-04 23:28:09,Jidder,#define WIN !FAIL
+2011-06-04 23:28:15,DesL,jo
+2011-06-04 23:28:23,Svenska,aber das bootformat wird vom aktuellen linux 2.6 m.W. noch unterstützt ;)
+2011-06-04 23:30:07,DesL,"erstmal an das PW für DOS erinnern, wenn man alles nur via netzwerk macht brauch man das ja nie :/"
+2011-06-04 23:30:18,Svenska,?
+2011-06-04 23:30:50,DesL,muss mich einloggen um die BAT zu starten
+2011-06-04 23:30:56,Svenska,lol?
+2011-06-04 23:31:04,Svenska,passwortschutz in autoexec.bat ?
+2011-06-04 23:31:05,DesL,"ja, geht remote schlecht"
+2011-06-04 23:31:07,DesL,ne
+2011-06-04 23:31:38,DesL,"""Warning: not enough free memory (load buffer size)"" *kopf->wand*"
+2011-06-04 23:31:47,Svenska,*lach*
+2011-06-04 23:31:52,Svenska,"okay, nimm grub :D"
+2011-06-04 23:32:01,Svenska,guck dir die parameter aber vorher in install.bat an
+2011-06-04 23:32:05,DesL,"nen, load buffer size: 0x0"
+2011-06-04 23:32:05,Svenska,TYPE INSTALL.BAT ;)
+2011-06-04 23:32:14,DesL,wie ging das mit HIMEM :D
+2011-06-04 23:32:26,Svenska,"in config.sys ""DEVICE=C:\DOS\HIMEM.SYS"""
+2011-06-04 23:32:42,Svenska,"gibts auch als exe-variante, heißt XMSMMGR.EXE (auf der win95-cd)"
+2011-06-04 23:33:03,Svenska,"besser ""DEVICE C:\DOS\HIMEM.SYS /TESTMEM:OFF"" (viel schneller)"
+2011-06-04 23:33:08,Svenska,und kein EMM386.EXE
+2011-06-04 23:33:15,Svenska,also auskommentieren (semikolon)
+2011-06-04 23:33:18,Jidder,Svenska kennt sich damit noch zu gut aus
+2011-06-04 23:33:34,Jidder,ich glaube er ist mit einer zeitmaschine von 1993 hierher gereist
+2011-06-04 23:33:36,Svenska,"Jidder: ja, ich kann die speicherverwaltung noch per hand optimieren"
+2011-06-04 23:33:44,Jidder,jeder andere würde sowas längst vergessen haben
+2011-06-04 23:33:44,Svenska,"nö, ich würde auf so nem rechner win95 installieren"
+2011-06-04 23:34:02,DesL,DEVICE=C:\WINDOWS\HIMEM.SYS
+2011-06-04 23:34:02,DesL,steht da schon
+2011-06-04 23:34:21,Svenska,"mach "" /TESTMEM:OFF"" dahinter, dann bootet es schneller"
+2011-06-04 23:34:45,DesL,aber trotzdem sieht er nur 1 MB
+2011-06-04 23:34:50,DesL,oder wie wo was
+2011-06-04 23:34:56,Svenska,*seufz*
+2011-06-04 23:35:02,Svenska,"moment, ich such mal ne config.sys raus"
+2011-06-04 23:43:01,Jidder,hat jemand von den anwesenden schon mal meinen crosscompiler aus dem wiki genutzt?
+2011-06-04 23:43:09,Svenska,nö
+2011-06-04 23:43:33,DesL,ja
+2011-06-04 23:43:37,DesL,"seit 1,5 jahren :"
+2011-06-04 23:44:17,Jidder,hm
+2011-06-04 23:44:24,DesL,why?
+2011-06-04 23:44:31,Jidder,"ich weiß nämlich nicht, ob ich den weiterhin anbieten soll"
+2011-06-04 23:44:44,DesL,hm
+2011-06-04 23:44:48,DesL,ich kann den auch hochladen
+2011-06-04 23:45:02,DesL,wenn ich ihn eben noch einmal saugen kann
+2011-06-04 23:45:06,Jidder,ich meine vor allem mit updates versorgen ^^
+2011-06-04 23:45:10,DesL,achso D
+2011-06-04 23:45:11,DesL,:D
+2011-06-04 23:45:23,Jidder,der pnoob hat das ja mal versucht und ist gescheitert ^^
+2011-06-04 23:45:24,DesL,ich habe ne version von 09
+2011-06-04 23:45:45,Jidder,also bei mir lokal hab ich immer den aktuellsten gcc von dem zeitpunkt an dem ich den computer formatiert habe
+2011-06-04 23:46:08,Jidder,"aber ich weiß nicht, ob ich mir die mühe machen soll, die immer hochzuladen"
+2011-06-04 23:46:17,Jidder,der mrx verzweifelt auch gerade am kompilieren 
+2011-06-04 23:46:22,Jidder,bzw jetzt ist er im bettchen
+2011-06-04 23:46:30,DesL,"der hier tut doch, und für OS-Dev braucht man eh nciht so ein extravagantes zeug"
+2011-06-04 23:46:50,Jidder,stimmt wohl
+2011-06-04 23:46:54,XanClic,"Das heißt, PrettyOS wird der Hahn abgedreht, wenn du den nicht mehr anbietest, Jidder? *g*"
+2011-06-04 23:47:02,DesL,XD
+2011-06-04 23:47:29,Jidder,hehe
+2011-06-04 23:54:24,Lutoma,> PNoob ist gescheitert
+2011-06-04 23:54:31,Lutoma,ist das nicht irgendwie eine wiederholugn?
+2011-06-04 23:54:36,Svenska,*g*

@@ -1,0 +1,242 @@
+date/time,nick,message
+2013-04-01 00:00:07,iksnagreb,"das ganze tritt auf, nachden create() aufgerufen wird, das zerlegt den path und dann wird open aufgerufen, aber dafür nehm ich den path noch mal neu aus ner andern variable"
+2013-04-01 00:01:47,JanDing,wie zerlegt es den pfad?
+2013-04-01 00:01:53,JanDing,mit strtok?
+2013-04-01 00:02:07,JanDing,hm wobei dann wär ja das / nicht mehr da
+2013-04-01 00:02:22,livinskull,<JanDing> wie zerlegt es den pfad? <= falsch vermutlich :P
+2013-04-01 00:02:46,JanDing,"du hast hoffentlich kopien vom pfad angelegt, wenn es den ""aus einer anderen variablen holt"
+2013-04-01 00:03:14,iksnagreb,http://pastebin.com/sTGJbj83 so wird der pfad zerlegt
+2013-04-01 00:03:35,iksnagreb,"das funktioniert auch, denn die datei ist danach erstellt"
+2013-04-01 00:04:21,JanDing,ist dein strtok standardkonform?
+2013-04-01 00:04:30,iksnagreb,ich denke schon
+2013-04-01 00:04:44,iksnagreb,"naja, ich hoffe"
+2013-04-01 00:04:45,livinskull,dann machts auf jeden Fall path kaputt
+2013-04-01 00:04:55,JanDing,das heißt es werden die gefundenen / überschrieben?
+2013-04-01 00:05:18,JanDing,"das heißt es werden die gefundenen ""/"" überschrieben?"
+2013-04-01 00:05:27,iksnagreb,http://pastebin.com/c4r7U2NV
+2013-04-01 00:05:32,JanDing,um das mal eindeutiger zu machen. nicht jeder parst meine sätze um diese zeit so wie ich ^^
+2013-04-01 00:06:46,iksnagreb,"aber deswegen hab ich ja zwei variablen dafür verwendet, di beide den path enthalten, die können doch nicht beide kaputt gemacht werden, oder?"
+2013-04-01 00:07:19,livinskull,"wenn du zwei ""pointer"" auf die gleiche variable hast schon"
+2013-04-01 00:07:20,livinskull,:P
+2013-04-01 00:07:31,JanDing,jo so ist es
+2013-04-01 00:07:38,JanDing,(das strtok schaut übrigens in ordnung aus)
+2013-04-01 00:08:26,livinskull,"oder z bsp n hardgecodeten path, zweimal den gleichen string, gcc optimized den zweiten dann weg wenner const ist glaub ich "
+2013-04-01 00:09:11,iksnagreb,"lol, die haben echt beide die gleiche adresse"
+2013-04-01 00:10:23,JanDing,das wird dich hoffentlich zu einer neuen erkenntnis über strings in c bzw. zeiger im allgemeinen führen ^^
+2013-04-01 00:11:43,iksnagreb,"ja, ich hab dafür zwar speicher von der speicherverwaltung angefordert, aber dann beide einfach so zugewiesen str = ""/tmp/tmp1"" dann hatten beide die gleiche adresse"
+2013-04-01 00:12:52,iksnagreb,danke für die hilfe
+2013-04-01 00:12:57,livinskull,lullz
+2013-04-01 00:13:02,livinskull,strcpy for the rescue!
+2013-04-01 00:17:00,martinFTW,Hey ich hab ein Problem mit Multitasking erst gehz wunderbar aber wenn ich das zweite mal in einen Task springe kriege ich einen Pagefault bei iret
+2013-04-01 00:17:59,martinFTW,Cr2 = 0x0 dabei liegt auf dem Stack wunderbar meine rücksprungaddresse die auch gemappt
+2013-04-01 00:18:02,martinFTW,ist
+2013-04-01 00:18:56,martinFTW,habt ihr spontan ne idee was da sein könnte
+2013-04-01 00:23:47,JanDing,"wenn es nicht der stack ist, ist das tss der nächste verdächtige"
+2013-04-01 00:25:26,martinFTW,tss[1] =  (uint32_t)(new_cpu +1) nehme ich nachwievor 
+2013-04-01 00:26:06,JanDing,"wenn es nicht das tss ist, ist doch was kaputt mit dem stack"
+2013-04-01 00:26:14,JanDing,ich glaube andere möglichkeiten gibt es gar nicht
+2013-04-01 00:26:57,martinFTW,übrigens geht es wenn ich immer den CPU_state vom Anfang nehme also das nicht den Status speichere
+2013-04-01 00:27:36,JanDing,wie speicherst du den status?
+2013-04-01 00:27:45,livinskull,dann is wohl der stack kaputt wen dus wie im tut machst
+2013-04-01 00:27:51,livinskull,imho
+2013-04-01 00:28:07,martinFTW,cpu = current_thread->state;
+2013-04-01 00:28:34,JanDing,und current_thread->state ist ein zeiger auf den stack?
+2013-04-01 00:29:23,martinFTW,ein zeiger auf den Cpu state des threads in den geswitcht werden soll
+2013-04-01 00:29:50,JanDing,"du hast doch interrupt routinen, die pusha am anfang machen oder nicht?"
+2013-04-01 00:30:10,JanDing,und dann sowas wie push %esp und das ist dann der parameter deines c-interrupthandlers?
+2013-04-01 00:30:10,martinFTW,    pushl $0
+2013-04-01 00:30:17,martinFTW,    pushl $\nr
+2013-04-01 00:30:23,JanDing,oha was kommt denn da
+2013-04-01 00:30:50,JanDing,ach das wars schon
+2013-04-01 00:30:52,JanDing,glück gehabt ^^
+2013-04-01 00:31:02,livinskull,xD
+2013-04-01 00:31:20,martinFTW,dann wird der ganze rest gepusht und dann esp
+2013-04-01 00:31:50,martinFTW,lol hä ich mache das doch wie im tut
+2013-04-01 00:32:06,JanDing,ja dann ist der stack kaputt
+2013-04-01 00:32:33,JanDing,du solltest prüfen warum auf 0 zugegriffen wird
+2013-04-01 00:32:37,JanDing,ist eines der register 0?
+2013-04-01 00:32:53,martinFTW,die meisten
+2013-04-01 00:33:05,JanDing,interessanter sind eip und esp
+2013-04-01 00:33:19,martinFTW,die aber nämlich genau nicht
+2013-04-01 00:33:25,JanDing,kommt der wert cr2=0 aus deinem eigenen interrupt handler oder aus dem qemu log?
+2013-04-01 00:33:34,martinFTW,qemu log
+2013-04-01 00:33:45,JanDing,dann weiß ich auch nicht weiter
+2013-04-01 00:34:09,martinFTW,das hab ich befürchtet trotzdem danke
+2013-04-01 00:35:08,martinFTW,ich merke aber das ich gerade das mit dem TSS viel zu wenig verstehe
+2013-04-01 00:36:26,martinFTW,und auch das einige Segmentregister anders aussehen als bei den anderen Taskswitches
+2013-04-01 00:37:06,JanDing,im registerdump von qemu?
+2013-04-01 00:37:42,martinFTW,ja
+2013-04-01 00:38:14,JanDing,"das deutet auch darauf hin, dass nicht auf dem stack liegt, was da liegen sollte, oder dass der stackpointer falsch ist"
+2013-04-01 00:38:46,JanDing,"oder was heißt ""anders"""
+2013-04-01 00:39:24,martinFTW,CS und SS sind anders
+2013-04-01 00:40:07,JanDing,welche werte genau?
+2013-04-01 00:40:33,martinFTW,Cs ist bei den ersten switches 0x1b dann 0x8
+2013-04-01 00:41:08,martinFTW,ss erst 0x23 dann 0x10
+2013-04-01 00:41:17,JanDing,hm aktivierst du interrupts im kernel?
+2013-04-01 00:41:42,JanDing,"bzw. ich formuliere es anders: es könnte sein, dass du interrupts im kernel aktiviert hast"
+2013-04-01 00:42:18,martinFTW,JanDing hmn nein eig verwende ich nur interrupt gates
+2013-04-01 00:42:28,martinFTW,also IRQs deaktiviert
+2013-04-01 00:43:05,JanDing,hm okay
+2013-04-01 00:43:06,JanDing,nicht mal ich weiß wie die dinger heißen ^^
+2013-04-01 00:43:39,martinFTW,Ich examine mal den Stack dann weiß ich definitiv ob da was nicht so ist wies sein sollte
+2013-04-01 00:43:47,JanDing,jo das ist eine gute idee
+2013-04-01 00:52:27,martinFTW,also esp ist beim interrupt 0x128000 an 0x128000 liegt mein EIP an 0x128004 liegt 0x1b an 0x128008 liegt eflags also 0x202
+2013-04-01 00:54:17,JanDing,du meinst beim iret?
+2013-04-01 00:54:25,martinFTW,ja
+2013-04-01 00:56:10,martinFTW,iwie müsste das schon alles gepusht sein und dann verstehe ich das mit der Reihenfolge überhaupt nicht die ist nämlich ganz anders wie in CPU_STATE oder struct x86_cpu_state
+2013-04-01 00:56:26,martinFTW,*gepopt
+2013-04-01 00:56:56,JanDing,"also die reihenfolge eip, cs, eflags ist richtig"
+2013-04-01 00:58:00,martinFTW,qemu log sagt mir aber das die Cpu hier garnichts richtig eingesetzt hat
+2013-04-01 00:58:06,martinFTW,von den drei
+2013-04-01 00:58:17,JanDing,"das würde heißen, dass der page fault vorher aufgetreten ist"
+2013-04-01 00:58:27,JanDing,die adresse 0x128000 ist etwas seltsam
+2013-04-01 00:58:40,JanDing,das heißt dass deine struct über zwei pages geht
+2013-04-01 00:59:00,martinFTW,wegen dem alignment?
+2013-04-01 00:59:06,JanDing,vorausgesetzt du hast vor dem iret sowas wie popa bzw pop für alle segmentregister
+2013-04-01 00:59:14,JanDing,ja
+2013-04-01 00:59:55,JanDing,"äh nicht ""pop für alle segmentregister"" sondern ""pop für irgendwelche register"""
+2013-04-01 01:00:07,JanDing,das klingt auch lustig
+2013-04-01 01:00:10,JanDing,pop
+2013-04-01 01:01:09,martinFTW,wie kommst du auf zwei pages?
+2013-04-01 01:01:54,JanDing,hast du so ein struct cpu_state wie hier http://www.lowlevel.eu/wiki/Teil_5_-_Interrupts?
+2013-04-01 01:02:08,martinFTW,ja auch
+2013-04-01 01:02:21,JanDing,"wenn du so eins hast, und das eip an adresse 0x128000 liegt, heißt das, dass error an adresse 0x127fffc liegt"
+2013-04-01 01:02:33,JanDing,intr an 0x127fff8 und so weiter
+2013-04-01 01:02:50,JanDing,also halt auf einer anderen page als eip
+2013-04-01 01:03:16,JanDing,(ein f weniger)
+2013-04-01 01:04:16,martinFTW,an 0x127ff8 liegt 0x8
+2013-04-01 01:05:19,JanDing,vor dem iret?
+2013-04-01 01:05:27,JanDing,bzw. beim iret
+2013-04-01 01:06:11,martinFTW,wie also beim error ist das 0x128000
+2013-04-01 01:06:30,JanDing,ich weiß nicht mehr wovon du redest
+2013-04-01 01:06:48,JanDing,"also wenn du andeuten willst, dass intr = 0x08 dann heißt das entweder double fault oder timer irq"
+2013-04-01 01:07:07,JanDing,"wobei wenn es der timer irq ist, dann hast du den PIC nicht (erfolgreich) umgemappt"
+2013-04-01 01:07:25,JanDing,"wenn es ein double fault ist, dann solltest du das qemu.log nachlesen können (timer irq kann man da auch nachlesen)"
+2013-04-01 01:07:27,JanDing,ich weiß nicht mehr weiter
+2013-04-01 01:07:32,JanDing,und es ist spät
+2013-04-01 01:07:34,JanDing,gn8
+2013-04-01 01:07:46,martinFTW,thx
+2013-04-01 01:08:00,martinFTW,bb
+2013-04-01 02:33:59,Guest0,Haha
+2013-04-01 02:34:00,Guest0,Ich hab gewonnen
+2013-04-01 02:34:12,Guest0,Ich bin der root unter den Gästen
+2013-04-01 14:50:19,iksnagreb,hallo
+2013-04-01 14:53:38,martinFTW,übrigens geht multitasking jetzt(aber nur wenn ich die Segmentdeskriptoren mannuel auf die richtigen werte setze beim threadswitch)
+2013-04-01 17:03:09,AbiChaos3,Hey Leute. Kurze Frage: e^2x ist doch (e^x)^2 und nicht (e^(x^2))?
+2013-04-01 17:04:03,livinskull,wtf
+2013-04-01 17:04:10,livinskull,hier is odev
+2013-04-01 17:04:14,livinskull,nicht #matheabi
+2013-04-01 17:05:34,AbiChaos3,"#matheabi ist leer :( Ihr seid nunmal die einzigen die sich mit Mathe gut auskennen, wenn man nichtmal dem Buch trauen kann. "
+2013-04-01 17:06:52,AbiChaos3,"die eben sagen, dass e^2x == e^x^2. Das stimmt zwar für den Fall, indem x = 2, aber für andere Zahlen nicht mehr. "
+2013-04-01 17:11:06,Jidder,e^2x ist nicht e^(x^2)
+2013-04-01 17:12:06,AbiChaos3,aber (e^x)^2
+2013-04-01 17:12:10,PatrickBic,gibt nur zufaellig dasselbe ergebnis bei x=2
+2013-04-01 17:12:20,PatrickBic,"AbiChaos, potenz ist rechtsassoziativ"
+2013-04-01 17:12:21,Jidder,ja
+2013-04-01 17:12:29,PatrickBic,nicht wie vieles in mathe sonst linksassoziativ ist
+2013-04-01 17:12:48,PatrickBic,d.h. e^x^2 wird => e^(x^2)
+2013-04-01 17:12:51,Jidder,am besten immer die reihendarstellung von e^x nehmen
+2013-04-01 17:13:19,Jidder,im mathebuch steht aber hoffentlich nicht die notation mit ^
+2013-04-01 17:13:52,PatrickBic,das war zuviel :P
+2013-04-01 17:14:05,Jidder,zwei sind ja noch da
+2013-04-01 17:14:15,Jidder,dreiffachredundante auslegung
+2013-04-01 17:14:20,PatrickBic,oh die hab ich gar ned mitgekriegt
+2013-04-01 17:14:22,AbiChaos3,Das war nur der der schon längst überfällig war ;) 
+2013-04-01 17:14:30,AbiChaos3,Der buggy Java-Client
+2013-04-01 17:14:48,PatrickBic,"AbiChaos3, jedenfalls: das mathebuch ist schwachsinn oder du verliest dich da oder so"
+2013-04-01 17:14:58,PatrickBic,auf jeden fall ist e^(x^2) != e^(2x)
+2013-04-01 17:16:09,AbiChaos3,War zum Glück kein Mathebuch sondern ein Aufgabenbuch mit Lösungen
+2013-04-01 17:17:08,PatrickBic,"AbiChaos3, nachweisbar ueber gleichsetzen und dann muss das fuer jedes x gelten"
+2013-04-01 17:17:23,PatrickBic,und da es fuer bsp. 3 nicht geht ists widerlegt
+2013-04-01 17:17:36,AbiChaos3,"auch wenn man die Innere Ableitung ansieht, fällt einem auf dass 2x != x^2"
+2013-04-01 17:17:44,AbiChaos3,"Innere Funktion, nicht Ableitung"
+2013-04-01 17:18:04,PatrickBic,"AbiChaos3, das auch ja. :P"
+2013-04-01 17:18:41,JanDing,zeh
+2013-04-01 19:24:41,JanDing,"wenn ich meinen kernel in qemu mittels multiboot lade, steht in eax 0x2badb000"
+2013-04-01 19:25:26,JanDing,wasn das fürn quark
+2013-04-01 19:25:52,DesL,moin
+2013-04-01 19:26:11,JanDing,moin
+2013-04-01 19:26:41,JanDing,problem gelöst. war irgendwas mit dem linker. der multiboot_header kann irgendwie nicht in die .text-sektion
+2013-04-01 19:26:59,JanDing,danke #lost
+2013-04-01 19:43:24,iksnagreb,hallo
+2013-04-01 19:50:35,JanDing,moin
+2013-04-01 19:54:13,martinFTW,JanDing: ich habe Multitasking übrigens halbwegs gefixt
+2013-04-01 19:54:42,martinFTW,<spam> https://github.com/MartinErhardt/Lizarx/blob/master/src/kernel/mt/threads.c </spam>
+2013-04-01 19:59:35,JanDing,durch das setzen der segmentregister in dispatch_thread?
+2013-04-01 20:01:12,martinFTW,jap wobei ich denke das ich den Bug der dahintersteckt immer noch nicht gefixt habe
+2013-04-01 20:02:04,martinFTW,cs ändert sich iwie mysteriöse weise zu von 0x23 zu 0x24 
+2013-04-01 20:02:24,martinFTW,wenn der state gespeichert wird
+2013-04-01 20:02:53,martinFTW,denke ich mal 
+2013-04-01 20:03:32,JanDing,oha
+2013-04-01 20:03:35,JanDing,das ist ziemlich seltsam
+2013-04-01 20:05:13,martinFTW,Osdev ist ziemlich komisch wie ich schon bei meinem Paging Bios mem problem feststellen durfte ;D
+2013-04-01 20:05:56,JanDing,hehe
+2013-04-01 20:06:05,JanDing,hast du einen idle thread oder so?
+2013-04-01 20:06:17,JanDing,"also etwas das zusätzlich zu den threads existiert, die du aus den modulen erstellst?"
+2013-04-01 20:06:26,martinFTW,nö
+2013-04-01 20:26:38,iksnagreb,"wtf, ich hab grad mein pmm echt heftig optimiert, es brauchte zum anfordern des gesamten physischen speicher bei 4GB etwa 40 Sekunden, jetzt geht es in wenigen Sekunden"
+2013-04-01 20:37:22,martinFTW,iksnagreb: LOL es sollte einen Sekundenbruchteil dauern außerdem ist es ziemlich schwierig eine dermaßen lahme PMM(40 sek?) zu proggen(wahrscheinlich hast du auch übertrieben)
+2013-04-01 20:37:43,iksnagreb,"ne, ich hab auf die uhr gesehen"
+2013-04-01 20:38:05,iksnagreb,ich hatte überhaut keine optimierung drin
+2013-04-01 20:38:17,iksnagreb,er musst am ende die ganze bitmap durchlaufen
+2013-04-01 20:38:35,iksnagreb,"jetzt merkt er sich, wo er zuletzt war"
+2013-04-01 20:38:51,martinFTW,okay wie schnell meine ist weiß ich nicht aber auch ohne Opti musst du da einen bug haben
+2013-04-01 20:40:05,martinFTW,weil 40 sekunden sind bei einem noch kleinen kernel ziiemlich viel da bin ich mir relativ sicher obwohl ich nicht der klügste bin
+2013-04-01 20:40:23,martinFTW,und auch 1 sek ist verdächtig langsam
+2013-04-01 20:41:30,iksnagreb,für 4GB ?
+2013-04-01 20:42:01,martinFTW,ja der kernel belegt ja nur die ersten 4 mb
+2013-04-01 20:42:21,iksnagreb,aber ich hab ja die gesamten 4GB angefordert
+2013-04-01 20:43:02,martinFTW,Du forderst in deiner PMM gleich 4GB an?
+2013-04-01 20:43:15,iksnagreb,"nein, immer eine seite, 4k"
+2013-04-01 20:43:30,iksnagreb,"inner schleife, ich wollte testen wie mein pmm so läuft"
+2013-04-01 20:44:27,martinFTW,achso du forderst 4000 seiten an und misst wie lang das dauert
+2013-04-01 20:44:43,martinFTW,*4000000
+2013-04-01 20:44:48,martinFTW,oder so 
+2013-04-01 20:44:57,martinFTW,oder mehr 
+2013-04-01 20:45:03,iksnagreb,917217
+2013-04-01 20:46:27,martinFTW,okay :D gut meine Mathe künste sind eher bescheiden Ich dachte die Allokation einer Seite dauerte 4GB
+2013-04-01 20:46:33,martinFTW,*40 sek
+2013-04-01 20:47:34,martinFTW,iksnagreb: hast du github?
+2013-04-01 20:47:40,iksnagreb,ne
+2013-04-01 20:48:10,martinFTW,oder sowas ähnliches ich will ja nicht spammen ;)
+2013-04-01 20:48:25,iksnagreb,"ne, ich hab sowas nicht"
+2013-04-01 20:51:08,martinFTW,wobei diese Optimierung die vordeste Sicher freie seite zu speichern auch speziell in diesem Testfall besonders gut geht
+2013-04-01 20:52:24,martinFTW,sag ich mal; du musst dann ja z.B den Pointer ja auch zurücksetzen wenn du speicher freest vor diesem erste sichere frei seite addresse
+2013-04-01 20:54:17,martinFTW,wenn du dann aber zwei physisch zusammenhängende Seiten alloziieren willst
+2013-04-01 20:54:36,martinFTW,und du vorher nur eine gefreet hast 
+2013-04-01 20:54:47,iksnagreb,"bei free speicher ich inner weiteren variable (last_freed) die wird dann bei alloc verwendet, ohne die bitmap zu durchlaufen"
+2013-04-01 20:55:27,iksnagreb,ich muss jetzt erst noch funktionen für das allozieren zusammenhängender adressen schreiben
+2013-04-01 20:55:46,iksnagreb,bisher brauch ich noch keinen zusammenhängenden physischen speicher
+2013-04-01 20:57:24,martinFTW,Also ich würde das nur als Optimierung und nicht als Bitmap ERSATZ machen aber gut das ist deine entscheidung und ich bin auch noch nicht sehr weit..
+2013-04-01 20:58:12,iksnagreb,"naja, es läuft, überarbeiten kann ichs nacher noch"
+2013-04-01 21:00:42,martinFTW,Ich werde dieses First_surely_free mit einem Tree kombinieren
+2013-04-01 21:48:35,martinFTW,sagt mal sollte ich die libC im Hauptrepository versionieren in ein Submodul auslagern oder als ganz eigenständig verwalten
+2013-04-01 21:49:29,JanDing,das ist einer hervoragende frage
+2013-04-01 21:54:14,martinFTW,Unser aller Herr und Vorbild Linus Torvalds sagt wir sollen viele kleine Repos machen weil man da z.B commit access für jedes einzelne verwalten kann (http://www.youtube.com/watch?v=4XpnKHJAok8) da waren Submodule meines Wissens aber noch nicht da 
+2013-04-01 21:54:30,martinFTW,also 2007
+2013-04-01 21:55:56,martinFTW,unterstützt Github eig submodule
+2013-04-01 21:56:06,martinFTW,?
+2013-04-01 21:58:11,JanDing,"wenn dann müsste die frage lauten, ob git es unterstützt"
+2013-04-01 22:01:33,martinFTW,"Ja in meinem tollen 300 seitigen buch heißt es: ""Mit Submodulen können in einem GitRepository(Gesamt-Repository) andere Repositorys(Modul-Repositorys eingebunden werden)"""
+2013-04-01 22:02:30,martinFTW,(K.11 S. 87 Z.1)
+2013-04-01 22:04:18,martinFTW,ich meinte mehr wie github das dann visualisiert 
+2013-04-01 22:05:59,JanDing,du hast probleme ^^
+2013-04-01 22:08:23,JanDing,ich war wieder böse :(
+2013-04-01 22:19:29,XanClic,"JanDing, übrigens gibt es auch noch Guest0"
+2013-04-01 22:19:34,XanClic,Nur so nebenbei
+2013-04-01 22:22:07,martin_,:D
+2013-04-01 22:41:14,JanDing,hm dann beginnt die suche nach Guest-1
+2013-04-01 22:41:53,XanClic,Vielleicht werden die Guestnummern ja Modulo irgendwas vergeben
+2013-04-01 22:42:09,XanClic,"Und wenn Guest65535 erreicht ist, stürzt euIRC immer ab"
+2013-04-01 22:46:29,JanDing,hm
+2013-04-01 22:47:02,JanDing,man könnte das mit ein paar 10000 bots prüfen
+2013-04-01 22:50:04,spacer,mit nem botnet
+2013-04-01 22:50:18,spacer,die zahl der verbinugen von einer ip ist begrenzt
+2013-04-01 22:50:28,spacer,und proxys mag euirc auch nicht
+2013-04-01 22:50:31,XanClic,Muss ja nicht parallel sein
+2013-04-01 22:52:57,spacer,hm
+2013-04-01 22:57:33,martinFTW,wer finanziert die IRC server eig?
+2013-04-01 22:57:40,XanClic,JanDing
+2013-04-01 23:06:50,JanDing,korrekt
+2013-04-01 23:58:38,martinFTW,hallo eig ist das VFS ja nur eine Abstraktionsschicht über die andere FS gemountet werden können sodass globale Pfade möglich sind.
+2013-04-01 23:59:44,mgottschlag,.

@@ -1,0 +1,147 @@
+date/time,nick,message
+2010-01-27 09:25:27,kwolf,Moin
+2010-01-27 09:34:23,FreakyPenguin,Moin
+2010-01-27 11:06:25,kwolf,ping pc[away]
+2010-01-27 11:06:49,pc[away],pong kwolf
+2010-01-27 11:07:31,kwolf,"I've noticed that with the current synchronous interfaces and our agreement to forbid threads, we actually have a problem ;-)"
+2010-01-27 11:08:00,kwolf,"We can have one of them, but both together mean that we completely block a device while its processing a request"
+2010-01-27 11:08:46,pcmattman,"Hmm, yes: that might be problematic"
+2010-01-27 11:09:13,pcmattman,"Also, I should probably mention that I now have the SATA specification so if I end up being able to write a SATA driver I'll be porting it to CDI"
+2010-01-27 11:09:49,kwolf,"It might not be relevant for our current basic drivers, but it limits possible performance, so we need to decide which option we want to take. What's your preference?"
+2010-01-27 11:10:02,pcmattman,"Perhaps we might need to add in locking of some sort to CDI drivers, implemented by the host - that'd be the best performance route"
+2010-01-27 11:10:18,kwolf,pcmattman: Nice. I'm just wondering why you take the pain of porting it and don't do SATA as a CDI driver in Pedigree in the first place
+2010-01-27 11:10:49,pcmattman,I guess mainly because it's easier to do hackish testing with the Pedigree driver interface ;)
+2010-01-27 11:11:16,kwolf,What are we missing to allow hackish testing? ;-)
+2010-01-27 11:11:21,FreakyPenguin,*g*
+2010-01-27 11:11:37,pcmattman,As for your original question: wouldn't it be difficult to allow asynchronous behaviour and forbid threads? :)
+2010-01-27 11:11:52,kwolf,"As for the CDI locks, I was thinking of opt-in multithreading for drivers, too"
+2010-01-27 11:12:18,FreakyPenguin,"Hm sounds reasonable, yes"
+2010-01-27 11:12:47,kwolf,"And yes, I think async wouldn't be as nice to handle, but you might have been of a different opinion"
+2010-01-27 11:13:01,kwolf,And I didn't want to influence your answer ;-)
+2010-01-27 11:13:58,kwolf,"Multithreading not in the sense that drivers could spawn threads, but that the CDI implementaiton is allowed to run multiple threads"
+2010-01-27 11:14:52,pcmattman,"Right, that's how I thought you defined threads"
+2010-01-27 11:15:13,pcmattman,In which case I would say remove threads and allow asynchronous calls to drivers
+2010-01-27 11:15:49,pcmattman,"I know that's not what you wanted to hear, but it's what I think makes the interface more accessible"
+2010-01-27 11:16:49,kwolf,It's really a hard thing to estimate what effect it would have on drivers
+2010-01-27 11:17:11,kwolf,"Basically, I want to keep writing drivers as simple as possible, while still not limiting them too much"
+2010-01-27 11:18:21,kwolf,"Hm, what exactly do you mean by ""more accessible""?"
+2010-01-27 11:21:55,pcmattman,"Well, the implementation doesn't need to worry about enforcing locking, just providing something like a mutex implementation in the interface if they feel locking is an issue"
+2010-01-27 11:22:16,pcmattman,If they don't need locking that can be a no-op - it leaves the choice up to the OS developer rather than enforcing a CDI design choice on them
+2010-01-27 11:22:33,pcmattman,It does however mean driver writers need to write code which locks global structures when they're used and all that
+2010-01-27 11:22:47,kwolf,"Hm, what you describe is basically threading, no?"
+2010-01-27 11:23:16,pcmattman,For one definition of threading
+2010-01-27 11:23:26,pcmattman,"It might be coming from a completely different process context, but I guess it's still a thread"
+2010-01-27 11:23:37,kwolf,"The async model would mean that you don't need locks because threading is forbidden, but each function like send_packet gets a callback as an additional parameter"
+2010-01-27 11:23:45,kwolf,At least that's how I understand it
+2010-01-27 11:24:01,pcmattman,"Well, I think it should be possible for multiple contexts to call upon a driver"
+2010-01-27 11:24:48,kwolf,"The context usually doesn't make a difference in kernel space, does it?"
+2010-01-27 11:25:07,pcmattman,In Pedigree for example you can have many threads all calling into the same device driver
+2010-01-27 11:25:43,pcmattman,(system calls are pre-emptable by the scheduler)
+2010-01-27 11:26:51,kwolf,"Well, yes"
+2010-01-27 11:26:57,kwolf,You're confusing me
+2010-01-27 11:27:07,kwolf,"Are we actually talking about the same thing, just with different names?"
+2010-01-27 11:27:22,pcmattman,Possibly
+2010-01-27 11:27:32,kwolf,"Because this is exactly my definition of the threading solution, whereas you said ""remove threads"""
+2010-01-27 11:27:55,pcmattman,"Well, the CDI implementation doesn't create threads, which is how you defined it earlier"
+2010-01-27 11:28:15,kwolf,The Pedigree kernel is the CDI implementation
+2010-01-27 11:28:16,pcmattman,"""run multiple threads"" interpreted as ""create multiple threads"""
+2010-01-27 11:28:35,pcmattman,"No, the CDI implementation is the CDI module which sits between the kernel and CDI drivers"
+2010-01-27 11:28:44,pcmattman,The interface != the kernel
+2010-01-27 11:29:10,kwolf,"It implements the interface by means of the kernel, so the kernel is part of the implementation ;-)"
+2010-01-27 11:29:25,kwolf,"Okay, I'll s/CDI implementation/OS/ then. Better this way?"
+2010-01-27 11:30:04,pcmattman,"Well in that case my mention of ""remove threads"" is the opposite of what I want ;)"
+2010-01-27 11:32:41,kwolf,"Right, so I guess we actually mean the same"
+2010-01-27 11:34:38,kwolf,"pcmattman: Are you okay with making this kind of threading opt-in? Like adding a field cdi_driver.threadsafe and if it's not set, the CDI implementation must lock the device before calling into the driver if the OS uses threads?"
+2010-01-27 11:36:37,pcmattman,"Yeah, sounds good"
+2010-01-27 11:37:04,pcmattman,I'm not 100% certain if the driver should call a CDI function to lock the resource or if the OS should decide though
+2010-01-27 11:38:02,kwolf,How could the OS decide that?
+2010-01-27 11:38:28,pcmattman,"Well, s/OS/CDI implementation/"
+2010-01-27 11:38:37,kwolf,Same question
+2010-01-27 11:38:49,pcmattman,A driver might call cdi_mutex_lock(&driver->mutex) because it knows it's about to touch a global structure
+2010-01-27 11:38:56,pcmattman,The OS wouldn't know that the global structure needs locking
+2010-01-27 11:39:04,pcmattman,CDI implementation rather
+2010-01-27 11:39:31,kwolf,"Right, as I understand it this means that the driver need to lock"
+2010-01-27 11:39:42,pcmattman,"So the question is: is the threading opt-in to be an opt-in provided by the CDI implementation (eg, turning cdi_mutex_lock into a no-op)?"
+2010-01-27 11:40:34,pcmattman,"(that would mean drivers would need to be fully aware of potential locking, but the OS developer could ignore the lock requests if they wanted)"
+2010-01-27 11:40:41,pcmattman,Or should it be on the other side?
+2010-01-27 11:41:25,kwolf,What I was thinking about is that driver can completely ignore the whole issue and get a global lock from the CDI implementation if needed.
+2010-01-27 11:41:41,kwolf,"Their performance will probably suffer, but a simple working driver is better than no driver at all"
+2010-01-27 11:43:13,kwolf,"What the CDI implementation actually is doing with lock requests, is up to the OS anyway. If the OS uses threads, it should probably do locking. If not, make it a no-op."
+2010-01-27 12:02:01,pcmattman,That works
+2010-01-27 12:02:34,pcmattman,"I was afraid to suggest a ""global lock"" idea, so I'm glad you did for me :)"
+2010-01-27 12:04:02,kwolf,"Heh, I'm always good for suggesting ugly things ;-)"
+2010-01-27 12:05:19,kwolf,Have you already had a look at my mem.h mail?
+2010-01-27 12:06:13,pcmattman,"I have, and I have replied"
+2010-01-27 12:06:25,pcmattman,I thought you had already received it and ignored it ;)
+2010-01-27 12:07:08,kwolf,I'm talking about my reply to your reply to my original mail ;-)
+2010-01-27 12:07:36,kwolf,At least there isn't another reply to this one yet on list.tyndur.org
+2010-01-27 12:41:28,pcmattman,"kwolf: Ah, I found the reply"
+2010-01-27 12:43:19,kwolf,"You still don't use mail folders and threading (yay, in a third meaning!)? At some point you'll need to organise your mails better. ;-)"
+2010-01-27 12:43:52,pcmattman,I'd like to auto-archive all the QEMU-devel mails so I don't get excited when I wake up and have 150 emails :)
+2010-01-27 12:44:29,kwolf,"Sorry, I'll try to keep my next patch series on qemu-devel smaller ;-)"
+2010-01-27 12:44:58,pcmattman,It's those guys with the 30-odd patch series which could _easily_ be merged into 3 or 4 larger patches
+2010-01-27 12:45:19,pcmattman,If I saw a 30 patch series for Pedigree I'd just ignore it ;)
+2010-01-27 12:45:49,kwolf,"Heh, I was just going to say ""yes, the Pedigree repository looks like you merge everything together"" ;-)"
+2010-01-27 12:47:41,kwolf,"I mean, merging is always easy - git will do it for you. Reviewing a monster patch isn't as easy, though."
+2010-01-27 12:47:52,pcmattman,True
+2010-01-27 12:48:04,pcmattman,"I try to split work into smallish patches, but I still don't commit for every little change to each file"
+2010-01-27 12:48:22,pcmattman,"I know that's not really what qemu-devel is like, but exaggeration is fun ;)"
+2010-01-27 12:49:46,pcmattman,"Well, each was a milestone in the development"
+2010-01-27 12:49:49,pcmattman,Then a few while I was fixing it ;)
+2010-01-27 12:52:07,pcmattman,"Right, replied to your mail"
+2010-01-27 12:52:16,pcmattman,"I'm off to sleep now, so I'll read your reply in the morning"
+2010-01-27 12:52:38,kwolf,"Ok, good night"
+2010-01-27 16:28:11,quok,wow a backlog for me to read
+2010-01-27 16:28:17,quok,"moin, btw :)"
+2010-01-27 16:28:21,XanClic,"Moin, quok"
+2010-01-27 16:29:43,kwolf,Moin quok
+2010-01-27 17:03:54,kwolf,quok: Still reading the backlog or are you in silent agreement?
+2010-01-27 17:32:38,quok,"kwolf: just got out of a meeting at work, so now time to read the backlog"
+2010-01-27 17:36:08,kwolf,That's the advantage of conference calls: You can read the backlog during the call. ;-)
+2010-01-27 17:36:30,FreakyPenguin,*g*
+2010-01-27 17:39:35,quok,unfortunately this one wasn't a conf call
+2010-01-27 17:41:20,quok,anyway... I think the above conversation has confused me
+2010-01-27 17:41:55,kwolf,"Anything else would have been surprising, because we were confused as well ;-)"
+2010-01-27 17:42:04,kwolf,But you're still confused in the end?
+2010-01-27 17:42:05,quok,"I want to be able to run each driver in a separate thread, but I don't need multiple threads for the same driver :)"
+2010-01-27 17:42:25,quok,"yes, still confused :)"
+2010-01-27 17:42:29,kwolf,You do need multiple threads for the same driver if you only have synchronous functions
+2010-01-27 17:43:11,quok,"no you don't, you can just let the driver block! :)"
+2010-01-27 17:43:12,kwolf,"As an example, I can't be in send_packet() until the network card signals back that the packet has actually be sent, before I queue the next one"
+2010-01-27 17:43:29,kwolf,"Well, I can, but performance suffers"
+2010-01-27 17:45:19,quok,"actually my original idea for device drivers in quokos was fully asynchronous drivers, each running in a separate thread"
+2010-01-27 17:45:34,quok,but drivers themselves didn't need to be multi-threaded
+2010-01-27 17:46:55,kwolf,I'm not sure if asynchronous drivers are easier to do
+2010-01-27 17:48:53,kwolf,"Your definition of asynchronous functions is the same as mine, btw? ;-)"
+2010-01-27 17:50:32,quok,something with callbacks? :)
+2010-01-27 17:51:14,kwolf,Should be near enough then ;-)
+2010-01-27 17:51:38,kwolf,Matt seemed to understand something completely different
+2010-01-27 17:54:28,quok,"the synchronous model makes driver writing easier though. All this locking and such will confuse people. Too many people have trouble making it past ""Hello OS World!"" ;)"
+2010-01-27 17:57:00,kwolf,"Right, I'm afraid of ending up with something like qcow2 which is AIO hell"
+2010-01-27 18:16:35,quok,and I don't want to end up with something like UDI ;)
+2010-01-27 18:17:45,kwolf,I've not seen much from UDI except this meta-meta-meta programming stuff
+2010-01-27 18:18:07,kwolf,But from what I've heard how it works I'd expect it's the same kind of thing
+2010-01-27 18:22:17,kwolf,"I'm still undecided what the solution to our problem is, though. Maybe it ends up being the callbacks."
+2010-01-27 18:30:05,quok,"ooh, a new thread for every request! ;)"
+2010-01-27 18:30:08,quok,"I'm joking, of course"
+2010-01-27 18:31:57,kwolf,Heh ;-)
+2010-01-27 18:32:44,kwolf,"CDI, now with built in stress test for your scheduler ;-)"
+2010-01-27 18:32:56,kwolf,And memory management. And everything.
+2010-01-27 18:33:16,kwolf,"But, well, I guess UDI beats it. It has a stress test for your brain."
+2010-01-27 18:33:30,FreakyPenguin,*g*
+2010-01-27 20:04:00,taljeth,re
+2010-01-27 20:05:48,FreakyPenguin,wz
+2010-01-27 20:06:30,XanClic,wb
+2010-01-27 20:07:08,taljeth,"Heh, different amount of i18n ;-)"
+2010-01-27 20:07:33,FreakyPenguin,Ah that's #tyndur... ;-)
+2010-01-27 20:08:12,taljeth,"I think it's okay, quok hasn't had his German lesson for today yet ;-)"
+2010-01-27 20:10:44,FreakyPenguin,Hope that isn't too much for him. *g*
+2010-01-27 20:46:05,quok,:P
+2010-01-27 20:46:35,quok,trying to code when you are constantly sneezing and your eyes are watering isn't fun
+2010-01-27 20:47:53,taljeth,"What code? Hm, at this time probably still at work?"
+2010-01-27 20:58:35,quok,actually I left work early today
+2010-01-27 20:58:44,quok,working on some quokos code right now
+2010-01-27 21:06:56,taljeth,Still MM?
+2010-01-27 21:09:20,quok,"nah, bootloader type code"
+2010-01-27 22:48:06,taljeth,gn8
+2010-01-27 22:48:19,FreakyPenguin,gn8

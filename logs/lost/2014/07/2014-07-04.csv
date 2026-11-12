@@ -1,0 +1,438 @@
+date/time,nick,message
+2014-07-04 08:48:03,Jonathan,Morgähn
+2014-07-04 12:01:49,iksnagreb,moin
+2014-07-04 16:01:03,Th3Falc0n,ein uint32_t array[1024] kann ich auch in einem uint32_t* array abbilden oder?
+2014-07-04 16:01:56,kevin,"Ein uint32_t* ptr kann auf ein uint32_t array[1024] zeigen, falls du das meint"
+2014-07-04 16:02:29,Th3Falc0n,uint32_t* aptr = array; und dann aptr[250] = 3; funktioniert oder?
+2014-07-04 16:03:13,Th3Falc0n,(mein problem ist es ein array aus ner funktion zurückzugeben)
+2014-07-04 16:03:32,kevin,"Ja, das funktioniert"
+2014-07-04 16:03:59,Th3Falc0n,auch als return array;? oder gibts da ein problem mitm stack?
+2014-07-04 16:04:42,iksnagreb,"das array sollte keine lokale variable aufm stack sein, die nachher wieder überschrieben wird"
+2014-07-04 16:05:51,Th3Falc0n,ja habs mir fast gedacht
+2014-07-04 16:06:08,iksnagreb,was genau hast du vor?
+2014-07-04 16:06:10,Th3Falc0n,hab mal uint32_t pagedir_ptr[1024]; durch uint32_t* pagedir_ptr = vmm_alloc(); ersetzt
+2014-07-04 16:06:33,Th3Falc0n,ein array returnen :D
+2014-07-04 16:06:37,Th3Falc0n,das hab ich vor
+2014-07-04 16:07:01,Th3Falc0n,um code redundanz zu verringern
+2014-07-04 16:08:18,kevin,Ein Array ist einfach ein Bytehaufen irgendwo im Speicher
+2014-07-04 16:08:34,kevin,"Ein Pointer darauf bietet dir alles, was du brauchst"
+2014-07-04 16:08:56,Th3Falc0n,ja aber nicht wenn das array in ner funktion aufm stack deklariert wurde
+2014-07-04 16:09:00,Th3Falc0n,dann hab ich ein problem bei return
+2014-07-04 16:09:31,kevin,"Das ist richtig, dieses ""irgendwo im Speicher"" sollte nach Möglichkeit so lange gültig sein wie der Pointer benutzt wird"
+2014-07-04 16:09:41,iksnagreb,"du kannst static nehmen, ich weiß aber nicht, ob das in deinem fall hilft"
+2014-07-04 16:09:53,iksnagreb,"kommt halt darauf an, was genau du vor hast"
+2014-07-04 16:10:15,kevin,Vermutlich will er irgendwoher eine freie Adresse bekommen und einfach die benutzen
+2014-07-04 16:10:51,kevin,Was das vmm_alloc() da oben auch andeutet
+2014-07-04 16:11:34,Th3Falc0n,naja das array muss halt per return zurückgegeben werden und danach noch gultig sein
+2014-07-04 16:12:02,iksnagreb,also entweder static deklariern oder dynamisch anlegen
+2014-07-04 16:12:07,Th3Falc0n,also ein local scope array wie uint32_t array[1024] geht nicht... vmm_alloc alloziert nen 4KB platz also geht uint32_t* array = vmm_alloc();
+2014-07-04 16:12:10,Th3Falc0n,oder static
+2014-07-04 16:12:14,Th3Falc0n,aber alloc erscheint mir schöner
+2014-07-04 16:12:34,kevin,Dann mach das doch einfach?
+2014-07-04 16:12:41,kevin,"static ist schöner, wenn du genau eins brauchst"
+2014-07-04 16:13:09,iksnagreb,"denk nur dran es wieder freizugeben, wenns nicht mehr gebraucht wird"
+2014-07-04 16:13:11,kevin,"PDs sind aber in der Regel was, was man mehr als eins hat"
+2014-07-04 16:13:56,Th3Falc0n,"ja ich hab aber maximal 2 gleichzeitig alloziert. dasjenige, welches gerade aktiv ist, und dasjenige das gerade bearbeitet wird"
+2014-07-04 16:14:10,Th3Falc0n,"also wäre static schon möglich, da es nur um das zweitere geht"
+2014-07-04 16:14:37,Th3Falc0n,ersteres ist nämlich einfal ein pointer auf 0x200000
+2014-07-04 16:14:48,Th3Falc0n,-l +ch
+2014-07-04 16:51:21,Th3Falc0n,kann ich in nem struct ne constante definieren? ( \0 nach nem char[] )
+2014-07-04 16:59:59,kevin,"Yay, kaputtgefixt. Statt kaputtem Image habe ich jetzt einen Segfault. Fortschritt, oder?"
+2014-07-04 17:00:41,darklink,Jo
+2014-07-04 17:04:24,Th3Falc0n,segfault ist immer gut
+2014-07-04 17:04:54,darklink,Segfault is der zweite name meines kernels
+2014-07-04 17:05:10,Th3Falc0n,der erste ist pagefault? xD
+2014-07-04 17:05:24,XanClic,"kevin, ja, um Segfaults muss man sich nämlich nicht kümmern, meint Paolo *duck*"
+2014-07-04 17:05:38,darklink,Und der dritte is #ud
+2014-07-04 17:06:00,kevin,XanClic: Hab ich schon wieder was verpasst? *g*
+2014-07-04 17:06:34,Th3Falc0n,#ud ? das hatte ich erst zwei mal
+2014-07-04 17:06:38,Th3Falc0n,#gp ist häufiger
+2014-07-04 17:06:52,darklink,Ich einmal
+2014-07-04 17:06:56,XanClic,"kevin, irgendein komischer Bug, der bei der Benutzung von NBD kam und eigentlich gar nicht passieren darf"
+2014-07-04 17:07:04,darklink,Aba eins der drei hat er immer
+2014-07-04 17:07:15,XanClic,"Da war ein opaque in einer Coroutine NULL, obwohl der einzige Punkt, der die Coroutine aufruft, das auf jeden Fall auf ungleich NULL setzt"
+2014-07-04 17:07:28,XanClic,"Und Paolo meinte dann „Max, um den Bug würd ich mir keine Gedanken machen“ *g*"
+2014-07-04 17:07:37,kevin,"Das klingt aber eher gar nicht gut, finde ich..."
+2014-07-04 17:07:56,kevin,Hm. Wie ist das hier zu interpretieren:
+2014-07-04 17:07:58,kevin,  ==25286== Invalid read of size 8
+2014-07-04 17:07:58,XanClic,"Na ja, reproduzieren konnte ichs noch nicht"
+2014-07-04 17:08:01,kevin,"  ==25286==  Address 0x161e9ce0 is 1,047,040 bytes inside a block of size 1,048,576 alloc'd"
+2014-07-04 17:08:10,Th3Falc0n,und wenn das ungleich NULL null ist?
+2014-07-04 17:09:19,darklink,Dann setze null auf NULL
+2014-07-04 17:09:47,kevin,#define NULL EINS
+2014-07-04 17:10:03,Th3Falc0n,und danach define EINS NULL ne
+2014-07-04 17:10:14,darklink,#define false true
+2014-07-04 17:10:26,darklink,#define true false
+2014-07-04 17:10:35,kevin,"Th3Falc0n: Weiß nicht, für die andere Richtung ist Jidder zuständig"
+2014-07-04 17:10:44,Th3Falc0n,ah ok
+2014-07-04 17:10:51,darklink,Was is jetze false?
+2014-07-04 17:11:36,Th3Falc0n,sieben
+2014-07-04 17:11:45,Th3Falc0n,sieben ist false
+2014-07-04 17:13:34,darklink,Nö das ist INFTY
+2014-07-04 17:14:44,darklink,Infinity*
+2014-07-04 17:15:31,XanClic,"unter C wirft dir das eine Warnung, wenn nicht gar einen Fehler"
+2014-07-04 17:15:41,XanClic,Wegen Redefinition von false und true
+2014-07-04 17:15:59,XanClic,"unter C++ könnte es gehen, und dann haben die halt umgekehrte Werte"
+2014-07-04 17:16:50,darklink,Vorhrer undef?
+2014-07-04 17:17:06,XanClic,Dann bekommst du einen Compilerfehler
+2014-07-04 17:17:10,XanClic,Weil true und false nicht definiert sind
+2014-07-04 17:17:19,XanClic,"Also, wenn du false benutzen willst, meckert er, weil es true nicht gibt"
+2014-07-04 17:17:19,darklink,Lol
+2014-07-04 17:17:21,XanClic,Und umgekehrt
+2014-07-04 17:17:31,kevin,Wirklich umgekehr oder wäre beides true?
+2014-07-04 17:17:32,darklink,Lol
+2014-07-04 17:17:50,XanClic,"Hm, gute Frage"
+2014-07-04 17:18:08,XanClic,"Vermutlich beides wegen true, ja"
+2014-07-04 17:18:11,darklink,Teste mal
+2014-07-04 17:20:15,kevin,In C kompiliert das übrigens sehr wohl. Man darf nur stdbool.h nicht includen *g*
+2014-07-04 17:20:30,XanClic,"Na ja, dann ist es halt genau das gleiche Problem wie mit #undef :-P"
+2014-07-04 17:23:01,kevin,Hm... http://codepad.org/6XjStzNB
+2014-07-04 17:23:16,kevin,Nix mit rumdrehen
+2014-07-04 17:24:10,kevin,Was auch irgendwie Sinn ergibt
+2014-07-04 17:24:30,Th3Falc0n,die müssten beide gleich sein oder?
+2014-07-04 17:25:00,Th3Falc0n,oder werden #define routinen nicht nacheinander angewendet?
+2014-07-04 17:25:26,Th3Falc0n,also ich mein wenns funktionieren würde
+2014-07-04 17:25:52,kevin,"Das Programm, das ich gepastet habe, funktioniert, sonst hättest du unten keine Ausgabe"
+2014-07-04 17:26:15,Th3Falc0n,ich mein wenn das redifinieren funktionieren würde
+2014-07-04 17:27:18,XanClic,"Ich finde, das ergibt keinen Sinn"
+2014-07-04 17:27:30,XanClic,"denn dann heißt es, er ersetzt true durch false und dann false durch true"
+2014-07-04 17:27:37,XanClic,aber warum wird dann nicht noch true durch false ersetzt?
+2014-07-04 17:27:48,XanClic,usw.
+2014-07-04 17:28:12,kevin,Weil C
+2014-07-04 17:28:16,XanClic,:-P
+2014-07-04 17:28:26,XanClic,Muss ich jetzt wirklich den Standard lesen? *g*
+2014-07-04 17:28:32,kevin,Makros gehen nicht rekursiv
+2014-07-04 17:28:33,XanClic,Ich mag die Seiten zum CPP nicht
+2014-07-04 17:28:42,XanClic,Das hätte ich eben auch gedacht
+2014-07-04 17:28:53,Th3Falc0n,"also ich persönlich probiere erst, und frage dann *g*"
+2014-07-04 17:28:56,XanClic,Aber warum wird dann true durch false und dann noch false durch true ersetzt?
+2014-07-04 17:29:18,kevin,"Was mich ein bisschen erstaunt, ist, dass das dann wohl erst ausgewertet wird, wenn das äußere Makro benutzt wird und nich schon beim #define"
+2014-07-04 17:29:31,kevin,Aber warum nicht
+2014-07-04 17:29:40,XanClic,"hm, ja, das auch"
+2014-07-04 17:29:55,Th3Falc0n,moment mal
+2014-07-04 17:30:13,Th3Falc0n,jetzt weiß ich auch warum das nicht geht
+2014-07-04 17:30:23,Th3Falc0n,weil auch die sachen vor define vom präproc betroffen sind
+2014-07-04 17:30:26,kevin,"XanClic: Das ist ja noch nicht rekursiv, das sind zwei unterschiedliche Makros, das geht"
+2014-07-04 17:31:07,Th3Falc0n,ja der präprozessor sucht alle makros raus und wendet die dann an
+2014-07-04 17:31:21,Th3Falc0n,deswegen werden auch die vars vor den #defines ersetzt
+2014-07-04 17:31:25,Th3Falc0n,würde ich jetzt mal behaupten so
+2014-07-04 17:32:03,XanClic,"kevin, ach so, der Präprozessor hört bewusst auf, wenn Zyklen kommen?"
+2014-07-04 17:32:07,kevin,Ich denke mal
+2014-07-04 17:32:12,kevin,"Aber falls jemand eine Präprozessorherausforderung haben will: Erklärt mir, wie tms.h in tyndur funktioniert"
+2014-07-04 17:32:26,Th3Falc0n,also ich behaupte der ließt alles makros aus und wendet auch alle an
+2014-07-04 17:32:29,kevin,"Ich bin mir nicht sicher, ob ich das je verstanden hatte oder ob das einfach nur solange gespielt ist, bis es funktioniert hat"
+2014-07-04 17:32:45,XanClic,"Wenn man den Präprozessor so richtig kaputtmachen will, benutzt man doch P99 *g*"
+2014-07-04 17:33:10,Th3Falc0n,"""#pragma region"" ist eh beste"
+2014-07-04 17:33:26,kevin,P99?
+2014-07-04 17:33:39,XanClic,"kevin, eine Headersammlung für den Präprozessor"
+2014-07-04 17:33:57,XanClic,"Da war unter anderem auch eine _Generic-Implementierung dabei, bevor gcc das wegen C11 hatte *g*"
+2014-07-04 17:34:27,kevin,...nicht anschauen *g*
+2014-07-04 17:34:34,XanClic,Also so mit Anzahl der einem Macro übergebenen Parameter bestimmen und sowas
+2014-07-04 17:34:52,XanClic,"Und das war noch eine der harmloseren Sachen, den Rest hab ich dann gar nicht mehr verstanden *g*"
+2014-07-04 17:35:00,kevin,"Ich habe ja noch keine zufriedenstellende Lösung gefunden, in C zur Compiletime einen String zu hashen"
+2014-07-04 17:35:23,Th3Falc0n,also p99 ist für mich das modell nachdem meine softair gefertigt ist 
+2014-07-04 17:35:23,XanClic,Hm *g*
+2014-07-04 17:35:26,kevin,"Liegt vermutlich dran, dass es nicht geht..."
+2014-07-04 17:35:36,kevin,"Zumindest wenn ""zufriedenstellend"" bedeutet, dass ich will, dass jedes Zeichen zählt"
+2014-07-04 17:36:29,Th3Falc0n,moin jidder
+2014-07-04 17:38:30,kevin,"Hmpf, localhost != 127.0.0.1"
+2014-07-04 17:38:41,XanClic,"Also, der C-Standard sagt, dass eigentlich schon beim #define ersetzt werden soll"
+2014-07-04 17:38:54,XanClic,"Und er sagt auch, dass es Fälle gibt, in denen die Ersetzung nicht eindeutig ist *g*"
+2014-07-04 17:39:15,kevin,Klingt gut *g*
+2014-07-04 17:39:18,XanClic,ui das ist ja lustig
+2014-07-04 17:39:19,kevin,Zum Beispiel?
+2014-07-04 17:39:31,XanClic,#define f(a) a*g; #define g(a) f(a)
+2014-07-04 17:39:36,XanClic,f(2)(9)
+2014-07-04 17:39:50,XanClic,das kann jetzt entweder zu 2*f(9) oder zu 2*9*g werden
+2014-07-04 17:40:33,Th3Falc0n,und das hängt ab von? der laune des präprocs?
+2014-07-04 17:40:38,XanClic,aber das Beispiel ist schon kriminell *g*
+2014-07-04 17:40:46,XanClic,"jo, steht nicht da"
+2014-07-04 17:40:52,XanClic,"Also, ob das jetzt implementation-defined ist oder was"
+2014-07-04 17:41:38,Th3Falc0n,if(rnd() > 0.5) doRecursiveDefines(); else doStraightDefines();
+2014-07-04 17:41:44,XanClic,"Hui, #line ist ja offiziell spezifiziert"
+2014-07-04 17:43:08,kevin,Das Beispiel ist nett...
+2014-07-04 17:48:23,Jonathan,Harharhar: http://s9.postimg.org/lssoex0pr/IMG_20140704_173904.jpg
+2014-07-04 17:49:36,yayachiken,ich dachte erst das wäre dwarf fortress
+2014-07-04 17:49:37,Th3Falc0n,great shit digga
+2014-07-04 17:50:08,Th3Falc0n,sieht eher nach mist aus
+2014-07-04 17:50:19,Jonathan,"Ja, uninitialisiertes VRAM"
+2014-07-04 17:50:30,kevin,Aber Zeichen
+2014-07-04 17:50:37,Jonathan,"Aber hey, nur noch das VRAM an die CPU anbinden, und dann geht's :D"
+2014-07-04 17:50:51,Th3Falc0n,Ich wollte auch immer mal ne CPU bauen aber hab mich nie getraut mit lesen anzufangen :D
+2014-07-04 17:51:02,Jonathan,"CPU bau ich auch nicht selbst, als CPU nehm ich nen Z80"
+2014-07-04 17:51:10,kevin,"Dann kannst du demnächst tyndur portieren, oder? *g*"
+2014-07-04 17:51:10,Th3Falc0n,achso
+2014-07-04 17:51:21,Jonathan,"kevin: Ja, hartverdrahtet 80x60 Textmodus auf 640x480 VGA"
+2014-07-04 17:51:33,Jonathan,Links unten das EPROM enthält Codepage 437 *g*
+2014-07-04 17:51:53,Jonathan,"Und wenn tyndur auf 1MB RAM läuft, gern"
+2014-07-04 17:52:19,Jonathan,"Müsste man halt nur den Kernel neu schreiben, sodass er mit meiner Hardware kompatibel ist (also quasi ganz tyndur *g*)"
+2014-07-04 17:52:33,Th3Falc0n,"*g* mikrOS würde sich beim task starten verabschieden, das braucht 4MB pro PD :D"
+2014-07-04 17:52:38,Jonathan,Awww
+2014-07-04 17:52:48,Jonathan,4MB ist der gesamte Adressraum der Maschine :D
+2014-07-04 17:53:02,Th3Falc0n,epic shit :D
+2014-07-04 17:53:07,Jonathan,"Und davon sind atm 1MB wirklich RAM, der Rest ist erstmal unbelegt"
+2014-07-04 17:53:27,Jonathan,"Wenn ich später mal 30€ übrig hab, rüste ich das Ding auf 4MB auf *g*"
+2014-07-04 17:53:30,XanClic,paloxena4 kommt damit aus
+2014-07-04 17:53:36,XanClic,das läuft theoretisch auch auf dem GBA
+2014-07-04 17:53:48,XanClic,"Aber ich hab keine Lust, das durch einen z80-Compiler zu jagen"
+2014-07-04 17:53:54,Jonathan,"XanClic: Ha, dann zwingt dich das ja jetzt quasi, das zu porten"
+2014-07-04 17:54:05,XanClic,Wenn du gcc für z80 bereitstellst…
+2014-07-04 17:54:16,Jonathan,SDCC und Z88DK wären im Angebot
+2014-07-04 17:54:22,XanClic,gcc hab ich gesagt :-P
+2014-07-04 17:54:24,Th3Falc0n,also mikrOS würde auch mit 24KB pro task auskommen hätte ich lust die 30 zeilen zu schreiben
+2014-07-04 17:54:25,XanClic,"oder clang, ich bin ja nicht so"
+2014-07-04 17:54:50,Jonathan,http://sourceforge.net/projects/z80gcc/
+2014-07-04 17:55:07,Jonathan,"XanClic: So, nu hab ich dich *g*"
+2014-07-04 17:55:21,XanClic,> Last Update: 2013-04-11
+2014-07-04 17:55:23,XanClic,der kann kein c11
+2014-07-04 17:55:27,Jonathan,...
+2014-07-04 17:55:28,XanClic,zumindest nicht vollständig
+2014-07-04 17:55:33,kevin,"Jonathan: Wenn man den Kernel neu schreibt, dann kommt er sicher auch mit 1 MB klar *g*"
+2014-07-04 17:55:46,Th3Falc0n,ich weiß nichtmal was in c11 drin ist :D
+2014-07-04 17:55:56,XanClic,Anonymous structs and unions
+2014-07-04 17:55:59,XanClic,_Generic
+2014-07-04 17:56:05,kevin,"Das heißt, der Kernel müsste das theoretisch sogar hinkriegen, nur GRUB lädt halt nicht unter 1 MB"
+2014-07-04 17:56:06,XanClic,"Theoretisch auch Threadsupport, aber das hab ich noch nicht ausprobiert"
+2014-07-04 17:56:17,Jonathan,kevin: GRUB lädt wohl sowieso nicht auf meiner Maschine *g*
+2014-07-04 17:56:19,Th3Falc0n,für threads nehm ich pthread
+2014-07-04 17:56:24,yayachiken,hat RMS in gcc keinen 8086 support mehr eingebaut?
+2014-07-04 17:56:25,yayachiken,:D
+2014-07-04 17:56:31,kevin,"Jonathan: Eben, also könnte es mit dem Kernel tun, wenn man den passenden Loader hat"
+2014-07-04 17:56:37,Jonathan,Genau
+2014-07-04 17:56:44,Jonathan,Und den Loader kann ich ja schreiben
+2014-07-04 17:56:51,XanClic,Nur wer schreibt den Kernel?
+2014-07-04 17:56:54,Jonathan,Ein BIOS muss ich mir ja sowieso aus den Fingern würgen
+2014-07-04 17:57:14,Th3Falc0n,ich geb ein + dafür dass XanClic anfängt tyndur zu porten
+2014-07-04 17:57:14,kevin,"Meinst du, den Kernel muss man komplett neu schreiben?"
+2014-07-04 17:57:19,XanClic,"[xan:23] Jonathan, http://sourceforge.net/projects/z80gcc/files/"
+2014-07-04 17:57:23,yayachiken,"apropos bios, da wüsste ich auch gerne"
+2014-07-04 17:57:28,yayachiken,was lädt die cpu denn als erstes?
+2014-07-04 17:57:28,XanClic,"kevin, einiges zumindest, ja"
+2014-07-04 17:57:33,yayachiken,jetzt sagt nicht das bios
+2014-07-04 17:57:36,kevin,"Ach so, wegen dem Compiler?"
+2014-07-04 17:57:37,XanClic,"Unter anderem, dass der Timer-IRQ fest auf 0 gestellt ist"
+2014-07-04 17:57:45,Jonathan,yayachiken: Die CPU lädt am Anfang einfach mal garnix
+2014-07-04 17:57:57,XanClic,"yayachiken, unter x86 ist das BIOS eingeblendet"
+2014-07-04 17:57:57,yayachiken,"Jonathan, ja aber wie bootstrappt man das"
+2014-07-04 17:57:59,Jonathan,Die CPU wird am Anfang durch eine BIOS-Steckkarte resettet
+2014-07-04 17:58:01,XanClic,als ROM
+2014-07-04 17:58:12,XanClic,Und die CPU startet bei 0xffff:0x0000
+2014-07-04 17:58:20,XanClic,und da liegt das BIOS-ROM
+2014-07-04 17:58:32,Jonathan,"XanClic: So geht das auf 8086, nicht auf meinem System :P"
+2014-07-04 17:58:37,XanClic,"[17:58:00] <XanClic> yayachiken, unter x86 ist das BIOS eingeblendet"
+2014-07-04 17:58:43,XanClic,"Und so geht das auch auf ARM, denke ich"
+2014-07-04 17:58:44,Jonathan,*g*
+2014-07-04 17:58:45,Jonathan,Stimmt
+2014-07-04 17:58:46,Jonathan,Also:
+2014-07-04 17:58:47,XanClic,Nur dass da der Startvektor 0 ist
+2014-07-04 17:58:58,yayachiken,ich denk der z80 ist voll 8086 kompatibel?
+2014-07-04 17:59:01,Jonathan,Nein
+2014-07-04 17:59:01,XanClic,lol was
+2014-07-04 17:59:02,Jonathan,8080
+2014-07-04 17:59:05,yayachiken,ah
+2014-07-04 17:59:35,Jonathan,yayachiken: Nachm Start übernimmt die BIOS-Karte den Bus und schreibt tolle Sachen in die untersten 16kB RAM (Page 0)... Dann wird die CPU nochmal resettet und darf losrennen
+2014-07-04 17:59:44,Jonathan,Und tut das dann auch prompt ab 0x0000
+2014-07-04 18:00:02,Jonathan,Und dort befindet sich dann halt das BIOS
+2014-07-04 18:00:46,Jonathan,Das muss sich dann da irgendwie wegräumen und die nächste Instanz in die untersten 16k laden (Bootloader oder Kernel)
+2014-07-04 18:01:34,Jonathan,Wahrscheinlich wird sich das BIOS nach dem Start direkt erstmal nach 0x4000 kopieren und von dort aus dann die untersten 16k mit dem Bootloader beschreiben
+2014-07-04 18:01:41,Jonathan,Der darf dann irgendwann auch den Kernel laden
+2014-07-04 18:02:30,yayachiken,"und wie wird das bios bei x86 ""eingeblendet""? selber mechanismus?"
+2014-07-04 18:02:32,Jonathan,"Ein GRUB- oder LILO-Port wäre nett, aber wahrscheinlich nicht machbar ^^"
+2014-07-04 18:02:40,yayachiken,oder macht das die MMU oder so
+2014-07-04 18:02:54,yayachiken,...ne das wäre ja schon virtuell 
+2014-07-04 18:03:23,Jonathan,"Ich glaube(tm), bei x86 steckt wirklich einfach ein ROM irgendwo im Adressraum"
+2014-07-04 18:03:33,Jonathan,Die haben ja aber auch genug Adressraum für so Spielchen *g*
+2014-07-04 18:04:01,yayachiken,ja aber how do
+2014-07-04 18:04:12,yayachiken,oder vielleicht erstmal gefragt: wie wird der speicher adressiert
+2014-07-04 18:04:48,yayachiken,"ich lege ja auf irgendeinen bus die adressen, aber wenn ich was einblende dann habe ich ja schon zwei bauteile und muss irgendwie zwischen denen multiplexen?"
+2014-07-04 18:05:18,Jonathan,Richtig
+2014-07-04 18:05:29,Jonathan,"Adressdekoder dran, und schon läuft der Krempel"
+2014-07-04 18:05:45,Jonathan,"Der Z80 hat ja noch einen zweiten Adressraum, den IO-Adressraum"
+2014-07-04 18:05:50,yayachiken,das ist ein diskretes bauteil oder ist der wo drauf?
+2014-07-04 18:05:55,Jonathan,Der ist bei mir auch auf mehrere Geräte unterteilt
+2014-07-04 18:06:24,Jonathan,Ein 74HC154 wird da einfach mit 4 Adressleitungen gefüttert und generiert dan Chipselect-Signale für die verschiedenen Komponenten
+2014-07-04 18:06:53,Jonathan,Aber bei neueren PCs ist das BIOS garantiert kein einzelner Baustein mehr *g*
+2014-07-04 18:06:59,Jonathan,Wahrscheinlich sogar ausblendbar
+2014-07-04 18:07:01,Jonathan,Oder so
+2014-07-04 18:07:13,Jonathan,"Kann natürlich auch sein, dass ich hier gerade totalen Schwachsinn erzähle"
+2014-07-04 18:07:37,Jonathan,"Deshalb solltest du wohl besser einen fragen, der sich richtig auskennt, den kevin zum Bleistiel *g*"
+2014-07-04 18:10:25,Th3Falc0n,was haben die leute heute mit ihren ping timeouts?
+2014-07-04 18:13:07,Th3Falc0n,sollte ich code beim exec / modul laden ohne PTE_W flag laden?
+2014-07-04 18:44:29,Jonathan,"kevin: Im Forum darf man größere Bilder nur per Link einbinden, oder?"
+2014-07-04 18:46:43,Jonathan,"Egal, sicher ist sicher"
+2014-07-04 18:58:04,Th3Falc0n,so ich schreib jetzt mein scheduler neu
+2014-07-04 18:58:06,Th3Falc0n,wünscht mir glück
+2014-07-04 19:00:57,kevin,Jonathan: Keine Ahnung
+2014-07-04 19:01:56,kevin,"Th3Falc0n: Ich hoffe nicht, dass dein Code auf Glück angewiesen ist"
+2014-07-04 19:03:47,Th3Falc0n,die bugfreiheit bei versuch[0] hängt rein vom universum ab kevin 
+2014-07-04 19:04:05,Th3Falc0n,und dasselbige hasst mich
+2014-07-04 19:20:07,Th3Falc0n,wenn mein userstack im 0xFFFFF000 segment liegt muss ich den ESP auf 0x00 initialisieren oder?)
+2014-07-04 21:34:38,Th3Falc0n,wieso ist mein ganzes zeit plötzlich um 1 byte verschoben?
+2014-07-04 21:34:42,Th3Falc0n,was geht hier falsch?
+2014-07-04 21:34:53,Th3Falc0n,-zeit +zeug
+2014-07-04 21:35:01,Papierkorb,off-by-one ..
+2014-07-04 21:35:14,Th3Falc0n,?
+2014-07-04 21:35:25,Papierkorb,So heißt die Fehlerklasse
+2014-07-04 21:35:44,Th3Falc0n,ah
+2014-07-04 21:36:14,Th3Falc0n,"aber off by one wäre bei mir 4byte für n int, weil alles uint32_t* sind"
+2014-07-04 21:38:48,Th3Falc0n,"das beste ist ja, dass er ein 1 byte offset hat beim pagetable lesen ausm uint32_t*"
+2014-07-04 21:38:59,Th3Falc0n,wie kann ich ein ungerades offset mit nem 4byte datentyp schaffen?
+2014-07-04 21:39:13,XanClic,(uint32_t *)unaligned_stuff
+2014-07-04 21:39:22,XanClic,außerdem darf malloc() ungerade Offsets zurückgeben
+2014-07-04 21:39:34,Th3Falc0n,ich benutze aber vmm_alloc_kernel
+2014-07-04 21:39:38,Th3Falc0n,was 4K blöcke zurückgibt
+2014-07-04 21:39:42,XanClic,"Die Spezifikation sagt nur, dass man auf den zurückgegebenen Pointer mit int * oder so zugreifen können muss"
+2014-07-04 21:39:43,XanClic,haha
+2014-07-04 21:40:01,XanClic,"Th3Falc0n, offenbar nicht"
+2014-07-04 21:40:02,Th3Falc0n,"(bzw 0, da es selber immoment nicht die pagetables lesen kann, da diese um 1byte verschoben sind)"
+2014-07-04 21:40:02,XanClic,:3
+2014-07-04 21:40:14,Jidder,vielleicht irgendwo -(~foo) statt -(-foo) geschrieben
+2014-07-04 21:40:33,Th3Falc0n,so ne zeile kommt nicht vor
+2014-07-04 21:40:39,Jidder,~(-foo)
+2014-07-04 21:40:42,XanClic,"ich würde ja auf irgendwas mit dem Presentbit in PD/PT tippen, aber dann sollte es wegen der anderen Flags mehr als nur ein Byte sein"
+2014-07-04 21:40:57,XanClic,"Dass also ein Eintrag in PD/PT direkt genommen wurde, ohne da die Flags rauszumaskieren"
+2014-07-04 21:41:50,Th3Falc0n,ich will ja gerade die flags lesen...
+2014-07-04 21:42:31,Th3Falc0n,((uint32_t*)(context->pagedir[i]))[i2] = ((vaddr > ALLOCATABLE_BOTTOM) ? PT_ALLOCATABLE : 0) | ((vaddr > USERSPACE_BOTTOM) ? PT_PUBLIC : 0); (setz eine nicht vorhandene seite)
+2014-07-04 21:42:46,XanClic,> (uint32_t*)(context->pagedir[i])
+2014-07-04 21:42:47,XanClic,merkste was
+2014-07-04 21:42:59,Jidder,mit kürzeren codezeilen wäre das nicht passiert
+2014-07-04 21:43:08,Th3Falc0n,ja das pagedir hat nen index von 0 bis 1023
+2014-07-04 21:43:18,XanClic,"also, wenn context->pagedir ist, was ich denke"
+2014-07-04 21:43:19,Th3Falc0n,ach ficken
+2014-07-04 21:43:22,XanClic,:-P
+2014-07-04 21:44:15,Papierkorb,D:
+2014-07-04 21:44:22,Papierkorb,"Th3Falc0n, hast du was gegen die 0?"
+2014-07-04 21:44:41,Th3Falc0n,gegen welche 0 ?
+2014-07-04 21:44:59,Th3Falc0n,eher egen 0xFFFFF000
+2014-07-04 21:45:03,darklink,Gegen die 0 0
+2014-07-04 21:45:23,Th3Falc0n,gegen welche 0 0 ?
+2014-07-04 21:46:55,darklink,Sieht wie cpp aus *bäh*
+2014-07-04 21:47:19,Papierkorb,C++ ftw
+2014-07-04 21:49:32,darklink,Bäh
+2014-07-04 21:50:10,darklink,C++ is augenkrebs
+2014-07-04 21:50:49,XanClic,du sollst es ja auch nicht lesen
+2014-07-04 21:50:50,XanClic,sondern nur schreiben
+2014-07-04 21:50:53,XanClic,"Ja, lesen kann C++ keiner"
+2014-07-04 21:50:56,Paddy,Das war Perl
+2014-07-04 21:50:56,XanClic,Aber das kann dir ja egal sein
+2014-07-04 21:50:57,XanClic,:3
+2014-07-04 21:51:01,XanClic,C++ doch auch
+2014-07-04 21:51:03,XanClic,Und Assembler
+2014-07-04 21:51:17,Paddy,"Naja, Perl ist einfach nur write-only "
+2014-07-04 21:51:22,Paddy,C++ ist write-only und krank
+2014-07-04 21:51:22,XanClic,Mein Assembler auch :-P
+2014-07-04 21:51:33,XanClic,"Okay, ob es krank ist, dürfen sich andere aussuchen"
+2014-07-04 21:51:36,XanClic,Aber vor allem kaputt
+2014-07-04 21:51:54,Paddy,Aber hoffentlich!
+2014-07-04 21:51:58,XanClic,"Hm, aber andere können ja nicht wissen, ob es krank ist"
+2014-07-04 21:52:01,XanClic,Weil ich es ja geschrieben hab
+2014-07-04 21:52:06,XanClic,Deshalb können die es ja nicht lesen
+2014-07-04 21:52:27,Paddy,Aber sie kennen dich eventuell und das könnte für eine Schlussfolgerung reichen
+2014-07-04 21:53:09,XanClic,Aber nicht empirisch
+2014-07-04 21:53:25,Paddy,Dann halt didaktisch
+2014-07-04 21:53:41,XanClic,Dazu will ich erst eine Präsentation sehen
+2014-07-04 21:54:16,Paddy,Aber wenn die auch write-only ist?
+2014-07-04 21:54:26,darklink,XanClic: gas is auch eine augenkrankheit
+2014-07-04 21:54:31,XanClic,"Paddy, du willst eine Präsentation in Perl machen? *g*"
+2014-07-04 21:54:43,XanClic,"darklink, im Allgemeinen benutz ich nicht AT&T"
+2014-07-04 21:54:47,Paddy,"Ich mach meine Präsentationen immer in TeX, das sollte reichen *g*"
+2014-07-04 21:54:59,darklink,Jo ok
+2014-07-04 21:55:01,XanClic,"Aber in letzter Zeit immer öfter für Inline-Assembler, weil die Intelausgabe von gcc manchmal kaputtgeht"
+2014-07-04 21:55:32,darklink,Kommt yasm nich mit gcc klar
+2014-07-04 21:55:37,darklink,Umgekehrt
+2014-07-04 21:55:44,Paddy,"FPC hab ich früher immer auf Intel umgeschaltet, aber so richtig gut hat das auch nicht immer funktioniert"
+2014-07-04 21:55:50,XanClic,"gcc hat eine Intelsyntaxausgabe, die sich mit -masm=intel aktivieren lässt"
+2014-07-04 21:56:01,XanClic,Und dann benutzt man halt auch für Inline-Assembly Intelsyntax
+2014-07-04 21:56:06,Paddy,Inzwischen lass ich das bleiben. Aber andererseits lass ich auch das mit Assembler größtenteils bleiben.
+2014-07-04 21:56:07,XanClic,Aber manchmal gibt der ungültige Syntax aus
+2014-07-04 21:56:14,XanClic,"Sehr selten, aber ist mir schon so zweimal passiert"
+2014-07-04 21:56:18,Papierkorb,lol
+2014-07-04 21:56:54,Th3Falc0n,ich find den gcc standard assembler recht freundlich
+2014-07-04 21:57:10,Th3Falc0n,der einzige der noch besser ist ist avrasm
+2014-07-04 21:57:39,XanClic,"Normalerweise will ich ja, dass mein Assembler assembliert"
+2014-07-04 21:58:10,XanClic,"Gut, bei x86 gibt es manchmal Sachen, wo der Assembler sich eine kürzere Instruktion raussuchen kann"
+2014-07-04 21:58:19,XanClic,"z. B. add eax,4 kann man als add eax,dword 4 oder als add eax,byte 4 kodieren"
+2014-07-04 21:58:48,XanClic,"nasm „optimiert“ das, wenn man da -O1 oder sowas gibt; fasm automatisch; und andere hab ich noch nicht für alleinstehende Assemblersachen benutzt"
+2014-07-04 21:59:43,XanClic,"Deshalb mag ich dann auch fasm am meisten, weil es meiner Meinung nach keine Nachteile hat, sich aber am einfachsten portieren lässt :-P"
+2014-07-04 22:05:16,bluecode,"Fußball, ole ole"
+2014-07-04 22:05:22,bluecode,"eine Mannschaft gewinnt, ole ole"
+2014-07-04 22:07:22,Th3Falc0n,super
+2014-07-04 22:07:29,Th3Falc0n,alles ist spannender als fussball
+2014-07-04 22:07:35,Th3Falc0n,seblst robofussball
+2014-07-04 22:09:36,Paddy,"Würde ich nicht sagen, aber mal ein Robocup-Spiel angeschaut zu haben war sicher kein Fehler :-)"
+2014-07-04 22:09:57,Th3Falc0n,ich gucke nur regelmäßig LCS...
+2014-07-04 22:10:20,Th3Falc0n,meine eltern halten mich für komplett bescheuert :D
+2014-07-04 22:10:49,Paddy,LCS?
+2014-07-04 22:11:16,Th3Falc0n,League Championship Series - League of Legends eSports Weltliga
+2014-07-04 22:34:18,Jonathan,Haikou XinGong Electronic Co.Ltd <--- Yay
+2014-07-04 23:06:50,Jonathan,"XanClic: Did you mean ""Kaputter Skriptsprachen-Code?"" ---> print(""Calling "" .. tostring(obj) .. "":"" .. c.fname .. ""... "" .. (obj[c.fname](obj, unpack(c.args)) and ""OK"" or ""Failed""))"
+2014-07-04 23:10:20,XanClic,"Jonathan, ja"
+2014-07-04 23:10:21,XanClic,wieso nicht ruby
+2014-07-04 23:10:56,XanClic,"puts ""Calling #{obj.to_s}: #{c.fname}... #{obj[c.fname](obj.unpack(c.args)) ? ""OK"" : ""Failed""}"""
+2014-07-04 23:11:13,XanClic,ach das ist gar nicht .unpack
+2014-07-04 23:11:23,Jonathan,:P
+2014-07-04 23:11:31,XanClic,dann halt obj[c.fname](*c.args)
+2014-07-04 23:12:02,XanClic,du kriegst die idee
+2014-07-04 23:12:13,XanClic,(den Anglizismus bekomm ich schon noch eingeführt)
+2014-07-04 23:12:21,XanClic,(wenn er nicht schon offiziell ist)
+2014-07-04 23:12:35,Jonathan,Ach ja
+2014-07-04 23:13:11,Jonathan,"function wasAuchImmer(arg1, arg2, optArg3) optArg3 = optArg3 or 42 do --[[weiterer code]] end end"
+2014-07-04 23:13:29,Jonathan,Default-Werte für optionale Parameter sind in Lua schön
+2014-07-04 23:14:04,Jonathan,Generell ist Lua auch viel toller als Ruby *g*
+2014-07-04 23:14:10,XanClic,"def foo(a1, a2, opt = 42)"
+2014-07-04 23:14:19,XanClic,"Ich sehe, du kennst mruby nicht"
+2014-07-04 23:14:21,XanClic,Oder die normale libruby
+2014-07-04 23:14:42,Jonathan,"function wasAuchImmer(arg1, arg2, opt) opt = opt or (arg1 + arg2) end"
+2014-07-04 23:15:14,XanClic,"def foo(a1, a2, opt = nil); opt = opt ? opt : a1 + a2"
+2014-07-04 23:15:28,XanClic,olo
+2014-07-04 23:15:33,Jonathan,xD
+2014-07-04 23:15:35,XanClic,"def foo(a1, a2, opt = a1 + a2); end"
+2014-07-04 23:15:37,XanClic,tut auch
+2014-07-04 23:15:40,Jonathan,Heh
+2014-07-04 23:15:46,Jonathan,Na warte nur
+2014-07-04 23:19:19,Jonathan,"local vectMeta = {__add = function(a, b) return {x = a.x + b.x, y = a.y + b.y} end, __tostring = function(a) return ""vect{"" .. tostring(a.x) .. "","" .. tostring(a.y) .. ""}"" end}   local function createVect(x, y) local v = {x = x, y = y} setmetatable(v, vectMeta) return v end   print(createVect(3, 2) + createVect(2, 5))"
+2014-07-04 23:19:53,XanClic,das sieht grausam aus
+2014-07-04 23:19:57,Jonathan,Ist es auch *g*
+2014-07-04 23:20:03,Jonathan,Ist sogar auch grausam buggy
+2014-07-04 23:20:28,Jonathan,"local vectMeta = {__add = function(a, b) return createVect(a.x + b.x, a.y + b.y) end, __tostring = function(a) return ""vect{"" .. tostring(a.x) .. "","" .. tostring(a.y) .. ""}"" end}   function createVect(x, y) local v = {x = x, y = y} setmetatable(v, vectMeta) return v end   print(createVect(3, 2) + createVect(2, 5))"
+2014-07-04 23:20:36,Jonathan,So ist's besser
+2014-07-04 23:21:35,Jonathan,"Netterweise erzeugt der Code eine objektorientierte Vektor-Klasse (und zwei Objekte der Klasse) und überschreibt für diese die Additions-Funktion, sodass mit dem normalen Additionsoperator Vektoraddition möglich ist"
+2014-07-04 23:22:14,XanClic,"class Vec2; def initialize(x, y); @x = x; @y = y; end; def to_s; ""#{@x},#{@y}""; end; def +(ov); Vec2.new(@x + ov.x, @y + ov.y); end; def x; @x; end; def y; @y; end; end"
+2014-07-04 23:23:04,XanClic,"Ich weiß wirklich nicht, warum ich genötigt werde, jetzt zu zeigen, dass eine Sprache, die als komfortable und allumfängliche Skriptsprache ausgelegt wurde (Ruby) komfortabler ist als eine Sprache, die sich primär möglichst einfach in C einbinden lassen sollte (Lua)"
+2014-07-04 23:23:12,Jonathan,:P
+2014-07-04 23:23:14,Jonathan,Keine Ahnung
+2014-07-04 23:23:24,Jonathan,Weil's lustig ist?
+2014-07-04 23:23:26,XanClic,"und jedenfalls puts (Vec2.new(3, 2) + Vec2.new(2, 5)).to_s"
+2014-07-04 23:23:43,XanClic,"Und wie gesagt, dank mruby und vermutlich auch libruby (nie ausprobiert) lässt sich auch Ruby gut in C einbinden"
+2014-07-04 23:31:50,Jidder,c lässt sich nicht gut in c einbinden
+2014-07-04 23:31:57,Jidder,"wie kann es sein, dass ruby sich gut in c einbinden lässt?"
+2014-07-04 23:33:08,Jonathan,Gute Nacht
+2014-07-04 23:49:56,Th3Falc0n,ist es legitim als RPC return absichtlich einen GPF auszulösen?
+2014-07-04 23:50:05,Th3Falc0n,(über die rücksprungadresse)
+2014-07-04 23:50:38,Th3Falc0n,oder sollte ich lieber mit dem kernel ne funktion in den userspace schreiben
+2014-07-04 23:50:40,XanClic,"es ist normalerweise einfacher, einen Syscall rpc_return anzubieten"
+2014-07-04 23:50:47,XanClic,aber man kann natürlich alles machen
+2014-07-04 23:50:55,XanClic,du sollst keine Funktion in den Userspace schreiben
+2014-07-04 23:51:09,Th3Falc0n,"ich möchte kein rpc_return, weil es probleme gibt wenn man das vergisst"
+2014-07-04 23:51:14,XanClic,Du sollst einfach ein void __rpc_trampoline(void) { main_rpc_function(); rpc_return(); } haben
+2014-07-04 23:51:29,XanClic,"So, wie man das bei _start() und main() halt auch macht"
+2014-07-04 23:51:49,Th3Falc0n,ich weiß ja nichtmal wie man das da macht?
+2014-07-04 23:51:54,XanClic,"void _start() { /* get argc and argv */ exit(main(argc, argv, _environ)); }"
+2014-07-04 23:52:19,Th3Falc0n,und wie sorg ich dafür dass wirklich jedes programm start implementiert?
+2014-07-04 23:52:28,XanClic,Indem du das in deiner Bibliothek hast
+2014-07-04 23:52:37,XanClic,Dann implementiert das kein Programm mehr
+2014-07-04 23:52:40,XanClic,Sondern alle implementieren nur main
+2014-07-04 23:52:53,Th3Falc0n,hmm k
+2014-07-04 23:53:04,Th3Falc0n,(mir fehlt auch noch der init prozess btw ;) )
+2014-07-04 23:53:29,Th3Falc0n,aber ist es wirklich nicht legitim das ret der main methode über den kernel zu manipulieren?
+2014-07-04 23:53:35,Th3Falc0n,oder der RPC methode
+2014-07-04 23:53:38,Th3Falc0n,oder von was auch immer
+2014-07-04 23:53:41,XanClic,[23:50:51] <XanClic> aber man kann natürlich alles machen
+2014-07-04 23:54:03,XanClic,Nur macht es halt jeder mit einer Trampolinfunktion
+2014-07-04 23:54:11,XanClic,Würde ich behaupten
+2014-07-04 23:56:47,Th3Falc0n,kann ich dir ELF denn im kernel entnehmen wo sich __start befindet? und vorallem: was beudeuten diese ewigen doppelten unterstriche
+2014-07-04 23:57:20,XanClic,_start ist einfach mal der Entrypoint der ELF
+2014-07-04 23:57:33,XanClic,"Der Unterstrich ist da, um anzuzeigen, dass die Funktion betriebssystemspezifisch ist"
+2014-07-04 23:57:50,XanClic,"Weil kein normales Programm Variablen oder Funktionen anlegen sollte, die mit Unterstrichen beginnen"
+2014-07-04 23:57:56,XanClic,(die sind eben für Betriebssystem und Compiler reserviert)
+2014-07-04 23:58:09,XanClic,Und beim Linken sucht ld standardmäßig nach _start und macht das zum Entrypoint

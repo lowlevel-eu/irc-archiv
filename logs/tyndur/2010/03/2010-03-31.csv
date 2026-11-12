@@ -1,0 +1,94 @@
+date/time,nick,message
+2010-03-31 09:23:18,kwolf,Morning pcmattman
+2010-03-31 09:23:32,pcmattman,Hi kw
+2010-03-31 09:23:35,pcmattman,er
+2010-03-31 09:23:35,pcmattman,kwolf: 
+2010-03-31 09:24:12,kwolf,Is the v2 of the e1000 patch still on your list?
+2010-03-31 09:24:59,pcmattman,I've completely forgotten what I was going to do in v2 unfortunately
+2010-03-31 09:25:19,kwolf,Don't you have IRC logs?
+2010-03-31 09:26:42,kwolf,Or just take this one: http://irc.tyndur.org/index.php?pageSize=1000&channelId=4
+2010-03-31 09:27:51,kwolf,"Of course, if you are busy with other things, there is no need to hurry. I just want to avoid to drop the patch because everyone forgets about it."
+2010-03-31 09:28:32,pcmattman,I have been using the e1000 quite extensively in VirtualBox at work and haven't run into any issues with it there
+2010-03-31 09:28:46,kwolf,"On real hardware, too?"
+2010-03-31 09:28:59,pcmattman,I haven't yet had a chance to try real hardware
+2010-03-31 09:29:44,kwolf,Ok. A working driver in VBox is nice progress for itself anyway.
+2010-03-31 14:31:29,Jarvix,Hi
+2010-03-31 14:33:26,kwolf,Hi Jarvix
+2010-03-31 14:33:32,Jarvix,hi
+2010-03-31 16:35:50,eddyb,XanClic: do you happen to know anything about usb master storage?
+2010-03-31 16:36:18,XanClic,"Unless you mean mass storage, no"
+2010-03-31 16:36:24,eddyb,*mass
+2010-03-31 16:36:29,XanClic,Then I do ;-9
+2010-03-31 16:36:32,XanClic,s/9/)/
+2010-03-31 16:36:34,eddyb,i don't know why i say master XD
+2010-03-31 16:37:34,eddyb,i've got my driver read some sectors
+2010-03-31 16:37:35,eddyb,but
+2010-03-31 16:38:03,eddyb,i found out that there are some not-so-predictable failures
+2010-03-31 16:38:18,eddyb,as in
+2010-03-31 16:38:31,XanClic,"Well, my drivers (CB/CBI and bulk-only) only work on emulators (but there also with real hardware)"
+2010-03-31 16:38:59,eddyb,i'm talking about qemu(bulk/SCSI)
+2010-03-31 16:39:00,XanClic,On completely real hardware (also real HC) I'm unable to read sectors
+2010-03-31 16:39:08,XanClic,ok
+2010-03-31 16:39:37,XanClic,"Hm, I guess I never had any problems with qemu's mass storage devices"
+2010-03-31 16:40:21,eddyb,"i do CBW out packet(endpoint 2), then i do an in to read the data and another for CSW(endpoint 1)"
+2010-03-31 16:40:35,XanClic,Should be correct
+2010-03-31 16:40:41,eddyb,"from time to time, i got the IN packet deferred"
+2010-03-31 16:40:55,XanClic,Stalled?
+2010-03-31 16:41:07,eddyb,it seems to be internal
+2010-03-31 16:41:19,XanClic,"Well, an NAK wouldn't stop the transfer..."
+2010-03-31 16:41:34,eddyb,i mean i don't get an irq
+2010-03-31 16:41:48,eddyb,it simply retries (i think) the packet later
+2010-03-31 16:41:58,XanClic,Sounds like an NAK
+2010-03-31 16:42:11,XanClic,And that would be completely fine
+2010-03-31 16:42:23,XanClic,Did you check the status field?
+2010-03-31 16:42:25,eddyb,you don't get me
+2010-03-31 16:42:34,eddyb,inside qemu
+2010-03-31 16:42:37,XanClic,Yes
+2010-03-31 16:42:46,eddyb,usb_msd_handle_data is called twice
+2010-03-31 16:42:52,eddyb,before i get an irq
+2010-03-31 16:43:35,eddyb,"well, i think it's something normal"
+2010-03-31 16:43:36,XanClic,"Well, all I can say is that I have no problems with that *g*"
+2010-03-31 16:43:54,eddyb,except for teh fact that it sets mode to CSW
+2010-03-31 16:44:07,XanClic,The only thing was that qemu's bulk-only devices didn't handle the class-specific control requests correctly
+2010-03-31 16:44:19,eddyb,and that makes no sense
+2010-03-31 16:44:34,eddyb,if (s->data_len == 0) s->mode = USB_MSDM_CSW;
+2010-03-31 16:44:35,eddyb,s->usb_len = 0;
+2010-03-31 16:44:55,eddyb,"so usb_len gets set to 0, while mode may be not set to CSW"
+2010-03-31 16:45:06,eddyb,(inside an if statement)
+2010-03-31 16:45:21,eddyb,then if (s->usb_len) deffer packet
+2010-03-31 16:45:33,eddyb,it simply shouldn't get there :|
+2010-03-31 16:45:44,XanClic,"Well, have you tried the qemu mailing list? *g*"
+2010-03-31 16:46:26,XanClic,"I think I could help you only if I experienced the same problem, but I didn't"
+2010-03-31 16:46:35,eddyb,hmm
+2010-03-31 16:46:54,eddyb,"okey, i'll try with stable qemu"
+2010-03-31 16:48:56,eddyb,maybe it's the same problem with the HID not NAKing when not having changed data(aka new kepress) in qemu git
+2010-03-31 16:52:54,eddyb,this is strange
+2010-03-31 16:53:10,eddyb,reinstalling qemu did absolutely nothing :|
+2010-03-31 17:31:42,eddyb,"funny, it still happens with stable qemu..."
+2010-03-31 17:32:12,eddyb,"also, it happens mostly on sectors 63 and 64"
+2010-03-31 17:56:35,eddyb,XanClic: any code I can check out?
+2010-03-31 17:56:47,XanClic,My USB code?
+2010-03-31 17:56:54,XanClic,"Well, if you're brave enough *g*"
+2010-03-31 17:56:57,eddyb,mass storage
+2010-03-31 17:57:28,XanClic,http://gitorious.org/paloxena/kernel3/blobs/master/src/kernel/drivers/usb-device/msd-cbi.c <— CBI
+2010-03-31 17:57:40,XanClic,http://gitorious.org/paloxena/kernel3/blobs/master/src/kernel/drivers/usb-device/msd-bo.c <— Bulk-only
+2010-03-31 17:58:07,eddyb,what's CBI?
+2010-03-31 17:58:13,XanClic,Control/Bulk/Interrupt
+2010-03-31 17:58:19,eddyb,ah
+2010-03-31 17:58:20,XanClic,Though I don't use the interrupt part *g*
+2010-03-31 17:58:33,XanClic,http://gitorious.org/paloxena/kernel3/blobs/master/src/kernel/drivers/bus/scsi.c <— and my SCSI code
+2010-03-31 17:59:08,eddyb,usb_bulk_transfer is sync?
+2010-03-31 17:59:32,eddyb,"ah, and what's tag for?"
+2010-03-31 17:59:48,eddyb,i set it to 0
+2010-03-31 17:59:48,XanClic,You may use it on your own
+2010-03-31 17:59:55,XanClic,I set it to 42
+2010-03-31 18:00:52,XanClic,I guess it's used to see if the CSW goes with the CBW or anything like that
+2010-03-31 18:13:27,eddyb,i think i see
+2010-03-31 18:14:56,eddyb,"the data arrives just after the packet get deferred, but before the handler function returns..."
+2010-03-31 18:25:48,eddyb,qemu code it's a big load of mess
+2010-03-31 19:15:19,eddyb,is there any way i can get to talk so some qemu developer(s) ?
+2010-03-31 19:15:28,XanClic,Yes
+2010-03-31 19:15:30,XanClic,kwolf is one ;-)
+2010-03-31 19:15:51,eddyb,because i know way too less about the code to start digging myself
+2010-03-31 19:15:56,eddyb,silly me XD
+2010-03-31 19:16:14,eddyb,"sadly, he's not around :("

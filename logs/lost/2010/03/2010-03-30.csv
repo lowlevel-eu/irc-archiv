@@ -1,0 +1,615 @@
+date/time,nick,message
+2010-03-30 00:12:59,taljeth2,gn8
+2010-03-30 00:13:28,FreakyPenguin,gn8
+2010-03-30 00:44:07,ehenkes,noch jemand da?
+2010-03-30 09:15:09,kwolf,Moin
+2010-03-30 09:44:39,chris12,moin
+2010-03-30 11:17:51,bluecode,moin
+2010-03-30 11:19:17,chris12,moin bluecode
+2010-03-30 11:22:27,kwolf,Moin bluecode
+2010-03-30 11:45:21,Thylon,hi
+2010-03-30 11:45:43,bluecode,tach Thylon
+2010-03-30 11:46:57,Thylon,Ich habe eine Frage zur Multibootstruktur genauer zur apm Tabelle: wie kann ich diese nutzen um apm direkt in 32bit anzusprechen ohne v8086?
+2010-03-30 11:47:39,bluecode,bietet APM ein Interface ohne BIOS Interrupts?
+2010-03-30 11:49:07,Thylon,"Das weis ich ja nicht genau, deshalb frage ich ja. :) Nur in der Beschreibung der Multibootstruktur steht 32bit Codesegment. Deshalb frage ich kann ich dass so jrgendwie benutzen?"
+2010-03-30 11:49:59,bluecode,"hm, jo hat es laut der Spzifikation"
+2010-03-30 11:50:25,bluecode,die Spezifikation gibts hier: http://www.microsoft.com/whdc/archive/amp_12.mspx
+2010-03-30 11:51:12,Thylon,"Da habe ich ja auch nachgesehen, wenn ich es allrerdings benutze startet die virtuale Maschine neu anschenend ohne Expection"
+2010-03-30 11:51:41,bluecode,sind die Felder die dir GRUB gibt überhaupt gültig?
+2010-03-30 11:51:59,bluecode,also überprüfst du die Flags
+2010-03-30 11:52:00,Thylon,ja das Flag ist gesetzt
+2010-03-30 11:52:47,Thylon,der Neustart geschieht in qemu und bochs genau gleich
+2010-03-30 11:56:51,Thylon,Ich nutze zum Testen ein kleines Stück inline assembler das nur die Versionsabzeige aufrufen soll und am Ende entweder 0 oder 1 nach eax schreibt:
+2010-03-30 11:56:52,Thylon,"asm(""xor %%eax,%%eax;movb $0x53, %%ah;movb $0x00, %%al;xor %%ebx,%%ebx;call %1;jc Fehler;mov $0x01,%0;call done;Fehler:;mov $0x02,%0;done:;"" :""=a"" (ok): ""m""(multiboot_struct->mi_apm->cseg));"
+2010-03-30 11:59:05,bluecode,der call ist so blödsinn
+2010-03-30 11:59:36,Thylon,Gut dann vielleicht ein kleiner Tipp wie ich's koregieren kann?
+2010-03-30 11:59:55,bluecode,"ich muss erstmal schauen, was genau in der Multibootstruktur eigentlich steht ;-)"
+2010-03-30 12:05:11,kwolf,"Also erstmal glaube ich, dass das call done ein jmp done sein sollte"
+2010-03-30 12:05:42,Thylon,jo stimmt
+2010-03-30 12:05:59,kwolf,Das ist aber vermutlich nicht der Fehler
+2010-03-30 12:06:38,bluecode,"so wie ich das sehe, musst du ein Code/Datensegment nach den Infos aus der Multibootstruktur zusammenbauen und in deine GDT eintragen"
+2010-03-30 12:06:50,kwolf,"Zweites grundsätzliches Problem: Die Spec sagt für 00h ""Supported modes: Real mode"""
+2010-03-30 12:07:11,bluecode,dann musst du vor dem jmp ds setzten und einen farjmup in das passende codesegment machen
+2010-03-30 12:07:17,bluecode,kwolf: du schaust falsch ;-)
+2010-03-30 12:07:23,kwolf,Hm?
+2010-03-30 12:07:51,kwolf,Wo müsste ich denn sonst schauen? ;-)
+2010-03-30 12:08:01,bluecode,"achso, du schaust nur bei der Versionsabfrage"
+2010-03-30 12:08:11,kwolf,"Das ist, was er aufruft"
+2010-03-30 12:08:13,bluecode,"stimmt, die geht wirklich nicht im pmode"
+2010-03-30 12:08:15,kwolf,ODer aufrufen möchte
+2010-03-30 12:08:15,Thylon,Vielleicht einmal in Assembler? :)
+2010-03-30 12:08:25,Thylon,Achso :)
+2010-03-30 12:08:44,bluecode,"trotzdem reicht ein normaler jmp/call nicht aus, siehhe oben"
+2010-03-30 12:09:22,kwolf,"Für mich sieht das so aus, dass man das Interface erstmal im RM vorbereiten muss, 03h geht nämlich auch nur im RM"
+2010-03-30 12:09:43,bluecode,"GRUB liefert die notwendigen Daten bereits, so wie ich das sehe"
+2010-03-30 12:10:07,kwolf,"Hm, der aktiviert dann auch schon alles, oder wie?"
+2010-03-30 12:10:36,bluecode,unwahrscheinlich würde ich sagn
+2010-03-30 12:10:38,bluecode,*sagen
+2010-03-30 12:12:01,bluecode,"ich glaube aber nicht, dass die ""connect"" funktion irgendwas wesentliches tut außer die Daten zurückgeben"
+2010-03-30 12:12:22,kwolf,Vielleicht
+2010-03-30 12:12:31,bluecode,"jo, vielleicht"
+2010-03-30 12:12:48,Thylon,Wie muss denn jetzt der call richtig aussehen?
+2010-03-30 12:12:55,bluecode,Thylon: ein far call
+2010-03-30 12:13:04,bluecode,aber du musst wie gesagt vorher deskriptoren machen
+2010-03-30 12:13:14,Thylon,ok
+2010-03-30 12:14:38,bluecode,ah
+2010-03-30 12:14:55,bluecode,"schau dir mal 4.6.4 in der Spec an, da stehts genauer"
+2010-03-30 12:15:28,kwolf,"Das müsste ein Interface nach eriks Geschmack sein, i386-Segmentierung mal tatsächlich im Einsatz ;-)"
+2010-03-30 12:15:29,bluecode,zweite Seite
+2010-03-30 12:15:40,bluecode,*g*
+2010-03-30 12:16:27,kwolf,"bluecode: Also nachdem es ein Disconnect gibt, nehme ich an, dass das Connect schon noch irgendwas nützliches macht"
+2010-03-30 12:16:49,kwolf,"Wahrscheinlich, dass das BIOS nicht mehr dazwischenfunkt oder so"
+2010-03-30 12:18:33,Thylon,Danke
+2010-03-30 12:18:49,bluecode,"kwolf: wenn ich das sauber implementieren würde, würde ich das connect natürlich machen, aber darum gehts ja hier erstmal nicht"
+2010-03-30 12:19:47,bluecode,"wenns schlecht läuft kriegst du halt überall den interface not connected fehlercode, aber das wäre ja schonmal fortschritt"
+2010-03-30 12:19:51,kwolf,"Die Frage, die sich mir im Moment stellt, ist vor allem, ob GRUB das schon macht oder nicht. Multiboot sagt dazu nicht wirklich was."
+2010-03-30 12:20:22,bluecode,"das kann es im Prinzip nicht, weil man ja nur entweder rm, pm16 oder pm32 ""verbinden"" kann, so wie ich das sehe"
+2010-03-30 12:20:52,kwolf,"Dass die Spec nichts dazu sagt spricht eigentlich eher dafür, dass er sich wieder disconnectet, aber nachdem Verbinden nur im RM geht, wäre es ja eigentlich schon geschickt, wenn GRUB das machen würde"
+2010-03-30 12:20:57,bluecode,"zumindest gibt es als Fehlercode bei connect32 ""05H  16-bit protected mode interface connection already established"""
+2010-03-30 12:21:10,kwolf,"Hm, ja und?"
+2010-03-30 12:21:30,bluecode,"[12:20:23] <bluecode> das kann es im Prinzip nicht, weil man ja nur entweder rm, pm16 oder pm32 ""verbinden"" kann, so wie ich das sehe"
+2010-03-30 12:21:35,kwolf,GRUB wechselt doch sowieso immer in den 32-Bit-PM.
+2010-03-30 12:21:41,kwolf,Was sollte es sich um den Rest kümmern?
+2010-03-30 12:22:09,bluecode,"tjo, dann kann man wohl mal im sourcecode nachsehen ;-)"
+2010-03-30 12:22:58,kwolf,Das sei dem geneigten Leser zur Übung überlassen ;-)
+2010-03-30 12:23:11,bluecode,bin auch auch dafür *g*
+2010-03-30 12:25:33,Thylon,Danke habt mir sehr geholfen funktioniert zwar noch nicht aber so wird es bestimmt klappen melde mich dann wieder :)
+2010-03-30 12:26:15,bluecode,Du darfst dann dazu gerne was ins Wiki schreiben ;-)
+2010-03-30 12:29:08,Thylon,Mach ich wenns klappt gerne ;)  Aber wenns nicht klappt frag ich noch ein par Sachen :).
+2010-03-30 12:55:49,Thylon,ich muss doch wenn ich die Beschreibung richtig verstehe die Größe die in der Multibootstruktur steht -1 als größe in der gdt angeben oder?
+2010-03-30 12:58:10,Thylon,?
+2010-03-30 13:05:40,Thylon,hallo noch jemand da?
+2010-03-30 13:52:09,Thylon,kwolf: noch da?
+2010-03-30 13:53:42,Thylon,ich habe jetzt die Deskriptorewn eingefügt aber es funktioniert trotz far call trotzdem nicht?! :(
+2010-03-30 13:54:01,Thylon,hat jemand noch einen Tipp für mich?
+2010-03-30 14:14:18,kwolf,"Knapp verpasst, würde ich sagen..."
+2010-03-30 14:15:14,bluecode,tjo
+2010-03-30 14:16:37,bluecode,kwolf: .plt etc ist komisch...
+2010-03-30 14:18:59,kwolf,Und irgendwie fallen immer Ubuntu-Benutzer auf sowas rein
+2010-03-30 14:19:14,bluecode,hm?
+2010-03-30 14:19:28,kwolf,"Das war doch Ubuntu, oder?"
+2010-03-30 14:19:32,bluecode,schon
+2010-03-30 14:19:40,kwolf,Also mein Compiler bastelt sowas nicht rein
+2010-03-30 14:20:00,bluecode,32bit System?
+2010-03-30 14:20:17,Tobiking,Ich hab bisher auch immer nur mit Ubuntu Probleme beim compilieren gehabt
+2010-03-30 14:21:50,bluecode,"hm, also bei mir hat ein normales Program .plt, bei dir nicht kwolf?"
+2010-03-30 14:22:21,kwolf,"Ich hab noch kein normales Programm angeschaut, nur tutorial.git und einen tyndur-Kernel. Die hatten es beide nicht."
+2010-03-30 14:22:39,bluecode,wobei..
+2010-03-30 14:22:44,bluecode,das kommt erst beim linken rein
+2010-03-30 14:22:46,kwolf,qemu-img hat eins
+2010-03-30 14:24:38,kwolf,"Hm, ld baut das ein, oder wie?"
+2010-03-30 14:24:43,bluecode,also ich hab mit ubuntu bei tutorial.git keine -plt
+2010-03-30 14:24:52,kwolf,Ich eben auch nicht
+2010-03-30 14:25:11,bluecode,"jo, aber ich hab ubuntu ;-)"
+2010-03-30 14:25:47,kwolf,"Und wenn du den allerersten Commit nimmst, also den ohne Linkerskript?"
+2010-03-30 14:25:54,kwolf,"Wobei er ja sagt, dass das keinen Unterschied macht"
+2010-03-30 14:27:03,bluecode,das gibt dann auch kein .plt
+2010-03-30 14:31:05,bluecode,"naja, wenn er mal das git ausprobiert, kann das wohl nicht schade"
+2010-03-30 14:31:07,bluecode,n
+2010-03-30 14:33:17,kwolf,"Jo, das ist sicher vernünftig"
+2010-03-30 14:33:36,FreakyPenguin,Moin
+2010-03-30 14:34:12,XanClic,"Moin, FreakyPenguin"
+2010-03-30 14:34:33,kwolf,Moin FreakyPenguin
+2010-03-30 14:38:15,kwolf,"Ui, noch ein bluecode"
+2010-03-30 14:38:33,bluecode_,das ist ein fieser Betrüger
+2010-03-30 14:39:00,kwolf,Und ein Mörder auch noch!
+2010-03-30 14:39:31,bluecode,ja!
+2010-03-30 14:44:13,Thylon,hallo
+2010-03-30 14:44:20,Guest82490,wb Thylon
+2010-03-30 14:44:23,Guest82490,MANNO
+2010-03-30 14:45:14,bluecode,wenn ich könnte würde ich NickServ den Hals umdrehen
+2010-03-30 14:45:31,Thylon,hast du das Thema schon gesehen?
+2010-03-30 14:45:41,chris12,zieh ihm den stecker
+2010-03-30 14:45:44,bluecode,offensichtlich
+2010-03-30 14:45:55,bluecode,"du hast sogar antworten, Thylon ;-)"
+2010-03-30 14:47:07,Thylon,gebe das codesegment doch an (so macht man doch einen Sprung oder wie sonst?)
+2010-03-30 14:47:39,bluecode,"du kannst es aber nicht mit mov <irgendwas>, cs setzten"
+2010-03-30 14:47:40,FreakyPenguin,"kwolf: Hm willst du heute abend nochmal versuchen die wiki-Texte rauszuholen, oder soll ich es mal von Hand probieren?"
+2010-03-30 14:48:08,bluecode,du musst den neuen Selektor direkt beim Sprung angeben
+2010-03-30 14:48:09,XanClic,"Och, ich find das aktuelle Wiki sehr schön"
+2010-03-30 14:48:18,XanClic,"Man sieht, wer gearbeitet hat, aber es kommt nix raus *g*"
+2010-03-30 14:48:26,bluecode,FreakyPenguin: huh?
+2010-03-30 14:49:15,Thylon,ah ok
+2010-03-30 14:49:17,FreakyPenguin,bluecode: http://www.lowlevel.eu/wiki/Hauptseite ;-)
+2010-03-30 14:49:47,bluecode,äh... datenbank portieren ;-)
+2010-03-30 14:49:52,bluecode,alles andere finde ich doof
+2010-03-30 14:50:12,kwolf,"FreakyPenguin: ""von Hand""?"
+2010-03-30 14:50:28,bluecode,aber vorher das wiki RO machen ;-)
+2010-03-30 14:50:46,kwolf,Ist doch nur der Testlauf
+2010-03-30 14:50:55,FreakyPenguin,"kwolf: Naja eine tabelle mit 2 Spalten müsste man doch wohl auch mit einem eigenen Skript einigermassen rauskriegen, wenn das smf-Dings nicht will"
+2010-03-30 14:51:07,kwolf,"Die Frage ist halt, ob das eigene Ding besser funktioniert ;-)"
+2010-03-30 14:52:04,FreakyPenguin,"Naja zur not halt auch stückweise, aber so schwierig kann das doch nicht sein? ;-)"
+2010-03-30 14:52:35,FreakyPenguin,"Ich meine das Wiki tut ja auch, also kommen die Datetsätze ja irgendwie raus.. ;-)"
+2010-03-30 14:53:02,Thylon,call 0x28:%1 so richtig?
+2010-03-30 14:53:14,Thylon,%1 ist ja der Parameter
+2010-03-30 14:53:16,kwolf,"Sieht nicht so richtig AT&Tig aus, aber wenn der Compiler es schluckt..."
+2010-03-30 14:53:36,Thylon,tut er ja nicht :( 
+2010-03-30 14:53:38,XanClic,"Hm, wohl besser $0x28"
+2010-03-30 14:53:45,Thylon,stimmt 
+2010-03-30 14:54:07,XanClic,"Wenn du denkst, es sind genügend % und $, dann fehlt noch was"
+2010-03-30 14:54:10,XanClic,Das ist AT&T
+2010-03-30 14:54:12,kwolf,"Also analog zum Sprung hätte ich irgendwie was wie lcall $0x28, %1 erwartet"
+2010-03-30 14:54:35,kwolf,Aber ich hab sowas noch nie benutzt
+2010-03-30 14:56:14,Thylon,Error: suffix or operands invalid for `lcall' bleibt
+2010-03-30 14:56:34,Thylon,hasse at&t
+2010-03-30 14:56:40,XanClic,Warum nimmst du es dann?
+2010-03-30 14:57:06,Thylon,will nicht umschalten weil es Standart für inline is :|
+2010-03-30 14:57:17,XanClic,Erstens ist es Standard und zweitens: warum nicht?
+2010-03-30 14:57:22,XanClic,"Konqueror ist btw nett, „Keine Verbindung zu Rechner localhost“ *g*"
+2010-03-30 14:58:11,kwolf,"Thylon: Vielleicht lcall $0x28, *%1 oder so? Und %1 ist auch sicher ein Register, nehme ich an?"
+2010-03-30 14:58:46,bluecode,"falls wir es noch erraten, sollten wir es ins wiki aufnehmen :-)"
+2010-03-30 14:58:51,kwolf,"Hm, du sagst explizit ""m"". Das könnte auch richtig sein. Ich bin verwirrt. *g*"
+2010-03-30 14:59:15,kwolf,Ich springe so selten zu einem Parameter in Inline-Assembler...
+2010-03-30 14:59:34,Thylon,stimmt muss es nicht r sein??
+2010-03-30 14:59:52,bluecode,einfach mal probieren ;-P
+2010-03-30 14:59:52,kwolf,Vielleicht ;-)
+2010-03-30 14:59:58,kwolf,Ohne meinen Anwalt sag ich dazu nichts *g*
+2010-03-30 15:00:24,Thylon,aber ich brauche die Register doch für die Parameter?!
+2010-03-30 15:00:50,bluecode,eigentlich sollte es schon ohne register gehen
+2010-03-30 15:01:34,bluecode,"wobei ""m"" doch falsch ist, oder nicht? Das würde doch bedeuten, dass er an der Adresse die Sprungadresse finden würde?"
+2010-03-30 15:02:03,Thylon,also das Sternchen passt auch nicht
+2010-03-30 15:02:03,bluecode,"wobei, das wäre ja genau das was er will..."
+2010-03-30 15:02:31,bluecode,"jo, du musst das zuerst in ein reg packen"
+2010-03-30 15:02:37,Thylon,an der Stelle ist ja die sprungadresse offset aus der Multibootstruktur oder?
+2010-03-30 15:02:44,kwolf,"bluecode: Nein, ich glaube, das ist dann die Adresse vom Pointer"
+2010-03-30 15:02:51,kwolf,Aber sicher bin ich mir da auch nie
+2010-03-30 15:03:26,bluecode,ich würde mal sagen ein jmp/call kann aber nicht um die memory-location Ecke schauen
+2010-03-30 15:03:42,kwolf,"Vermutlich nicht, ja"
+2010-03-30 15:03:47,bluecode,wir sind ja nicht bei PowerPC (oder wie hieß die arch mit den tollen befehlen)?
+2010-03-30 15:03:50,kwolf,Register klingt auf jeden Fall sinnvoll
+2010-03-30 15:03:59,kwolf,Also ein PPC kann das erst recht nicht ;-)
+2010-03-30 15:04:06,XanClic,"Hm, ich weiß noch, wie SHyx0rmZ einfach ein retf genommen hat, damit er keinen far-jmp bauen muss *g*"
+2010-03-30 15:04:06,Thylon,aber welches (Parameter)
+2010-03-30 15:04:20,kwolf,Der kann aus dem Speicher in ein Register laden und umgekehrt. Viel mehr macht der mit Speicher nicht.
+2010-03-30 15:04:22,bluecode,kwolf: wo gabs dann diese alles in einem instruktion?
+2010-03-30 15:04:35,kwolf,"Das war schon PPC, aber nur auf Registern ;-)"
+2010-03-30 15:04:40,Thylon,ich glaube ich lagere es jetzt aus 
+2010-03-30 15:05:02,bluecode,"Thylon: du solltest auch mal newlines im Assemblercode benutzen, nur mal so als tipp"
+2010-03-30 15:05:11,kwolf,"Thylon: Nimm einfach irgendein Register, also ""r"" oder so"
+2010-03-30 15:05:38,Thylon,auch mit r ein Fehler
+2010-03-30 15:05:41,bluecode,irgendeins ist eher schlecht
+2010-03-30 15:05:49,bluecode,er benutzt ja ein paar der regs
+2010-03-30 15:06:10,Thylon,Error: suffix or operands invalid for `lcall'
+2010-03-30 15:06:18,bluecode,mit * bei registern
+2010-03-30 15:06:52,Thylon,"lcall $0x28,*%1 bei register auch nicht"
+2010-03-30 15:07:00,Thylon,fehler wie oben
+2010-03-30 15:07:32,kwolf,"Hm, wie geht denn lcall genau? Vielleicht mal Intel-Doku anschauen..."
+2010-03-30 15:08:07,Thylon,wenn ich es auslagere muss ich dann in der Assemblerfunktion alle Register sichern oder brauch ich's bei c nicht?
+2010-03-30 15:09:38,kwolf,"Alles, was du benutzt, sichern ist ein guter Ansatz"
+2010-03-30 15:10:24,kwolf,"Wenn es nach C-Aufrufkonvention geht, ist es zwar für ein paar Register überflüssig, aber das ist ja nicht performancekritisch"
+2010-03-30 15:10:37,Thylon,gut dann lagere ich jetzt aus und nutze intel syntnax :)
+2010-03-30 15:11:03,kwolf,"Da musst du trotzdem wissen, wie der Befehl geht ;-)"
+2010-03-30 15:11:38,Thylon,ist intel syntnax nicht call 0x28:offset ?
+2010-03-30 15:11:42,kwolf,Versuch's
+2010-03-30 15:12:05,kwolf,"Aber das ist das gleiche, was du grad schon probiert hast, also bestehen gewisse Chancen, dass es so nicht geht"
+2010-03-30 15:12:57,kwolf,"Wenn ich die Doku grad richtig verstehe, müssen die Operanden entweder immediate sein oder ein Speicheroperand mit einem Far-Pointer"
+2010-03-30 15:20:04,Thylon,also er sagt error: operation size not specified
+2010-03-30 15:20:20,Thylon,bei call 0x28:edx
+2010-03-30 15:22:34,XanClic,"call dword bei nasm, glaub ich"
+2010-03-30 15:22:40,bluecode,"kwolf: wenn du mal zuviel Zeit hast, magst du dann mal schauen, ob du alles was in ""C-Kernel mit GRUB"" gesagt wird auch in deiner Tutorialreihe (abgesehen von dem GRUB-Imagebauen, das will ich in den GRUB-Artikel einbauen) hast? Dann wäre das Tut nämlich auch überflüssig"
+2010-03-30 15:24:11,kwolf,Ich habe nie zuviel Zeit ;-)
+2010-03-30 15:24:49,Thylon,call dword 0x28:edx = invalid combination of opcode and operands
+2010-03-30 15:25:08,bluecode,call 0x28:[edx] oder ist das wieder zuviel indirektion?
+2010-03-30 15:25:15,XanClic,Das ist zu viel
+2010-03-30 15:25:26,XanClic,Thylon: Nimm fasm und dann call far *g*
+2010-03-30 15:26:30,Thylon,[edx]  = operation size not specified
+2010-03-30 15:26:47,kwolf,XanClic: Hast du damit denn schonmal einen far-Call gemacht? ;-)
+2010-03-30 15:26:58,kwolf,+indirekten
+2010-03-30 15:27:13,XanClic,"kwolf: Nö, aber ich kann ja mal ausprobieren, ob fasm das assembliert"
+2010-03-30 15:27:27,kwolf,"Jo, wenn man den richtigen Assembler nimmt, lernt die CPU das sicher ;-)"
+2010-03-30 15:27:31,XanClic,"Hm, schade, ne ;-)"
+2010-03-30 15:27:41,XanClic,"Na ja, das mit Sprüngen und so ist auf FASM schon einfacher"
+2010-03-30 15:28:03,Thylon,call 0x28:[0x18:edx] = invalid segment override
+2010-03-30 15:28:17,kwolf,Der Operand ist m16:32 oder ptr16:32
+2010-03-30 15:28:25,XanClic,Also ich würd jetzt mal behaupten... Genau.
+2010-03-30 15:28:28,Thylon,ja
+2010-03-30 15:28:33,XanClic,Dass ein far-call mit Register nicht geht
+2010-03-30 15:28:39,kwolf,"Ich nehme an, beim einen ist komplett immediate, beim anderen halt ein Far-Pointer im Speicher"
+2010-03-30 15:28:55,kwolf,Wie ich vor einer Viertelstunde schon gesagt habe
+2010-03-30 15:28:55,XanClic,Also wohl in eine Variable speichern und dann mit der arbeiten
+2010-03-30 15:29:40,XanClic,"Fraglich nur, wie das dann funktioniert"
+2010-03-30 15:29:53,kwolf,Wieso?
+2010-03-30 15:29:55,XanClic,Man könnte es ja doch per retf machen *g*
+2010-03-30 15:30:05,XanClic,"Na ja, call 0x28:[sub] sieht komisch aus und das will der auch nicht"
+2010-03-30 15:30:15,XanClic,bzw. s/sub/blablablubb/
+2010-03-30 15:30:55,Thylon,wie denn per retf? 
+2010-03-30 15:31:05,bluecode,laut dem nasm manual gibt es nur farcalls mit immediatewerten
+2010-03-30 15:31:08,XanClic,"Na ja, cs und eip des Ziels speichern"
+2010-03-30 15:31:09,XanClic,Und dann retf
+2010-03-30 15:31:13,bluecode,http://wiki.osdev.org/Far_Call_Trick
+2010-03-30 15:31:16,XanClic,Und vorher natürlich aktuelles cs und eip
+2010-03-30 15:32:26,XanClic,Also in etwa so: http://pastebin.com/t1GFceaE
+2010-03-30 15:32:57,XanClic,"http://pastebin.com/b09Ur0UQ so, mit Doppelpunkt *g*"
+2010-03-30 15:33:52,Thylon,augenblick probiere es aus :)
+2010-03-30 15:33:55,XanClic,"Wobei ich jetzt nicht wüsste, was passiert, wenn man da in ein 16-Bit-Segment springt"
+2010-03-30 15:35:48,kwolf,"Man landet im 16-Bit-PM, nehme ich an"
+2010-03-30 15:36:03,XanClic,"Na ja, aber wie ist das dann mit dem Stack?"
+2010-03-30 15:36:15,kwolf,Den sollte man vielleicht anpassen
+2010-03-30 15:36:17,XanClic,"Der ist dann ja auch in 16-Bit-Werte aufgeteilt, statt in 32-Bit"
+2010-03-30 15:36:39,XanClic,Aber wie kommt man dann wieder raus? *g*
+2010-03-30 15:36:52,XanClic,Man kann dann ja nicht in ein 32-Bit-Segment irgendwo zurückspringen
+2010-03-30 15:36:57,XanClic,Sondern wohl nur in die ersten 64 kB
+2010-03-30 15:37:06,kwolf,"Reicht doch, wenn man's weiß"
+2010-03-30 15:38:05,Thylon,"jetzt hat er schon Probleme mit mov %0,%%edx"
+2010-03-30 15:38:26,Thylon,wie wäre es richtig?
+2010-03-30 15:40:39,Thylon,?
+2010-03-30 15:41:19,bluecode,du hast auf intel syntax umgestellt?
+2010-03-30 15:42:02,Thylon,ne
+2010-03-30 15:42:15,Thylon,mach es jetzt aber anders :)
+2010-03-30 15:42:23,Thylon,Test kommt gleich
+2010-03-30 15:43:30,DesL2,moinsen
+2010-03-30 15:43:37,XanClic,"moin, DesL2"
+2010-03-30 15:43:43,Thylon,Danke leute es funktioniert 
+2010-03-30 15:44:03,Thylon,mahl sehen ob auch das Herunterfahren kalppt :)
+2010-03-30 15:44:10,Thylon,*klappt
+2010-03-30 15:52:54,Thylon,ok er kommt nur nicht mehr zurück 
+2010-03-30 15:53:12,Thylon,also nach dem far jump
+2010-03-30 15:53:14,DesL,was ist denn los?
+2010-03-30 15:53:47,Thylon,ach ich versuche apm im Protected Mode ans Laufen zu kriegen
+2010-03-30 15:53:54,Thylon,ohne v8086
+2010-03-30 15:55:35,DesL,apm?
+2010-03-30 15:55:49,Thylon,Advanced Power Management
+2010-03-30 15:56:08,DesL,Achso^^
+2010-03-30 15:57:41,Thylon,und dass ist nicht so einfach :)
+2010-03-30 15:57:56,Thylon,muss jetzt aber erst einmal gehen tschüs
+2010-03-30 15:58:23,DesL,cu
+2010-03-30 16:45:58,Iteem,hi
+2010-03-30 16:46:07,XanClic,"moin, Iteem ;-)"
+2010-03-30 16:46:08,bluecode,hi Iteem
+2010-03-30 16:46:58,Iteem,"kwolf: XanClic hat gesagt du hast das os-dev für einsteiger tut geschrieben, oder?"
+2010-03-30 16:47:16,bluecode,das ist korrekt
+2010-03-30 16:47:22,Iteem,ok
+2010-03-30 16:47:38,Iteem,ich hab da nämlich ein kleines problem :P
+2010-03-30 16:48:01,bluecode,und du hast es auch schon behoben? *g*
+2010-03-30 16:48:17,Iteem,"grub meint, wenn ich den kernel starten will: Error 13: Invalid or unsupported executable format from GRUB ... "
+2010-03-30 16:48:39,Iteem,bluecode: nein sonst würde ich ja ned fragen^^
+2010-03-30 16:49:01,bluecode,"1. ist es eine ELF-Datei 2. Befindet sich die Multibootheader in den ersten 8k (das kann man mit mbchk überprüfen, falls es installiert ist)?"
+2010-03-30 16:49:23,Iteem,mbchk meinte nein
+2010-03-30 16:49:30,Iteem,aber ich weiss ja nicht wie beheben :P
+2010-03-30 16:49:33,kwolf,Moin Iteem
+2010-03-30 16:49:58,bluecode,Iteem: magst du mal den Kernel irgendwo hochladen?
+2010-03-30 16:50:14,Iteem,ehm jo kann ich machen
+2010-03-30 16:50:22,Iteem,aber für was brauchst du nur den kernel?
+2010-03-30 16:50:26,bluecode,also nur die executable mein ich
+2010-03-30 16:50:48,Iteem,meinte ich auch ;)
+2010-03-30 16:51:10,bluecode,"ich möchte mir anschauen was bei dir beim kompilieren rauskommt, da gibts scheinbar bei manchen Probleme (siehe Thread von gestern/heute im Forum)"
+2010-03-30 16:53:09,Tobiking,Wobei Ubuntu da oft im Spiel ist ^^
+2010-03-30 16:53:52,bluecode,"ubuntu wird auch häufig verwendet, was soll uns das dann sagen?"
+2010-03-30 16:53:53,Iteem,bei mir sicher ned^^
+2010-03-30 16:54:11,bluecode,außerdem funktioniert es bei meinem Ubuntu
+2010-03-30 16:55:50,Iteem,http://www.iteem.bplaced.com/kernel.bin
+2010-03-30 16:56:05,Iteem,ich habs nur zum hochladen .bin genannt
+2010-03-30 16:56:26,bluecode,"joa, sieht nach exakt dem problem aus dem forum aus"
+2010-03-30 16:57:23,Iteem,im forum hab ich noch nicht nachgesehen...
+2010-03-30 16:57:32,bluecode,brauchst du auch nicht
+2010-03-30 16:57:36,bluecode,da steht keine lösung
+2010-03-30 16:57:53,Iteem,schade
+2010-03-30 16:58:52,Iteem,und an ubuntu liegt es definitiv ned ;)
+2010-03-30 16:59:10,bluecode,"Möchtest du mal den Sourcecode des Tutorials direkt versuchen? ""git clone git://git.tyndur.org/tutorial.git tutorial"", dann das makefile dort ausführen und nachschauen ob beim objdump immernoch eine .plt Sektion vorkommt?"
+2010-03-30 16:59:25,bluecode,ansonsten wäre OS + Compilerversion interessant
+2010-03-30 17:00:08,Iteem,os ist debian und der compiler sollte eigentlich aktuell sein
+2010-03-30 17:00:18,Iteem,ich hab er letzhin mal ein update gemacht^^
+2010-03-30 17:00:28,bluecode,"hm, ist quasi fast ubuntu"
+2010-03-30 17:00:29,Iteem,*erst
+2010-03-30 17:01:57,XanClic,"Hm, zufällig ein Assemblergott anwesend?"
+2010-03-30 17:02:37,kwolf,Stell deine Frage einfach? ;-)
+2010-03-30 17:02:57,XanClic,Ist repe/repne nur für manche Instruktionen erlaubt?
+2010-03-30 17:03:13,XanClic,Laut http://ref.x86asm.net/coder32.html hat rep den gleichen Opcode wie repe/repne
+2010-03-30 17:03:38,DesL,AUch gleiche operanden?
+2010-03-30 17:03:41,kwolf,Was sollte der Unterschied sein?
+2010-03-30 17:03:56,XanClic,"Na ja, rep wiederholt, ohne auf die Flags zu achten"
+2010-03-30 17:04:07,XanClic,Dachte ich zumindest *g*
+2010-03-30 17:04:44,kwolf,"Hm, okay ;-)"
+2010-03-30 17:04:56,bluecode,"XanClic: schau in die intelmanauls, da steht das doch"
+2010-03-30 17:05:10,XanClic,"Bah, wozu gibts denn den Channel? Für Noobs wie mich natürlich *g*"
+2010-03-30 17:05:22,kwolf,Also das Intelmanual führt jedenfalls alle erlaubten Befehle einzeln auf
+2010-03-30 17:05:41,bluecode,exakt
+2010-03-30 17:05:53,bluecode,und ich hab keine Lust das abzutippen
+2010-03-30 17:06:29,Iteem,bluecode: lol das geht jetzt
+2010-03-30 17:06:50,DesL,Tippfehler im linkerscript?
+2010-03-30 17:07:02,XanClic,"Gut, offensichtlich ist repe/repne nur für Befehle, die die Flags verändern"
+2010-03-30 17:07:03,bluecode,Iteem: dann darfst du jetzt rausfinden was du anders machst ;-)
+2010-03-30 17:07:11,Iteem,wenn er die ganze zeit AA BB und cc spamen soll :P
+2010-03-30 17:07:21,Iteem,hmm
+2010-03-30 17:07:37,kwolf,dd sollte auch noch dabei sein ;-)
+2010-03-30 17:07:40,bluecode,das linkerscript wäre wohl das erste was du versuchen solltest
+2010-03-30 17:07:49,Iteem,ich hab wirklich nur copy and paste gemacht um wirklich sicherzugehen das es funzt
+2010-03-30 17:07:50,kwolf,Und vielleicht die Makefile
+2010-03-30 17:07:54,bluecode,das wird ja im tutorial später verwendet
+2010-03-30 17:08:09,Iteem,ich schau mal
+2010-03-30 17:08:22,kwolf,"Iteem: Vielleicht habe ich was im git gefixt, aber vergessen, es in das Tut zu übernehmen"
+2010-03-30 17:08:41,Iteem,ich hoffs für mich ;)
+2010-03-30 17:08:59,DesL,worksforme
+2010-03-30 17:10:11,Iteem,und danke noch an alle die geholfen haben :)
+2010-03-30 17:10:28,bluecode,kwolf: -nostdinc fehtl im git...
+2010-03-30 17:10:42,kwolf,Im git oder im Tut?
+2010-03-30 17:10:49,bluecode,wie gesagt
+2010-03-30 17:11:02,kwolf,"Das erklärt aber nicht, warum das git tut und das Tut tut nicht ;-)"
+2010-03-30 17:11:11,DesL,Tut
+2010-03-30 17:11:11,bluecode,sowieso nicht
+2010-03-30 17:11:21,kwolf,DesL: Das war Absicht ;-)
+2010-03-30 17:11:32,DesL,Was? das es geht?
+2010-03-30 17:11:36,kwolf,Das sowieso
+2010-03-30 17:11:47,DesL,XD
+2010-03-30 17:12:15,DesL,Was den nu?
+2010-03-30 17:13:17,kwolf,"Iteem müsste halt sagen, wo der Unterschied liegt"
+2010-03-30 17:13:27,kwolf,Wir haben das Problem alle nicht
+2010-03-30 17:13:41,DesL,Bei welchem Tut teil bist du eigentlich gerade?
+2010-03-30 17:13:54,kwolf,"Teil 4, nehme ich an"
+2010-03-30 17:13:55,bluecode,"ich hab das tut noch nie abgetippt, insofern kA kwolf ;-)"
+2010-03-30 17:14:03,kwolf,Good point ;-)
+2010-03-30 17:14:32,bluecode,"beim clean wäre es wahrscheinlich schon, wenn die kernel-Datei auch fliegt"
+2010-03-30 17:14:44,DesL,"Also unter Windoof geht es, sollte es wirklich am Compiler liegen?"
+2010-03-30 17:15:02,kwolf,Ziemlich sicher liegt es an der Toolchain. Compiler oder Linker.
+2010-03-30 17:15:29,DesL,oder eben am Linkerscript??
+2010-03-30 17:15:32,kwolf,"Und ziemlich sicher gibt es Möglichkeiten, das hinzubiegen"
+2010-03-30 17:15:49,kwolf,Das Skript ist bei allen das gleiche
+2010-03-30 17:16:05,bluecode,"hä? bei ihm geht doch git, wieso sollte dann die toolchain schuld sein?"
+2010-03-30 17:16:20,kwolf,Hm...
+2010-03-30 17:16:23,DesL,Iteem: wird der asm Teil für Multiboot dazu gelinkt?
+2010-03-30 17:16:44,kwolf,Die Binary hat er doch gepostet
+2010-03-30 17:16:50,Iteem,hmm? ich denke ja
+2010-03-30 17:17:02,Iteem,make linkt start.o jedenfalls mit
+2010-03-30 17:17:08,DesL,"GRUB kann tlw kein .bin, als was linkst du es?"
+2010-03-30 17:17:26,bluecode,ELF
+2010-03-30 17:17:44,DesL,na dann.
+2010-03-30 17:17:53,Iteem,DesL: ich nehm einfach die dateien aus dem tut ;)
+2010-03-30 17:18:08,DesL,Dann sollte alles gehen...
+2010-03-30 17:18:19,bluecode,ach...
+2010-03-30 17:18:27,DesL,:-)
+2010-03-30 17:18:55,bluecode,"hm, machen wirs mal andersrum, Iteem, kannst du mir das ges. (nicht-funktionierende) Projekt mal geben?"
+2010-03-30 17:19:20,Iteem,looooool
+2010-03-30 17:19:22,Iteem,hat sich erledigt xD
+2010-03-30 17:19:29,DesL,Was wars?
+2010-03-30 17:19:41,Iteem,ka ich hab das ganze einfach nochmals neu gemacht^^
+2010-03-30 17:19:53,Iteem,anscheinend ein fehler meinerseits :P
+2010-03-30 17:19:55,Iteem,sry
+2010-03-30 17:19:59,DesL,Hast du die Projekt vermisccht?
+2010-03-30 17:20:03,DesL,*+e
+2010-03-30 17:20:36,Iteem,"? nein ich hab nur das tutorial als grundlage genommen, keine dateien aus git"
+2010-03-30 17:20:44,Iteem,falls du das meinst
+2010-03-30 17:20:48,bluecode,und das funktioniert momentan?
+2010-03-30 17:20:53,DesL,"ja, meinte ich."
+2010-03-30 17:21:05,Iteem,ja ohne probleme
+2010-03-30 17:21:24,bluecode,"und was hat sich zwischen ""es tut nicht"" und ""es tut"" verändert?"
+2010-03-30 17:21:25,Iteem,"sry nochmals, ich hoffe ihr nehmst mir nicht übel"
+2010-03-30 17:21:51,Iteem,ein löschen aller dateien und nochmals reinkopieren aus dem tut? :D
+2010-03-30 17:22:08,DesL,"Total, wir haden dich jez 4ever! (nein nicht wirklich XD)"
+2010-03-30 17:22:42,bluecode,Iteem: und wie kann ich das jetzt reproduzieren? *g*
+2010-03-30 17:22:57,Iteem,tja frage ich mich auch
+2010-03-30 17:23:18,Iteem,kann sein das ich vergessen hab das linkerscript einzubauen
+2010-03-30 17:23:29,DesL,WTF?
+2010-03-30 17:23:44,DesL,dann hättest du nichtmal nen kernel
+2010-03-30 17:24:11,Iteem,"doch, geht wunderbar wenn ichs jetzt probiere :P"
+2010-03-30 17:24:19,Iteem,also das bauen
+2010-03-30 17:24:27,Iteem,aber laufen tuts dann ned
+2010-03-30 17:24:29,bluecode,"Iteem: kannst du mal beim git ein ""git reset d4cb2bbd8b54cd0475f6071caffc722712d8d844"" machen und dann nochmal versuchen (vorher die erstellten dateien löschen)"
+2010-03-30 17:24:44,bluecode,und dann halt nochmal mit objdump nach .plt ausschau halten
+2010-03-30 17:25:23,Iteem,hmm? wo meinst du?
+2010-03-30 17:26:02,bluecode,beim dem zeuch das du mit git gezogen hast
+2010-03-30 17:26:36,Iteem,ok
+2010-03-30 17:26:42,bluecode,kwolf: das nostdinc fehlt aber konsistent im git (also auch im ersten commit)
+2010-03-30 17:27:20,kwolf,Vermutlich hat es irgendjemand ins Wiki eingefügt und ich habe die Änderung nicht gesehen
+2010-03-30 17:27:35,bluecode,das war bestimmt ich
+2010-03-30 17:27:45,kwolf,"Wenn es im ersten Commit wäre und später nicht mehr, wäre das sehr seltsam ;-)"
+2010-03-30 17:31:18,bluecode,hm
+2010-03-30 17:31:29,Iteem,"bluecode: ok hab ich gemacht, kein .plt gesichtet ;)"
+2010-03-30 17:33:09,kwolf,"Jetzt streng dich bitte an, wieder eine kaputte Version hinzubekommen ;-)"
+2010-03-30 17:33:20,DesL,XD
+2010-03-30 17:33:20,bluecode,"braucht er nicht mehr, ich hab eine"
+2010-03-30 17:33:27,kwolf,Ah?
+2010-03-30 17:33:29,DesL,wie dass?
+2010-03-30 17:33:30,bluecode,jo
+2010-03-30 17:33:32,Iteem,lol
+2010-03-30 17:33:37,kwolf,Wie geht?
+2010-03-30 17:33:45,bluecode,durch c&p
+2010-03-30 17:33:48,kwolf,*lol*
+2010-03-30 17:33:55,DesL,welche file?
+2010-03-30 17:33:57,kwolf,Am Ende macht das -nostdinc es kaputt ;-)
+2010-03-30 17:34:20,Iteem,:P
+2010-03-30 17:34:57,bluecode,ich schau dann mal warum das kaputt geht
+2010-03-30 17:36:00,kwolf,Ich krieg per c&p kein .plt
+2010-03-30 17:36:07,kwolf,Aber ist ja auch kein Ubuntu ;-)
+2010-03-30 17:36:36,kwolf,"Du hast auch nur die ganz einfache Version vom Anfang genommen, oder? Also init.c, start.S und Makefile?"
+2010-03-30 17:36:47,bluecode,jo
+2010-03-30 17:36:59,DesL,bei mir geht das?
+2010-03-30 17:37:05,kwolf,DesL: Welche Distro?
+2010-03-30 17:37:22,XanClic,Windows
+2010-03-30 17:37:28,DesL,genau^^
+2010-03-30 17:37:36,kwolf,"Das ist offensichtlich nicht Ubuntu, auch wenn Gnome ähnlich bescheiden zu bedienen ist"
+2010-03-30 17:37:59,Iteem,kwolf: also die einfache version am anfang tut bei mir immer noch ned
+2010-03-30 17:37:59,XanClic,*g*
+2010-03-30 17:38:08,Iteem,aber das sollte auch ned so schlimm sein ^^
+2010-03-30 17:38:17,kwolf,"Doch, die sollte man auch fixen"
+2010-03-30 17:38:25,kwolf,Kaputte Tuts sind nicht so tolll
+2010-03-30 17:38:29,kwolf,Und toll auch nicht
+2010-03-30 17:38:41,bluecode,hm
+2010-03-30 17:38:50,Iteem,jo aber du sagst da ja selbst das es einen fehler drinn hat ;)
+2010-03-30 17:38:52,bluecode,"kwolf: warum hat eigentlich niemand gesagt, dass git revert nicht das war was ich wollte? ;-)"
+2010-03-30 17:40:32,kwolf,Weil du nicht gefragt hast?
+2010-03-30 17:40:44,kwolf,Was wolltest du denn?
+2010-03-30 17:41:01,kwolf,"Iteem: Aber ich wüsste halt gern, welchen ;-)"
+2010-03-30 17:41:12,bluecode,"naja, das git geht bei mir genauso nicht"
+2010-03-30 17:41:23,DesL,ich denk GIT ist ok?
+2010-03-30 17:41:33,bluecode,das dachte ich auch
+2010-03-30 17:41:50,Iteem,bei mir geht das auch
+2010-03-30 17:41:56,kwolf,"Hm, ich hab die Zeile nicht richtig gelesen"
+2010-03-30 17:42:01,kwolf,"git reset ... ist Blödsinn, ja"
+2010-03-30 17:42:06,kwolf,git checkout wollt ihr
+2010-03-30 17:42:09,bluecode,jo
+2010-03-30 17:42:10,ScollPi,moin moin
+2010-03-30 17:42:15,XanClic,"moin, ScollPi"
+2010-03-30 17:42:26,DesL,moin
+2010-03-30 17:42:27,kwolf,Moin ScollPi
+2010-03-30 17:47:13,bluecode,"bis inklusive commit 2 gehts nicht, danach funktionierts"
+2010-03-30 17:47:35,bluecode,Sinn ergibt es allerdings keinen
+2010-03-30 17:53:11,kwolf,Seltsam
+2010-03-30 17:53:59,kwolf,"Naja, bis später"
+2010-03-30 17:54:14,DesL,bb
+2010-03-30 17:55:03,kwolf,"Und wenn jemand ""Lern C"" freundlicher formulieren kann, Horst bräuchte eine Antwort im Forum ;-)"
+2010-03-30 17:55:18,bluecode,"hm, aber das linkerscript kaschiert den Bug, denn nur ohne linkerscript kommt .plt an so wirre adressen"
+2010-03-30 17:55:20,DesL,"hm, link?"
+2010-03-30 18:13:15,bluecode,"hm, jetzt hab ich keine Lust mehr, das ist doof"
+2010-03-30 18:14:53,DesL,weiste nicht wo der Bug ist?
+2010-03-30 18:25:27,bluecode,exakt
+2010-03-30 18:25:38,DesL,"hm, doof"
+2010-03-30 18:32:53,Iteem,so ich geh erstmals
+2010-03-30 18:32:56,Iteem,bye
+2010-03-30 19:24:05,XanClic,"Nett, Kate stürzt ab, wenn ich eine Datei namens „opcodes“ öffnen will"
+2010-03-30 19:24:41,DesL,wer ist Kate?
+2010-03-30 19:25:13,XanClic,http://de.wikipedia.org/wiki/Kate_(KDE)
+2010-03-30 19:25:38,DesL,Achso^^
+2010-03-30 19:25:41,DesL,Reproduzierbar?
+2010-03-30 19:25:45,XanClic,Jop
+2010-03-30 19:26:02,XanClic,"Leere Datei names „opcodes“, dann $ kate opcodes, bämm"
+2010-03-30 19:26:08,DesL,auch mit Datein gleichennamens und anderem Inhalt?
+2010-03-30 19:26:18,XanClic,"Ah, meine Hervorhebungsdateien sind kaputt"
+2010-03-30 19:26:27,XanClic,"Wenn ich die verschiebe, dann gehts"
+2010-03-30 19:28:23,DesL,"hm, doof"
+2010-03-30 19:28:32,XanClic,Oder meine Sessions
+2010-03-30 19:29:33,XanClic,"ok, zu früh gefreut *g*"
+2010-03-30 19:29:47,DesL,XD
+2010-03-30 19:34:04,XanClic,"Ich frag mich langsam ehrlich, ob ich der einzige bin, dessen KDE4-Kate andauernd crasht"
+2010-03-30 19:34:23,DesL,*haha*
+2010-03-30 19:34:26,FreakyPenguin,Also meins crasht nie ;-)
+2010-03-30 19:34:40,XanClic,"Ich dachte, du nimmst nur vim? ;-)"
+2010-03-30 19:34:57,FreakyPenguin,Jo wenn ich es nicht benutze crasht es doch auch nicht? ;-)
+2010-03-30 19:35:01,XanClic,*g*
+2010-03-30 19:35:23,DesL,LOL
+2010-03-30 19:35:27,Tobiking,Ich frag mich ja auch ob ich der einzige bin bei dem fast alles bei KDE4 crasht ^^
+2010-03-30 19:36:29,DesL,"hm, wleches kDE 4?"
+2010-03-30 19:37:28,XanClic,"Das lustige ist ja, wenn ich das opcodes als opcodes.sh öffne, geht es"
+2010-03-30 19:37:38,DesL,wtf?
+2010-03-30 19:37:43,XanClic,"Vermutlich versucht Kate da krampfhaft, irgendeine Syntaxhighlightingdatei zu finden"
+2010-03-30 19:38:12,aaron,hi
+2010-03-30 19:38:32,DesL,das war aber ein Kurzes Vergnügen^^
+2010-03-30 19:38:42,Tobiking,Bei KDE 4 hab ich inzwischen bestimmt jede Version durch ^^
+2010-03-30 19:38:56,XanClic,"So, jetzt hab ich einen neuen Dateityp *.txt erstellt"
+2010-03-30 19:39:00,Tobiking,Am besten lief immer noch der letzte OpenSuse Meilenstein
+2010-03-30 19:39:05,XanClic,Und jetzt stürzt er wenigstens nicht mehr bei opcodes.txt ab
+2010-03-30 19:39:14,DesL,ja? 11.3?
+2010-03-30 19:39:23,DesL,"äh,ne"
+2010-03-30 20:11:30,taljeth,Moin
+2010-03-30 20:11:59,DesL,moin
+2010-03-30 20:12:11,ScollPi,moin
+2010-03-30 20:12:50,XanClic,"Moin, taljeth"
+2010-03-30 20:16:26,Thylon,hi ich habe jetzt alles getestet( apm protected mode) und es klappt leider immer noch nicht richtig. Könntet ihr mal im Thema vorbeischauen und nachschauen ob ihr eine Lösung findet? :?
+2010-03-30 20:18:28,erik,Guten Abend
+2010-03-30 20:18:43,XanClic,Da fehlt erstens das retf
+2010-03-30 20:18:45,XanClic,"Moin, erik"
+2010-03-30 20:18:59,ScollPi,moin
+2010-03-30 20:19:00,XanClic,"Und zweitens ist noch das Problem mit dem Stack, sobald du im 16-Bit-Segment bist"
+2010-03-30 20:19:26,Thylon,Alles gemacht und diese Kleinigkei vergessen ^^ 
+2010-03-30 20:19:51,Thylon,XanClic: Ich springe doch in ein 32-BIt-Segment
+2010-03-30 20:20:04,XanClic,"Aso, na dann"
+2010-03-30 20:20:20,XanClic,Ich schenk dir trotzdem diesen Paste: http://apm.pastebin.com/kiTcs9rX *g*
+2010-03-30 20:22:17,Thylon,jetzt habe ich wieder einen Neustart :(
+2010-03-30 20:22:39,bluecode,XanClic: Kate ist bei mir noch nie abgestürzt
+2010-03-30 20:22:48,XanClic,bluecode: Hilft mir wenig *g*
+2010-03-30 20:24:36,bluecode,fuck... jetzt hab ich schon wieder irgendwas gelöscht was ich eigentlich noch brauche
+2010-03-30 20:24:53,DesL,XD
+2010-03-30 20:25:47,Thylon,hat noch jemand ne Idee
+2010-03-30 20:25:50,Thylon,?
+2010-03-30 20:25:54,bluecode,bei was denn?
+2010-03-30 20:26:04,erik,Thylon: verstehe ich das richtig das Du von 32Bit-Code in 16Bit-Code springen willst? wenn ja ist wimre ein Call-Gate Pflicht
+2010-03-30 20:26:21,XanClic,"Och, mit far-jmp gehts auch"
+2010-03-30 20:26:22,bluecode,"nein, will er nicht"
+2010-03-30 20:26:23,XanClic,(Getestet)
+2010-03-30 20:28:20,Thylon,also ich springe doch ins 32-Bit-Segment von APM oder ist mein Deskriptor falsch?
+2010-03-30 20:28:36,Thylon,oder bessergesagt die Sprungangabe?
+2010-03-30 20:28:56,bluecode,woher sollen wir das wissen?
+2010-03-30 20:29:09,bluecode,zumindest sehe ich hier nirgends einen Link auf Code
+2010-03-30 20:29:17,DesL,eien Runde Orakeln^^
+2010-03-30 20:29:45,bluecode,"tut mir leid, ich unterstütze bin keine Orakelturingmaschine"
+2010-03-30 20:29:56,bluecode,-unterstütze
+2010-03-30 20:30:31,Thylon,http://apm.pastebin.com/AtsNa7iW  zu 0x28 springe ich
+2010-03-30 20:31:00,Thylon,oder bessergesagt 0x28 als segmentangabe :)
+2010-03-30 20:31:20,erik,"also wenn Du von 32Bit nach 32Bit willst würde ich auf jeden Fall einen richtigen Call-Befehl nehmen, wenn Du fürchtest das Dein Assembler den nicht richtig baut dann kannst Du den auch mit 'db' zusammenbauen"
+2010-03-30 20:31:42,XanClic,"Call geht aber nicht mit Register, wie taljeth festgestellt hat"
+2010-03-30 20:31:49,XanClic,far-call zumindest nicht
+2010-03-30 20:32:11,erik,ist das offset dynamisch?
+2010-03-30 20:32:16,Thylon,ich nehme ein retf weil wir heute Mittag schon lang an einem far-call gebastelt haben und es nicht geklappt hat
+2010-03-30 20:32:24,XanClic,Zumindest zur Assemblezeit nicht bekannt
+2010-03-30 20:32:25,bluecode,an welches Offset springst du denn genau?
+2010-03-30 20:32:34,Thylon,offset kommt aus der Multiboot-Struktur
+2010-03-30 20:32:47,bluecode,ok
+2010-03-30 20:32:54,bluecode,was sagt bochs zu dem ganzen code?
+2010-03-30 20:33:12,bluecode,"(mit logging, etc)"
+2010-03-30 20:33:24,Thylon,direkt die Angabe die in der Multiboot-Struktur steht (Flag ist auch gesetzt)
+2010-03-30 20:35:32,Thylon,Das ist ja das Komische Bochs startet ohne Kommentar in der Log-Datei neu (qemu auch) glaube ich zumindest ^^
+2010-03-30 20:36:03,bluecode,hast du auch im konsolenmenü die ganzen loggingoptionen bei CPU0 auf 'report'
+2010-03-30 20:38:29,Thylon,sekunde
+2010-03-30 20:40:23,Thylon,also er sagt nichts
+2010-03-30 20:40:40,Thylon,aha expection doch
+2010-03-30 20:41:02,DesL,ah
+2010-03-30 20:44:12,bluecode,Thylon: und was genau?
+2010-03-30 20:44:20,bluecode,und va. wo
+2010-03-30 20:45:50,Thylon,er sagt exception(): 3rd (13) exception with no resolution ich weis tripple fault   <--test os ohne interrupt handling aber das heist doch General protection fault oder? Sonst baue ich das Interrupt handling Morgen ein und sag euch bescheit 
+2010-03-30 20:45:57,Thylon,bescheit
+2010-03-30 20:46:13,bluecode,hast du wirklich das mit dem logging einstellt wie ich oben meinte?
+2010-03-30 20:47:55,Thylon,http://apm.pastebin.com/j33QsSYR Ausschnitt der Log-Datei
+2010-03-30 20:48:22,bluecode,"Unknown paste ID, it may have expired or been deleted!"
+2010-03-30 20:48:38,Thylon,hää
+2010-03-30 20:48:45,Thylon,sekunde mach ich neu
+2010-03-30 20:50:10,Thylon,http://apm.pastebin.com/w95TKNpe so 2.Versuch ^^
+2010-03-30 20:51:56,bluecode,00482775836e[CPU0 ] branch_far64: RIP > limit
+2010-03-30 20:51:59,bluecode,ist wohl das Problem
+2010-03-30 20:52:24,bluecode,"lass dir mal die daten aus der multibootheader, die du verwendest ausgeben"
+2010-03-30 20:53:04,Thylon,ok mache ich alles Morgen da ich jetzt gehen muss danke tschüs und bis morgen :)
+2010-03-30 20:53:12,bluecode,cu
+2010-03-30 20:53:32,DesL,bb
+2010-03-30 21:11:02,Jidder,moinsen
+2010-03-30 21:11:13,bluecode,tach Jidder
+2010-03-30 21:11:17,DesL,moin moin
+2010-03-30 21:59:16,erik,"ich müde, tschüß"
+2010-03-30 22:05:14,XanClic,Jemand zufällig Ahnung von Z80?
+2010-03-30 22:13:09,Jidder,ein kleines bisschen
+2010-03-30 22:13:16,XanClic,Hat sich schon erledigt *g*
+2010-03-30 22:13:26,Jidder,jo der ist ja auch schon ziemlich alt
+2010-03-30 22:13:26,XanClic,"Ich wollte wissen, in welcher Reihenfolge A und F in AF stehen"
+2010-03-30 22:13:29,Jidder,hätt ich mir fast denken können
+2010-03-30 22:13:38,Jidder,das hätte ich auch nachschlagen müssen^^
+2010-03-30 22:14:01,XanClic,"Na ja, sie standen so, wie ichs mir bisher gedacht hatte *g*"
+2010-03-30 22:14:10,Jidder,alphabetisch?^^
+2010-03-30 22:14:29,XanClic,"Hm, kommt drauf an, von welcher Seite man rangeht"
+2010-03-30 22:14:55,Jidder,von A
+2010-03-30 22:15:00,XanClic,Dann ja
+2010-03-30 22:15:12,Jidder,siehste konnte ich dir also doch helfen^^
+2010-03-30 22:15:16,XanClic,*g*
+2010-03-30 22:39:51,XanClic,gn8
+2010-03-30 23:28:20,DesL,"hm, hat sich schonmal jemand mit dem Thema BIOS-Coding beschäftigt?"
+2010-03-30 23:30:56,taljeth2,Ist dir ein OS zu einfach geworden? ;-)
+2010-03-30 23:31:38,DesL,"nicht wirklich, nein. Aber ich würde mich gerne mal Damit beschäftigen^^"
+2010-03-30 23:32:33,taljeth2,"Naja, kannst du schon machen. Aber ich würde damit dann endgültig bei Emulatoren bleiben"
+2010-03-30 23:32:53,DesL,XD
+2010-03-30 23:32:57,taljeth2,"Kannst ja mal SeaBIOS auschecken, das ist das BIOS, das qemu standardmäßig benutzt"
+2010-03-30 23:33:03,taljeth2,Oder bochsbios
+2010-03-30 23:33:19,taljeth2,"Wobei SeaBIOS auch auf echter Hardware läuft und bochsbios nicht, soweit ich weiß"
+2010-03-30 23:33:20,DesL,"mach ich mal, nun muss ich weg, gn16"
+2010-03-30 23:33:40,bluecode,gibt doch auch irgendsoein linuxbios oder so
+2010-03-30 23:34:17,DesL,"Könnte es sein das Bochsbios einfach nur ne CFg ist, die sagt was wo liegt, un dder Rest von Bochs selbst eingestellt wird?"
+2010-03-30 23:35:53,Jidder,"ne denke ich mal nich. der unterschied is eher, dass das bios von bochs das mainboard nicht initialisieren muss"
+2010-03-30 23:36:04,Jidder,also ram und so
+2010-03-30 23:36:23,DesL,ein Kompromiss XD
+2010-03-30 23:36:26,DesL,gn8
+2010-03-30 23:36:28,Jidder,gn8

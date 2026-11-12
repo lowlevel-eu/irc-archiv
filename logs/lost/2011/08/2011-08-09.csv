@@ -1,0 +1,173 @@
+date/time,nick,message
+2011-08-09 00:40:38,Jidder,"so ich könnte jetzt ins wiki schreiben, dass qemu 0.15 released wurde, aber was sind denn die highlights?"
+2011-08-09 00:47:44,Darkchaos,"jetzt habe ich nur noch as problem, dass ich in malloc unallozierte pages habe, die frage ist nur, wie mache ich das, wie stelle ich fest zu welchen pages der bereich gehört (bzw ich denke wohl einfach zu komplex, die 1. kann ich bestimmen wenn ich sie 4kB algined bekomme (im zweifelsfall immer abgerundet also), aber wenn ich dann genau 13kB speicher habe, etc"
+2011-08-09 01:23:35,Darkchaos`DEV,"http://pastebin.com/S1TYGddx Das ist mein malloc bisher, allerdings lasse ich die Frage ob gemapped oder nicht außer acht, es wäre, als würde ich alle 4GB allozieren, und dann einen 4GB großes malloc_t item anlegen"
+2011-08-09 01:23:44,Darkchaos`DEV,"aber ich muss erstmal schlafen, vllt fällgt jemanden noch was ein"
+2011-08-09 01:39:30,JidderSport,ich lass mir mal was einfallen
+2011-08-09 09:17:24,kevin,Moin
+2011-08-09 10:50:19,akluth,Guten Morgen
+2011-08-09 10:50:37,kevin,Moin
+2011-08-09 11:08:45,bluecode,moin
+2011-08-09 11:20:34,kevin,Moin Blauer
+2011-08-09 11:21:16,bluecode,wie siehts eigentlich mit nem neuen tyndur Release aus?
+2011-08-09 11:25:59,akluth,Heyho
+2011-08-09 11:31:08,akluth,Wer ist hier eigentlich alles bei Google+?
+2011-08-09 11:31:36,bluecode,"ich schonmal nicht, aber ich bin auch nicht auf Facebook"
+2011-08-09 11:35:43,kevin,Dem schließe ich mich an
+2011-08-09 11:45:51,bluecode,kevin!
+2011-08-09 11:46:26,kevin,bluecode?
+2011-08-09 11:46:33,bluecode,[11:21:15] <bluecode> wie siehts eigentlich mit nem neuen tyndur Release aus?
+2011-08-09 11:48:19,kevin,Ach so
+2011-08-09 11:48:33,kevin,FreakyPenguin: Wie sieht es mit deinen LIOv2-Patches aus? ;-)
+2011-08-09 11:49:11,kevin,So richtig viele interessante Neuerungen haben wir ja nicht seit dem letzten Release
+2011-08-09 11:49:31,bluecode,liov2 und kernel2 doch?
+2011-08-09 11:49:40,kevin,LIOv2 ist doch noch nicht in master
+2011-08-09 11:49:58,kevin,Und ein Kernel ist halt nicht so richtig sichtbar
+2011-08-09 11:50:20,bluecode,"wird aber doch hoffentlich vor dem nächsten Release in den master gehen, oder? ;-)"
+2011-08-09 11:50:34,bluecode,sonst ist der Release natürlich sinnfrei
+2011-08-09 11:50:50,kevin,"Ich nehme an, auch wenn das heißt, dass ich nicht sagen kann, wann es das Release gibt ;-)"
+2011-08-09 11:51:35,kevin,Aber vielleicht sollten wir dann 0.3.0 wirklich ohne viel neues Zeug machen
+2011-08-09 11:51:47,kevin,Sondern eher so KDE-4-mäßig *g*
+2011-08-09 11:52:50,bluecode,ist halt ein Release um zu sehen ob noch alles mit liov2 so funktioniert wie vorher auch
+2011-08-09 12:00:31,kevin,"Naja, gleich wohl nicht"
+2011-08-09 12:00:49,kevin,"Aber es ist ja auch interessant, gegen welche neuen Kaputtheiten wir die alten eingetauscht haben ;-)"
+2011-08-09 12:01:47,kevin,Wobei die richtig lustigen Sachen wie Netzwerk auf LIOv2 eh noch fehlen
+2011-08-09 12:02:15,bluecode,Wieso das denn?
+2011-08-09 12:02:33,bluecode,aber für einen Release sollte das wohl auf jeden Fall dabei sein
+2011-08-09 12:07:11,kevin,Dann wird es dieses Jahr aber nichts mehr mit dem Release
+2011-08-09 12:07:21,kevin,"Außer natürlich du fängst an, fleißig Patches zu posten ;-)"
+2011-08-09 12:07:33,bluecode,und wie wahrscheinlich ist das? ;-)
+2011-08-09 12:07:52,kevin,So wahrscheinlich wie ein Release mit LIOv2-Netzwerk dieses Jahr? ;-)
+2011-08-09 12:07:58,bluecode,*g*
+2011-08-09 12:08:30,bluecode,was fehlt denn für Netzwerk? Streams?
+2011-08-09 12:09:47,kevin,Und irgendeine Art select()
+2011-08-09 12:10:01,kevin,Damit nicht dauergepollt werden muss
+2011-08-09 12:10:42,kevin,"Ich glaube, Streams an sich haben wir sogar schon so halbwegs"
+2011-08-09 13:03:13,Darkchaos,"http://pastebin.com/S1TYGddx kann mal einer gucken ob malloc gehen würde, falls malloc_list.addr = 8; malloc_size = 4GB; etc wäre"
+2011-08-09 13:03:18,Darkchaos,und next und prev = 0
+2011-08-09 13:27:38,kevin,Warum fragst du nicht deinen Rechner?
+2011-08-09 13:28:43,Darkchaos,"weil es noch nicht lauffähig ist, weil er garnicht beachtet ob die page zu der die adressen gehören gemappt sind oder nicht, und ich habe keine ahnung wie ich dafür sorge dass ich die richtige page habe (stichwort 4k aligned)"
+2011-08-09 13:29:10,bluecode,ich glaub du hast das mit den verschiedenen layern nicht wirklich verstanden
+2011-08-09 13:30:41,kevin,"Darkchaos: Was dir fehlt, ist im Fall von current->next == 0 ein vmm_alloc(), dessen Ergebnis du dann in die Liste einträgst"
+2011-08-09 13:31:41,kevin,"Alles, was in der Liste ist, ist gemappt"
+2011-08-09 13:32:31,bluecode,"das if nach der while-Schleife ist nicht so sinnvoll, es könnte trotzdem sein, dass current ein passendes stückchen speicher hat, du verlässt aber einfach die Funktion"
+2011-08-09 13:33:08,bluecode,sollte eher ein if (! current->size < size) sein
+2011-08-09 13:33:19,bluecode,"äh, ohne !"
+2011-08-09 13:33:29,kevin,Ack
+2011-08-09 13:34:15,bluecode,"ansonsten sollte, falls das stück nicht vollständig passt ein neuer listeneintrag für den rest gemacht werden (falls der groß genug für einen listeneintrag ist)"
+2011-08-09 13:35:00,bluecode,"was du in dem Fall momentan machst und warum, verstehe ich nicht wirklich"
+2011-08-09 13:36:42,bluecode,bzw. ich wüsste nicht wie man dafür ein free schreiben sollte
+2011-08-09 13:37:08,kevin,"Geht schon, aber nicht besonders eleganz"
+2011-08-09 13:37:38,kevin,Du bräuchtest noch einen Allokator für die malloc_ts
+2011-08-09 13:37:47,kevin,"Der wäre aber einfacher, weil du nur feste Größen hast"
+2011-08-09 13:40:21,bluecode,"kevin: seh ich ehrlich gesagt nicht, im zerstückelt er den Speicherbereich eines malloc_ts, falls es zB 3 Stücke gibt, wie implementier ich ein free für das mittlere Stück? Abgesehen davon muss man dann nochmal durch die Liste um überhaupt die richtige malloc_t zu finden"
+2011-08-09 13:40:46,bluecode,"-er, im = er"
+2011-08-09 13:40:48,kevin,Ein neues malloc_t für das mittlere Stück anlegen und in die Liste eintragen?
+2011-08-09 13:41:29,kevin,"Das ist doch nur eine Freispeicherliste, oder?"
+2011-08-09 13:42:18,kevin,"Ach so, du meinst, du weißt nicht, wie groß das Stück ist... Das ist ein Argument. ;-)"
+2011-08-09 13:42:38,bluecode,"genau, das meinte ich :-D (jetzt wo du es sagst)"
+2011-08-09 13:42:42,kevin,hehe
+2011-08-09 13:43:35,kevin,"Hm, kommt Darkchaos noch mit, was wir hier diskutieren?"
+2011-08-09 13:45:33,Darkchaos,war grad afk sry^^
+2011-08-09 13:45:33,Darkchaos,also
+2011-08-09 13:47:09,Darkchaos,dann nach dem vmm_alloc wieder an den anfang springen? Wenn ja wie (Gotos sind ja böse :D)
+2011-08-09 13:48:57,kevin,Wenn dir nichts besseres einfällt nimm halt ein goto
+2011-08-09 13:49:12,kevin,"Das sind wirklich keine Fragen, für die du OS-Dev-Erfahrung brauchst"
+2011-08-09 13:49:34,Darkchaos,"und das mit der while verstehe ich nicht ganz, was da falsch sein soll, und das mit dem free:"
+2011-08-09 13:49:40,Darkchaos,angenommenm free(0x1234);
+2011-08-09 13:49:55,bluecode,^ eigentlich weißt du dann aber dass du a) genug speicher zur verfügung hast und b) wo
+2011-08-09 13:50:12,kevin,"Darkchaos: Ok, spielen wir dieses free(0x1234) einfach mal durch - was machst du?"
+2011-08-09 13:51:15,bluecode,"das Problem ist nicht die Schleife, sondern das if dahinter, du ignorierst immer das letzte Element der Freispeicherliste (weil dort current->next 0 ist)"
+2011-08-09 13:51:15,Darkchaos,"dann: void free (void* addr) { malloc_t* mall = (0x1234 - sizeof(malloc_t)); mall->size und ich hab die größe, ich setze mall->previous->next auf mall, und mall->next->previous auf mall"
+2011-08-09 13:51:23,Darkchaos,"die frage ist nur, wie ich sicherstelle, dass es mall->previous noch gibt"
+2011-08-09 13:51:35,bluecode,"und wie kommst du darauf, dass eine malloc_t struktur davor liegt?"
+2011-08-09 13:51:43,Darkchaos,stimmt
+2011-08-09 13:51:47,bluecode,trifft das wirklich in allen fällen deines Codes zu?
+2011-08-09 13:52:01,Darkchaos,weil beim erzeugen von speicher ganz am anfang der header hingeschrieben wird
+2011-08-09 13:52:10,Darkchaos,naja in allen fällen in denen der speicher dynamisch geholt wurd
+2011-08-09 13:52:22,bluecode,wirklich?
+2011-08-09 13:52:24,kevin,Dann ist aber dein Aufsplitten von Speicherblöcken falsch implementiert
+2011-08-09 13:52:46,bluecode,"genau, ab da trifft es eben nicht mehr zu"
+2011-08-09 13:54:30,Darkchaos,stimmt auch wieder
+2011-08-09 13:54:47,Darkchaos,also ist der ansatz scheiße?
+2011-08-09 13:54:56,kevin,Welcher?
+2011-08-09 13:55:15,kevin,"Bevor du fragen kannst, ob er was taugt, musst du dich erstmal auf einen einzigen einigen"
+2011-08-09 13:55:25,kevin,Das Mischmasch taugt nichts
+2011-08-09 13:55:38,Darkchaos,"dass vor jedem speicherblock 8 Byte Header sitzen sollten, und ich eine FREISpeicherliste mache"
+2011-08-09 13:55:42,kevin,Das ist okay
+2011-08-09 13:55:52,kevin,"Nur ist es halt nicht, was du implementiert"
+2011-08-09 13:56:22,kevin,malloc_t.addr ist dann übrigens überflüssig
+2011-08-09 14:31:34,akluth,wtf neue news ich werd bekloppt im kopp
+2011-08-09 14:31:44,XanClic,"Apropos, moin"
+2011-08-09 14:31:47,kevin,Werd?
+2011-08-09 14:31:50,kevin,Moin XanClic
+2011-08-09 14:33:13,akluth,Werde bekloppt ich werd
+2011-08-09 14:33:19,akluth,Hallo Maxclic
+2011-08-09 14:38:35,akluth,"Wirklich konstruktiv bedeutet, Du nimmst den Code und optimierst ihn für alle, oder Du akzeptierst ihn einfach als Information."
+2011-08-09 14:38:48,XanClic,Da hat er didaktisch gesehen recht!
+2011-08-09 14:38:52,akluth,"tl;dr -> Ich bin zu faul, zu fail und zu unfähig das selbst zu machen, mach du."
+2011-08-09 14:45:00,kevin,Abgesehen davon war der Kommentar sowieso MrX gerichtet
+2011-08-09 14:45:05,kevin,+an
+2011-08-09 14:45:14,bluecode,um was gehts überhaupt?
+2011-08-09 14:45:43,kevin,Um Sehnek
+2011-08-09 14:49:53,akluth,*grusel*
+2011-08-09 15:16:48,bluecode,und um welchen thread genau?
+2011-08-09 15:25:26,kevin,"Meinst du, das hab ich mir gemerkt? ;-)"
+2011-08-09 15:35:46,akluth,Es war auf jeden Fall ein lauer Sommermorgen
+2011-08-09 15:37:48,kevin,"""Sommer"""
+2011-08-09 16:23:10,cjuner,"Ich versuche gerade gdb in Verbindung mit qemu zu verwenden. Funktioniert auch soweit. Ich habe ein bootstrap (sowas wie ein zwischenschritt zwischen grub und dem eigentlich kernel) und den eigentlichen kernel. Ich kann das symbol-file von meinem bootstrap laden und es benutzen. Allerdings springt bootstrap dann irgendwann in den kernel. Kann ich gdb auch gleichzeitig das symbol-file für den kernel geben, damit ich es nicht von hand nachl"
+2011-08-09 16:23:10,cjuner,aden muss?
+2011-08-09 16:24:20,kevin,add-symbol-file oder sowas
+2011-08-09 16:24:35,kevin,"Ach so, du meinst direkt? Keine Ahnung..."
+2011-08-09 16:25:20,kevin,"Schon probiert, mehrere -symbols zu verwenden?"
+2011-08-09 16:25:44,cjuner,muss ich noch probieren
+2011-08-09 16:36:25,Creative,moin
+2011-08-09 16:54:38,kevin,"bluecode: Du willst nicht zufällig unser SMP weitermachen, wenn du dich schon mit Implementierungsdetails von Locks rumschlägst? ;-)"
+2011-08-09 16:56:26,bluecode,das ist ungefähr so wahrscheinlich wie ein tyndur-Release dieses Jahr ;-P
+2011-08-09 16:58:27,kevin,Du lehnst dich weit aus dem Fenster ;-)
+2011-08-09 17:03:05,bluecode,"Mist, ich dachte das wäre unwahrscheinlich"
+2011-08-09 17:04:06,bluecode,und so richtig lust auf smp kommt ganz sicher nicht auf ;-)
+2011-08-09 17:07:44,billy,moin
+2011-08-09 17:07:49,akluth,http://www.fkrauthan.de/eng/pages/about_me - okay...
+2011-08-09 17:09:23,kevin,akluth: Was genau willst du uns sagen?
+2011-08-09 17:09:52,akluth,"Dass die Forenbeiträge nun so gar nicht zu ""about_me"" passen ^.^"
+2011-08-09 17:09:57,akluth,compeiliren und so
+2011-08-09 17:10:25,kevin,dsas er tpipen knan sthet dohc nigrends
+2011-08-09 17:10:41,akluth,*g*
+2011-08-09 17:10:49,akluth,Bheuaptet baer eid isetie
+2011-08-09 17:11:03,kevin,Tut sie das?
+2011-08-09 17:11:16,Creative,moin billy
+2011-08-09 17:12:01,akluth,"Ja, weil ich erkenne da soweit keine Rechtschreibfehler"
+2011-08-09 17:12:24,billy,kennt sich hier jemand mit irrlicht aus?
+2011-08-09 17:27:34,Creative,"hab bei google nichts gefunden... Gibt es irgendeine möglichkeit von einer anderen Datei auf eine statische funktion zuzugreifen, ohne die ganze Datei nochmal einzubinden?"
+2011-08-09 17:28:14,kevin,Einen Funktionspointer weitergeben
+2011-08-09 17:28:55,Creative,"hm, ich glaube dann mache ich lieber die funktion in die andere datei zurück"
+2011-08-09 18:25:31,Creative,gibt es bei c keine Funktionsheader im quellcode? Müssen die alle in eine Header-datei???
+2011-08-09 18:26:20,XanClic,Ein #include fügt einfach die angegebene Datei in den Code ein
+2011-08-09 18:26:34,Creative,das weiß ich :D ;)
+2011-08-09 18:26:38,XanClic,Anscheinend nicht :-P
+2011-08-09 18:26:45,bluecode,"was sind ""Funktionsheader""?"
+2011-08-09 18:26:48,XanClic,"Denn dadurch wird klar, dass Headerdateien nichts anderes als ganz normaler C-Code sind"
+2011-08-09 18:26:49,Creative,sonst hätte ich es ja nie gemacht ;)
+2011-08-09 18:27:21,XanClic,"Und dass somit alles, was in einer Headerdatei steht, auch in einer anderen Codedatei stehen darf"
+2011-08-09 18:27:34,Creative,kann es sein dass bei den funktionsheader (kA wie die heißen) nur der variablen typ rein muss?
+2011-08-09 18:29:58,Creative,bluecode: Funktionsheader sind doch dafür da dass der Compiler weiß ob eine Funktion existiert z.B: int Funk (int (VarName)) ; (...) int Funk (int VarName) {(...)}
+2011-08-09 18:31:20,XanClic,"C99-Standard, Abschnitt 6.7.5.3 (“Function declarators (including prototypes)”) dürfte deine Frage beantworten"
+2011-08-09 18:31:46,Creative,oh stimmt Prototypen...
+2011-08-09 18:32:54,XanClic,"Oder um es gleich zu sagen: Ja, man kann die Variablenbezeichner weglassen, aber das will man einfach nicht"
+2011-08-09 18:34:16,Creative,"war gerade beim googlen danachm, aber so geht es natürlich auch"
+2011-08-09 18:47:19,DerHartmut,Früher im KRieg gab es keine Prototypen.
+2011-08-09 18:47:30,DerHartmut,Da war noch alles rau und hart.
+2011-08-09 18:51:34,DerHartmut,Und ich habe nun FEierabend.
+2011-08-09 19:39:02,Paddy,Hi
+2011-08-09 19:39:12,XanClic,Hæ
+2011-08-09 19:40:15,Paddy,"Komdu sæll, Clici. Hvað segirðu?"
+2011-08-09 19:40:39,XanClic,Nichðs? :D
+2011-08-09 19:41:00,Paddy,*lol*
+2011-08-09 19:41:17,Paddy,"ekkert wäre das, glaube ich ;-)"
+2011-08-09 19:42:37,Paddy,Hæ SHyx0rmZ
+2011-08-09 19:43:13,SHyx0rmZ,Hæ
+2011-08-09 22:48:12,Jidder,hallo zusammen
+2011-08-09 23:29:47,DesL,moin
+2011-08-09 23:45:21,Jidder,"so ich weiß haha der jidder hat keine ahnung von html: man kodiert in einem <a href=""...""> doch leerzeichen mit %20 odeR?"
+2011-08-09 23:45:44,DesL,das macht der browser _afaik_ von selber

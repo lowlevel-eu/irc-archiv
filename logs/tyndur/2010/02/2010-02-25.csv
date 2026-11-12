@@ -1,0 +1,67 @@
+date/time,nick,message
+2010-02-25 09:11:59,kwolf,Moin
+2010-02-25 10:13:38,pcmattman,Hello kwolf
+2010-02-25 10:15:02,kwolf,Hi pcmattman
+2010-02-25 10:15:12,kwolf,How's it going with the X server? :-P
+2010-02-25 10:15:44,pcmattman,"Well, I found out there's actually alternatives to sysvinit, so I'm investigating those routes at the moment"
+2010-02-25 10:16:14,pcmattman,"OS X uses a thing called ""launchd"" which sounds nice, and isn't a GNU program"
+2010-02-25 10:17:05,pcmattman,"The goal is to have some form of script or something which runs at startup and loads all the drivers necessary for the system (ie, a bunch of modload invocations) to function"
+2010-02-25 10:17:29,pcmattman,That way the initrd can just contain a tiny subset of modules and drivers and those people want can be loaded later
+2010-02-25 10:17:57,pcmattman,"For example, the network stack and network drivers should probably be loaded outside of kernel startup, and only if the user says ""Yes, enable networking"""
+2010-02-25 10:17:59,kwolf,"Hm, are you going to integrate it with the CDI driver loading stuff that you'll send to the list soon? ;-)"
+2010-02-25 10:18:22,pcmattman,Most likely
+2010-02-25 10:18:38,kwolf,"Would be difficult with sysvinit, no?"
+2010-02-25 10:19:02,pcmattman,"The CDI driver loading stuff is an example of loading drivers on-demand (or rather, on device plugin)"
+2010-02-25 10:19:42,kwolf,"I don't know launchd though, what kind of approach does it use?"
+2010-02-25 10:20:14,pcmattman,"launchd is basically a mix of cron, inetd, and init"
+2010-02-25 10:20:24,pcmattman,"Mix of functionality, not code"
+2010-02-25 10:21:04,pcmattman,"So I might have a startup script which runs ""modload cdi"", and the CDI module is loaded, executed, and a bunch of other drivers are loaded automatically by the loading system I've yet to implement"
+2010-02-25 10:21:10,kwolf,So it's runlevel based like init?
+2010-02-25 10:21:29,pcmattman,I believe so. I haven't researched it enough yet to be sure
+2010-02-25 10:21:59,pcmattman,http://developer.apple.com/macosx/launchd.html
+2010-02-25 10:23:32,pcmattman,The basic idea is to try and really reduce the size of our kernel+initrd and put off loading necessary drivers as late as possible
+2010-02-25 10:24:02,pcmattman,"(as well as support running daemon processes such as Apache, if you want to use Pedigree as a web server OS or something ;) )"
+2010-02-25 10:25:11,kwolf,We need a new HTTP status code for Segmentation Fault first ;-)
+2010-02-25 10:25:20,pcmattman,:(
+2010-02-25 10:25:38,pcmattman,"Mind you, apache doesn't actually work on Pedigree at the moment because we need to implement writable mmap files"
+2010-02-25 10:26:25,kwolf,I thought it was fairly platform independent?
+2010-02-25 10:26:47,pcmattman,"It is, but we built it with mmap support"
+2010-02-25 10:26:55,kwolf,"Well, that's your problem then ;-)"
+2010-02-25 10:27:01,pcmattman,"However, our mmap does not yet support writing to the memory region and having those regions written back to the file"
+2010-02-25 10:27:13,kwolf,"If you don't have a working mmap, don't tell Apache to use it"
+2010-02-25 10:27:16,pcmattman,All we need to do is implement that and it'll work fine
+2010-02-25 10:27:20,pcmattman,"Well, it was mmap or shm"
+2010-02-25 10:27:38,pcmattman,"I like keeping my sanity, so I chose mmap ;)"
+2010-02-25 10:28:02,kwolf,Fair enough ;-)
+2010-02-25 10:28:29,pcmattman,"I might look at lighthttpd though, try and do some stress testing of the TCP code"
+2010-02-25 10:28:53,pcmattman,And/or the CDI rtl8139 driver
+2010-02-25 10:31:41,kwolf,"Then you need performance, so you need more clever cdi_mem_areas ;-)"
+2010-02-25 10:32:11,pcmattman,"Heh, no more quick and easy solution :)"
+2010-02-25 10:32:52,kwolf,Quick and easy never works. Except for Hello World.
+2010-02-25 10:33:08,pcmattman,Or works and then scales terribly
+2010-02-25 10:33:20,pcmattman,Both aren't good
+2010-02-25 11:03:56,pcmattman,"""server.c:(.text+0x979): undefined reference to `setgroups'"" :)"
+2010-02-25 11:04:23,pcmattman,"Out of interest, how do you go with tyndur and porting software?"
+2010-02-25 11:10:49,kwolf,You mean just the basic approach?
+2010-02-25 11:10:59,pcmattman,Pretty much
+2010-02-25 11:11:31,kwolf,Maybe you have already seen http://git.tyndur.org/?p=lbuilds.git;a=summary
+2010-02-25 11:11:46,kwolf,It's basically our build/packaging system for external software
+2010-02-25 11:12:05,pcmattman,"Oh, cool"
+2010-02-25 11:12:08,pcmattman,You put it in a repository
+2010-02-25 11:12:35,pcmattman,"We put already-built packages in a repository, but not patches, source trees, or any of the tools needed to create ports"
+2010-02-25 11:12:35,kwolf,"For each package, we have a download URL, a build script and some patches "
+2010-02-25 11:12:59,kwolf,We only carry patches in our own repo
+2010-02-25 11:15:30,kwolf,lbuilds is actually pretty nice to work with
+2010-02-25 11:15:44,pcmattman,It looks like it
+2010-02-25 11:15:46,kwolf,I just need to learn not to forget quilt add all the time ;-)
+2010-02-25 11:16:08,pcmattman,"I've been meaning to put together such a thing, so someone without a properly configured environment can change that and port something"
+2010-02-25 11:16:13,pcmattman,It's just a *lot* of work
+2010-02-25 11:17:01,kwolf,"Hm, lbuilds is pretty simple. It's just a couple of short shell scripts."
+2010-02-25 11:17:58,kwolf,Most of it should even be independent of tyndur
+2010-02-25 11:20:22,kwolf,"But if you're going to copy it, we'll lose about the only thing where we are ahead :-("
+2010-02-25 11:20:23,kwolf,;-)
+2010-02-25 11:23:56,pcmattman,"Nah, not gonna copy it"
+2010-02-25 11:24:14,pcmattman,"Nice idea though, might copy the concept"
+2010-02-25 11:24:16,pcmattman,;)
+2010-02-25 11:25:47,kwolf,I guess it's even more useful with a working POSIX layer ;-)
+2010-02-25 11:37:44,pcmattman,That helps

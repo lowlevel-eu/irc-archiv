@@ -1,0 +1,161 @@
+date/time,nick,message
+2010-01-18 09:17:03,kwolf,Moin
+2010-01-18 09:17:10,pcmattman,Hi kwolf
+2010-01-18 09:18:44,kwolf,Finally some activity on the mailing list again :-)
+2010-01-18 09:19:10,pcmattman,"Yes, good to see"
+2010-01-18 09:19:13,pcmattman,"I'll be back soon, dinner"
+2010-01-18 09:20:26,FreakyPenguin,Moin
+2010-01-18 09:21:20,kwolf,"Guten Appetit, pcmattman (don't think that exists in English...)"
+2010-01-18 09:21:23,kwolf,Moin FreakyPenguin
+2010-01-18 09:29:47,kwolf,FreakyPenguin: What about you? I haven't seen a mail from you on cdi-devel for a while. You're just going to take what we decide?
+2010-01-18 09:30:44,FreakyPenguin,As long as it looks reasonable ;-)
+2010-01-18 09:31:17,kwolf,You should know my code well enough... ;-)
+2010-01-18 09:31:26,FreakyPenguin,*g*
+2010-01-18 09:31:56,FreakyPenguin,I'm just waiting for the discussion about cdi/fs ;-)
+2010-01-18 09:32:22,kwolf,Do we need to discuss the rewrite or should we just do it? ;-)
+2010-01-18 09:33:38,FreakyPenguin,Maybe we should discuss _how_ the rewrite should look like ;-)
+2010-01-18 09:37:15,kwolf,Probably something that is easy to implement...
+2010-01-18 09:37:28,pcmattman,Back
+2010-01-18 09:38:14,FreakyPenguin,"kwolf: Well, what is the problem with the current implementation?"
+2010-01-18 09:40:03,FreakyPenguin,"The problems I see: No Hardlinks, permissions aren't usable and maybe we should do something about the cache"
+2010-01-18 09:40:06,FreakyPenguin,wb pcmattman
+2010-01-18 09:40:38,kwolf,"Hm, I haven't implement it yet. I guess it's too much abstraction. And wasn't the cache a problem?"
+2010-01-18 09:40:52,kwolf,And then we need to support translation tables
+2010-01-18 09:41:07,FreakyPenguin,Exactly ;-)
+2010-01-18 09:42:22,kwolf,"pcmattman: In my mail I'm actually coming from a monolithic kernel, too"
+2010-01-18 09:42:40,pcmattman,"Well, yes - in your mail"
+2010-01-18 09:42:58,pcmattman,"I was thinking more from the perspective of CDI in general, where we need to cater for micro and monolithic kernel architectures"
+2010-01-18 09:43:04,kwolf,Absolutely
+2010-01-18 09:43:31,pcmattman,That didn't really come across right in the mail though :)
+2010-01-18 09:43:52,kwolf,Be sure that I would never neglect the needs of a microkernel system ;-)
+2010-01-18 09:45:41,kwolf,"I'm not sure why interrupting a driver function is easier in a monolithic kernel. I mean, in a microkernel the problem I described can never happen."
+2010-01-18 09:47:22,pcmattman,"Well, each driver function can be called by an individual thread: there's no real problem with needing to send an IPC request to an application or anything"
+2010-01-18 09:47:40,pcmattman,"Application, driver, whatever your terminology is for your microkernel drivers"
+2010-01-18 09:49:08,kwolf,"But you get the concurrency issues in a monolithic kernel, whereas in the microkernel model things are usually queued anyway"
+2010-01-18 09:50:34,pcmattman,This is true
+2010-01-18 09:51:07,pcmattman,Unfortunately I'm quick to ignore the concurrency issues and go with the solution which is easiest to write. It's certainly a flaw :)
+2010-01-18 09:51:41,kwolf,Ignoring concurreny issues and later wondering what the cause for the crash might be is always easier ;-)
+2010-01-18 09:52:01,pcmattman,"Or adding ""/// \todo locking"" ;)"
+2010-01-18 09:52:30,kwolf,FreakyPenguin: We should add these to kernel2 ;-)
+2010-01-18 09:54:41,kwolf,"pcmattman: Exactly this is why currently I've completely disabled IRQs while drivers are running. Or basically while any kernel code is running, with the exception of the idle task."
+2010-01-18 09:55:31,kwolf,"It nicely solves any concurrency issues (in exchange for some other problems, of course)"
+2010-01-18 09:55:37,pcmattman,Right
+2010-01-18 09:56:22,pcmattman,"I still think working IRQs are an important requirement for a proper CDI implementation. Concurrency issues are something we need to solve at some point, after all"
+2010-01-18 09:56:28,kwolf,"In the end I'm going to move driver code into their own kernel threads, though. IRQs wouldn't be a problem then any more."
+2010-01-18 09:56:44,kwolf,But I guess many OSes that start using CDI are in an early stage
+2010-01-18 09:57:09,kwolf,Or at least that's what I hope
+2010-01-18 09:57:13,pcmattman,"Right, so providing concurrency constructs may be as simple as a volatile char in their initial implementation"
+2010-01-18 09:57:34,pcmattman,"IRQs are usually one of the first thing people get working, after all"
+2010-01-18 09:57:44,pcmattman,Concurrency however is usually one of the last things people think about
+2010-01-18 09:57:49,kwolf,Right
+2010-01-18 09:58:26,kwolf,"I think if we go forward with the suggestion from the mail thread, we're fine"
+2010-01-18 09:58:28,pcmattman,"If you define the interface to only allow one driver function per device to be running (and make that an OS-controlled thing), you offload a bit of effort from CDI driver writers"
+2010-01-18 09:58:36,kwolf,We just need to find a good definition for cdi_wait_irq
+2010-01-18 09:59:03,FreakyPenguin,/// Does the right thing. ;-)
+2010-01-18 09:59:25,kwolf,pcmattman: I don't think your interruptible flag does really gain us anything. When would a driver set it and when not?
+2010-01-18 09:59:43,pcmattman,"Well, I don't think a driver would set it at all"
+2010-01-18 09:59:58,pcmattman,"It would be for interface use only, as a lock to only allow one driver function per device to be called"
+2010-01-18 10:00:12,pcmattman,"This ""flag"" could easily be a mutex or a similar concurrency construct"
+2010-01-18 10:01:13,kwolf,"If drivers don't use it, there's no reason to include it in the interface"
+2010-01-18 10:01:28,pcmattman,That's true
+2010-01-18 10:01:29,kwolf,The library can do anything it wants anyway
+2010-01-18 10:02:05,pcmattman,"I think though it would be beneficial to use something like my cdi_wait_irq example for a future implementor's reference or something, as a psuedocode example"
+2010-01-18 10:02:39,pcmattman,"Sure, we are looking at drivers and the interface itself, but we also need to consider programmers who want to implement the CDI interface into their OS and might be a bit confused about what some terminology means"
+2010-01-18 10:03:22,kwolf,"We might want to provide some standard functions, indeed. For example I'm going to remove the partition table code from ata (it really doesn't belong there), but I'd still like to share it."
+2010-01-18 10:03:43,pcmattman,Perhaps it could go into a partition driver?
+2010-01-18 10:03:54,kwolf,Another driver? Hm...
+2010-01-18 10:04:06,pcmattman,In Pedigree our partition driver is separate
+2010-01-18 10:04:26,pcmattman,It means we can talk to the partitioner directly with things like disk images without going through ATA or something
+2010-01-18 10:05:31,kwolf,ata is something that should be easy to implement. I wouldn't feel comfortable with requiring IDC for it
+2010-01-18 10:06:01,pcmattman,I'm not sure how you would make it work for tyndur/cdi
+2010-01-18 10:06:25,pcmattman,"I'm merely pointing out how my project does it, so you understand where I'm coming from in this instance"
+2010-01-18 10:06:42,kwolf,Right
+2010-01-18 10:07:09,kwolf,"If we put the things into a library instead of a driver you wouldn't lose anything, would you?"
+2010-01-18 10:07:22,pcmattman,I doubt it
+2010-01-18 10:08:14,kwolf,And things like the cdi_list_t implementation are something else to share for the library that certainly can't be a driver
+2010-01-18 10:08:34,pcmattman,Yup
+2010-01-18 10:11:13,kwolf,Looks like there's still a lot to do until end of February
+2010-01-18 10:16:02,kwolf,"Hm, we're getting checksum offloading for cdi/net?"
+2010-01-18 20:33:48,taljeth,"Hey, quok, XanClic, we're waiting for your comments on the list"
+2010-01-18 20:34:35,XanClic,"Hm, there's nothing I didn't decide not to response to ;-)"
+2010-01-18 20:35:58,FreakyPenguin,Hm das mit dem Englisch üben wir aber nochmal ;-)
+2010-01-18 20:36:15,mgottschlag,"hey, nix gegen 3x verneint."
+2010-01-18 20:37:07,XanClic,Irgendwann muss man doch mit boolescher Algebra anfangen ;-)
+2010-01-18 20:46:53,taljeth,"Aber zumindest müsste es respond heißen, oder? ;-)"
+2010-01-18 20:47:14,XanClic,"Ah, ja ;-)"
+2010-01-18 20:47:21,XanClic,s/response/respond ;-)
+2010-01-18 20:47:25,taljeth,+/ ;-)
+2010-01-18 20:47:31,XanClic,+g?
+2010-01-18 20:47:40,taljeth,Kommt doch nur einmal vor
+2010-01-18 20:47:55,XanClic,"Egal, kann nicht schaden ;-)"
+2010-01-18 22:16:53,quok,"XanClic: btw, for now assume that the BIOS will work properly and support devices up to 8GB with CHS only"
+2010-01-18 22:17:05,XanClic,thx :-)
+2010-01-18 22:17:11,quok,I'm not going to run bootsector tests on a 386 with a 8GB HD in it :)
+2010-01-18 22:17:28,XanClic,I thought you planned to do so?
+2010-01-18 22:18:05,XanClic,Or will you just test a 8GB imag?
+2010-01-18 22:18:07,XanClic,*image
+2010-01-18 22:18:08,quok,"No, because of BIOS limitations, the large image tests will be done on more modern machines that can support those drive sizes"
+2010-01-18 22:18:24,XanClic,"Ah, 386 was meant literally ;-)"
+2010-01-18 22:18:32,quok,yes
+2010-01-18 22:18:37,XanClic,My machines are modern ;-)
+2010-01-18 22:18:37,quok,I'm about to post all of that
+2010-01-18 22:18:47,quok,Then you have nothing to worry about. :)
+2010-01-18 22:18:52,XanClic,*g*
+2010-01-18 22:18:54,quok,"well, SHOULD have nothing to worry about."
+2010-01-18 22:19:20,quok,"I'm preparing for a job interview at the end of this week, so I haven't yet finished running all my machines through the tests I have planned"
+2010-01-18 22:19:46,quok,but next week I should be able to post them
+2010-01-18 22:20:24,quok,"You're right why I chose 8GB as the max image size, too :)"
+2010-01-18 22:20:34,XanClic,"btw, one thing I have wanted to ask for a long time: One doesn't use ""an"" in front of letters ""starting"" with a vowel such as ""S"" which is spoken ""as"" (or something like that)?"
+2010-01-18 22:22:02,quok,"Do you mean like ""an old laptop"" vs ""a old laptop""? the former would be correct."
+2010-01-18 22:22:08,XanClic,I know
+2010-01-18 22:22:23,XanClic,"But if I use ""SVO"" as an abbreviation, for example"
+2010-01-18 22:22:28,XanClic,"Is it ""an SVO"" or ""a SVO""?"
+2010-01-18 22:23:36,XanClic,"Because when spelling the letter ""S"" I actually start with speaking a vowel which sounds like a short ""e"""
+2010-01-18 22:24:21,Homix,"i think it is ""a svo"""
+2010-01-18 22:24:43,XanClic,Just wanted to ask someone with English as his mother tongue ;-)
+2010-01-18 22:24:53,quok,"Hmm, I have no idea which would be correct. :) the failings of american schools is now quite clearly evident! :)"
+2010-01-18 22:24:58,XanClic,"Hm, I think s/as/being would be better"
+2010-01-18 22:25:05,XanClic,*g*
+2010-01-18 22:25:14,quok,hmm s/is/are/
+2010-01-18 22:25:55,quok,"btw, I'm also glad to see that you found you cannot truly trust the BPB's geometry information"
+2010-01-18 22:26:15,quok,that's the one thing I kept forgetting about adding to the osdev wiki's FAT article when I wrote my fat12/16 bootsector
+2010-01-18 22:26:19,XanClic,"Hm, wiktionary states ""The article an is used before vowel sounds, and a before consonant sounds."" which sounds as ""an SVO"""
+2010-01-18 22:26:42,XanClic,"quok: Admit it, you wanted to make it harder ;-)"
+2010-01-18 22:26:52,quok,I did want to make it harder :)
+2010-01-18 22:27:35,quok,"I hope I didn't mis-state that the geometry information can be assumed to be correct. The rest of the FAT information can be assumed to be correct, of course, otherwise you'd have a corrupt filesystem"
+2010-01-18 22:27:52,XanClic,Besides of the type field ;-)
+2010-01-18 22:27:56,quok,"but you can't ever really trust the drive geometry, except on certain hardware."
+2010-01-18 22:28:11,XanClic,Which may be assumed to be correct but with an incorrect one the FS wouldn't be broken
+2010-01-18 22:28:29,XanClic,"Ha, Wikipedia ftw"
+2010-01-18 22:28:31,XanClic,"""an SSO"""
+2010-01-18 22:28:33,XanClic,:-)
+2010-01-18 22:28:44,XanClic,"""an LWR (Note: When an acronym is spelled out, rather than spelling out what it is that is represented by the letters in the acronym, the phonetics of the acronym should be used when reading the text aloud. So the use of ""a"" or ""an"" as shown in this example is correct based on the proper application of this rule)"""
+2010-01-18 22:28:58,XanClic,"So it would be ""an 8GB image"", too ;-)"
+2010-01-18 22:29:39,Homix,XanClic: link? ;)
+2010-01-18 22:29:49,XanClic,http://en.wikipedia.org/wiki/English_articles#Indefinite_article :-P
+2010-01-18 22:30:17,XanClic,"It also says ""now used before words starting with a vowel sound, regardless of whether the word begins with a vowel letter."""
+2010-01-18 22:32:47,quok,"bah, why does English has to be so complicated? :)"
+2010-01-18 22:32:47,XanClic,Escape is useless *g*
+2010-01-18 22:33:11,XanClic,"I don't think it to be complicated, that's the way I always did it ;-)"
+2010-01-18 22:33:22,XanClic,Read my forum posts ;-)
+2010-01-18 22:33:25,quok,"hmm, well, when I take over the world and every computing device runs QuokOS, I'll also make the official language quokish"
+2010-01-18 22:33:31,XanClic,*g*
+2010-01-18 22:33:56,quok,"in Quokish, the world 'quok' is used like the word 'smurf' in the world of the Smurfs"
+2010-01-18 22:34:24,quok,"""have a quok day!"" or ""I'm going to go quok your wife, you bastard"" ;)"
+2010-01-18 22:34:27,XanClic,"And about greetings - ""good morning"" and ""good night"" are ""official"" greetings? Just want to be sure, I don't translate too literal ;-)"
+2010-01-18 22:34:28,XanClic,*g*
+2010-01-18 22:34:49,XanClic,"Hm, wasn't there also a word like that in The Hitchhiker's Guide To The Galaxy?"
+2010-01-18 22:35:16,quok,"""How was your day? ""Quite quok, thank you very much!"" (or ""Damn, it was the mother quok"")"
+2010-01-18 22:35:21,XanClic,*g*
+2010-01-18 22:35:30,XanClic,"Hm, pcmattman is already awake?"
+2010-01-18 22:35:38,XanClic,That means I should go to bed now *g*
+2010-01-18 22:35:50,quok,"what timezone are you in, btw?"
+2010-01-18 22:35:55,XanClic,UTC+1
+2010-01-18 22:36:01,XanClic,It's 10:35 pm here
+2010-01-18 22:36:03,quok,for some reason I was thinking UTC+2
+2010-01-18 22:36:08,XanClic,That's in summer time ;-)
+2010-01-18 22:36:15,XanClic,I have three clocks here
+2010-01-18 22:36:34,XanClic,"One for Kansas City, one for me and one for pcmattman's city, I can never remember that name *g*"
+2010-01-18 22:36:53,XanClic,"The timezone was the same of Brisbane, that clock says"
+2010-01-18 22:40:25,XanClic,"Ah, Rockhampton"
+2010-01-18 22:40:56,XanClic,Good night and thanks for making that CHS thing clearer :-)

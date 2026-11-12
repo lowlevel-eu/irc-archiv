@@ -1,0 +1,178 @@
+date/time,nick,message
+2012-09-05 07:57:12,DesL,"schiet wetter, kalt, nebelig -.-"
+2012-09-05 09:12:23,kevin,Moin
+2012-09-05 11:02:35,JuZtMe,moin
+2012-09-05 13:55:04,DesL,moin
+2012-09-05 13:56:23,DesL,"""Wie schaut das mit dem Sicherungskasten auf dem Flur aus, die sind ja abgeschlossen, was ist wenn mir da am Wochenende die Sicherung rausfliegt?"" Hausmeister: ""Sie haben da nicht dran zugehen"".... der hausmeister ist freitags bis 13:00 da, wenn mir um 13:05 die sicherung rausknallt muss ich bis montag morgens ohne strom zurechtkommen oder was?"
+2012-09-05 19:17:44,Paddy,Hi
+2012-09-05 19:20:03,JanDing,moin
+2012-09-05 19:25:20,PatrickBic,"ich hab schon wieder ne fat32 frage :P   wenn ich nen directory eintrag habe, dann damit ueber die clusternumber diesen cluster lade"
+2012-09-05 19:25:36,PatrickBic,dann muss ich von diesem cluster X auf den fat-eintrag X-1 (wegen start=0) zurueck kommen
+2012-09-05 19:25:47,PatrickBic,um den naechsten directory eintrag mit dem naechsten cluster zu kriegen
+2012-09-05 19:25:57,PatrickBic,nur.. wie komm ich von cluster X auf directory-eintrag x-1?
+2012-09-05 20:03:33,Paddy,PatrickBic: Ich komm grad nicht hinterher... Wolltest du nicht vom Verzeichniseintrag auf den Cluster? Wieso plötzlich andersrum?
+2012-09-05 20:57:28,PatrickBic,"Paddy, sorry war afk"
+2012-09-05 20:57:46,PatrickBic,"Paddy, also. ich lade ja den bpb"
+2012-09-05 20:58:09,PatrickBic,dann komm ich nachher auf die directory eintraege
+2012-09-05 20:58:25,PatrickBic,in jedem dir-eintrag steht die clusternummer fuern content (bei dateien jetzt)
+2012-09-05 20:58:35,Paddy,Genau
+2012-09-05 20:58:39,PatrickBic,nun steht also beispielsweise im 7ten eintrag clusternummer 4
+2012-09-05 20:58:48,Paddy,Also der erste Cluster der Datei halt
+2012-09-05 20:58:52,PatrickBic,genau
+2012-09-05 20:58:54,PatrickBic,"dann gehe ich zu cluster 4, lade da meine daten"
+2012-09-05 20:59:08,Paddy,Ok
+2012-09-05 20:59:11,PatrickBic,nun sind da aber mehr als der cluster platz hat (in meinem fall beispielsweise 8 sektoren je 512 byte)
+2012-09-05 20:59:22,PatrickBic,"daher brauchts nen anderen ""zweiten"" cluster"
+2012-09-05 20:59:30,PatrickBic,moeglicherweise 5 (bei defragmentierter platte)
+2012-09-05 20:59:37,PatrickBic,moeglicherweise auch 729 (irgendwas einfach)
+2012-09-05 20:59:51,Paddy,"Das steht ja in der FAT, welcher das ist"
+2012-09-05 21:00:04,PatrickBic,der zweite cluster der datei mit dem eintrag 7 steht nun im eintrag 4
+2012-09-05 21:00:11,PatrickBic,dort steht auch obs der letzte cluster ist oder nicht
+2012-09-05 21:00:31,PatrickBic,stimmt das so noch?
+2012-09-05 21:00:46,Paddy,"Achtung, du überlädst grad das Wort Eintrag, aber ich glaube schon"
+2012-09-05 21:00:56,Paddy,Verzeichniseintrag 7 und Cluster Nummer 4
+2012-09-05 21:01:00,PatrickBic,genau
+2012-09-05 21:01:14,PatrickBic,wie krieg ich dazu den 2ten cluster (die nummer davon)
+2012-09-05 21:01:25,PatrickBic,ich weiß das das im eintrag4 steht.. laut wiki halt
+2012-09-05 21:01:31,PatrickBic,nur seh ich nicht wie ich den kriegen koennt
+2012-09-05 21:01:37,Paddy,"Dann steht im vierten Eintrag der FAT, wo es weitergeht"
+2012-09-05 21:01:50,Paddy,"Hm, oder irgendwo waren noch zwei addiert oder subtrahiert oder so, glaube ich"
+2012-09-05 21:02:00,PatrickBic,ja aber der eintrag wiederrum kann irgendwo sein
+2012-09-05 21:02:02,Paddy,"Wo die FAT liegt, weißt du ja"
+2012-09-05 21:02:04,PatrickBic,der ist ja nicht anfang+4 oder?
+2012-09-05 21:02:18,PatrickBic,"Paddy, -1 wars weil fat bei 0 anfaengt"
+2012-09-05 21:02:19,Paddy,Die FAT liegt am Stück auf der Platte
+2012-09-05 21:02:22,PatrickBic,aaaaah
+2012-09-05 21:02:27,PatrickBic,das erklaert einiges ^^
+2012-09-05 21:02:46,PatrickBic,dann ists ja anfang+X*sizeof(eintrag) oder?
+2012-09-05 21:03:55,Paddy,get_next_cluster* machen das anscheinend in libfat
+2012-09-05 21:04:01,Paddy,"Und ja, deine Formel klingt plausibel"
+2012-09-05 21:04:20,Paddy,"Außer bei FAT12, das ist ein bisschen gemeiner, weil du da halbe Bytes hast"
+2012-09-05 21:04:22,PatrickBic,mal probieren
+2012-09-05 21:23:48,PatrickBic,"Paddy, http://git.tyndur.org/?p=libfat.git;a=blob;f=libfat/file.c;h=84644f5bed66380b2c00f5e597ea3264564a0411;hb=HEAD  weißt du warum in zeile 32 das *512 da ist?"
+2012-09-05 21:24:22,Paddy,Weil ein Sektor 512 Bytes hat?
+2012-09-05 21:24:36,Paddy,"Strenggenommen ist das Blödsinn, die Sektorgröße steht doch im BPB, oder?"
+2012-09-05 21:24:53,PatrickBic,unsigned short bytesPerSector;
+2012-09-05 21:24:57,PatrickBic,jap
+2012-09-05 21:25:43,Paddy,Dann sollte man wohl theoretisch das nehmen
+2012-09-05 21:26:07,Paddy,"Wobei ich glaube, dass man in der Praxis was anderes als 512 nur nehmen darf, wenn man keinen Wert drauf legt, dass andere Betriebssysteme das auch lesen können"
+2012-09-05 21:26:44,PatrickBic,"hm.. gut, ich dacht eh das das (512) von daher kommt"
+2012-09-05 21:26:51,PatrickBic,dann hab ich kA warum meins ned geht
+2012-09-05 21:27:05,Paddy,Weil's kaputt ist!
+2012-09-05 21:27:19,PatrickBic,.. ;)
+2012-09-05 21:27:37,PatrickBic,also ich hab cluster6 lese da den anfang ...
+2012-09-05 21:27:46,Paddy,"Ah, ich seh jetzt erst Zeile 12 in dem libfat-Code"
+2012-09-05 21:27:47,Paddy, // FIXME Sektorgroesse != 512
+2012-09-05 21:27:50,Paddy,*g*
+2012-09-05 21:27:52,PatrickBic,und dann ruf ich die funktion (paste gibts gleich) mit der node + nummer 6 auf
+2012-09-05 21:28:11,PatrickBic,http://pastebin.com/69s1naDE
+2012-09-05 21:28:21,PatrickBic,sector is jetzt sogar mal fix
+2012-09-05 21:28:32,PatrickBic,is bis auf das lesen direkt von libfat mal kopiert
+2012-09-05 21:29:33,Paddy,Dann wird wohl das Lesen falsch sein?
+2012-09-05 21:29:55,Paddy,"FAT32 soll das sein, schließe ich mal aus dem Variablennamen?"
+2012-09-05 21:29:59,PatrickBic,jep fat32
+2012-09-05 21:30:10,PatrickBic,"und nein das lesen passt weil ich damit bpb, und die ganzen verzeichnisse usw lese"
+2012-09-05 21:31:05,Paddy,Die Parameter eventuell
+2012-09-05 21:31:19,Paddy,"Mal ausgegeben, welches Offset er liest?"
+2012-09-05 21:31:30,PatrickBic,sector waere das 
+2012-09-05 21:31:31,PatrickBic,moment
+2012-09-05 21:31:54,Paddy,Und was kommt überhaupt fehlerhaftes raus?
+2012-09-05 21:32:16,PatrickBic,cluster nummer 0
+2012-09-05 21:32:27,PatrickBic,sector 32 will er laden
+2012-09-05 21:32:43,PatrickBic,also fat_sector + reserved = 32
+2012-09-05 21:33:26,Paddy,Ist das die richtige Stelle?
+2012-09-05 21:33:36,PatrickBic,reserved = 32
+2012-09-05 21:33:39,PatrickBic,von daher sag ich mal adhoc nein
+2012-09-05 21:33:52,Paddy,"Naja, fat_sector = 0 für Cluster 6"
+2012-09-05 21:34:25,PatrickBic,6 * sizeof(uint32) / 512
+2012-09-05 21:34:38,Paddy,24 / 512 = 0
+2012-09-05 21:34:45,PatrickBic,6*4 / 512 
+2012-09-05 21:34:49,PatrickBic,d.h. das passt
+2012-09-05 21:34:58,PatrickBic,und 6 * 4 % 512
+2012-09-05 21:35:03,Paddy,"Ja, sechs FAT-Einträge passen grad noch in den ersten Sektor rein"
+2012-09-05 21:35:03,PatrickBic,sollte 24 sein
+2012-09-05 21:35:16,Paddy,Ja
+2012-09-05 21:35:49,PatrickBic,und dann lese ich von dort
+2012-09-05 21:37:42,Paddy,PatrickBic: Hexdump vom gelesenen Sektor
+2012-09-05 21:38:15,XanClic,Moin
+2012-09-05 21:39:30,PatrickBic,"Paddy, da wuerden ja die ersten bsp 50 werte reichen oder?"
+2012-09-05 21:40:12,PatrickBic,(alle 0x00)
+2012-09-05 21:40:43,Paddy,Dann liest du vielleicht doch von der falschen Stelle oder die Lesefunktion ist kaputt
+2012-09-05 21:41:03,Paddy,"Kannst ja mal mit einem Hexeditor (oder hexdump) das Image anschauen, ob dort am passenden Offset was steht"
+2012-09-05 21:41:29,PatrickBic,ich sag mal vorsichtig das der wert falsch is von wo ich lese
+2012-09-05 21:42:16,PatrickBic,nun krieg ich werte die passen wuerden
+2012-09-05 21:42:43,PatrickBic,fatOffset (eigene variable) vergessen
+2012-09-05 21:43:24,PatrickBic,gibt an wo das FS innerhalb der festplatte liegt
+2012-09-05 21:44:11,Paddy,hehe
+2012-09-05 21:44:25,Paddy,Das offensichtliche mal wieer
+2012-09-05 21:46:00,PatrickBic,"Paddy, grad per zufall ueber ne funktion von mir drueber gelesen und mich gefragt ""warum nehm ich das da und hier nicht"" :P"
+2012-09-05 21:49:37,PatrickBic,"Paddy, http://i48.tinypic.com/2a6t307.png"
+2012-09-05 21:49:41,PatrickBic,sieht das so ok aus?
+2012-09-05 21:50:23,Paddy,Was sollte das denn sein?
+2012-09-05 21:50:44,PatrickBic,die ersten 150 werte dieses sectors nun
+2012-09-05 21:50:52,Paddy,"Ah, sind das die einzelnen Bytes, jeweils sign-extended?"
+2012-09-05 21:51:33,PatrickBic,was meinst du mit sign-extended? kenne den begriff nicht
+2012-09-05 21:52:03,Paddy,Sind es Bytes? ;-)
+2012-09-05 21:52:09,PatrickBic,ja
+2012-09-05 21:52:22,Paddy,0xfffffff8 ist halt ein bisschen breiter als ein Byte
+2012-09-05 21:52:49,PatrickBic,"If ""table_value"" is greater than or equal to (>=) 0x0FFFFFF8 then there are no more clusters in the chain. "
+2012-09-05 21:52:52,Paddy,"Wenn du in signed rechnest, wird 0xf8 beim Cast auf int auf 0xfffffff8 erweitert"
+2012-09-05 21:53:02,PatrickBic,is auch signed ;)
+2012-09-05 21:53:26,Paddy,"Ja, hab ich halt erst nicht verstanden, weil man bei einem Hexdump normal nur zwei Hexziffern hat ;-)"
+2012-09-05 21:54:02,Paddy,"Ich würde mal sagen, das könnte eine gültige FAT sein, die nur sehr kurze Dateien hat"
+2012-09-05 21:54:49,PatrickBic,is auch nur kurz
+2012-09-05 21:54:56,PatrickBic,"3 ordner, 2 dateien"
+2012-09-05 21:54:59,PatrickBic,1 datei hat 1 zeile
+2012-09-05 21:55:02,PatrickBic,die andere hat 10 zeilen
+2012-09-05 21:55:14,PatrickBic,zu je ~75chars
+2012-09-05 21:56:41,Paddy,Dann kann es passen
+2012-09-05 21:58:04,PatrickBic,d.h. jetzt sagt mir der 24te wert wo mein cluster ist oder?
+2012-09-05 21:58:43,PatrickBic,ehm
+2012-09-05 21:58:49,PatrickBic,mein natuerlich ob es der letzte ist
+2012-09-05 21:59:13,Paddy,Der sechste Eintrag
+2012-09-05 21:59:23,Paddy,"Der geht bei Byte 24 los, aber hört erst bei Byte 27 auf"
+2012-09-05 21:59:35,Paddy,"Quatsch, Eintrag Nummer 6, nicht der sechste"
+2012-09-05 22:00:13,PatrickBic,also sector[5] demnach
+2012-09-05 22:00:33,PatrickBic,"Paddy, wobei.. warum nicht 24? (also 23 im array dann)"
+2012-09-05 22:00:41,PatrickBic,6*sizeof(uint32) % 512
+2012-09-05 22:00:47,PatrickBic,das verwendet die libfat funktion doch auch
+2012-09-05 22:07:05,Paddy,Eintrag 0 geht von Byte 0-3
+2012-09-05 22:07:10,Paddy,Eintrag 1 von Byte 4-7
+2012-09-05 22:07:14,Paddy,Kannst selber weiterrechnen
+2012-09-05 22:07:46,xabc,jemand bock auf mario kart auf n64 über teamviewer?
+2012-09-05 22:08:09,PatrickBic,"Paddy, schon klar"
+2012-09-05 22:08:10,xabc,gibts hier aucch en offtopic-channel?
+2012-09-05 22:08:15,PatrickBic,aber siehe libfat funktion
+2012-09-05 22:08:22,PatrickBic,da steht
+2012-09-05 22:08:32,PatrickBic,value = *(uint32*)&sector[fat_offset];
+2012-09-05 22:08:44,PatrickBic,fat_offset is ja cluster*sizeof(uint32)%512
+2012-09-05 22:08:47,PatrickBic,in meinem fall also 24
+2012-09-05 22:08:55,Paddy,xabc: Wir sind hier 99% der Zeit offtopic ;-)
+2012-09-05 22:08:59,PatrickBic,d.h. value geht von 24 bis 28
+2012-09-05 22:09:05,PatrickBic,oder auch 23 bis 27.
+2012-09-05 22:09:09,Paddy,24 bis 27
+2012-09-05 22:09:13,PatrickBic,ah ja klar
+2012-09-05 22:09:18,PatrickBic,denkfehler grad ;)
+2012-09-05 22:09:24,Paddy,grad? ;-)
+2012-09-05 22:09:37,PatrickBic,ich glaub wir meinen dasselbe reden aber von 2 seiten
+2012-09-05 22:10:10,PatrickBic,du sagst ich soll die id nehmen (6) 
+2012-09-05 22:10:22,PatrickBic,und ich frag mich warum da fat_offset steht was ja die byte-angabe (6*sizeof) ist
+2012-09-05 22:23:55,PatrickBic,"Paddy, danke schonmal, ich fix das morgen noch mit der id ;)"
+2012-09-05 22:25:49,xabc,"gibt es hier was zu beachten, brauche ich bspw ein proxy?"
+2012-09-05 22:26:34,xabc,ist schon sehr lang her seit ich das letzte mal im irc war
+2012-09-05 22:26:53,Paddy,Eigentlich nicht
+2012-09-05 22:27:06,Paddy,"Du bist offensichtlich hier, also alles richtig gemacht ;-)"
+2012-09-05 22:29:23,xabc,"dachte eher an meine ip, wobei ich aktuell auch keinen überblick bei proxies habe"
+2012-09-05 22:30:10,Paddy,"Deine IP ist meines Wissens nicht zurückverfolgbar, falls du das meinst"
+2012-09-05 22:30:23,Paddy,"Also jedenfalls nicht von jemandem, der nicht auf dem Server Admin ist"
+2012-09-05 22:31:31,xabc,euirc scheint auch relativ etabliert zu sein
+2012-09-05 22:33:19,livinskull,"[22:28:55] <Paddy> Deine IP ist meines Wissens nicht zurückverfolgbar, falls du das meinst <= 67.215.65.132 ? :P"
+2012-09-05 22:34:10,xabc,"ah danke, android und copy&paste xD"
+2012-09-05 22:34:11,livinskull,wait.. das is USA o.O
+2012-09-05 22:35:15,livinskull,"das sind euirc server ps die der mir hier bei ""lookup"" gibt "
+2012-09-05 22:35:18,livinskull,*ips
+2012-09-05 22:40:07,xabc,hat nun jemand bock auf ne runde mario kart auf n64 emu über teamviewer?
+2012-09-05 23:54:06,livinskull,"heut inner arbeit in windbg: ""Starting kernel vertical"""
+2012-09-05 23:54:06,livinskull,lol
+2012-09-05 23:54:51,livinskull,als obs horizontal grad nicht passt
+2012-09-05 23:54:51,livinskull,xD

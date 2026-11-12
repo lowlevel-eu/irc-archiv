@@ -1,0 +1,44 @@
+date/time,nick,message
+2012-11-10 10:06:56,alexander,MOrgen
+2012-11-10 19:54:43,Paddy,Hi
+2012-11-10 20:21:06,MSN,huhu
+2012-11-10 20:57:40,iksnagreb,"hallo, gibt es ne möglichkeit, interrupt handler hinzuzufügen, wärend das system läuft? so könnten sich treiber dann für einen interrupt als zuständig registrieren. ich denke das es da ne möglichkeit gibt, aber ich komm grad nicht drauf"
+2012-11-10 20:59:44,Paddy,Einfach zur Laufzeit in die IDT eintragen?
+2012-11-10 21:00:48,Paddy,"Beziehungsweise in irgendeine Datenstruktur in deinem Interruptmanagement. Ich nehme an, Sachen wie EOI machst du ja sowieso schon immer, also ist der IDT-Eintrag schon da."
+2012-11-10 21:02:14,iksnagreb,"ich habe für alle interrupts idt einträge zu einem handler, der dann die nummer auswertet und die entsprechenden funktionen aufruft"
+2012-11-10 21:03:48,Paddy,"Ja, also musst du da halt irgendwie eine Registrierung der entsprechenden Funktion zur Laufzeit einbauen."
+2012-11-10 21:03:58,Paddy,Funktionspointer in einem Array speichern oder so
+2012-11-10 21:04:59,iksnagreb,"funktionspointer sind vom typ void, also ein array vom typ void, oder so? das hab ich schon versucht, der compiler will aber keine void arrays machen"
+2012-11-10 21:06:42,Paddy,"void ist kein Funktionspointern, sondern ein Nichts"
+2012-11-10 21:07:44,Paddy,"void(*)(void) ist der Typ eines Funktionspointers auf eine Funktion ohne Parameter, die nichts zurückgibt"
+2012-11-10 21:10:20,iksnagreb,"ich steh grad wohl etwas auf dem Schlauch, kann ich dann einfach die funktionen alle in ein array eintragen? ich hab noch nie nen array von funktionen gesehen"
+2012-11-10 21:11:38,Paddy,Dann wird es Zeit
+2012-11-10 21:16:40,iksnagreb,von welchem typ muss das array sein?
+2012-11-10 21:16:57,iksnagreb,"ichn hab echt kein plan, wie nen void array aussieht"
+2012-11-10 21:19:12,Paddy,Es soll nicht void sein...
+2012-11-10 21:20:31,Paddy,"Hm, jetzt wollte ich einen Link auf den tyndur-Code posten, aber tyndur macht das gar nicht so"
+2012-11-10 21:21:13,Paddy,"Ah, kernel1 aber."
+2012-11-10 21:21:27,Paddy,"typedef void(*pfIrqHandler)(int, uint32_t*);"
+2012-11-10 21:21:29,Paddy,pfIrqHandler irq_handlers[16] = { 0 };
+2012-11-10 21:21:37,Paddy,Siehe http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/kernel/include/intr.h;h=9930502182b5cdba7d6126563086ab5324adcbfb;hb=HEAD
+2012-11-10 21:21:44,Paddy,Und http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/kernel/src/intr.c;h=bab6e5a50a88779101b38f48c11b6b932ff93be1;hb=HEAD
+2012-11-10 21:22:26,iksnagreb,"danke, ich werd mal versuch das ganze zu verstehn"
+2012-11-10 22:20:46,iksnagreb,"hallo, ich hab es jetzt so probiert, wie Paddy es mir eben gesagt hat, ich kann das array so auch anlegen, aber es lässt sich kein witerer wart eintragen Ich bekomme diesen Fehler:  ""Fehler: falsche Benutzung eines void-Ausdruckes"""
+2012-11-10 22:22:36,Jidder,wie versuchst du einen wert einzutragen?
+2012-11-10 22:23:57,iksnagreb,so: http://mibpaste.com/obyO9z
+2012-11-10 22:24:04,Paddy,"Hm, ein USB-Raketenwerfer ist ein Human Interface Device?"
+2012-11-10 22:24:10,Paddy,"Macht irgendwie fast Sinn, wenn man so drüber nachdenkt *g*"
+2012-11-10 22:24:23,Jidder,iksnagreb: du hast zwei variablen namens handler
+2012-11-10 22:24:29,Jidder,einmal den parameter und einmal das array
+2012-11-10 22:24:37,Jidder,eins von beiden solltest du umbenennen
+2012-11-10 22:24:48,iksnagreb,"oh man, ich bin heut echt nicht bei der sache"
+2012-11-10 22:24:51,iksnagreb,danke
+2012-11-10 22:31:40,iksnagreb,"jetzt muss ichs nur noch schaffen den eingetragenen handler auszuführen aber wie? einfach handler[interrupt_nummer] aufrufen geht nicht, oder?"
+2012-11-10 22:39:11,Jidder,handler[interrupt_nummer]() sollte gehen
+2012-11-10 22:39:27,Jidder,(*handler[interrupt_nummer])() 
+2012-11-10 22:39:40,Jidder,ich glaube ersteres ist nicht standardkonform
+2012-11-10 22:41:49,iksnagreb,ich bekomm ne Invalid Opcode Exception
+2012-11-10 22:42:04,Jidder,da hast du eventuell irgendwo einen nullpointer 
+2012-11-10 22:42:18,Jidder,immer vorher prüfen
+2012-11-10 22:44:49,iksnagreb,"genau das wars, was ist eigentlich heut mit mir los? ich galub ich habs programmiern und logisch denken verlernt"
+2012-11-10 22:48:14,Jidder,kommt halt mal vor

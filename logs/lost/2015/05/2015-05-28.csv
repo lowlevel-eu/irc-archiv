@@ -1,0 +1,224 @@
+date/time,nick,message
+2015-05-28 00:00:21,Svenska,"ich hab nämlich festgestellt, dass, wenn die 16 cpus passende adressen ansprechen (so dass die daten aus der richtigen ecke des chips rausfallen), ich damit direkt auf den adressraum der arm-kerne zugreifen kann"
+2015-05-28 00:00:32,Svenska,und zwar den irq-controller
+2015-05-28 00:01:00,Svenska,"dann könnte ich quasi im host ein wait_for_irq() bauen, was den host nicht zu 100% auslastet"
+2015-05-28 00:01:10,Svenska,"bisher ist polling von shared memory am effizientesten, aber es stinkt..."
+2015-05-28 00:02:18,Jidder,das glaube ich
+2015-05-28 00:02:52,Svenska,auf der anderen seite ist ein externer zugriff auf die interrupt-register durch MMIO irgendwie hässlich
+2015-05-28 00:03:02,Svenska,"ich wuerde gerne einen interrupt-pin haben, aber den gibt's nicht"
+2015-05-28 00:03:03,Jonathan,"Svenska: Kommst du an das Assembly-Listing, das der Compiler für deinen Code generiert?"
+2015-05-28 00:03:07,Svenska,klar
+2015-05-28 00:03:12,Svenska,ist ein stinknormaler gcc
+2015-05-28 00:03:28,Jidder,Svenska: nicht wenn du einen schönen header mit tollen #defines und structs draus machst
+2015-05-28 00:03:39,Jonathan,"Wie wäre es damit, dass du im Assembly vor alle CALLs/JMPs usw. eine Debug-Ausgabe der Zieladresse klebst?"
+2015-05-28 00:04:00,Svenska,"also wuerde ich auf epiphany-seite ein dummy-pending-bit setzen, und auf dem host ein kernel-modul, welches diesen dummy-interrupt dann abfängt"
+2015-05-28 00:04:30,Svenska,"dann könnte ich auch ein paar speicherblöcke direkt in meine anwendung mappen, um dieses dämliche read/write interface zu umgehen"
+2015-05-28 00:04:41,Svenska,"Jonathan: ich habe echte schwierigkeiten, eine debug-ausgabe zu bauen..."
+2015-05-28 00:04:54,Jonathan,"Hmm, das ist dann natürlich doof"
+2015-05-28 00:04:58,Jonathan,"Oh, wobei!"
+2015-05-28 00:05:11,Svenska,programmieren von dem teil ist ein fast kompletter blindflug
+2015-05-28 00:05:13,Jonathan,Es geht vermutlich auch ziemlich einfach...!
+2015-05-28 00:05:16,Jonathan,Svenska:
+2015-05-28 00:05:29,Jonathan,"Du hast doch mit jeder CPU Zugriff auf shmem, oder?"
+2015-05-28 00:05:32,Svenska,ja
+2015-05-28 00:05:40,Svenska,und die zugriffe sind nicht atomisch...
+2015-05-28 00:05:45,Svenska,und nicht synchronisiert...
+2015-05-28 00:05:49,Svenska,...schon garnicht mit dem host.
+2015-05-28 00:06:04,Jonathan,"Wie wäre es, wenn du für jede CPU einen Ringpuffer in den shmem legst, und dann für jeden CALL/JMP einen Eintrag in den Ringpuffer schubst?"
+2015-05-28 00:06:23,Jonathan,"Wenn eine CPU anhält, kannst du aus dem Puffer die letzten x Sprünge nachvollziehen."
+2015-05-28 00:06:32,Svenska,problem:
+2015-05-28 00:06:42,Svenska,"ich habe 16 cpus, aber nur 1 ringpuffer"
+2015-05-28 00:06:49,Svenska,und nur 1 bus zum shmem
+2015-05-28 00:07:00,Jonathan,Wieso kannst du nicht mehrere Ringpuffer machen...?
+2015-05-28 00:07:00,Svenska,"d.h. wenn ich das tue, synchronisiere ich die cpus implizit"
+2015-05-28 00:07:08,Svenska,ändert nix am problem
+2015-05-28 00:07:11,Jonathan,:(
+2015-05-28 00:07:24,Svenska,"wenn ich die cpus synchronisiere, sind alle timing-probleme weg"
+2015-05-28 00:07:25,Svenska,:-)
+2015-05-28 00:07:31,Jonathan,Kannst du post-mortem auf den RAM der CPUs zugreifen?
+2015-05-28 00:07:37,Svenska,ja
+2015-05-28 00:07:44,Svenska,wobei ich kein post-mortem habe :)
+2015-05-28 00:07:53,Svenska,"wenn die cpus fertig sind, gehen sie in IDLE"
+2015-05-28 00:07:55,Jonathan,Wie sieht denn ein mortem bei dir aus?
+2015-05-28 00:07:56,Jonathan,:P
+2015-05-28 00:08:03,Svenska,"wenn sie irgendwie hängen, tun sie das nicht :-)"
+2015-05-28 00:08:09,Jonathan,Hmmm *g*
+2015-05-28 00:08:12,Jonathan,"Ja, gut"
+2015-05-28 00:08:17,Svenska,"naja, vermutlich finden die irgendwas im adressraum und fuehren das aus"
+2015-05-28 00:08:18,Jonathan,Oder schlecht
+2015-05-28 00:08:22,Svenska,könnte der linux-kernelspeicher sein...
+2015-05-28 00:08:38,Jonathan,Du könntest das mit dem CPU-lokalen Ringpuffer vielleicht doch mal probieren
+2015-05-28 00:08:40,Svenska,"...oder eine adresse, die auf eine der anderen 3 kanten des chips geroutet wird, dann hängt das interface :)"
+2015-05-28 00:08:46,Jonathan,"Und wenn's hängt, mal einen Blick riskieren"
+2015-05-28 00:09:02,Jonathan,"Ohje, buggy hardware?"
+2015-05-28 00:09:05,Svenska,ne
+2015-05-28 00:09:10,Svenska,3 seiten sind nicht verdrahtet
+2015-05-28 00:09:22,Jonathan,"Hm, achso. *g*"
+2015-05-28 00:09:30,Svenska,"ein lesezugriff auf die dazugehörigen adressen (routing ist statisch) fuehrt zu ""keine antwort"" => interface wartet forever"
+2015-05-28 00:09:37,Svenska,bis ich die cpu resette :)
+2015-05-28 00:09:44,Jonathan,Definitiv doof
+2015-05-28 00:09:50,Svenska,eleganter ist aber tatsächlich ein silicon bug
+2015-05-28 00:09:56,Svenska,wenn ich eine software-exception auslöse
+2015-05-28 00:10:09,Svenska,dann setzt die cpu den program counter auf 4 und hängt sich auf. ^^
+2015-05-28 00:10:18,Jonathan,lol
+2015-05-28 00:10:32,Svenska,"ist in der folge-revision gefixt, aber interrupts hab ich ueberhaupt noch nicht probiert"
+2015-05-28 00:10:35,Svenska,sind nicht notwendig
+2015-05-28 00:10:44,Jonathan,Aber was spricht denn *gegen* den lokalen Ringpuffer?
+2015-05-28 00:10:52,Svenska,dass er extern ist
+2015-05-28 00:11:00,Svenska,bzw
+2015-05-28 00:11:03,Svenska,"ja, das könnte ich alles tun"
+2015-05-28 00:11:11,Svenska,hab ich nur noch nicht :D
+2015-05-28 00:11:16,Jonathan,Okay *g*
+2015-05-28 00:11:21,Jidder,ich hab auch noch eine idee
+2015-05-28 00:11:24,Jidder,*meld*
+2015-05-28 00:11:27,Jidder,herr lehrer
+2015-05-28 00:11:28,Svenska,:)
+2015-05-28 00:11:31,Jonathan,"Jidder, erzähl uns mehr"
+2015-05-28 00:11:55,Jidder,"code der auf den cpus ausgeführt wird auf einen minimalfall reduzieren, mit dem sich das problem reproduzieren lässt"
+2015-05-28 00:12:01,Svenska,"(achso, und DMA läuft nur mit 50% geschwindigkeit, und ueberhaupt kriege ich nur 1/4 der bandbreite wegen silicon bugs)"
+2015-05-28 00:12:06,Svenska,jaaaaa
+2015-05-28 00:12:10,Svenska,das wär ja einfach :D
+2015-05-28 00:12:46,Svenska,"konkret: ich hab ne kommunikations-bibliothek geschrieben, die channel-konfigurationen ausliest und dann anfängt, mit pointern auf andere CPUs umherzuschmeißen"
+2015-05-28 00:12:55,Svenska,"funktioniert auch ganz gut, code sieht sauber aus"
+2015-05-28 00:13:04,Svenska,nur gelegentlich hängt eine cpu
+2015-05-28 00:13:08,Svenska,oder auch mehrere
+2015-05-28 00:13:48,Svenska,"und, was total verwirrend ist, manchmal läuft die initialisierung durch und die cpu ist trotzdem in der wueste und merkt's nicht"
+2015-05-28 00:13:58,Svenska,und gelegentlich funktioniert alles.
+2015-05-28 00:14:06,Jonathan,Hm.
+2015-05-28 00:14:31,Jonathan,"""Total unregelmäßig gelegentlich obwohl selber Bytecode"" oder  ""Regelmäßig gelegentlich""?"
+2015-05-28 00:14:43,Svenska,alle cpus haben den selben code
+2015-05-28 00:14:54,Svenska,(allerdings if() statements fuer ihre eigene id)
+2015-05-28 00:15:01,Jonathan,"Ja, gut, aber das macht sie nicht gleich."
+2015-05-28 00:15:03,Svenska,und gelegentlich hängen sich manche cpus weg
+2015-05-28 00:15:11,Svenska,*schulterzuck*
+2015-05-28 00:15:13,Jonathan,Immer die selben?
+2015-05-28 00:15:22,Svenska,je nach größe meiner matrix ändert sich die wahrscheinlichkeit
+2015-05-28 00:15:30,Svenska,nö
+2015-05-28 00:15:34,Jonathan,"Wenn du das System jetzt zweimal mit *exakt* dem selben Code startest, hängen die selben CPUs...?"
+2015-05-28 00:15:38,Svenska,nö
+2015-05-28 00:15:49,Jonathan,"Gut, dann ist das ein Bug der Sorte ""richtig eklig"""
+2015-05-28 00:15:56,Svenska,"10x ""make run"", 8x hängt, 2x läuft"
+2015-05-28 00:16:08,Svenska,"0.1x läuft, produziert aber ein array aus NaN statt der ergebnisse"
+2015-05-28 00:16:19,Svenska,(_das_ ist irritierend.)
+2015-05-28 00:16:20,Jidder,"wenn das abhängig von der matrix ist, würde ich doch mal die variieren"
+2015-05-28 00:16:27,Svenska,ne konstante matrix
+2015-05-28 00:16:47,Svenska,"apropros, kennt sich wer mit QR-dekomposition aus? :D"
+2015-05-28 00:16:56,Jonathan,Was ist das? :D
+2015-05-28 00:16:57,Jidder,"muss die konstant für die funktionsfähigkeit des programms aus, oder nur für die korrektheit?"
+2015-05-28 00:17:10,Svenska,weder noch
+2015-05-28 00:17:30,Svenska,"aber mein code knotet ein statisches array in den shm rein, bevor er die cpus startet"
+2015-05-28 00:17:49,Svenska,und die cpus bauen erstmal die kommunikationskanäle auf
+2015-05-28 00:18:02,Jidder,"wenn es ein hardwareproblem ist, kann man das doch sicherlich provozieren, wenn man mal mehr oder weniger 1sen auf dem bus hat"
+2015-05-28 00:18:19,Svenska,"bevor sie anfangen, darueber zu kommunizieren und das QRD-zeugs auszurechnen"
+2015-05-28 00:18:40,Svenska,"den mathe-teil verstehe ich nicht, der ist vermutlich buggy, aber er teilt nicht durch 0"
+2015-05-28 00:18:49,Svenska,"hw-bug schließ ich mal aus, compiler-bug ebenso"
+2015-05-28 00:18:55,Svenska,irgendwelche timing-kacke halt
+2015-05-28 00:19:10,Svenska,"(wobei auch das relativ konstant ist, weil ich die cpus von oben links nach unten rechts nacheinander starte)"
+2015-05-28 00:21:12,Jonathan,"Bin mal weg, gute Nacht"
+2015-05-28 00:21:23,Svenska,gn8
+2015-05-28 00:58:09,Svenska,gn8
+2015-05-28 13:37:45,Jonathan,Moin
+2015-05-28 13:40:42,kevin,Moin
+2015-05-28 13:41:10,masterq32,heyhey
+2015-05-28 14:15:52,Svenska,"wenn eine struct volatile ist, gilt das dann auch fuer alle elemente dadrin?"
+2015-05-28 14:16:56,masterq32,volatile struct X x;
+2015-05-28 14:17:09,masterq32,"ja, da sollten alle member volatile sein"
+2015-05-28 14:17:15,masterq32,ansonsten würde das keinen sinn machen imho
+2015-05-28 14:17:43,Svenska,hm
+2015-05-28 14:19:07,masterq32,aus nem deadlink:
+2015-05-28 14:19:08,masterq32,"Finally, if you apply volatile to a struct or union, the entire contents of the struct/union are volatile. If you don't want this behavior, you can apply the volatile qualifier to the individual members of the struct/union."
+2015-05-28 14:19:23,Svenska,okay
+2015-05-28 14:20:35,Svenska,dann muss ich jetzt nur noch den feinen unterschied zwischen einem volatile pointer und einem pointer auf etwas volatiles rauskriegen
+2015-05-28 14:21:31,kevin,"Naja, wenn dir bewusst ist, dass es diesen Unterschied gibt, was gibt es da noch rauszufinden?"
+2015-05-28 14:21:47,Svenska,wie ich das dem c-compiler bewusst mache
+2015-05-28 14:22:08,Svenska,"ich hab ne funktion, die bekommt einen ""volatile channel_t *channel"""
+2015-05-28 14:22:21,masterq32,das ist nen volatile pointer auf channel
+2015-05-28 14:22:21,Svenska,und dadrin ist ne warteschleife: while(!channel->dst.ptr)
+2015-05-28 14:22:26,masterq32,du willst wahrscheinlich eher
+2015-05-28 14:22:33,masterq32,channel volatile *channel;
+2015-05-28 14:23:00,masterq32,http://s.mq32.de/?x63e
+2015-05-28 14:24:34,Svenska,hmm
+2015-05-28 14:24:55,Svenska,"ich hatte eben ""volatile channel_t volatile *channel"", aber das hat spontan auch nix gebracht"
+2015-05-28 14:26:36,Svenska,"ein paar volatile's im header zu verteilen produziert warnungen, schafft aber abhilfe :-D"
+2015-05-28 14:26:41,Svenska,zumindest ein bisschen
+2015-05-28 14:30:22,kevin,masterq32: Das ist doch genau andersrum?
+2015-05-28 14:30:59,kevin,So wie bei const char* auch der char konstant ist und nicht der Pointer
+2015-05-28 14:31:52,kevin,Ein volatile-Pointer wäre channel_t* volatile channel;
+2015-05-28 14:31:59,kevin,Also volatile nach dem *
+2015-05-28 14:32:22,kevin,volatile channel_t* und channel_t volatile* ist das gleiche
+2015-05-28 14:33:40,Svenska,"""volatile channel_t volatile * volatile channel"" ist jedenfalls legal"
+2015-05-28 14:34:29,kevin,"Du meinst nach dem Motto ""viel hilft viel""? *g*"
+2015-05-28 14:34:41,Svenska,im augenblick ja
+2015-05-28 14:34:59,kevin,Was bastelst du denn überhaupt?
+2015-05-28 14:35:11,Svenska,eine kommunikationsbibliothek fuer das manycore-dingens
+2015-05-28 14:35:37,Svenska,die liest die konfiguration aus einem speicherbereich und initialisiert dann kommunikationskanäle
+2015-05-28 14:36:12,Svenska,"und das zu debuggen ist irgendwie doof, wenn die eine oder andere cpu in einer warteschleife hängt"
+2015-05-28 14:36:27,Svenska,"(und darauf wartet, dass eine andere cpu den pointer gueltig macht)"
+2015-05-28 14:36:52,Jonathan,"Svenska: Momentan klingt das irgendwie nach ""Ich schmeiß einfach irgendwelche Änderungen in den Code und hoffe, dass es klappt""... Hat bei meinem Drahthaufen auch nix gebracht"
+2015-05-28 14:37:03,Svenska,ist es auch :-)
+2015-05-28 14:37:05,Jonathan,*g*
+2015-05-28 14:37:18,Svenska,"aber im augenblick will ich erstmal nur dafuer sorgen, dass gewisse fehler garantiert nicht auftreten können"
+2015-05-28 14:37:21,Jonathan,"Meine Lösung war, ein Debugging-Display an die Hardware zu kleben und damit zu debuggen"
+2015-05-28 14:37:24,Jonathan,Hm joa
+2015-05-28 14:37:26,kevin,"Bei sowas würde ich mir eher überlegen, wo die Abhängigkeiten sind und Barriers einbauen statt mit volatile um mich zu werfen..."
+2015-05-28 14:37:52,Svenska,"innerhalb der library kann ich keine barriers verwenden, leider"
+2015-05-28 14:37:55,kevin,"Ach so, du hast Nebeläufigkeit nur fürs Debugging? Jo, dann da ansetzen ;-)"
+2015-05-28 14:37:57,Jonathan,"Aber irgendwie debuggen zu können ist imho die beste Voraussetzung dafür, richtig debuggen zu können"
+2015-05-28 14:38:16,Svenska,darum der dumper: wo hängt der code gerade :D
+2015-05-28 14:38:17,kevin,Wieso kannst du innerhalb der Lib keine Barriers benutzen?
+2015-05-28 14:38:29,Svenska,weil das drunterliegende SDK nur eine barrier-konfig erlaubt
+2015-05-28 14:38:30,Jonathan,Svenska: Ich dachte jetzt eher an Debugging-Ausgaben :D
+2015-05-28 14:38:56,Svenska,"und wenn ich innerhalb der lib barriers nutze (die an sich nicht notwendig sind), dann muss ich dafuer eine API bereitstellen"
+2015-05-28 14:39:37,Svenska,"Jonathan: debug-ausgaben hab ich, ich kann wahllos irgendwelche matrix-elemente ueberschreiben und mir die angucken. aber wenn ich das tue, zerhaut's mir das timing"
+2015-05-28 14:40:23,Svenska,"achso, zu deiner frage von gestern"
+2015-05-28 14:40:43,Svenska,"es ist immer core (2,2), der keine ptr hat"
+2015-05-28 14:41:06,Svenska,"oder zumindest ist es statistisch öfter als alle anderen, dass er irgendwo in der wueste ist -.-"
+2015-05-28 14:43:06,Svenska,oh. verdammt.
+2015-05-28 14:43:24,Svenska,die funktionen aus math.h können fputs() aufrufen
+2015-05-28 14:43:57,Jonathan,lol
+2015-05-28 14:44:07,Svenska,das duerfte crashen
+2015-05-28 14:50:10,Svenska,"http://blog.alexrp.com/epiphany-notes/ << aah, das ist interessant :D"
+2015-05-28 15:04:41,Svenska,...wieso hängt die cpu in _modsi3 -.-
+2015-05-28 15:24:43,Jonathan,Svenska: _modsi3 tut was?
+2015-05-28 15:24:49,Jonathan,Modulo signed int?
+2015-05-28 15:25:38,Jonathan,Kann die Instruktion vielleicht auf RAM arbeiten?
+2015-05-28 15:30:16,Svenska,ich hab keine ahnung
+2015-05-28 15:30:26,Svenska,der kern hängt sonstwo
+2015-05-28 15:31:57,Svenska,"die funktion ist teil vom gcc, weil die architektur keine hw-division hat"
+2015-05-28 15:32:04,Svenska,also greift die auf jeden fall auf den stack zu
+2015-05-28 15:35:33,Jonathan,"Hm, dann ist das definitiv seltsam"
+2015-05-28 15:35:59,Jonathan,"Kannst du eine Funktion bauen, die prüft, ob ein Pointer auf eine gültige Adresse zeit?"
+2015-05-28 15:36:01,Jonathan,*zeigt
+2015-05-28 15:36:24,Jonathan,"Wenn ja, würde ich sowas mal an alle möglichen Stellen kleben und schauen, ob da irgendwas kaputt ist"
+2015-05-28 15:48:12,Svenska,"wie gesagt, ein printf() wäre schon toll :)"
+2015-05-28 15:51:55,Jonathan,Joa
+2015-05-28 15:52:12,Svenska,"ich gucke grad, ob ich ein TRAP pollen kann"
+2015-05-28 15:52:16,Jonathan,"Genau so ein ekelhafter Fehler hat mich dazu gebracht, die Debugging-Anzeige anzubauen"
+2015-05-28 15:52:24,Svenska,und was wars bei dir? :D
+2015-05-28 15:52:26,Jonathan,Es gibt eben einfach keinen Ersatz für Debug-Ausgaben
+2015-05-28 15:52:28,Jonathan,Ähm *g*
+2015-05-28 15:52:32,Jonathan,Was richtig kaputtes
+2015-05-28 15:52:34,Jonathan,Folgendes:
+2015-05-28 15:52:50,Jonathan,Mein modsys_invoke schubst ja den Stack herum. Dazu sichert es den SP und stellt ihn wieder her.
+2015-05-28 15:53:11,Jonathan,"Nach dem Sichern des SPs hab ich zwei POPs gemacht, die ich nicht mit PUSHs kompensiert habe."
+2015-05-28 15:53:30,Jonathan,Das Wiederherstellen des SP hat also zwei POPs rückgängig gemacht...
+2015-05-28 15:53:46,Jonathan,Deshalb hat modsys_invoke jetzt zwei POPs mehr als PUSHs *g*
+2015-05-28 15:53:58,Svenska,lol
+2015-05-28 15:54:54,Jonathan,"Es ist mir dann langsam gedämmert, als ich Returnadressen, SP usw. auf dem Display angezeigt habe"
+2015-05-28 15:55:05,Jonathan,Ohne irgendeine Debuggingmöglichkeit kommt man sowas einfach nicht bei...
+2015-05-28 15:55:23,Svenska,"naja, du hättest aber die uart missbrauchen können"
+2015-05-28 15:55:23,Jonathan,Und wenn's nur ein hexadezimales 16-Bit-Display aufm BIOS ist.
+2015-05-28 15:55:54,Jonathan,"Hätte ich tun können, dazu müsste ich die dann aber ohne funktionierenden Stack und wenn sowieso alles schon im Arsch ist initialisieren"
+2015-05-28 15:56:05,Svenska,initialisieren kannst du vorher
+2015-05-28 15:56:27,Svenska,"dann ist das nur ein ""send_char(); while(!ready);"""
+2015-05-28 15:57:19,Jonathan,"Ja gut, ich hab's halt jetzt so gelöst :P"
+2015-05-28 15:58:07,Svenska,wtf
+2015-05-28 15:58:21,Svenska,"""Epiphany trap numbers. The trap number range is 5 or 6 bits (documentation is unclear, 6 bits looks most likely), ..."""
+2015-05-28 15:58:56,Jonathan,Wtf
+2015-05-28 15:59:30,Svenska,urks
+2015-05-28 15:59:37,Svenska,das scheint ... *grusel*
+2015-05-28 15:59:50,Svenska,tatsache.
+2015-05-28 16:00:05,Svenska,"ich gucke, ob ein core steht, und dann gucke ich mir dessen program counter an"
+2015-05-28 16:00:21,Svenska,"und dann gucke ich nach, welche instruction im core-lokalen speicher an dieser stelle steht"
+2015-05-28 16:00:37,Svenska,"und wenn das ein TRAP ist, fummle ich da ein paar bits raus und kriege die nummer"
+2015-05-28 20:00:15,iksnagreb,nabend

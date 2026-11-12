@@ -1,0 +1,128 @@
+date/time,nick,message
+2016-07-29 02:23:09,janosch,hi
+2016-07-29 02:25:30,janosch,ich hatte gerade einen schweren Anfall an Nostalgie...
+2016-07-29 02:32:16,janosch,in der Zwischenzeit hab ich viel über OS-Development gelernt - Macht mal bitte was zu Synchronisierung in das Wiki ;)
+2016-07-29 06:54:48,darklink,"Für den log: AMP synchronisierung läuft ohne interrupts über bestimmte addressen, auf denen gewartet wird, bis sie wahr sind. Mit interrupts sende ich den prozessoren einfach IRQs"
+2016-07-29 06:55:07,darklink,zumindest bei mir
+2016-07-29 09:25:18,darklink,Hmm
+2016-07-29 09:26:01,darklink,vielleicht könnte ich ja GBA und DSi ports für MTGos irgendwann machen
+2016-07-29 09:30:08,darklink,wobei wahrscheinlich eher letzteres
+2016-07-29 09:30:40,darklink,"Der ARM7 hat keine MPU, der ARM9 hat aber"
+2016-07-29 09:31:31,darklink,Außerdem ist der RAM des GBAs viel zu klein
+2016-07-29 09:32:12,darklink,DSi hat afaik 32MB oder so. Und einen SD-kartenslot
+2016-07-29 09:37:04,darklink,16MB
+2016-07-29 09:37:30,darklink,dachte der originale DS hatte 16. Anscheinend doch nur 8
+2016-07-29 09:43:54,darklink,Der GBA hat btw nur 32KB IWRAM + 256KB eRAM
+2016-07-29 09:47:44,darklink,"und keinen weg daten von außerhalb der ROM zu laden. Gibt zwar multiboot (keine ähnlichkeit zu Multiboot), allerdings limitiert das den code zu 32 KB. Und die verbindung ist glaube ich < 1MB/s"
+2016-07-29 09:51:49,darklink,Die roms können ohne mapper bis zu 16MB werden und mit mapper 64MB (GBA video)
+2016-07-29 12:56:55,Jonathan,Moin
+2016-07-29 13:56:55,darklink, Moin
+2016-07-29 14:42:50,darklink,So. Unreal mode scheint zu funktionieren
+2016-07-29 14:43:04,darklink,kann auf 4GB daten zugreifen
+2016-07-29 14:46:42,darklink,"zwar nur auf 64KB code, allerdings brauche ich für den FIRMloader nicht mehr"
+2016-07-29 14:48:44,darklink,"jetzt frage ich mich, wie ich das mit den callbacks bei x64 mache"
+2016-07-29 14:50:23,darklink,einfach in den realmode zurück und dann in den unreal mode wieder rein?
+2016-07-29 14:51:13,darklink,kann man im v8068 mode in den unreal mode?
+2016-07-29 14:51:31,darklink,man muss ja kurz protected mode starten
+2016-07-29 14:54:42,darklink,ok. Im singletaskmodus (beim booten) können module übers bios geladen werden
+2016-07-29 15:21:44,Guest10835,morgen
+2016-07-29 15:21:57,Guest10835,"Jonathan, du hast doch sicher mal was mit SDCC/Z80 gemacht, oder?"
+2016-07-29 16:19:04,Jonathan,"MasterQ32: Ja, damit hab ich mein komplettes OS gemacht :P"
+2016-07-29 16:19:29,Jonathan,"(Und ja, der Compiler ist buggy, der Linker ist eklig, und generell ist an SDCC für Z80 alles kacke)"
+2016-07-29 16:20:02,MasterQ32,alternative?
+2016-07-29 16:20:10,Jonathan,Keine bekannt
+2016-07-29 16:20:16,MasterQ32,mist
+2016-07-29 16:20:19,Jonathan,Z88DK produziert ausnehmend schlechten Code
+2016-07-29 16:20:31,MasterQ32,ich möchte mal für meinen TI83+ n bisschen code in C schreiben
+2016-07-29 16:20:46,Jonathan,Dafür wird SDCC sicherlich reichen :P
+2016-07-29 16:21:02,Jonathan,Nur für ernsthafte Projekte (aka OS) will man lieber einen gescheiten Compiler
+2016-07-29 16:21:31,MasterQ32,hehe
+2016-07-29 16:21:46,MasterQ32,backend für LLVM?
+2016-07-29 16:22:28,Jonathan,"Hab ich schon drüber nachgedacht, war mir damals aber zu viel :P"
+2016-07-29 16:23:12,Jonathan,"Ach, stimmt ja"
+2016-07-29 16:23:30,Jonathan,Ich hab ja den Output von SDCC vor dem Assembler abgegriffen und dann mit Lua drin rum gepfuscht
+2016-07-29 16:23:38,Jonathan,Und das dann erst in den Assembler gefüttert
+2016-07-29 16:23:57,Jonathan,Weil SDCC hard-coded jede Variable zweimal ausgibt
+2016-07-29 16:24:29,MasterQ32,warum das? :D
+2016-07-29 16:24:36,Jonathan,"Naja, wegen ROM-Systemen"
+2016-07-29 16:24:57,Jonathan,"Code im ROM = Initialisierte Variablen auch im ROM, müssen dann vom Startup-Code in den RAM kopiert werden"
+2016-07-29 16:25:11,Jonathan,"Dummerweise hat niemand daran gedacht, dass es auch Systeme geben könnte, wo der Code mal nicht im ROM ist"
+2016-07-29 16:25:28,Jonathan,Also musste ich das hinterher wieder rauspopeln
+2016-07-29 16:27:24,Jonathan,"Falls du tatsächlich was mit SDCC und Z80 machen willst, guck mal hier: http://pastebin.com/sKRiLn2x"
+2016-07-29 16:27:31,darklink,hmm
+2016-07-29 16:27:33,Jonathan,MasterQ32: Das ist mein Buildscript *g*
+2016-07-29 16:27:44,darklink,also ich habe a20 und unreal mode an
+2016-07-29 16:28:05,darklink,glaube ich kann jetzt einfach den c code callen oder so
+2016-07-29 16:46:23,darklink,hat wer LD schon mal im unreal mode verwendet?
+2016-07-29 16:47:10,darklink,also das codesegment ist 0x1000 und ist 64k groß. Das datensegment ist 0x0000 und ist 4GB groß
+2016-07-29 16:48:51,darklink,"wie kann ich LD sagen, dass .text an an position 0x0000 ist und .data, .rodata und .bss an position 0x10000 ist? einfach .=0x10000; im linkerscript?"
+2016-07-29 18:06:07,darklink,C code läuft
+2016-07-29 22:55:31,Godwine,nabend
+2016-07-29 22:57:46,MasterQ32,huhu
+2016-07-29 22:59:49,Godwine,wie läufts?
+2016-07-29 23:01:00,MasterQ32,jutjut
+2016-07-29 23:01:07,MasterQ32,arbeite grade an einem game jam eintrag
+2016-07-29 23:02:40,Godwine,spiele unter zeitdruck schreiben? :D
+2016-07-29 23:02:50,MasterQ32,jau
+2016-07-29 23:02:54,MasterQ32,eine woche zeit
+2016-07-29 23:04:27,Godwine,was hast du denn vor? :D
+2016-07-29 23:05:42,MasterQ32,https://puu.sh/qj18E/bb885393ad.png
+2016-07-29 23:05:50,MasterQ32,ein kampfspiel
+2016-07-29 23:05:57,MasterQ32,kennst du das alte flash-spiel Tanks?
+2016-07-29 23:06:44,Godwine,ja :D
+2016-07-29 23:06:59,MasterQ32,stell dir das ganze topdown vor
+2016-07-29 23:07:05,MasterQ32,1:1 local coop
+2016-07-29 23:07:15,MasterQ32,man platziert gravitations-affektoren
+2016-07-29 23:07:21,MasterQ32,und schießt dem anderen die base kaputt :D
+2016-07-29 23:08:29,MasterQ32,hab jetzt grade die geschosspartikel gebastelt
+2016-07-29 23:08:44,Godwine,also man erzeugt gravitationsquellen die projektile ablenken können und ansonsten schießt man einfach auf die blöcke an der base des gegners?
+2016-07-29 23:09:23,MasterQ32,genau
+2016-07-29 23:09:37,MasterQ32,man muss eben mit seinen resourcen haushalten
+2016-07-29 23:09:50,MasterQ32,"wenn ich das richtig hinbekomme, wird das saugeil"
+2016-07-29 23:09:55,Godwine,klingt gut ich mag taktikspiele :D
+2016-07-29 23:11:20,MasterQ32,joar 
+2016-07-29 23:11:26,MasterQ32,"thema ist ""strategie"" und ""gravitation"""
+2016-07-29 23:11:36,MasterQ32,muss nichts in zusammenhang sein :D
+2016-07-29 23:12:38,Godwine,füllst du die beiden basen noch mit texturen?
+2016-07-29 23:13:05,MasterQ32,wie meinst?
+2016-07-29 23:13:13,MasterQ32,ich würde da gerne ne art plasma-effekt reinbasteln
+2016-07-29 23:13:15,MasterQ32,oder blitze
+2016-07-29 23:13:17,MasterQ32,irgendwie sowas
+2016-07-29 23:13:35,Godwine,na das sieht im moment aus wie zwei kugeln mit steinblöcken die langsam kaputt gehen drum
+2016-07-29 23:14:04,MasterQ32,joar
+2016-07-29 23:14:11,MasterQ32,ist eigentlich ne art schutzschild
+2016-07-29 23:14:13,Godwine,du kannst ja planeten draus machen mit raumstationen die drum herum kreisen und bei einem treffer teile verlieren oder so :D
+2016-07-29 23:14:16,MasterQ32,hehe
+2016-07-29 23:14:24,MasterQ32,ich bleib erst mal so minimalistisch
+2016-07-29 23:14:36,Godwine,okay geht ja um das spielprinzip^^
+2016-07-29 23:14:41,MasterQ32,jau
+2016-07-29 23:14:51,MasterQ32,"ich hab ne woche zeit, ich will jetzt erst mal so viel gameplay wie möglich"
+2016-07-29 23:18:07,darklink,"So ich glaube ich werde eine variante meiner homepage erstellen, die javascript nutzt"
+2016-07-29 23:18:26,darklink,Und ich glaube ich werde das captchascript sicherer machen
+2016-07-29 23:18:54,Godwine,damit nur echte menschen deinen virus installiert bekommen?
+2016-07-29 23:19:02,darklink,Hab nämlich potentielle angriffsvektoren
+2016-07-29 23:19:50,darklink,"Godwine: ne, damit leute mir meine inodes nicht wegfressen"
+2016-07-29 23:20:03,darklink,(warte - hat UFS inodes?)
+2016-07-29 23:20:34,Godwine,hat nicht jedes fs inodes?
+2016-07-29 23:21:01,darklink,Außer *FAT*
+2016-07-29 23:23:28,darklink,NTFS hat laut freebsds df welche
+2016-07-29 23:26:56,MasterQ32,Godwine: Projektile mit Partikeln https://puu.sh/qj2tP/a620951852.png
+2016-07-29 23:28:49,Godwine,wo werden die abgefeuert?
+2016-07-29 23:29:13,MasterQ32,im moment random
+2016-07-29 23:29:26,MasterQ32,aber man bekommen eine zielvorrichtung um die base herrum
+2016-07-29 23:33:48,darklink,Damit man gezielt am gegner vorbeischießen kann?
+2016-07-29 23:35:22,MasterQ32,genau
+2016-07-29 23:35:57,darklink,Ich glaube bochs ist bloß dazu da mich zu ärgern
+2016-07-29 23:36:12,darklink,Und gdb auch
+2016-07-29 23:36:22,darklink,:/
+2016-07-29 23:36:35,MasterQ32,definitiv
+2016-07-29 23:36:44,darklink,oder gccs 16-bit modus
+2016-07-29 23:36:44,Godwine,vorallem gdb
+2016-07-29 23:37:04,Godwine,16 bit?
+2016-07-29 23:37:30,darklink,warum will der ne 32-bit addresse im 16-bit modus pushen?
+2016-07-29 23:37:41,darklink,Bin im real mode
+2016-07-29 23:38:02,darklink,Und will da in C programmieren
+2016-07-29 23:39:10,darklink,Unter echter hw und in qemu funktioniert es
+2016-07-29 23:40:14,darklink,In bochs bleibt es mit nem #gp hängen
+2016-07-29 23:41:23,darklink,"Naja, ich geh mal schlafen"
+2016-07-29 23:41:38,Godwine,gute nacht

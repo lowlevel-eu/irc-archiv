@@ -1,0 +1,137 @@
+date/time,nick,message
+2012-12-07 09:11:09,DesL,moin
+2012-12-07 09:38:11,DesL,ui
+2012-12-07 09:38:23,DesL,"""Welcome to the Steamlinuxbeta mailing list"""
+2012-12-07 09:38:33,DesL,haben das jetzt alle bekommen die sich beworben haben?
+2012-12-07 10:21:29,ferler_,"Hoi, bin ich richtig hier wenn ich ein Problem mit einem der Guides von lowlevel.eu habe?"
+2012-12-07 11:21:04,DesL,joa
+2012-12-07 11:21:09,DesL,prinzipiell
+2012-12-07 11:33:46,ferler_,"Okay, dann poste ich mal mein Problem, wenn jemandem etwas dazu einfällt würde ich mich freuen ;)"
+2012-12-07 11:33:55,ferler_,Also es geht um den Guide: http://www.lowlevel.eu/wiki/C%2B%2B-Kernel_mit_GRUB
+2012-12-07 11:34:22,ferler_,Habe es 1 zu 1 so gemacht und versucht den Kernel mit qemu zu startewn
+2012-12-07 11:34:51,ferler_,Stürzt aber für mich unerklärlich so ab http://pastebin.com/nrmgGkPS 
+2012-12-07 11:35:12,ferler_,Auch wenn ich den kompletten Code durch eine einzige Schleife ersetze
+2012-12-07 11:35:58,DesL,ist da was beim linken falschgelaufen?
+2012-12-07 11:40:46,ferler_,"Hmm, ich benutze das Linkerscript aus dem Guide und den ld, den Fedora 17 mitliefert sowie exakt den Befehl aus dem Guide"
+2012-12-07 11:43:26,ferler_,"Muss man es qemu neuerdings sagen, dass man einen Multibootkernel laden möchte? Das Linkerscript platziert ja alles oberhalb 0x0100000, und die Addresse 0x000a0000 klingt für mich so als wäre da nicht in den protected Mode geschalten?"
+2012-12-07 11:47:11,DesL,hast du dir den kernel mal mit objdump o.ä. angeschaut ob da sicher nichts an der addresse liegt?
+2012-12-07 11:52:24,ferler_,"Nein, noch nicht, nie wirklich etwas mit objdump gemacht. ;) Reicht es die Sections anzusehen? "
+2012-12-07 12:07:20,mgottschlag,http://stackoverflow.com/questions/4631345/qemu-crashes-when-loading-kernel
+2012-12-07 12:08:39,mgottschlag,"ah, ne, das ist evtl nicht das selbe"
+2012-12-07 12:18:19,ferler_,"Hey, das auf stackoverflow hab ich auch schon gesehen"
+2012-12-07 12:20:36,ferler_,"Aber im Code kann ja fast kein Fehler sein, der ist auf das hier geschrumpft"
+2012-12-07 12:20:37,ferler_,http://pastebin.com/Kg9h0VrY
+2012-12-07 12:25:33,mgottschlag,"was sagt readelf -a, was sagt objdump -d?"
+2012-12-07 12:28:01,ferler_,mom
+2012-12-07 12:28:33,ferler_,readelf: http://pastebin.com/zSXwNqsX
+2012-12-07 12:29:33,ferler_,objdump: http://pastebin.com/LAt4SYft
+2012-12-07 12:29:59,mgottschlag,ferler_: der multiboot-header muss in den ersten 8K des Programms sein
+2012-12-07 12:30:23,mgottschlag,"du hast in deiner Datei aber am Anfang erstmal ein MB ""nichts"""
+2012-12-07 12:32:03,ferler_,"Also ist der Wiki-Guide inkorrekt? Was mich wundern würde, habe vor nem Jahr schon mal damit herumgespielt und da ging es."
+2012-12-07 12:32:38,ferler_,"Wie gesagt, habe mich komplett nach dem gerichtet und nur nachträglich den kompletten sonstigen Code rausgeworfen. ;)"
+2012-12-07 12:33:25,mgottschlag,"kP, aber Off=100000 sieht für mich stark danach aus, dass qemu den multiboot-header nicht findet"
+2012-12-07 12:34:23,DesL,hm
+2012-12-07 12:34:24,DesL,warte mal
+2012-12-07 12:34:33,DesL,"wieso sollte LD da ein MB ""nichts"" reinpacken?"
+2012-12-07 12:34:44,mgottschlag,+1
+2012-12-07 12:35:43,ferler_,. = 0x0100000;
+2012-12-07 12:35:54,ferler_,So steht's im Linkerscript vor .text
+2012-12-07 12:35:56,DesL,nein
+2012-12-07 12:36:01,DesL,das sagt nur das er das symbol dahin packt
+2012-12-07 12:36:48,mgottschlag,"und irgendeine fehlende AT-Direktive im Skript kanns ja eigentlich auch nicht sein, der generiert ja ELF, und kein flat binary"
+2012-12-07 12:40:06,mgottschlag,"naja, bin man einkaufen, bbl"
+2012-12-07 12:40:36,ferler_,"Ciao, danke dir"
+2012-12-07 12:59:01,ferler_,"Wenn "". = 0x0100000;"" im Script steht, wird .text sowohl an Addresse als auch an Dateioffset 0x0100000 gesetzt ... lasse ich es weg, dann landet .text an Addresse 0 und Offset 200000"
+2012-12-07 13:00:24,ferler_,"Dh. die Lösung für mein Problem könnte es sein, .text auf Addresse 0x0100000 zu setzen ohne dieses hohe Fileoffset?"
+2012-12-07 13:22:26,MSN,"hey ich lerne grad asm, zwangsweise at&t syntax.. ich hab ne long variable die ich nkrementieren will gibts da was besseres als das: leal buflen, %ecx"
+2012-12-07 13:22:26,MSN,"        addl $1, (%ecx"
+2012-12-07 13:25:23,MSN,ich nehme übrigens auch gerne gute tutorials unsere folien sind nämlich müll
+2012-12-07 13:29:14,max,wieso zwangsweise
+2012-12-07 13:29:28,max,Gibt deine Uni das vor?
+2012-12-07 13:30:08,MSN,jop
+2012-12-07 13:30:44,max,Beileid *g*
+2012-12-07 13:31:07,max,"Na ja, es geht direkt addl $1,buflen, denke ich"
+2012-12-07 13:31:44,MSN,ich probiers gleich nochmal aber ich mein das hätte ich schon ;)
+2012-12-07 13:32:53,MSN,wir dürfen auch intel syntax benutzen aber dann müsste ich halt in der klausur erstmal alle codefragmente die villeicht gegeben sind übersetzen und auf den übungszetteln auch.. bei letzteren gehts ja noch aber in der klausur kostet mir das zu viel zeit
+2012-12-07 13:33:36,stultus,Darf man fragen wo du studierst? x86 ist ja nicht unbedingt die übliche Lehrarchitektur
+2012-12-07 13:33:50,MSN,bonn
+2012-12-07 13:34:31,stultus,"Ok, aus der ecke hab ich auch noch nichts gehört ^^ hier machen sie überall nur MIPS"
+2012-12-07 13:34:44,MSN,ach im ersten semster ham sich 2 verschiedene profs jeweils nen eigenen assembler ausgedacht den wir lernen mussten.. das war viel schlimmer
+2012-12-07 13:35:04,stultus,....was
+2012-12-07 13:35:09,stultus,"Ok, das ist ne katastrophe"
+2012-12-07 13:35:11,MSN,und der eine hat dann noch nen interpreter dafür gebastelt :D
+2012-12-07 13:36:11,MSN,und er hatte funktionen die c code in seinen assembler übersetzen
+2012-12-07 13:37:41,MSN,"und wenn man die nich kannte - tja pech gehabt! man darf den algorithmus nicht sinnvoll in seinem assembler implementieren man muss ihn übersetzen, auch wenns total ineffizient is"
+2012-12-07 13:38:01,stultus,...was
+2012-12-07 13:38:11,stultus,"Ganz ehrlich, ich hätt mir gesagt das fach machste bei nem andern prof"
+2012-12-07 13:38:49,stultus,"So nen Humbug, das ist ja schon schädigend für jede Bildung :/"
+2012-12-07 13:38:59,MSN,ja gibt glücklicherweise ne alternativ veranstaltung ;) diese hier wo ich at&t syntax lernen muss :P
+2012-12-07 13:39:21,stultus,:D dann passt das ja
+2012-12-07 13:40:14,MSN,jop das andere war halt nen billiger c kurs und dieser komische assembler und jez ham wir netzwerkprogrammierung und nen richtigen assembler
+2012-12-07 13:40:23,MSN,also ich bin zufrieden ;)
+2012-12-07 13:42:08,MSN,so bin mal OS wechseln ;)
+2012-12-07 15:03:49,msn,ich hab jez ein neues problem :D
+2012-12-07 15:04:58,msn,"ich pushe nen wert auf den stack, rufe meine funktion auf und poppe sie wieder in mein register"
+2012-12-07 15:05:25,msn,leider ist nachher ne andere variable drin als vorher
+2012-12-07 15:05:37,msn,will heissen: pop macht meinen stack kaputt
+2012-12-07 15:06:19,kevin,"Eher, du machst deinen Stack irgendwo zwischen push und pop kaputt"
+2012-12-07 15:06:34,msn,push %ebx	call printnum
+2012-12-07 15:06:58,msn,".type printnum, @function   printnum:	pop %eax"
+2012-12-07 15:07:13,msn,dazwischen passiert nix
+2012-12-07 15:07:53,kevin,"Weißt du, was ein call tut?"
+2012-12-07 15:08:17,msn,oh es legt die rücksprungadresse auf den stack..
+2012-12-07 15:08:20,msn,richtig
+2012-12-07 15:08:28,DerHartmut,Hallo zusammen
+2012-12-07 15:08:51,kevin,"Normalerweise nimmt man dann halt sowas wie -8(%ebp), um auf den Parameter zuzugreifen"
+2012-12-07 15:08:59,kevin,"Wenn man einen Framepointer hat, ansonsten halt über %esp"
+2012-12-07 15:09:07,msn,danke :)
+2012-12-07 15:09:17,kevin,Moin DerHartmut
+2012-12-07 15:09:45,kevin,"msn: Und der Aufrufer macht dann nach dem call wieder ein pop. Dort funktioniert das, weil dazwischendrin das ret kam, das die Rücksprungadresse aufräumt."
+2012-12-07 15:10:18,kevin,"Also, C-Aufrufkonvention wäre das halt"
+2012-12-07 15:10:25,kevin,"Geht natürlich auch anders, wenn man anders will"
+2012-12-07 15:12:36,msn,will man längerfristig wohl eher nich ;)
+2012-12-07 15:14:07,kevin,"Es gibt Leute, die wissen immer alles besser ;-)"
+2012-12-07 15:22:51,msn,yaaay alles funktioniert :)
+2012-12-07 15:27:25,pocky,hi leute
+2012-12-07 15:36:36,kevin,Hi pocky
+2012-12-07 15:37:53,pocky,"ich bin mal wieder am verzweifeln, diesmal bei was ganz billigem..."
+2012-12-07 15:37:54,pocky,"will simpel den bildschirm scrollen lassen, also einfach alles ne zeile hochkopieren, nur irgendwie kann ich bereits beschriebene zeichen nicht  überschreiben oO ich pastebin mal eben code und screenshot..."
+2012-12-07 15:40:32,pocky,http://pastebin.com/V6a1GUzN
+2012-12-07 15:40:32,pocky,"hier die (unfertige) scroll funktion, die zu testzwecken im moment eigentlich alles mit blauen # überschreiben sollte"
+2012-12-07 15:43:41,pocky,http://s1.directupload.net/images/121207/r5yg22im.jpg
+2012-12-07 15:43:54,pocky,"nur irgendwie überschreibt das alles nur, nicht den text der bereits vorhanden ist"
+2012-12-07 15:45:48,kevin,screen_w/h sind die erwarteten 80/25?
+2012-12-07 15:46:27,pocky,http://pastebin.com/GGqt75HQ
+2012-12-07 15:46:27,kevin,Und was ist s?
+2012-12-07 15:46:28,pocky,jap
+2012-12-07 15:46:40,pocky,"s sind die zeilen die gescrollt werden sollen, im normalfall 1"
+2012-12-07 15:46:44,kevin,"Da steht kein const, also könntest du die irgendwo verändert haben"
+2012-12-07 15:47:15,pocky,"das s wird ja im moment noch gar nicht verwendet, im moment wundere ich mich ja, warum der das alte zeug nicht überschreibt"
+2012-12-07 15:47:16,kevin,video_addr ist uint8_t*?
+2012-12-07 15:47:25,pocky,ja
+2012-12-07 15:47:27,kevin,"Außer für s = 0, da wird es verwendet"
+2012-12-07 15:47:43,pocky,"ja, aber dann passiert ja nix mehr"
+2012-12-07 15:48:12,kevin,"Also wenn screen_w/h richtig sind, sehe ich den Fehler grad auch nicht"
+2012-12-07 15:49:21,pocky,"holla, mir fällt da was auf"
+2012-12-07 15:50:37,msn,gibts nen simplen weg zu prüfen ob nen long negativ ist? 
+2012-12-07 15:51:17,pocky,das erste/letzt bit prüfen?
+2012-12-07 15:51:56,msn,das hab ich befürchtet :P
+2012-12-07 15:53:31,pocky,warum?
+2012-12-07 15:53:42,msn,weil ich noch nicht weis wie :P
+2012-12-07 15:53:53,msn,aber das lern ich dann nachm essen :P
+2012-12-07 15:54:48,pocky,"mh, irgendwie scrollt der bevor der irgendwas schreibt, und scrollt nicht mehr wenn er scrollen muss, wobei das gar nicht gehen kann"
+2012-12-07 15:54:52,pocky,seltsam
+2012-12-07 16:53:37,pocky,woher weißt printf eigentlich ob es signed oder unsigned ist?
+2012-12-07 16:53:46,kevin,Weil du es ihm sagst
+2012-12-07 16:53:55,kevin,"%d ist signed, %u ist unsigned"
+2012-12-07 16:54:00,pocky,ah
+2012-12-07 16:54:05,kevin,%o und %x sind immer unsigned
+2012-12-07 16:54:14,pocky,danke
+2012-12-07 16:55:04,pocky,schon wieder alles zu lange her
+2012-12-07 19:50:30,pocky,"mh, wie krieg ich qemu nochmal dazu nen memdump oder so zu machen, statt neuzustarten bei nem fault?"
+2012-12-07 20:53:59,pocky,"mh, warum macht mein inline assembler aus meinem ""mov %ax, %ds"" ein ""mov %eax, %ds"" (laut objdump) ?"
+2012-12-07 20:55:08,MSN,kommt das nich aufs gleiche raus=
+2012-12-07 20:55:22,pocky,"weiß nicht, wunder mich nur"
+2012-12-07 20:55:31,Svenska,ist DS ein 32-bit-register? :-)
+2012-12-07 20:55:38,pocky,der kackt mir nämlich genau da ab
+2012-12-07 20:55:54,pocky,"scheiß gdt, jedesmal das gleiche xD"

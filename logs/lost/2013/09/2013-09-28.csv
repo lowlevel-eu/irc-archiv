@@ -1,0 +1,627 @@
+date/time,nick,message
+2013-09-28 10:34:13,Jonathan,morgähn
+2013-09-28 11:04:32,tufel,huhu
+2013-09-28 11:08:06,tufel,gibts ein wait- befehl in vhdl der auch in der synthese tut ?
+2013-09-28 11:12:56,mgottschlag,nein
+2013-09-28 11:13:12,mgottschlag,du must auf Taktflanken warten und im zweifelsfall mitzählen
+2013-09-28 11:13:36,mgottschlag,tufel: hat sich die Frage von wegen Array Signal/Variable schon geklärt?
+2013-09-28 11:14:29,tufel,"joar, ich glaub array können variablen und signale sein, oder ?"
+2013-09-28 11:14:47,mgottschlag,genau
+2013-09-28 11:15:00,mgottschlag,den Unterschied kennst du dann vermutlich inzwischen auch? :)
+2013-09-28 11:16:54,tufel,naja ich glaub es kommt immer auf den element-typ an..
+2013-09-28 11:18:10,mgottschlag,"hm, ne, eigentlich nicht, der unterschied zwischen signal und variable is immer der selbe"
+2013-09-28 11:19:00,Jonathan,Äh huch
+2013-09-28 11:19:12,Jonathan,"2x XanClic, und das sogar mit dem selben Nick?! oO"
+2013-09-28 11:19:42,mgottschlag,:D
+2013-09-28 11:19:43,tufel,naja das I ist bei einem groß geschreiben
+2013-09-28 11:19:44,mgottschlag,Jonathan: nein
+2013-09-28 11:19:58,Jonathan,Hehe xD
+2013-09-28 11:19:59,Jonathan,Auch gesehen
+2013-09-28 11:20:14,Jonathan,Bei meinem Font sind I und L gleich
+2013-09-28 11:22:51,tufel,"ah ich versteh, mit : variable Array : Array_typ, erschafft man ne variable und mit: signal Array : Array_typ, ein signal.... "
+2013-09-28 11:35:43,tufel,"nun, kann man in vhdl, erst warten bis eine taktflanke steigt, und danach warten bis sie wieder fällt ?"
+2013-09-28 11:47:09,mgottschlag,ja. aber man muss das selber implementieren :p
+2013-09-28 11:49:38,tufel,ich hab dazu 2 if-verzweigungen verschachtelt aber ihrgentwie kommt da immer der selbe fehler... couldn't implement registers for assignments on this clock edge
+2013-09-28 11:51:18,mgottschlag,zeig mal den code
+2013-09-28 12:05:28,tufel,wie kann ich code hoch hochladen
+2013-09-28 12:09:23,tufel,http://codeviewer.org/preview
+2013-09-28 12:10:14,tufel,http://codeviewer.org/view/code:36e5
+2013-09-28 12:11:53,mgottschlag,"ne, das kann nicht funktionieren"
+2013-09-28 12:12:10,mgottschlag,tufel: ist das in einem prozess?
+2013-09-28 12:12:15,tufel,joar
+2013-09-28 12:12:33,mgottschlag,"ein Prozess läuft immer vollständig zu genau einem Zeitpunkt ab, ohne Zeitverzögerung"
+2013-09-28 12:12:47,mgottschlag,"dein Problem ist jetzt, dass du nie gleichzeitig eine steigende und fallende Flanke hast"
+2013-09-28 12:13:08,mgottschlag,"d.h. wenn du das erkennen willst, muss der Prozess zweimal hintereinander ausgeführt werden, und du musst dir den Zustand merken"
+2013-09-28 12:13:27,mgottschlag,"das erste mal wird er bei der steigenden Flanke ausgeführt, und du merkst dir, dass eine gekommen ist"
+2013-09-28 12:13:42,mgottschlag,"das zweite mal erkennst du eine fallende Flanke und den Merker, und führst deinen Code aus"
+2013-09-28 12:13:52,tufel,ah ok
+2013-09-28 12:13:59,mgottschlag,"VHDL ist nicht sequenziell wie andere Programmiersprachen, ein Prozess ist immer vollständig parallel"
+2013-09-28 12:14:04,mgottschlag,"also, alle Zeilen eines Prozesses"
+2013-09-28 12:14:17,mgottschlag,"hm, schließlich ist VHDL ja auch keine Programmiersprache"
+2013-09-28 12:15:34,mgottschlag,"hast du wirklich verstanden, was der Unterschied zwischen einem Signal und einer Variable ist? das hängt damit nämlich sehr stark zusammen ^^"
+2013-09-28 12:19:11,tufel,"naja ich weiß nur das wenn man einer Variable ein wert zuweist hat diese ihn sofort, ein signal muss dagegen erst warten bis der prozess zu ende ist..."
+2013-09-28 12:20:23,mgottschlag,"ja, wobei ""warten"" es nicht wirklich trifft - ein Signal ist halt etwas, wo du den Eingabewert hast, der fest ist, und der Ausgabewert des Signals in deinem Prozess kann halt nicht direkt wieder gelesen werden, sondern nur gesetzt werden"
+2013-09-28 12:20:38,mgottschlag,"""warten"" gibt es halt nicht :)"
+2013-09-28 12:21:27,tufel,mmh ok
+2013-09-28 12:22:32,tufel,dann muss dieser merker ein signal sein oder ?
+2013-09-28 12:22:51,mgottschlag,kann auch eine Variable sein - generell kann jedes Signal auch eine Variable sein glaub ich
+2013-09-28 12:23:01,mgottschlag,aber ein Signal reicht
+2013-09-28 12:25:08,tufel,"ok, ist der code jetzt so ok ? http://codeviewer.org/view/code:36e6"
+2013-09-28 12:29:31,tufel,mmh es kommt immernoch dieser slesame fehler :couldn't implement registers for assignments on this clock edge
+2013-09-28 12:30:24,tufel,*seltsamer
+2013-09-28 12:44:48,mgottschlag,das sieht schon wesentlich besser aus
+2013-09-28 12:44:57,mgottschlag,"wo der Fehler herkommt, da habe ich keine Ahnung"
+2013-09-28 12:45:37,mgottschlag,allerdings ist falling_edge/rising_edge zumindest bei der VHDL-Synthese nur an ganz bestimmten Stellen in bestimmten Formen erlaubt
+2013-09-28 12:45:57,mgottschlag,und vielleicht ist dieses and marker = 0 im selben if das problem
+2013-09-28 12:46:08,mgottschlag,mach das marker mal in ein separates if
+2013-09-28 12:47:27,mgottschlag,"außerdem, ist in dem Prozess drum herum noch was?"
+2013-09-28 12:47:55,mgottschlag,"""if rising_edge..."" muss zumindest bei Xilinx für die Synthese immer das äußerte (und einzige) if in einem Prozess sein"
+2013-09-28 12:50:48,tufel,"http://codeviewer.org/view/code:36e7 hier mal der komplette Code,"
+2013-09-28 12:51:35,tufel,drum herum ist noch ne if-verzweigung
+2013-09-28 12:51:57,mgottschlag,"ja, das ist viel zu komplex"
+2013-09-28 12:52:10,mgottschlag,"""if clock_50_Mhz = '1' and clock_50_Mhz'event then"" - das ist ja letztenendes ein rising_edge, oder?"
+2013-09-28 12:52:28,mgottschlag,"insofern macht das überhaupt keinen Sinn, weil du nie gleichzeitig bei 10MHz und bei 50MHz eine rising edge hast"
+2013-09-28 12:52:37,mgottschlag,dein Prozess wird nämlich immer nur von einem von beiden getriggert
+2013-09-28 12:53:08,mgottschlag,"außerdem: wenn dein Prozess in der Sensitivity List mehr als *einen* Takt und evtl noch *eine* weitere asynchron abgefrage Variable hat, machst du was falsch"
+2013-09-28 12:53:44,mgottschlag,"in dem Prozess da ist das einzige, was in der Sensitivity List stehe muss, clock_10Mhz (und halt clock_50Mhz, aber das funktioniert so nicht)"
+2013-09-28 12:54:03,tufel,mmh ok
+2013-09-28 12:54:05,mgottschlag,"außerdem, mach erstmal um alles ein if mit rising_edge(clock_10Mhz), und frag station dann in einzelnen ifs drinnen ab"
+2013-09-28 12:54:08,mgottschlag,das ist die normale Form
+2013-09-28 12:54:18,mgottschlag,"und das ist vermutlich die einzige, die synthetisierbar ist"
+2013-09-28 12:55:32,tufel,naja ok
+2013-09-28 12:56:45,mgottschlag,"tufel: http://vhdlguru.blogspot.de/2010/04/synchronous-vs-asynchronous-resets-in.html <- das sind die einzigen beiden Arten von Sensitivity-List-Inhalt, die du je bei synchronen Prozessen haben solltest (bei asynchronen, also kombinatorischen Prozessen stehen halt die ganzen Variablen da drin, aber dann müssen alle Variablen drin stehen, und du hast keinen Takt)"
+2013-09-28 12:59:37,tufel,mmh ich glaub ich schreib mein ganzer process neu
+2013-09-28 13:01:18,mgottschlag,"außerdem sollten Prozesse immer recht einfach sein, und man hat eher viele kleine anstatt einen riesigen Prozess"
+2013-09-28 13:01:36,mgottschlag,"aber das kommt drauf an, viele kleine Prozesse haben natürlich auch wieder Timingprobleme"
+2013-09-28 13:01:51,tufel,timing- probleme ? :D
+2013-09-28 13:02:16,mgottschlag,"naja, wenn mehrere Prozesse eine Aufgabe zusammen erledigen, müssen sie synchron laufen"
+2013-09-28 13:02:39,tufel,ah ok
+2013-09-28 13:02:46,mgottschlag,"bzw evtl nacheinander, aber im Idealfall noch im selben Takt und so - das ist dann der Punkt, wo ein großer Prozess einfacher ist :)"
+2013-09-28 13:03:31,tufel,naja kann man einen prozess den verschachteln ?
+2013-09-28 13:06:40,mgottschlag,"nein, aber du kannst dein Problem in unabhängige Teile aufteilen"
+2013-09-28 13:12:21,tufel,mmh also z.b um etwas zu verzögern müsste ich einen neuen prozess eröffnen oder?
+2013-09-28 13:17:03,tufel,"kann man den processe auch als funkionen dienen, die in einem anderem prozess aufgerufen werden kann ?"
+2013-09-28 13:18:06,mgottschlag,ne
+2013-09-28 13:18:29,mgottschlag,"also, generell geht Aufteilen auf Prozesse nur, wenn du die Aufgaben gut trennen kannst"
+2013-09-28 13:20:02,tufel,für was dienen eigentlich procedures?
+2013-09-28 13:22:49,mgottschlag,"gute frage, ist schon länger her"
+2013-09-28 13:23:00,mgottschlag,"ich glaube, das war so das entsprechende zu Funktionen in normalen Programmiersprachen"
+2013-09-28 13:23:12,tufel,ah
+2013-09-28 13:24:17,tufel,"dann kann ich ja anstatt viele kleine prozesse einen großen machen und die funktonen in viele procedures unterbringen die dann im großem prozess aufgerufen werden, oder ?:D"
+2013-09-28 13:24:41,mgottschlag,"ja, kannst du auch"
+2013-09-28 13:25:04,tufel,mmh dann versuch ich das mal so
+2013-09-28 14:02:37,tufel,"http://codeviewer.org/view/code:36e8 mmh hab jetzt versucht so ein procedure zu schreiben, aber ihrgentwie tut der nicht :D  Ich seh aber leider nicht wo der Fehler liegen könnte..."
+2013-09-28 14:13:12,mgottschlag,dein Elch ist kaputt gegangen
+2013-09-28 14:13:37,mgottschlag,kann man eine prozedur in einem prozess definieren? o.O
+2013-09-28 14:13:50,mgottschlag,"und außerdem, du musst die doch dann auch irgendwo instanzieren (=aufrufen)"
+2013-09-28 14:23:06,tufel,"mmh meine prozedur wird doch in gar keinem Prozess definiert, oder?"
+2013-09-28 14:25:34,mgottschlag,"ah, stimmt"
+2013-09-28 14:25:48,mgottschlag,aber sie wird trotzdem nirgendwo verwendet
+2013-09-28 14:25:49,mgottschlag,"bbl, rebooten"
+2013-09-28 14:32:06,tufel,"http://codeviewer.org/view/code:36e9 so hab  die prozedur in einem Prozess eingebaut, tut aber immernoch nicht.. Naja immerhin ist der elch wieder ganz XD ...das ist der erste Fehler:  Hirn16.vhd(77) near text ""PROCEDURE"";  expecting ""end"", or ""("", or an identifier (""procedure"" is a reserved keyword), or a concurrent statement"
+2013-09-28 14:33:49,mgottschlag,"tufel: also das Internet sagt mir, dass du Prozeduren nur global oder in packages deklarieren kannst"
+2013-09-28 14:36:26,tufel,mmh ist etwa meine prozedur nicht global o.O
+2013-09-28 14:37:00,mgottschlag,"nein, die ist in einem architecture"
+2013-09-28 14:40:22,tufel,mmh ich habs so gemacht wie hier: http://www.elektronikentwickler-aachen.de/quelldateien/processor-text-io.vhd und da ist die Prozedur auch in der architektur...
+2013-09-28 14:42:06,mgottschlag,ah
+2013-09-28 14:42:13,mgottschlag,aber nicht im begin... end
+2013-09-28 14:44:49,tufel,"mmh jetzt kommt dieser fehler: Error (10500): VHDL syntax error at Hirn16.vhd(84) near text ""if"";  expecting ""begin"", or a declaration statement . Ich versteh das so das ein If nicht vor dem Begin ausgeführt werden kann oder ?"
+2013-09-28 14:46:08,mgottschlag,deiner prozedur fehlt das begin
+2013-09-28 14:47:12,tufel,oh
+2013-09-28 14:49:38,tufel,"naja jetzt kommt dieser fehler: Error (10568): VHDL error at Hirn16.vhd(91): can't write to interface object ""DATA"" of mode IN "
+2013-09-28 15:13:33,tufel,ah ich hab das problem gelöst :D
+2013-09-28 15:17:19,tufel,naja aber ne verzögerung gibts ihrgentwie trotzdem nicht... ich geh mal off bb
+2013-09-28 16:47:11,tufel,huhu
+2013-09-28 16:47:25,tufel,wie kann ich testen ob mein verzögerer tut ?
+2013-09-28 16:50:05,mgottschlag,simulieren?
+2013-09-28 16:50:07,mgottschlag,mit testbench
+2013-09-28 16:53:39,tufel,"naja, bei mir sieht ds jetzt so aus : http://codeviewer.org/view/code:36ea , noarmalerweiße muss jetzt für ein Takt-zyklus WE auf high sein oder ?"
+2013-09-28 16:58:52,mgottschlag,"da ""normalerweise"" in der Informatik ""im Moment in der Praxis noch nicht"" heißt, musst du trotzdem simulieren ;o"
+2013-09-28 16:58:55,mgottschlag,*:p
+2013-09-28 17:00:50,tufel,"hehe, simuliert habe ich jetzt, aber we ist immer auf 0 o.o"
+2013-09-28 17:01:24,mgottschlag,"tufel: das selbe wie letztes mal: gewöhn dir an, das ""rising_edge"" ins äußerste if zu packen"
+2013-09-28 17:01:37,mgottschlag,und nicht in irgendeine geschachtelte prozedur
+2013-09-28 17:02:15,tufel,mmh wie soll ich dann verzögern ? :D
+2013-09-28 17:02:21,mroman,mit delay?
+2013-09-28 17:02:27,mroman,also mit after?
+2013-09-28 17:02:41,tufel,naja ich mein in der synthese
+2013-09-28 17:02:51,mroman,oh
+2013-09-28 17:03:12,mroman,clock halbieren oder so
+2013-09-28 17:03:18,mroman,kA was du genau verzoegern willst
+2013-09-28 17:03:44,mgottschlag,tufel: generell sollte das so funktionieren
+2013-09-28 17:03:46,mroman,und dein we ist immer auf 0 ja
+2013-09-28 17:03:57,mgottschlag,aber bitte nicht irgendwo ganz tief verschachtelt erst auf den Takt prüfen!
+2013-09-28 17:03:59,mroman,hardware ist paralell
+2013-09-28 17:04:06,mroman,we <= '1'; we <= '0';
+2013-09-28 17:04:11,mroman,du ueberschreibst we immer wieder mit 0
+2013-09-28 17:04:15,mroman,das we wird so NIE 1
+2013-09-28 17:04:15,mgottschlag,"das ist das *erste* was du machst, und außerhalb von dem Takt-If machst du nichts anderes!"
+2013-09-28 17:04:25,mgottschlag,"und stimmt, das ist das andere Problem"
+2013-09-28 17:04:26,mroman,Signale werden erst am Ende des Prozesses aktualisiert.
+2013-09-28 17:04:40,mgottschlag,"aber generell, immer alles in Takt-Ifs haben - das nennt sich dann ""synchron"""
+2013-09-28 17:05:56,mroman,"wenn du we fuer eine bestimmte Zeit 1 haben willst, und dann wieder 0"
+2013-09-28 17:06:08,mroman,musst du we irgendwie toggeln
+2013-09-28 17:06:17,mroman,z.b jeden clock zyklus oder so
+2013-09-28 17:08:24,mgottschlag,"tufel: hm, könnte das dein Gedankenproblem sein: alles außerhalb des if rising_edge wird *immer* ausgeführt, also auch zwischen Taktflanken und so"
+2013-09-28 17:09:03,tufel,mmh wahrscheinlich
+2013-09-28 17:09:23,mgottschlag,"deswegen, immer *alles* ins Takt-If, dass immer alles Taktsynchron ist"
+2013-09-28 17:09:35,mgottschlag,und startwerte auch als solche in der Signaldeklaration eintragen
+2013-09-28 17:10:26,tufel,mmh ok
+2013-09-28 17:11:53,tufel,"ich hab die we <= '1'; we <= '0';  jeweils in die IF und die Elsif hineingetan, aber jetzt kommt ein fehler: Can't infer register for ""marker"" at Hirn16.vhd(85) because it does not hold its value outside the clock edge"
+2013-09-28 17:12:03,mgottschlag,code?
+2013-09-28 17:12:42,mgottschlag,"oh, btw: du hast in der sensitivity list den 10mhz-code, prüfst aber immernoch auf 50mhz-taktflanken, das funktioniert auch nicht"
+2013-09-28 17:13:06,tufel,http://codeviewer.org/view/code:36ec
+2013-09-28 17:13:58,tufel,dann tu ich in die sensitivity auch die clock_50_Mhz
+2013-09-28 17:14:54,mgottschlag,nein!
+2013-09-28 17:14:57,mgottschlag,nur einen Takt!
+2013-09-28 17:15:03,mgottschlag,mehr kann die Hardware nicht!
+2013-09-28 17:15:16,mgottschlag,zwei verschiedene Takte werden nie synchron laufen
+2013-09-28 17:15:54,tufel,mmh ok
+2013-09-28 17:17:44,tufel,mal ne ganz dumme frage... wie belegt man ein signal mit einem startwert ? XD
+2013-09-28 17:19:10,mgottschlag,"ich dachte, da geht ein := wert; in der signaldeklaration"
+2013-09-28 17:19:18,mgottschlag,"und wenn die Syntax nicht so ist, dann so ähnlich"
+2013-09-28 17:21:50,tufel,"ah es geht, danke"
+2013-09-28 17:22:43,tufel,http://codeviewer.org/view/code:36ed
+2013-09-28 17:24:51,tufel,"So mein neuer Code, mit einer Clock"
+2013-09-28 17:24:58,tufel,bzw takt-signal
+2013-09-28 17:30:49,tufel,mmh aber es taucht immernoch der slebe fehler auf...
+2013-09-28 18:55:14,mroman,gibt schon boards mit mehreren Kristalldingern
+2013-09-28 18:55:17,mroman,also mit mehrern Takts
+2013-09-28 18:55:40,mroman,dank clock skew ist es sowieso schwer synchronen takt ueberall zu haben :)
+2013-09-28 18:55:48,mroman,aber grundsaetzlich
+2013-09-28 18:55:52,mroman,wenn du mehrere takte brauchst
+2013-09-28 18:56:07,mroman,pulse width modulation / clock divider waeren da stichworte
+2013-09-28 18:57:08,mroman,oh. er ist ja gar nicht mehr da
+2013-09-28 18:59:18,mgottschlag,"mroman: <mroman> gibt schon boards mit mehreren Kristalldingern - ja klar, und mit PLLs kann man sich ja beliebige Takte machen - aber jeder Prozess kann trotzdem nur mit einem Takt umgehen"
+2013-09-28 19:15:59,Svenska^,die MMU ist nicht unbedingt innerhalb der CPU - siehe die m68k-maschinen
+2013-09-28 19:16:34,Svenska^,gleiches gilt fuer den interrupt-controller (siehe ARM älter Cortex)
+2013-09-28 19:20:25,mgottschlag,"ja, stimmt schon, aber zumindest die TLB ist in der CPU"
+2013-09-28 19:20:30,mgottschlag,wenn es denn eine gibt
+2013-09-28 19:20:43,mgottschlag,d.h. alle neueren CPUs haben zumindest Teile der MMU in der CPU
+2013-09-28 19:21:06,Svenska^,"alle neueren CPUs haben die MMU bereits integriert, weil der speicher zu schnell ist :-)"
+2013-09-28 19:21:29,mgottschlag,"naja, MIPS hat nur die TLB integriert ^^"
+2013-09-28 19:21:35,mgottschlag,auch in neueren Versionen ^^
+2013-09-28 19:21:52,mgottschlag,"okay, das ist natürlich auch was anderes"
+2013-09-28 19:22:03,Svenska^,"hm, interessant. mit MIPS hab ich bisher nicht wirklich zu tun gehabt, ausser linux-ar7 zu befummeln"
+2013-09-28 19:22:23,mgottschlag,MIPS implementiert die MMU in Software :)
+2013-09-28 19:22:52,Svenska^,"hmm, auch nett. :-)"
+2013-09-28 19:23:19,mgottschlag,"und mit Interrupt Controller hast du natürlich Recht, der ist ja fast immer hinter nem Datenbus"
+2013-09-28 19:23:44,mgottschlag,"ich hatte auch in dem Moment an die eigentliche Behandlung von Interrupts in der CPU gedacht, ist aber natürlich auch was anderes :)"
+2013-09-28 19:23:55,Svenska^,*g*
+2013-09-28 19:24:23,Svenska^,"es gibt schon gute gruende, beides in die CPU zu tun"
+2013-09-28 19:24:50,mgottschlag,"naja, gute Gründe, es auf den selben Chip zu tun, aber nicht unbedingt in den CPU-Kern"
+2013-09-28 19:24:58,mgottschlag,"also, halt hinter nem schnellen Systembus"
+2013-09-28 19:25:08,Svenska^,= in die cpu :-D
+2013-09-28 19:25:21,Svenska^,bei tufelix' cpu duerfte das aber egal sein
+2013-09-28 19:26:16,Svenska^,"die frage ist halt, wieviel vom system nun ""CPU"" und wieviel ""Chipsatz"" sein soll, und wie die miteinander gekoppelt sind"
+2013-09-28 19:26:53,Svenska^,"ich vermute, das ist ihm nicht ganz klar und fuehrt dann zu stilblueten wie ""RS-232 im CPU-Kern"", ""Instruktion fuer Debug-Output"" usw"
+2013-09-28 19:30:40,mgottschlag,"wobei ""RS-232"" ja eigentlich noch das beste daran ist - 15V-FPGA ftw!"
+2013-09-28 19:30:51,Svenska^,?
+2013-09-28 19:30:55,Svenska^,achso :-)
+2013-09-28 19:31:02,Svenska^,du meinst TTL wäre ausreichend? :)
+2013-09-28 19:31:11,mgottschlag,"ja, irgendwie schon"
+2013-09-28 19:31:28,Svenska^,wobei es dafuer ja wandlerbausteine gibt =)
+2013-09-28 19:36:11,mroman,ach
+2013-09-28 19:36:18,mroman,rs232 kann man auch mit 3V betreiben .
+2013-09-28 19:36:56,Svenska^,"eben. nur: will er wirklich rs232 haben, oder reicht der drilling (Rx,Tx,GND)?"
+2013-09-28 19:37:02,mroman,hm
+2013-09-28 19:37:04,mroman,oder 5V
+2013-09-28 19:37:34,Svenska^,5V wird bei FPGAs schon eher schwierig. und -12V mögen die eingänge garantiert nicht
+2013-09-28 19:37:49,mroman,meine CPU hat REVERSELINKEDLIST Instructions .
+2013-09-28 19:38:07,mroman,"leider nicht, aber cool waer's."
+2013-09-28 19:38:15,Svenska^,wer's braucht...
+2013-09-28 19:40:38,mroman,burroughs ultra large systems oder so braucht das sicher.
+2013-09-28 19:41:06,Svenska^,wie wäre es mit doppelt verketten und rueckwärts iterieren? :-)
+2013-09-28 19:41:47,Jidder,oder alle speicherzugriffe verdoppeln und an der adressraumhälfte spiegelnß
+2013-09-28 19:42:00,Svenska^,"aber erinnert mich irgendwie an das stueck kernel-code, wo drin steht, dass dieses array da wirklich mit bubble-sort behandelt werden kann, weil es maximal 4 einträge hat..."
+2013-09-28 19:42:51,Svenska^,Jidder: damit drehst du aber auch die elemente um :)
+2013-09-28 19:43:08,Jidder,"lässt sich ja mit instruktionen lösen, die die endianness umdrehen"
+2013-09-28 19:43:13,mroman,he
+2013-09-28 19:43:18,mroman,alles unter 4K Opcodes ist RISC .
+2013-09-28 19:43:22,mroman,bzw. MISC
+2013-09-28 19:43:37,Svenska^,reduced - medium - complex?
+2013-09-28 19:43:38,mroman,mit 4096 Instruktionen wird's langsam brauchbar .
+2013-09-28 19:44:02,Jidder,m = murks
+2013-09-28 19:44:07,Svenska^,hm
+2013-09-28 19:44:28,Svenska^,so ganz verkehrt ist der gedanke ja nicht
+2013-09-28 19:44:45,Svenska^,"läuft darauf hinaus, eine anwendung in vhdl zu synthetisieren"
+2013-09-28 19:45:23,Svenska^,"und da ich gerade systemc vor mir habe... ja, das ist inzwischen möglich, wenn auch an sich doof"
+2013-09-28 19:46:13,Svenska^,ich könnt grad wieder ueber XML kotzen
+2013-09-28 19:46:36,Svenska^,"bzw ueber die spezialisten, die sagen ""XML ist cool, das brauchen wir"""
+2013-09-28 19:46:56,Svenska^,"ein datenport ist *trommelwirbel* ein konstanter string, gecastet nach void*"
+2013-09-28 19:47:10,Svenska^,und dazu noch nicht mal global eindeutig.
+2013-09-28 19:47:14,mroman,was
+2013-09-28 19:47:21,Svenska^,"weil ""man den in XML mit namen versehen kann"""
+2013-09-28 19:48:08,Svenska^,"#define PORT_INPUT ""port_input"" (...) bla_read((void*)PORT_INPUT, buf, len, ...)"
+2013-09-28 19:48:44,Svenska^,(und wehe der name matcht nicht der XML-beschreibung)
+2013-09-28 19:50:13,Svenska^,"und da XML hierarchisch ist, ist das literal natuerlich nicht eindeutig"
+2013-09-28 20:21:19,mroman,ich muss jedenfalls noch mindestens einen undokumentierten Opcode einfuehren
+2013-09-28 20:21:22,mroman,aus tradition
+2013-09-28 20:21:42,mroman,der weird ist aber unter umstaenden sehr nuetzlich ist .
+2013-09-28 20:23:02,Svenska^,HCF? Halt-and-Catch-Fire?
+2013-09-28 20:23:09,mroman,neh
+2013-09-28 20:23:10,mroman,sinnvoll
+2013-09-28 20:23:16,mroman,hcf ist jmp 0
+2013-09-28 20:23:39,Svenska^,sollte eher jmp .+0 sein :)
+2013-09-28 20:23:42,mroman,"bzw xor r0, r0, r0; movtc cr1, r0; jmp 0;"
+2013-09-28 20:23:49,mroman,dann gibts auch keine Interrupts mehr.
+2013-09-28 20:23:56,mroman,evtl auch jmp -4
+2013-09-28 20:24:01,mroman,ich glaube der ip wandert weiter
+2013-09-28 20:24:18,Svenska^,"wenn ip weiterwandert, ist es ein nop =)"
+2013-09-28 20:24:25,mroman,ja
+2013-09-28 20:24:45,mroman,wohl
+2013-09-28 20:24:59,mroman,"und call 0 waere wohl ""gib mir ip in rc du sack"""
+2013-09-28 20:25:35,Svenska^,dann bau nen mac ein
+2013-09-28 20:25:44,mroman,momentan sind 39 von 64 Opcodes belegt :)
+2013-09-28 20:25:53,Svenska^,ohne jeden specifier
+2013-09-28 20:26:03,mroman,und 16 sind reserviert falls floating point
+2013-09-28 20:26:06,mroman,also sind noch 9 frei
+2013-09-28 20:26:20,Svenska^,"""MAC: R0 = R0 + R1 * R2"""
+2013-09-28 20:28:34,mroman,ic
+2013-09-28 20:50:49,Manuel,"So, da bin ich wieder, Jidder bist du da?"
+2013-09-28 20:51:22,Svenska^,...lol.
+2013-09-28 20:52:34,Manuel,"Sorry, hab gerade weggeklickt >.<"
+2013-09-28 20:52:48,Svenska^,tip: beschaff dir nen echten irc-clienten :-)
+2013-09-28 20:52:58,Svenska^,diese browserlösungen sind notlösungen
+2013-09-28 20:53:47,Manuel,ok
+2013-09-28 20:54:05,Svenska^,du brauchst währenddessen ja den aktiven browser nicht ausmachen
+2013-09-28 20:54:41,Manuel,"Ich habe jetzt mit einer Spezifikation für FAT32 gearbeitet, kann ich da einen thread im forum erstellen, wegen der verständnis davon und so? weil ich bin mir nicht sicher ob ich alles richtig verstanden habe"
+2013-09-28 20:54:52,Svenska^,kannst du
+2013-09-28 20:55:02,Svenska^,kannst aber auch hier fragen =)
+2013-09-28 20:55:09,Manuel,ok
+2013-09-28 20:55:31,Jidder,ich hab übrigens keine ahnung von fat
+2013-09-28 20:55:57,Svenska^,ich hab mal mitm hexeditor ein DR-DOS-passwort gelöscht... aber ob das zählt? :-)
+2013-09-28 20:55:59,Manuel,Uhm hat denn irgendeiner hier überhaupt ahnung ich chatt von fat?
+2013-09-28 20:56:19,Svenska^,probier's einfach
+2013-09-28 20:56:42,Svenska^,"ansonsten kannst du auch einfach ein fat32 erzeugen, bissl damit rumspielen und anschliessend mit nem hexeditor wieder auseinandernehmen"
+2013-09-28 20:57:06,Svenska^,"und wenn du deine daten damit wiederfindest, dann findet die auch ein programm wieder, wenn es die gleichen schritte tut"
+2013-09-28 20:57:35,Manuel,"Uhm jup, eine grundlegende frage ist mir ganz wichtig: Steuere ich die Festplatte per I/O an ? Oder wie den Arbeitsspeicher?"
+2013-09-28 20:58:18,Svenska^,fuer PIO-Modi: wie I/O
+2013-09-28 20:58:21,Paddy,Kommt drauf an
+2013-09-28 20:58:22,Svenska^,fuer DMA-Modi: anders
+2013-09-28 20:58:32,Svenska^,(d.h. anders als beides)
+2013-09-28 20:58:33,Paddy,AHCI ist MMIO
+2013-09-28 20:58:51,Paddy,Oder täusche ich mich grad?
+2013-09-28 20:58:54,Svenska^,ja
+2013-09-28 20:59:03,Manuel,Davon stand nichts drinnen :S Woher weis ich denn welche Modi ich nehmen muss oder ist es egal?
+2013-09-28 20:59:07,Svenska^,mmap() auf den AHCI-controller bringt wenig =)
+2013-09-28 20:59:19,Svenska^,Manuel: unterscheide zwischen dateisystem und gerät
+2013-09-28 20:59:37,Svenska^,"das ""gerät"" (egal, ob das ne SD-karte, festplatte, diskette, cd, ... ist) besteht aus blöcken"
+2013-09-28 20:59:54,Manuel,Ja
+2013-09-28 20:59:57,Jidder,wie lego oder wie minecraft?
+2013-09-28 21:00:05,Manuel,Er meint aus Clustern/Sektoren
+2013-09-28 21:00:27,Svenska^,"normalerweise will man: (a) wissen, wie gross ein block ist (b) einen block lesen können (c) einen block schreiben können"
+2013-09-28 21:00:31,Manuel,"z.B. Ein Cluster sind 512 Byte, und in einem Sektor sind 128 Cluster"
+2013-09-28 21:00:34,Svenska^,nein
+2013-09-28 21:00:44,Svenska^,cluster gibts nur bei FAT32
+2013-09-28 21:00:55,Manuel,"Ne, hier steht bei allen FAT"
+2013-09-28 21:01:00,Manuel,"FAT12, 16 und 32"
+2013-09-28 21:01:02,Svenska^,...
+2013-09-28 21:01:08,Svenska^,"ich rede vom gerät, nicht vom dateisystem"
+2013-09-28 21:01:28,Manuel,oh
+2013-09-28 21:01:54,Svenska^,eine diskette hat 2880 sektoren zu je 512 byte
+2013-09-28 21:02:26,Svenska^,"und um damit arbeiten zu können, möchtest du eigentlich eine funktion haben, der du sagst ""hier hast du einen puffer, schreibe bitte den inhalt von sektor X da rein"""
+2013-09-28 21:02:41,Svenska^,"oder andersrum ""hier hast du einen puffer, schreibe bitte den inhalt vom puffer in sektor X"""
+2013-09-28 21:02:51,Manuel,"Moment, ich muss ja mit dem Clustern arbeiten"
+2013-09-28 21:02:55,Svenska^,nein
+2013-09-28 21:03:06,Manuel,nicht? wofür sind die dann gut?
+2013-09-28 21:03:09,Svenska^,"wenn du die daten nicht von der diskette/festplatte/cd lesen kannst, kannst du mit den clustern auch nix anfangen"
+2013-09-28 21:04:12,Svenska^,"du hast schichten-/zwiebelstruktur. ganz unten sitzt die hardware, ganz oben sitzt ein programm, welches ""C:\DOKUMENTE\BLUBBER.TXT"" oder ""/home/blubber.txt"" lesen will"
+2013-09-28 21:04:22,Svenska^,dazwischen findet eine ganze menge umrechnen statt
+2013-09-28 21:04:28,Svenska^,ich fang mal oben an
+2013-09-28 21:04:41,Svenska^,nehmen wir windows-style pfadnamen
+2013-09-28 21:05:31,Svenska^,"C:\DOKUMENTE\BLUBBER.TXT ist vermutlich eine datei, die vermutlich in einem ordner liegt, vermutlich auf einem laufwerk"
+2013-09-28 21:05:41,Svenska^,"wissen tust du das nicht, wenn du nur den text siehst"
+2013-09-28 21:06:34,Svenska^,"das heisst, dein (fat-)dateisystemtreiber fängt jetzt an, mit hilfe von clustern und so weiter rauszusuchen, ob die annahme ueberhaupt stimmt"
+2013-09-28 21:07:19,Manuel,"Dass heist, für den namen die 11 Byte von DIR_name auslesen, und dann, warte kurz"
+2013-09-28 21:07:23,Svenska^,"d.h. es wird das wurzelverzeichnis gelesen, dann wird nach ""DOKUMENTE"" gesucht. wenn das tatsächlich ein ordner ist, dann wird dadrin nach ""BLUBBER.TXT"" gesucht und wenn das tatsächlich eine datei ist, dann kannst du die sektorweise lesen"
+2013-09-28 21:09:21,Svenska^,"die datei kann aber sonstwie zersplittert auf der festplatte rumliegen, also muss dein treiber in der lage sein, ""Cluster 25 von C:\DOKUMENTE\BLUBBER.TXT"" umzuwandeln in ""Sektoren 543, 544, 545, 546 von der Partition"""
+2013-09-28 21:09:53,Svenska^,"jetzt kommt dazu, dass du ja mehrere dateisysteme (partitionen) auf einer festplatte haben kannst"
+2013-09-28 21:10:06,Svenska^,"bisher hast du vom pfad ja nur ""\DOKUMENTE\BLUBBER.TXT"" betrachtet"
+2013-09-28 21:10:14,Manuel,"Ah, also: Ich werde dann die Sektoren nach der Datei Dokumente durchsuchen, und überprüfen ob sie dass Atribut eines Ordners hat."
+2013-09-28 21:10:23,Svenska^,ja
+2013-09-28 21:10:30,Svenska^,jetzt geht es eine ebene tiefer
+2013-09-28 21:10:56,Svenska^,"eine festplatte kann mehrere partitionen enthalten (disketten theoretisch auch, macht aber keine. sd-karten theoretisch auch, verletzt aber den standard.)"
+2013-09-28 21:11:19,Svenska^,"dein dateisystemtreiber sagt also, welche blöcke der partition er lesen möchte"
+2013-09-28 21:11:40,Svenska^,windows hat laufwerksbuchstaben. die zeigen auf zwei dinge: welche festplatte und welche partition gemeint ist
+2013-09-28 21:12:40,Svenska^,"partitionen sind grosse zusammenhängende(!) bereiche der festplatte, das heisst wenn du den ersten block der partition kennst, kannst du alle anderen damit ausrechnen (musst natuerlich aufpassen, dass du nicht hinter dem ende landest - da ist jemand anders)"
+2013-09-28 21:13:16,Manuel,"Das Ende, das signiere ich doch im letzten Cluster oder Sektor mit einem Attribut?"
+2013-09-28 21:13:22,Svenska^,"also kommt der partitionstreiber und rechnet dir ""Blöcke 543, 544, 545, 546 von Partition X"" in ""Blöcke 943, 944, 945, 946 von Festplatte X"" um."
+2013-09-28 21:13:36,Svenska^,das ist ausserhalb des dateisystems!
+2013-09-28 21:13:55,Manuel,ok... muss ich noch auseinander halten^^
+2013-09-28 21:14:22,Svenska^,und der festplattentreiber fuer festplatte X spricht dann die hardware an
+2013-09-28 21:14:31,Svenska^,"also, wenn man jetzt von unten betrachtet"
+2013-09-28 21:15:00,Svenska^,jede Festplatte ist eine Sammlung von gleichgrossen Blöcken (0..SIZE-1)
+2013-09-28 21:15:28,Svenska^,"jede Partition ist eine Sammlung von gleichgrossen Blöcken (0..SIZE-1), die _innerhalb_ einer Festplatte liegt."
+2013-09-28 21:15:50,Svenska^,"und innerhalb dieser Blöcke hast du die Struktur, die es bei FAT so gibt."
+2013-09-28 21:16:26,Svenska^,"und weil man ja ein richtig gutes betriebssystem schreibt, gibt es auch noch mehrere festplatten, die verschiedene treiber brauchen können."
+2013-09-28 21:16:36,Svenska^,soweit klar?
+2013-09-28 21:17:40,Manello,****
+2013-09-28 21:18:17,Svenska^,?
+2013-09-28 21:18:21,Manello,"Also ja, aber ich verstehe nicht dass du sagstdie festplatte hat selber schon viele gleichgroße blöcke, aber hier steht man muss diese selber im BPB angeben, je nachdem wie sie formatiert wurde"
+2013-09-28 21:18:32,Manello,Eben^^
+2013-09-28 21:18:37,Svenska^,ja
+2013-09-28 21:18:38,Svenska^,also
+2013-09-28 21:18:50,Svenska^,FAT ist alt.
+2013-09-28 21:20:16,Svenska^,"das wurde um 1980 erfunden. da waren festplatten fast unbezahlbar, computer haben musikkassetten als massenspeicher benutzt und es gab disketten fuer groessere maschinen"
+2013-09-28 21:20:38,Svenska^,(FAT auf Musikkassetten gab es m.W. nie.)
+2013-09-28 21:20:47,Svenska^,disketten kann man tatsächlich sehr unterschiedlich formatieren
+2013-09-28 21:21:28,Svenska^,"und da auf einer diskette nichts drauf ist ausser FAT, hat man die struktur der diskette einfach in die FAT mit reingeschrieben"
+2013-09-28 21:23:15,Svenska^,"und da DOS auf Rechnern lief, die sagenhafte 32 KB RAM und unglaublich dumme Hardware hatten (verglichen mit heute), war ""automatisch rauskriegen"" keine wirklich gute option"
+2013-09-28 21:24:11,Svenska^,heute betrachtet man sowas lieber als eine aneinanderreihung von gleichgrossen blöcken
+2013-09-28 21:24:47,Manello,"Ok, soweit bei disketten und FAT12, da es ja für disketten ist. Aber ist es bei den anderen genauso, da diese nicht auf Disketten funktionieren?"
+2013-09-28 21:25:24,Svenska^,"und vergisst, dass es zylinder/spuren/sektoren gibt, vergisst interleaving-faktoren, vergisst suchzeiten und den anderen kram, wenn man es kann. festplatten sind modern geworden (disketten nicht, aber das kann man alles im diskettentreiber machen)"
+2013-09-28 21:25:37,Svenska^,du kannst eine diskette theoretisch auch FAT32-formatieren
+2013-09-28 21:25:57,Svenska^,"macht nur keiner, weil es platzverschwendung ist. und du kannst festplatten mit FAT12 formatieren (passiert automatisch, wenn die partition kleiner als 32 MB ist)"
+2013-09-28 21:26:24,Manello,"Moment, FAT 32 braucht aber mindestens 62000 sektoren^^ Disketten haben nur um die 4000 daher pass es nicht"
+2013-09-28 21:26:25,Jidder,nicht nur platzverschwendung sondern auch gegen die spezifikation 
+2013-09-28 21:26:57,Manello,Bzw. Cluster^^
+2013-09-28 21:27:09,Svenska^,"Manello: 1,44 MB-disketten haben 2800 blöcke. es gibt aber auch grössere disketten"
+2013-09-28 21:27:20,Svenska^,ZIP-disketten oder so zeugs war mal ganz gross in mode :-D
+2013-09-28 21:27:26,Manello,ok
+2013-09-28 21:27:34,Svenska^,wie auch immer
+2013-09-28 21:27:54,Svenska^,"FAT funktioniert grundsätzlich auf jedem system, was daten speichern kann. egal ob diskette oder festplatte"
+2013-09-28 21:28:11,Svenska^,(@jidder: schmutzige details lass ich weg :D)
+2013-09-28 21:29:03,Svenska^,"und weil das so ist, möchtest du erstmal die unterschiede zwischen disketten, festplatten usw. wegmachen"
+2013-09-28 21:29:59,Svenska^,"=> es gibt zwar unterschiede, aber im grossen und ganzen sind disketten und festplatten fuer so ein betriebssystem fast das gleiche (eine aneinanderreihung von blöcken gleicher grösse)"
+2013-09-28 21:30:25,Manello,Aber mal zurrück zu meinen 2 Fragen: Wie erstelle ich eine Datei auf FAT? Und wie steuere ich diese per Ports an
+2013-09-28 21:31:10,Svenska^,du erstellst deine datei mit dem dateisystemtreiber und steuerst die hardware mit dem hardwaretreiber an
+2013-09-28 21:31:34,Svenska^,und zwischen dem hardwaretreiber und dem dateisystemtreiber liegt irgendwo eine schicht betriebssystem (oder ein satz von funktionen)
+2013-09-28 21:32:08,Manello,"Den Dateisystemtreiber muss ich ja selber schreiben, oder meinst du da was anderes?"
+2013-09-28 21:32:19,Svenska^,du musst auch den hardwaretreiber selber schreiben :-)
+2013-09-28 21:32:25,Svenska^,das ist ja der punkt
+2013-09-28 21:33:11,Svenska^,"und da aus deinen I/O-ports eben _nicht_ ""FAT"" rausfällt, solltest du erstmal das fundament bauen, bevor du mit den wänden anfängst"
+2013-09-28 21:33:59,Manello,Also mit dem Hardwaretreiber anfangen
+2013-09-28 21:34:15,Svenska^,"disketten werden vom FDC (floppy disk controller) angesteuert, festplatten normalerweise vom IDE-Controller (bei modernen rechnern vom AHCI-Controller, aber dafuer braucht man PCI)"
+2013-09-28 21:34:18,Svenska^,ja
+2013-09-28 21:34:45,Svenska^,"wenn du deine diskette oder festplatte sektorweise lesen (schreiben) kannst, kannst du ueber FAT nachdenken"
+2013-09-28 21:34:47,tufel,huhu
+2013-09-28 21:34:55,Svenska^,"vorher ist das ... interessant, aber sinnlos ^^"
+2013-09-28 21:35:22,Manello,"Naja, nun ist die Frage: In wiefern muss ich diese ansteuern? Ich meine muss ich jedes Bauteil ansteuern, oder ist da noch eine shcicht davor"
+2013-09-28 21:35:34,Svenska^,das ist hardwareabhängig
+2013-09-28 21:35:47,Svenska^,im Real-Mode kannst du das BIOS benutzen (int 13h)
+2013-09-28 21:35:58,Svenska^,"ist aber langsam, funktioniert nicht mit modernem zeugs und ist auch sonst relativ beschränkt"
+2013-09-28 21:37:05,Svenska^,im Protected Mode musst du einen speziellen hardwaretreiber schreiben. dazu gibts im wiki infos...mom
+2013-09-28 21:37:10,Manello,"Ok, ich möchte erstmal nur mit FAT32 die Festplatte auf dem das OS dann laufen soll unterstützen^^ Gibt es auch Spezifikationen für Hardwaretreiber, und muss ich das dann für jede Festplatte extra machen oder gibt es da so eine Norm?"
+2013-09-28 21:37:23,Jidder,du musst nicht jedes bauteil einzeln ansprechen
+2013-09-28 21:38:00,Jidder,über die i/o ports kannst du die festplatte anweisen den x-ten sektor zu lesen. die details davon macht die hardware selbst
+2013-09-28 21:38:17,Svenska^,"http://www.lowlevel.eu/wiki/FDC << da steht, wie ein diskettenlaufwerk funktioniert"
+2013-09-28 21:38:30,Svenska^,"http://www.lowlevel.eu/wiki/IDE << da steht, wie eine IDE-festplatte benutzt wird"
+2013-09-28 21:39:06,Svenska^,"und wenn du einen funktionierenden IDE-Treiber hast, kannst du mit FAT32 anfangen"
+2013-09-28 21:39:13,Manello,"@Jidder: Ich brauche daher doch eigentlich keinen Hardwaretreiber für die Festplatte, ich kann sie ja dann mit dem Dateisystem ansprechen, ich meine da ist ja dann nur In Out für den Hardwaretreiber"
+2013-09-28 21:39:31,Svenska^,falsch
+2013-09-28 21:39:58,Svenska^,"aber ich dachte, ich hätte das gut genug erklärt -.-"
+2013-09-28 21:40:19,Manello,"Nein es war schon genug, aber mit jidders aussagen und deinen komme ich gerade durcheinander :S"
+2013-09-28 21:40:44,Svenska^,der x-te sektor der festplatte ist nicht der x-te sektor deiner fat
+2013-09-28 21:41:01,Svenska^,"wenn in der fat steht ""sektor 25"", dann ist das auf der festplatte ne andere nummer"
+2013-09-28 21:41:23,Svenska^,"und wenn deine fat ne clustergrösse von 8 KB hat, dann hat deine festplatte immernoch eine sektorgrösse von 512 byte"
+2013-09-28 21:50:47,tufel,"wie wichtig ist der Befehl ""Or"" und wie leicht kann man ihn emulieren ?"
+2013-09-28 21:51:07,Manello,"Wäre es auch eine Idee mal bei DOS reinzuspieckeln, wie das die Treiber handhabt?"
+2013-09-28 21:51:22,Jidder,"Manello: nein. DOS ist closed source, in assembler geschrieben und uralt"
+2013-09-28 21:51:35,Jidder,tufel: OR kann man mit AND und NOT emulieren
+2013-09-28 21:51:54,Jidder,aber eine CPU ohne OR?
+2013-09-28 21:52:22,tufel,naja ich hab kein platz mehr für den interrupt-rücksprung-Befehl XD
+2013-09-28 21:53:16,Svenska^,Manello: ein betriebssystem hat zwei hauptfunktionen: hardware ansprechen und eine umgebung fuer anwendungen bereitstellen :-)
+2013-09-28 21:53:30,Svenska^,"wenn du also ein betriebssystem schreiben möchtest, wirst du um die hardware nicht rumkommen"
+2013-09-28 21:54:30,Svenska^,"DOS hat uebrigens keine eigenen hardwaretreiber, sondern nutzt einfach die funktionen vom BIOS"
+2013-09-28 21:54:44,Svenska^,(die du nicht nutzen kannst.)
+2013-09-28 21:56:35,Manello,Die ich nicht nutzen kann weil das BIOS bald nicht mehr unterstützt wird^^
+2013-09-28 21:56:49,Svenska^,"die du nicht nutzen kannst, weil die nur im real mode funktionieren"
+2013-09-28 21:57:19,Svenska^,und der stinkt.
+2013-09-28 22:00:54,Svenska^,"oh nice, der media-descriptor ist fuer 8""-disketten ausgelegt -.-"
+2013-09-28 22:02:05,Svenska^,"(8""-disketten haben oft 77 spuren, 5.25""-pc-disketten haben 40 oder 80 spuren, 3.5""-pc-disketten haben 80 spuren)"
+2013-09-28 22:04:49,Jonathan|2,Huhu Svenska >:D
+2013-09-28 22:05:36,Jonathan,Mal so ne kleine Frage an dich: Hast du schonmal ne IDE-Festplatte so richtig zum Laufen gebracht?
+2013-09-28 22:20:22,Svenska^,nö
+2013-09-28 22:20:35,Svenska^,bzw
+2013-09-28 22:20:46,Svenska^,nur an dafuer vorgesehener hardware :-)
+2013-09-28 22:22:24,Svenska^,"Jonathan: So 20- und 40-MB-Biester an Maschinen ähnlichen Alters sind nicht gerade die nettesten IDE-Geräte, weil beide Seiten älter als IDE sind."
+2013-09-28 22:25:52,Svenska^,"ich hab zwar zwischenzeitlich post aus deutschland bekommen, aber dank ueberlastung wegen uni nicht die zeit, daran weiterzuarbeiten"
+2013-09-28 22:32:20,Jonathan,Ah...ok
+2013-09-28 22:32:36,Jonathan,"Und ich hab inzwischen auch Post bekommen, eine 128MB-""Mini-IDE-SSD"" ;P"
+2013-09-28 22:32:42,Svenska^,läuft dein IDE noch nicht?
+2013-09-28 22:32:48,Jonathan,Leider nicht wirklich
+2013-09-28 22:32:56,Jonathan,Da kommt nur Müll an
+2013-09-28 22:33:13,Jonathan,Gibt sogar Übertragungsfehler beim Lesen der Statusbits
+2013-09-28 22:33:27,Svenska^,das ist seltsam
+2013-09-28 22:33:43,Jonathan,"Ich weiß, und ich kriegs einfach nicht zum Laufen"
+2013-09-28 22:33:45,Svenska^,hast du mal mit nem oszi draufgeguckt?
+2013-09-28 22:33:58,Jonathan,Hab ich...
+2013-09-28 22:34:02,Svenska^,sieht gut aus?
+2013-09-28 22:34:07,Jonathan,Die Übertragung vom Controller zum Z80 steht
+2013-09-28 22:34:19,Jonathan,Da ist bisher noch kein Fehler aufgetreten
+2013-09-28 22:34:33,Svenska^,und zwischen festplatte und controller?
+2013-09-28 22:34:54,Jonathan,"Soweit wie ich das beurteilen kann, sind die Signale dort auch sauber"
+2013-09-28 22:35:30,Svenska^,verschiedene festplatten probiert und versorgungsspannung begutachtet? :-)
+2013-09-28 22:35:44,Jonathan,3 Festplatten und 1 SSD ;P
+2013-09-28 22:35:49,Jonathan,Tun alle das selbe
+2013-09-28 22:36:03,Svenska^,"dann solltest du mit der SSD testen, die ist vermutlich am genuegsamsten =)"
+2013-09-28 22:36:13,Jonathan,"Jep, die steckt da auch momentan drauf"
+2013-09-28 22:36:17,Svenska^,"du hast doch sicherlich nen logikanalysator, oder?"
+2013-09-28 22:36:33,Jonathan,"Das leider (noch) nicht, aber ich könnte mir mal einen bauen"
+2013-09-28 22:36:45,Svenska^,zur not musst du das oszi geschickt triggern :-)
+2013-09-28 22:37:10,Jonathan,Das ist ja nicht schwer - einfach an den /IORQ-Anschluss der IDE-Karte klemmen ;)
+2013-09-28 22:37:19,Svenska^,und gleich mal den signalfluss einer realen ide-verbindung mit dem deiner verbindung ab
+2013-09-28 22:37:37,Jonathan,Das könnte schwer werden
+2013-09-28 22:37:40,Svenska^,auch in bezug auf timing
+2013-09-28 22:37:44,Svenska^,eben
+2013-09-28 22:37:48,Jonathan,"Ich hab noch exakt 1 Gerät im Haus, das mit IDE läuft"
+2013-09-28 22:37:59,Jonathan,"Und das ist mein Server - der MUSS laufen, daran darf ich nicht rumspielen"
+2013-09-28 22:38:20,Svenska^,"naja, hast du nicht irgendwelche reste rumliegen, aus denen du mal eben schnell was basteln kannst?"
+2013-09-28 22:38:34,Jonathan,"Momentan leider nichts, was laufen würde"
+2013-09-28 22:38:42,Jonathan,Aaaaah wobei
+2013-09-28 22:38:50,Jonathan,USB-zu-IDE-Adapter
+2013-09-28 22:38:51,Svenska^,"naja, n altes 486er board, 1-8 mb ram und dos reicht ja"
+2013-09-28 22:39:06,Svenska^,"hmm, ja die sollten gehen"
+2013-09-28 22:39:16,Svenska^,wobei die wiederum wenig spass mit alten festplatten haben
+2013-09-28 22:39:43,Jonathan,"Meine beiden haben bisher jede Festplatte klaglos angesteuert, die ich hier so habe"
+2013-09-28 22:39:52,Svenska^,"(""can't read disk size"" ""assuming 2 TB device"" ""partition table read error"", ...)"
+2013-09-28 22:40:03,Svenska^,(bei ner 20 MB-platte...)
+2013-09-28 22:40:05,Jonathan,xD
+2013-09-28 22:40:23,Jonathan,"Nagut, so alte Platten hab ich aber auch nicht :P"
+2013-09-28 22:40:26,Svenska^,:p
+2013-09-28 22:40:46,Jonathan,"Das älteste, was ich habe, ist das 1,2GB-WD-Caviar-Ding, das ich auch schonmal an meinem Board hängen hatte"
+2013-09-28 22:40:54,Svenska^,"ja, die kann LBA."
+2013-09-28 22:40:58,Jonathan,Jop :P
+2013-09-28 22:41:18,Svenska^,"wie gesagt, da mal das timing abgleichen und auch den signalfluss aller betroffenen pins"
+2013-09-28 22:41:44,Jonathan,Das Timing sollte eigentlich relativ wenig mit sporadischen Bitkippern zu tun haben...
+2013-09-28 22:42:22,Svenska^,"ja, aber wenn die bits auf dem kabel stimmen, ist deine lesefunktion kaputt"
+2013-09-28 22:42:35,Svenska^,"wenn die bits auf dem kabel nicht stimmen, hast du mist im treiber gebaut"
+2013-09-28 22:42:41,Jonathan,"Moment, weißt du zufälligerweise die Pegel von IDE?"
+2013-09-28 22:42:51,Svenska^,"ne, wuerde aber 5V vermuten..."
+2013-09-28 22:42:57,Jonathan,"Ich ""eigentlich"" auch"
+2013-09-28 22:43:07,Jonathan,Aber mein Oszilloskop meinte was anderes
+2013-09-28 22:43:08,Svenska^,CF-karten haben m.W. 3.3V
+2013-09-28 22:43:46,Svenska^,"TTL => ausgänge haben mind. 2.4V, typ 3.2V"
+2013-09-28 22:43:56,Svenska^,ist ja bei meinem Z80 nicht anders ^^
+2013-09-28 22:43:57,Jonathan,"Hm, so ein Mikrocontroller haut ja wirklich saubere 0V/5V hinten raus, und die Pegelschwelle liegt bei ca. 2,5V mit etwas Schmitt-Trigger-Verhalten"
+2013-09-28 22:44:15,Jonathan,"Mind. 2,4V plus Schmitt-Trigger-Verhalten = Fehler gefunden. :D"
+2013-09-28 22:44:33,Svenska^,"TTL hat verschiedene schwellen, glaube 0 = <0.2V und 1 = >2V oder so"
+2013-09-28 22:44:52,Jonathan,"Genau, und darauf wurde IDE dann wohl auch ausgelegt..."
+2013-09-28 22:45:10,Svenska^,"ja. 5V-TTL hat <=0.8V und >=2.0V am eingang, <=0.4V und >=2.4V am ausgang"
+2013-09-28 22:45:25,Jonathan,"Hm, damit wirst du wohl keine Probleme haben *g*"
+2013-09-28 22:45:30,Svenska^,nope
+2013-09-28 22:45:44,Jonathan,Nur mein neumodisches CMOS muss sich daran natürlich verschlucken *grummel*
+2013-09-28 22:45:52,Svenska^,jap.
+2013-09-28 22:46:05,Jonathan,Tze.
+2013-09-28 22:46:15,Jonathan,"Mal schauen, ob ich nen einfachen Pegelwandler stricken kann."
+2013-09-28 22:46:26,Jonathan,"Und dann in 16-facher Ausführung in die Datenleitungen kleben, das Ding..."
+2013-09-28 22:46:36,Svenska^,wie ist die platte angeschlossen?
+2013-09-28 22:46:39,Svenska^,direkt in den uC rein?
+2013-09-28 22:46:45,Jonathan,Jep
+2013-09-28 22:46:52,Svenska^,mit allen leitungen?
+2013-09-28 22:46:54,Jonathan,Nein
+2013-09-28 22:47:10,Jonathan,"Der hat nur das Nötigste dran, um den 16-Bit-Bus auf 8-Bit umzusetzen"
+2013-09-28 22:47:21,Svenska^,?
+2013-09-28 22:47:23,Jonathan,Von den Adressbits der Platte bekommt er z.B. nix mit
+2013-09-28 22:47:29,Svenska^,hm
+2013-09-28 22:47:39,Svenska^,andere frage: wieviel externe beschaltung hast du da? :)
+2013-09-28 22:48:33,Jonathan,"Die ganze Karte besteht aus 1 ATMega8 als DeviceInfo-ROM, 1 ATMega8515 als Bus-Umsetzer und 3 kleinen Logik-ICs."
+2013-09-28 22:48:42,Jonathan,"Ick schau mal, was das nochmal für Logik war."
+2013-09-28 22:49:48,Svenska^,"74HCT ist ungefähr das, was du willst. TTL-kompatible eingänge und CMOS-kompatible ausgänge"
+2013-09-28 22:50:07,Jonathan,"1 als Puffer missbrauchter 74HC126, ein 74HCT32, ein 74HCT04"
+2013-09-28 22:51:02,Jonathan,"Aber die einzigen Ausgänge, die von der Festplatte in irgendein anderes IC gehen, sind die Datenleitungen und IORDY"
+2013-09-28 22:51:58,Jonathan,"Das OR dient dazu, ein paar CS- und Read/Write-Signale aus dem Z80-Bus zu generieren (für ROM und Bus-Umsetzer)"
+2013-09-28 22:52:20,Svenska^,"CMOS-low ist TTL-kompatibel, CMOS-high ist TTL-kompatibel"
+2013-09-28 22:52:29,Jonathan,"Das NOT-Gatter dient eigentlich nur dazu, die CSEL-Signale für IDE zu generieren"
+2013-09-28 22:52:40,Svenska^,"TTL-low ist CMOS-kompatibel, TTL-high ist _nicht_ CMOS-kompatibel"
+2013-09-28 22:53:03,Jonathan,"Ja, da brauche ich ""nur"" 17 Pegelwandler. :P"
+2013-09-28 22:53:32,Svenska^,"das einzige, was bei dir TTL-high ist, sind die 16 datenleitungen und /IORDY, richtig?"
+2013-09-28 22:53:37,Jonathan,Jop
+2013-09-28 22:53:57,Svenska^,"und bidirektional sind die datenleitungen auch, macht 4x 74HCT24x"
+2013-09-28 22:53:59,Svenska^,*g*
+2013-09-28 22:54:04,Jonathan,Fu!
+2013-09-28 22:54:05,Svenska^,'243 glaube
+2013-09-28 22:54:10,Jonathan,245
+2013-09-28 22:54:17,Svenska^,ach mist. ^^
+2013-09-28 22:54:20,Jonathan,:P
+2013-09-28 22:54:36,Svenska^,wobei das glaube relativ egal ist... mom
+2013-09-28 22:55:01,Svenska^,du kannst mit 2x 74HCT244 arbeiten
+2013-09-28 22:55:30,Svenska^,(plus ein draht)
+2013-09-28 22:55:47,Jonathan,Ach verdammt
+2013-09-28 22:55:54,Jonathan,Eben mein Teilelager inspiziert
+2013-09-28 22:56:17,Jonathan,"74HC244 und 74HC245 in Hülle und Fülle da, jeweils mehr als 10 ICs"
+2013-09-28 22:56:24,Jonathan,HCT kein einziger
+2013-09-28 22:56:27,Jonathan,Verdammt
+2013-09-28 22:56:34,Svenska^,HC könnte auch funktionieren
+2013-09-28 22:56:42,Jonathan,Könnte...
+2013-09-28 22:56:44,Jonathan,Oder moment
+2013-09-28 22:56:47,Svenska^,das ist so das klassische problem mit SD-karten
+2013-09-28 22:56:52,Jonathan,Hab da so ne ganz verwegene Idee *g*
+2013-09-28 22:56:54,Svenska^,mit HC funktionieren die meisten
+2013-09-28 22:57:40,Svenska^,wobei
+2013-09-28 22:57:46,Svenska^,deine pegel sind _noch_ kleiner als 3.3V
+2013-09-28 22:58:27,Svenska^,hast du noch andere '244er oder nur HC?
+2013-09-28 22:59:27,Jonathan,Wirklich nur HC
+2013-09-28 22:59:40,Jonathan,Aber: http://j-strobl.dyndns-free.com/CMOSTTL.png
+2013-09-28 23:00:57,Svenska^,ich wuerde HC244 fuer die datenleitungen benutzen (die kannst du ja tristaten) und dieses dingens da fuer IORDY
+2013-09-28 23:01:08,Svenska^,dann sind das nur 2 ICs
+2013-09-28 23:01:23,Svenska^,"und wenn es nicht geht, fährst du mit dem rad mal eben schnell zum laden und kaufst 2 HCTs ^^"
+2013-09-28 23:01:30,Jonathan,Du meinst 245 - aber ob das dann von den Pegeln her passt...
+2013-09-28 23:01:37,Svenska^,"ne, ich meinte 244er"
+2013-09-28 23:01:40,Svenska^,die sind unidirektional
+2013-09-28 23:01:49,Jonathan,Dann sind es aber trotzdem 4 ICs
+2013-09-28 23:01:54,Jonathan,Öh aso
+2013-09-28 23:02:03,Svenska^,die haben 8 bit jeweils ^^
+2013-09-28 23:02:17,Jonathan,Hä?
+2013-09-28 23:02:22,Jonathan,Müssen doch trotzdem 4 ICs sein
+2013-09-28 23:02:26,Svenska^,?
+2013-09-28 23:02:28,Jonathan,Hin und zurück
+2013-09-28 23:02:33,Svenska^,nö
+2013-09-28 23:02:38,Svenska^,in eine richtung passen die pegel ja :)
+2013-09-28 23:02:56,Jonathan,"Aber wenn du das tun würdest, würdest du Ausgänge und Eingänge der 244er verbinden... xD"
+2013-09-28 23:03:10,Svenska^,"ich wusste, da war was -.-"
+2013-09-28 23:03:11,Svenska^,:-)
+2013-09-28 23:03:13,Jonathan,xd
+2013-09-28 23:03:19,Svenska^,dioden reinschleifen ^^
+2013-09-28 23:03:27,Jonathan,Uhm
+2013-09-28 23:03:40,Jonathan,Dann könnte ich mir die ICs aber auch gleich ganz sparen :P
+2013-09-28 23:03:45,Jonathan,"0,7V und die Signale passen"
+2013-09-28 23:04:00,Svenska^,hast ja recht
+2013-09-28 23:04:29,Svenska^,du kannst aber auch ein bisschen risiko spielen
+2013-09-28 23:04:42,Svenska^,und Vcc des AVR durch ne diode schicken
+2013-09-28 23:05:04,Jonathan,Daran hab ich auch schon gedacht
+2013-09-28 23:05:11,Jonathan,"Aber ich glaub, das ist nix für mich ;P"
+2013-09-28 23:05:33,Svenska^,?
+2013-09-28 23:05:36,Jonathan,Querstrom durch die Schutzdioden will ich nicht wirklich haben
+2013-09-28 23:05:39,Svenska^,zuviel risiko?
+2013-09-28 23:05:50,Svenska^,hm?
+2013-09-28 23:06:10,Svenska^,"ich weiss ja nicht, wie dick dein businterface ist"
+2013-09-28 23:06:23,Jonathan,CMOS eben
+2013-09-28 23:06:34,Svenska^,"aber wenn du einen AVR an den Z80 hängst und seriell mit nem anderen AVR verbindest, der an der HD hängt"
+2013-09-28 23:06:38,Jonathan,"Das ist schon ganz gut dazu fähig, viel Strom zu liefern"
+2013-09-28 23:06:58,Jonathan,"[23:06:28] <Svenska^> aber wenn du einen AVR an den Z80 h�ngst und seriell mit nem anderen AVR verbindest, der an der HD h�ngt <--- dann könnte ich vom Aufwand her auch HCT245 kaufen :P"
+2013-09-28 23:07:03,Svenska^,"dann brauchst du ""nur"" Vcc vom 2. AVR absenken und die serielle leitung mit doppeldioden verbinden"
+2013-09-28 23:07:28,Jonathan,"TTL geht auf ziemlich saubere 0V runter wenn es low ausgibt, oder?"
+2013-09-28 23:07:30,Svenska^,dein zeichensatz ist irgendwie kaputt ;)
+2013-09-28 23:07:35,Svenska^,öh... nein? =)
+2013-09-28 23:07:40,Jonathan,Hmmmm
+2013-09-28 23:07:48,Svenska^,"du musst schon brav strom ziehen, um das gatter zu senken..."
+2013-09-28 23:07:59,Jonathan,G'mein
+2013-09-28 23:08:03,Svenska^,warum?
+2013-09-28 23:08:45,Jonathan,"V_IL für den ATMega8515 ist 0,2Vcc"
+2013-09-28 23:08:52,Jonathan,Also 1V
+2013-09-28 23:09:17,Jonathan,"V_IH ist 0,6Vcc, also 3V"
+2013-09-28 23:09:45,Svenska^,das schaffst du locker
+2013-09-28 23:09:56,Svenska^,die festplatte gibt <= 0.4V oder >= 2.4V aus
+2013-09-28 23:10:25,Svenska^,...wie wäre es eigentlich mit pullups? ;)
+2013-09-28 23:10:28,Jonathan,"Jep, <=0,4V reicht schon"
+2013-09-28 23:10:51,Jonathan,"Hmmm, Pullups... Die internen 10k-Dinger hab ich mal testweise angeschaltet, gab keine Änderung :P"
+2013-09-28 23:10:54,Svenska^,das problem sind die 0.6V fuer high-pegel
+2013-09-28 23:11:10,Jonathan,"Ja, ich könnt mal stärkere Pullups versuchen"
+2013-09-28 23:11:16,Svenska^,"und normalerweise gibt so ein TTL-ausgang auch 3.2V aus, statt nur 2.4V"
+2013-09-28 23:11:17,Jonathan,560 Ohm z.B.
+2013-09-28 23:11:19,Svenska^,jo
+2013-09-28 23:11:30,Svenska^,"ich hätte jetzt 1k vorgeschlagen, aber ist ja egal ^^"
+2013-09-28 23:11:49,Jonathan,Das gäbe so ca. 8mA am TTL-Ausgang ---> Obere Stromgrenze ---> Maximale V_OH
+2013-09-28 23:11:52,Svenska^,die internen pullups sind glaube nichtmal pullups
+2013-09-28 23:12:00,Jonathan,"Doch, sind sie"
+2013-09-28 23:12:10,Svenska^,sind das nicht KSQs?
+2013-09-28 23:12:16,Svenska^,geregelte?
+2013-09-28 23:12:52,Jonathan,"In der Charakteristik von so nem Pullup sieht es auf jeden Fall relativ Ohmsch aus, aber man kann ja nochmal einen Blick wagen, moment :P"
+2013-09-28 23:13:23,Svenska^,"ja, wird ja auch so geregelt, dass es ohmsch aussieht"
+2013-09-28 23:13:38,Svenska^,implementiert ist das aber glaube anders (wäre sonst auch schwieriger zu schalten)
+2013-09-28 23:13:44,Jonathan,"Ah, okay"
+2013-09-28 23:13:59,Jonathan,"Naja, solange es sich wie ein normaler Widerstand verhält... Merkt ja keiner ;P"
+2013-09-28 23:14:31,Jonathan,20...50k hat so ein Pullup
+2013-09-28 23:14:50,Jonathan,"Eigentlich klar, dass sich das nicht viel auswirkt :P"
+2013-09-28 23:15:04,Svenska^,eben
+2013-09-28 23:15:33,Svenska^,"mir ging es darum, dass der wert vom pullup nicht garantiert und vor allem nicht statisch ist"
+2013-09-28 23:15:59,Jonathan,btw: http://xkcd.com/941/
+2013-09-28 23:16:08,Jonathan,"Aber doch, 20..50k sind garantiert"
+2013-09-28 23:16:52,Svenska^,ja
+2013-09-28 23:17:06,Svenska^,und vermutlich von äusseren bedingungen abhängig ;)
+2013-09-28 23:17:08,Jonathan,"Faktor 2,5 ist doch vernachlässigbar *g*"
+2013-09-28 23:17:53,Svenska^,der xkcd gefällt mir
+2013-09-28 23:18:10,Svenska^,"es fehlen: hinreichend grosses smartphone, hd-webcam, hd-webcam =)"
+2013-09-28 23:18:18,Jonathan,"Jop, mir auch..."
+2013-09-28 23:18:25,Jonathan,Und genau den selben Gedanken hatte ich danach auch *g*
+2013-09-28 23:20:02,Svenska^,http://xkcd.com/1267/
+2013-09-28 23:20:21,Jonathan,Kenn ich :D
+2013-09-28 23:20:29,Jonathan,http://xkcd.com/1124/
+2013-09-28 23:21:03,Jonathan,"Hehehe, btw: http://ragecomic.com/16933"
+2013-09-28 23:21:53,Svenska^,mh
+2013-09-28 23:24:54,Svenska^,1254 ist nice
+2013-09-28 23:26:05,Jonathan,Jop
+2013-09-28 23:34:28,tufel,"Mhh hätt mal da ne frage zu vhdl: http://codeviewer.org/view/code:36ef Bei diesem Code, kommt diese Fehlermeldung: more than one Use Clause imports a declaration of simple name ""unsigned"" -- none of the declarations are directly visible . Weiß jemand wie man das Problem lösen könnte? "
+2013-09-28 23:36:24,Jonathan,"Bin dann auch mal weg, bis morgen"

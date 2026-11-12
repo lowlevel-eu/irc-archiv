@@ -1,0 +1,282 @@
+date/time,nick,message
+2013-10-01 00:03:47,Darkchaos,"ein Array schreibt ja einfach an page_directory+offset, oder? Es wird nicht *""page_directory+offset"" genutzt, oder?"
+2013-10-01 00:05:40,mgottschlag,ich wünsch euch noch viel Spaß
+2013-10-01 00:05:45,mgottschlag,"und geh jetzt ins Bett, gn8"
+2013-10-01 00:06:40,Jidder,Darkchaos: ich weiß nicht was du mit dieser notation meinst. aber ein array funktioniert wie ein array
+2013-10-01 00:06:53,Jidder,wenn deine page directories arrays von uint32_t bzw unsigned int sind
+2013-10-01 00:06:58,Jidder,dann funktioniert alles so wie es soll
+2013-10-01 00:07:51,Darkchaos,"Ich frage mich, wie der Compiler intern Arrays umsetzt"
+2013-10-01 00:10:27,Jidder,für richtige arrays werden entsprechend der größe einfach genügend bytes reserviert
+2013-10-01 00:10:50,Darkchaos,hmm
+2013-10-01 00:11:06,Jidder,"das page directory ist ja eigentlich kein array, das der compiler erstellt hat"
+2013-10-01 00:11:18,Jidder,sondern du hast irgendwo im code page_directory = (uint32_t *)pmm_alloc(); stehen
+2013-10-01 00:11:30,Jidder,die variable page_directory ist also ein zeiger
+2013-10-01 00:12:05,Jidder,page_directory[0] ist aber der erste eintrag in diesem array
+2013-10-01 00:12:24,Darkchaos,"also wird der Zeiger aufgelöst, und auf diese adresse dann zugegriffen"
+2013-10-01 00:12:54,Jidder,im prinzip ja
+2013-10-01 00:13:41,Jidder,mit page_directory + irgendwas wäre ich vorsichtig
+2013-10-01 00:13:54,Jidder,das macht was anderes als du vielleicht denkst
+2013-10-01 00:14:17,Jidder,deswegen hab ich auch nicht so direkt auf die frage mit page_directory + offset geantwortet
+2013-10-01 00:15:53,Darkchaos,"Die Frage war nur, ob bei page_directory[2] page_directory dereferenziert wird, und dann 8Byte vorgesprungen, oder ob von page_directory aus 8Byte vorgesprungen und dann dereferenziert wird"
+2013-10-01 00:16:56,Jidder,letzteres
+2013-10-01 00:17:18,Jidder,"wenn du dereferenzierst, hast du ja keinen zeiger mehr. da kann man also nicht nochmal 8 byte vorspringe"
+2013-10-01 00:17:20,Jidder,n
+2013-10-01 00:18:46,Darkchaos,"also los geht's, rein in's verderben"
+2013-10-01 00:19:49,Darkchaos,und die virtuelle Adresse des PD's ist dann also (0xFFFFF << 12)
+2013-10-01 00:20:41,Jidder,ja
+2013-10-01 00:20:48,Jidder,aber warum sagst du nicht 0xfffff000?
+2013-10-01 00:22:07,Darkchaos_,um die compilezeit zu erhöhen :D
+2013-10-01 00:22:15,Darkchaos_,"Nein, du hast recht, es macht eigentlich keinen SInn"
+2013-10-01 00:25:31,Darkchaos,Und wie viel Speicher als kernel_mem festlegen? Das erste GB?
+2013-10-01 00:25:59,Jidder,"keine ahnung, aber warum nicht"
+2013-10-01 00:27:44,Darkchaos,"dann muss ich nur sicherstellen, dass der userspace nicht < 1GB zugewiesen bekommt, abererstmal first things first"
+2013-10-01 00:37:42,Darkchaos,"Ist es schlimm, einen kernel-context beizubehalten"
+2013-10-01 00:37:58,Darkchaos,"Ich würde ihn nutzen, um von ihm aus immer die neuesten mappings des 1GB bereiches zu kopieren"
+2013-10-01 00:39:24,Darkchaos,dazu muss allerdings der context + page_directory gemappt sein. Und zwar irgendwo virtuell
+2013-10-01 00:50:01,Jidder,notwendig ist das nicht
+2013-10-01 00:50:14,Jidder,also ein kernel kontext um irgendwelche mappings zu machen
+2013-10-01 00:50:17,Darkchaos_,Aber es erlaubt mir immer das update auf die neueste version
+2013-10-01 00:50:26,Darkchaos_,"Sonst kann es passieren, dass ich tausend mal update"
+2013-10-01 00:50:29,Jidder,kernel space ist doch im prinzip in jedem prozess gleich
+2013-10-01 00:50:39,Darkchaos_,"also wenn ich sage, immer vom neuen task zum alten"
+2013-10-01 00:50:56,Darkchaos_,"kann es sein, dass der neue auf stand ""16"" ist, der alte ""15"", aber 18 ist aktuell"
+2013-10-01 00:51:03,Jidder,achso du willst gar nicht in den kernel kontext wechseln?
+2013-10-01 00:51:24,Jidder,also meinst du nur das page directory?
+2013-10-01 00:51:25,Darkchaos_,das passiert doch automatisch beim syscal
+2013-10-01 00:51:47,Darkchaos_,"aber es dreht sich um folgendes: Falls sich der kernel space mal ändert, was ja durchaus passieren kann"
+2013-10-01 00:51:54,Darkchaos_,dann muss das geupdatet werden
+2013-10-01 00:52:01,Darkchaos_,und das mache ich mir einfach mit einem kernel context
+2013-10-01 00:52:14,Darkchaos_,"der muss allerdings in jedem task gemappt sein, auch kein Problem"
+2013-10-01 00:52:32,Jidder,ich glaube ich weiß was du meinst. das kannst du machen
+2013-10-01 00:53:29,Darkchaos_,"und wenn sich was im kernel space ändert, wird dieser spezielle kontext geändert und beim taskswap wird die PD über die aktuelle geschrieben"
+2013-10-01 00:54:22,Darkchaos_,"ich plane den kernel-context an 3MiB zu mappen, dann ist er wiederum im kernelbereich gemappt "
+2013-10-01 00:59:27,Darkchaos,"Die Einträge im PD sind doch die physischen Adressen der Pagetable, oder?"
+2013-10-01 00:59:32,Jidder,ja
+2013-10-01 01:04:44,Darkchaos,"und jetzt habe ich ein kleines Denkproblem. Wenn ich das rekursive mapping vollziehen will, muss ich ja paging wieder ausschalten, oder?"
+2013-10-01 01:17:22,Darkchaos,Jidder? Oder soll ich das mapping vollziehen _kurz_ bevor ich paging aktiviere
+2013-10-01 01:17:42,Jidder,du kannst das rekursive mapping machen während paging aktiv ist
+2013-10-01 01:23:37,Darkchaos,"Wie soll ich denn ein mappingvornehmen, während das pd noch nicht gemappt ist?"
+2013-10-01 01:24:05,Jidder,du hast eine codezeile page_dir = pmm_alloc();
+2013-10-01 01:24:16,Jidder,darunter schreibst du page_dir[1023] = page_dir | flags;
+2013-10-01 01:24:18,Jidder,fertig
+2013-10-01 01:25:17,Jidder,achso du willst auf das page directory nur über 0xfffff000 zugreifen?
+2013-10-01 01:25:28,Darkchaos,Wie sonst?
+2013-10-01 01:25:33,Darkchaos,also das ist ja der Zweck
+2013-10-01 01:25:37,Darkchaos,deswegen mappe ich es
+2013-10-01 01:26:25,Jidder,ich würde es wie jeden anderen kernel speicher auch mappen
+2013-10-01 01:26:45,Darkchaos,Ich verstehe dich nicht recht?
+2013-10-01 01:26:54,Jidder,"du hast doch sicherlich noch wo anders aufrufe von pmm_alloc, um speicher für kerneldatenstrukturen (prozessinformationen, etc.) zu reservieren"
+2013-10-01 01:26:58,Jidder,wie mappst du die denn?
+2013-10-01 01:27:30,Darkchaos,"naja, die mappe ich momentan vor dem aktivieren von cr3"
+2013-10-01 01:27:39,Jidder,das ist ja keine dauerhafte lösung
+2013-10-01 01:28:08,Darkchaos,"nein, deswegen wird das rekursive Mapping getätigt, um dann später etwas mappen zu können"
+2013-10-01 01:28:24,Jidder,nein das rekursive mapping ist dazu da um einfach auf die page tables zuzugreifen
+2013-10-01 01:28:38,Jidder,weil sie dann schön im speicher hintereinander liegen
+2013-10-01 01:29:02,Jidder,"die alternative wäre jede page table einzeln zu mappen. diese alternative musst du für alles, was keine page table ist anwenden"
+2013-10-01 01:29:24,Jidder,"wenn du ein neues page directory erstellst, dann ist ja zu dem zeitpunkt ein anderes aktiv"
+2013-10-01 01:29:53,Jidder,"schreib den zeiger auf das neue page directory in das alte, z.b. eintrag current_pd[1022] = new_pd | flags;"
+2013-10-01 01:30:20,Jidder,dann hast du die page tables an 0xff800000 bis 0xffc00000
+2013-10-01 01:30:23,Darkchaos,jetzt blicke ich garnicht mehr durch :o
+2013-10-01 01:30:27,Jidder,und das neue page directory auf der vorletzten page davon
+2013-10-01 01:31:10,Jidder,ich glaube irgendjemand hat dir rekursiv gemapptes page directory als wundermittel verkauft
+2013-10-01 01:31:11,Jidder,das ist es nicht
+2013-10-01 01:31:16,Jidder,man muss tatsächlich noch programmieren
+2013-10-01 01:31:59,Darkchaos,"um ein neues PD zu erstellen, mappe ich es schon temporär und löse das mapping dannach"
+2013-10-01 01:31:59,Darkchaos,hmm
+2013-10-01 01:32:11,Jidder,ja das ist doch eine möglichkeit
+2013-10-01 01:32:21,Jidder,bzw. DIE möglichkeit
+2013-10-01 01:32:28,Jidder,auch bekannt als korrekte vorgehensweise
+2013-10-01 01:33:05,Darkchaos,"naja, aber ich mappe dazu einfach die nächste freie Page"
+2013-10-01 01:34:28,Jidder,und das ist ein problem?
+2013-10-01 01:34:42,Darkchaos,"nein, nur anders als du es tatest"
+2013-10-01 01:34:43,Jidder,"ich weiß zwar nicht was du meinst, aber wenn du auf speicherzugreifen kannst, dann ist das doch super"
+2013-10-01 01:35:03,Darkchaos,lass mich nochmal überlegen
+2013-10-01 01:36:53,Darkchaos,"Ich glaube, ich habe alle PDs im Kernel-Context gemappt"
+2013-10-01 01:37:25,Darkchaos,ich weiß nichtmehr warum ich das fraktale Mapping anwenden wollte
+2013-10-01 01:39:18,Darkchaos,"Ich kann mir nur vorstellen, dass ich so besser und aus dem userspace darauf zugreifen kann"
+2013-10-01 01:39:28,Darkchaos,"weil bei 100 Tasks, jeder Task 100 PDs hat"
+2013-10-01 01:39:38,Darkchaos,weil jeder Task das PD eines anderen manipulieren kann
+2013-10-01 01:40:24,Jidder,der user space sollte keinen direkten zugriff auf irgendwelche page tables haben
+2013-10-01 01:43:51,Darkchaos,"Also hatte ich eigentlich alles am laufen, lol"
+2013-10-01 01:43:59,Darkchaos,mal meine commits anschauen
+2013-10-01 01:50:01,Darkchaos,was bin ich ein idiot
+2013-10-01 01:50:24,Darkchaos,"""noch ein kleines problem zu fixxen"""
+2013-10-01 01:58:17,Darkchaos,"gibt es einen git befehl, der einfach den letzten commit wieder revidiert?"
+2013-10-01 01:59:17,Jidder,muss ich auch jedes mal wieder googeln
+2013-10-01 02:16:33,Darkchaos,"Also nochmals: Es reicht, wenn jedes PD irgendwohin gemappt ist im kernel, da bei einem SYSCALL immer automatisch in den Kernel gesprungen wird"
+2013-10-01 02:17:32,Darkchaos,"das Problem nur ist, woher will man die virtuellen Adressen eines jeden PT wissen"
+2013-10-01 02:18:39,Jidder,"die einfache lösung dafür ist rekursiv gemapptes page directory. die alternative ist eine funktion, die page tables bei bedarf mappt"
+2013-10-01 02:18:59,Jidder,"und diese funktion sollte sich merken, wo was gemappt ist"
+2013-10-01 02:19:15,Jidder,oder der nutzer muss dran denken das mapping wieder aufzuheben
+2013-10-01 02:23:51,Darkchaos,"naja, um aber bei bedarf pt's zu mappen, muss die pt schon gemappt sein"
+2013-10-01 02:24:47,Jidder,jo
+2013-10-01 02:24:56,Jidder,musste dann machen
+2013-10-01 02:25:26,Darkchaos,"Jidder: Und wie ist das jetzt beim rekursiv gemappten. Dazu muss lediglich das page_directory virutell gemappt sein, nicht die pt's (das wird dadurch ja getan)"
+2013-10-01 02:25:35,Jidder,ja
+2013-10-01 02:25:52,Jidder,"äh nein, das page directory muss im page directory eingetragen werden"
+2013-10-01 02:26:07,Jidder,das ist ja nicht mappen. mappen vom page directory wäre page directory in einer page table eintragen
+2013-10-01 02:26:50,Darkchaos,mooment
+2013-10-01 02:27:06,Darkchaos,"ich trage das pd in die pt ein,"
+2013-10-01 02:27:15,Darkchaos,und aktiviere das paging
+2013-10-01 02:27:43,Darkchaos,und dann kann ich das pd ins pd eintragen ohne probleme
+2013-10-01 02:28:02,Jidder,aj
+2013-10-01 02:28:02,Jidder,ja
+2013-10-01 02:28:21,Jidder,"falls du das meinst, was ich denke"
+2013-10-01 02:28:48,Darkchaos,"ja. Und das muss ich tun, weil ich beim laufenden System ein neues PD erstelle, Paging schon aktiviert ist"
+2013-10-01 02:28:48,Jidder,"das wäre, dass wir über zwei unterschiedliche page directories reden"
+2013-10-01 02:29:03,Darkchaos,ähm
+2013-10-01 02:29:35,Darkchaos,"ich mappe das page directory in sich selbst, an irgend eine adresse (die ich aber kenne)"
+2013-10-01 02:29:59,Darkchaos,"dabei aber als normales mapping, also 1 Page für das page_directory"
+2013-10-01 02:32:17,Darkchaos,obwohl wie soll ich das tun.
+2013-10-01 02:32:53,Darkchaos,Ich blicke nicht mehr durch
+2013-10-01 02:34:25,Jidder,hm
+2013-10-01 02:35:19,Jidder,"um einen neuen kontext zu erstellen und einzurichten, würde ich so vorgehen"
+2013-10-01 02:35:43,Jidder,pgdir_phys = pmm_alloc();
+2013-10-01 02:35:58,Jidder,uint32_t *pgdir_virt = vmm_auto_map(pgdir_virt);
+2013-10-01 02:36:25,Jidder,"die funktion vmm_auto_map nimmt eine virtuelle adresse seiner wahl, und mappt die übergebene physische adresse dahin"
+2013-10-01 02:36:35,Jidder,ganz am schluss musst du also vmm_unmap(pgdir_virt); machen
+2013-10-01 02:36:42,Jidder,das gibt das mapping wieder frei
+2013-10-01 02:36:50,Jidder,das ganze passiert im derzeit aktiven kontext
+2013-10-01 02:37:06,Jidder,und da sind die page tables ja bereits eingerichtet und leicht verfügbar
+2013-10-01 02:37:07,Darkchaos,das mappt das neue pagedir in den kernel_context des aktuellen prozesses
+2013-10-01 02:37:12,Jidder,genau
+2013-10-01 02:37:42,Jidder,"so und jetzt sorgst du dafür, dass du in dem neuen kontext das auch machen kannst. entweder du nutzt rekursives mapping und macht pgdir_virt[1023] = pgdir_phys | 3;"
+2013-10-01 02:38:26,Jidder,oder du kopierst von deinem aktuell aktiven kontext die mappings für das erste 1 GB in das neue page directory
+2013-10-01 02:38:46,Jidder,"also memcpy(pgdir_virt, 0xfffff000, 1024);"
+2013-10-01 02:39:45,Darkchaos,"wobei ich da dann auch das problem wiederum habe, dass ich irgendwie auf die PTs kommen muss"
+2013-10-01 02:39:49,Jidder,"anschließend kannst du entweder den neuen prozess da reinmappen (was dann eine funktion benötigt, die auf speicher zugreifen kann, der gerade nicht zum aktuellen kontext gehört) oder das ganze später machen, wenn du das erste mal in den neuen kontext wechselst (das ist einfacher)"
+2013-10-01 02:39:59,Jidder,eben nicht
+2013-10-01 02:40:09,Darkchaos,bei der alternative
+2013-10-01 02:40:14,Darkchaos,ohne rekursives Mapping
+2013-10-01 02:40:32,Jidder,"wenn du im aktuellen kontext auf die page tables zugreifen kannst, dann kannst du das im neuen kontext das auch tun"
+2013-10-01 02:40:43,Jidder,weil das erste GB des adressraums gleich ist
+2013-10-01 02:40:54,Jidder,und da müssen die drin sein
+2013-10-01 02:41:09,Darkchaos,"ja, aber ich weiß ja die virtuelle addresse meistens nicht"
+2013-10-01 02:41:14,Jidder,"das heißt natürlich dass du vorm aktivieren des pagings dafür sorgen musst, dass das klappt"
+2013-10-01 02:42:13,Jidder,also ich hab früher die brute force methode genommen und das page directory einfach nach der physischen adresse durchsucht
+2013-10-01 02:42:31,Jidder,äh die page tables nach der physischen adresse von der gesuchten page table durchsucht
+2013-10-01 02:42:37,Darkchaos,achso und weil es 1:1 gemappt ist
+2013-10-01 02:42:44,Jidder,ne nicht unbedingt
+2013-10-01 02:42:59,Jidder,"die alternative ist ein array, eine hashtable, oder was dir sonst einfällt, um die zuordnung von physisch -> virt zu speichern"
+2013-10-01 02:43:10,Jidder,die musst du halt vor dem aktivieren von paging initialisieren
+2013-10-01 02:43:20,Darkchaos,Die mir das rekursive aber erspart
+2013-10-01 02:43:29,Jidder,ja
+2013-10-01 02:44:27,Jidder,"naja wenn auf deinem os irgendwann mal komplexere software performant laufen soll, brauchst du das dann doch wieder"
+2013-10-01 02:44:34,Jidder,auch mit rekursivem mapping
+2013-10-01 02:44:46,Darkchaos,weil es schneller ist als ein array oder so?
+2013-10-01 02:45:01,Jidder,(eigentlich skaliert fast alles was wir hier in den tutorials haben nicht)
+2013-10-01 02:46:04,Jidder,rekursives mapping ist schnell bei der auflösung von virtuell -> physisch. aber physisch -> virtuell ist damit nicht effizient möglich
+2013-10-01 02:46:08,Jidder,außer halt brute force
+2013-10-01 02:47:15,Jidder,"streich das letzte. das ist so als wenn man sagen würde eier rollen gut, aber stapeln kann man die nicht"
+2013-10-01 02:47:29,Darkchaos,benötigt man immer physisch->virtuell überhaupt?
+2013-10-01 02:48:14,Jidder,für shared memory und swapping (vermutlich)
+2013-10-01 02:50:34,Darkchaos,und die alternative wäre eine Hashmap zB
+2013-10-01 02:50:49,Jidder,ja
+2013-10-01 02:51:03,Darkchaos,Oder beides
+2013-10-01 02:51:19,Darkchaos,ich denke vorallem an swapping
+2013-10-01 02:51:58,Darkchaos,kann man das noch anders lösen?
+2013-10-01 02:52:11,Darkchaos,"obwohl, Swapping wird nicht unterstützt. RAM wird immer günstiger."
+2013-10-01 02:52:17,Jidder,hehe
+2013-10-01 02:52:34,Jidder,swapping ist ja schon ein relativ komplexes konzept
+2013-10-01 02:52:40,Darkchaos,"haja, wenn man es eh nie auf echter hardware laufen hat"
+2013-10-01 02:52:53,Jidder,das könnte ich nicht über irc erklären (wenn ich wüsste wie es genau funktioniert)
+2013-10-01 02:53:51,Darkchaos,"Ist es nicht so, dass Pages die nicht PRESENT sind einfach irgendwie von der Festplatte ließt"
+2013-10-01 02:54:13,Jidder,"jetzt nur noch das ""einfach"" und ""irgendwie"" detailliert erklären und schon stimmt das ^^"
+2013-10-01 03:36:46,Darkchaos,"wenn ich page_table = pagedirectory[dir_entry] aufrufe, dann hab ich doch die physische adresse eigentlich?"
+2013-10-01 03:43:17,Darkchaos,Nacht Jidder:)
+2013-10-01 09:08:33,alexander,Morgen
+2013-10-01 11:30:58,Darkchaos,"gitorious ist ja mal der hammer :D Den commit den ich gestern gemacht habe, wird als ""vor 2 monaten"" gesehen :D"
+2013-10-01 11:59:13,Darkchaos,"Kann es sein, dass der Tutorialkernel bzw das vmm_map nur bei ausgeschaltenem paging funktioniert?"
+2013-10-01 11:59:31,Darkchaos,"(Da er page_table = page_dir[xyz] anwendet, was ja die physische Adresse gibt)"
+2013-10-01 11:59:53,Darkchaos,"bzw es funktioniert auch, wenn die PDs alle unter 1GB liegen"
+2013-10-01 12:01:15,mgottschlag,"ja, sowas kommt schonmal vor, das hat Linux lange Zeit auch so gemacht (oder macht es sogar auf x86 immer noch so), nur dass die den physischen Speicher etwas höher im virtuellen Adressraum mappen und ein Offset einführen"
+2013-10-01 12:01:36,mgottschlag,deswegen unterscheidet Linux auch zwischen hohen und niedrigen physischen Adressen
+2013-10-01 12:06:28,kevin,"Darkchaos: Der Artikel beschreibt, wie man es mit angeschaltetem Paging macht"
+2013-10-01 12:06:39,kevin,Darkchaos: Aber Code zum Kopieren gibt es dafür jedenfalls in tutorial.git nicht
+2013-10-01 12:07:22,Darkchaos,"ja das suche ich auch nicht, das ist mir nur so aufgefallen, beim implementieren"
+2013-10-01 12:07:57,Darkchaos,"und ein cmp cr3, memory->context benötige ich auch noch, das unterscheidet nämlich darüber, ob ich mappen kann"
+2013-10-01 12:08:18,Darkchaos,"Nur was mache ich, wenn der Kontext nicht aktuell ist, dann bräuchte ich wieder eine HashMap"
+2013-10-01 12:08:44,Darkchaos,momentan könnte ich so nur pagetables ein/auslinken
+2013-10-01 12:18:15,kevin,"Ich verstehe weder, was dein Problem konkret ist, noch was das mit einer HashMap zu tun hat"
+2013-10-01 12:19:12,Darkchaos,"Jedes Pagedirectory wird in seinem kontext rekursiv gemappt. Will ich nun aber ein PageDirectory bearbeiten, welches nicht das aktive ist, habe ich ein Problem"
+2013-10-01 12:19:38,Darkchaos,"Das PD ist zwar bei mir gemappt, aber die PTs müsste ich alle nochmals seperat mappen"
+2013-10-01 12:20:32,kevin,Dann mach das halt?
+2013-10-01 12:21:15,kevin,Inaktive PTs temporär zu mappen ist ja nicht wirklich schwierig.
+2013-10-01 12:21:45,kevin,"Nur für die aktive geht das nicht so leicht, weil man in ein Henne-Ei-Problem rennt. Deswegen dort das rekursive Mapping."
+2013-10-01 12:24:37,Darkchaos,"Achso, du meinst bei Zugriff einfach temporär mappen"
+2013-10-01 12:24:44,Darkchaos,"das ist die Idee, sie müssen garnicht dauerhaft gemappt werden"
+2013-10-01 13:59:29,Darkchaos,"komisch, wollte grad zum spaß ein stash speichern"
+2013-10-01 13:59:38,Darkchaos,hat er mir ne uralt version draufgeladen
+2013-10-01 13:59:44,Darkchaos,ein glück hatte ich vorher gepushed
+2013-10-01 14:02:29,Jonathan,moin
+2013-10-01 14:03:54,kevin,Moin
+2013-10-01 14:58:23,Svenska^,Jonathan: hast du printf mal zum laufen gebracht?
+2013-10-01 14:59:13,Jonathan,"Nope, zu viel Schule, zu wenig Zeit"
+2013-10-01 15:00:22,Svenska^,http://pastebin.com/pZNEdNZq
+2013-10-01 15:00:51,Svenska^,"hier mal ein testcode von mir. erst ein hallo, welt - danach ein echo. =)"
+2013-10-01 15:02:57,Svenska^,"(bzw. kein echo, sondern die integer-ausgabe des wertes - gecastet auf int - weil ich ja vom avr noch nichts lesen kann.)"
+2013-10-01 15:47:10,Svenska^,"blödes schönwetter-wlan hier. kaum fängt man an, traffic zu verursachen, fliegt man raus."
+2013-10-01 19:46:59,mroman_,Gibts Computer mit Prozessoren mit unterschiedlichem Instruktionssatz zwischen denen man wechseln kann?
+2013-10-01 19:51:07,Lowl3v3l,naja theoretisch sollte das möglich sein
+2013-10-01 19:51:24,Lowl3v3l,aber obs gebaut wird... wohl kaum
+2013-10-01 19:52:44,mgottschlag,naja. 64-bit-intel ist doch sowas ^^
+2013-10-01 19:52:56,mgottschlag,und ARM auch (16-bit-Instruktionen vs 32-bit-Instruktionen)
+2013-10-01 19:53:08,mgottschlag,aber in beiden Fällen mappt alles halt auf einen ansonsten gleichen CPU-Kern
+2013-10-01 20:29:01,Svenska^,"mroman_: ja, gibt es"
+2013-10-01 20:29:34,mroman_,z.b
+2013-10-01 20:29:35,mroman_,?
+2013-10-01 20:29:47,Svenska^,ältere ARM-Chips schalten zwischen ARM und Thumb um (hängt vom Prozessorkontext ab)
+2013-10-01 20:29:56,mroman_,ja ok
+2013-10-01 20:29:59,mroman_,ausser ARM
+2013-10-01 20:29:59,Svenska^,bei Interrupts wird automatisch in den ARM-Modus gewechselt u.ä.
+2013-10-01 20:30:17,mroman_,und x86 legacy 16bit zaehlt auch nicht
+2013-10-01 20:30:26,Svenska^,"der Epiphany-Chip, den ich vor mir habe, schaltet teilweise zwischen Signed-Int und Float-Instructions um"
+2013-10-01 20:30:27,mroman_,ich meine einen effektiv voellig anderen Prozessor.
+2013-10-01 20:30:59,Svenska^,"ne. wenn du einen komplett anderen kern haben willst, gibt es billigere möglichkeiten"
+2013-10-01 20:31:14,XanClic,Hatte IA-64 nicht einen x86-Kompatiblitätsmodus?
+2013-10-01 20:31:22,Svenska^,apple hat das zweimal gut mit software hingekriegt (m68k -> PPC ; PPC -> x86)
+2013-10-01 20:31:45,Svenska^,und konsolen machen das meist mit zwei prozessoren (GBA: fuer GB/GBC-kompatiblität ist ein echter Z80-klon verbaut)
+2013-10-01 20:32:39,Svenska^,"aber sag mal, warum die genannten beispiele (x86, ARM, Epiphany) nicht zählen und warum nicht."
+2013-10-01 20:33:35,Svenska^,"XanClic: ja, vermutlich ähnlich wie VM86"
+2013-10-01 20:33:49,mroman_,Svenska^: nicht exotisch genug.
+2013-10-01 20:33:51,Svenska^,und meines wissens ohne den legacy-kram
+2013-10-01 20:34:11,Svenska^,"mroman_: aha, du willst also eine cpu, die eigentlich zwei cpus in einem gehäuse ist und die keiner nutzt... hmm"
+2013-10-01 20:34:18,mroman_,neh
+2013-10-01 20:34:21,mgottschlag,"""exotisch"" ist deutsch für ""macht keiner"" :p"
+2013-10-01 20:34:22,Svenska^,wie wäre es mit parallax' propeller-chips?
+2013-10-01 20:34:22,mroman_,so co-processor maessig
+2013-10-01 20:34:35,Svenska^,??
+2013-10-01 20:34:42,mroman_,ja
+2013-10-01 20:34:47,XanClic,Der NDS hat zwei ARM-Prozessoren :-P
+2013-10-01 20:34:47,Svenska^,"co-prozessoren macht man auf system-level, nicht auf cpu-kern-level"
+2013-10-01 20:34:52,mroman_,x86 mit einem co-processor der bestimmte Dinge schneller kann
+2013-10-01 20:34:53,mroman_,oder so
+2013-10-01 20:34:57,Svenska^,der GBA hat ARM + Z80
+2013-10-01 20:35:02,XanClic,"mroman_, das nennt sich GPU"
+2013-10-01 20:35:07,mroman_,z.b
+2013-10-01 20:35:14,XanClic,"Svenska^, man kann aber nicht umschalten"
+2013-10-01 20:35:17,mroman_,aber GPU ist nicht altmodisch genug.
+2013-10-01 20:35:17,Jidder,dschipiju
+2013-10-01 20:35:19,XanClic,Also softwareseitig und trivial
+2013-10-01 20:35:19,Svenska^,"die epiphany tut nicht allein, sondern braucht nen host (entweder x86 oder arm)"
+2013-10-01 20:35:29,mroman_,naja umschalten ist nicht soo zwingend
+2013-10-01 20:35:29,XanClic,"mroman_, dann FPU? :-P"
+2013-10-01 20:35:31,mroman_,aber ansteuern
+2013-10-01 20:35:36,mroman_,ok
+2013-10-01 20:35:40,Jidder,alles mit dsp?
+2013-10-01 20:35:55,Svenska^,wie wäre es mit BigLittle-dingern von Samsung oder TI ?
+2013-10-01 20:36:05,XanClic,Als wäre das altmodischer als GPUs
+2013-10-01 20:36:08,Svenska^,also die ARM-Teile mit 2x ARM-Cortex A9 und 2x ARM-Cortex M3 ?
+2013-10-01 20:36:20,mroman_,"ich suche etwas aelteres, exotisches"
+2013-10-01 20:36:20,mroman_,:)
+2013-10-01 20:36:24,Svenska^,(wobei die ja wieder fast den gleichen befehlssatz haben)
+2013-10-01 20:36:28,Svenska^,mroman_: du bist unfair
+2013-10-01 20:36:36,Svenska^,"erst fragen, ob es das gibt und dann sagen, dass alle beispiele nix taugen"
+2013-10-01 20:36:47,XanClic,"Und vor allem, wie sollen wir von exotischen Sachen wissen?"
+2013-10-01 20:36:52,Svenska^,-> was genau suchst du? nenne bitte die korrekte antwort.
+2013-10-01 20:36:52,XanClic,Da kann sich jeder jeden Mist zusammengebaut haben
+2013-10-01 20:36:56,Jidder,"vermutlich reichen die 64 opcodes nicht aus und anstatt diese beschränkung aufzuheben, solls eine neue cpu werden"
+2013-10-01 20:36:59,Svenska^,wenn du schon quiz spielen willst
+2013-10-01 20:37:01,Jidder,*zusätzliche
+2013-10-01 20:40:33,Svenska^,"...also die antwort ist ""ja, gibt es. ist aber nicht das, was du suchst. bitte stelle die frage konkreter."""
+2013-10-01 20:46:46,Svenska^,http://www.youtube.com/watch?v=NMvO8PgGzFc

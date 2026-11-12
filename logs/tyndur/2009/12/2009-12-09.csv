@@ -1,0 +1,89 @@
+date/time,nick,message
+2009-12-09 11:22:40,pcmattman,"kwolf: Out of interest, when do you expect to have English documentation available for CDI?"
+2009-12-09 11:23:16,kwolf,When quok is done ;-)
+2009-12-09 11:23:43,pcmattman,"Is he doing translation, or are you waiting? :)"
+2009-12-09 11:24:01,kwolf,"Seriously, I'm not sure. I don't want to translate comments for things that are going to change anyway"
+2009-12-09 11:24:10,kwolf,He said he'd start to translate some of them
+2009-12-09 11:24:13,pcmattman,True
+2009-12-09 11:24:25,kwolf,While he's implementing CDI in his own OS
+2009-12-09 11:24:31,pcmattman,Is there anything important I missed while I was away?
+2009-12-09 11:24:37,pcmattman,"Yes, he mentioned that today"
+2009-12-09 11:26:40,kwolf,eddyb somehow stopped to have his monologues and we couldn't figure how to get them back ;-)
+2009-12-09 11:26:58,kwolf,Otherwise not a lot of important things
+2009-12-09 11:27:06,pcmattman,Okay
+2009-12-09 11:27:21,kwolf,"Oh, except for the driver initialisation patches, of course"
+2009-12-09 11:27:31,pcmattman,"Yes, I noticed them in the list"
+2009-12-09 11:27:41,kwolf,CDI_DRIVER instead of pedigree.cc
+2009-12-09 11:27:47,kwolf,Hope it works out for you
+2009-12-09 11:27:47,pcmattman,Much nicer! :)
+2009-12-09 11:30:52,pcmattman,"I might have a look at getting that integrated now, actually"
+2009-12-09 12:33:19,pcmattman,kwolf: ping
+2009-12-09 12:33:27,kwolf,pong
+2009-12-09 12:33:40,pcmattman,Just hit a bit of a problem in include/cdi/dma.h
+2009-12-09 12:34:02,kwolf,Unrelated to the recent changes then?
+2009-12-09 12:34:05,pcmattman,"Your definition of cdi_dma_handle contains a ""FILE*"" member, which is not defined"
+2009-12-09 12:34:08,pcmattman,"Yes, unrelated"
+2009-12-09 12:34:43,pcmattman,"At this stage, I am merely going to make an empty struct in Pedigree's cdi-osdep.h, but I thought I would bring it up anyway"
+2009-12-09 12:34:54,kwolf,"Right, this belongs into cdi-osdep.h"
+2009-12-09 12:35:20,kwolf,"There even is a comment ""LOST-Implementation..."""
+2009-12-09 12:35:25,pcmattman,Yup
+2009-12-09 12:35:56,kwolf,"Which is (a) the wrong name of the OS and (b) not correct German, because it's correctly called ""Implementierung"" ;-)"
+2009-12-09 12:36:03,pcmattman,Hehe :)
+2009-12-09 12:36:51,pcmattman,It seems Pedigree also requires specific elements in the structure of dma.h
+2009-12-09 12:37:21,pcmattman,"I am preparing a set of patches as a result of my recent changes, which should make things a bit neater"
+2009-12-09 12:38:52,kwolf,Thanks. I think we really need more cleanup patches in the next time
+2009-12-09 12:39:24,pcmattman,"Well, re-integrating the latest git CDI into Pedigree shows that kind of thing really well"
+2009-12-09 12:39:27,kwolf,Hm... I'm wondering if we need to define struct cdi_dma_handle publicly at all
+2009-12-09 12:39:50,kwolf,The interfaces look like it could be completely opaque
+2009-12-09 12:40:10,pcmattman,Possibly
+2009-12-09 12:44:49,kwolf,The next step I'm going to make in restructuring is to make device creation library driven. 
+2009-12-09 12:45:22,pcmattman,What do you mean by that
+2009-12-09 12:45:22,pcmattman,?
+2009-12-09 12:45:46,kwolf,"That is, instead of each driver searching its devices in its init function, I'd prefer to have the CDI library call a probe function"
+2009-12-09 12:45:55,pcmattman,"Oh, I see"
+2009-12-09 12:45:57,kwolf,Which gets the PCI device as a parameter
+2009-12-09 12:46:10,kwolf,"This will help with hotplugging, which we definitely need as we go forward with USB"
+2009-12-09 12:46:17,pcmattman,Yup
+2009-12-09 12:47:31,kwolf,"Maybe this weekend, don't know. Probably depends on how things are going with our 0.2.2 release"
+2009-12-09 13:13:49,pcmattman,"Hmm, kwolf: There's a mismatch between the documentation of CDI_DRIVER and the actual calls in drivers"
+2009-12-09 13:14:09,kwolf,Hm
+2009-12-09 13:14:10,kwolf,?
+2009-12-09 13:14:13,pcmattman,"The documentation says ""Pointer to a driver description (struct cdi_driver*)"" but it's called with a non-pointer object"
+2009-12-09 13:14:47,kwolf,Oops. Care to send a patch?
+2009-12-09 13:15:01,kwolf,The question is which side to fix. I tend to fixing the comment
+2009-12-09 13:24:43,pcmattman,I'll patch the comment
+2009-12-09 13:25:01,pcmattman,"However, I have run into a much bigger problem now"
+2009-12-09 13:25:55,pcmattman,"At the moment the cdi_*_driver struct is built as a static object, where all of the relocations for init/destroy/init_device/remove_device will happen when the module is loaded"
+2009-12-09 13:26:51,pcmattman,"However, because of the way our modules work, we need a const initialiser for each component, which means we can't use a struct"
+2009-12-09 13:31:47,kwolf,"What you need is a init function, right?"
+2009-12-09 13:32:04,pcmattman,"That already technically exists, it just can't be specified in a struct"
+2009-12-09 13:32:28,kwolf,"Your CDI_DRIVER macro would become ugly, but it could define a wrapper function that accesses the struct"
+2009-12-09 13:32:52,pcmattman,That would be a horrendously ugly macro
+2009-12-09 13:33:12,pcmattman,"I'm working on a possible solution that I'll add as a patch, you can decide if it's okay to keep or not"
+2009-12-09 13:34:13,kwolf,Would it really be horrendously ugly?
+2009-12-09 13:34:25,kwolf,Not just the usual ugliness with preprocessor magic?
+2009-12-09 13:34:36,pcmattman,"In comparison, yes"
+2009-12-09 13:35:12,pcmattman,And I doubt Pedigree is the only OS that will run into such a problem
+2009-12-09 13:36:59,kwolf,I would have preferred not adding to many (unnamed) parameters to CDI_DRIVER. Not sure if you can find a solution that avoids this
+2009-12-09 13:37:32,pcmattman,"I have one potential solution, let's see how it goes after I mail the patch to the list"
+2009-12-09 13:48:43,pcmattman,"Okay, the mail is out"
+2009-12-09 13:54:28,pcmattman,"And I'm off to sleep, night"
+2009-12-09 14:00:22,kwolf,Nicht
+2009-12-09 14:00:24,kwolf,*Night
+2009-12-09 17:33:26,kwolf_,Hi quok :-)
+2009-12-09 17:33:36,quok,Hi :)
+2009-12-09 17:33:42,FreakyPenguin,Hi
+2009-12-09 17:33:50,XanClic,Hi
+2009-12-09 17:36:13,kwolf_,"quok: Have you seen Matt's mail, especially his CDI_DRIVER_CONST proposal?"
+2009-12-09 17:37:16,kwolf_,"Actually, not only quok, but everyone here"
+2009-12-09 17:38:00,XanClic,Seen: yes; understood: no ;-)
+2009-12-09 17:38:27,quok,"I'm with XanClic on that. I've seen the mail and the diffs, don't really understand the issue though"
+2009-12-09 17:39:51,kwolf_,His problem is that he needs to have something like MODULE_INIT(init_function) for Pedigree
+2009-12-09 17:40:05,kwolf_,And he can't read the init_function from the driver struct at compile time
+2009-12-09 17:40:45,kwolf_,"I suggested that CDI_DRIVER could generate a static wrapper function that reads it from the struct, but he wasn't quite happy with that"
+2009-12-09 17:40:48,XanClic,So this CONST macro is just the same as the other macro but you give the content of the driver structure instead of the structure itself?
+2009-12-09 17:41:03,kwolf_,"Right, I think this is what he's intending"
+2009-12-09 17:41:24,quok,"Crap, I forgot I have a doctor appointment. I'll bbl. :)"
+2009-12-09 17:41:53,kwolf_,Ok
+2009-12-09 18:29:48,DerHartmut,Good evening
+2009-12-09 18:29:54,XanClic,"Good evening, DerHartmut"

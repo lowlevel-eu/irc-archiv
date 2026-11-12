@@ -1,0 +1,57 @@
+date/time,nick,message
+2010-01-14 21:17:59,XanClic,"Hm, Guest206355, are you really planning to use >2 GB media? *g*"
+2010-01-14 21:20:26,taljeth,"That's what FAT12 is made for, no?"
+2010-01-14 21:20:38,XanClic,"FAT16 must be supported, too ;-)"
+2010-01-14 21:21:07,XanClic,"He said ""up to 8 GB"" in the forum, though FAT16 just supports 4 GB"
+2010-01-14 21:21:27,taljeth,The disk might be partitioned
+2010-01-14 21:21:31,XanClic,"But my problem is, that the FAT of a 2 GB FAT16 medium fits exactly into 64 kB *g*"
+2010-01-14 21:21:39,XanClic,"No, it's not planned to be an MBR"
+2010-01-14 21:22:43,taljeth,"Which doesn't mean that your file system can't be in the second partition, IIUC"
+2010-01-14 21:22:58,XanClic,"Hm, got that right now, but I hope that's not required xD"
+2010-01-14 21:25:00,XanClic,Hum... How would that be accomplished by the way?
+2010-01-14 21:25:09,XanClic,Parsing the partition table for the only bootable entry?
+2010-01-14 21:25:23,XanClic,Compile it in while partitioning?
+2010-01-14 21:38:03,taljeth,"Looking for the bootable flag is what MBRs usually do, afaik"
+2010-01-14 21:38:19,taljeth,Some MBRs at least. GRUB certainly doesn't.
+2010-01-14 21:38:26,XanClic,"I know, but what about the booted boot sectors?"
+2010-01-14 21:39:47,taljeth,I guess they get their partition passed by the MBR.
+2010-01-14 21:40:00,taljeth,Not sure though
+2010-01-14 21:40:11,XanClic,So there would hardly be a possibility to implement that situation in that contest?
+2010-01-14 21:40:16,taljeth,But you should know if your bootloader is done
+2010-01-14 21:40:59,taljeth,Partitioned disks are clearly a requirement
+2010-01-14 21:41:18,XanClic,But there's no possibility to handle them - nice *g*
+2010-01-14 21:42:41,taljeth,I'm not interested enough in bootloader to be able to tell
+2010-01-14 21:44:50,quok,"XanClic: sorry, I wasn't identified here so didn't get pinged properly for whatever reason"
+2010-01-14 21:45:05,XanClic,np ;-)
+2010-01-14 21:46:06,quok,I certainly am planning on testing a 4GB FAT16 filesystem :)
+2010-01-14 21:46:27,XanClic,"Hm, OK *g*"
+2010-01-14 21:46:30,quok,and on 8GB partitioned boot media as well
+2010-01-14 21:47:10,taljeth,You'll probably have a busy day on Jan 31 ;-)
+2010-01-14 21:47:13,XanClic,Though there doesn't seem to be any possibility to get the start sector of that partition?
+2010-01-14 21:48:16,quok,a typical ms-dos like MBR passes the partition table entry in ES:DI
+2010-01-14 21:48:30,XanClic,But you don't know on which partition you are
+2010-01-14 21:49:28,taljeth,What else do you need besides the partition table entry?
+2010-01-14 21:49:35,quok,"ou don't need to, you just parse what is in ES:DI, that will give you your parition startin and ending chs information"
+2010-01-14 21:49:41,XanClic,"Ah, I didn't get the ""entry"" :-)"
+2010-01-14 21:50:18,quok,I also seem to recall that something in the BPB or EBPB is supposed to contain the number of sectors before the filesystem starts
+2010-01-14 21:50:36,quok,hidden sectors perhaps?
+2010-01-14 21:50:50,XanClic,"Uh, you're right"
+2010-01-14 21:50:59,XanClic,Now I know what that *** value is *g*
+2010-01-14 21:52:23,quok,"you'll be able to save space by relying on the hidden sectors value, but you could also parse the 16 bytes passed in ES:DI. the problem there is if you are being booted from an unpartitioned device then you may or may not have valid data in ES:DI :)"
+2010-01-14 21:53:30,XanClic,The problem is to use 32 bit registers for the sector ;-)
+2010-01-14 21:53:45,XanClic,Or dx:ax as I'm currently doing it
+2010-01-14 21:56:29,quok,that's exactly how I do it
+2010-01-14 21:56:40,XanClic,"btw, may I rely on that the information in the ""type"" field of the BPB is correctly set to ""FAT12   "" or ""FAT16   ""? :D"
+2010-01-14 21:56:58,quok,You may
+2010-01-14 21:57:02,XanClic,thx :D
+2010-01-14 21:57:05,quok,but you'd be wrong to do so :)
+2010-01-14 21:57:53,quok,"many tools do rely on the value in the 'type' field, but according to MS that is incorrect"
+2010-01-14 21:58:03,XanClic,"I know, hence I ask you"
+2010-01-14 21:59:15,quok,"If I were you, I wouldn't rely on it"
+2010-01-14 21:59:31,quok,I consider it making an assumption that shouldn't be made
+2010-01-14 21:59:31,XanClic,But it's a lot smaller to do so ;-)
+2010-01-14 21:59:45,XanClic,Right now I have exactly 512 bytes
+2010-01-14 21:59:50,XanClic,With supporting 4 GB FATs
+2010-01-14 22:00:05,quok,I HAVE seen media that doesn't match the type field
+2010-01-14 22:00:48,XanClic,Let's see if I claim more free space to calculate if it's 12 or 16 ;-)
+2010-01-14 22:01:17,XanClic,But first of all I have that crappy partition thing...

@@ -1,0 +1,182 @@
+date/time,nick,message
+2016-08-15 05:52:32,darklink,Äh?
+2016-08-15 05:53:00,darklink,"Label:mov pc, [pc, #-4]"
+2016-08-15 05:53:13,darklink,.int label
+2016-08-15 05:53:33,darklink,warum nicht einfach: b .?
+2016-08-15 09:21:52,Godwine,gibts irgendeine möglichkeit auf x86 einen call in den usermode zu machen und dann in den kernelmode zu returnen?
+2016-08-15 09:23:22,darklink,nö
+2016-08-15 09:23:28,darklink,Nur longjumps
+2016-08-15 09:23:43,darklink,Also sowas wie push label
+2016-08-15 09:24:15,darklink,Jmp 0x1B:dest
+2016-08-15 09:24:31,darklink,"Label: mov eax, label2"
+2016-08-15 09:24:49,darklink,int KEXEC_INT_NR
+2016-08-15 09:25:00,darklink,Label2:
+2016-08-15 09:25:25,Godwine,wie käm ich dann zurück in den kernelmode?
+2016-08-15 09:25:33,darklink,"Natürlich ist das scheiße, da man einen kernelexec() interrupt braucht"
+2016-08-15 09:25:50,darklink,KEXEC springt  zu eax
+2016-08-15 09:25:55,Godwine,achso mit dem interrupt
+2016-08-15 09:26:39,darklink,man kann aber auch usermode interrupts
+2016-08-15 09:27:14,darklink,D.h. die idt setzt cs auf 0x1C
+2016-08-15 09:27:44,darklink,braucht aber auch spezielle unterstützung vom usermode
+2016-08-15 09:27:57,darklink,Statt ret ein iret machen am ende
+2016-08-15 09:28:14,darklink,Bzw statt einen exit() syscall ein iret machen
+2016-08-15 09:29:06,Godwine,okay wie würde der interrupt dann ablaufen?
+2016-08-15 09:29:13,kevin,Moin
+2016-08-15 09:29:19,Godwine,moin kevin
+2016-08-15 09:30:26,Godwine,der kernel müsste ja trotzdem den kontext wechseln und die segmentregister laden usw und dann in den usermode springen? Der usermode kommt dann mit nem iret aber wieder zurück in den kernel?
+2016-08-15 09:31:04,kevin,"Ist dir nicht bewusst, dass ganz normale Prozesse auch nur ein Aufruf des Kernels in den Userspace sind?"
+2016-08-15 09:31:29,kevin,Du brauchst da nichts fundamental anderes
+2016-08-15 09:32:17,Godwine,also implementiere ich einen interrupt den der kernel aufruft der dann zum task switcht and die funktion die ich aufrufen will und dann muss die funktion wieder mit nem interrupt zurück?
+2016-08-15 09:33:32,kevin,"Interrupts können meines Wissens nicht in niedriger privilegierten Code gehen, außer per Task Gate. Sonst könnten die ja den Kernelstack kaputtmachen (bzw. böswillig ändern), indem sie ihren Stack modifizierern."
+2016-08-15 09:34:03,kevin,"Godwine: Genau, das wäre eine Möglichkeit"
+2016-08-15 09:34:18,kevin,Wofür hast du denn das ganze überhaupt vor?
+2016-08-15 09:34:45,kevin,Für einen normalen Funktionsaufruf müsste man ja nicht durch den Kernel gehen
+2016-08-15 09:35:06,Godwine,na mein schedulersystem ist ja eventbasiert und ich brauche auch aufrufe zum initialisieren oder zum hinzufügen eines neuen tasks
+2016-08-15 09:36:59,Godwine,"im moment setzt ein timer interrupt jedes mal eip auf die einsprungsaddresse des schedulers, setzt eax auf 1 für ein timerevent und geht dann in den usermode an der stelle"
+2016-08-15 09:37:46,Godwine,der scheduler guckt sich eax an und tut was getan werden muss und returned dem kernel dann eine threadid
+2016-08-15 09:38:04,Godwine,der kernel guckt ob der scheduler den thread überhaupt schedulen darf und wenn ja switcht der da hin
+2016-08-15 09:38:21,Godwine,so aber wie füg ich neue threads hinzu?
+2016-08-15 09:39:47,Godwine,ich könnte das theoretisch von dem prozess aus machen dem der scheduler gehört indem ich den scheduler in seinem addressraum als read-write lasse
+2016-08-15 09:39:53,Godwine,der könnte dann reinspringen
+2016-08-15 09:40:36,Godwine,aber der erste aufruf muss aus dem kernel kommen denn der scheduler braucht ein init und eine threadid um seinen ersten thread einzureihen
+2016-08-15 09:41:47,kevin,"Neuer Thread heißt, der Prozess, dem der Scheduler, oder einer der Kindprozesse startet per Syscall einen neuen Thread, oder?"
+2016-08-15 09:41:52,kevin,Und der Scheduler muss jetzt davon erfahren
+2016-08-15 09:42:58,kevin,Richtig soweit?
+2016-08-15 09:43:00,Godwine,genau wenn ein task einen syscall macht um einen prozess zu starten bekommt er eine taskid und eine threadid und die muss er einem scheduler geben damit der task auch ausgeführt wird
+2016-08-15 09:44:29,Godwine,das kann als direkter aufruf in den eigenen scheduler gehen oder als message an den vaterprozess der einen scheduler hat und sozusagen das kind seines kindes in seinem scheduler aufnimmt
+2016-08-15 09:45:16,Godwine,eigentlich sogar an jeden beliebigen scheduler der bereit ist ihn anzunehmen ^^
+2016-08-15 09:45:30,kevin,"Wenn du dir aber eh schon Signale antust (was anderes sind deine Scheduler-Aufrufe ja letztendlich nicht), warum machst du dann für neue Threads nicht einfach nur einen zweiten ""Signalhandler"" im Scheduler?"
+2016-08-15 09:46:29,kevin,"Wenn der Mechanismus eh schon da ist, macht es doch keinen Unterschied, ob du den jetzt einmal oder zweimal benutzt"
+2016-08-15 09:47:15,kevin,"Und die Message kommt natürlich vom Kernel, nicht vom Userspace"
+2016-08-15 09:47:31,kevin,"Sonst könnte der Userspace eine Message schicken, ohne tatsächlich einen Thread erzeugt zu haben, oder anderum"
+2016-08-15 09:48:10,Godwine,stimmt das wär blöd
+2016-08-15 09:48:19,kevin,"Hm, ""oder andersrum"" ist sogar ein interessanter Fall. Das wären dann kooperativ geschedulte Threads, oder in anderen Worten Coroutinen."
+2016-08-15 09:48:40,kevin,Von denen braucht der Scheduler nichts wissen
+2016-08-15 09:49:31,Godwine,die threadid ist ja erstmal nur eine zahl die der scheduler dem kernel zurückgibt um ihm mitzuteilen welchen thread er ausgewählt hat
+2016-08-15 09:49:59,Godwine,wenn ein task durch einen systemaufruf einen anderen thread mit seiner id assoziiert dann ruft der scheduler stattdessen den auf
+2016-08-15 09:50:12,Godwine,der erste thread hätte seine cpu zeit verschenkt
+2016-08-15 09:52:50,kevin,"Jo, es wäre nur blöd, wenn der Scheduler eine Zahl auswählen könnte, zu der es gar keinen Thread gibt"
+2016-08-15 09:53:25,kevin,"Hm, oder wenn ein Prozess seine Threads mehrfach anmeldet um mehr Rechenzeit zu bekommen"
+2016-08-15 09:54:02,Godwine,naja letztendlich entscheidet das ja der prozess dem der scheduler gehört
+2016-08-15 09:54:24,Godwine,aber die sache mit der ungültigen threadid wäre doof
+2016-08-15 09:55:56,Godwine,der prozess dem der scheduler gehört wäre im einfachsten fall der init task
+2016-08-15 09:56:21,Godwine,aber dann muss ich dem prozess über syscalls die möglichkeit geben seinen scheduler zu managen
+2016-08-15 09:56:38,Godwine,damit keine ungültigen ids übergeben werden
+2016-08-15 09:57:13,Godwine,oder ich returne zum scheduler wenn er eine ungültige id angibt damit er die löschen kann
+2016-08-15 09:57:29,Godwine,aber trotzdem könnte malware dann das system verschlacken
+2016-08-15 09:58:02,kevin,"Naja, wie gesagt, lass die An- und Abmeldung von Threads den Kernel übernehmen, dann stimmt das immer mit der Wirklichkeit überein"
+2016-08-15 09:58:23,kevin,Weil die tatsächlichen Thread-Objekte sind ja im Kernel
+2016-08-15 09:58:28,Godwine,wäre auch weniger frickelig als den scheduler bloß in einem prozess nicht readonly zu machen
+2016-08-15 10:06:59,Godwine,und für solche kontrollsignale kann ich ja eine funktion mit einem far jump in den signalhandler des schedulers machen und der macht dann seinen syscall zurück und der syscall handler gibt die kontrolle an die farjump funktion zurück
+2016-08-15 10:09:08,kevin,Far Jump von wo nach wo?
+2016-08-15 10:11:23,Godwine,farjump vom kernel zum handler des schedulers
+2016-08-15 10:12:05,Godwine,vorher muss der cpu zustand gespeichert werden damit der syscall handler später zurück kann in die funktion
+2016-08-15 10:14:36,Godwine,ich hoffe das ganze bringt überhaupt was xD
+2016-08-15 10:15:10,Godwine,wenn das nachher langsamer ist als n normaler taskswitch zu nem scheduler und zurück bin ich sauer ^^
+2016-08-15 10:16:04,kevin,Du kannst keinen Far Jump zwischen verschiedenen Privilegstufen machen
+2016-08-15 10:16:09,kevin,Gibt einen #GP
+2016-08-15 10:16:42,Godwine,achso?
+2016-08-15 10:16:49,kevin,"Du musst entweder Interrupts nehmen (also iret wie bei jedem anderen Task auch), oder theoretisch gäbe es noch Task Gates oder Call Gates"
+2016-08-15 10:17:17,kevin,"Wenn die aber besser wären, würde man sie auch für normale Syscalls nehmen ;-)"
+2016-08-15 10:17:37,kevin,"Bzw. es gab mal ein paar Leute, die behauptet haben, dass Call Gates viel tollerer sind, aber irgendwie macht's trotzdem niemand"
+2016-08-15 10:18:07,kevin,Ich selber habe den Performanceunterschied nie ausprobiert
+2016-08-15 10:18:10,Godwine,call gates sollen wohl flotter gewesen sein als interrupts hab ich gehört
+2016-08-15 10:18:23,kevin,"""sollen gewesen sein"" ist Vergangenheit? ;-)"
+2016-08-15 10:18:29,Godwine,aber dann kam sysenter un sysleave
+2016-08-15 10:18:34,kevin,"Keine Ahnung, vielleicht sind sie es immer noch"
+2016-08-15 10:18:50,Godwine,die sachen sind ja immer nur so schnell wie man bereit ist sie zu optimieren als prozessorhersteller ^^
+2016-08-15 10:19:01,kevin,Eben
+2016-08-15 10:19:19,kevin,Und da fehlen mir die aktuellen Informationen zu Interrupts gegenüber Call Gates
+2016-08-15 10:19:34,Godwine,und interrupt müssen gut optimiert sein weil die passieren ständig ob man will oder nicht
+2016-08-15 10:19:44,kevin,"Hm, ja"
+2016-08-15 10:19:51,Godwine,call gates sind aber inzwischen eher ein relikt des pm ^^
+2016-08-15 10:19:57,kevin,Hardwareinterrupts zumindest
+2016-08-15 10:20:12,kevin,Softwareinterrupts könnten theoretisch anders performen
+2016-08-15 10:20:13,Godwine,ja aber in der cpu werden die ja scheinbar ganz ähnlich gehandhabt
+2016-08-15 10:20:26,kevin,"Keine Ahnung, ich arbeite bei keinem CPU-Designer ;-)"
+2016-08-15 10:20:51,Godwine,sonst könnte man doch keinen timerinterrupt mit nem int xx simulieren?
+2016-08-15 10:21:47,Godwine,ich glaub es gab sicherlich betriebssteme die damals call gates benutzt haben ^^
+2016-08-15 10:21:58,kevin,"Och, OS/2 hat das bestimmt getan"
+2016-08-15 10:22:06,kevin,Das hat jede PM-Schweinerei benutzt
+2016-08-15 10:22:10,Godwine,:D
+2016-08-15 10:22:19,kevin,Inklusive den vier Ringen
+2016-08-15 10:22:43,kevin,"Ich finde ja immer noch, dass dein Scheduler in Ring 1 oder 2 laufen sollte ;-)"
+2016-08-15 10:22:44,Godwine,die ringe wären auch echt praktisch wenn man die konsequenter implementiert hätte
+2016-08-15 10:23:10,Godwine,vielleicht mache ich das auch damit niemand sonst auf die scheduler interrupts zugreifen kann :D
+2016-08-15 10:23:38,Godwine,"und den kernel mit ""ey schedule mal xxx"" spammt obwohl er nix zu melden hat^^"
+2016-08-15 10:24:43,Godwine,die hätten diese reserved bits beim paging für den ring benutzen sollen der darauf zugreifen darf
+2016-08-15 10:26:32,Godwine,das würde man dann heute noch benutzen
+2016-08-15 10:26:52,kevin,Jo
+2016-08-15 10:27:05,Godwine,für genau solche sachen wie das was ich mir jetzt zusammenhacke
+2016-08-15 10:27:22,Godwine,das wird nur desswegen hässlich weil intel es verbockt hat :D
+2016-08-15 10:28:17,kevin,"Oder ein bisschen anderen Segmentierung, so dass man nur bestimmte Bereiche zugreifbar machen kann, ohne die Base zu ändern"
+2016-08-15 10:30:12,Godwine,naja ich bin erstmal weg
+2016-08-15 10:30:16,Godwine,bis nachher ^^
+2016-08-15 15:30:45,kevin,Hm. Alles kaputt.
+2016-08-15 15:31:07,MasterQ32,morgen
+2016-08-15 15:31:12,MasterQ32,nicht alles kaputt machen!
+2016-08-15 15:31:35,kevin,Soll ich dir was übriglassen zum Kaputtmachen? ;-)
+2016-08-15 15:32:26,Svenska,moin
+2016-08-15 15:56:40,darklink,zwei instruktionen und das teil springt in den geschützten teil der bootrom
+2016-08-15 15:58:54,kevin,Ich will nichts von durch die Gegend springen hören. Taskswitchingcode verwirrt mich gerade mal wieder.
+2016-08-15 16:01:59,darklink,kevin: sind zwei branches
+2016-08-15 16:02:10,darklink,ein aus dem exceptionvektor raus
+2016-08-15 16:02:27,darklink,und einer in die geschützte bootrom rein
+2016-08-15 16:08:22,kevin,"Hm, setjmp() gibt nur einen int zurück. Da krieg ich wohl keinen Pointer durch..."
+2016-08-15 17:14:36,kevin,"Wenn man nur wüsste, was valgrind immer meint..."
+2016-08-15 17:15:36,kevin,Invalid read of size 8
+2016-08-15 17:15:38,kevin,"Address 0x148ccc50 is 1,047,504 bytes inside a block of size 1,048,576 alloc'd"
+2016-08-15 17:15:49,kevin,"Und warum soll das jetzt invalid sein, wenn es ordentlich alloziert ist="
+2016-08-15 18:37:04,MasterQ32,huhu
+2016-08-15 18:49:26,Godwine,heyho
+2016-08-15 18:53:31,MasterQ32,damit kann ich dann auf der seriellschnittstelle sinnvoll daten ausgeben :)
+2016-08-15 18:55:28,MasterQ32,"muss ja schließlich rausfinden, warum mein Fat-Treiber irgendwann aufhört, sinnvolle dinge zu tun"
+2016-08-15 18:58:27,Svenska,hi
+2016-08-15 18:58:41,MasterQ32,huhu
+2016-08-15 20:35:11,darklink,Lol
+2016-08-15 20:35:36,darklink,"ich bricke das handy jedes mal, wenn ich supersu installiere"
+2016-08-15 20:35:47,MasterQ32,dann lass es :D
+2016-08-15 20:37:14,darklink,wenn ich dann das backup wieder drauflade geht google nich mehr
+2016-08-15 20:37:58,darklink,und wenn ich dann google neu installiere funktioniert der setup manager nich
+2016-08-15 20:38:11,Svenska,"ich fuerchte, du hast was kaputtgemacht. dumm gelaufen."
+2016-08-15 20:38:33,darklink,fehlten paar permissions
+2016-08-15 20:38:42,darklink,jetzt läuft's wieder
+2016-08-15 21:10:48,Svenska,"hmm, papier fängt an zu stinken, wenn es langsam verkohlt."
+2016-08-15 23:46:46,Quantenmagier,hi
+2016-08-15 23:46:50,Quantenmagier,"""the DS segment should be configured to have it's base at the same address as SS does. Otherwise you may run into problems when passing pointers to local variables into functions, because normal GPRs can't access the stack the way you might think."""
+2016-08-15 23:47:19,Svenska,jau
+2016-08-15 23:47:27,Quantenmagier,can someone explain me why pointers depend on the adress of the stack?
+2016-08-15 23:47:30,Svenska,"das klingt genau nach dem, was wir dir schonmal vorgeschlagen hatten ;)"
+2016-08-15 23:47:40,Quantenmagier,joa
+2016-08-15 23:48:01,Quantenmagier,"ich muß halt diese expand down segmente dafür benutzen, aber mir ist noch nich tklar warum?"
+2016-08-15 23:48:09,Svenska,wofuer?
+2016-08-15 23:48:38,Svenska,du musst kein stack-segment benutzen
+2016-08-15 23:48:48,Quantenmagier,doch muß ich
+2016-08-15 23:48:52,Svenska,das darf auch den gleichen selektor benutzen wie dein ds ;)
+2016-08-15 23:49:08,Svenska,wofuer steht GPR? allzweckregister?
+2016-08-15 23:49:16,Quantenmagier,svenska nicht wenn das stack segment expand down sien muß
+2016-08-15 23:49:25,Quantenmagier,jop general purpose register
+2016-08-15 23:49:41,Svenska,"vermutlich geht MOV EAX, SS:[EBP+4] nicht"
+2016-08-15 23:49:55,Svenska,"und wenn man das ueber DS adressiert, dann geht's halt nicht, wenn DS != SS"
+2016-08-15 23:50:00,Svenska,oder zumindest base(DS) != base(SS)
+2016-08-15 23:50:14,Svenska,womit sich auch das top-down erledigt hätte.
+2016-08-15 23:50:49,Svenska,modernes C und segmentierung beißt sich halt
+2016-08-15 23:50:50,Quantenmagier,wieso hat sich top-down erledigt?
+2016-08-15 23:51:02,Svenska,"weil DS nach oben wächst, dein stack aber nach unten"
+2016-08-15 23:51:20,Svenska,"...besorg dir ein Turbo C oder sowas, der compiler kann damit eher umgehen"
+2016-08-15 23:51:23,Quantenmagier,joa aber solange man die selbe base adresse hat ist das doch egal
+2016-08-15 23:51:57,Svenska,"wären SS:[EBP+4] und DS:[EBP+4] identisch, wenn base(DS) != base(SS)? ich vermute mal, nein."
+2016-08-15 23:52:04,Svenska,...hab aber keine ahnung.
+2016-08-15 23:53:24,Quantenmagier,nee aber mit expand down kann man die base ja gleich machen
+2016-08-15 23:54:08,Svenska,"kann man auch ohne expand down, aber ich wuerde trotzdem nicht erwarten, dass das so funktioniert, wie du dir das gerade vorstellst ;)"
+2016-08-15 23:55:17,Quantenmagier,"naja ohne expand down funktionieren die meisten programme ja grad, aber ich hab halt das problem, daß ich dann den stack nicht vergrößern kann um zum beispiel einen thread zu erstellen, deswegen brauch ich expand down"
+2016-08-15 23:55:47,Svenska,?
+2016-08-15 23:56:09,Svenska,"ob du nun von base oberhalb was freilassen musst, oder von base unterhalb, macht doch keinen unterschied?"
+2016-08-15 23:57:25,Quantenmagier,hmm muß die base denn oberhalb des limits liegen bei expand down?
+2016-08-15 23:58:29,Svenska,hm?
+2016-08-15 23:58:35,Svenska,keine ahnung. hab mich damit nie befasst. :-)
+2016-08-15 23:58:41,Svenska,ich fand segmentierung mal ganz cool
+2016-08-15 23:58:49,Svenska,...ist schon ne weile her. :-)
+2016-08-15 23:59:05,Quantenmagier,aso grad mal nachgesehn
+2016-08-15 23:59:43,Quantenmagier,"32 bit expand down segmente scheinen tatsächlich die base oberhalb zu haben, aber 16bit expand down segmente haben sie anscheinend unterhalb.."
+2016-08-15 23:59:54,Svenska,naja

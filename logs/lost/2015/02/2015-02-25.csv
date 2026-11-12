@@ -1,0 +1,537 @@
+date/time,nick,message
+2015-02-25 15:47:48,Jonathan,"Svenska: Habe herausgefunden, wie man mit einem GAL, einem R und einem C einen Oszillator baut *g*"
+2015-02-25 15:47:55,Svenska,gratuliere :)
+2015-02-25 15:47:59,Jonathan,Danke :P
+2015-02-25 15:48:09,Svenska,einen inverter? ;)
+2015-02-25 15:48:20,Jonathan,Ein Inverter und ein Buffer ;)
+2015-02-25 15:48:33,Jonathan,Das GAL hat ja leider keine Hysterese
+2015-02-25 15:48:39,Jonathan,Also musste ich mir die extern hinbasteln
+2015-02-25 15:48:59,Svenska,"hm ja, sowas ähnliches werd ich fuers dram auch brauchen"
+2015-02-25 15:49:07,Svenska,"allerdings ohne rueckkopplung, daher kein oszillator"
+2015-02-25 15:49:33,Svenska,(wobei ich mir eine ordentliche delay line bereitgelegt habe)
+2015-02-25 15:49:42,Jonathan,"Auf diese Weise kann ich jetzt Taktgenerator, Adressdekoder, Tristate-Buffer usw. für die PS/2-Karte in einem einzigen Chip vermurksen :D"
+2015-02-25 15:49:55,Svenska,äh?
+2015-02-25 15:50:24,Jonathan,Hmm?
+2015-02-25 15:50:25,Svenska,"ich dachte, bei ps/2 gibt die tastatur den takt an?"
+2015-02-25 15:50:29,Jonathan,Achso ja
+2015-02-25 15:50:37,Jonathan,Ich versorge aber meinen i8042 so mit Takt
+2015-02-25 15:50:40,Svenska,und die register kannst du ja vollkommen asynchron betreiben *g*
+2015-02-25 15:50:43,Svenska,ah ok
+2015-02-25 15:50:46,Jonathan,:P
+2015-02-25 15:51:08,Svenska,also man nehme den normalen kbc und ignoriere die probleme *g*
+2015-02-25 15:51:09,Jonathan,"Etwas asynchrone Logik im GAL (Inverter+Buffer) bildet den RC-Oszillator, läuft auf 12MHz"
+2015-02-25 15:51:24,Jonathan,Das geht dann auf den Clock-Pin vom GAL
+2015-02-25 15:51:38,Svenska,was brauchst du denn fuer logik neben dem kbc?
+2015-02-25 15:51:49,Jonathan,Und das GAL erzeugt dann mit zwei Flipflops die Signale für XTAL1/2
+2015-02-25 15:52:02,Jonathan,"Naja, ich muss CS entsprechend anreden"
+2015-02-25 15:52:23,Svenska,"hm, wieviele register hat der 8042?"
+2015-02-25 15:52:29,Jonathan,2
+2015-02-25 15:52:30,Svenska,also wieviele bildet er ab
+2015-02-25 15:52:31,Jonathan,*g*
+2015-02-25 15:52:32,Svenska,ok
+2015-02-25 15:52:49,Svenska,(verkraftet er eigentlich ne maus? :D)
+2015-02-25 15:52:51,Jonathan,"Muss halt mit meinem Bussystem verwurstet werden, und mit einem '563 als ID-Register"
+2015-02-25 15:53:07,Jonathan,"Es gibt Versionen vom i8042, die können auch Mäuse :P"
+2015-02-25 15:53:18,Jonathan,Aber außerdem muss ich dem i8042 noch externe Treiberlogik für die PS/2-Leitungen verpassen
+2015-02-25 15:53:27,Jonathan,Im originalen IBM-PC sitzen da Tristate-Inverter
+2015-02-25 15:53:51,Jonathan,"Die versenke ich auch im GAL, welches netterweise sogar die Pullups für die PS/2-Schnittstelle integriert hat"
+2015-02-25 15:53:51,Svenska,wieso tristate?
+2015-02-25 15:54:01,Jonathan,*Open collector
+2015-02-25 15:54:10,Svenska,ok
+2015-02-25 15:54:11,Jonathan,Der i8042 hat nur Push-Pull-Ausgänge
+2015-02-25 15:55:08,Jonathan,"Ich hoffe nur, dass dieser verrückte Oszillator stabil läuft *g*"
+2015-02-25 15:55:23,Svenska,in jedem fall wird er stark temperaturabhängig sein
+2015-02-25 15:55:29,Jonathan,Ja
+2015-02-25 15:55:32,Jonathan,Aber das ist egal
+2015-02-25 15:55:43,Jonathan,Hauptsache irgendwas zwischen 4MHz und 12MHz
+2015-02-25 15:56:00,Jonathan,Apropos
+2015-02-25 15:56:14,Jonathan,Im Datenblatt vom i8042 sind Beschaltungen für LC-Oszillatoren angegeben... :D
+2015-02-25 15:56:33,Jonathan,Wieso würde man einen Mikrocontroller per LC-Oszillator betakten wollen?!
+2015-02-25 15:56:41,Svenska,weil man nix anderes hatte.
+2015-02-25 15:56:47,Jonathan,Hmm achso *g*
+2015-02-25 15:57:08,Svenska,"also braucht man - ohne gal - einen '138 fuer /CS, zwei inverter fuer CLK und DATA, und einen oszillator fuer den takt von 8042 ?"
+2015-02-25 15:57:22,Jonathan,Nicht ganz
+2015-02-25 15:57:24,Svenska,oder kann man auf letzteren verzichten
+2015-02-25 15:57:32,Jonathan,Takt ist unbedingt nötig
+2015-02-25 15:57:52,Jonathan,"Du brauchst außerdem noch ein '74, um die beiden Taktphasen zu erzeugen"
+2015-02-25 15:58:11,Jonathan,So macht es zumindest IBM
+2015-02-25 15:58:23,Jonathan,Außerdem brauchst du nicht zwei *Inverter*
+2015-02-25 15:58:38,Jonathan,Du brauchst einen invertierenden und einen nichtinvertierenden Open-Collector-Buffer
+2015-02-25 15:58:45,Svenska,iih
+2015-02-25 15:58:48,Jonathan,Die Verschaltung ist...seltsam
+2015-02-25 15:58:55,Svenska,also vier inverter
+2015-02-25 15:58:56,Svenska,:)
+2015-02-25 15:59:05,Svenska,mit tristate
+2015-02-25 15:59:09,Jonathan,Drei
+2015-02-25 15:59:22,Jonathan,"CLK ist invertiert, DATA nicht (oder umgekehrt)"
+2015-02-25 15:59:24,Svenska,"1 fuer den takt, 1 fuer den inverter, 2 fuer den nichtinverter? ;)"
+2015-02-25 15:59:28,Jonathan,Achso
+2015-02-25 15:59:32,Jonathan,Naja
+2015-02-25 15:59:36,Svenska,dann sind das 3 chips
+2015-02-25 15:59:38,Jonathan,Ein reiner Inverter geht da nicht
+2015-02-25 15:59:43,Svenska,ja alles OC natuerlich
+2015-02-25 15:59:50,Jonathan,Muss ein Flipflop mit komplementären Ausgängen sein
+2015-02-25 16:00:02,Jonathan,XTAL1 und XTAL2 dürfen höchstens 10ns überlappen
+2015-02-25 16:00:09,Jonathan,Inklusive Rise-Time
+2015-02-25 16:00:11,Svenska,och nöö :/
+2015-02-25 16:00:14,Jonathan,*g*
+2015-02-25 16:00:33,Svenska,"gut, das erklärt warum der 8042 scheiße ist"
+2015-02-25 16:00:41,Jonathan,Zusammen mit einem GAL16V8 ist's aber echt minimalistisch :D
+2015-02-25 16:01:19,Jonathan,Hat bei mir inklusive ID-Register genau 3 Chips
+2015-02-25 16:01:24,Jonathan,Ohne das Register wären es 2
+2015-02-25 16:01:39,Svenska,wobei das geht
+2015-02-25 16:01:49,Svenska,ein lsttl gatter hat ne delay von 10ns
+2015-02-25 16:01:56,Jonathan,Klar
+2015-02-25 16:01:58,Svenska,"da könnte ein inverter gerade noch ausreichen, wenn man auf kante näht"
+2015-02-25 16:02:02,Jonathan,Aber die Rise Time ist auch sehr kritisch
+2015-02-25 16:02:15,Jonathan,Mit einem '74 ist es okay
+2015-02-25 16:02:38,Svenska,74er hab ich
+2015-02-25 16:02:44,Svenska,aber die können wieder kein OC
+2015-02-25 16:02:51,Jonathan,Für XTAL1/2 brauchst du auch kein OC
+2015-02-25 16:02:53,Svenska,also dioden zwischenpfropfen *g*
+2015-02-25 16:03:02,Jonathan,OC brauchst du nur für CLK/DATA vom PS/2-Anschluss
+2015-02-25 16:03:09,Jonathan,Das Interface ist ja OC mit Pullup
+2015-02-25 16:03:26,Svenska,ich will wenig chips mensch ^^
+2015-02-25 16:03:28,Jonathan,^^
+2015-02-25 16:03:38,Jonathan,Dann papp nen AVR rein? *g*
+2015-02-25 16:03:39,Svenska,"CLK liegt bei mir auf dem bus, 4 mhz"
+2015-02-25 16:03:55,Jonathan,"Das wären dann 2MHz am i8042, weil der '74 das ja nochmal teilt"
+2015-02-25 16:04:03,Svenska,lass raten: reicht nicht
+2015-02-25 16:04:03,Jonathan,"Ich weiß nicht, ob das ausreicht"
+2015-02-25 16:04:06,Jonathan,Naja
+2015-02-25 16:04:15,Jonathan,Davon steht im Datenblatt nichts
+2015-02-25 16:04:24,Svenska,hängt von der firmware dadrin ab
+2015-02-25 16:04:25,Jonathan,Kommt ja auf das Programm im i8042 an
+2015-02-25 16:04:27,Jonathan,Genau
+2015-02-25 16:04:36,Svenska,wie schnell hat ibm den getaktet?
+2015-02-25 16:04:45,Svenska,der erste 286er hatte 6 mhz
+2015-02-25 16:04:47,Jonathan,"IBM hat 12MHz in ein '74 gegeben, also 6MHz für den i8042"
+2015-02-25 16:04:59,Jonathan,Das hab ich 1:1 im GAL nachgebaut
+2015-02-25 16:05:09,Svenska,schneller duerfte der isa auch nicht sein...
+2015-02-25 16:05:23,Jonathan,Guck dir doch einfach die Pläne von IBM an :P
+2015-02-25 16:05:28,Svenska,"nö, faul :p"
+2015-02-25 16:05:29,Jonathan,Ich kann dir die passende Seite ja mal hochladen
+2015-02-25 16:06:36,Svenska,"also hat ibm den takt fuer den 8042 asynchron erzeugt, richtig?"
+2015-02-25 16:06:56,Jonathan,http://postimg.org/image/5srfk55al/
+2015-02-25 16:06:59,Jonathan,Nein
+2015-02-25 16:07:13,Jonathan,IBM hat den Haupt-Takt des Systems (12MHz) in ein '74 gefüttert
+2015-02-25 16:07:28,Jonathan,Und dessen Ausgänge (Q und /Q) sind +PCK und -PCK
+2015-02-25 16:07:39,Jonathan,*PCLK
+2015-02-25 16:07:46,Svenska,hmm
+2015-02-25 16:08:11,Jonathan,Synchron zur CPU muss es allerdings nicht sein
+2015-02-25 16:08:36,Jonathan,"Und schau mal, was mit den Pins ""P26"" und ""P27"" passiert"
+2015-02-25 16:08:51,Svenska,"verdammt, der 286er frisst ein 2xCLK signal"
+2015-02-25 16:09:10,Jonathan,Genau
+2015-02-25 16:10:27,Jonathan,"KBD_CLK ist invertiert, KBD_DTA nicht"
+2015-02-25 16:10:30,Svenska,"data ist nicht invertiert und oc, clk ist invertiert und oc"
+2015-02-25 16:10:38,Jonathan,Ganz genau
+2015-02-25 16:10:42,Svenska,wofuer steht FB1 und FB2 ?
+2015-02-25 16:10:53,Jonathan,"Ich denke mal, Fuse"
+2015-02-25 16:11:10,Svenska,möglich
+2015-02-25 16:11:38,Jonathan,Und die beiden Leitungen werden dem i8042 zurück auf die Test-Eingänge gefüttert
+2015-02-25 16:12:20,Svenska,"aalso... 3 inverter, 2 dioden, 2 widerstände fuer die tastatur, und 1 inverter fuer den takt"
+2015-02-25 16:12:41,Jonathan,Könnte klappen
+2015-02-25 16:13:05,Jonathan,"""+KBD_INH"""
+2015-02-25 16:13:06,Svenska,dann hat der nur 4 mhz statt 6
+2015-02-25 16:13:13,Jonathan,Könnte noch funktionieren
+2015-02-25 16:14:13,Svenska,"ja gut, den schluessel brauch ich nicht *g*"
+2015-02-25 16:14:28,Jonathan,*g*
+2015-02-25 16:14:42,Svenska,"wenn du langeweile hast, kannst du ja mal schauen, ob es bei 4 mhz noch geht"
+2015-02-25 16:14:44,Jonathan,"Aber eventuell ist die Tastatur gesperrt, wenn der Pin high ist"
+2015-02-25 16:14:52,Svenska,"ansonsten muss ich den mit 16 oder 14,28 mhz takten :)"
+2015-02-25 16:14:55,Jonathan,Und der Pin hat einen integrierten Pullup
+2015-02-25 16:15:05,Jonathan,16MHz + 74LS74
+2015-02-25 16:15:10,Jonathan,= 8MHz nichtüberlappend
+2015-02-25 16:15:16,Svenska,jaja *g*
+2015-02-25 16:15:22,Jonathan,"Der i8042 kann bis 12,5MHz ;)"
+2015-02-25 16:15:26,Svenska,mist ;)
+2015-02-25 16:15:44,Jonathan,"Hast du so Angst davor, ein Flipflop zu verlöten? *g*"
+2015-02-25 16:15:57,Svenska,"nö, ich hab sogar welche da, wenn ich mich recht entsinne"
+2015-02-25 16:16:02,Jonathan,Also :P
+2015-02-25 16:16:07,Jonathan,Das ist dann doch ne Möglichkeit
+2015-02-25 16:16:36,Svenska,hm ja
+2015-02-25 16:16:37,Jonathan,Und zwar die sauberste Möglichkeit
+2015-02-25 16:16:51,Jonathan,Alternativ kannst du ja nen RC-Oszillator bauen.
+2015-02-25 16:16:53,Svenska,"besser, ich nehm die 10,7 mhz"
+2015-02-25 16:17:10,Svenska,dann kann ich die gpu gleich mit versorgen *g*
+2015-02-25 16:17:22,Svenska,das ist mir uebrigens auch mal aufgefallen
+2015-02-25 16:17:34,Svenska,_eigentlich_ hab ich mir da was echt doofes vorgenommen *g*
+2015-02-25 16:17:41,Jonathan,Wieso? *g*
+2015-02-25 16:17:55,Svenska,"ich nehme einen haufen logik, um DRAMs an den z80 zu knueppeln, der dafuer nicht richtig vorgesehen ist"
+2015-02-25 16:18:11,Svenska,"und dann nehme ich ein bisschen logik, um SRAM an den TMS zu kleben, der eigentlich DRAM will *g*"
+2015-02-25 16:18:18,Jonathan,Ohje xD
+2015-02-25 16:18:58,Svenska,da muss ich aber nur einen muxer nehmen
+2015-02-25 16:19:34,Svenska,"7 pins umschalten oder so, fuer 16 kb"
+2015-02-25 16:39:08,Svenska,"erzeugt der 8042 interrupts? :-) wahrscheinlich ja, mist."
+2015-02-25 16:40:24,Jonathan,Svenska: Auf dem originalen IBM-Plan ist kein Interrupt-Pin angeschlossen ;)
+2015-02-25 16:40:48,Svenska,"hm, das ist... interessant."
+2015-02-25 16:41:14,Svenska,"öh, ""+OPT BUF FULL"" ?"
+2015-02-25 16:41:25,Jonathan,Hm stimmt
+2015-02-25 16:42:10,Svenska,dann kann ich kbc und vdc nicht auf eine platine setzen
+2015-02-25 16:43:01,Jonathan,"kevin: Muss man den normalen KBC im x86-PC zwingend per Interrupt nutzen, oder geht das auch mit Polling?"
+2015-02-25 16:43:24,Svenska,"ich glaub, den kann man pollen, ist halt nur doof"
+2015-02-25 16:43:47,Jonathan,"Naja, wenn er keine Interrupts erzeugen würde, könntest du ihn auch nur pollen :P"
+2015-02-25 16:44:06,Svenska,oder ich verknote die interrupts...
+2015-02-25 16:44:18,Jonathan,Oder das
+2015-02-25 16:44:37,Svenska,"ich ueberlege gerade... der 8042 wird ja keine maus unterstuetzen, aber die unterschiedlich sind die protokolle?"
+2015-02-25 16:44:43,Svenska,könnte man einfach zwei nebeneinander kleben? :D
+2015-02-25 16:44:52,Jonathan,Könnte man afaik
+2015-02-25 16:45:05,Jonathan,Wobei
+2015-02-25 16:45:29,Jonathan,Der i8042 übersetzt ja nicht nur stumpf Byte für Byte
+2015-02-25 16:45:35,Jonathan,"Ich glaub, der tut auch schon was an den Daten"
+2015-02-25 16:45:52,Jonathan,"Manche i8042 sind mit ner Firmware programmiert, die auch Mäuse ansteuern kann"
+2015-02-25 16:46:06,Jonathan,So einer würde gehen
+2015-02-25 16:46:06,Svenska,"das sind dann aber welche, die auch ps/2-anschluesse hinten dran hatten"
+2015-02-25 16:46:13,Svenska,hatten meine definitiv nicht *g*
+2015-02-25 16:46:19,Jonathan,*g*
+2015-02-25 16:46:41,Jonathan,Stand in irgendeinem Intel-Datenblatt zum i8042
+2015-02-25 16:46:54,Svenska,witzigerweise habe ich in meiner bastelkiste auch DIN-buchsen und PS/2-kabel... das wird auch noch lustig
+2015-02-25 16:46:58,Jonathan,Dass es Chips mit spezieller Mausunterstützung gibt
+2015-02-25 16:46:59,Jonathan,:D
+2015-02-25 16:47:14,Jonathan,Ich hab mir zwei Mini-DIN-Buchsen besorgt
+2015-02-25 16:47:29,Svenska,zur not nehm ich ein svideo-kabel auseinander
+2015-02-25 16:47:37,Jonathan,... *g*
+2015-02-25 16:47:54,Svenska,oder ne din-tastatur.
+2015-02-25 16:47:57,Jonathan,"Du kannst dein System doch auf den Namen ""ugly hack"" taufen ;)"
+2015-02-25 16:49:31,Svenska,bisher ist alles sauber
+2015-02-25 16:52:11,Svenska,"hm lustig, der chip kann genlock..."
+2015-02-25 16:52:24,kevin,Jonathan: Gehen sollte das auch mit Polling
+2015-02-25 16:52:58,kevin,"Aber jeder Anfänger, der mit sowas im Forum ankommt, kriegt erstmal die Meinung gesagt *g*"
+2015-02-25 16:53:27,Svenska,ja gut *g*
+2015-02-25 16:53:42,Svenska,"aber wenn man den pc-baustein nimmt und in einen nicht-pc einbaut, ist man sowieso krank :D"
+2015-02-25 16:54:04,kevin,"Jo, bei Jonathan würde ich nur sagen, dass er das nicht den Kindern zeigen soll ;-)"
+2015-02-25 16:54:05,Jonathan,*g*
+2015-02-25 16:54:40,Svenska,"aber wenn das geht, dann kann man den interrupt mit anderen geräten teilen, was gut ist"
+2015-02-25 16:55:18,Jonathan,"Dann hab ich schon 2 ""PC-Chips"" im System: 16550 UART und 8042 Keyboard-Controller *g*"
+2015-02-25 16:55:47,Svenska,*g*
+2015-02-25 16:58:30,kevin,"Mach doch mit einem 80386 weiter, dann wären wir endlich mal wieder auf einem allgemeinveständlichen Stand *g*"
+2015-02-25 16:58:56,Svenska,"Jonathan: wolltest du nicht den 486 einbauen, wegen der 8 bit busbreite? ;)"
+2015-02-25 17:02:17,Jonathan,Svenska: Das wäre das nächste Projekt nach der Schule ;)
+2015-02-25 17:02:33,Jonathan,Da könnte ich dann auch mehr RAM dranklemmen
+2015-02-25 17:02:53,Jonathan,"Und am besten mach ich das System kompatibel zum alten IBM-PC, dann kann ich DOS/Linux starten *g*"
+2015-02-25 17:03:33,Svenska,geenau :D
+2015-02-25 17:20:35,Jonathan,"kevin? Wie läuft das auf x86 eigentlich mit der Initialisierung der Tastatur? Macht der KBC das automatisch, oder initialisiert das OS die?"
+2015-02-25 17:25:00,Svenska,"ich glaube, der init-code resettet die tastatur zuerst"
+2015-02-25 17:48:20,Svenska,"davon abgesehen ist die schnittstelle ohnehin zu doof, da ist so gut wie kein zustand drin"
+2015-02-25 17:50:30,Jonathan,"Svenska: Wenn ich auf die Tastatur drücke, sehe ich Takt und Daten auf den PS/2-Leitungen!! :D"
+2015-02-25 17:50:41,Svenska,:D
+2015-02-25 17:50:49,Jonathan,"Nur noch hoffen, dass der i8042 diese Signale auch schluckt *g*"
+2015-02-25 17:51:00,Svenska,im schlimmsten fall musst du die invertieren ^^
+2015-02-25 17:51:51,Jonathan,"Ja, und das heißt: GAL neu flashen ^^"
+2015-02-25 17:52:02,Svenska,"ich hab grad ne gute beschreibung vom tms9918a gefunden und ueberlege gerade, wie man den chip vergewaltigen muss, um 64 zeichen nebeneinander zu platzieren :)"
+2015-02-25 17:52:09,Jonathan,xD
+2015-02-25 17:52:45,Svenska,"32x24 doppelzeichen ist nämlich doof, weil ich nur 256 einträge im character ram habe"
+2015-02-25 17:53:10,Svenska,"(und nein, lesbarkeit auf dem bildschirm spielt keine rolle. :-D)"
+2015-02-25 17:54:13,Svenska,"aber ich habe einen flachfernseher mit nativen 1024x768, das ist exakt 4x4 so groß wie die 256x192 die der chip macht"
+2015-02-25 17:54:21,Jonathan,:D
+2015-02-25 17:54:34,Jonathan,"Mein System bootet noch, wenn ich die PS/2-Karte einsetze"
+2015-02-25 17:54:44,Jonathan,D.h. zumindest am Bus hab ich auf der Karte keinen Murks gemacht
+2015-02-25 17:54:53,Jonathan,"Jetzt muss ich mal schauen, ob ich mit dem Ding auch reden kann ;)"
+2015-02-25 18:13:36,Jonathan,Svenska: Das ID-Register ist schonmal lesbar :D
+2015-02-25 18:14:09,Svenska,:)
+2015-02-25 18:17:29,Jonathan,Hmmm
+2015-02-25 18:17:49,Jonathan,Rein theoretisch kann ich den Input-Port P1 vom i8042 dann ja für eigene Sachen verwursten :D
+2015-02-25 18:18:08,Jonathan,Genauso den Output-Port P2
+2015-02-25 18:18:48,Svenska,"yeah, ich empfehle A20, SPK und RESET, fuer die pc-kompatiblität :)"
+2015-02-25 18:19:14,kevin,Wofür hat man denn sonst einen Tastaturcontroller? *g*
+2015-02-25 18:19:28,Jonathan,*g*
+2015-02-25 18:20:34,Jonathan,"""ffh: Total Error"""
+2015-02-25 18:21:15,Jonathan,Das find ich ja mal klasse
+2015-02-25 18:21:15,Svenska,lol?
+2015-02-25 18:22:06,Jonathan,Hmm
+2015-02-25 18:22:10,Svenska,wollt ihr den total fehler?
+2015-02-25 18:22:18,Jonathan,Aber unbedingt! *g*
+2015-02-25 18:22:24,Svenska,:D
+2015-02-25 18:22:32,Jonathan,"Auf Port 0x80 geb ich Daten aus, auf Port 0x81 Commands"
+2015-02-25 18:22:40,Jonathan,Wäre das schonmal geklärt
+2015-02-25 18:22:56,Jonathan,Hmmmm
+2015-02-25 18:23:21,Jonathan,"Leitet so ein i8042 direkt alles zur Tastatur durch, was man als Daten reinschreibt, nachdem er resettet wurde?"
+2015-02-25 18:23:43,Svenska,"naja, wo sitzt denn die intelligenz einer tastatur...? in der tastatur."
+2015-02-25 18:23:53,Jonathan,*g*
+2015-02-25 18:23:56,Jonathan,Naja
+2015-02-25 18:24:08,Jonathan,Der olle i8042 scheint wohl offenbar auch Scancode Translating zu können und sowas
+2015-02-25 18:24:19,Jonathan,Zumindest steht das im Lowlevel-Wiki :D
+2015-02-25 18:24:25,Svenska,"ich dachte, das wäre die tastatur selbst"
+2015-02-25 18:24:32,Svenska,da ist nämlich auch ein uC drin
+2015-02-25 18:24:34,Jonathan,Ja
+2015-02-25 18:24:39,Jonathan,Aber der schickt nur Scancodes
+2015-02-25 18:25:33,Jonathan,"Ich versuch mal, der Tastatur nen Reset-Befehl zu schicken"
+2015-02-25 18:25:33,kevin,"Kommuniziert man nicht normal mit dem Controller und braucht einen KBC-Befehl, wenn man was an die Tastatur weiterleiten will?"
+2015-02-25 18:25:40,kevin,Oder war das eine Register so und das andere anders?
+2015-02-25 18:26:06,Jonathan,"Es steht im Lowlevel-Wiki, dass der KBC alles direkt an die Tastatur weitergibt, sofern er keine Daten für einen Befehl erwartet :D"
+2015-02-25 18:26:23,Jonathan,"Also versuch ich jetzt mal, meiner Tastatur 0xFF zu schicken"
+2015-02-25 18:26:23,Svenska,"die ganzen avr-projekte, die ich kenne, reduzieren die tastatur auf das absolute minimum"
+2015-02-25 18:26:27,Jonathan,Ja
+2015-02-25 18:27:11,Jonathan,"Rein theoretisch müsste die Tastatur ja dann ihre LEDs kurz aufblinken lassen, wenn sie resettet"
+2015-02-25 18:27:31,Svenska,"öh, echt? :-D"
+2015-02-25 18:32:46,Jonathan,Oder auch nicht :D
+2015-02-25 18:32:57,Jonathan,Ich lese vielleicht erstmal nur den Status vom KBC... *g*
+2015-02-25 18:33:27,Svenska,"du bist dir sicher, dass die tastatur bei reset blinkt? :-D"
+2015-02-25 18:33:46,Jonathan,Nein :D
+2015-02-25 18:33:55,Jonathan,Status vom KBC: 0x00
+2015-02-25 18:35:16,kevin,Das ist eher wenig?
+2015-02-25 18:36:52,Jonathan,Vermutlich
+2015-02-25 18:39:56,Jonathan,"Verdammt, wieso tut er das? :D"
+2015-02-25 18:45:48,Jonathan,"Gut, tot ist er schonmal nicht."
+2015-02-25 18:46:20,Jonathan,"Wenn ich einen Command schreibe und danach den Status lese, ist der Status 0x08"
+2015-02-25 18:46:45,Svenska,aus was fuer einem board hast du den chip gezogen?
+2015-02-25 18:47:15,Jonathan,"Puh, aus einem ollen Ding in der Schule"
+2015-02-25 18:47:36,Jonathan,Hatte Sockel für Cache-SRAM auf der Platine
+2015-02-25 18:49:23,Jonathan,AMI KB-BIOS-VER-F MEGATRENDS
+2015-02-25 18:49:26,Jonathan,Steht auf dem Chip drauf
+2015-02-25 18:49:41,Svenska,"ja, so einer wie meiner"
+2015-02-25 18:49:59,Jonathan,Es scheint zumindest mal ein Standard-KBC zu sein.
+2015-02-25 18:50:32,Jonathan,"Bit 4 vom Statusregister verhält sich so, wie in der Beschreibung vom KBC im Wiki"
+2015-02-25 18:50:40,Jonathan,Wobei
+2015-02-25 18:50:46,Jonathan,Das könnte auch ein Feature von i8042 sein
+2015-02-25 18:53:27,Jonathan,"Ja, wird vom i8042 in Hardware gemacht :("
+2015-02-25 18:53:48,Jonathan,"D.h. ich hab keine Ahnung, ob mein KBC lebt"
+2015-02-25 18:54:42,Svenska,boah was werd ich von offiziellen kanälen zugespammt :(
+2015-02-25 18:54:58,Jonathan,?
+2015-02-25 18:55:39,Svenska,"letzte woche kam ne mail an alle angestellten, ob man an einem projekt mitmachen will zum thema angewandte kultur- und gesellschaftsforschung, und jetzt spammen sie weiter"
+2015-02-25 18:56:16,Svenska,"jeden werktag 3-5 mails an ""alle angestellten"" mit irgendwelchem unfug. optimal sind die mails, die auf einen hinweis im intranet hinweisen, fuer gewöhnlich nachrichten"
+2015-02-25 18:56:30,Jonathan,xD
+2015-02-25 18:56:34,Svenska,statt einfach den text hinten reinzukopieren -.-
+2015-02-25 19:06:58,Jonathan,Hmmm... KBD_CLK ist einfach dauerhaft auf low :(
+2015-02-25 19:07:08,Svenska,pullup vergessen? :D
+2015-02-25 19:07:20,Jonathan,KBD_DATA ist auf high :P
+2015-02-25 19:07:26,Jonathan,Das GAL hat integrierte Pullups
+2015-02-25 19:07:44,Jonathan,Irgendwas mag mein KBC nicht
+2015-02-25 19:10:02,Svenska,"hm, ich bin grad erstaunt, wie krass man allein so ein musikstudio im griff haben kann"
+2015-02-25 19:10:04,Svenska,https://www.youtube.com/watch?v=83aqGYsRgAY
+2015-02-25 19:11:17,Jonathan,:D
+2015-02-25 19:12:49,Svenska,der kann multitasking :D
+2015-02-25 19:15:35,Jonathan,Svenska: http://linusakesson.net/bitbuf/index.php
+2015-02-25 19:18:20,Svenska,ich bin ja schon an ADSR gescheitert :-)
+2015-02-25 19:18:50,Svenska,"und als ich den prototypen hatte, hatte ich keinen zugang mehr zum lab fuer die hardware weil der kurs vorbei war"
+2015-02-25 19:20:56,Svenska,das bitbuf teil ist ja mal geil
+2015-02-25 19:23:51,Jonathan,Dieser doofe Switch... :(
+2015-02-25 19:26:28,DerAlex,Aloha he holde Hacker
+2015-02-25 19:26:39,Svenska,gomorr'n
+2015-02-25 20:49:00,Jonathan,"Svenska: Ich glaub, mein GAL versagt bei der Erzeugung des Takts :("
+2015-02-25 20:49:08,Svenska,schade
+2015-02-25 20:49:21,Jonathan,"Also, der Takt ansich ist schon da und hat auch die richtige Frequenz"
+2015-02-25 20:49:37,Jonathan,Nur kriegt das GAL mehr als TTL-Level nicht hin
+2015-02-25 20:49:56,Svenska,oh
+2015-02-25 20:50:04,Jonathan,"Der i8042 hätte aber gern 3,8V auf XTAL1/2"
+2015-02-25 20:50:06,Svenska,also der klassiker: XTAL will 5V ?
+2015-02-25 20:50:10,Jonathan,Ja
+2015-02-25 20:50:21,Jonathan,Der i8042 spinnt komplett
+2015-02-25 20:50:36,Svenska,2 Ts ?
+2015-02-25 20:50:44,Jonathan,"Manche Pins geben Analogsignale aus, die aussehen, wie kaputter Sägezahn"
+2015-02-25 20:50:58,Jonathan,Diskrete Transistoren bei 6MHz? :D
+2015-02-25 20:51:06,Svenska,warum nicht? nimmst du gute :-)
+2015-02-25 20:51:11,Jonathan,*g*
+2015-02-25 20:51:19,Jonathan,Hätte höchstens noch BS170 da
+2015-02-25 20:51:21,Svenska,oder du ... baust den LC-oszillator aus der schaltung ;)
+2015-02-25 20:51:26,Jonathan,"Ich glaube, ich verwurste ein 74HC74"
+2015-02-25 20:51:45,Jonathan,Oder ich probiere ein anderes GAL
+2015-02-25 20:51:47,Svenska,oder 7404 oder so
+2015-02-25 20:51:54,Jonathan,"In der Hoffnung, dass das gescheitere Pegel ausspuckt"
+2015-02-25 20:51:55,Svenska,du kannst ja beide invertieren
+2015-02-25 20:52:04,Jonathan,Stimmt
+2015-02-25 20:52:05,Jonathan,Das geht auch
+2015-02-25 20:52:15,Jonathan,Hat dann auch gleiche Verzögerungen
+2015-02-25 20:52:26,Svenska,"aber gut, damit fällt dann bei mir jede form von ""ich invertiere einfach"" aus"
+2015-02-25 20:52:27,Jonathan,Müsste dann aber HCT sein
+2015-02-25 20:52:32,Jonathan,"Ja, leider"
+2015-02-25 20:52:41,Svenska,HC sollte auch gehen?
+2015-02-25 20:52:53,Jonathan,Nein
+2015-02-25 20:53:00,Jonathan,Muss ja die Pegel vom GAL fressen
+2015-02-25 20:53:28,Svenska,hmm ich hab noch ne idee
+2015-02-25 20:53:39,Svenska,"welchen strom spuckt das GAL aus, und wie gut kann es sinken?"
+2015-02-25 20:53:42,Jonathan,Pull-Ups hab ich schon *g*
+2015-02-25 20:53:45,Svenska,ach mist ;)
+2015-02-25 20:53:49,Svenska,nimm kleinere ;)
+2015-02-25 20:53:52,Jonathan,470 Ohm sind drin
+2015-02-25 20:54:00,Svenska,mh
+2015-02-25 20:54:03,Jonathan,Das ist schon ziemlich klein
+2015-02-25 20:54:09,Svenska,ich weiß :(
+2015-02-25 20:55:23,Svenska,"dann wirst du nen HCT brauchen, egal welchen"
+2015-02-25 20:55:41,Jonathan,Leider ja
+2015-02-25 20:55:52,Jonathan,Oh lol
+2015-02-25 20:55:54,Svenska,oder einen HC mit pullups an den eingängen
+2015-02-25 20:55:58,Jonathan,"""SN54S74"""
+2015-02-25 20:56:00,Jonathan,... *g*
+2015-02-25 20:56:05,Svenska,wtf
+2015-02-25 20:56:07,Jonathan,Den hab ich ja auch noch
+2015-02-25 20:56:15,Jonathan,Vielleicht wäre das ein Kandidat? :D
+2015-02-25 20:56:21,Svenska,"nein, ist schottky"
+2015-02-25 20:56:23,Jonathan,Ja
+2015-02-25 20:56:36,Svenska,"ob nun S oder LS ist egal, beide geben nur <4V aus"
+2015-02-25 20:56:38,Jonathan,"Aber ich hab das Gefühl, das GAL verreckt an der kapazitiven Last"
+2015-02-25 20:56:56,Svenska,und dann willst du einen stromfresser da einbauen? ;)
+2015-02-25 20:57:03,Svenska,ich wuerd ein HC nehmen und hoffen
+2015-02-25 20:57:08,Jonathan,Hmmm ;)
+2015-02-25 20:57:40,Jonathan,Ich könnte ja ein paar HCT-Inverter parallel schalten.
+2015-02-25 20:57:49,Svenska,?
+2015-02-25 20:58:02,Svenska,"zwei hct-inverter reichen, wenn du die da hast"
+2015-02-25 20:59:11,Jonathan,"Was ich in HCT da habe: 08, 14, 32, 74"
+2015-02-25 20:59:42,Svenska,"08 geht, 14 geht, 32 geht, 74 geht"
+2015-02-25 21:00:28,Jonathan,Ich nehm 32
+2015-02-25 21:00:33,Svenska,"wobei der 74er die schlechteste wahl ist, glaube"
+2015-02-25 21:24:12,Svenska,der 8048 ist halt antik. geht's jetzt?
+2015-02-25 21:24:45,Jonathan,Weiß ich noch nicht
+2015-02-25 21:24:48,Jonathan,Die Pegel sind etwas besser
+2015-02-25 21:24:55,Jonathan,Aber immer noch ziemlich doof
+2015-02-25 21:24:58,Svenska,"""etwas""?"
+2015-02-25 21:25:15,Jonathan,"Naja, zumindest erreiche ich jetzt die 3,8V"
+2015-02-25 21:25:18,Svenska,"kann das sein, dass der 8048 so krass strom zieht, dass das gatter in die knie geht?"
+2015-02-25 21:25:28,Jonathan,Die Rise Time ist noch immer kacke
+2015-02-25 21:26:32,Jonathan,Ich lese jetzt einfach mal das Statusregister in ner Endlosschleife aus
+2015-02-25 21:26:54,Svenska,ist die versorgungsspannung der tastatur stabil?
+2015-02-25 21:27:11,Jonathan,Sagt immernoch 0x00
+2015-02-25 21:27:22,Jonathan,"Die Spannung an der Tastatur ist in Ordnung, ja"
+2015-02-25 21:27:34,Jonathan,Hab 100n an die Buchse gelötet
+2015-02-25 21:28:29,Svenska,hmm
+2015-02-25 21:29:03,Svenska,"langsam hab ich das gefuehl, dass das L im LC-oszillator nicht unwichtig wäre..."
+2015-02-25 21:31:01,Jonathan,xD
+2015-02-25 21:31:07,Jonathan,Wieso?
+2015-02-25 21:31:17,Svenska,lädt die kapazität der leitung schneller hoch
+2015-02-25 21:31:22,Jonathan,Achso ja
+2015-02-25 21:31:52,Jonathan,"Aber inzwischen hab ich entdeckt, wieso mein Takt so scheiße war: Der gnadenlose Stromverbrauch von GAL und i8042 haben mein Netzteil in die Knie gezwungen"
+2015-02-25 21:32:16,Jonathan,Jetzt liegt an den Takt-Eingängen der geforderte Takt perfekt an
+2015-02-25 21:33:59,Jonathan,Apropos
+2015-02-25 21:34:08,Jonathan,Mein neues Oszilloskop kann ja USB-Sticks verwerten :D
+2015-02-25 21:34:14,Jonathan,Das kann ich ja jetzt eigentlich mal ausprobieren
+2015-02-25 21:37:44,Jonathan,Svenska: So sieht der Takt jetzt aus: http://s11.postimg.org/tc471emnn/clock001.png
+2015-02-25 21:38:13,Jonathan,Das ist direkt an XTAL1/2
+2015-02-25 21:40:28,Jonathan,KBD_CLK ist immernoch low... :(
+2015-02-25 21:40:45,Svenska,direkt aus dem gal der takt oder via bande?
+2015-02-25 21:41:04,Jonathan,Letzteres
+2015-02-25 21:41:20,Jonathan,Das 74HCT32 bereinigt die Pegel ganz ordentlich
+2015-02-25 21:42:31,Jonathan,"Rise- und Fall-Time (von 0,6V auf 3,5V und umgekehrt) ist <10ns"
+2015-02-25 21:42:49,Jonathan,"Genau das, was das Intel-Datenblatt gerne hätte"
+2015-02-25 21:43:07,Svenska,"sicher, dass du das korrekte register liest?"
+2015-02-25 21:43:14,Jonathan,Ja
+2015-02-25 21:43:42,Jonathan,"Wenn ich etwas auf 0x80 (Datenregister) schreibe, ist der Wert von 0x81 (Statusregister) danach 0x08"
+2015-02-25 21:43:45,Svenska,die spannung sieht mir bissl asymmetrisch aus
+2015-02-25 21:43:55,Svenska,+2V und -3V
+2015-02-25 21:43:59,Svenska,oder seh ich das falsch?
+2015-02-25 21:44:14,Svenska,was hast du ueberhaupt als netzteil?
+2015-02-25 21:44:14,Jonathan,Ist um 3V nach unten verschoben ^^
+2015-02-25 21:44:22,Jonathan,Damit es gescheit auf den Bildschirm passt
+2015-02-25 21:44:24,Svenska,ok
+2015-02-25 21:44:28,Jonathan,DC-getriggert
+2015-02-25 21:44:31,Svenska,also gibst du echte 5V aus
+2015-02-25 21:44:43,Jonathan,Netzteil ist ein 450W-ATX-Klops
+2015-02-25 21:44:57,Svenska,und das hast du in die begrenzung getrieben? :D
+2015-02-25 21:45:01,Jonathan,Nein *g*
+2015-02-25 21:45:16,Jonathan,"Wenn ich eine Platine außerhalb des Systems teste, hänge ich die an ein popeliges SNT"
+2015-02-25 21:45:23,Jonathan,Das ging in die Begrenzung
+2015-02-25 21:45:31,Svenska,krass
+2015-02-25 21:45:36,Jonathan,Ja
+2015-02-25 21:45:39,Svenska,d.h. der 8048 zieht 500 mA?
+2015-02-25 21:45:44,Jonathan,Nee
+2015-02-25 21:45:52,Jonathan,Der wird zwar ziemlich warm
+2015-02-25 21:45:58,Jonathan,Aber das GAL frisst auch viel
+2015-02-25 21:46:18,Jonathan,Asynchrone + synchrone Logik auf 12MHz = Stromverbrauch
+2015-02-25 21:46:29,Svenska,"btw bin grad sauer, die einzige kaffeemaschine mit funktionierender kakaoausgabe ist nachts abgeschaltet, und die andere ... naja, gibt mir wasser :-("
+2015-02-25 21:46:38,Jonathan,... :(
+2015-02-25 21:47:18,Jonathan,"Ich versteh nicht, was mein i8042 da tut"
+2015-02-25 21:47:53,Jonathan,Die Anbindung an den Bus scheint ja zu funktionieren
+2015-02-25 21:48:12,Jonathan,"Bei einem Schreibzugriff sagt mir das Ding nachher korrekt, dass ich was geschrieben habe"
+2015-02-25 21:48:27,Svenska,aber es treibt nix auf die tastatur raus
+2015-02-25 21:48:35,Jonathan,Ja
+2015-02-25 21:48:40,Svenska,hast du den keylock mal umgedreht?
+2015-02-25 21:48:42,Jonathan,Und reagiert sonst auch nicht auf irgendwelche Befehle
+2015-02-25 21:48:45,Jonathan,Ja
+2015-02-25 21:49:38,Jonathan,"Aber der i8042 sagt ja auch angeblich, dass sein Selbsttest fehlgeschlagen ist"
+2015-02-25 21:49:44,Jonathan,Was auch immer der Selbsttest ist
+2015-02-25 21:50:18,Jonathan,"Wenn das Ding laufen würde, würde Bit 3 vom Statusregister gesetzt sein :("
+2015-02-25 21:50:26,Svenska,nun ja
+2015-02-25 21:50:42,Svenska,"er sagt dir, er sei kaputt"
+2015-02-25 21:50:58,Jonathan,Das glaube ich ihm nicht *g*
+2015-02-25 21:51:47,Svenska,vllt muss eine anderer pin noch korrekt sein
+2015-02-25 21:52:00,Jonathan,Ja
+2015-02-25 21:52:08,Jonathan,Könnte sein
+2015-02-25 21:52:19,Svenska,ist die rueckkopplung an die TESTn korrekt?
+2015-02-25 21:52:28,Jonathan,Ja
+2015-02-25 21:52:37,Jonathan,T0 (= KBD_CLK) ist allerdings dauerhaft low
+2015-02-25 21:52:45,Svenska,und KBD_DATA ?
+2015-02-25 21:52:48,Jonathan,Weil der i8042 auf P26 high ausgibt
+2015-02-25 21:52:53,Jonathan,KBD_DATA ist high
+2015-02-25 21:52:55,Jonathan,Genauso wie T1
+2015-02-25 21:53:05,Svenska,sollte das?
+2015-02-25 21:53:10,Jonathan,Weiß ich nicht
+2015-02-25 21:53:12,Jonathan,Steht nirgends
+2015-02-25 21:53:59,Svenska,"C=0 D=1 steht fuer ""PC ist Busy"""
+2015-02-25 21:54:26,Jonathan,Ist also nicht unbedingt falsch
+2015-02-25 21:54:37,Svenska,exakt
+2015-02-25 21:55:15,Svenska,"wenn du was an die tastatur schicken willst, dann sollte sich beides umdrehen"
+2015-02-25 21:55:23,Svenska,"von ""PC busy"" auf ""PC will senden"""
+2015-02-25 21:55:40,Jonathan,Tut es nicht
+2015-02-25 21:55:47,Jonathan,Der i8042 reagiert auf nichts
+2015-02-25 21:56:11,Svenska,hm
+2015-02-25 22:01:44,Svenska,"andere seite sagt D=high C=low: ""Kommunikation gestoppt (Inhibit)"""
+2015-02-25 22:09:09,Jonathan,Svenska: http://postimg.org/image/5srfk55al/full/
+2015-02-25 22:09:18,Jonathan,Oder ich hab einfach nur den Plan falsch verstanden
+2015-02-25 22:09:34,Jonathan,"KBD_CLK muss auf low sein, wenn P26 auf high ist, richtig?"
+2015-02-25 22:10:06,Svenska,ja
+2015-02-25 22:10:23,Jonathan,Gut
+2015-02-25 22:10:34,Svenska,wobei mir C76 und C77 nicht ganz klar sind
+2015-02-25 22:10:46,Jonathan,Entstörung
+2015-02-25 22:10:50,Jonathan,Wegen EMV
+2015-02-25 22:10:55,Svenska,"hm ok, point taken"
+2015-02-25 22:11:12,Jonathan,Feedback auf T0 und T1 ist auch soweit okay
+2015-02-25 22:11:30,Svenska,auch nicht vertauscht?
+2015-02-25 22:11:36,Jonathan,"T0=low, T1=high"
+2015-02-25 22:11:39,Jonathan,Hab's nachgemessen
+2015-02-25 22:11:40,Svenska,"wenn du dem chip ein reset gibst, passiert da was an den leitungen?"
+2015-02-25 22:11:49,Jonathan,Kann ich gerade mal messen
+2015-02-25 22:15:39,Jonathan,Svenska: Bleibt konstant
+2015-02-25 22:15:54,Svenska,das ist komisch
+2015-02-25 22:15:59,Jonathan,Ja
+2015-02-25 22:16:16,Svenska,keylock ist low?
+2015-02-25 22:18:23,Jonathan,Ja
+2015-02-25 22:18:28,Jonathan,Sofern du damit P17 meinst
+2015-02-25 22:18:39,Svenska,ja
+2015-02-25 22:18:59,Svenska,was ist mit P14 ?
+2015-02-25 22:19:12,Jonathan,high
+2015-02-25 22:19:23,Svenska,mach den mal low
+2015-02-25 22:19:27,Jonathan,Wieso?
+2015-02-25 22:19:34,Svenska,"weiß nicht, oder ist das ein output?"
+2015-02-25 22:19:37,Jonathan,Der wird nur von der PC-Software verwendet
+2015-02-25 22:19:47,Jonathan,Kann mit nem Befehl ausgelesen werden
+2015-02-25 22:19:53,Jonathan,Sollte mit dem KBC selbst nichts zu tun haben
+2015-02-25 22:19:58,Svenska,"""sollte""..."
+2015-02-25 22:20:14,Jonathan,... :)
+2015-02-25 22:21:06,Svenska,"P15 und P16 sind auch eher komisch eingezeichnet, aber du hattest was von pullups gesagt, oder?"
+2015-02-25 22:21:06,Jonathan,Ja
+2015-02-25 22:22:04,Svenska,und du hast gaanz sicher auch keine versorgungsspannung vergessen? ^^
+2015-02-25 22:23:02,Jonathan,Kann ich ja nochmal kontrollieren ^^
+2015-02-25 22:27:26,Jonathan,Svenska: Sind alle dran
+2015-02-25 22:27:35,Svenska,doof
+2015-02-25 22:33:02,Jonathan,Huuuuch
+2015-02-25 22:33:24,Svenska,?
+2015-02-25 22:33:27,Svenska,keine tastatur angeschlossen?
+2015-02-25 22:34:39,Jonathan,"Svenska: Im Techincal Reference Manual steht folgendes zu Bit 2 vom Statusregister: ""System Flag. This bit may be set to 0 or 1 by writing to the system's flag bit in the keyboard controller's command byte. It is set to 0 after a power on reset."""
+2015-02-25 22:34:46,Jonathan,Hmmmm
+2015-02-25 22:35:01,Jonathan,Vielleicht ist ja einfach nur das Lowlevel-Wiki falsch?
+2015-02-25 22:35:08,Svenska,um welches bit geht es?
+2015-02-25 22:35:25,Jonathan,"Das, dass auf Lowlevel als ""Selbsttest-Bit"" bezeichnet wird"
+2015-02-25 22:35:30,Jonathan,Welches immer 1 sein soll
+2015-02-25 22:35:41,Svenska,naja du muesstest es trotzdem setzen können
+2015-02-25 22:35:57,Svenska,"und die tastatur muesste dann ja funktionieren, was sie nicht tut ^^"
+2015-02-25 22:37:41,Jonathan,"Vielleicht ist der KBC nach dem power-on im ""Keyboard inhibit""-Modus"
+2015-02-25 22:37:55,Jonathan,Da zieht er nämlich laut Manual auch CLK auf low
+2015-02-25 22:38:04,Svenska,"nein, das macht der schluessel"
+2015-02-25 22:38:09,Svenska,der ist n mechanischer schalter
+2015-02-25 22:38:31,Jonathan,Naja
+2015-02-25 22:38:45,Jonathan,Es gibt auch einen Softwarebefehl dazu
+2015-02-25 22:38:47,Svenska,osdev sagt:
+2015-02-25 22:38:52,Svenska,System Flag
+2015-02-25 22:38:52,Svenska,Meant to be cleared on reset and set by firmware (via. PS/2 Controller Configuration Byte) if the system passes self tests (POST) 
+2015-02-25 22:39:01,Jonathan,Ah okay
+2015-02-25 22:39:15,Jonathan,"Dann ist es also richtig, wenn das bei mir auf 0 ist"
+2015-02-25 22:41:23,Svenska,also musst du erst 0x05 an den command port schicken
+2015-02-25 22:41:30,Svenska,dann sollte das bit auf 1 gehen
+2015-02-25 22:42:58,Svenska,bzw 0x05 per command 0x60 schicken
+2015-02-25 22:43:17,Svenska,"hihi, wenn du 0bxxxxxxx1 per command 0xD1 schickst, dann hängst du den computer weg, weil du reset dann dauerhaft auf low setzt :D"
+2015-02-25 22:43:59,Jonathan,xD
+2015-02-25 22:44:03,Jonathan,Naja
+2015-02-25 22:44:09,Jonathan,"Bin mal weg, gute Nacht ^^"
+2015-02-25 22:44:14,Jonathan,Morgen kann ich ja nochmal schauen
+2015-02-25 22:44:16,Svenska,"deswegen gibts cmd 0xFE fuer ""pulse mal reset"" :D"
+2015-02-25 22:44:19,Svenska,viel spaß
+2015-02-25 22:44:22,Svenska,schlaf gut

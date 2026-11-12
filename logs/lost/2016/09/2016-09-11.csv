@@ -1,0 +1,69 @@
+date/time,nick,message
+2016-09-11 10:35:59,feliwir,felmoin
+2016-09-11 10:36:04,feliwir,*moin
+2016-09-11 10:47:26,Paddy,Moin
+2016-09-11 11:17:46,feliwir,ist jemandem so langweilig das er mein x64 kernel anschauen mag und sagen was nicht stimmt :D
+2016-09-11 11:46:53,feliwir,ich komm nie in meine kernel_main -.- https://github.com/feliwir/benny/blob/master/kernel/arch/x86_64/boot.asm
+2016-09-11 11:49:05,mgottschlag,"ich empfehle ja inzwischen der Einfachheit halber üblicherweise, für x86/x86_64 einfach ein UEFI zu nehmen, das bereits im LM startet :D"
+2016-09-11 11:49:24,feliwir,"mgottschlag, ich benutze halt grub :-/"
+2016-09-11 11:49:25,mgottschlag,"du kannst qemu -d int übergeben, dann gibt er dir alle Exceptions aus"
+2016-09-11 11:49:45,mgottschlag,"dann siehst du, falls dein LM-Setup einen PF erzeugt"
+2016-09-11 11:51:29,feliwir,pf ?
+2016-09-11 11:51:32,mgottschlag,pagefault
+2016-09-11 11:52:19,feliwir,"mein instruction pointer ist irgendwo im nirgendwo, das ist das einzige was ich weiß"
+2016-09-11 11:52:27,feliwir,und verändert sich ständig
+2016-09-11 11:52:43,mgottschlag,"dann lass dir erstmal die Exceptions mit -d int ausgeben, dann weißt du vielleicht, warum"
+2016-09-11 11:52:50,mgottschlag,systematisches Debugging ftw
+2016-09-11 11:53:34,feliwir,was genau soll ich dann damit machen: http://pastebin.com/rwf8VcHF ?
+2016-09-11 11:53:47,Paddy,"Oder qemu -d in_asm, da sieht man meistens auch, wo eip anfängt, davonzulaufen"
+2016-09-11 11:54:07,mgottschlag,"okay, das sieht nicht aus als wäre da irgendwelche Exceptions"
+2016-09-11 11:54:47,Paddy,"""verändert sich ständig"" heißt, er wird einfach größer, oder?"
+2016-09-11 11:54:52,mgottschlag,"ich würde jetzt iterativ ein 1: jmp 1b im Code einfügen und hin und her schieben, um zu gucken, wo der Kontrollfluss noch in meinem Code ist und wo er abhaut"
+2016-09-11 11:55:02,feliwir,"Paddy, ja"
+2016-09-11 11:56:04,feliwir,wenn man gdb glauben darf komme ich nicht zu check_multiboot
+2016-09-11 11:56:21,feliwir,https://github.com/feliwir/benny/blob/master/kernel/arch/x86_64/boot.asm#L36
+2016-09-11 11:59:04,feliwir,kann ich qemu irgendwie anweisen grub zu überspringen?
+2016-09-11 11:59:10,feliwir,also wenn ich die iso auswähle
+2016-09-11 12:05:48,Paddy,Was meinst du mit überspringen?
+2016-09-11 12:12:33,feliwir,"Paddy, das halt dann eingabe gedrückt wird irgendwie oder soll ich in der grub.cfg einfach den timeout setzen?"
+2016-09-11 12:20:50,Paddy,"Jo, einfach Timeout auf 0 und gut"
+2016-09-11 12:21:03,Paddy,Oder du nimmst halt qemu -kernel statt GRUB
+2016-09-11 12:29:39,feliwir,kann es denn sein dass die Instruktion meinen EIP durcheinander bringt: https://github.com/feliwir/benny/blob/master/kernel/arch/x86_64/boot.asm#L33
+2016-09-11 12:29:48,feliwir,ich komm nämlich nie zu check_multiboot
+2016-09-11 13:02:56,Paddy,"feliwir: Das ist kein Sprung, also eher nein"
+2016-09-11 13:03:35,feliwir,"Paddy, hast nen plan warum ich dann in _start komme aber nicht in check_multiboot"
+2016-09-11 13:03:49,Paddy,Wie hast du das geprüft?
+2016-09-11 13:05:37,feliwir,naja wenn in gdb bei _start breake und dann den kernel laufen lassen komm ich da hin
+2016-09-11 13:05:49,feliwir,bei check_multiboot komm ich aber nie an
+2016-09-11 13:07:00,Paddy,Auf gdb würde ich mich gerade beim Bootvergang nicht verlassen
+2016-09-11 13:07:41,Paddy,Insbesondere kommt er nicht mit CPU-Moduswechsel klar
+2016-09-11 13:07:56,Paddy,Vergiss gdb einfach erstmal
+2016-09-11 13:08:54,Paddy,"Nimm klassische, zuverlässige Debugmethoden wie Debugausgaben oder Endlosschleifenund info registers"
+2016-09-11 13:10:50,feliwir,hm okay
+2016-09-11 13:12:25,feliwir,  1: jmp 1b das ist schon eine endlosschleife oder?
+2016-09-11 13:12:44,Paddy,Ja
+2016-09-11 13:13:35,feliwir,"wtf. Ich hab das direkt am Start von meiner _start, aber das EIP registers verändert sich trotzdem noch permanent"
+2016-09-11 13:14:16,Paddy,"Bist du dir dann sicher, dass _start dein Einsprungspunkt ist?"
+2016-09-11 13:17:21,feliwir,na bei meinem i386 kernel funktioniert es und der ist exakt gleich
+2016-09-11 13:17:31,feliwir,was sollte man denn alles beim linkerscript ändern?
+2016-09-11 13:20:02,Paddy,Im Moment noch nichts
+2016-09-11 13:20:45,feliwir,dann weiß ich echt nicht mehr weiter :(
+2016-09-11 13:21:39,Paddy,Was für eine Binary kommt denn am Ende raus? Ist das eine 32-Bit- oder eine 64-Bit-ELF?
+2016-09-11 13:22:26,feliwir,Dateiformat: elf64-x86-64
+2016-09-11 13:23:59,Paddy,Und GRUB akzeptiert das?
+2016-09-11 13:25:07,feliwir,joa
+2016-09-11 13:26:23,feliwir,ich versuchs mal mit dem bochs debugger
+2016-09-11 13:27:59,Paddy,Wie baut man denn deinen Kernel für x86_64? Reicht einfach make?
+2016-09-11 13:28:45,Paddy,make kernel ARCH=x86_64
+2016-09-11 13:28:46,Paddy,Das?
+2016-09-11 22:36:34,Svenska,"@max (log): wenn dir ""Restaurang"" schon gefällt, dann dürfte dir ""Kvarg"" noch viel mehr gefallen. :-)"
+2016-09-11 22:37:07,Paddy,"Das hat fast schon was von ""kornflex"" *g*"
+2016-09-11 22:37:28,Svenska,aber mais flexen will ich nur eher selten *g*
+2016-09-11 22:37:38,Paddy,"Jo, aber in Island scheint das so üblich zu sein ;-)"
+2016-09-11 22:38:05,Svenska,*g*
+2016-09-11 22:38:24,Svenska,"die dänen wuerden das uebrigens mit ks schreiben, weil die kein x im alphabet haben"
+2016-09-11 22:38:51,Paddy,Bei den Cornflakes wär das ja schon wieder näher am Original
+2016-09-11 22:38:58,Paddy,Beim flexen anderenseits... ;-)
+2016-09-11 22:39:43,Svenska,"bin eben mehrfach mit dem bus an großer werbung für ""Kvargprodukter utan socker"" vorbeigefahren und musste da so das chatlog denken"
+2016-09-11 22:39:57,Paddy,Quarkprodukte aus Socken? *g*
+2016-09-11 22:40:07,Svenska,"ne, ohne zucker *g*"

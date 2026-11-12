@@ -1,0 +1,605 @@
+date/time,nick,message
+2010-03-31 09:13:34,kwolf,Moin
+2010-03-31 09:19:36,FreakyPenguin,Moin
+2010-03-31 09:20:55,kwolf,So früh schon wach? ;-)
+2010-03-31 09:23:21,FreakyPenguin,Öhm noch... ;-)
+2010-03-31 09:23:49,kwolf,Was hast du denn so spannendes gemacht? ;-)
+2010-03-31 09:25:06,FreakyPenguin,Böh gestern zu lange geschlafen und dann halt mal wieder AVL-Bäume gebaut ;-)
+2010-03-31 09:28:24,kwolf,Tun unsere denn nicht gut genug? ;-)
+2010-03-31 09:28:48,FreakyPenguin,"Doch, aber ich wollte nicht den Code für die Übung einreichen ;-)"
+2010-03-31 09:30:05,kwolf,Du magst meinen Code nicht? *g*
+2010-03-31 09:32:42,FreakyPenguin,Ist halt nur bedingt java ;-)
+2010-03-31 09:33:27,kwolf,Hast du keine Klasse mehr für Pointer rumfahren? ;-)
+2010-03-31 09:33:40,FreakyPenguin,*g*
+2010-03-31 09:34:23,kwolf,"Irgendwie hätte ich grad Lust, zu probierern, COW zu implementieren. Aber ich vermute, bis heute abend hat sich das gelegt. ;-)"
+2010-03-31 09:35:28,FreakyPenguin,*hehe*
+2010-03-31 09:36:06,FreakyPenguin,"Naja ich muss jetzt mal weiter, bis später ;-)"
+2010-03-31 09:36:09,kwolf,bd
+2010-03-31 10:22:15,|Thyl,so ich habe Neuigkeiten in Bochs ein #GP und in qemu ein #UD als expection 
+2010-03-31 10:24:23,kwolf,Das klingt seltsam
+2010-03-31 10:24:50,kwolf,Wie sieht dein Code denn jetzt aus und wo fliegt die Exception?
+2010-03-31 10:26:48,Thylon,der c Teil http://pastebin.com/EFEi2fHm
+2010-03-31 10:27:42,Thylon,der assembler teil http://pastebin.com/j9QanUNh
+2010-03-31 10:28:06,kwolf,"Okay, und wo genau kommt die Exception?"
+2010-03-31 10:28:45,Thylon,Expection in Bochs: 1049400d qemu: 45380
+2010-03-31 10:28:48,Thylon,d
+2010-03-31 10:29:26,kwolf,Das ist jeweils eip?
+2010-03-31 10:29:31,Thylon,ja
+2010-03-31 10:29:33,kwolf,"Wenn ja, wo im Code ist das?"
+2010-03-31 10:29:53,Thylon,wenn meine Expectionhandler funktionieren :)
+2010-03-31 10:30:00,kwolf,"Hm, vermutlich gar nicht im Code? ;-)"
+2010-03-31 10:30:18,kwolf,"Wenn ich mal davon ausgehe, dass dein Kernel an 1 MB liegt und nicht riesig ist"
+2010-03-31 10:30:32,Thylon,genau kleiner testkernel
+2010-03-31 10:31:21,Thylon,schau es dir bitte noch mal an muss leider gehenn bis später
+2010-03-31 10:53:23,Thylon,so wieder da
+2010-03-31 10:54:31,Thylon,kwolf: noch was entdeckt?
+2010-03-31 10:59:33,kwolf,"Vermutlich nicht den Grund für deine Abstürze, aber der Aufruf im C-Code sieht fishy aus"
+2010-03-31 11:00:14,kwolf,"Du müsstest eigentlich einen Haufen Register clobbern, wenn du es so machen willst"
+2010-03-31 11:00:22,Thylon,weis so auf computer geteste auch #gp und andere Addresse
+2010-03-31 11:00:40,kwolf,Oder du hältst dich mit deiner Assemblerfunktion an die C-Aufrufkonvention und machst einen normalen Funktionsaufruf. Das wäre meine bevorzugte Variante.
+2010-03-31 11:01:20,Thylon,"habe ich gestern auf die Schnelle nicht hinbekommen daher dieser ""Trick"""
+2010-03-31 11:01:50,Thylon,eindeutig ist der Absturz auserhalb meines Kernels
+2010-03-31 11:02:47,kwolf,"Ja, entweder dein Sprung zum APM-Code ist kaputt oder du machst deinen Stack kaputt und es geht erst später kaputt"
+2010-03-31 11:03:29,kwolf,Vorschlag: Häng einen gdb ran und mach Singlestepping in dem interessanten Bereich
+2010-03-31 11:03:40,Thylon,Stimmen den Die Deskriptoren die ich anlege vom Funktionsaufruf her?
+2010-03-31 11:04:15,kwolf,Die ändern nichts am eip
+2010-03-31 11:04:42,kwolf,Vermutlich sind aber die Flags für das 16-Bit-Segment falsch
+2010-03-31 11:04:51,Thylon,wie dann richtig?
+2010-03-31 11:05:05,kwolf,Bin ich ein Intelmanual?
+2010-03-31 11:05:13,kwolf,Oder ein Wiki?
+2010-03-31 11:05:16,Thylon,ne
+2010-03-31 11:05:34,kwolf,"Ich glaube, die Konstante, die du für CODESEG hast, ist eben für ein 32-Bit-Codesegment"
+2010-03-31 11:05:47,kwolf,Das Flag könnte aber auch woanders drin sein
+2010-03-31 11:05:57,kwolf,"Ich weiß nur, dass die Flags für 16 und 32 Bit nicht gleich sein sollten"
+2010-03-31 11:06:33,Thylon,hm aber in der secifikation steht nichts von Flags oder?
+2010-03-31 11:07:18,Thylon,Die Flags für 16bit und 32 bit müssen vielleicht wirklich unterschiedlich sein probiers ma aus
+2010-03-31 11:09:09,kwolf,"Wie gesagt, mach Singlestepping, damit du siehst, wo der falsche Sprung ist"
+2010-03-31 11:09:26,kwolf,Oder -d in_asm könnte auch helfen
+2010-03-31 11:15:50,Thylon,"so der ""far jmp"" is richtig sagt bochsdbg"
+2010-03-31 11:16:23,Thylon,dann ruft er cli auf und push 0x0000000d mehr gleich :)
+2010-03-31 11:17:44,kwolf,Nach der Werbung?
+2010-03-31 11:18:20,Thylon,dann jmp .+0x000000b2 (0x0010048d)  nein räum nur gleichzeitig mein Zimmer auf :)
+2010-03-31 11:18:46,Thylon,pushad
+2010-03-31 11:19:18,Thylon,push ds
+2010-03-31 11:21:29,Thylon,http://pastebin.com/mFFtf2gp
+2010-03-31 11:23:02,chris12,moin
+2010-03-31 11:24:20,kwolf,Thylon: Was soll mir der Code sagen?
+2010-03-31 11:24:59,Thylon,moment gleich alles dazu
+2010-03-31 11:37:26,Thylon,"http://pastebin.com/XD7J3sxV das Passiert nach dem ""far jmp"" geht noch viel weiter"
+2010-03-31 11:38:27,DickHuuhn,"http://boerse.ard.de/content.jsp?key=dokument_422098 << rolf, hier sind mehr :D"
+2010-03-31 12:01:53,Thylon,http://pastebin.com/JJjyBv3q am ende hängt er sich dann ganz plötzlic mit nem #gp auf
+2010-03-31 12:02:02,Thylon,*plötzlich
+2010-03-31 12:03:40,kwolf,Beim jnz?
+2010-03-31 12:04:52,Thylon,er kommt da leider gar nicht mehr hin auf dem Weg hängt es hatte Breakpoint auf jnz gemacht :) 
+2010-03-31 12:05:49,kwolf,Und er ist auch gar nicht bei der komischen Adresse gelandet?
+2010-03-31 12:06:26,Thylon,Die eip beim #gp ist 0x100338
+2010-03-31 12:06:54,kwolf,[10:28] <Thylon> Expection in Bochs: 1049400d qemu: 45380
+2010-03-31 12:07:02,kwolf,Da war das wohl noch anders
+2010-03-31 12:07:23,Thylon,Da in Dezimal jetzt in hex
+2010-03-31 12:07:34,Thylon,d für Dezimal :)
+2010-03-31 12:08:47,Thylon,auf jeden Fall steht da ein retf
+2010-03-31 12:09:37,kwolf,"Ah, du verwirrst uns absichtlich"
+2010-03-31 12:10:03,kwolf,"Adressen gibt man _immer_ in Hex an. Und d ist eine gültige Hexziffer, also eine ganz schlechte Idee, Dezimalzahlen so zu kennzeichnen"
+2010-03-31 12:10:07,Thylon,scheint so als ob mein retf call der fehler ist falscher Rücksprung auf dem Stack
+2010-03-31 12:10:46,Thylon,Weil 0x100338 mein retf ist aber an der Stelle schon aufgerufen worden war
+2010-03-31 12:11:49,kwolf,"[11:02] <kwolf> Ja, entweder dein Sprung zum APM-Code ist kaputt oder du machst deinen Stack kaputt und es geht erst später kaputt"
+2010-03-31 12:12:12,Thylon,Also ich mache ja retf so: http://pastebin.com/EEf5mhbN ist da was Falsch?
+2010-03-31 12:12:21,kwolf,Weiß ich nicht
+2010-03-31 12:12:53,Thylon,Hast du eine Ahnung wie mann einen Far Call richtig macht ?
+2010-03-31 12:13:53,kwolf,"Eine Ahnung, ja, und die habe ich gestern oft genug genannt. Aber es ist nicht mehr als eine Ahnung, könnte völlig falsch sein."
+2010-03-31 12:14:50,Thylon,also nur über Speicher oder Imediate ?
+2010-03-31 12:15:01,kwolf,Jo. Und Immediate scheidet offensichtlich aus.
+2010-03-31 12:15:24,kwolf,Was ist denn der Errorcode bei deinem #GP?
+2010-03-31 12:18:42,Thylon,0
+2010-03-31 12:21:00,Thylon,Errorcode 0
+2010-03-31 12:21:32,kwolf,#GP(0)
+2010-03-31 12:21:32,kwolf,If the return code or stack segment selector NULL.
+2010-03-31 12:21:33,kwolf,If the return instruction pointer is not within the return code segment limit
+2010-03-31 12:22:22,Thylon,aus welchem intelmanual?
+2010-03-31 12:22:32,Homix,DEM intel manual ;)
+2010-03-31 12:22:33,kwolf,Das steht bei der Beschreibung von retf
+2010-03-31 12:23:09,Thylon,welcher Download auf der Intelseite?
+2010-03-31 12:24:44,kwolf,http://lowlevel.brainsware.org/wiki/index.php/Linkliste#Offizielle_Spezifikationen
+2010-03-31 12:25:42,kwolf,Du willst zumindest Volume 1 bis 3 haben
+2010-03-31 12:26:02,Thylon,danke
+2010-03-31 12:31:20,Homix,"hm das ist mir auch noch in keinem kernel passiert, dass ich ewig nach nem fehler such, nur weil ich vergessen hab, für user-code das entsprechende codesegment zu setzen^^"
+2010-03-31 12:31:29,Homix,datensegment*
+2010-03-31 13:11:48,bluecode,moin
+2010-03-31 13:12:18,kwolf,Moin bluecode
+2010-03-31 13:45:34,DickHuuhn,http://www.macrochan.org/view.php?u=7OBRG5OK2GDYRGWJBAMQSLVGI3JWC4ZV
+2010-03-31 13:46:14,bluecode,ECHAN
+2010-03-31 13:46:22,DickHuuhn,meh ^^
+2010-03-31 13:46:24,DickHuuhn,sry :D
+2010-03-31 14:31:58,Jidder,wwjd
+2010-03-31 14:32:02,Jidder,moin moin
+2010-03-31 14:32:10,bluecode,tach Jidder
+2010-03-31 14:32:11,Jidder,was würde ich wohl dun?
+2010-03-31 14:33:14,bluecode,"""würde""? Unter welchen Bedingungen denn?"
+2010-03-31 14:33:42,kwolf,Moin Jidder
+2010-03-31 14:34:02,kwolf,"Oh nein, er hat sich verraten!"
+2010-03-31 14:34:04,kwolf,[14:31] --> Jidder hat den Kanal betreten (~JanDing@euirc-56a834af.reverse.mdcc-fun.de).
+2010-03-31 14:34:21,Jidder,uuups
+2010-03-31 14:34:30,JanDing,ja ich gebs ja zu
+2010-03-31 14:34:44,JanDing,"könnt ihr mir jetzt sagen, was jidder hier immer macht?"
+2010-03-31 14:35:54,kwolf,Reimen :-)
+2010-03-31 14:37:18,JanDing,echt? ist das nicht verboten?
+2010-03-31 14:37:25,JanDing,wegen der einschaltquoten?
+2010-03-31 14:37:43,JanDing,führt sowas nicht zu toten?
+2010-03-31 14:37:56,JanDing,wie die aneinanderreihung von zoten?
+2010-03-31 14:38:59,kwolf,Jetzt wäre Op von Noten
+2010-03-31 14:39:03,kwolf,Äh...
+2010-03-31 14:39:32,JanDing,dann ist jetzt eile geboten
+2010-03-31 14:42:28,JanDing,der schurke flüchtet von dannen
+2010-03-31 14:42:39,JanDing,das gute versmaß auch
+2010-03-31 14:42:44,JanDing,er versteckt sich in den tannen
+2010-03-31 14:42:50,JanDing,es versteckt sich in dem strauch
+2010-03-31 14:47:07,kwolf,Klassischer Deadlock.
+2010-03-31 14:47:54,bluecode,*g*
+2010-03-31 17:15:07,kwolf,"Hach, Ringlisten sind toll"
+2010-03-31 17:15:13,bluecode,moin
+2010-03-31 17:15:14,kwolf,"Vor allem, wenn man nicht beabsichtigt hat, dass es welche sind"
+2010-03-31 17:15:18,kwolf,Moin bluecode
+2010-03-31 17:15:30,XanClic,"Moin, bluecode"
+2010-03-31 17:19:20,bluecode,kwolf: du hast auch keine Ahnung warum da plt nur in den ersten 2 commits auftaucht oder?
+2010-03-31 17:20:11,kwolf,"Ich weiß nichtmal, was das genau ist"
+2010-03-31 17:20:46,bluecode,eine Tabelle für PIC
+2010-03-31 17:21:14,DesL,moin moin
+2010-03-31 17:21:34,XanClic,"moin, DesL"
+2010-03-31 17:22:19,DesL,"Ach, Feierabend ist was feines^^"
+2010-03-31 17:24:15,ScollPi,moin moin
+2010-03-31 17:24:32,DesL,moin moin moin
+2010-03-31 17:24:59,kwolf,"bluecode: Und warum macht der Compiler PIC, ohne dass ich danach frage?"
+2010-03-31 17:25:29,DesL,Aus Höflichkeit?
+2010-03-31 17:26:06,bluecode,"macht ja nicht der Compiler, sondern der Linker"
+2010-03-31 17:27:10,kwolf,Und warum macht der das?
+2010-03-31 17:27:22,bluecode,Bug oder Feature?
+2010-03-31 17:50:19,bluecode,hat von euch schonmal jemand was zu Bayesian Networks gehört?
+2010-03-31 17:51:11,DesL, nope
+2010-03-31 17:51:23,bluecode,richtet sich eher an die Studenten ;-)
+2010-03-31 17:51:44,kwolf,"Glück gehabt, dann muss ich ja nicht antworten"
+2010-03-31 17:52:01,bluecode,und die mit abgeschlossenem Studium ;-)
+2010-03-31 17:52:11,kwolf,Ich hab trotzdem keine Ahnung davon ;-)
+2010-03-31 17:52:12,bluecode,oder abgebrochenem
+2010-03-31 17:52:24,kwolf,mastamind ist doch gar nicht hier? ;-)
+2010-03-31 17:52:36,XanClic,Definiere „Studium“ *g*
+2010-03-31 17:52:45,bluecode,"ich kann mir doch nicht merken, wer hier was macht, kwolf ;-)"
+2010-03-31 17:53:14,kwolf,Ich heute nichts mehr
+2010-03-31 17:53:16,kwolf,Bis später ;-)
+2010-03-31 17:53:17,DesL,XD
+2010-03-31 17:53:24,bluecode,cu
+2010-03-31 17:53:25,XanClic,bd
+2010-03-31 17:53:38,DesL,bb
+2010-03-31 18:41:39,chris12,"xD ""VFD does not run on Windows 95/98/Me."" und sowas unter NT 6.1"
+2010-03-31 18:43:48,DesL,XD
+2010-03-31 18:44:34,chris12,seltsam im 95 komp. modus gehts ...
+2010-03-31 18:44:56,DesL,hm?!
+2010-03-31 18:45:35,chris12,oder auch nicht ...
+2010-03-31 18:45:50,DesL,was denn nu?
+2010-03-31 18:45:57,chris12,funzt net
+2010-03-31 18:46:26,DesL,"6.1, ist was?"
+2010-03-31 18:46:29,DesL,7?
+2010-03-31 18:46:32,chris12,jo
+2010-03-31 18:46:45,DesL,32?
+2010-03-31 18:46:53,chris12,64
+2010-03-31 18:47:17,Homix,"steht doch auf der entwickler-website, dass der treiber nur 32-bit ist^^"
+2010-03-31 18:47:38,chris12,es giebt auch ne 64 variante
+2010-03-31 18:47:44,DesL,Ebend^^
+2010-03-31 18:48:02,ScollPi,"ja, aber w7 akzeptiert nur signierte treiber"
+2010-03-31 18:48:02,Homix,"dort findet man auch ne 64 bit kompilierung (nicht vom entwickler!), das bei mir aber nicht gefunzt hat, ich habs aber auch nicht lange ausprobiert ;)"
+2010-03-31 18:48:29,DesL,wofür brauchst du Überhaupt vfd?
+2010-03-31 18:48:41,chris12,das ist sawas wie mount
+2010-03-31 18:48:51,chris12,unter linux für floppys
+2010-03-31 18:49:00,DesL,"scho klar, aber wofür? "
+2010-03-31 18:49:21,chris12,damit kann man img dateien mounten
+2010-03-31 18:50:02,DesL,Schon Klar! Aber was genua willst du machen? ich kann dir ggf. alternativen nennen!
+2010-03-31 18:50:07,chris12,aso
+2010-03-31 18:50:10,chris12,ähmm
+2010-03-31 18:50:11,ScollPi,"bin ich froh, das ich in meinem pc einen diskettenlaufwerk eingebaut hab =)"
+2010-03-31 18:50:24,DesL,Meiner hat keinen Platz mehr^^
+2010-03-31 18:50:26,XanClic,"Bin ich froh, dass ich Linux bzw. mtools hab *g*"
+2010-03-31 18:50:40,DesL,chris12: also?
+2010-03-31 18:50:40,XanClic,"(Stichwort: mtools, so btw)"
+2010-03-31 18:50:44,ScollPi,oder so
+2010-03-31 18:50:52,chris12,"naja windoof kann ja von hause aus keine dateien mounten, außer festplatten images."
+2010-03-31 18:51:13,XanClic,"Ui, das kann es?"
+2010-03-31 18:51:24,chris12,und um ein image mit fs zu erstellen muss ich das erstmal mounten
+2010-03-31 18:51:26,DesL,NIcht wirklich.
+2010-03-31 18:51:33,DesL,"nein, must du nicht,."
+2010-03-31 18:51:42,chris12,ach nicht?
+2010-03-31 18:52:02,DesL,such mal nach bfi.exe
+2010-03-31 18:52:45,chris12,schon klar aber wie ist das mit grub?
+2010-03-31 18:52:52,chris12,also bootsektor
+2010-03-31 18:53:35,DesL,"mh, ich habe mir mit dd for Windows einen Bootsector von einem Imgae gezogen, ich kann es dir geben."
+2010-03-31 18:53:53,XanClic,Ich hätte da mein übliches niwohlOSes Angebot *g*
+2010-03-31 18:54:08,DesL,wie?
+2010-03-31 18:54:10,XanClic,http://gitorious.org/niwohlos/niwohlos/blobs/raw/128ad9d1c07c957a7ae088a2ef2d405e32a0694b/build/base.img.bz2
+2010-03-31 18:54:18,XanClic,FAT12-Image mit GRUB
+2010-03-31 18:54:37,XanClic,"Ich denk zwar nicht, dass das mit BFI so geht, aber mit mtools kann man auch mit fertigen Images arbeiten"
+2010-03-31 18:54:50,DesL,bei mir geht es^^
+2010-03-31 18:54:58,XanClic,Umso besser ;-)
+2010-03-31 18:55:29,DesL,chris12: soll ich es dir geben?
+2010-03-31 18:55:51,chris12,kann man mit bfi einen ordner aus einer datei erstellen?
+2010-03-31 18:55:52,DesL,Du kriegst GRUB4DOs unter Windows7 64Bit btw nicht zum laufen...
+2010-03-31 18:56:00,chris12,DesL: ich denke noch nicht
+2010-03-31 18:56:00,DesL,genau :-)
+2010-03-31 18:56:05,DesL,wieso?
+2010-03-31 18:56:13,chris12,was wieso
+2010-03-31 18:56:26,DesL,[18:56] <chris12> DesL: ich denke noch nicht
+2010-03-31 18:56:37,chris12,weil ich bfi habe
+2010-03-31 18:56:54,DesL,und wie soll ich deine aussage deuten?
+2010-03-31 18:57:31,chris12,ich brauche es nicht ;)
+2010-03-31 18:57:41,DesL,was?
+2010-03-31 18:57:46,DesL,was brauchst du nicht?
+2010-03-31 18:58:19,chris12,was wolltest dur mir denn geben
+2010-03-31 18:58:35,DesL,das image und das dazu passende grub + batchscript
+2010-03-31 18:59:01,chris12,wie gesagt ich denke noch nicht
+2010-03-31 18:59:09,DesL,wieso nicht?
+2010-03-31 18:59:47,chris12,"weil ich erstmal selbe herausfinden will, wie und ob windoof so funzt wie ich es mir vorstelle"
+2010-03-31 19:00:05,DesL,frisch installiert?
+2010-03-31 19:00:43,chris12,jo vor einigen tagen auf 64 bit umgestiegen
+2010-03-31 19:00:58,chris12,das blödeste was ich je gemacht hab
+2010-03-31 19:01:05,DesL,"dann halt nicht, aber sag ruhig wenn^^"
+2010-03-31 19:01:11,DesL,Wieso?
+2010-03-31 19:01:28,chris12,ein halbwegs laufendes system gegen ein weiteres gb eingetauscht ...
+2010-03-31 19:01:59,DesL,"hm, wieso eingetauscht? und wieso ein gb?"
+2010-03-31 19:02:59,chris12,"naja ich hatte vorher win7 32bit installiert. mein rechner hat 4 gb ram, von denen ich nur 2.7 gb nutzen konnte"
+2010-03-31 19:03:12,chris12,so jetzt kann ich 3.7 gb nutzen
+2010-03-31 19:03:26,DesL,"achso, aber es ist doch nicht Instabil?"
+2010-03-31 19:03:46,chris12,noch nicht
+2010-03-31 19:03:53,DesL,XD
+2010-03-31 19:03:57,chris12,aber es läuft sogut wie nichts mehr
+2010-03-31 19:04:00,DesL,bei mir hält es äußerst gut.
+2010-03-31 19:04:07,DesL,Was denn nicht?
+2010-03-31 19:04:26,DesL,Bei mir läuft so ziemlich alles^^
+2010-03-31 19:04:31,chris12,"zb einige spiele, gcc, make, ld, ect"
+2010-03-31 19:04:44,chris12,vfd ...
+2010-03-31 19:04:47,DesL,gcc mak ld und alle spiele die ich habe gehen....
+2010-03-31 19:04:54,DesL,bfi
+2010-03-31 19:05:12,chris12,bin mal rebooten
+2010-03-31 19:18:06,erik,Guten Abend
+2010-03-31 19:18:44,DesL,moin
+2010-03-31 19:19:34,bluecode,abend erik
+2010-03-31 19:19:55,chris12,re
+2010-03-31 19:20:08,ScollPi,nabend erik
+2010-03-31 19:39:08,DesL,"ist ""_beginthread"" Standard C/C++?"
+2010-03-31 19:39:14,bluecode,nein
+2010-03-31 19:39:32,DesL,Also Windoof.h
+2010-03-31 19:39:32,bluecode,der C/C++ Standard kennt überhaupt keine Threads
+2010-03-31 19:39:58,bluecode,"nicht unbedingt, könnte auch eine compilererweiterung sein"
+2010-03-31 19:40:03,DesL,"mh, verdammt, sowohl Windoof als auch process sind drinn -_-#"
+2010-03-31 19:40:06,bluecode,wie zB OpenMP
+2010-03-31 19:40:25,DesL,da war doch was mit dem Fuck BCC mit -tWm oder so^^
+2010-03-31 19:40:42,DesL,"ne, -tWM"
+2010-03-31 19:40:50,bluecode,Es gibt noch Compiler von Borland?
+2010-03-31 19:41:23,DesL,BCC55^^
+2010-03-31 19:41:35,DesL,"alt, aber es geht."
+2010-03-31 19:42:19,ScollPi,welchen C/C++ standard?
+2010-03-31 19:42:35,DesL,wie meinen?
+2010-03-31 19:43:10,bluecode,ScollPi: macht das den Unterschied? ;-)
+2010-03-31 19:44:26,bluecode,"hm, wohl nur bei meiner Aussage zu C/C++ und Threads, das hat sich mit dem nächsten Standard hoffentlich gegessen"
+2010-03-31 19:44:40,bluecode,aber es hat sicher dann nicht die Form _beginthread
+2010-03-31 19:44:41,DesL,Mit C++0x?
+2010-03-31 19:44:57,bluecode,"für x=A oder x=B, ja"
+2010-03-31 19:45:23,DesL,C D E F....
+2010-03-31 19:45:39,bluecode,wahrscheinlich ist B ;-)
+2010-03-31 19:45:45,ScollPi,genau das meinte ich bluecode
+2010-03-31 19:46:26,DesL,bluecode: das Alphabet bietet viele Zeichen!
+2010-03-31 19:46:50,DesL,und nciht vergessen: Plan Z: neue Buchstaben für weitere Pläne erfinden...
+2010-03-31 19:47:05,bluecode,"wenn hexadezimal nicht ausreicht, dann wird es aber Zeit die Sprache zu wechseln ;-)"
+2010-03-31 19:47:29,bluecode,"wobei, mit gcc kriegt man ja mittlerweile ziemlich viel vom nächsten Standard"
+2010-03-31 19:47:56,bluecode,"meine Einschätzung wäre fast, dass wenn der Standard rauskommt gcc bereits standardkompatibel ist"
+2010-03-31 19:47:59,Tobiking,11 ist doch angeplant soweit ich gehört habe. Wobei da nicht genau gesagt wurde obs dezimal ist oder hex ^^
+2010-03-31 19:48:17,DesL,XD
+2010-03-31 19:48:26,bluecode,"Problem ist, dass das Abstimmen und Veröffentlichen auch Zeit braucht"
+2010-03-31 19:48:39,XanClic,"Ach, dafür steht das x?"
+2010-03-31 19:48:51,bluecode,für was sonst?
+2010-03-31 19:48:57,XanClic,"Ich dachte immer, das soll den Anfang einer Hexziffer symbolisieren *g*"
+2010-03-31 19:49:05,bluecode,nein...
+2010-03-31 19:49:22,bluecode,"wie bei C89, C99, C++98, C++03 halt auch..."
+2010-03-31 19:49:24,XanClic,"Na ja, immerhin heißt es ++"
+2010-03-31 19:49:38,DesL,x könnte ja auch auf eine Multiplikation hinweisen....
+2010-03-31 19:49:42,XanClic,"Wenn schon ein Operator drin ist, könnte ja auch noch so ein Element dabei sein ;-)"
+2010-03-31 19:49:56,DesL,was war bei C++03 eigentlich neu?
+2010-03-31 19:50:02,bluecode,nichts
+2010-03-31 19:50:38,DesL,geht das denn?
+2010-03-31 19:50:42,Tobiking,War das nicht TR1?
+2010-03-31 19:50:50,bluecode,Tobiking: nein
+2010-03-31 19:51:09,bluecode,bei 03 würde nur eindeutiger geschrieben was gemeint ist
+2010-03-31 19:51:29,bluecode,TR1 ist separat und noch dazu kein Standard
+2010-03-31 19:55:54,bluecode,"hm, es gibt C95, interessant ^^"
+2010-03-31 19:56:10,bluecode,( http://de.wikipedia.org/wiki/Varianten_der_Programmiersprache_C#C95 )
+2010-03-31 20:08:51,erik,"wenn sich schon sonst keiner am Forum-Thread ""Eigene CPU"" beteiligt, gibt es überhaupt jemand der da mitließt ?"
+2010-03-31 20:10:58,erik,"aha, ich hatte schon fast mit inhaltlicher Kritik gerechnet"
+2010-03-31 20:11:14,DesL,XD
+2010-03-31 20:11:49,ScollPi,"eigene CPU, so'n wahnsinnsgedanken hatte ich auch schon einmal"
+2010-03-31 20:12:10,erik,ich ziehe ja stellenweise ganz schön über Flat-Memory her und hatte gedacht das die meisten das ärgert
+2010-03-31 20:12:29,erik,ScollPi: so wahnsinig ist das nicht
+2010-03-31 20:12:51,chris12,jo ich les mit
+2010-03-31 20:13:03,chris12,naja manchmal
+2010-03-31 20:13:08,DesL,Wie wiet seit ihr eigtl?
+2010-03-31 20:13:22,bluecode,wiet?
+2010-03-31 20:13:25,erik,mit was
+2010-03-31 20:13:38,XanClic,Womit?
+2010-03-31 20:13:39,chris12,gings nicht das letztemal um segmentierung?
+2010-03-31 20:13:42,ScollPi,"mag sein erik, aber wenn ich ehrlich sein soll und den gedanken wieder weiter spinnen würde, würde ich mir über multicore brüten"
+2010-03-31 20:13:47,DesL,wie weit generell
+2010-03-31 20:14:05,bluecode,sehr weit
+2010-03-31 20:14:15,erik,chris12: es geht seit Tagen primär um Segmentierung
+2010-03-31 20:14:20,DesL,total
+2010-03-31 20:14:27,chris12,seht ihr ;)
+2010-03-31 20:14:48,erik,ScollPi: Für multicode brauch man nen dicken FPGA und der kostet Geld
+2010-03-31 20:15:49,erik,Multi-CPU ist da schon realistischer
+2010-03-31 20:16:44,ScollPi,"ob multicore oder multi-cpu, vom prinzip her mache ich da kein unterschied, ist letztenendes nur eine frage der umsetzung"
+2010-03-31 20:17:08,DesL,"mh, sicher so?"
+2010-03-31 20:17:08,erik,also Multi-CPU ist mein Ziel
+2010-03-31 20:18:50,erik,DesL: komische Sätze Du baust. Mehr Du schreiben must!
+2010-03-31 20:19:53,DesL,ich verushc je gerade wenig zu schreiben XD
+2010-03-31 20:19:59,DesL,*versuche
+2010-03-31 20:20:38,erik,Möge die selbstbeherschung mit Dir sein.
+2010-03-31 20:21:11,DesL,May the Source be with you....
+2010-03-31 20:21:12,ScollPi,"hmmm, multi-cpu, da würde ich mir lieber eine handvoll 6510er holen und die zusammen löten"
+2010-03-31 20:21:32,DesL,warum nicht gleich z80er
+2010-03-31 20:21:42,erik,Warum nicht 386
+2010-03-31 20:22:00,ScollPi,"wär auch möglich, aber die 6510 hab ich schon programmiert"
+2010-03-31 20:22:05,DesL,"z80er kriegt man doch nachgeschmissen, oder?"
+2010-03-31 20:28:29,JanDing,"heyho wenn ich an der richtigen kiste stehe, werf ich euch alles nach"
+2010-03-31 20:28:56,DesL,"werfen sie, ich fange."
+2010-03-31 20:29:25,JanDing,stehe zur zeit an der kiste mit ferkeln
+2010-03-31 20:29:38,JanDing,das wird eine ferkelei^^
+2010-03-31 20:29:44,DesL,geh mal weiter zur z80 Kiste
+2010-03-31 20:29:50,DesL,oder zur 386er.
+2010-03-31 20:30:34,JanDing,keine lust mir ne schwermetallvergiftung zu holen :/
+2010-03-31 20:30:36,chris12,was für ein prozessor ist eig in einem c64? wisst ihr das?
+2010-03-31 20:30:56,DesL,"6510er, oder?"
+2010-03-31 20:30:56,JanDing,ein 6510er ^^
+2010-03-31 20:31:12,chris12,ah
+2010-03-31 20:32:08,DesL,Ach kacke
+2010-03-31 20:33:18,ScollPi,"in letzteren version des c64 war sogar ein 8510 verbaut, oder war es ein 8502?"
+2010-03-31 20:33:33,JanDing,steht doch im wikipedia artikeln^^
+2010-03-31 20:33:40,DesL,ebend
+2010-03-31 20:38:51,DerHartmut,Einen wunderschönen Naben d zusammen
+2010-03-31 20:38:57,erik,Dir acuh
+2010-03-31 20:39:00,ScollPi,moin moin
+2010-03-31 20:40:34,JanDing,moin
+2010-03-31 20:43:14,DesL,moinsen
+2010-03-31 20:44:13,erik,"ScollPi: ich hab gerade gesehen das Du im Wiki an nem Partitions-Sektor arbeitest, hälst Du das noch für sinvoll? EFI hat da was neues auf Lager"
+2010-03-31 20:45:02,DerHartmut,Solange es noch BIOSs gibt ist das doch keine schlechte IDee
+2010-03-31 20:45:04,bluecode,und wann kommt EFI?
+2010-03-31 20:45:08,DesL,n+1
+2010-03-31 20:45:24,JanDing,t+epsilon
+2010-03-31 20:45:33,DerHartmut,schokolade+milch
+2010-03-31 20:45:34,XanClic,ð
+2010-03-31 20:45:37,DerHartmut,Ergibt Liebe.
+2010-03-31 20:45:43,JanDing,falschrum
+2010-03-31 20:46:04,DerHartmut,"Ne, schon richtig, weil Milch+Schokolade ergibt Kinderriegel"
+2010-03-31 20:46:14,erik,"EFI gibt es schon, es lädt nur meistens eine BIOS-Emulation die dann den eigentlichen Boot-Vorgang macht"
+2010-03-31 20:46:15,JanDing,ergibt+liebe
+2010-03-31 20:46:20,DerHartmut,Achso.
+2010-03-31 20:46:22,DerHartmut,*g*
+2010-03-31 20:46:27,bluecode,erik: in Desktop-PCs?
+2010-03-31 20:46:52,erik,"meines wissens nach schon, zumindest in neueren"
+2010-03-31 20:47:07,bluecode,"wie neu ist ""neueren"" bei dir?"
+2010-03-31 20:47:10,bot_i,es
+2010-03-31 20:47:28,bot_i,es
+2010-03-31 20:47:36,erik,"bin ich mir jetzt nicht sicher, vielleicht ein Jahr eventuell auch zwei"
+2010-03-31 20:47:44,Homix,jop einige Desktop-Mainboards sollen wirklich schon EFI haben
+2010-03-31 20:47:49,ScollPi,"nur wegen EFI hol ich mir keinen neuen PC mit EFI, bleib da lieder bei dem was ich habe, was VIELE andere haben, eben beim BIOS"
+2010-03-31 20:47:54,bluecode,das ist mir ein bisschen zu neu
+2010-03-31 20:48:32,erik,"klar, von Verbreitung kann man bei EFI noch nicht sprechen"
+2010-03-31 20:49:20,bot_i,_:es
+2010-03-31 20:49:47,DesL,"es, was sol dass??"
+2010-03-31 20:49:48,DesL,*solll
+2010-03-31 20:50:02,Homix,bei meinem laptop (halbes jahr alt) ist anscheinend auch irgendwie EFI Support dabei^^
+2010-03-31 20:50:19,bluecode,"DesL: jetzt weiß ich schonmal, wer hier mit Bots kommt ;-)"
+2010-03-31 20:50:26,Homix,schaut aber trotzdem alles wie ein normales BIOS aus und nicht wie zB in VirtualBox
+2010-03-31 20:50:45,bluecode,"es hat ja auch bios-emu, wie erik schon sagte"
+2010-03-31 20:51:01,bluecode,"DesL: das hier ist kein Bottestchannel, klar?"
+2010-03-31 20:51:26,DesL,das ist auch nut telnet in ermangelung eines besseren Nicks^^
+2010-03-31 20:51:33,erik,ScollPi: ich woll eigentlich fragen ob Du vielleicht einen MBR mit ner Menge optionaler Debug-Ausgaben oder nen Boot-Sektor der von FAT12/16/31 ne MZ-EXE lädt (ohne relozieren) und startet brauchst
+2010-03-31 20:52:45,bot_i,Telnet!
+2010-03-31 20:53:01,bot_i,Telnet rules!
+2010-03-31 20:53:07,DerHartmut,bot_i: Geh damit nach niwohlos
+2010-03-31 20:53:20,DesL,mahce ich ^^
+2010-03-31 20:53:48,DesL,hatte eh gerade ein Timeout^^
+2010-03-31 20:54:39,ScollPi,"erik: mein os bootet mit meinen eigene bootsektor und bootloader, der bootloader selbst ist ein mix aus assembler und c"
+2010-03-31 20:55:52,ScollPi,"doch zZ überarbeite ich gerade den bootloader von meinem os, da ich bisher ein eigenes FS benutze, ich aber auch FAT (12,16,32) ebenso unterstützen möchte"
+2010-03-31 20:55:52,bluecode,dann könntest du ja den GRUB#Warum GRUB? Artikel ausbauen ;-)
+2010-03-31 20:56:11,Iteem,hi
+2010-03-31 20:56:24,bluecode,tach Iteem
+2010-03-31 20:57:03,DerHartmut,Hello Iteem
+2010-03-31 20:57:48,erik,"ScollPi: War nur ne Frage, den MBR hab ich geschrieben weil ich mit dem Zeugs von Win2k und Linux nicht so zufrieden war und der Boot-Sektor war für nen eigenen DOS-Extender der auch als eigenes OS laufen sollte (daraus ist aber nichts geworden)"
+2010-03-31 21:00:29,ScollPi,"erik: ich hab mir mal den bootsektor (fat12) von windows xp angeschaut, da ist noch spagetti-code drin =)"
+2010-03-31 21:00:48,JanDing,echt?
+2010-03-31 21:02:53,ScollPi,aber dennoch an einigen stelle tricky
+2010-03-31 21:03:48,erik,"Das tollste ist mein Boot-Sector auch nicht, vor allem bei FAT32 geht es sehr eng zu, da zählt ""eleganter"" Quell-Code nicht viel"
+2010-03-31 21:04:14,erik,meinen MBR benutze ich immer wenn ich meinen Computer einschalte
+2010-03-31 21:06:35,ScollPi,"alles haben die redmonder auch nicht reinbekommen, sodass der rest buchstäblich in die NTDLR gesteckt wurde, aber die lösung ist dennoch genial"
+2010-03-31 21:10:15,erik,"ich weis nur das die bei DOS damals nur die ersten 4 kBytes der IO.SYS geladen haben welche dann eine Art Stage 2 Bootloader war, daher war ich sehr stolz das ich bis zu 512 KB laden kann (auch bei fragmentierten Dateien und allen Cluster-Größen)"
+2010-03-31 21:11:24,ScollPi,bei FAT kommt es eben auf die clustergröße an
+2010-03-31 21:12:06,DerHartmut,Es kommt immer auf die Größe an.
+2010-03-31 21:12:11,DesL,"mit welcher begründung kann mir der IRC-Server "":5DBCEEAA!nospoof@irc.ham.de.euirc.net PRIVMSG bot_d :?VERSION?"" Antworten?!!"
+2010-03-31 21:12:20,ScollPi,"klar, man könnte auch die reservierten sektoren nutzen, doch dazu muss der datenträger neu formatiert werden, zumindest bei FAT12 und FAT16, FAT32 ist da anders"
+2010-03-31 21:12:51,XanClic,DesL: Das ist keine Antwort
+2010-03-31 21:12:54,XanClic,Das ist ein CTCP-Request
+2010-03-31 21:13:09,XanClic,"Und zwar CTCP-Version, um genau zu sein"
+2010-03-31 21:13:14,DesL,hat er eben abernicht gemacht^^
+2010-03-31 21:13:28,XanClic,Macht er bei Konversation immer
+2010-03-31 21:13:39,XanClic,"FINGER, VERSION, LAG und TIME"
+2010-03-31 21:13:41,DesL,war beim connecten.
+2010-03-31 21:35:44,DesL,XanClic: was hat das einrücken in der Opcode.txt zu bedeuten?!
+2010-03-31 21:36:10,XanClic,"Erstens dass das wohl ECHAN ist und zweitens, dass das Befehle mit dem Prefix sind"
+2010-03-31 21:36:32,XanClic,"Also die nach 0xCB kommen und eingerückt sind, beginnen eben mit 0xCB"
+2010-03-31 21:36:50,DesL,ah^^
+2010-03-31 21:36:54,JanDing,und ich dachte einrücken kommt vom rhythmischem drücken auf tab und leertaste
+2010-03-31 21:37:03,JanDing,percussion indentation
+2010-03-31 21:37:14,DesL,Ursache und Wirkung?!
+2010-03-31 21:38:00,JanDing,nicht wenn du die gesamte materie im universum außer deinen körper in antimaterie verwandelst
+2010-03-31 21:38:26,DesL,"hm, Suicid extreme?"
+2010-03-31 21:38:55,JanDing,das ist ein nebeneffekt
+2010-03-31 21:38:55,XanClic,"Ganz extremes Geisterfahren, ja"
+2010-03-31 21:39:05,DesL,*g*
+2010-03-31 21:39:15,JanDing,darf ich fragen über welche opcode.txt ihr redet?
+2010-03-31 21:39:22,JanDing,vielleicht liefert die mir ja noch ein paar vorlagen
+2010-03-31 21:39:28,XanClic,http://git-xanclic.is-a-geek.org/pub/?p=gxemu.git;a=blob;f=opcodes.txt;hb=master
+2010-03-31 21:39:32,XanClic,Opcodes des Z80 im GBC
+2010-03-31 21:40:20,JanDing,ah okay
+2010-03-31 22:03:59,erik,"weiß jemand wo man Beschreibungen von Defragmentierungs-Algorithmen findet, Google liefert mir nur Defragmentierungsprogramme für Windoof"
+2010-03-31 22:05:34,JanDing,ne keine ahnung
+2010-03-31 22:05:56,DesL,Was gibt es denn das so OS mäßig?
+2010-03-31 22:07:29,JanDing,ist defragmentierung denn überhaupt noch wichtig heutzutage? kenn das nur von fat
+2010-03-31 22:07:56,DesL,"kann wer Russisch? : ??????!?? ??? ?????????,???? ???????????? ? ????? :-[  ????? ?????? ???? ???????,?? ?? ?? ????????? ???? :-(  ??? ??? ????  http://rubyurl.com/KNku  ????????"""
+2010-03-31 22:08:10,XanClic,Das war kein Russisch
+2010-03-31 22:08:11,DesL,ach damn
+2010-03-31 22:08:12,JanDing,google translate kann russisch
+2010-03-31 22:08:14,XanClic,Das waren Fragezeichen
+2010-03-31 22:08:26,DesL,war mal Russisch
+2010-03-31 22:08:57,DerHartmut,SHyx0rmZ kann russisch
+2010-03-31 22:09:02,DesL,"Übsersetzt: ""Hallo, ich mag dich, wollen dich kennenlernen: - [videmsya fast jeden Tag, aber Sie haben mich nicht bemerkt :-( Hier ist mein Foto http://rubyurl.com/KNku wissen? """""
+2010-03-31 22:09:08,erik,"JanDing: ich will Speicher defragmentieren  (und für windows ist das offensichtlich sehr wichtig, da gibt es sehr viele Programme)"
+2010-03-31 22:09:36,JanDing,für deine segmente?
+2010-03-31 22:09:45,erik,ja
+2010-03-31 22:09:50,DesL,"hm, mal wieder don Komischer Russe, der mich be ICQ addet."
+2010-03-31 22:09:56,JanDing,kannst ja mal das stichwort compaction suchen
+2010-03-31 22:10:05,JanDing,bei garbage collectoren gibts da doch sowas
+2010-03-31 22:11:02,JanDing,memory compaction
+2010-03-31 22:11:41,erik,"GCs gehen oft von managed Sprachen aus wo Pointer als solche erkennbar sind, die ganzen Wikipedia-Artikel haben lieder nichts gescheites gebracht"
+2010-03-31 22:11:57,JanDing,ich meine den teil eines garbage collectors der speicher verschiebt
+2010-03-31 22:12:55,JanDing,http://www.memorymanagement.org/glossary/c.html#compaction
+2010-03-31 22:15:57,erik,"genau das meinte ich, die für GCs beschriebenen Algorithmen sind für Segmente eher uninteressant, diese Algorithemn teilen die Speicherobjekte nie und benötigen dafür sehr viel virtuellen Adressraum und atomare verschiebe-aktionen, meine Segmente können aber durchaus in mehreren Stücken vorliegen und lassen sich während der benutzung im Hintergrund verschieben"
+2010-03-31 22:16:49,DerHartmut,"Freunde der Nacht, ich bin denn wech"
+2010-03-31 22:17:26,erik,"DerHartmut: tschüß, sein ein Freund des schlafs"
+2010-03-31 22:17:33,JanDing,gn8 DerHartmut
+2010-03-31 22:18:47,erik,"JanDing: für ""memory compaction"" liefert google (auf den ersten Blick) bessere Treffer, die werde ich morgen mal genauer durchlesen, Danke für den Tipp"
+2010-03-31 22:19:02,JanDing,"also sobald du dinge verschiebst, die du aber auch zerlegen kannst, bist du grob geschätzt bei exponentieller laufzeit, wenn du eine form von optimalität (minierung der zahl der memcpys oder so) forderst"
+2010-03-31 22:19:55,JanDing,"da kannste auch erstmal die naive implementierung nehmen, und heuristiken auf basis gesammelter erfahrung einbauen"
+2010-03-31 22:21:21,JanDing,das wäre zumindest mein ansatz^^
+2010-03-31 22:21:57,erik,"also wenn man einem klassischen HDD-Defragmentierer bei der arbeit zuschaut dann versucht der die Dateien nach einem bestimmten muster anzuordnen, dabei fängt er forne an und schiebt Abschnitt-Weise erst mal alles zu Seite was im Weg ist und legt dann das gewünscht dort hin, das macht er bis er das Ende erreicht hat, dabei werden aber die meisten Cluster min 2 mal bewegt (ist für mich aber nicht so schlim)"
+2010-03-31 22:23:48,Tobiking,Dafür braucht man dann aber auch genug Platz das ganze erstmal weg zu schaffen
+2010-03-31 22:23:52,JanDing,"jo musst du abschätzen, wie viel druck auf deine speicherverwaltung liegt"
+2010-03-31 22:25:05,erik,"Ein HDD-Defragger kann auch mit einem einzigen freien Cluster arbeiten, das machts nur langsamer (weil er die HDD-Köpfe öfter bewegen muss) aber nicht komplexer"
+2010-03-31 22:26:25,X-Mind,hi
+2010-03-31 22:26:28,JanDing,hi X-Mind
+2010-03-31 22:26:32,DesL,moin
+2010-03-31 22:26:39,ScollPi,moin
+2010-03-31 22:26:56,JanDing,erik: bei einem hdd-defragmentierer ist der rechenaufwand auch wesentlich geringer als die dauer einer verschiebeoperation
+2010-03-31 22:27:16,JanDing,vermutlich stoßen da die gemeinsamkeiten der algorithmen schnell an grenzen
+2010-03-31 22:27:32,erik,JanDing: Was meinst Du mit Druck? den Fragmentierungsgrad des frei-Speichers?  Meine Segmente will ich auch deshalb defragmentieren weil zerstückelte Segmente langsamer sind (Paging)
+2010-03-31 22:28:16,X-Mind,Weiß einer wie man Netzwerk-unterstützung implamentiert?
+2010-03-31 22:28:35,DesL,"Schwester, Skalpell!"
+2010-03-31 22:29:11,erik,"JanDing: der Rechenaufwand ist weniger wichtig, die defragmentierung macht ein User-Space-Prozess mit niedriger Prio"
+2010-03-31 22:29:41,DesL,X-Mind: kanns du schon auf die Netzwerkkarte zugreiffen?
+2010-03-31 22:30:01,erik,ich will richtiges Live-Defragmentieren benutzter Segmente implementieren
+2010-03-31 22:32:17,JanDing,"also mit druck meine ich: wenn dein defragmentieren das alloziieren von speicherbereichen blockiert, ist der druck hoch"
+2010-03-31 22:33:03,JanDing,"aber kann sein, dass ich dich falsch verstanden habe. ich dachte beim defragmentieren ist eines deiner hilfsmittel die segment zu zerlegen, aber du willst sie wieder zusammenfügen?"
+2010-03-31 22:34:53,erik,"blockiert werden darf natürlich nichts, sehe ich momentan auch keine gefahr, der Defragger ist ein Client von vieler der Speicherverwaltung, die Segmente muss ich in Pages zerlegen um die Pages einzeln zu verschieben, ich kopiere also quasie immer einzelne Cluster, erst das Ergebnis sind wieder komplette Segmente"
+2010-03-31 22:36:05,erik,"die User-Programme können aber auch mit den zerstückelten Segmenten arbeiten (Dank an Paging) und merken davon nichts, das Defraggen darf beliebig langsam im Hintergrund laufen"
+2010-03-31 22:38:51,JanDing,"hm joar gut, dann ist wohl die analogie zum hdd-defragmentierer gerechtfertigt"
+2010-03-31 22:39:33,JanDing,"dachte eher, dass die defragmentierung im schlimmsten fall die speicherverwaltung anhalten könnte, ähnlich wie zum beispiel das swapping"
+2010-03-31 22:40:10,erik,"nein, angehalten wird da glücklicherweise nichst"
+2010-03-31 22:40:57,erik,die zerstückelten Segmente kosten nur Performance wegen dem Paging haben ansonsten aber keine besonderen Nachteile
+2010-03-31 22:42:29,Homix,"ich glaube nicht, dass fragmentierter speicher so viel performance kosten^^ wohl eher gegen 0"
+2010-03-31 22:42:48,JanDing,man kann ja die cpu so entwickeln
+2010-03-31 22:42:52,JanDing,zum beispiel aus kostengründen^^
+2010-03-31 22:43:06,erik,Homix: das hängt davon ab was Dein der Vergleichswert ist
+2010-03-31 22:43:23,Homix,achso ich ging jetzt von einer normalen x86-cpu aus ;)
+2010-03-31 22:43:41,erik,Paging soll einge Prozent Performance kosten
+2010-03-31 22:43:56,erik,gratis gibt es das jedenfalls nicht
+2010-03-31 22:44:14,Homix,"schon, aber trotz deiner defragmentierung wird ja immernoch paging benutzt"
+2010-03-31 22:44:39,erik,"nein, wenn alles defragmentiert ist benötige ich kein Paging"
+2010-03-31 22:45:14,erik,"und auch nur die zerstückelten Segmente müssen übers Paging laufen, alle anderen gehen direkt in den phyischen Speicher"
+2010-03-31 22:45:26,Homix,dann machst du dein OS mit managed code?
+2010-03-31 22:45:37,erik,nein mit Segmentierung
+2010-03-31 22:45:59,Homix,"was heißt, nur die zerstückelten segmente? du kannst nicht einen teil des RAMs mit und den anderen ohne Paging ansprechen ;)"
+2010-03-31 22:46:47,Homix,außerdem gibt es grad mal 4 Segmentregister ... mit 4 Blöcken kann man nicht wirklich (de)fragmentieren
+2010-03-31 22:46:54,erik,"zerstückelt sind Segmente die nicht am _einem_ Stück im physischen Speicher liegen, ja ich kann Paging auf einen bestimmten virtuellen Adressraum begrenzen"
+2010-03-31 22:47:08,XanClic,"Homix: Du weißt, dass er nicht auf x86 beschränkt ist? ;-)"
+2010-03-31 22:47:27,DesL,strange
+2010-03-31 22:47:59,Homix,"hm ok, seine eigene cpu oder was genau?"
+2010-03-31 22:48:09,XanClic,Würde ich jetzt sagen
+2010-03-31 22:48:18,JanDing,ich bin auch nicht beschränkt^^
+2010-03-31 22:48:19,erik,"mit x86 ließe sich das prinzipiell auch machen, dann würden aber während des defragmentierens alle Segmente leiden und das Paging müsste man über CR0 abschalten wenn alles wieder gut ist"
+2010-03-31 22:49:10,erik,"ich bastele ne eigene CPU, schaut doch mal im Forum rei, der Thread heit auch ""Eigene CPU"""
+2010-03-31 22:49:23,Homix,"hm, und man soll wirklich teile des rams mit und andere teile ohne paging betreiben können? wie das?"
+2010-03-31 22:50:12,erik,"auf x86 muss immer alles durchs Paging (deshalb leidet auch alles), auf meiner CPU gibt es da extra Range-Register"
+2010-03-31 22:50:19,JanDing,"mir sind die posts in dem thread zu lang, dafür dass ihr versucht ein problem zu lösen, dass ich nie haben werde^^"
+2010-03-31 22:50:32,DesL,XD
+2010-03-31 22:50:56,Homix,erik: und wie viele range register?
+2010-03-31 22:51:08,Homix,also wie viele bereiche kann man definieren mit/ohne paging?
+2010-03-31 22:51:13,erik,Na warte mal bis Du etliche TB RAM hast dann wirst Du merken das Paging eine echte Bremse ist
+2010-03-31 22:51:53,Homix,wieso sollte Paging durch mehr RAM langsamer werden? ;)
+2010-03-31 22:52:15,erik,"Homix: ich kann Paging für genau einen Bereich anschalten, der Rest ist ohne (falls es sich als erforderlich herraus stellt kommt noch ein zweiter Bereich dazu)"
+2010-03-31 22:52:35,Homix,"klar, das LongMode Paging ist sicher ein wenig langsamer als PAE-Paging ist ein wenig langsamer als ""normales/altes"" paging ;)"
+2010-03-31 22:52:40,Homix,hm ein bereich ist nicht gerade viel
+2010-03-31 22:52:45,erik,Mehr RAM beduetet mehr Pages und mehr Pages bedeuten mehr TLB-misses
+2010-03-31 22:53:06,XanClic,"Hm, mehr RAM bedeutet, Halbleiter ist günstiger, bedeutet größere TLB?"
+2010-03-31 22:53:13,JanDing,"mehr ram bedeutet mehr selektoren, bedeutet segmentregister neuladen"
+2010-03-31 22:53:17,erik,und das Paging-Directory wird größer und die Verwaltung auffwändiger
+2010-03-31 22:54:06,erik,"JanDing: meine Segmente können groß werden, ob 4 kB oder 100 TB ist kein unterschied"
+2010-03-31 22:54:23,Homix,man wird in den 10 ms bis zum nächsten taskswitch bzw. bis zu einem tlb-flush eh nicht so viele TBs/GBs bearbeiten können^^
+2010-03-31 22:54:41,DesL,100TB RAM? gib mal was ab!
+2010-03-31 22:55:14,Homix,"selbst jetzt gibt es schon 1 GB Pages bei neuen AMD Prozessoren, insofern ..."
+2010-03-31 22:55:36,erik,der aktive Memory-Foot-Print der Programme wird immer größer
+2010-03-31 22:56:04,taljeth,Moin
+2010-03-31 22:56:08,Homix,moin
+2010-03-31 22:56:09,XanClic,"Moin, taljeth"
+2010-03-31 22:56:12,erik,Homix: für die großen Pages muss aber der phyische Speicher auch am stück sein
+2010-03-31 22:56:21,erik,hallo taljeth
+2010-03-31 22:56:32,Homix,"ist bei 100 TB ja dann nicht mehr das problem, wenn man 1 GB am stück braucht :)"
+2010-03-31 22:56:44,XanClic,"erik: Aber je größer der RAM wird, desto größer werden auch die TLBs, wage ich zu behaupten"
+2010-03-31 22:57:19,taljeth,erik: Zu deiner letzten PN im Forum: http://git.tyndur.org/?p=tyndur.git;a=blob;f=doc/codestil.txt;h=da5c05be62085bd6addd3dafc094029fd293fe64;hb=HEAD
+2010-03-31 22:57:22,erik,"die TLBs sind im Proz und die zu vergrößern ist sehr aufwändig, ist ein voll-assoziativer Cache"
+2010-03-31 22:57:37,XanClic,"Na ja, es gibt ja schon neue Prozessoren *g*"
+2010-03-31 22:59:05,Homix,"bei einer 1 GB Page wird man auch in 10 jahren nicht innerhalb einer Scheduler-Timeslice (vlt 10 ms?) mehr als 1 TLB Eintrag brauchen, wenn man sich geschickt anstellt ;)"
+2010-03-31 22:59:06,erik,"taljeth: igit da sind ja einige abscheulichkeiten dabei, muss ich mich da dran halten oder sind das eher so Richtlinien"
+2010-03-31 22:59:35,XanClic,*lol*
+2010-03-31 22:59:39,taljeth,"Das sind Richtlinien, an die du dich halten musst ;-)"
+2010-03-31 22:59:52,XanClic,"Vor allem die Sternchen sind scheußlich, ja"
+2010-03-31 23:00:05,Homix,"nene, da steht ""sollen"" ;)"
+2010-03-31 23:00:14,Homix,und nicht müssen
+2010-03-31 23:00:49,taljeth,"Naja, solange der Code irgendwann eingecheckt werden soll, wäre es ratsam ;-)"
+2010-03-31 23:00:56,Tobiking,Viele Spezifikationen haben doch so ne tolle Einleitung mit der Bedeutung von sollen ^^
+2010-03-31 23:01:26,Tobiking,Das kann man also ganz schnell umdefinieren.
+2010-03-31 23:01:41,erik,"also über 4 Leerzeicht kann man ja reden, aber einiges andere dort ist echt nicht mein Geschmack"
+2010-03-31 23:02:03,XanClic,"Nein, taljeth redet da nicht drüber, das weiß ich aus Erfahrung *g*"
+2010-03-31 23:03:05,erik,viellicht hat taljeth ja so eine automigischen Code-Formatierungs-Tool das er dann über meinen Quäll-Code jagt
+2010-03-31 23:03:15,XanClic,"Oh, das hab ich auch schon probiert"
+2010-03-31 23:03:25,XanClic,War nicht so the yellow from the egg
+2010-03-31 23:03:32,taljeth,"erik: Es geht nicht um Geschmack, sondern um Einheitlichkeit"
+2010-03-31 23:04:04,taljeth,"In anderen Projekten benutze ich auch einen anderen Stil, wenn das dort eben so vorgegeben ist"
+2010-03-31 23:04:20,Homix,"eig ist das ja ganz ok, aber ich schreib das { für den einleitenden codeblock immer in eine eigene zeile ;)"
+2010-03-31 23:04:23,Tobiking,Mit der Codeformatierung von Eclipse hab ich bisher keine Probleme gehabt. Mein Codestil richtet sich aber auch nachdem was damit möglich ist ^^
+2010-03-31 23:04:29,XanClic,Homix: +1 ;-)
+2010-03-31 23:04:39,JanDing,mein c code sieht aus wie java
+2010-03-31 23:04:50,Homix,"in Pascal kommt das ""Begin"" aber in die Zeile mit dem IF *g*"
+2010-03-31 23:04:53,JanDing,nur der garbage collector ist in c blöd
+2010-03-31 23:04:56,DesL,XD
+2010-03-31 23:04:56,JanDing,der macht nie was :(
+2010-03-31 23:05:00,erik,"taljeth: Der sinn solcher regelungen ist mir bewusst, nur das einhalten fällt mir nicht immer leicht"
+2010-03-31 23:05:06,JanDing,vermutlich weil ich kein garbage produziere
+2010-03-31 23:05:32,erik,zumindest die Klammereinrückungen verstehe ich nicht
+2010-03-31 23:07:07,erik,"und die 80 Zeichen sind auch aus dem vorletzen Jahrtausend, heute gibt es WXGA usw."
+2010-03-31 23:07:31,taljeth,"Ich krieg zweimal 80 Zeichen nebeneinander auf den Bildschirm, das ist also immer noch passend"
+2010-03-31 23:07:33,erik,betohnung auf das W
+2010-03-31 23:07:57,taljeth,"Geht nicht mehr unbedingt darum, dass der Bildschirm voll wäre, sondern darum, dass lange Zeilen schwer zu lesen sind"
+2010-03-31 23:08:04,taljeth,Deswegen wird eine Zeitung ja auch in Spalten gedruckt
+2010-03-31 23:08:48,taljeth,Und davon abgesehen hat tyndur momentan 80x25 ;-)
+2010-03-31 23:08:53,erik,schon klar ich reitze das auch nicht aus hinter der 50ten Spallte steht auch nur selten was das wirklich Porgramlogic enthällt 
+2010-03-31 23:09:00,XanClic,"*reize, bitte"
+2010-03-31 23:09:04,XanClic,Sonst highlighted das bei mir
+2010-03-31 23:09:09,taljeth,*lol*
+2010-03-31 23:09:14,Homix,*g*
+2010-03-31 23:09:24,erik,XanClic: sorry
+2010-03-31 23:09:37,JanDing,reize reize von rammstein!
+2010-03-31 23:11:00,erik,"taljeth: ich würde trotzdem erst mal so anfangen wie ich das gewohnt bin (zumindest in Grenzen, 4 Leerzeichen ist kein Problem) und dann später umformatieren"
+2010-03-31 23:11:24,taljeth,Wenn's dir Freude macht...
+2010-03-31 23:11:26,Homix,"ich denke es kommt auch drauf an, woran du arbeitest"
+2010-03-31 23:11:38,DesL,Deutsche Liebeslied?: Rammstein - Bück dich....
+2010-03-31 23:11:46,taljeth,Nach master merge ich aber nichts im GNU-Stil ;-)
+2010-03-31 23:12:56,erik,"form follows function, wenn es nach master gemegedet werden kann dann ändere ich auch nicht mehr viel dran, dann ist mir der Style egal"
+2010-03-31 23:14:20,erik,"okay, tschüß für heute"
+2010-03-31 23:14:38,taljeth,"Ok, bis bald"
+2010-03-31 23:14:38,JanDing,gn8
+2010-03-31 23:32:14,chris12,ich sag dann mal gute nacht
+2010-03-31 23:33:12,XanClic,gn8
+2010-03-31 23:52:51,DickHuuhn,http://web.mit.edu/newsoffice/2010/ai-unification.html
+2010-03-31 23:52:55,DickHuuhn,schick

@@ -1,0 +1,441 @@
+date/time,nick,message
+2017-05-27 09:43:37,MasterQ32,morgen
+2017-05-27 10:21:34,MasterQ32,moin Paddy
+2017-05-27 10:21:40,Paddy,Moin
+2017-05-27 10:21:47,MasterQ32,tyndur zickt bei mir :(
+2017-05-27 10:22:03,MasterQ32,"nicht der prerelease, aber das selbstgebaute"
+2017-05-27 10:22:48,MasterQ32,/apps/getterm erhält keinen stack
+2017-05-27 10:22:50,MasterQ32,hast du eine idee?
+2017-05-27 10:24:57,Paddy,Nicht wirklich
+2017-05-27 10:25:29,MasterQ32,mist
+2017-05-27 10:25:44,MasterQ32,"das heißt, ich muss die tage wirklich mal ne debug-session machen und kernelcode lesen"
+2017-05-27 10:25:47,Paddy,Da wird wenig anderes übrigbleiben als die VM zu debuggen
+2017-05-27 10:26:01,Paddy,"Ich würde das ja für dich machen, aber bei mir crasht da nichts"
+2017-05-27 10:26:08,MasterQ32,"ja, bei kevin auch nicht"
+2017-05-27 10:26:12,Paddy,Und aus der Ferne... eher schwer
+2017-05-27 10:28:52,Paddy,"Du hast nicht verstanden, was XanClic dir sagen wollte, oder? *g*"
+2017-05-27 10:29:37,MasterQ32,hm? wann genau?
+2017-05-27 10:29:42,Paddy,Egal ;-)
+2017-05-27 10:29:55,MasterQ32,"auf jeden fall liegt es an meinem build, nicht an meinem pc"
+2017-05-27 10:30:09,MasterQ32,habs grade auf nem zweiten PC getestet
+2017-05-27 10:30:21,Paddy,"Jo, mein Build hat bei dir ja auch getan"
+2017-05-27 10:30:41,MasterQ32,genau
+2017-05-27 10:30:53,MasterQ32,welchen compiler verwendest du für den kernel und die module?
+2017-05-27 10:30:55,Paddy,"Dass mal zwischen Compilerversionen irgendwas unterschiedlich gemacht wird und man ein neues Flag deaktivieren muss oder so, kommt ja schon vor"
+2017-05-27 10:31:19,Paddy,"Aber ich kann mir nicht erklären, wie das dazu führen soll, dass das Programm gestartet wird, aber kein Stack gemappt ist"
+2017-05-27 10:31:38,Paddy,4.8.3 is das
+2017-05-27 10:32:03,MasterQ32,https://pastebin.com/qXQps8R2
+2017-05-27 10:32:10,MasterQ32,[felix@denkplatte tyndur]$ /opt/i686-elf/bin/i686-elf-gcc --version
+2017-05-27 10:32:10,MasterQ32,i686-elf-gcc (GCC) 6.3.0
+2017-05-27 10:32:15,MasterQ32,das würde einiges erklären
+2017-05-27 10:32:50,Paddy,"Bei mir tut es aber auch auf einem neueren, müsste nur den anderen Rechner kurz booten, um nachzuschauen, was das ist"
+2017-05-27 10:39:30,Paddy,"Ok, frisch gebaut mit einem 6.3.1, funktioniert"
+2017-05-27 10:39:51,Paddy,Genauergesagt der Hostcompiler von F25
+2017-05-27 10:40:32,MasterQ32,verrückt
+2017-05-27 10:40:43,MasterQ32,welches OS zum bauen?
+2017-05-27 10:41:23,Paddy,"Wie gesagt, das jetzt war Fedora 25"
+2017-05-27 10:41:41,MasterQ32,ah
+2017-05-27 10:41:46,Paddy,Das andere mit dem älteren Compiler ist ein openSUSE
+2017-05-27 10:41:51,MasterQ32,hm
+2017-05-27 10:42:48,Paddy,"binutils 2.26.1, falls das irgendeinen Unterschied machen sollte"
+2017-05-27 10:43:17,MasterQ32,ich hab 2.28
+2017-05-27 10:45:57,Paddy,"Was ich an deinen Stacktraces auch nicht ganz verstehe, ist, wieso das aktuelle eip eine Userspaceadresse ist, aber der Stacktrace dann aus Kernel-eips besteht"
+2017-05-27 10:46:07,Paddy,Vielleicht mal die Kerneladressen auflösen?
+2017-05-27 10:47:14,Paddy,"Und komplett kaputt kann dein Build auch nicht sein, sonst hätte er die getterms ja nicht einmal in den Speicher geladen bekommen. Da laufen schon ein paar andere Prozesse vorher und tun was sinnvolles."
+2017-05-27 10:47:35,MasterQ32,"ja, schon weird"
+2017-05-27 10:49:30,MasterQ32,okay
+2017-05-27 10:49:46,MasterQ32,der erste crash tritt mit ESP=0x0000000000000000 auf
+2017-05-27 10:50:27,Paddy,"Jo, 0 ist ein guter Startwert für esp"
+2017-05-27 10:50:45,MasterQ32,okay
+2017-05-27 10:51:05,Paddy,"Du siehst ja auch an cr2, dass er zuerst die 4 Bytes abzieht und dann reinschreibt"
+2017-05-27 10:51:05,MasterQ32,welches ist die richtige binary? kernel oder kernel2?
+2017-05-27 10:51:09,Paddy,kernel2
+2017-05-27 10:52:09,Paddy,Also ich nehme zum Debuggen normal build/output/kernel/tyndur2
+2017-05-27 10:52:54,MasterQ32,örm WUS?
+2017-05-27 10:53:18,MasterQ32,"ich gehe mal davon aus ,dass bei stack backtrace der oberste eip die instruktion ist, bei der es knallt, oder?"
+2017-05-27 10:53:51,Paddy,"Die, bei der es knallt, ist die bei RIP=... in den roten Zeilen"
+2017-05-27 10:54:02,MasterQ32,"ah, RIP okay"
+2017-05-27 10:54:06,MasterQ32,"warum RIP, aber ECX?"
+2017-05-27 10:54:12,Paddy,"Bin mir nicht sicher, ob die im Stacktrace normal wiederholt wird oder ob es da mit dem Aufrufer weitergeht"
+2017-05-27 10:54:32,Paddy,Weil Antoine sich nicht entscheiden konnte *g*
+2017-05-27 10:54:57,MasterQ32,der stack backtrace liefert mir irgendwas beim exception handling im kernel code
+2017-05-27 10:55:23,MasterQ32,und 40000090 ist der einstiegspunkt von getterm
+2017-05-27 10:56:14,Paddy,"Hm, gut, dann bringt das so nix..."
+2017-05-27 10:56:31,Paddy,"Ich glaube, ich würde den PF-Exceptionhandler so ändern, dass er panict statt nur den Prozess abzuschießen"
+2017-05-27 10:56:47,Paddy,Und dann kann man mit qemu/gdb den Zustand näher anschauen
+2017-05-27 10:57:03,MasterQ32,klingt sinnvoll
+2017-05-27 10:58:21,Paddy,handle_exception() in src/kernel2/src/arch/i386/interrupts/im.c ist das 
+2017-05-27 10:59:31,Paddy,"Für Exceptions in Ring 0 macht er genau das schon, das muss man jetzt halt immer machen"
+2017-05-27 11:00:50,MasterQ32,oh
+2017-05-27 11:00:57,MasterQ32,tyndur ist relativ robust gegenüber stackoverlow :D
+2017-05-27 11:02:32,MasterQ32,"okay, also Zeile 800 einfach in ein if(true) umbauen?"
+2017-05-27 11:04:41,Paddy,"Das sollte es tun, ja"
+2017-05-27 11:05:13,Paddy,Bei mir würde da ja grundsätzlich sowas rauskommen: if (1 || (isf->cs & 0x03) == 0) {
+2017-05-27 11:05:58,MasterQ32,/* if ((isf->cs & 0x03) == 0)*/  {
+2017-05-27 11:06:36,Paddy,"Zwei Stellen zu modifizieren und geht schief, wenn ein else da ist"
+2017-05-27 11:07:00,Paddy,"Bei meiner Variante muss ich nur 1 mit 0 überschreiben, wenn ich den Originalzustand nochmal anschauen will"
+2017-05-27 11:07:33,MasterQ32,stimmt
+2017-05-27 11:18:19,Paddy,Tut es?
+2017-05-27 11:19:02,MasterQ32,"nun, der kernel hat panik und hängt seit ca.10 Minuten in seiner Panikschleife"
+2017-05-27 11:19:09,MasterQ32,bin grade noch mit meiner BA beschäftigt
+2017-05-27 11:19:28,Paddy,"Ah, na dann mach erstmal deine BA"
+2017-05-27 11:19:34,MasterQ32,jau
+2017-05-27 11:19:39,MasterQ32,ich HASSE einleitungstexte
+2017-05-27 11:19:49,MasterQ32,und schlusstexte
+2017-05-27 11:19:54,Paddy,"Ja, fast so schlimm wie der Schluss"
+2017-05-27 11:21:09,MasterQ32,korrekt
+2017-05-27 11:21:16,MasterQ32,und über allem steht dieser verkackte abstrakt
+2017-05-27 11:23:56,Paddy,Den finde ich noch das einfachste von den dreien
+2017-05-27 11:24:03,MasterQ32,hm
+2017-05-27 11:24:07,MasterQ32,ich schreib den halt immer zum schluss :D
+2017-05-27 11:24:14,MasterQ32,"und ich weiß nie, was da wirklich reingehört"
+2017-05-27 11:24:34,Paddy,"Naja, um was es in der Arbeit geht halt ;-)"
+2017-05-27 11:24:41,MasterQ32,joar
+2017-05-27 11:24:44,MasterQ32,stimmt
+2017-05-27 11:24:49,Paddy,"Und zwar direkt zum Punkt und ohne Blabla, deswegen mag ich ihn lieber als Einleitungen"
+2017-05-27 11:24:55,MasterQ32,das pack ich halt grade fröhlich mit in die Einleitung
+2017-05-27 11:25:03,MasterQ32,"wobei, eigentlich gehörts ja auch in die einleitung mit rein"
+2017-05-27 11:25:06,Paddy,"Ja, die Einleitung ist das gleiche, nur mit viel Blabla"
+2017-05-27 11:25:25,MasterQ32,"ich hab mal nen Paper gefunden, die hatten als Abstact ein Piet-Programm :D"
+2017-05-27 11:26:00,Paddy,"Weiß nicht, ob ich das machen würde, wenn es benotet ist ;-)"
+2017-05-27 11:26:20,MasterQ32,genau :D
+2017-05-27 11:26:28,MasterQ32,aber die Idee ist geil :D
+2017-05-27 11:26:45,MasterQ32,ist definitiv abstrakt :D
+2017-05-27 12:01:41,MasterQ32,"okay, geistig re"
+2017-05-27 12:01:54,MasterQ32,"wenn ich jetzt GDB anwerfe, kann ich da mehr als eine ELF laden?"
+2017-05-27 12:04:25,MasterQ32,(gdb) bt
+2017-05-27 12:04:25,MasterQ32,"#0  handle_exception (isf=0x66cfb8, int_num=14 '\016') at im.c:813"
+2017-05-27 12:04:25,MasterQ32,#1  0x00408c00 in im_handler (isf=0x66cfb8) at im.c:118
+2017-05-27 12:04:25,MasterQ32,#2  0x00405340 in im_int_stub_all ()
+2017-05-27 12:04:32,MasterQ32,"okay, irgendwie bin ich jetzt wenig überrascht"
+2017-05-27 12:12:06,Paddy,"Du kannst auch mehr als eine ELF laden, aber wenn keine andere ELF im Backtrace ist, bringt dir das wenig ;-)"
+2017-05-27 12:12:28,MasterQ32,how?
+2017-05-27 12:12:47,MasterQ32,aber ja
+2017-05-27 12:12:53,MasterQ32,ich hänge jetzt in der kernel panic im exception handler
+2017-05-27 12:14:35,Paddy,cpus[0].thread->user_stack_bottom wäre vielleicht interessant
+2017-05-27 12:14:57,Paddy,"Ansonsten halt die letzte Page Table, wie die die letzte Page mappt (oder auch nicht)"
+2017-05-27 12:15:29,MasterQ32,"okay, wie komm ich da ran? hab das erste mal mit tyndur zu tun und hab ehrlich gesagt grade keine lust, den ganzen kernel zu lesen :P"
+2017-05-27 12:16:01,XanClic,ist doch aber spaßig
+2017-05-27 12:16:14,Paddy,Variablen kriegst du über gdb
+2017-05-27 12:16:21,Paddy,Und die PTs würde ich direkt im qemu-Monitor anschauen
+2017-05-27 12:17:11,Paddy,"XanClic: tyndur.git hat bei dir bis zu einer Shell gebootet, oder? Das Problem war nur mit lbuilds?"
+2017-05-27 12:17:13,MasterQ32,(gdb) p *cpus[0].thread
+2017-05-27 12:17:13,MasterQ32,"$4 = {kernel_stack = 0x66cfb8, kernel_stack_bottom = 0x66c000, kernel_stack_size = 4096,  user_isf = 0x66cfb8, user_stack_bottom = 0xfffff000, process = 0xa88750, status = 2, lock = 0 '\000', vm86 = false, tid = 21, is_main_thread = true, on_destroy = 0xa889a4,  lio_services = 0x0, lio_trees = 0x0}"
+2017-05-27 12:17:33,XanClic,"Paddy, ich hab tyndur längere Zeit nicht ausprobiert, aber das können wir ja ändern"
+2017-05-27 12:18:18,Paddy,MasterQ32: Also user_stack_bottom sieht vernünftig aus
+2017-05-27 12:19:03,XanClic,Hm. Irgendwie nicht so.
+2017-05-27 12:19:15,MasterQ32,(qemu) info tlb 
+2017-05-27 12:19:16,XanClic,Bei sowas fühl ich mich ja direkt zu Hause
+2017-05-27 12:19:18,MasterQ32,"ist das richtige, oder?"
+2017-05-27 12:19:40,Paddy,"Der wird dann vermutlich kein Mapping anzeigen, sonst gäbe es ja keinen PF"
+2017-05-27 12:19:42,XanClic,"Hab ich erwähnt, wie ich paloxena… 2 oder 3 rausgeholt hab, um herauszufinden, wo die MPFPS bei qemu liegt? Da hat auch alles dauernd gefaultet"
+2017-05-27 12:19:56,Paddy,XanClic: Was faultet bei dir?
+2017-05-27 12:20:03,Paddy,Vielleicht habt ihr ja dasselbe Problem
+2017-05-27 12:20:05,XanClic,"vermutlich das gleiche, wenn ich mir cr2=-4 so ansehe"
+2017-05-27 12:20:17,Paddy,Auch getterm?
+2017-05-27 12:20:18,MasterQ32,00000000ffc25000: 0000000000000000 ---------
+2017-05-27 12:20:20,XanClic,jo
+2017-05-27 12:20:25,MasterQ32,das hier ist das höchste mapping bei mir
+2017-05-27 12:20:52,Paddy,"XanClic: Das macht mal so richtig gar keinen Sinn für mich, weil davor ja ein Haufen andere Prozesse laufen müssen, bevor getterm überhaupt drankommt"
+2017-05-27 12:21:31,Paddy,"MasterQ32: Ich würde halt cr3 anschauen, dann das PD dumpen, da den letzten Eintrag nehmen und die PT dumpen, und da auch wieder auf den letzten Eintrag schauen"
+2017-05-27 12:23:20,MasterQ32,(qemu) memsave 0xc31000 4096 pagedir.dmp
+2017-05-27 12:23:20,MasterQ32,Invalid addr 0x0000000000c31000/size 4096 specified
+2017-05-27 12:23:50,dietzi|2,Mahlzeit
+2017-05-27 12:23:53,MasterQ32,hey D
+2017-05-27 12:23:56,MasterQ32,hey dietzi|2
+2017-05-27 12:24:06,Paddy,"Du willst xp 0xc31ffc, glaube ich"
+2017-05-27 12:24:22,dietzi,War bedingt durch die Zwangstrennung...... Ich hatte den reconnect vor dem timeout
+2017-05-27 12:24:55,MasterQ32,"ah, ich wäre jetzt über hexeditor gegeangen ^^"
+2017-05-27 12:25:33,MasterQ32,(qemu) xp 0xC31ffc
+2017-05-27 12:25:33,MasterQ32,0000000000c31ffc: 0x00c34007
+2017-05-27 12:25:45,XanClic,also wenn ich diese void-Pointer-Arithmetik im PF-Handler sehe
+2017-05-27 12:25:50,XanClic,((void*) cr2 >= current_thread->user_stack_bottom - 0x1000000)
+2017-05-27 12:25:55,MasterQ32,"also user,write,present"
+2017-05-27 12:25:55,XanClic,Das ist ja schon ein bisschen eklig.
+2017-05-27 12:26:07,XanClic,"Würde mich übrigens auch nicht wundern, wenn gcc das wegoptimiert und das deshalb kaputt ist :-P"
+2017-05-27 12:26:10,MasterQ32,(void*) vergleiche auf >= sind auch gar nicht definiert
+2017-05-27 12:26:15,XanClic,Tja.
+2017-05-27 12:26:22,XanClic,"Probieren wir das doch einfach mal aus, bevor ich weiter gucke"
+2017-05-27 12:26:47,Paddy,"tyndur ist doch nicht in C11, sondern gnu11 geschrieben *g*"
+2017-05-27 12:26:47,XanClic,"Tut nichts, schade"
+2017-05-27 12:27:04,XanClic,"Aber liegt jedenfalls daran, dass er da nicht den Stack vergrößert, glaube ich"
+2017-05-27 12:27:17,Paddy,"Sollte nicht, weil das ist die allererste Stackpage"
+2017-05-27 12:27:32,XanClic,Tuts aber
+2017-05-27 12:27:33,Paddy,Und die wird eigentlich in pm_thread_create() gemappt
+2017-05-27 12:27:37,XanClic,Offenbar nicht
+2017-05-27 12:27:58,Paddy,"Du meinst, wir mappen die Page immer erst im PF-Handler, ohne es zu wissen?"
+2017-05-27 12:28:20,XanClic,Würde mich jetzt nicht so wundern
+2017-05-27 12:28:36,MasterQ32,korrekt
+2017-05-27 12:28:39,Paddy,"Hm, nein, das macht auch keinen Sinn, wir legen ja schon Sachen auf den Stack bevor der Prozess anfängt zu laufen"
+2017-05-27 12:28:58,MasterQ32,PF weil wegen Stack
+2017-05-27 12:28:58,MasterQ32,[CPU0] Exception 14; Error Code = 0x6
+2017-05-27 12:28:58,XanClic,"Offensichtlich nicht, sonst wär esp ja nicht -4"
+2017-05-27 12:29:11,MasterQ32,ich hab grade einfach mal zwei kprintfs gemacht
+2017-05-27 12:29:23,XanClic,"Die Frage ist jetzt, wer hat user_stack_bottom auf -4k gesetzt"
+2017-05-27 12:29:28,MasterQ32,PF weil wegen Stack  ist in dem if(int_num == 0x0e)
+2017-05-27 12:29:47,MasterQ32,vorher wird der stack immer passend vergrößert
+2017-05-27 12:30:15,XanClic,// Den Stack mappen und einen pointer auf den ISF erstellen
+2017-05-27 12:30:16,XanClic,"Ah, der."
+2017-05-27 12:30:26,XanClic,"Wobei, nicht der."
+2017-05-27 12:30:33,Paddy,"Ist user_stack_bottom nicht der einzige Wert, der wie erwartet ist?"
+2017-05-27 12:30:54,XanClic,Was gibts denn da für Werte?
+2017-05-27 12:31:01,XanClic,"Das einzige, was nicht erwartet ist, ist, dass das nicht gemappt ist, oder?"
+2017-05-27 12:31:13,Paddy,Jo
+2017-05-27 12:32:23,XanClic,"Also er ist der Meinung, er hätte es gemappt"
+2017-05-27 12:33:03,Paddy,"Hat er es auch wirklich und es wird nur später wieder geunmappt, oder geht es gleich schief?"
+2017-05-27 12:33:22,XanClic,"Gute Frage. Schade, wenn man den Rückgabewert nicht prüft."
+2017-05-27 12:33:27,Paddy,Oh *g*
+2017-05-27 12:33:53,XanClic,"Ist schon true, doch"
+2017-05-27 12:34:27,Paddy,"Naja, die Frage bleibt. Gibt es nur true zurück oder hat es auch wirklich gemappt? ;-)"
+2017-05-27 12:34:34,XanClic,Tja…
+2017-05-27 12:34:49,XanClic,> auf die Schnauze
+2017-05-27 12:34:54,XanClic,Einen Ton haben die Kommentare am Leib
+2017-05-27 12:35:46,XanClic,"Na ja, also, ich geh mal davon aus, wenn da true zurückkommt, hat er es in irgendeinen Kontext gemappt."
+2017-05-27 12:35:59,XanClic,Ob das nun der richtige ist und ob das später wieder entfernt wird…
+2017-05-27 12:36:20,Paddy,"Wäre grundsätzlich eine valide Annahme, aber wenn das Ergebnis von der Toolchain abhängt, kann man sich da nicht so sicher sein..."
+2017-05-27 12:37:26,Paddy,"Das kprintf() in map_page() aktivieren, oder geht man dann in Meldungen unter?"
+2017-05-27 12:38:12,XanClic,Ich kann ja auch einfach mmc_resolve() aufrufen.
+2017-05-27 12:38:30,Paddy,Auch eine Option
+2017-05-27 12:38:52,Paddy,"Aber damit sieht man eher nicht, ob es später geändert wird"
+2017-05-27 12:39:38,XanClic,"Find auch gut, wie da eine nicht ausgerichtete virtuelle Adresse übergeben wird."
+2017-05-27 12:40:15,dietzi,Ich hätte mal ne kurze Zwischenfrage zu einem anderen Thema.....:
+2017-05-27 12:40:16,dietzi,"Ich habe jetzt mal einen anderen Testrechner ""versucht"". Jetzt habe ich folgendes Phänomen: die Tastatur und die Maus funktionieren nicht mehr. Es wird auch kein Interupt ausgelöst. Hat jemand eine Idee an was das liegen könnte? In QEMU und auf meinem IGEL läuft alles wie erwartet..."
+2017-05-27 12:40:31,Paddy,"XanClic: Klingt auch eher nach einem Bug, würde ich vermuten"
+2017-05-27 12:40:56,XanClic,[674b88/67446c] Did it work? 0
+2017-05-27 12:40:58,XanClic,Aw.
+2017-05-27 12:41:00,MasterQ32,"dietzi: kernel broken und bisher nur glück gehabt, kein PIC vorhanden (wäre weird)"
+2017-05-27 12:41:26,dietzi,Wie kann ich auslesen ob ein PIC vorhanden ist?
+2017-05-27 12:41:42,Paddy,Tastaturen sind notorische Problemmacher
+2017-05-27 12:41:48,Paddy,"Wenn es ein PC ist, hast du einen PIC"
+2017-05-27 12:41:57,dietzi,Es ist ein PC (x64)
+2017-05-27 12:41:59,Paddy,XanClic: it = das Mappen?
+2017-05-27 12:42:08,XanClic,ja
+2017-05-27 12:42:34,Paddy,"Bei dem unalignten, oder was unerwartetes?"
+2017-05-27 12:42:42,XanClic,"Ach, war ja doch alignt. Ich bin nur doof."
+2017-05-27 12:42:55,XanClic,Und ich hab nur die falsche Adresse hingeschrieben
+2017-05-27 12:43:16,XanClic,"Ist zu früh am Morgen. Hab gedacht, 4096 wäre 0x4000."
+2017-05-27 12:43:23,Paddy,Ah
+2017-05-27 12:43:29,Paddy,"Unalignt sollte auch einen Panic geben, sehe ich grad"
+2017-05-27 12:44:35,dietzi,Und es gibt noch eine Auffälligkeit: nachdem die IDT initialisiert ist bekomme ich immer 2x IRQ7.....
+2017-05-27 12:45:42,XanClic,kprintf() in im_prepare_current_thread() war keine gute Idee.
+2017-05-27 12:47:40,XanClic,"Hm. In dem Moment, wo der Kontext aktiviert wird, ist das Mapping weg. Schade."
+2017-05-27 12:48:21,XanClic,"Wird also entfernt, weil auch týndur jetzt findet, dass das weg ist"
+2017-05-27 12:49:42,Paddy,"Wie entfernt man etwas, was schon weg ist?"
+2017-05-27 12:50:45,XanClic,"Na ja, zum Zeitpunkt von pm_scheduler_add() ist es ja noch da."
+2017-05-27 12:51:28,XanClic,Bei pm_scheduler_pop() dann nicht mehr
+2017-05-27 12:51:56,Paddy,Schade
+2017-05-27 12:52:02,XanClic,"Irgendwie schon, ja"
+2017-05-27 12:54:39,XanClic,Mapping 40000000 (pd[100]) Pagetable=0x006f6000
+2017-05-27 12:54:40,XanClic,"Äh, OK."
+2017-05-27 12:54:46,XanClic,"Ach, ich kann wieder nicht denken"
+2017-05-27 12:55:00,XanClic,"Wenn es 13 Uhr ist. Vorher einfach alles ignorieren, was ich schreibe"
+2017-05-27 12:55:43,Paddy,"Okay, ich erwarte den Fix pünktlich um 13:00 ;-)"
+2017-05-27 12:55:56,XanClic,Dann kann ich erstmal das Problem suchen
+2017-05-27 12:56:09,Paddy,Ach so
+2017-05-27 12:57:29,XanClic,kernel2 macht ja gar keinen TLB-Shootdown
+2017-05-27 12:57:34,XanClic,Also bei anderen Kernen
+2017-05-27 12:57:40,XanClic,Wie soll da jemals SMP richtig funktionieren???
+2017-05-27 12:58:04,Paddy,"SMP-Kernel geben doch nur Hello World aus (oder sowas), das tut auch so"
+2017-05-27 12:58:09,XanClic,:-)
+2017-05-27 13:09:19,dietzi,"Kann es sein, dass bei diesem Rechner ein APIC verbaut ist und dieser nicht aktiviert ist? Habe mich jetzt nicht weiter mit APIC beschäftigt....."
+2017-05-27 13:10:02,dietzi,"Also bezüglich meines Problems, dass keine Interrupts (außer IRQ0) ausgelöst werden"
+2017-05-27 13:12:56,XanClic,"Das einer verbaut ist, ist wahrscheinlich, dass der kein Legacy-PIC-Interface anbietet, extrem unwahrscheinlich"
+2017-05-27 13:13:02,XanClic,*Dass einer…
+2017-05-27 13:14:42,XanClic,boah gcc ist ein arsch
+2017-05-27 13:14:51,XanClic,                *(volatile int *)NULL = 42;
+2017-05-27 13:14:53,XanClic,"  4064b6:       c7 05 00 00 00 00 00    mov    DWORD PTR ds:0x0,0x0"
+2017-05-27 13:14:54,XanClic,  4064bd:       00 00 00 
+2017-05-27 13:14:56,XanClic,  4064c0:       0f 0b                   ud2
+2017-05-27 13:15:10,XanClic,"wie kommt der da auf die Idee, da 0 hin zu schreiben? 42 hab ich gesagt"
+2017-05-27 13:15:33,dietzi,"Also vorhanden ist ""einer"". Habe das jetzt mittels cpuid in Erfahrung gebracht"
+2017-05-27 13:15:43,dietzi,gcc mag dich wohl nicht......
+2017-05-27 13:17:44,MasterQ32,darf er das machen?
+2017-05-27 13:18:00,XanClic,Eigentlich eine sehr gute Frage
+2017-05-27 13:18:21,XanClic,Vermutlich schon. Könnte aber trotzdem doof sein.
+2017-05-27 13:19:21,XanClic,"Hab gestern übrigens gelernt, dass PCI-Geräte mit MSI beliebige Interruptvektoren (> 15) auslösen können, unter anderem auch Exceptions (die > 15 sind) und IPIs"
+2017-05-27 13:19:22,Paddy,"ud2? Haben wir das Flag, dass NULL-Zugriffe erlaubt, nicht gesetzt?"
+2017-05-27 13:19:37,XanClic,Die können also auch Prozessoren mit INIT und SIPI neu starten
+2017-05-27 13:19:40,Paddy,wtf?
+2017-05-27 13:19:55,XanClic,http://www.invisiblethingslab.com/resources/2011/Software%20Attacks%20on%20Intel%20VT-d.pdf
+2017-05-27 13:20:27,XanClic,Und MSI ist nur ein PCI-Write nach 0xfee?????
+2017-05-27 13:20:31,Paddy,"Ich dachte immer, man würde die Vektoren selber mappen. Aber vielleicht hätte ich mich mal mit was modernerem als PIC näher auseinandersetzen sollen."
+2017-05-27 13:20:54,XanClic,"Wenn man also ein Scatter-/Gather-Gerät hat, kann man einen beliebigen MSI auslösen, wenn man dem Gerät einfach sagt, es soll was dahin schreiben"
+2017-05-27 13:21:03,XanClic,Alles gut designt
+2017-05-27 13:22:19,XanClic,"Ich mochte ja besonders „In der MSI-Spezifikation ist der Wert 110b reserviert. Aber das 32-Bit-Wort sieht merkwürdigerweise sonst genau aus wie das, was man in den APIC schreiben würde, und da bedeutet 110b SIPI – probieren wirs doch einfach mal aus“"
+2017-05-27 13:22:47,Paddy,*g*
+2017-05-27 13:23:06,Paddy,Einmal mit Profis...
+2017-05-27 13:23:22,XanClic,"Ach was. Intel sagt, das ist kein Problem."
+2017-05-27 13:24:17,XanClic,Äh.
+2017-05-27 13:24:28,XanClic,"Also, entweder bin ich immer noch doof, oder hier ist etwas ganz doof."
+2017-05-27 13:24:49,XanClic,mmc_resolve() in syscall_init_child_page() gibt irgendwie die Adresse der einen Page Table zurück…
+2017-05-27 13:24:54,XanClic,Äh.
+2017-05-27 13:25:12,Paddy,Das klingt ungesund
+2017-05-27 13:26:10,Paddy,Du meinst dest_phys?
+2017-05-27 13:26:32,XanClic,init child_page 14  3ffff000  0x00005000 Bytes
+2017-05-27 13:26:41,XanClic,"Ist auch einfach schade, wenn man versucht, Kernelpages zu initialisieren"
+2017-05-27 13:26:43,XanClic,Ja
+2017-05-27 13:26:58,XanClic,Das habt ihr jetzt von eurem rekursiven Mapping. So.
+2017-05-27 13:26:58,Paddy,"Hm, ja..."
+2017-05-27 13:27:01,Paddy, // TODO Im Kommentar genannte Bedingungen und Berechtigungen pruefen
+2017-05-27 13:27:14,XanClic,Ich habs ja immer gesagt!
+2017-05-27 13:27:36,Paddy,Aber wieso ruft der Userspace das mit 0x3ffff000 auf?
+2017-05-27 13:27:56,Paddy,Und wieso geht das nicht viel früher kaputt?
+2017-05-27 13:28:01,XanClic,PHDR           0x000034 0x3ffff034 0x3ffff034 0x000c0 0x000c0 R E 0x4
+2017-05-27 13:28:07,XanClic,Was auch immer getterm da macht.
+2017-05-27 13:28:15,Paddy,"Öh, hä?"
+2017-05-27 13:28:17,XanClic,äh ich meine
+2017-05-27 13:28:18,XanClic,LOAD           0x000000 0x3ffff000 0x3ffff000 0x02938 0x02938 R E 0x1000
+2017-05-27 13:28:44,Paddy,  LOAD           0x001000 0x40000000 0x40000000 0x01968 0x01968 R E 0x1000
+2017-05-27 13:28:54,XanClic,"Lustig. Es gibt gar keine Section, die unter 0x4… wäre"
+2017-05-27 13:29:01,XanClic,"Aber interessiert ld irgendwie nicht so, offenbar."
+2017-05-27 13:29:09,XanClic,Juhu hab den Bug gefunden
+2017-05-27 13:29:10,Paddy,"Ich würde mal sagen, eure binutils sind kaputt"
+2017-05-27 13:29:17,XanClic,Und das gerundet um 13 Uhr!
+2017-05-27 13:29:19,Paddy,Oder natürlich das Skript
+2017-05-27 13:29:28,XanClic,Mit Higher Half wär das nicht passiert.
+2017-05-27 13:29:34,XanClic,Fassen wir zusammen
+2017-05-27 13:29:40,XanClic,1. Mit Higher Half wär das nicht passiert
+2017-05-27 13:29:47,XanClic,2. Mit rekursivem Mapping wär das so nicht passiert!
+2017-05-27 13:29:48,XanClic,äh ohne
+2017-05-27 13:29:58,Paddy,"Jo, da wäre dann nur irgendwas anderes schiefgegangen"
+2017-05-27 13:30:05,XanClic,…Vielleicht.
+2017-05-27 13:30:28,Paddy,"Aber mal ernsthaft, wie kommt ld auf die Idee, was vor 0x40000000 zu packen?"
+2017-05-27 13:30:59,XanClic,https://gist.github.com/XanClic/22241c8329ef2249b4bef5902acad4e9
+2017-05-27 13:31:32,XanClic,Er lädt halt die gesamte ELF samt Headern…
+2017-05-27 13:31:44,XanClic,Ist bestimmt irgendein tolles neues Feature.
+2017-05-27 13:32:41,XanClic,Die wichtigere Frage ist ja
+2017-05-27 13:32:47,XanClic,Wieso nicht bei den anderen Modulen?
+2017-05-27 13:32:53,Paddy,Ich bin nicht begeistert
+2017-05-27 13:33:00,XanClic,:D
+2017-05-27 13:33:01,Paddy,"Und ja, gute Frage, was mit den anderen ist"
+2017-05-27 13:33:11,Paddy,Kannst ja mal dumpen
+2017-05-27 13:33:25,XanClic,"Na ja, die halt nicht."
+2017-05-27 13:33:46,MasterQ32,kann ich also theoretisch das image mounten und einfach die elf strippen?
+2017-05-27 13:33:47,XanClic,https://gist.github.com/XanClic/71b93a039119c5080de8a734eb563f7e wär jetzt init
+2017-05-27 13:33:53,XanClic,Nein
+2017-05-27 13:34:18,XanClic,"Man kann höchstens die Relocationadresse auf 0x41000000 oder sowas erhöhen, aber das wär ja Aufgeben"
+2017-05-27 13:34:20,Paddy,"ld-Doku lesen und die passende Option finden, um das abzuschalten, vermute ich"
+2017-05-27 13:34:44,Paddy,"Oder Linkerskript anpassen, falls das geht"
+2017-05-27 13:36:14,Paddy,"XanClic: Okay, was ist an init jetzt so anders außer dass er da halt nichts vorher mappt?"
+2017-05-27 13:36:22,XanClic,Was fragst du mich sowas? *g*
+2017-05-27 13:36:36,XanClic,Müssen außerdem alle Multibootmodule sein
+2017-05-27 13:36:39,Paddy,"Hm, es ist nicht dynamisch gelinkt, aus welchem Grund auch immer"
+2017-05-27 13:36:58,XanClic,Ah ja. Das klingt nach einem Grund
+2017-05-27 13:37:12,Paddy,"Ach so, init sollte auch nicht dynamisch gelinkt sein, guter Punkt"
+2017-05-27 13:37:20,Paddy,Sich selber linken kann es schlecht bevor es läuft
+2017-05-27 13:37:29,XanClic,"Dynamisches Linken ist des Teufels, war ja klar"
+2017-05-27 13:38:18,Paddy,Natürlich war das klar
+2017-05-27 13:38:25,Paddy,Hilft trotzdem nix ;-)
+2017-05-27 13:38:35,XanClic,Klar. Kann man abschalten *g*
+2017-05-27 13:38:43,XanClic,Löst das Problem! Wie Higher Half übrigens auch.
+2017-05-27 13:38:43,Paddy,"Ja, aber das ist ja doof"
+2017-05-27 13:38:51,XanClic,Hab ich schon Higher Half erwähnt?
+2017-05-27 13:39:01,XanClic,Stern zur Variable würde übrigens auch alles fixen. Da bin ich mir sicher.
+2017-05-27 13:39:03,Paddy,Das ist auch doof
+2017-05-27 13:39:18,Paddy,"Hm, apropos Higher Half... Was würde denn passieren, wenn ich nach 0 linken wollte? ;-)"
+2017-05-27 13:39:34,Paddy,Würde dann der Header bei 0xfffff000 landen?
+2017-05-27 13:39:46,XanClic,"Da kannst du ja eh nichts hinschreiben, weil gcc dann eh nur 0 hinschreibt und ein ud2 anschließt"
+2017-05-27 13:40:04,Paddy,Nur ein falsch konfigurierter gcc
+2017-05-27 13:40:20,XanClic,Und ein falsch konfigurierter ld
+2017-05-27 13:40:33,XanClic,Irgendwann muss ich mal einen Linker schreiben. Das ist eigentlich eine Idee.
+2017-05-27 13:40:39,XanClic,"ld ist doch einfach furchtbar, der macht nie, was er soll"
+2017-05-27 13:40:49,XanClic,Vor allem die Linkerskripte
+2017-05-27 13:41:03,XanClic,"Gibts inzwischen eigentlich eine richtige Möglichkeit, den Multibootheader in den ersten 8k zu platzieren?"
+2017-05-27 13:41:13,XanClic,Oder ist das immer noch einfach nur Glück?
+2017-05-27 13:41:16,Paddy,"Ich glaube, das tut nur aus Versehen"
+2017-05-27 13:41:38,XanClic,"Ja, so schreib ich die Linkerskripte immer. Irgendwann tuts und dann fass ich das nicht mehr an"
+2017-05-27 13:41:43,XanClic,"Bis es kaputtgeht, weil ld aktualisiert wurde"
+2017-05-27 13:42:20,Paddy,Das Problem ist ja offensichtlich
+2017-05-27 13:42:26,Paddy,Man aktualisiert seine Toolchain nicht
+2017-05-27 13:42:45,XanClic,Dann ginge auch FPC? ;-)
+2017-05-27 13:42:52,Paddy,Genau
+2017-05-27 13:43:01,XanClic,"Ist eigentlich eine gute Idee. Ich meine, gcc fixt Bugs ja eh nicht."
+2017-05-27 13:46:02,Paddy,Die binutils-Changelog ist ja toll. Da stehen nur lauter Änderungen am Buildsystem drin.
+2017-05-27 13:46:17,XanClic,Bestimmt ist da einfach durch ein gcc-Update was kaputtgegangen *g*
+2017-05-27 13:47:56,XanClic,"Also, --nmagic hilft"
+2017-05-27 13:48:28,XanClic,"Bin mir nicht sicher, ob das Absicht ist, aber das Alignment kaputtzumachen hilft natürlich, dass er nicht einfach den ELF-Header in die Ladeadresse bringen kann"
+2017-05-27 13:48:51,Paddy,"""...and disable linking against shared libraries"""
+2017-05-27 13:48:53,Paddy,Hm.
+2017-05-27 13:49:03,XanClic,  INTERP         0x00136c 0x4000128c 0x4000128c 0x00013 0x00013 R   0x1
+2017-05-27 13:49:05,XanClic,      [Requesting program interpreter: /usr/lib/libc.so.1]
+2017-05-27 13:49:06,XanClic,ist aber noch drin
+2017-05-27 13:49:14,Paddy,Das ist die Manpage auch noch kaputt
+2017-05-27 13:49:17,Paddy,*Dann
+2017-05-27 13:59:14,dietzi,Frage: kann ich mein OS (ohne Berücksichtigung von x64 im Code) auf x64 ohne Weiteres laufen lassen?
+2017-05-27 13:59:30,dietzi,Oder muss ich bei der GDT/IDT andere Werte annehmen?
+2017-05-27 13:59:37,MasterQ32,"ja, schon"
+2017-05-27 13:59:55,MasterQ32,"x64 ist ja nur ein weitere level, dein rechner startet ja (theoretisch) immer noch im 16-bit-modus"
+2017-05-27 14:00:22,dietzi,In welchen Modus wird dann aber geschaltet? Ich lade den Kernel direkt per PXE
+2017-05-27 14:00:57,MasterQ32,dein bootloader ist (afaik) auch 16 bit und schaltet bei multiboot dann in den protected mode um
+2017-05-27 14:01:51,MasterQ32,http://www.lowlevel.eu/wiki/Bootprozess_auf_x86
+2017-05-27 14:02:19,dietzi,In der PXE-Config steht folgendes:
+2017-05-27 14:02:20,dietzi,LABEL kernel-base
+2017-05-27 14:02:20,dietzi,        KERNEL mboot.c32
+2017-05-27 14:02:20,dietzi,        APPEND /kernel
+2017-05-27 14:02:36,MasterQ32,multiboot ist afaik immer 32 bit
+2017-05-27 14:02:40,dietzi,mboot.c32 -> vermutlich mutliboot 32 bit
+2017-05-27 14:02:46,MasterQ32,ne
+2017-05-27 14:03:03,MasterQ32,c32 ist die dateiendung von (sys|ext|pxe)linux für seine module
+2017-05-27 14:03:29,dietzi,Aber ich kann von multiboot ausgehen?
+2017-05-27 14:03:36,dietzi,Und entsprechend protected mode
+2017-05-27 14:03:47,MasterQ32,lädst du deinen kernel über multiboot?
+2017-05-27 14:04:42,dietzi,Meinst du meinen Code?
+2017-05-27 14:04:44,dietzi,Dann ja
+2017-05-27 14:06:31,dietzi,Hab mal kurz gegooglet: mboot.c32 ist multiboot
+2017-05-27 14:06:49,dietzi,Also wird der Kernel seitens des Bootloaders mit Multiboot geladen
+2017-05-27 14:06:57,MasterQ32,"kllugscheiß: mboot.c32 ist ein multiboot-loader für syslinux, multiboot ist nur spezifikation"
+2017-05-27 14:07:10,dietzi,Verzeihung :D
+2017-05-27 14:08:05,dietzi,Ich verstehe nur nicht warum ausschließlich IRQ0 ausgelöst wird....
+2017-05-27 14:08:33,dietzi,Und nach laden der IDT 2x IRQ7
+2017-05-27 14:08:42,dietzi,Irgendwas läuft da schief....
+2017-05-27 14:13:59,dietzi,An welcher Stelle sollten Maus und Tastatur initialisiert werden? Vor oder nach dem Laden der IDT?
+2017-05-27 14:14:28,MasterQ32,weit NACH dem laden
+2017-05-27 14:14:35,MasterQ32,irgendwo von einem maus/tastatur treiber
+2017-05-27 14:15:04,dietzi,Die Treiber existieren
+2017-05-27 14:15:14,dietzi,Es geht mir nur um den init-Befehl
+2017-05-27 14:15:29,MasterQ32,"naja, der init-befehl ist ja im treiber"
+2017-05-27 14:15:41,dietzi,Er wird aber in der init.c aufgerufen
+2017-05-27 14:16:50,dietzi,Aktuell habe ich folgende Reihenfolge:
+2017-05-27 14:16:51,dietzi,    Speicherverwaltung
+2017-05-27 14:16:51,dietzi,    Timer (auf 10ms)
+2017-05-27 14:16:51,dietzi,    Multitasking
+2017-05-27 14:16:51,dietzi,    GDT
+2017-05-27 14:16:51,dietzi,    IDT
+2017-05-27 14:16:53,dietzi,    Tastatur
+2017-05-27 14:16:55,dietzi,    Maus
+2017-05-27 14:17:04,MasterQ32,"okay, also treiber im kernel integriert"
+2017-05-27 14:17:09,dietzi,Ja
+2017-05-27 14:17:30,dietzi,"bei init_idt wird erst der PIC, dann der APIC und anschließend die IDT geladen"
+2017-05-27 14:17:38,dietzi,APIC wird nur aktiviert
+2017-05-27 14:18:05,dietzi,Nach dem Laden der IDT 2x IRQ7 und nach init_keyboard 1x IRQ1
+2017-05-27 14:18:11,dietzi,Danach nur noch IRQ0
+2017-05-27 14:21:39,MasterQ32,"so jungs, ich packs mal!"
+2017-05-27 14:21:45,dietzi,bye
+2017-05-27 14:21:45,MasterQ32,cyaaa
+2017-05-27 15:12:49,Paddy,"""The ELF standard says that a PT_PHDR segment, if present, must be included as part of the memory image of the program.  Ie it must be part of a PT_LOAD segment as well."""
+2017-05-27 15:12:50,Paddy,Bäh
+2017-05-27 15:12:58,Paddy,http://sourceware.org/git/gitweb.cgi?p=binutils-gdb.git;a=commitdiff;h=1a9ccd70f9a75dc6b48d340059f28ef3550c107b;hp=128e85e3ab36b8e30f6612fb50de3cbb4ede6824
+2017-05-27 15:13:32,XanClic,"Dann also wohl doch nach 0x40000000 + x linken, mit x >= 4096"
+2017-05-27 15:16:10,Paddy,"Jo, so: https://pastebin.com/rLNMLkND"
+2017-05-27 15:16:33,Paddy,In der Praxis ist das ein x < 4096
+2017-05-27 15:16:39,XanClic,Was es nicht alles für Magie gibt
+2017-05-27 15:16:49,Paddy,"Wenn's eh im gleichen LOAD-Segment landet, kann es ja auch die gleiche Page sein"
+2017-05-27 15:17:39,Paddy,"Kannst du mal probieren, ob das bei dir tut?"
+2017-05-27 15:17:57,Paddy,Mein lbuilds-ld 2.28 schien damit bei der einen Testbinary was sinnvolles zu tun
+2017-05-27 15:18:25,XanClic,da muss ich ja meinen tollen --nmagic-Fix rausnehmen.
+2017-05-27 15:18:57,XanClic,Oh. Das lichtet vim ja sogar hoch. Dann ist das ja doch gar keine so unbekannte Magie.
+2017-05-27 15:19:33,XanClic,LOAD           0x000000 0x40000000 0x40000000 0x01938 0x01938 R E 0x1000
+2017-05-27 15:19:35,XanClic,sieht schon besser aus
+2017-05-27 15:19:44,XanClic,PHDR           0x000034 0x40000034 0x40000034 0x000c0 0x000c0 R E 0x4
+2017-05-27 15:20:07,XanClic,"Jop, tut"
+2017-05-27 15:20:36,XanClic,# systemctl poweroff
+2017-05-27 15:20:39,XanClic,Befehl wurde nicht gefunden!
+2017-05-27 15:20:40,XanClic,Och.
+2017-05-27 15:24:15,Paddy,Das zu portieren überlasse ich dir ;-)
+2017-05-27 15:25:18,XanClic,"Da muss ich nur warten, bis der Kernel reingemerget wurde und dann ist das ganz einfach"
+2017-05-27 16:06:46,tyndur,>> Commit in tyndur.git:refs/heads/master 'user-i386.ld: Platz für die Header reservieren' (Kevin Wolf)
+2017-05-27 16:06:47,tyndur,"! user-i386.ld: ELF schreibt vor, dass wenn es ein PT_PHDR-Segment gibt (was bei dynamisch gelinkten Programmen der Fall ist), die Header gleichzeitig auch in einem LOAD-Segment sein müssen. Älteren binutils-Versionen war das egal, aber ein neuerer ld erweitert einfach das LOAD-Segment nach vorne, um Platz für die Header zu schaffen."
+2017-05-27 16:06:47,tyndur,"  Wenn jetzt .text direkt bei 0x40000000 anfängt, dann landen die Header also in dem Speicherbereich, der gar nicht mehr dem Userspace gehört, und die letzte Pagetable geht kaputt. Um das zu fixen, wird .text jetzt genau soweit nach hinten verschoben, dass ab 0x40000000 die Header Platz haben."
+2017-05-27 20:04:05,Jonathan,Moin
+2017-05-27 20:04:17,Paddy,Moin
+2017-05-27 22:37:50,dietzi,Nabend

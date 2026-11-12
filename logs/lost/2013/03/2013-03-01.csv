@@ -1,0 +1,183 @@
+date/time,nick,message
+2013-03-01 06:56:34,arbu,moin
+2013-03-01 06:56:49,arbu,"Bin gerade im Tutorial an der Stelle bei Aktivierung der Hardwareinterrupts, und kriege prompt danach eine GP-Exception. Wie kann ich die Ursache eingrenzen?"
+2013-03-01 07:06:53,arbu,"der errorcode sollte ja den selektor angeben bei dem es schief lief. Habe da jedoch Werte die viel zu hoch sind, als dass sie einen gültigen selektor sein könnten. Ist auch nicht immer gleich."
+2013-03-01 07:07:43,arbu,"Prinzipiell denke ich habe ich irgendwo nen generelles Speicherproblem (softwaremäßig, nicht hardware). Aber kein Plan, wie ich jetzt vorgehen soll."
+2013-03-01 08:09:28,arbu,"hm, das problem habe ich nur wenn ich den kernel mit qemu direkt lade. mit virtual box nicht. argh"
+2013-03-01 09:47:33,arbu,"ok, ich denke mein Problem liegt beim Aufruf des Interrupthandlers und das ich mir dabei den Stack zerschiesse http://pastebin.com/Cu77vHwd . Aber wie mache ich es richtig?"
+2013-03-01 09:52:31,arbu,"wenn ich void handle_interrupt(struct cpustate* cpu) definiere erschliesst sich mich nicht das push %esp davor und das add$4,%esp danach da ich esp nicht in den Argumenten habe und die Funktion keinen Wert zurück gibt. Lasse ich die beiden Zeilen weg crashed die ganze VM"
+2013-03-01 09:52:46,mgottschlag,"was sagt qemu, wenn du ihn exceptions loggen lässt?"
+2013-03-01 09:53:02,arbu,eh gute frage
+2013-03-01 09:53:09,arbu,moment
+2013-03-01 09:54:04,mgottschlag,"push esp = du pusht den Stackpointer auf den Stack, d.h. du übergibst die Stelle mit den gepushten Registern (""CPU-State"") an die Funktion"
+2013-03-01 09:54:07,mgottschlag,sieht korrekt aus
+2013-03-01 09:55:18,arbu,wie logge ich die exceptions mit qemu?
+2013-03-01 09:56:49,mgottschlag,"""-d ?"" für ne Liste, ""-d <item>,<item2>"" für das Loggen selbst"
+2013-03-01 09:56:59,mgottschlag,"-D logfile für die Datei, sonst gehts nach /tmp/qemu.log"
+2013-03-01 09:59:11,arbu,http://pastebin.com/wFxGq75Z beim interpretieren tu ich mir allerdings schwer
+2013-03-01 10:01:24,mgottschlag,ich seh auf anhieb nichts falsches und hab grad keine zeit mehr
+2013-03-01 10:01:35,arbu,"ok, aber danke soweit :)"
+2013-03-01 10:02:11,mgottschlag,ws für ne instruktion ist an dem eip?
+2013-03-01 10:02:14,mgottschlag,*was
+2013-03-01 10:03:31,arbu,äh
+2013-03-01 10:03:51,mgottschlag,also generell sind nur die letzten beiden interrupts wichtig
+2013-03-01 10:04:00,mgottschlag,"der letzte ist die exception, der davor der interrupt"
+2013-03-01 10:04:07,mgottschlag,das ganze davor ist noch vom BIOS
+2013-03-01 10:04:18,kevin,"Hm, ist der Error Code nicht irgendwie groß?"
+2013-03-01 10:04:26,arbu,"jo, das hätte ich jetzt anhand der gut und ist Einträge auch so gedeutet"
+2013-03-01 10:04:47,arbu,"ja, sehr groß und ändert sich so nach 10 mins immer wieder mal"
+2013-03-01 10:04:59,arbu,füllt die 32 bit gut aus
+2013-03-01 10:05:01,alexander,Morgen
+2013-03-01 10:05:06,arbu,moin
+2013-03-01 10:05:18,kevin,Moin alexander
+2013-03-01 10:05:49,arbu,bezüglich eip hab ich keine Ahnung was du meinst
+2013-03-01 10:05:57,mgottschlag,"naja, ich wünsch noch viel Spaß und mach mich jetzt mal auf den Weg zu einer hübschen Algorithmen-2-Klausur"
+2013-03-01 10:06:03,kevin,Viel Spaß ;-)
+2013-03-01 10:06:07,arbu,viel erfolg
+2013-03-01 10:06:12,kevin,Das auch
+2013-03-01 10:06:21,mgottschlag,"arbu: naja, was für eine instruction löst die exception aus?"
+2013-03-01 10:06:23,mgottschlag,thx
+2013-03-01 10:06:30,mgottschlag,ich werd garantiert extrem viel spaß haben
+2013-03-01 10:06:51,arbu,die exception kommt sobald ich die hardwareinterrupts mit sti aktiviere
+2013-03-01 10:07:09,kevin,"Meine Vermutung wäre, dass die IDT kaputt ist"
+2013-03-01 10:07:39,kevin,Und auf einen falsches/nicht initialisiertes Codesegment zeigt oder so
+2013-03-01 10:07:52,arbu,hm hab beim tyndur 0.2.0 kernel gespickelt und kann da keine wesentlichen unterschiede festellen
+2013-03-01 10:08:43,alexander,"Jemand hier Erfahrung mit Überwachungssystemen (Watchdog/Heartbeat) etc.? Was zu empfehlen? Nagios, Icinga?"
+2013-03-01 10:09:56,kevin,Ich würde einfach -watchdog benutzen *g*
+2013-03-01 10:10:59,kevin,arbu: Zeig mal deinen IDT-Initialisierungcode her
+2013-03-01 10:11:37,kevin,"Hm, und ich gehe davon aus, dass Softwareinterrupts auch nicht tun, oder? Das würde es vielleicht einfacher zum Debuggen machen."
+2013-03-01 10:11:39,arbu,http://pastebin.com/3VGPEj7P
+2013-03-01 10:12:56,arbu,"eher nicht, die exception kommt direkt nach dem aktivieren der interrupts"
+2013-03-01 10:16:03,kevin,"Ich gehe davon aus, dass du sichergestellt hast, dass die Operatorenrangfolge richtig ist?"
+2013-03-01 10:16:18,kevin,Bei Cast oder Shift wäre ich persönlich mir nämlich nicht sicher
+2013-03-01 10:16:57,arbu,in set_idtentry?
+2013-03-01 10:17:28,kevin,Ja. Aber scheint richtig zu sein.
+2013-03-01 10:18:42,arbu,"habe grad auch nochmal eindeutiger geklammert, bringt aber nix"
+2013-03-01 10:20:24,kevin,"Hast du mal eip nachgeschlagen, wie mgottschlag vorgeschlagen hatte?"
+2013-03-01 10:23:15,arbu,noch dabei
+2013-03-01 10:28:00,arbu,aber k.A. wie ich die Stelle finde auf die eil zeigt
+2013-03-01 10:28:03,arbu,*eip
+2013-03-01 10:32:59,kevin,Du disassemblierst deinen Kernel mit objdump -S kernel.elf oder so und suchst einfach nach der Adresse
+2013-03-01 10:33:16,kevin,"Wenn du deinen Kernel vorher mit gcc -g kompiliert hast, könnte das sogar lesbar sein"
+2013-03-01 10:33:54,arbu,ah :)
+2013-03-01 10:38:37,arbu,"hm. 2 Sachen kapier ich nicht. 1) im log von qemu scheint der letzte Eintrag die exception zu sein. Ich hätte gedacht, dass qemu den status in dem moment loggt in dem die exception auftritt. eip ist da allerdings schon bei hlt angekommen das aufgerufen wird aufgrund der exception."
+2013-03-01 10:40:26,arbu,"Der vorherige logeintrag müsste IRQ0 sein der ausgelöst wird. Allerdings zeigt eil auf einen krummen Wert, der so nicht im objdump zu finden ist, sondern mitten in mov    %dx,-0x4(%ebp) in der Funktion outb"
+2013-03-01 10:42:51,kevin,Das mit dem krummen Wert ist seltsam. Hast du auch sicher genau den gleichen Kernel ausgeführt und disassembliert?
+2013-03-01 10:43:06,arbu,oh Gott wie peinlich -.-
+2013-03-01 10:43:47,kevin,*g* Passiert uns allen...
+2013-03-01 10:45:02,arbu,"ah, ergibt auf einmal alles mehr sinn :)"
+2013-03-01 10:45:33,arbu,beim IRQ ist er in der endlosschleife vom kernel -> passt
+2013-03-01 10:46:20,arbu,bei der Exception ist er beim Rücksprung mittels iret aus intr_common_handler
+2013-03-01 10:46:50,kevin,Dann liegt wohl nicht das richtige auf dem Stack
+2013-03-01 10:47:22,arbu,"was mich zu meiner anfangsvermutung führt, dass ich mir irgendwie den stack zerschossen habe"
+2013-03-01 10:48:09,kevin,Dann wäre die schonmal bestätigt
+2013-03-01 10:49:19,arbu,"habe irgendwie arge Zweifel ob die Kombination von meinem assemblerteil mit dem c-teil wirklich zusammenpasst. Assembler, insbesonders die Parameterübergabe beim Funktionsaufruf und der Rücksprung ist nicht gerade meine stärke"
+2013-03-01 10:49:36,kevin,"Also dein handle_interrupt() sieht harmlos aus, es kann eigentlich nur im Assemblerteil liegen"
+2013-03-01 10:50:20,kevin,Paste mal den kompletten Assemblerteil
+2013-03-01 10:50:29,arbu,http://pastebin.com/sjpiwmaD
+2013-03-01 10:52:00,arbu,da habe ich wie gesagt Zweifel bei den Zeilen 71-73 ob das so richtig ist
+2013-03-01 10:54:07,kevin,Sollte schon
+2013-03-01 10:54:27,kevin,"push legt einen Pointer auf den Stack, das add nimmt ihn wieder runter"
+2013-03-01 10:56:10,arbu,"das ja, aber ob handle-interrupt die Parameter richtigen vom stack holt ..."
+2013-03-01 10:56:45,kevin,"Naja, das einzige, was man da groß falsch machen kann, ist die Reihenfolge"
+2013-03-01 10:56:48,kevin,Und da handle_interrupt nur einen hat...
+2013-03-01 10:57:15,arbu,weil den ich den Pointer afaik nicht in meinen Parametern habe. aber keine Ahnung was der compiler da automatisch pusht und popt
+2013-03-01 10:57:24,kevin,Du könntest mal spaßeshalber das call auskommentieren
+2013-03-01 10:57:46,kevin,"Dann weißt du, ob die C-Funktion was damit zu tun hat"
+2013-03-01 10:58:06,arbu,dann crashed qemu komplett
+2013-03-01 11:01:48,kevin,Das heißt konkret?
+2013-03-01 11:01:50,arbu,qemu: fatal: invalid tss type
+2013-03-01 11:02:02,arbu,eil zeigt ins nirvana
+2013-03-01 11:02:09,arbu,*eip
+2013-03-01 11:02:14,arbu,k*** rechtschreibkorrektur
+2013-03-01 11:03:16,kevin,"Okay, dann muss der gefixt werden"
+2013-03-01 11:03:58,kevin,Probier mal ein einfaches intr_stub_32: iret
+2013-03-01 11:04:06,kevin,Ohne irgendwas anderes dazwischen
+2013-03-01 11:04:26,arbu,"wenn ich mir das log so anschaue: würd ich sagen, dass es im Endeffekt noch der gleiche Fehler ist. er kommt aus der exception mit iret raus, und springt dann ins nirvana "
+2013-03-01 11:04:40,kevin,"Ja, also muss irgendwo der Stack kaputtgehen"
+2013-03-01 11:04:46,arbu,jo
+2013-03-01 11:06:11,kevin,"Deswegen der Vorschlag, mal mit einem leeren Interrupthandler zu schauen"
+2013-03-01 11:08:34,arbu,"hm nur beim 32 nen iret, oder auch bei allen ändert nix"
+2013-03-01 11:30:18,kevin,"Die Interruptnummer pushst du auch nicht mehr, oder?"
+2013-03-01 11:30:43,kevin,Hast du den kompletten Code irgendwo online?
+2013-03-01 11:44:36,arbu,mom
+2013-03-01 11:47:12,arbu,https://dl.dropbox.com/u/1512622/os.zip
+2013-03-01 11:47:36,arbu,ne die nummer un eventueller fehlerlose wird auch nicht mehr gepushed
+2013-03-01 11:52:39,kevin,"Hat vermutlich nichts mit deinem Problem zu tun, aber -I /usr/include/ ist keine gute Idee"
+2013-03-01 11:53:02,arbu,sondern?
+2013-03-01 11:56:37,kevin,"Nichts von deinem Host-System benutzen. Wenn du Header brauchst, selber schreiben."
+2013-03-01 11:57:27,kevin,"Hm, bei mir gibt der Kernel gar nichts aus"
+2013-03-01 11:58:10,arbu,"naja, dachte die os-unabhängigen könnte ich verwenden, wobei sich dann natürlich berechtigterweise die Frage stellt ob ich weiss ob diese wirklich os-unabhängig sind"
+2013-03-01 11:58:44,arbu,"achso, ja, hatte die consolengeschichte gerade rausgenommen, nur um sicher zu gehen, dass ich da nicht mir einen Fehler einfange"
+2013-03-01 11:58:58,arbu,da sind return unter kprintf und clrscr
+2013-03-01 11:59:49,kevin,"Ok, jetzt gibt es wieder Ausgabe"
+2013-03-01 11:59:55,kevin,Aber eip rennt mir trotzdem davon
+2013-03-01 12:00:10,kevin,Ohne Crash allerdings
+2013-03-01 12:00:44,arbu,"jo, der kommt falsch aus dem stack"
+2013-03-01 12:00:55,kevin,"Oh, cool"
+2013-03-01 12:00:57,kevin,check_exception old: 0xffffffff new 0x1
+2013-03-01 12:01:03,kevin,"Eine Exception 1, was ist denn das? :-)"
+2013-03-01 12:01:42,arbu,"laut doku debug, habe ich aber nicht gewollt ausgelöst :)"
+2013-03-01 12:01:53,kevin,hehe
+2013-03-01 12:01:54,kevin,Spannend
+2013-03-01 12:15:18,kevin,"Ich werde daraus ehrlichgesagt auch nicht schlau, falls dir das hilft..."
+2013-03-01 12:15:31,arbu,ist ein Trost ;)
+2013-03-01 12:24:06,kevin,"Hm, da passieren echt spannende Sachen"
+2013-03-01 12:24:38,arbu,"gut, wenn der stack wild läuft ist das Resultat nicht wirklich berechenbar"
+2013-03-01 12:27:42,kevin,Aha!
+2013-03-01 12:27:46,kevin,case 6: /* 286 interrupt gate */
+2013-03-01 12:27:51,kevin,"Ich glaube, deine IDT stimmt nicht ganz ;-)"
+2013-03-01 12:28:17,arbu,hm
+2013-03-01 12:28:22,kevin,"Ein Interrupthandler für 32-Bit-PM, der im 16-Bit-PM angesprungen wird, kann nicht so gut funktionieren"
+2013-03-01 12:28:58,arbu,"hem, dachte ich wäre im 32Bit PM"
+2013-03-01 12:29:15,arbu,dafür sollte ja eigentlich grub sorgen
+2013-03-01 12:29:38,arbu,"bzw, bei qemu mittels -kernel qemu selbst"
+2013-03-01 12:30:03,kevin,"Ja, schon. Aber mit dem Interrupt springst du in den 16-Bit-PM."
+2013-03-01 12:32:00,arbu,"was ist folglich also mein Fehler? Dass ich durch den Interrupt in den 16-Bit-PM komme, oder das ich das gar nicht verhindern das dies geschieht und ich mir was komplett anderes ausdenken muss?"
+2013-03-01 12:32:03,kevin,"Wenn du GATE_INTERRUPT als 0xe statt 0x6 definierst, tut es (da ist das 32-Bit-Flag noch gesetzt)"
+2013-03-01 12:33:23,arbu,der typ hat dorch nur 3 bit
+2013-03-01 12:33:33,arbu,wie soll ich da 0xe setzen?
+2013-03-01 12:33:37,kevin,"Kommt drauf an, was man alles als Typ bezeichnet..."
+2013-03-01 12:33:49,kevin,http://www.lowlevel.eu/wiki/IDT
+2013-03-01 12:33:55,kevin,"Bit 43 im Eintrag, so wie es aussieht"
+2013-03-01 12:33:59,arbu,oh
+2013-03-01 12:34:30,arbu,"hatte den part in der liste übersehen, weil ich dachte das wäre für LM"
+2013-03-01 12:34:44,kevin,"Ja, das ist irgendwie doof formatiert"
+2013-03-01 12:36:19,arbu,es läuft! *hüpf
+2013-03-01 12:36:36,arbu,dank dir. Das hätte ich im leben nicht gefunden
+2013-03-01 12:37:31,kevin,"Ich hab auch Debugcode in den qemu eingebaut, um das zu finden ;-)"
+2013-03-01 12:37:51,kevin,Aber eigentlich hätten wir einfach nur gleich mal die IDT mit einer korrekten vergleichen sollen...
+2013-03-01 12:38:07,kevin,Und das Bit ist im Wiki jetzt hoffentlich besser formatiert
+2013-03-01 16:53:34,alexander,KACKBRATZ
+2013-03-01 16:53:39,alexander,ECHAN
+2013-03-01 17:06:33,kevin,Moin auch
+2013-03-01 17:15:21,arbu,mit tss[1] = (uint32_t) (new_cpu +1) wird doch das esp-register im TSS gesichert. Richtig?
+2013-03-01 17:17:15,kevin,"Das ist tss.esp0, also der Wert, der für esp benutzt wird, wenn man in den Ring 0 zurückwechselt"
+2013-03-01 17:17:43,SHyx0rmZ,Moin
+2013-03-01 17:17:52,arbu,warum +1 und nicht +4? Ich meine der Offset wären doch 4 bytes
+2013-03-01 17:18:43,arbu,moin
+2013-03-01 17:21:57,kevin,arbu: Auf dem Stack liegt im Moment die komplette struct cpu_state drauf. Die wird ja noch gepopt bis zum Wechsel in den Userspace.
+2013-03-01 17:22:28,kevin,Der richtige Wert für esp beim Wechsel zurück ist also direkt nach der struct cpu_state
+2013-03-01 17:23:02,kevin,"new_cpu + 1 geht um sizeof(*new_cpu) Bytes weiter, das ist Pointerarithmetik. Und es sind deutlich mehr als vier Bytes."
+2013-03-01 17:24:06,arbu,"ok, glaub ich sollt mich bissl besser mit struct auseinandersetzen"
+2013-03-01 17:25:17,arbu,"für mich war new_cpu einfach nur ein 4byte großer Pointer auf die Struktur und das ganze +1 halt eine Adresse um 1 Byte höher, aber da lag ich wohl falsch"
+2013-03-01 20:15:16,arbu,"wie ist denn mbs_mmap_length in der multiboot-struktur zu verstehen? Das ist die Angabe der Länge in Bytes, oder? Und ein Eintrag hat 24 Byte, daher bekomme ich die Anzahl der Einträge raus durch mbs_mmap_length/24, oder sehe ih da etwas komplett falsch?"
+2013-03-01 20:45:44,kevin,Könnte stimmen
+2013-03-01 20:46:09,kevin,"Wobei die Länge eines Eintrags streng genommen nicht konstant sein muss, die steht ja jeweils mit im Eintrag drin"
+2013-03-01 20:47:14,arbu,"ok, aber kann es sein, dass ich Einträge da drinnen habe die aussagen: base:0 länge:0"
+2013-03-01 20:47:15,arbu,?
+2013-03-01 20:56:18,kevin,Eher nicht
+2013-03-01 20:57:29,arbu,"kriege ale mi_mmap_length 120 zurück. Das wären nach meiner Rechnung 5 Einträge, allerdings haben nur die ersten 3 sinnvolle Werte. Nummer 4 und 5 sind komplett auf 0 gesetzt."
+2013-03-01 21:10:14,SHyx0rmZ,genau wie im PM
+2013-03-01 21:10:49,SHyx0rmZ,"ach, Quark"
+2013-03-01 21:11:10,SHyx0rmZ,8B
+2013-03-01 21:13:02,SHyx0rmZ,"also, eigentlich natürlich nur 32 Bit"
+2013-03-01 21:17:00,SHyx0rmZ,der Errorcode ist nur 32 Bit breit
+2013-03-01 21:17:19,SHyx0rmZ,aber ist 64 Bit von RIP entfernt
+2013-03-01 21:17:29,SHyx0rmZ,dazwischen liegen also noch 32 Bit undefiniertes Zeug rum
+2013-03-01 21:18:40,SHyx0rmZ,"AMD64 Architecture Programmer's Manual, Volume 2: System Programming"
+2013-03-01 21:18:44,SHyx0rmZ,Figure 8-13
+2013-03-01 21:23:55,SHyx0rmZ,"merk dir einfach, dass der im LM so gut wie immer 16-byte-aligned ist"
+2013-03-01 21:24:05,SHyx0rmZ,ähm
+2013-03-01 21:24:09,SHyx0rmZ,*8-byte-aligned
+2013-03-01 21:24:23,SHyx0rmZ,wo drückt denn der Schuh?

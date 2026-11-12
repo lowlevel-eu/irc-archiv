@@ -1,0 +1,319 @@
+date/time,nick,message
+2007-11-02 00:00:11,VerrueckterPinguin,"container_header Ist der header der ganzen Datei? Darin sind dann die image_directory, dann supertable und noch imgtable?"
+2007-11-02 00:01:52,taljeth,"container_header ist der Header der Containerdatei, ja. Dort drin ist das Image Directory, welches den Namen und einen Verweis auf die Supertable des Images enthält."
+2007-11-02 00:02:34,taljeth,Und ein BDRVContainerState verweist auf ein geöffnetes einzelnes Image aus diesem Image Directory.
+2007-11-02 00:03:05,taljeth,"Und warum imgtable so heißt, kann ich dir nicht sagen, das sind einfach die L2-Tabellen unterhalb der Supertables. ;-)"
+2007-11-02 00:03:55,VerrueckterPinguin,*g*
+2007-11-02 00:06:14,taljeth,Ist zumindest die Grundidee halbwegs nachvollziehbar? ;-)
+2007-11-02 00:06:41,VerrueckterPinguin,Ja ;-)
+2007-11-02 00:07:45,taljeth,"Und das Ding muß dynamisch wachsen können, weil z.B. auch zwei qcow-Images drin sein können sollen."
+2007-11-02 00:09:19,taljeth,"Öhm, willst du das Ding eigentlich kompilieren können? *g* Dann sollte ich vielleicht noch den Patch für die alten qemu-Dateien hochladen..."
+2007-11-02 00:09:57,VerrueckterPinguin,Zuerst muss ich den Code mal versuchen zu verstehen ;-)
+2007-11-02 00:10:30,taljeth,"Naja, du weißt schon... Wie du mir, so ich dir. *g*"
+2007-11-02 00:10:47,taljeth,Das wären die restlichen zweieinhalb Zeilen: http://vs6503.vserver4free.de/lost/qemu-container.patch
+2007-11-02 00:11:43,VerrueckterPinguin,Iiih ein goto *g*
+2007-11-02 00:12:19,taljeth,"Cool, da ist noch eins übrig? ;-)"
+2007-11-02 00:12:51,taljeth,Ich wollte mich halt nicht allzu weit vom qemu-Stil entfernen
+2007-11-02 00:13:14,taljeth,Aber letztendlich ist das meiste LOST-Stil geworden...
+2007-11-02 00:13:54,VerrueckterPinguin,"Ok in ext2 war ich mehrmals versucht für Fehlerbehandlung ein goto zu benutzen. Aber irgendwie hab ichs geschafft, es bleiben zu lassen. ;-)"
+2007-11-02 00:14:53,taljeth,"Naja, in Linux ist es ja auch üblich. Und für solche Fälle kann man es wohl auch durchgehen lassen."
+2007-11-02 00:15:36,VerrueckterPinguin,"Jo, aber sehr vorbildlich ist es meiner Meinung nach nicht. Besonders in LOST, das ja auch für Einsteiger geignet sein soll ;-)"
+2007-11-02 00:15:40,VerrueckterPinguin,+te *g*
+2007-11-02 00:15:47,taljeth,*hehe*
+2007-11-02 00:18:55,VerrueckterPinguin,"Hm, jetzt bin ich grad unsicher: In read_table werden da imgtables alloziert?"
+2007-11-02 00:19:09,VerrueckterPinguin,Die haben die gleiche grösse wie die Supertables?
+2007-11-02 00:21:07,VerrueckterPinguin,"Ah ne, jetzt sehe ichs ;-)"
+2007-11-02 00:24:33,VerrueckterPinguin,"taljeth: Aber Zeile 241 ist doch Mist, oder irre ich mich? ;-) Würde da ein return -1 nicht mehr Sinn machen?"
+2007-11-02 00:24:43,VerrueckterPinguin,Eh 251
+2007-11-02 00:30:02,taljeth,Jein. ;-)
+2007-11-02 00:30:40,taljeth,"Das ist dann eine Tabelle, die es nicht gibt, aber beim Lesen kann man dann davon ausgehen, daß es einfach ein Block voller Nullen ist. Der Fall wird in cntfile_read abgefangen."
+2007-11-02 00:30:54,VerrueckterPinguin,"Ah, ok ;-)"
+2007-11-02 00:30:59,taljeth,cntfile_read_sector meine ich.
+2007-11-02 00:32:01,taljeth,"Du meinst, da sollte ein Kommentar hin? *g*"
+2007-11-02 00:32:45,VerrueckterPinguin,Wäre vielleicht keine schlechte Idee *g*
+2007-11-02 00:33:37,taljeth,Ich hab mir mal ein // TODO Kommentar hingeschrieben. *g*
+2007-11-02 00:33:55,VerrueckterPinguin,*lrl*
+2007-11-02 00:34:37,VerrueckterPinguin,"So, zeile 276 sieht für mich auch etwas seltsam aus..."
+2007-11-02 00:35:08,VerrueckterPinguin,"Die müsste doch ausgeschrieben so aussehen: ""uint64_t table_num = (sector_num * 512 * 1024) / (TABLE_LEN * 512 * 1024);"" ?"
+2007-11-02 00:37:13,VerrueckterPinguin,"Ah, das sind 512 bytes... es ist schon spät *g*"
+2007-11-02 00:39:49,taljeth,Zeile 276 ist bei mir eine Kommentarzeile. ;-)
+2007-11-02 00:40:16,VerrueckterPinguin,Wegen deinem TODO ;-)
+2007-11-02 00:40:29,VerrueckterPinguin,Aber die stimmt trotzdem ;-)
+2007-11-02 00:40:30,taljeth,[00:38] <VerrueckterPinguin> [...] es ist schon spät *g*
+2007-11-02 00:46:15,VerrueckterPinguin,Ich sehe grad schönes Potential für einen Segfault... ;-)
+2007-11-02 00:46:37,taljeth,"Wäre ja schlimm, wenn ich sowas nicht eingebaut hätte. ;-) Wo denn?"
+2007-11-02 00:46:48,VerrueckterPinguin,"Zeile 354: ""ret = bdrv_pwrite(container, offset, buf, 512 * 1024);"""
+2007-11-02 00:47:13,VerrueckterPinguin,"Wer sagt denn, dass buf 1024 Sektoren gross ist?"
+2007-11-02 00:47:23,taljeth,"Ups, da war ich etwas leichtfertig mit dem Erhöhen von 512 auf 512k. ;-)"
+2007-11-02 00:47:35,VerrueckterPinguin,*g*
+2007-11-02 00:48:03,taljeth,"Hm, wie mach ich das dann am blödesten? Lokale 512k-Variable auf den Stack und mit Nullen füllen?"
+2007-11-02 00:49:03,VerrueckterPinguin,void* buffer = (void*) (uintptr_t) rand(); *g*
+2007-11-02 00:49:31,taljeth,*g* Und ernsthaft?
+2007-11-02 00:50:01,VerrueckterPinguin,Ich hab das in Fat auch mit lokalem array gemacht.
+2007-11-02 00:50:12,VerrueckterPinguin,"Ist zwar nicht besonders schön, aber geht wohl nicht anders."
+2007-11-02 00:50:47,VerrueckterPinguin,Ah das hat ja schlimmere Folgen als ich gemeint habe... ;-)
+2007-11-02 00:51:04,VerrueckterPinguin,Oder auch nicht *g*
+2007-11-02 00:51:08,taljeth,Nicht?
+2007-11-02 00:51:28,taljeth,Kommt wohl auf das FS an.
+2007-11-02 00:51:29,VerrueckterPinguin,Doch. Wenn die Sektornummer nicht am Anfang vom Block liegt. ;-)
+2007-11-02 00:52:09,VerrueckterPinguin,Und bei ext2 ist da die Warscheinlichkeit nicht allzu klein ;)
+2007-11-02 00:52:21,taljeth,Dann wird der Buffer halt zweimal an unterschiedliche Stellen rausgeschrieben. ;-)
+2007-11-02 00:53:06,VerrueckterPinguin,*Argh* ich war wieder oben bei read ;-)
+2007-11-02 00:53:35,taljeth,"Was meinst du, wie oft mir das schon passiert ist? ;-)"
+2007-11-02 00:54:34,VerrueckterPinguin,*hehe*
+2007-11-02 00:55:32,taljeth,"Würde mich aber wundern, wenn das der böse Fehler war."
+2007-11-02 00:57:11,VerrueckterPinguin,"Jo, mich auch."
+2007-11-02 00:58:08,VerrueckterPinguin,"Hey aber ""s->imgdir->supertable_len * TABLE_LEN * 512 * 1024;"" bleibt doch relativ konstant, oder?"
+2007-11-02 00:58:41,VerrueckterPinguin,Wie soll dann bitte alloc funktionieren?
+2007-11-02 00:58:42,taljeth,Im allgemeinen ja.
+2007-11-02 00:59:02,taljeth,"Ah, sehr schön, es passiert nicht nur mir, daß bs und container verwechselt werden."
+2007-11-02 00:59:10,VerrueckterPinguin,*g*
+2007-11-02 00:59:11,taljeth,"Das ist das, was ich vorhin mal angesprochen habe. *g*"
+2007-11-02 01:00:04,taljeth,"Dieses getlength ist natürlich mehr die Maximalgröße, die mit dieser Supertable machbar ist."
+2007-11-02 01:00:48,taljeth,Vielleicht sollte ich dafür noch ein bißchen reserved anzapfen und die Größe extra speichern.
+2007-11-02 01:01:12,taljeth,Wobei die vermutlich sowieso nur für raw interessant ist.
+2007-11-02 01:01:43,taljeth,"(Ja, du mußt mir nicht erklären, daß raw das wichtigste Format ist, das weiß ich auch so *g*)"
+2007-11-02 01:01:58,VerrueckterPinguin,*g*
+2007-11-02 01:02:46,taljeth,"qcow hat zumindest auch ohne getlength was gemacht, während raw eine Festplatte mit 0 Sektoren erkannt hat..."
+2007-11-02 01:04:21,taljeth,"Wenn du bei getlength warst, bist du also ziemlich genau durch?"
+2007-11-02 01:04:36,VerrueckterPinguin,"Jo, ich bin am Ende angelangt."
+2007-11-02 01:05:43,taljeth,"Hm, na gut. Dann probiere ich morgen, ob der Fehler beim Schreiben entscheidend war."
+2007-11-02 01:06:09,VerrueckterPinguin,Kann doch eigentlich fast nicht sein...
+2007-11-02 01:06:37,taljeth,Ich kann's mir auch kaum vorstellen.
+2007-11-02 01:06:47,taljeth,Aber gerade das macht es so wahrscheinlich. ;-)
+2007-11-02 01:07:30,VerrueckterPinguin,Stimmt. ;-)
+2007-11-02 01:11:41,taljeth,"Naja, genug für heute, wenn ich mich morgen in der Uni blicken lassen will. ;-)"
+2007-11-02 01:12:01,VerrueckterPinguin,"Jo, ich gehe auch noch etwas schlafen ;-)"
+2007-11-02 01:12:16,taljeth,Morgen nicht frei?
+2007-11-02 01:12:23,VerrueckterPinguin,"Nein, und heute auch nicht ;-)"
+2007-11-02 01:12:43,VerrueckterPinguin,Kanton Bern ist reformiert
+2007-11-02 01:13:02,taljeth,"Tja, Pech. ;-)"
+2007-11-02 01:13:11,Guest170987,Genau. ;-)
+2007-11-02 01:13:45,taljeth,"Das heißt, bei euch ist das auch von Kanton zu Kanton unterschiedlich?"
+2007-11-02 01:14:02,Guest170987,"Aber ich will morgen Abend ein LOST laufen sehen mit Container-Floppy und einem lpt, das mir einen FPC holt *g*"
+2007-11-02 01:14:09,Guest170987,"Jo, ist es"
+2007-11-02 01:14:28,Guest170987,"Ein bisschen ""Kantönligeist"" muss scheinbar noch sein. ;-)"
+2007-11-02 01:14:40,taljeth,"LOST läuft von Container-Floppy, das war mein allererster Test. ;-)"
+2007-11-02 01:15:02,Guest170987,Und einen fpc bekomme ich auch per lpt? *g*
+2007-11-02 01:15:03,taljeth,Bei uns dürften es auch nur BaWü und Bayern sein.
+2007-11-02 01:15:14,taljeth,Das eher nicht. ;-)
+2007-11-02 01:16:16,Guest170987,Und ich muss dieses Wochenende wohl mal IDE fixen ;-)
+2007-11-02 01:16:30,Guest170987,Damit ich ext2 anständig testen kann
+2007-11-02 01:16:59,taljeth,"Ich denke, ich werde dich davon nicht abhalten. ;-)"
+2007-11-02 01:17:35,Guest170987,;-)
+2007-11-02 01:17:42,taljeth,"Naja, gn8"
+2007-11-02 01:17:46,Guest170987,Gute Nacht
+2007-11-02 02:21:14,schnippi,re
+2007-11-02 10:55:28,bluecode,moin
+2007-11-02 14:11:56,taljeth,Góðan daginn
+2007-11-02 15:08:42,Coffee,hi
+2007-11-02 15:09:08,T2k3,hi 
+2007-11-02 15:31:52,maumo,moin
+2007-11-02 15:32:00,maumo,"seit liep zu mir, ich hatte seit ner woche kein internet"
+2007-11-02 15:32:32,Coffee,loooool
+2007-11-02 15:32:33,Coffee,haha
+2007-11-02 15:32:35,taljeth,Moin
+2007-11-02 15:32:40,Coffee,=)
+2007-11-02 15:32:41,taljeth,Die Welt ist schlecht. ;-)
+2007-11-02 15:32:48,maumo,oh ja
+2007-11-02 15:32:51,maumo,die telekom
+2007-11-02 15:32:55,maumo,und vor allem 1und1 -.-
+2007-11-02 15:33:02,maumo,ich find die machn wa tot
+2007-11-02 15:33:20,maumo,und
+2007-11-02 15:33:25,maumo,das ist nicht zum lachen
+2007-11-02 15:34:07,Coffee,lol
+2007-11-02 15:34:09,Coffee,stimmt aber
+2007-11-02 15:34:33,Coffee,"telekom hat mir zu letzten jahr oktober DSL16000 versprochen, hier gibbets immernoch nur 3000 =("
+2007-11-02 15:40:32,maumo,ich hab 2000 -.-
+2007-11-02 15:40:38,maumo,nja ... ich bin hier aber auch am arsch der welt
+2007-11-02 16:02:26,Noooooooooos,hi
+2007-11-02 16:29:54,schnippi,hiho
+2007-11-02 16:30:32,Noooooooooos,hiho schnippi
+2007-11-02 16:33:46,taljeth,Moin schnippi 
+2007-11-02 16:35:17,T2k3,olla schnippi
+2007-11-02 16:36:09,schnippi,:)
+2007-11-02 17:21:56,Oliver,you can't smile with a gun in ya face
+2007-11-02 17:22:27,taljeth,Hallo Gast
+2007-11-02 17:23:51,Noooooooooos,hmmm
+2007-11-02 17:31:18,Noooooooooos,wie ist denn das smile gemeint?
+2007-11-02 17:31:59,bluecode,http://dict.leo.org/ende?lp=ende&lang=de&searchLoc=0&cmpType=relaxed&sectHdr=on&spellToler=on&search=smile&relink=on
+2007-11-02 17:32:40,taljeth,Man kann das auch als leo:smile schreiben. ;-)
+2007-11-02 17:33:03,bluecode,Man kann es auch lassen.
+2007-11-02 17:33:25,bluecode,"Und der Frage ""wie ist denn das leo: gemeint"" ausweichen ;-)"
+2007-11-02 17:33:31,taljeth,Nicht auszuschließen. ;-)
+2007-11-02 17:33:39,Noooooooooos,und was hat eine kanone mit lachen zu tun?
+2007-11-02 17:34:18,bluecode,"""a gun in ya face"" = eine Waffe an die Schläfe halten (sinngemäß)"
+2007-11-02 17:35:00,Noooooooooos,hmm....
+2007-11-02 17:35:09,Noooooooooos,kommt drauf an
+2007-11-02 17:35:15,bluecode,"jo, äußerst tiefsinnig."
+2007-11-02 17:35:24,Noooooooooos,find ich auch
+2007-11-02 17:45:50,VerrueckterPinguin,Moin
+2007-11-02 17:46:34,taljeth,Moin VerrueckterPinguin 
+2007-11-02 17:47:17,VerrueckterPinguin,taljeth: Und tun deine Container jetzt? ;-)
+2007-11-02 17:48:19,taljeth,Ein Minimal-Sarge ist jedenfalls installiert und bootet. Lag wohl doch daran. ;-)
+2007-11-02 17:48:40,taljeth,Als nächstes probiere ich es jetzt nochmal mit qcow
+2007-11-02 17:48:48,Noooooooooos,moin
+2007-11-02 17:49:40,taljeth,Oder genauergesagt mache ich als nächstes erstmal ein paar #ifdef DEBUG rein. *g
+2007-11-02 17:49:52,VerrueckterPinguin,Aber *g*
+2007-11-02 17:50:06,VerrueckterPinguin,Ups das Aber gehört da nicht hin ;-)
+2007-11-02 17:52:28,taljeth,Du wolltest mir widersprechen? ;-)
+2007-11-02 17:53:26,VerrueckterPinguin,"Nein, das würde ich doch niemals wagen. ;-)"
+2007-11-02 17:53:52,VerrueckterPinguin,(Natürlich nur solange du OP oder noch was schlimmeres hast. *g*
+2007-11-02 17:54:37,taljeth,"Ja, richtig, meine Schreckensherrschaft... *g*"
+2007-11-02 17:54:52,VerrueckterPinguin,Genau. ;-)
+2007-11-02 17:55:34,taljeth,"War wohl richtig, Jidder die Adminrechte damals abzuschwatzen. ;-)"
+2007-11-02 17:57:33,Coffee,re
+2007-11-02 17:59:07,taljeth,"Ach richtig, ohne Netzwerkkabel wird das mit dem svn commit schwierig..."
+2007-11-02 18:00:42,bluecode,nicht wenn man wlan hat ;-)
+2007-11-02 18:01:04,taljeth,Ich hab doch mein WLAN-Kabel verlegt.
+2007-11-02 18:01:21,bluecode,das ist natürlich ärgerlich
+2007-11-02 18:01:28,taljeth,"Hm, bei Kabeln sollte man nicht von verlegen reden, oder? *g*"
+2007-11-02 18:01:39,bluecode,*lol*
+2007-11-02 18:01:58,taljeth,"Ist mir nur so aufgefallen, nachdem ich es abgeschickt hatte..."
+2007-11-02 18:05:43,taljeth,"VerrueckterPinguin: Ich habe die aktuelle Version hochgeladen, falls du einen Streßtest machen willst. Sieben verschiedene Images in lauter verschiedenen Formaten oder sowas. ;-)"
+2007-11-02 18:08:08,VerrueckterPinguin,Für welche Version ist denn der Patch? CSV?
+2007-11-02 18:08:37,VerrueckterPinguin,Ich habe es mit dem gestrigen CSV-Snapshot probiert. Da passt der Patch nicht wirklich drauf. ;-)
+2007-11-02 18:32:59,taljeth,"Jo, ich würde nicht Comma Separated Values nehmen, sondern CVS. ;-)"
+2007-11-02 18:34:25,taljeth,"Aber cvs diff taugt wohl nicht viel, ich mache nochmal einen vernünftigen diff."
+2007-11-02 18:35:41,taljeth,"Öhm, wenn mir jemand sagt, wie das geht jedenfalls..."
+2007-11-02 18:36:09,VerrueckterPinguin,-u? ;-)
+2007-11-02 18:36:28,taljeth,"Jaja, aber ich habe ja keinen Vergleichsstand da..."
+2007-11-02 18:36:52,taljeth,Mit qcow scheint es übrigens nach wie vor nicht zu gehen
+2007-11-02 18:41:37,taljeth,VerrueckterPinguin: Neuer Patch ist oben
+2007-11-02 18:49:11,taljeth,VerrueckterPinguin: Haben wir ein is_directory oder sowas?
+2007-11-02 18:49:37,VerrueckterPinguin,Nur stat...
+2007-11-02 18:49:49,taljeth,"Ich weiß, aber ich will kein POSIX."
+2007-11-02 18:50:01,taljeth,"Naja, ich mach einen Patch dafür. ;-)"
+2007-11-02 19:24:47,taljeth,"Hm, ist [PPatch] ein Pointer auf einen Patch? *g*"
+2007-11-02 19:33:38,taljeth,VerrueckterPinguin: Ich hab grad mal eine leichtverdauliche Patchserie geschickt.
+2007-11-02 19:40:35,VerrueckterPinguin,taljeth: Ich habs gesehen. ;-)
+2007-11-02 19:43:32,taljeth,"Ach Mist, ich wußte doch, daß ich was vergessen habe... Als ich die Liste erstellt habe, habe ich noch drangedacht, aber bis ich zum return gekommen bin, wieder vergessen. ;-)"
+2007-11-02 19:58:11,taljeth,VerrueckterPinguin: Gilt dein Ack auch für  Patch 3?
+2007-11-02 19:59:24,VerrueckterPinguin,Hast du denn das was ich noch geschrieben habe geändert?
+2007-11-02 19:59:48,taljeth,"Hm, okay, dann warte ich mal auf die Mail. ;-)"
+2007-11-02 20:00:35,VerrueckterPinguin,Hat gmx die wieder als Spam eingestuft?
+2007-11-02 20:01:05,taljeth,"Bin grad dabei, nachzuschauen"
+2007-11-02 20:02:56,taljeth,Sieht nicht so aus
+2007-11-02 20:05:23,VerrueckterPinguin,Hast du dazu noch garkeine Mail erhalten?
+2007-11-02 20:06:14,taljeth,Nein. Und mein zweiter Versuch für Patch 2 ist bei mir auch nicht angekommen
+2007-11-02 20:06:32,taljeth,Deine Antwort darauf allerdings schon.
+2007-11-02 20:07:13,nicolas,huhu
+2007-11-02 20:07:33,nicolas,so wie ich die Mailingliste sehe wird LOST bald LONIX heißen :-)
+2007-11-02 20:07:52,VerrueckterPinguin,"taljeth: Ah, da ist in den Logs wirklich was böses bei mir..."
+2007-11-02 20:07:58,VerrueckterPinguin,Moin nicolas
+2007-11-02 20:08:17,taljeth,Soll ich aus dem size_t ein int machen?
+2007-11-02 20:08:43,VerrueckterPinguin,Bringt ja nichts ;)
+2007-11-02 20:08:44,taljeth,"Der Fehler müßte aber irgendwo anders auch drinsein (pipe?), weil ich diesen Teil nur kopiert habe, wmnat."
+2007-11-02 20:09:11,VerrueckterPinguin,Ein == müsste doch da hin
+2007-11-02 20:10:20,taljeth,"Ups, ich dachte, da kommen negative Zahlen als Fehler"
+2007-11-02 20:10:44,VerrueckterPinguin,Nein fwrite gibt auch size_t zurück. ;-)
+2007-11-02 20:10:55,VerrueckterPinguin,Moin nicolas btw ;-)
+2007-11-02 20:11:09,nicolas,hast du schon Pinguin^^
+2007-11-02 20:11:14,taljeth,"Aber du hast natürlich recht, fread != read. ;-)"
+2007-11-02 20:11:47,taljeth,nicolas: s/<VerrueckterPinguin>/<taljeth>/
+2007-11-02 20:11:51,VerrueckterPinguin,*g*
+2007-11-02 20:11:53,taljeth,Dann paßt es jetzt. ;-)
+2007-11-02 20:12:06,nicolas,:D
+2007-11-02 20:12:26,taljeth,VerrueckterPinguin: Außer dem == statt < noch Einwände oder darf ich committen?
+2007-11-02 20:13:42,VerrueckterPinguin,"Hm seltsam, der SMTP-Server vom Provider hat da einfach bei der Shell-Mail gebouncet. Und zwar für jeden Empfänger :/"
+2007-11-02 20:15:06,VerrueckterPinguin,Ein paar nette Fehlermeldungen wären vielleicht noch was... ;-)
+2007-11-02 20:15:57,taljeth,Immer diese Erwartungshaltung... ;-)
+2007-11-02 20:16:15,VerrueckterPinguin,Und sollte das size_t length = strlen(filename) + strlen(dst_path) + 1;
+2007-11-02 20:16:22,VerrueckterPinguin,+ nicht ein + 2 sein?
+2007-11-02 20:16:50,VerrueckterPinguin,"Ah ne, jetzt sehe ich das + 1 unten auch. ;-)"
+2007-11-02 20:19:09,VerrueckterPinguin,Aber sonst sieht es gut aus.
+2007-11-02 20:20:56,taljeth,Ich schick's nochmal.
+2007-11-02 20:21:29,taljeth,nicolas: Was meintest du übrigens mit LONIX? ;-)
+2007-11-02 20:21:42,nicolas,oder LUNIX :D
+2007-11-02 20:21:48,nicolas,LOST wird zu unix^^
+2007-11-02 20:21:53,nicolas,oder zumindest zu einem clon
+2007-11-02 20:22:08,taljeth,Dann hast du entweder keine Ahnung von UNIX oder du kannst nicht lesen. ;-)
+2007-11-02 20:23:00,VerrueckterPinguin,nicolas: Wie kommst du denn darauf?
+2007-11-02 20:23:24,nicolas,nur so^^
+2007-11-02 20:24:05,taljeth,Du kannst ja mit eigenen Patches gegensteuern. ;-)
+2007-11-02 20:40:53,taljeth,VerrueckterPinguin: Paßt der shell-Patch jetzt?
+2007-11-02 20:41:17,VerrueckterPinguin,Das nennt man timing. Vor 3 Sekunden hab ich das Ok geschickt *g*
+2007-11-02 20:41:32,taljeth,*g*
+2007-11-02 20:42:08,taljeth,"Das mache ich gern, damit ich eines meiner Lieblingswörter, wohlgetimt, verwenden kann. ;-)"
+2007-11-02 20:42:50,VerrueckterPinguin,"Hm ok, wenn ext2 auf einem 200Mb-Datenträger den Block 0xFFFFFFFF einlesen will, stimmt wohl wirklich was nicht. ;-)"
+2007-11-02 21:04:30,taljeth, /home/toni/newlost/lost/trunk/src/modules/ext2/lostio.c:110: undefined reference to `vfstree_create_child'
+2007-11-02 21:04:41,taljeth,"Ähm, der Pfad sieht seltsam aus, vielleicht mal ein make clean. *g*"
+2007-11-02 21:11:12,taljeth,"VerrueckterPinguin: Mit deinem ext2-Code kann ich nichts anfangen, kompiliert nicht ansatzweise."
+2007-11-02 21:23:14,VerrueckterPinguin,"Hm, hat was, vfstree_create_child hab ich nur lokal..."
+2007-11-02 21:23:45,VerrueckterPinguin,taljeth: Ist das alles was fehlt?
+2007-11-02 21:24:03,taljeth,"../include/lostio.h:87: error: Syntaxfehler before ""io_resource_t"""
+2007-11-02 21:24:12,taljeth,Dort fehlt wohl seit Ewigkeiten ein #include
+2007-11-02 21:25:09,VerrueckterPinguin,Stimmt... ich schicke gleich ein Patch dafür und für die Funktion
+2007-11-02 21:27:00,taljeth,Also mit FPC über lpt heute wird es eng... ;-)
+2007-11-02 21:27:07,VerrueckterPinguin,*g*
+2007-11-02 21:31:40,VerrueckterPinguin,"So, ich habe den Patch geschickt"
+2007-11-02 21:35:48,taljeth,"Ist das fehlende #include nichts, was man für 0.1 brauchen könnte?"
+2007-11-02 21:36:19,VerrueckterPinguin,"Ok, ich mache ja schon einen seperaten Commit ;-)"
+2007-11-02 21:38:06,VerrueckterPinguin,Soll ich dafür auch über die Liste gehen? *g*
+2007-11-02 21:38:57,taljeth,"Nein, brauchst du nicht. Aber ein Ack war das noch nicht. ;-)"
+2007-11-02 21:39:24,VerrueckterPinguin,Schade. ;-)
+2007-11-02 21:41:21,taljeth,"Okay, aber jetzt."
+2007-11-02 21:48:39,VerrueckterPinguin,"So, ist drin"
+2007-11-02 21:59:09,taljeth,"Huch, was war das für eine Tastenkombination?"
+2007-11-02 21:59:21,taljeth,"VerrueckterPinguin: Wieso hast du was geackt, was nicht kompiliert? *g*"
+2007-11-02 22:00:48,VerrueckterPinguin,Was meinst du? ;-)
+2007-11-02 22:01:42,taljeth,"Naja, deine zusätzlichen Fehlermeldungen waren halt kaputt. ;-)"
+2007-11-02 22:05:33,taljeth,Sollte Schreiben auf ext2 funktionieren...?
+2007-11-02 22:05:56,VerrueckterPinguin,"Jo, auf Floppy schon"
+2007-11-02 22:06:06,taljeth,Aber auf IDE nicht?
+2007-11-02 22:06:39,taljeth,"Und floppy kann kein zweites Laufwerk, oder?"
+2007-11-02 22:09:26,VerrueckterPinguin,"Nein, IDE ist noch kaputt. ;-)"
+2007-11-02 22:09:39,VerrueckterPinguin,Floppy sollte es eigentlich theoretisch können.. ;-)
+2007-11-02 22:23:00,taljeth,"Zwei Laufwerke gleichzeitig verwenden zu wollen, war wohl doch zu mutig. Also Rootdisk mit ext2 bauen..."
+2007-11-02 22:25:43,VerrueckterPinguin,Willst du mein Skript dafür? Oder kriegst du das noch selbst hin? *g*
+2007-11-02 22:26:18,taljeth,Für GRUB muß ich nachschauen. ;-)
+2007-11-02 22:28:18,taljeth,"Ach Mist, vielleicht hätte ich stage1/2 auch noch draufkopieren sollen..."
+2007-11-02 22:36:51,taljeth,Ist das Startverzeichnis eigentlich in shell hartkodiert?
+2007-11-02 22:37:49,VerrueckterPinguin,"Nein, in Init"
+2007-11-02 22:38:09,VerrueckterPinguin,Aber nur solange man keine init.cfg benutzt
+2007-11-02 22:38:09,taljeth,*g*
+2007-11-02 22:41:34,taljeth,"Hm, das sieht böse aus..."
+2007-11-02 22:41:45,taljeth,"Wenn ich lpt.mod von ext2 starte, gibt es einen OOM. Dieselbe Version von FAT funktioniert."
+2007-11-02 22:42:09,VerrueckterPinguin,Wie gross ist das Ding denn?
+2007-11-02 22:42:39,taljeth,"Nichts außergewöhnlich großes, ich würde auf höchstens 200K schätzen"
+2007-11-02 22:43:22,taljeth,-rwxr-xr-x  1 kevin kevin 59K 2007-11-02 22:40 lpt.mod
+2007-11-02 22:43:30,taljeth,Ist ja sogar noch komprimiert.
+2007-11-02 22:44:17,VerrueckterPinguin,Das gefällt mir nicht wirklich... ;-)
+2007-11-02 22:48:00,taljeth,"Wenn ich lpt von GRUB laden lasse, geht es."
+2007-11-02 22:48:07,taljeth,Überraschung. ;-)
+2007-11-02 22:51:01,VerrueckterPinguin,Das kann man so sagen. ;-)
+2007-11-02 23:06:54,nicolas,schauen wir mal ob lost auf Mac OS X zum kompilieren geht
+2007-11-02 23:10:57,nicolas,"hmm was mag make an ""subdirs:"" nicht?"
+2007-11-02 23:11:15,nicolas,Makefile:24: *** missing separator.  Stop. / /Users/nicolas/Desktop/trunk/src/modules/vterm/Makefile
+2007-11-02 23:16:53,VerrueckterPinguin,Was sagt denn ein pwd?
+2007-11-02 23:17:15,nicolas, /Users/nicolas/Desktop/trunk
+2007-11-02 23:18:58,VerrueckterPinguin,Kannst du deine Makefile mal irgend über ein Nopaste-Skript herzeigen?
+2007-11-02 23:20:18,nicolas,Makefile oder Makefile.all?
+2007-11-02 23:20:55,VerrueckterPinguin,"Wenn ich Makefile sage, meine ich vermutlich nicht die Makefile.all *g*"
+2007-11-02 23:21:39,nicolas,http://pastebin.com/m426e57e5
+2007-11-02 23:21:39,nicolas,*g*
+2007-11-02 23:22:03,Noooooooooos,bin weg cu
+2007-11-02 23:22:36,nicolas,cu
+2007-11-02 23:25:21,VerrueckterPinguin,nicolas: Dein echo kann offensichtlich kein -e ;-)
+2007-11-02 23:25:55,taljeth,wtf? Sowas gibt es? ;-)
+2007-11-02 23:25:57,nicolas,wie kann ich das prüfen
+2007-11-02 23:26:00,nicolas,echo -e 'lol'
+2007-11-02 23:26:00,nicolas,geht
+2007-11-02 23:26:28,taljeth,nicolas: echo -e \\a oder sowas?
+2007-11-02 23:27:12,nicolas,das gibt nichts aus
+2007-11-02 23:28:16,VerrueckterPinguin,taljeth: Vielleicht ein Problem wegen irgendwelchen builtin-Kommandos?
+2007-11-02 23:28:31,taljeth,Keine Ahnung.
+2007-11-02 23:28:40,taljeth,nicolas: Benutz halt Makefile.Jidder ;-)
+2007-11-02 23:28:48,nicolas,^^
+2007-11-02 23:29:01,taljeth,"Selbstverständlich ohne jede Garantie, daß die ansatzweise das tut, was sie soll"
+2007-11-02 23:29:06,nicolas,was sind da für unterschiede dabei?
+2007-11-02 23:29:37,taljeth,Es sind zwei komplett unterschiedliche Buildsysteme
+2007-11-02 23:29:58,nicolas,ok teste ich morgen mak
+2007-11-02 23:30:01,nicolas,*mal
+2007-11-02 23:36:23,VerrueckterPinguin,"taljeth: Ob es Zufall ist, dass die ersten 12 Blocks Problemlos funktionieren? (Das sind nämlich genau die, zu denen die Blocknummer direkt im Inode hinterlegt ist... *g*)"
+2007-11-02 23:39:57,schnippi,re
+2007-11-02 23:45:00,VerrueckterPinguin,Ups da habe ich beim Aufräumen des Codes ein -1 zuviel wegoptimiert
+2007-11-02 23:45:09,VerrueckterPinguin,Jetzt siehts bei mir wieder besser aus.
+2007-11-02 23:50:30,VerrueckterPinguin,Und die md5summe sieht auch in etwa gleich aus. ;-)
+2007-11-02 23:54:54,VerrueckterPinguin,taljeth: http://lost.famkaufmann.info/ext2.tar.bz2 Falls du nochmal einen Versuch starten möchtest.
+2007-11-02 23:58:20,VerrueckterPinguin,wz schnippi btw ;-)

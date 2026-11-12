@@ -1,0 +1,299 @@
+date/time,nick,message
+2015-08-16 10:13:53,Jonathan,Moin
+2015-08-16 13:46:47,Svenska,"Jonathan: du kennst dich doch mit netzteilen aus, oder? :-)"
+2015-08-16 13:46:54,masterq32,morgen
+2015-08-16 13:47:01,Svenska,moin
+2015-08-16 13:47:25,masterq32,heute wohl mal page faults fixen :D
+2015-08-16 13:47:53,masterq32,"nur zum verständnis: bei page fault ""pmm_alloc"" und dann die neue page passend zuweißen?"
+2015-08-16 13:48:08,Svenska,nö :-)
+2015-08-16 13:48:13,masterq32,okay :P
+2015-08-16 13:48:21,Svenska,"erst rauskriegen, /warum/ du einen #PF bekommst ;)"
+2015-08-16 13:48:25,masterq32,hmmm :D
+2015-08-16 13:48:48,masterq32,mal wiki lesen
+2015-08-16 13:48:56,masterq32,hatte das zwar schon mal gelesen aber wohl wieder alles entfallen
+2015-08-16 13:49:37,Svenska,"wenn ein task zufällig auf irgendeine adresse zugreift, dann solltest du da nicht unbedingt RAM hinlegen"
+2015-08-16 13:49:59,masterq32,"naja, ich hab ja nur ""einen"" Task, das ist meine VM"
+2015-08-16 13:51:14,Svenska,"aber dein kernel sollte trotzdem wissen, welche adressen deine VM belegen darf"
+2015-08-16 13:52:33,Svenska,"wenn du allerdings beim malloc() schon mappst, dann darf dein task niemals einen #PF auslösen"
+2015-08-16 13:52:53,masterq32,"hm, hab das etwas unorthodox gelöst:"
+2015-08-16 13:53:08,masterq32,mappe fix von 4 MB nach 8 MB und gebe dem malloc den speicherraum
+2015-08-16 13:53:13,masterq32,aber trotzdem faultet da was
+2015-08-16 13:53:38,Svenska,du mappst physisch 4M..8M in den task 4M..8M und kriegst trotzdem einen #PF ?
+2015-08-16 13:54:07,masterq32,ich mappe 4 - 8 mb in den virt via pmm_alloc
+2015-08-16 13:54:38,masterq32,und ja
+2015-08-16 13:54:49,masterq32,ich schieb das jetzt einfach mal auf die malloc-implementierung :D
+2015-08-16 13:54:53,masterq32,weil in der knallts nämlich
+2015-08-16 13:55:01,Svenska,"dann fixe dein malloc(), nicht den #PF ;)"
+2015-08-16 13:55:08,masterq32,:P
+2015-08-16 13:55:11,masterq32,ja stimmt
+2015-08-16 13:55:25,masterq32,war da mal so dreist und hab das malloc aus der avr-libc genommen :D
+2015-08-16 13:55:43,masterq32,sollte ich eh irgendwann selber schreiben
+2015-08-16 13:56:25,Svenska,"im #PF solltest du jedenfalls nix mappen, was nicht gemappt sein sollte."
+2015-08-16 13:56:31,masterq32,okay :D
+2015-08-16 13:56:37,masterq32,wäre halt nen dirty-fix gewesen
+2015-08-16 13:56:50,masterq32,ich könnte auch sagen: alles physisch größer  10 MB gehört malloc :P
+2015-08-16 13:57:07,Svenska,"wenn du sowieso nur einen task hast, kannst du doch auch einfach ohne paging arbeiten..."
+2015-08-16 13:57:16,Svenska,"kernel 0..4M, alles darüber deine VM"
+2015-08-16 13:57:16,masterq32,stimmt auch wieder
+2015-08-16 13:57:33,masterq32,"hatte ja ursprünglich nen anderen plan, darum ist das ja noch im kernel"
+2015-08-16 13:57:42,masterq32,sollte dann ja auch nicht mehr page faulten
+2015-08-16 13:57:44,Svenska,wieviele tasks soll deine VM eigentlich unterstützen?
+2015-08-16 13:57:50,masterq32,örm
+2015-08-16 13:57:53,masterq32,gute frage
+2015-08-16 13:58:00,Svenska,oder ist das nur ein single-tasking-system?
+2015-08-16 13:58:07,Svenska,"quasi ""DOS, aber mit eingebauter Scriptsprache"""
+2015-08-16 13:58:07,masterq32,vorerst mal singletasking system
+2015-08-16 13:58:11,masterq32,genau
+2015-08-16 13:58:15,masterq32,und halt treiber in der sprache
+2015-08-16 13:58:32,Svenska,paging lohnt sich nämlich nur für mehrere prozesse (ist dann aber sehr praktisch)
+2015-08-16 13:58:33,Jonathan,Svenska: Tatsache ;)
+2015-08-16 13:58:37,Jonathan,War irgendwie ein bisschen afk *g*
+2015-08-16 13:58:41,masterq32,jo stimmt
+2015-08-16 13:59:24,masterq32,"multitasking in der VM ist ja ""relativ einfach"", ich kann ja das ganze ding theoretisch an jeder stelle unterbrechen und dann rumhüpfen zwischen tasks"
+2015-08-16 13:59:36,Jonathan,Richtig ;)
+2015-08-16 13:59:46,Jonathan,"Außer, du befindest dich in irgendwelchen atomaren Sachen im Kernel"
+2015-08-16 13:59:57,Svenska,aber du hast innerhalb der vm keinerlei speicherschutz und so
+2015-08-16 13:59:57,masterq32,joar aber da bin ich ja eh nicht in der VM :D
+2015-08-16 14:00:04,masterq32,jo is mir bewusst
+2015-08-16 14:00:30,Jonathan,"Bei meinem OS können u.a. auch Tasks pre-empted werden, wenn sie sich im VFS-Code oder in einem Treiber befinden :D"
+2015-08-16 14:00:33,Svenska,"das ist so der klassiker: das OS schützt prozesse davor, sich gegenseitig kaputtzumachen"
+2015-08-16 14:00:46,Jonathan,Joa
+2015-08-16 14:00:47,Svenska,aber... die daten klauen geht trotzdem
+2015-08-16 14:01:09,Jonathan,Svenska: Du wolltest irgendwas wegen einem Netzteil? :)
+2015-08-16 14:01:13,Svenska,ja...
+2015-08-16 14:01:26,Svenska,"und zwar habe ich hier ein laptop, etwas ältere bauart, und das macht komische dinge"
+2015-08-16 14:01:55,Svenska,"ich habe das teil auseinandergebaut und zum ersten mal festgestellt, dass das teil eine hintergrundbeleuchtung hat, und wenn die an ist, ist die qualität des displays sogar gut"
+2015-08-16 14:02:06,Jonathan,lol *g*
+2015-08-16 14:02:10,Svenska,das teil resettet immer mal wieder
+2015-08-16 14:02:17,Jonathan,Hmmm
+2015-08-16 14:02:27,Jonathan,Klingt jetzt spontan nach ausgetrockneten Elkos
+2015-08-16 14:02:38,Svenska,"und zwar war das immer dann, wenn ""display an"" und ""festplatte dreht an"" bzw ""floppy init"" gilt"
+2015-08-16 14:02:54,Jonathan,Definitiv tote Elkos :D
+2015-08-16 14:03:02,Svenska,"ich kann dem bios aber _vor_ dem POST sagen, dass er das display ausmachen und auf den externen schirm geben soll, dann gehts ;)"
+2015-08-16 14:03:07,Jonathan,*g*
+2015-08-16 14:03:21,Svenska,und dann hab ich die spannung vom inverter gemessen
+2015-08-16 14:03:26,Jonathan,Imo spielt sich da folgendes ab:
+2015-08-16 14:03:38,Svenska,"geht auf ~155 V, licht an"
+2015-08-16 14:03:42,Jonathan,Ein Spannungswandler (vermutlich auch mehrere) hat einen halb trockenen Elko
+2015-08-16 14:03:45,Svenska,sinkt dann mit 0.5 V/s
+2015-08-16 14:04:08,Svenska,"und bei ~150 V geht das display aus, die spannung fällt auf 0, steigt dann auf ~101 V und bleibt da"
+2015-08-16 14:04:14,Jonathan,"Mit wenig Last geht's, weil dann der Rippelstrom noch nicht so groß ist, und der halb trockene Elko das noch in den Specs halten kann"
+2015-08-16 14:04:39,Jonathan,Mit mehr Last (z.B. Platte) wird der Rippel zu groß und die Kiste resettet
+2015-08-16 14:04:51,Svenska,die resets kommen auch ohne platte und floppy
+2015-08-16 14:04:51,Jonathan,Von welchem Baujahr sprechen wir denn? :P
+2015-08-16 14:04:57,Jonathan,Ah okay
+2015-08-16 14:05:02,Svenska,"öh, 1986 ;)"
+2015-08-16 14:05:05,Jonathan,Hmmm *g*
+2015-08-16 14:05:14,Jonathan,"Ich glaub, die Kondensatoren da drin könnten schon gut knusprig sein ;)"
+2015-08-16 14:05:24,Svenska,"ok, deckt sich mit ner 2. aussage ^^"
+2015-08-16 14:05:28,Jonathan,^^
+2015-08-16 14:05:32,Jonathan,Na dann :P
+2015-08-16 14:05:49,Svenska,dann geh ich mal den die teile vom inverter analysieren und morgen einkaufen
+2015-08-16 14:05:54,Jonathan,Jo
+2015-08-16 14:06:07,Jonathan,Am besten auch vom Rest des Computers
+2015-08-16 14:06:09,Svenska,"achso, das eigentliche netzteil hatte ich schonmal ersetzt, weil ich das vermutet hatte"
+2015-08-16 14:06:15,Jonathan,Joa
+2015-08-16 14:06:19,Svenska,das wird extern mit 9V betrieben
+2015-08-16 14:06:28,Jonathan,"Aber auf dem Mainboard selbst sind ja auch noch Konverter, die haben auch Elkos"
+2015-08-16 14:06:29,Svenska,(... 9V/2A glaube)
+2015-08-16 14:06:33,Jonathan,Und die sind vermutlich auch alle schon platt
+2015-08-16 14:06:57,Jonathan,"(Die Kiste will vermutlich mindestens mal +3,3V, +5V und +12V mit internen Wandlern erzeugen)"
+2015-08-16 14:07:04,Svenska,wieso 3.3 ? ;)
+2015-08-16 14:07:16,Jonathan,So um 1986 kam das langsam auf ;)
+2015-08-16 14:07:27,Jonathan,"Aber gut, 3,3V müssen nicht unbedingt sein :D"
+2015-08-16 14:07:28,Svenska,das ist'n 286/12 mit 1 MB RAM
+2015-08-16 14:07:31,Jonathan,*g*
+2015-08-16 14:07:35,Jonathan,"Okay, streich die 3,3V ;)"
+2015-08-16 14:08:00,Jonathan,"Aber da drin sind mindestens 2 Wandler, deren trockene Elkos ""tausche mich!"" schreien"
+2015-08-16 14:08:01,Svenska,allerdings war die speichererweiterung eine platine
+2015-08-16 14:08:48,Svenska,"da muss ich mal den pinout sammeln, evtl kann ich meine bausteine dann für ein zweites MB einsetzen"
+2015-08-16 14:09:06,Svenska,"viele infos gibt's dazu nicht im netz, aber vermutlich waren nur 2 MB maximal drin"
+2015-08-16 14:09:14,Jonathan,Nice
+2015-08-16 14:09:22,Jonathan,"Btw, ich verbreche auch gerade ein Netzteil *g*"
+2015-08-16 14:09:39,Jonathan,"Mein FPGA-Board hat +12V Input, und hätte daraus gerne:"
+2015-08-16 14:09:48,Jonathan,"+12V, +5V, +3,3V, -5V"
+2015-08-16 14:10:08,Svenska,"huch, wozu -5V ?"
+2015-08-16 14:10:19,Jonathan,Ein bisschen Analogkrams
+2015-08-16 14:10:27,Jonathan,(Delta-Sigma-ADC)
+2015-08-16 14:10:31,Svenska,aso
+2015-08-16 14:10:37,Svenska,was hast du eigentlich mit dem fpga vor?
+2015-08-16 14:10:47,Jonathan,Ich wollte mich mal an einem Oszilloskop versuchen *g*
+2015-08-16 14:10:54,Svenska,aah *g*
+2015-08-16 14:11:02,Jonathan,In LTSpice funktioniert mein diskreter ADC schon wunderbar ;)
+2015-08-16 14:11:38,Jonathan,Subtrahierer und Integrator diskret aus Transistoren...
+2015-08-16 14:11:55,Svenska,und was peilst du so für leistungsdaten an? ;)
+2015-08-16 14:11:56,Jonathan,"Dahinter ein FPGA-Pin als 1,65V-Komparator missbraucht *g*"
+2015-08-16 14:12:09,Jonathan,"100MSa/s, 5 bis 10 MHz"
+2015-08-16 14:13:06,Jonathan,Vielleicht krieg ich auch 200MSa/s (und entsprechend höhere Bandbreite) mit einem Multi-Level-Modulator hin :D
+2015-08-16 14:13:29,Svenska,wtf :D
+2015-08-16 14:14:03,Jonathan,"Subtrahierer und Integrator sind btw einfach zwei schnelle Stromquellen (einstellbar per Eingangsspannung), die auf einen gemeinsamen 68pF-Kondensator arbeiten *g*"
+2015-08-16 14:14:35,Jonathan,"Und der Kondensator hängt dann an einem FPGA-Pin, wo er mit ausreichend Spannungshub die High/Low-Schwelle (bei 1,65V) betätigen kann *g*"
+2015-08-16 14:14:46,Svenska,m( :D
+2015-08-16 14:14:50,Jonathan,:D
+2015-08-16 14:15:08,Jonathan,"Hey, diese Regelschleife läuft mit 100MHz *g*"
+2015-08-16 14:15:12,Jonathan,Da muss man schon Opfer bringen ;)
+2015-08-16 14:16:49,Jonathan,Hmmm...
+2015-08-16 14:16:59,Jonathan,"Vielleicht mach ich aus den -5V doch lieber -1,7V"
+2015-08-16 14:17:04,Jonathan,"Naja, mal schauen :D"
+2015-08-16 14:17:25,Jonathan,Wobei ich -5V auch für den Preamp brauche.
+2015-08-16 14:17:45,Svenska,du bist n ticken extrem ;)
+2015-08-16 14:17:55,Svenska,ist aber cool
+2015-08-16 14:18:04,Jonathan,*g*
+2015-08-16 14:18:51,Jonathan,"Hey, ich hab aus 2N3904 Popel-Transistoren einen Verstärker mit 10MHz Bandbreite (+-0,5dB) und 50kOhm Eingangsimpedanz bei 10MHz gebastelt. :D"
+2015-08-16 14:19:36,Jonathan,(Hab den Eingangstransistor gebootstrapped und dann die resultierende extrem schwingfreudige Feedback-Schleife vorsichtig kompensiert)
+2015-08-16 14:19:55,Jonathan,"(Also, Emitterfolger mit Konstantstrom-Senke und Bootstrapping am Kollektor)"
+2015-08-16 14:20:17,Svenska,*rauschen* :-D
+2015-08-16 14:21:19,Jonathan,? :D
+2015-08-16 14:21:19,Svenska,"um sowas zu verstehen, muss ich mehr als ein halbes auge benutzen ^^"
+2015-08-16 14:21:23,Jonathan,Achso :P
+2015-08-16 14:22:18,Jonathan,http://postimg.org/image/vqbufjvlr/full/ <--- Das hier ist die 200MSa/s-Version in der Simulationen
+2015-08-16 14:22:21,Jonathan,*-en
+2015-08-16 14:23:10,Jonathan,Der Krempel rechts neben den FFs ist nur ein Test der Signalqualität :D
+2015-08-16 14:23:22,Jonathan,Im Oszi wird das ein FIR-Filter im FPGA
+2015-08-16 14:23:31,Jonathan,(Damit ich digitale Samples bekomme)
+2015-08-16 14:24:02,Svenska,"öh, stromspiegel?"
+2015-08-16 14:24:10,Jonathan,"Jo, jede Menge davon"
+2015-08-16 14:24:17,Jonathan,Die sind schön schnell ;)
+2015-08-16 14:24:18,Svenska,"jo, 4 sehe ich"
+2015-08-16 14:24:41,Jonathan,Schau mal nur die linken beiden Stromspiegel an
+2015-08-16 14:24:42,Svenska,"ich muss dazu sagen, dass ich bei transistorschaltungen relativ schnell den kopf zu hatte in den vorlesungen"
+2015-08-16 14:24:48,Jonathan,*g*
+2015-08-16 14:24:53,Jonathan,"Naja, was da passiert (ganz einfach):"
+2015-08-16 14:25:11,Jonathan,"Durch die ""Set""-Eingänge der Stromspiegel links fließt ein gemeinsamer Strom"
+2015-08-16 14:25:20,Jonathan,Diese Ströme kompensieren sich an den Ausgängen wieder
+2015-08-16 14:25:36,Jonathan,"Liegt jetzt am Eingang ein (Spannungs-)Signal an, verschieben sich die Ströme"
+2015-08-16 14:25:48,Jonathan,Und am Ausgang kommt ein Strom proportional zur Eingangsspannung raus :)
+2015-08-16 14:26:39,Svenska,"das ""SINE(1.65 1 100k)"" ist also der signaleingang?"
+2015-08-16 14:26:44,Jonathan,Genau
+2015-08-16 14:26:51,Svenska,"ah, dann ergibt's sinn ^^"
+2015-08-16 14:26:54,Jonathan,:D
+2015-08-16 14:27:33,Jonathan,Die Bandbreite von diesen 4-Transistor-Stromquellen ist halt gewaltig
+2015-08-16 14:27:49,Svenska,"wenn mittig 0V, dann fließt exakt der gleiche strom durch den oberen und den unteren stromspiegel"
+2015-08-16 14:27:56,Jonathan,Jo
+2015-08-16 14:27:58,Svenska,nur halt in verschiedene richtungen
+2015-08-16 14:28:10,Jonathan,"(Mitte ist allerdings auf 1,65V *g*)"
+2015-08-16 14:28:27,Svenska,"ja, also V/2"
+2015-08-16 14:28:30,Jonathan,Jo
+2015-08-16 14:28:46,Svenska,"nicht verschiedene richtungen, sondern gleiche richtung (grr)"
+2015-08-16 14:29:12,Jonathan,Und jede Verschiebung der beiden Ströme erscheint am Ausgang und lädt den Kondensator ;)
+2015-08-16 14:29:43,Svenska,und dessen spannung nimmst du für noch eine stufe stromspiegel
+2015-08-16 14:29:48,Jonathan,Nee
+2015-08-16 14:30:03,Jonathan,Der andere Stromspiegel ist wieder ein Eingang zum Kondensator
+2015-08-16 14:30:15,Jonathan,In der Mitte summieren sich die Ströme
+2015-08-16 14:30:16,Svenska,"oh, stimmt"
+2015-08-16 14:30:18,Jonathan,:D
+2015-08-16 14:30:30,Svenska,die stromspiegel sind gespiegelt ^^
+2015-08-16 14:30:43,Jonathan,"Die Summe der beiden Ströme ist das ""Delta"", und der Kondensator das ""Sigma"" *g*"
+2015-08-16 14:31:05,Jonathan,So hab ich mir den zusätzlichen Subtrahierer gespart
+2015-08-16 14:31:12,Jonathan,Und der würde ja auch nur auf die Bandbreite schlagen
+2015-08-16 14:32:38,Jonathan,"So, und ein NE555 erzeugt mir jetzt zusammen mit ein paar Dioden und Kondensatoren -10V :D"
+2015-08-16 14:32:50,Svenska,:D
+2015-08-16 14:33:05,Jonathan,Noch nen Regler dran und dann hab ich -5V :D
+2015-08-16 14:34:21,Svenska,"hm, das baujahr von dem laptop ist übrigens nicht ganz einfach bestimmbar"
+2015-08-16 14:34:36,Svenska,"da ist ein award modular bios 3.03 drauf, wenn's dir hilft ^^"
+2015-08-16 14:34:52,Jonathan,"Hmm, naja, so wichtig ist das Baujahr ja nicht :P"
+2015-08-16 14:35:05,Jonathan,Das grobe Jahrzehnt hat schon völlig ausgereicht *g*
+2015-08-16 14:35:46,Svenska,"jedenfalls bedient sich das etwas anders, und hat das Y/Z-problem nicht"
+2015-08-16 14:35:59,Svenska,"weil F10 = Ende, F5 = Speichern, F1 = nicht-Speichern"
+2015-08-16 14:37:45,Jonathan,Ich löte kurz mal den Spannungsregler zusammen :P
+2015-08-16 14:37:45,Svenska,"achso, und das teil fiept sehr laut, wenn die hintergrundbeleuchtung an ist, und leiser, wenn sie aus ist"
+2015-08-16 14:37:52,Jonathan,"Hmmm, gut"
+2015-08-16 14:38:00,Jonathan,Das sind sowas von die Kondensatoren :P
+2015-08-16 14:38:11,Svenska,:p
+2015-08-16 14:38:31,Jonathan,(In Ermangelung eines 7905 muss jetzt ein OPV + Transistor sein Werk verrichten *g* )
+2015-08-16 14:57:59,Jonathan,Svenska: Läuft :D
+2015-08-16 14:58:17,Svenska,:D
+2015-08-16 14:58:25,Svenska,bei mir gabs eben einen knall
+2015-08-16 14:58:44,Jonathan,? :D
+2015-08-16 14:58:48,Svenska,da hat die display-aufhalte-feder ihre verankerung rausgerissen
+2015-08-16 14:58:56,Svenska,"habs erstmal geklebt, mal schauen ob das hält"
+2015-08-16 14:59:09,Jonathan,Doof
+2015-08-16 14:59:20,Svenska,"hätte das display nicht zuklappen dürfen, im ausgebauten zustand (normal drückt die verankerung zusätzlich auf ne metallplatte)"
+2015-08-16 14:59:28,Svenska,das teil ist .. gut abgeschirmt. massiv.
+2015-08-16 14:59:36,Jonathan,Hmm *g*
+2015-08-16 14:59:50,Jonathan,Apropos...
+2015-08-16 15:00:02,Jonathan,Vielleicht kann ich meinem Konverter zu noch mehr Bandbreite verhelfen
+2015-08-16 15:00:14,Jonathan,Indem ich einfach die zweite Stromquelle durch nen Widerstand ersetze :D
+2015-08-16 15:00:29,Jonathan,Wobei das vermutlich nicht so toll für die Linearität ist
+2015-08-16 15:01:54,Svenska,"die platine hat 14 elkos, die versorgung hat 10, der inverter 1"
+2015-08-16 15:02:24,Jonathan,Wäre ein Ansatzpunkt
+2015-08-16 15:02:30,Jonathan,Irgendwelche ausgebeulten Deckel?
+2015-08-16 15:02:34,Svenska,nö
+2015-08-16 15:02:45,Svenska,sonst wärs auch mir klar gewesen ^^
+2015-08-16 15:02:47,Jonathan,:D
+2015-08-16 15:02:55,Jonathan,Ein ESR-Meter hast du vermutlich nicht? *g*
+2015-08-16 15:03:02,Svenska,nö
+2015-08-16 15:03:11,Jonathan,Schade
+2015-08-16 15:03:31,Jonathan,Dann musst du wohl 25 Elkos tauschen :P
+2015-08-16 15:03:41,Jonathan,Oder schick mir doch mal Fotos von den Platinen
+2015-08-16 15:04:16,Svenska,überall kupfer-klebe-folie
+2015-08-16 15:04:22,Svenska,und metallplatten ineinander gesteckt
+2015-08-16 15:04:40,Jonathan,Hm :D
+2015-08-16 15:04:58,Jonathan,Kannst du denn kein Foto von der Oberseite der Platine machen?
+2015-08-16 15:05:12,Jonathan,"Wäre einfach mal interessant, *wo* sich diese Elkos befinden"
+2015-08-16 15:05:20,Svenska,auf der unterseite ist jedenfalls sogar ein 74HC
+2015-08-16 15:05:24,Svenska,und 3 74HCT
+2015-08-16 15:05:42,Jonathan,"Meistens ist es ja schon ziemlich offensichtlich, wenn ein Elko direkt neben einer dicken Spule und nem FET sitzt"
+2015-08-16 15:05:56,Svenska,jo ist es
+2015-08-16 15:06:16,Jonathan,Zeig halt mal her :D
+2015-08-16 15:06:34,Svenska,ok
+2015-08-16 15:10:15,Svenska,lädt...
+2015-08-16 15:10:37,Svenska,...lädt...
+2015-08-16 15:11:12,Svenska,...lädt... :)
+2015-08-16 15:12:35,Svenska,http://fs2.directupload.net/images/150816/pqrb6tvi.jpg
+2015-08-16 15:12:56,Svenska,"steht zwar auf dem kopf, aber das kannst du ja fixen ;)"
+2015-08-16 15:13:12,Svenska,"oben links ist die ganze versorgungssache, da hing kopfüber der inverter drüber"
+2015-08-16 15:18:25,Svenska,"das ganze ist auf einer metallplatte montiert, über die platine kommen dann FDD und HDD (beachte den komischen stromstecker), und oben drauf kommt noch eine metallplatte"
+2015-08-16 15:21:47,Svenska,die tastatur ist übrigens ein sehr komischer zwitter zwischen xt- und at-tastatur
+2015-08-16 15:22:14,Svenska,"die f-tasten sind oben, gibt aber nur 10 davon, und ESC ist rechts von F10"
+2015-08-16 15:37:13,Jonathan,"Folgende würd ich tauschen: C2, C100, C22 und alle ""großen"" Cs im oberen Teil der Platine"
+2015-08-16 15:37:38,Jonathan,"Bzw. alle auf der linken Seite (in der Nähe der Spulen), und den dicken rechts"
+2015-08-16 15:39:29,Svenska,hm
+2015-08-16 15:40:35,Svenska,also insbesondere C22/C100 sind weit weg von der stromversorgung ^^
+2015-08-16 15:45:49,iksnagreb,moin
+2015-08-16 15:55:30,Svenska,"hm okay... wenn ich die stromversorgung hinkriege, dann habe ich das nächste projekt gefunden ^^"
+2015-08-16 15:56:00,Svenska,und das wird dann ne massive veränderung vom z80-projekt nach sich ziehen
+2015-08-16 15:57:08,Jonathan,Hmmmm? :D
+2015-08-16 15:57:15,Svenska,das teil auf 2 MB aufrüsten
+2015-08-16 15:57:24,Svenska,und zwar mit 8x 256Kx4 bausteinen
+2015-08-16 15:57:33,Jonathan,C22/C100 sind aber vermutlich an lokalen Regs für die Logik dran
+2015-08-16 15:57:34,Svenska,"anders wirds nicht gehen, und von der sorte hab ich nur genau 8 ;)"
+2015-08-16 15:57:35,Jonathan,Also auch kritisch
+2015-08-16 15:57:45,Jonathan,Hmmm ;)
+2015-08-16 15:58:01,Svenska,auf dem foto links über C2
+2015-08-16 16:06:03,Jonathan,"Ah, da"
+2015-08-16 16:11:08,Svenska,"jo, maximal 2 MB, mehr wurde nie angeboten"
+2015-08-16 16:11:38,Jonathan,Sind deine DRAMs in SMD oder in DIP?
+2015-08-16 16:11:43,Svenska,dip
+2015-08-16 16:11:45,Jonathan,Gut ^^
+2015-08-16 16:11:58,Svenska,warum? ne platine werd ich so oder so bauen müssen ^^
+2015-08-16 16:11:59,Jonathan,Wäre wohl etwas schlecht zu lochrastern gewesen *g*
+2015-08-16 16:12:06,Svenska,"achso, ne, alles dip"
+2015-08-16 16:12:18,Jonathan,"Naja, ich hätte jetzt kurzerhand Lochraster reingeworfen"
+2015-08-16 16:12:26,Jonathan,Aber mit ner geätzten Platine ginge natürlich auch SMD :P
+2015-08-16 16:12:58,Svenska,ja klar lochraster + kupferlackdraht ^^
+2015-08-16 16:13:03,Jonathan,Hmmm... Meine -5V scheinen ca. 70mA liefern zu können :D
+2015-08-16 16:13:22,Jonathan,Dürfte für normale Analogschaltungen ja ausreichen
+2015-08-16 16:15:22,Svenska,http://www.sinasohn.com/cgi-bin/clascomp/bldhtm.pl?computer=b310pls
+2015-08-16 16:16:12,Jonathan,Nice :D
+2015-08-16 16:16:13,Svenska,"das netzteil hab ich nicht und der akku ist mal komplett ausgelaufen, meiner ist leer"
+2015-08-16 16:16:22,Svenska,spart auch ein bisschen gewicht ;)
+2015-08-16 16:16:35,Svenska,der griff ist toll ^^
+2015-08-16 16:16:46,Jonathan,^^
+2015-08-16 16:18:58,Jonathan,"Vielleicht bastel ich erstmal das analoge Front-End, bevor ich den Konverter baue :D"
+2015-08-16 16:20:55,Jonathan,Svenska: LM318 oder diskretes Frontend?
+2015-08-16 16:21:18,Svenska,kein plan von sowas
+2015-08-16 16:21:21,Jonathan,Hmm :P
+2015-08-16 16:26:42,Svenska,"Jonathan: ähm, nochmal zusammenfassend: deine faustregel besagt, dass große elkos eher kaputt sind als kleine?"
+2015-08-16 16:27:39,Jonathan,"Große Elkos sind eher mit höheren Rippelströmen belastet (hinter z.B. Schaltnetzteilen braucht man dicke Elkos), deshalb sind die meistens eher defekt"
+2015-08-16 16:27:46,Jonathan,Weil sie eben stärker beansprucht werden
+2015-08-16 16:27:49,Svenska,ok
+2015-08-16 16:28:07,Jonathan,"Einen kleinen Elko (z.B. 10µF) wird man eher hinter sowas wie nem Linearregler finden, und da sind die kaum belastet ^^"
+2015-08-16 16:28:27,Svenska,klingt logisch
+2015-08-16 16:28:31,Jonathan,Jo :P
+2015-08-16 16:29:08,Svenska,"dann mach ich mal ne liste, was da so verbaut ist und kauf die morgen ein ... nächste woche bin ich eh nicht zuhause"
+2015-08-16 16:29:23,Jonathan,Mach das :)
+2015-08-16 17:13:43,Svenska,alles erträglich
+2015-08-16 22:32:42,masterq321,hey
+2015-08-16 22:32:58,masterq321,"wie kann es sein, dass ein page fault auftritt, obwohl ich gar kein paging aktiviert habe?"
+2015-08-16 23:28:58,masterq321,mein free ist so hart broken :D

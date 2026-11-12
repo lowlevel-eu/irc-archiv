@@ -1,0 +1,413 @@
+date/time,nick,message
+2010-03-19 00:06:54,ehenkes,wie kann man die CPU Frequenz ermitteln in Protected Mode?
+2010-03-19 00:07:59,Jidder,mit hilfe des timestamp counters (rdtsc)
+2010-03-19 00:08:05,Jidder,oder bei einigen stehts auch in der CPUID drin
+2010-03-19 00:08:31,Jidder,"aber weiß nicht, ob das immer der tatsächliche wert ist"
+2010-03-19 00:08:43,Jidder,vor allem weil sich in aktuellen systemen die frequenz im laufenden betrieb ändern kann
+2010-03-19 00:08:59,Jidder,das erschwert natürlich auch die methode über den timestamp cpunter
+2010-03-19 00:09:02,ehenkes,strom sparen?
+2010-03-19 00:09:03,FreakyPenguin,Da müsste man das ja wohl auch vernünftig auslesen können?
+2010-03-19 00:09:21,FreakyPenguin,"Also jo, mit vernünftig meine ich nicht den Aufwand ;-)"
+2010-03-19 00:09:47,Jidder,"ja strom sparen, oder wenn nur ein kern von zwei kernen benutzt wird, kann dieser hochgetaktet werden"
+2010-03-19 00:09:57,Jidder,also die schwankungen gehen in beide richtungen
+2010-03-19 00:20:59,ehenkes,ok
+2010-03-19 00:21:20,ehenkes,so?
+2010-03-19 00:21:23,ehenkes,uint64_t rdtsc()
+2010-03-19 00:21:23,ehenkes,{
+2010-03-19 00:21:23,ehenkes,    uint64_t val;
+2010-03-19 00:21:23,ehenkes,"    __asm__ volatile (""rdtsc"" : ""=a""(val));"
+2010-03-19 00:21:23,ehenkes,    return val;
+2010-03-19 00:21:24,ehenkes,}
+2010-03-19 00:22:47,Jidder,"""=A"" statt ""=a"""
+2010-03-19 00:22:53,Jidder,damit du einen 64 bit wert bekommst
+2010-03-19 00:22:59,ehenkes,stimmt 64 bit
+2010-03-19 00:23:04,ehenkes,danke
+2010-03-19 00:24:29,bluecode,"Jidder: ich dachte bis jetzt, dass das der Typ von val angibt"
+2010-03-19 00:24:41,Homix,aber rdtsc gibt doch 2 32-Bit Werte zurück!?
+2010-03-19 00:24:56,Homix,kann das der inline assembler entpsrechend umwandeln?
+2010-03-19 00:25:11,Jidder,bluecode: was willst du mir damit sagen?
+2010-03-19 00:25:26,Jidder,Homix: =A ist der trick um edx und eax als 64 bit wert zu interpretieren
+2010-03-19 00:25:32,bluecode,isee
+2010-03-19 00:25:43,bluecode,dann hat sich mein Kommentar erledigt ;-)
+2010-03-19 00:25:46,Jidder,^^
+2010-03-19 00:25:49,bluecode,ich war sowieso bei ray
+2010-03-19 00:25:51,bluecode,*rax
+2010-03-19 00:26:10,bluecode,"du programmierst zu viel Assembler, Jidder"
+2010-03-19 00:26:21,Jidder,nein assembler lässt sich zu viel von mir programmieren
+2010-03-19 00:26:59,Homix,gn8
+2010-03-19 00:27:14,ehenkes,was kommt da eigentlich zurück? direkt die frequenz?
+2010-03-19 00:27:16,bluecode,da muss ein Aufstand der Assemblierer her
+2010-03-19 00:27:34,bluecode,"ehenkes: nein, die anzahl der takte seit prozessorreset"
+2010-03-19 00:28:02,Jidder,"eigentlich nur eine zahl, die streng monoton steigt"
+2010-03-19 00:28:11,Jidder,mit jedem aufruf
+2010-03-19 00:28:14,Jidder,oder irgendsowas steht da doch in den manuals
+2010-03-19 00:28:41,ehenkes,kann man da ein sleep ohne interrupt mit bauen?
+2010-03-19 00:28:47,Jidder,ja
+2010-03-19 00:29:14,ehenkes,man muss allerdings die CPU-Frequenz erst bestimmen
+2010-03-19 00:29:23,bluecode,"""The processor monotonically increments the time-stamp counter MSR every clock cycle and resets it to 0 whenever the processor is reset."""
+2010-03-19 00:29:24,Jidder,ja
+2010-03-19 00:29:47,ehenkes,interessant
+2010-03-19 00:29:49,Jidder,"technisch gesehen musst du gar nicht mal die frequenz bestimmen, sondern nur wissen, um wieviel sich der TSC in 1 sekunde erhöht"
+2010-03-19 00:30:05,Jidder,oder halt statt 1 sekunde irgendeine andere zeiteinheit
+2010-03-19 00:30:06,ehenkes,das ist die Frequenz
+2010-03-19 00:30:13,bluecode,in einem multitasking system macht aber busywaiting keinen Spaß
+2010-03-19 00:30:14,ehenkes,Hz = sec hoch minus 1
+2010-03-19 00:30:43,Jidder,"die sache ist halt, dass wie gesagt die frequenz bei aktuellen prozessoren nicht konstant ist"
+2010-03-19 00:30:51,bluecode,"zumindest wenn es um intervalle geht, die man mit dem normalen sleep abdecken will"
+2010-03-19 00:31:08,Jidder,"das heißt du solltest darauf achten, dass du beim kalibieren dieses umrechnungsfaktors die selben bedingungen hast, wie beim warten in der sleep-funktion"
+2010-03-19 00:31:17,ehenkes,"ich habe in meiner kernel idle loop eine ecke, die nur alle sekunde aufgerufen wird"
+2010-03-19 00:31:37,ehenkes,da könnte ich doch die differenz ermitteln und in eine systemvariable schreiben
+2010-03-19 00:32:04,ehenkes,diesen wert kann man dann für ein sleep ohne interrupt verwenden
+2010-03-19 00:32:14,Jidder,jop
+2010-03-19 00:32:31,ehenkes,ich benötige so etwas für EHCI timing im EHCI interrupt
+2010-03-19 00:32:44,ehenkes,"seht gut, gleich mal testen"
+2010-03-19 00:32:44,bluecode,um welche intervalle geht es da?
+2010-03-19 00:33:12,ehenkes,meinst du in EHCI?
+2010-03-19 00:34:20,ehenkes,        uint64_t rdtscValue = rdtsc();
+2010-03-19 00:34:20,ehenkes,        uint32_t rdtscHi    = rdtscValue >> 32;
+2010-03-19 00:34:20,ehenkes,        uint32_t rdtscLo    = rdtscValue & 0xFFFFFFFF; klappt das so?
+2010-03-19 00:34:34,FreakyPenguin,"bluecode: Du hast doch letztens die tls builtins von gcc erwähnt, hast du die schon benutzt?"
+2010-03-19 00:34:40,bluecode,ja
+2010-03-19 00:34:51,bluecode,@ FreakyPenguin
+2010-03-19 00:35:02,Jidder,"ehenkes: ja diese 3 zeilen, tun das offensichtliche. ob sie das tun was du willst, weiß ich nicht"
+2010-03-19 00:35:07,FreakyPenguin,bluecode: Gibts da irgendwo code? Oder wonach will ich da suchen? ;-)
+2010-03-19 00:35:17,ehenkes,wir werden sehen
+2010-03-19 00:35:22,bluecode,"was genau willst du denn machen, FreakyPenguin?"
+2010-03-19 00:35:39,bluecode,http://gcc.gnu.org/onlinedocs/gcc-4.1.2/gcc/Atomic-Builtins.html ist die liste der funktionen
+2010-03-19 00:36:35,Jidder,wo bei mir wieder die kommata landen ...
+2010-03-19 00:36:54,bluecode,Jidder: ?
+2010-03-19 00:37:11,Jidder,"""ja diese 3 zeilen, tun das offensichtliche"""
+2010-03-19 00:37:17,bluecode,ah *g*
+2010-03-19 00:37:28,FreakyPenguin,"bluecode: Eigentlich möchte ich nur wissen was man da bereitstellen mus damit das funktioniert, aber ich glaube jetzt habe ich das passende Dokument, thx"
+2010-03-19 00:37:36,bluecode,"wo ist eigentlich einer dieser Sprachnazis, wenn mal jemand anders nen Fehler macht ;-P"
+2010-03-19 00:37:46,FreakyPenguin,*g*
+2010-03-19 00:37:56,Jidder,^^
+2010-03-19 00:38:07,bluecode,"FreakyPenguin: atomare ops, darauf aufbauend Mutex/Semaphore"
+2010-03-19 00:38:17,bluecode,bzw. eher Spinlock
+2010-03-19 00:38:39,FreakyPenguin,"Hat aber mit thread local storage noch nicht wirklich was zu tun, oder wird das ganz anders umgesetzt als ich mir das vorstelle? ;-)"
+2010-03-19 00:39:09,bluecode,"nö, das hat nur was mit threads an sich zu tun"
+2010-03-19 00:39:32,bluecode,"TLS machst du normalerweise über Segmente oder nen Syscall, der dir die adresse für ""diesen"" thread liefert"
+2010-03-19 00:39:46,bluecode,und in der TLS speicherst du dann halt so sachen wie errno
+2010-03-19 00:39:52,FreakyPenguin,Jo die atomaren operationen kannte ich schon
+2010-03-19 00:40:24,FreakyPenguin,"Das ist mir klar, mich interessierte die Konkrete umsetzung die gcc erwartet ;-)"
+2010-03-19 00:40:31,bluecode,ah TSL != TLS *g*
+2010-03-19 00:40:43,FreakyPenguin,*g*
+2010-03-19 00:41:05,bluecode,hm? Was soll gcc da erwarten?
+2010-03-19 00:42:02,bluecode,"es könnte sein, dass es ein builtin gibt, dass über ein Segreg was liest"
+2010-03-19 00:43:12,FreakyPenguin,bluecode: Naja was er halt macht wenn er was mit __thread findet ;-)
+2010-03-19 00:43:27,bluecode,das in eine eigene sektion packen
+2010-03-19 00:43:41,bluecode,aber das hab ich bis jetzt auch nicht genauer versucht
+2010-03-19 00:43:54,bluecode,dazu müsstest du in die elf spec schauen
+2010-03-19 00:44:01,bluecode,"könnte sein, dass da irgendwas erwartet wird"
+2010-03-19 00:44:10,FreakyPenguin,"Die hab ich mittlerweile vor mir, jo ;-)"
+2010-03-19 00:44:17,bluecode,dann viel Spaß ^^
+2010-03-19 00:44:18,FreakyPenguin,Die ist da im gcc-Ding verlinkt am Ende ;-)
+2010-03-19 00:45:56,bluecode,ah http://people.redhat.com/drepper/tls.pdf wars
+2010-03-19 00:46:37,FreakyPenguin,Ah eine magische funktion also __tls_get_addr
+2010-03-19 00:48:55,FreakyPenguin,"Hmpf fix %fs, für die anderen 2 Modelle, doof"
+2010-03-19 01:35:08,ehenkes,das klappt gut mit rdtsc
+2010-03-19 01:35:59,ehenkes,"wieso kann man uint64_t eigentlich nicht durch 1000 teilen, musste >>10 machen und anschließend auf uint32_t-Niveau korrigieren."
+2010-03-19 01:36:53,ehenkes,kam error-meldung irgendwas mit udiv2 oder so
+2010-03-19 01:37:02,ehenkes,udiv3
+2010-03-19 01:38:20,Jidder,"weil im allgemeinen bei einer division einer 64-bit-zahl eine 64-bit-zahl herauskommen kann. dafür gibt es keinen x86-befehl, und deswegen macht der gcc da einen funktionsaufruf draus"
+2010-03-19 01:38:44,Jidder,joar end of erklärung wenn das publikum eh weg is
+2010-03-19 01:38:44,Jidder,gn8
+2010-03-19 01:39:04,ehenkes2,gn8
+2010-03-19 03:48:20,uni_bt_ro,"hi, noch jemand wach?"
+2010-03-19 03:49:02,uni_bt_ro,kennt zufällig einer von euch ein gutes Linkerscript Tutorial?
+2010-03-19 08:35:27,ehenkes,hi
+2010-03-19 09:22:40,bluecode,Forum mal wieder kaputt?
+2010-03-19 09:22:50,bluecode,moin
+2010-03-19 09:43:33,kwolf,Moin
+2010-03-19 09:44:44,kwolf,"*argh* Wer hat denn schon wieder das Forum kaputtgemacht, ohne uns was zu sagen?"
+2010-03-19 09:45:21,kwolf,"bluecode_: Kannst du das mal kurz fixen, ich hab das FTP-Passwort nicht zur Hand"
+2010-03-19 09:45:24,bluecode_,vor nicht allzulanger zeit hatten wir doch den Plan umzuziehen
+2010-03-19 09:45:36,bluecode_,was soll ich denn da fixen ^^
+2010-03-19 09:45:54,kwolf,Die blöde Warnung abschalten
+2010-03-19 09:47:15,bluecode_,mal schaun
+2010-03-19 09:50:18,kwolf,Irgendwo ein error_reporting(E_ALL & ~E_STRICT); oder sowas einbauen
+2010-03-19 09:50:19,bluecode_,ist durch preg_replace ersetzen (k)eine gute Idee?
+2010-03-19 09:50:44,kwolf,"Ich fürchte, das hier ist nicht die einzige Stelle, sonst wäre das wohl der richtige Fix"
+2010-03-19 09:52:09,bluecode_,error_reporting(E_ALL & ~E_STRICT); scheint nichts zu bringen
+2010-03-19 09:52:47,bluecode_,mal E_DEPRECATED versuchen
+2010-03-19 09:53:42,bluecode_,gut ich kann auch kein php *g*
+2010-03-19 09:54:53,kwolf,"Hm, error_reporting(0) vielleicht? ;-)"
+2010-03-19 09:55:04,bluecode_,das wäre wohl die keule
+2010-03-19 09:55:33,kwolf,"Nur mal zum probieren, ob es überhaupt was ändert"
+2010-03-19 09:55:34,bluecode_,tut sogar
+2010-03-19 09:55:40,bluecode_,"jo, klar"
+2010-03-19 09:55:57,kwolf,"Hm, dann mach mal alles ohne E_NOTICE oder so"
+2010-03-19 09:56:34,kwolf,Eigentlich müssten wir ja jetzt nur Flags bisecten *g*
+2010-03-19 10:02:35,bluecode_,es scheint nichts abgesehen von 0 zu funktionieren
+2010-03-19 10:02:50,bluecode_,das darfst du dann selber anders machen :-)
+2010-03-19 10:03:38,kwolf,"Ach, wird schon passen so ;-)"
+2010-03-19 10:07:19,ehenkes,kwolf: warum gibt es keine CDI zur CPU hin?
+2010-03-19 10:07:32,bluecode_,was meinst du damit?
+2010-03-19 10:07:57,ehenkes,"ich bestimme die CPU-Frequenz mittels rdtsc, will die dann eintragen in eine Struktur"
+2010-03-19 10:08:14,ehenkes,da wäre doch eine Entkoppelugn via CDI nicht ganz verkehrt
+2010-03-19 10:08:27,bluecode_,warum bzw. in welche?
+2010-03-19 10:08:40,bluecode_,abgesehen davon darfst du natürlich CDI erweitern
+2010-03-19 10:09:02,ehenkes,                  uint32_t CPU_Frequency_MHz = RdtscKCountsLo/1000)<<10)/1000;
+2010-03-19 10:09:02,ehenkes,                  pODA->CPU_Frequency_MHz = CPU_Frequency_MHz;
+2010-03-19 10:09:26,ehenkes,"ich trage das in meine ODA ein, aber CDI wäre sicher auf Dauer besser"
+2010-03-19 10:09:53,ehenkes,Die Erweiterung von CDI sollte aber möglichst harmonisiert erfolgen
+2010-03-19 10:09:55,bluecode_,"es wäre schön, wenn du erklären würdest was genau du von CDI erwartest ;-)"
+2010-03-19 10:10:07,bluecode_,dafür gibt es ein Forum in dem man das diskutieren kann
+2010-03-19 10:10:42,ehenkes,zwei Dinge: a) CPU-Frequenz in Hz (also als uint64_t) b) Pentium ja/nein
+2010-03-19 10:11:02,ehenkes,"das ist das, was ich momentan brauche"
+2010-03-19 10:11:32,bluecode_,dann überleg dir ein Interface dafür und schlage es im Forum vor
+2010-03-19 10:11:46,kwolf,ehenkes: Was will ein Treiber damit?
+2010-03-19 10:12:10,bluecode_,wobei du eigentlich eher ein sleep vorschlagen solltest
+2010-03-19 10:12:15,bluecode_,bzw. ein µsleep oder so
+2010-03-19 10:12:16,kwolf,Das existiert doch...
+2010-03-19 10:12:24,kwolf,cdi_sleep_ms()
+2010-03-19 10:12:36,ehenkes,"bei uns ist die meinung, CDI nur zu verwenden für ""CDI-Treiber"", aber man kann das auch anders sehen und alles entkoppeln, z.B. auch cmos oder cpu"
+2010-03-19 10:12:38,bluecode_,"wenn man weniger als 1ms schlafen will, das meine ich"
+2010-03-19 10:13:04,ehenkes,wo ist dieses cdi_sleep_ms() ?
+2010-03-19 10:13:10,kwolf,"bluecode_: Ich glaube, das ist im Moment nicht ehenkes' Problem ;-)"
+2010-03-19 10:13:15,kwolf,ehenkes: cdi/misc.h
+2010-03-19 10:13:23,ehenkes,thx
+2010-03-19 10:13:43,bluecode_,"kwolf: weiß ich nicht, er wollte für EHCI irgendwie sleepen, da könnte ich mir sehr gut vorstellen, dass 1ms zu viel ist"
+2010-03-19 10:14:00,bluecode_,bzw. ineffizient
+2010-03-19 10:14:29,ehenkes,ich könnte das mittels rdtsc leicht auf Mikrosekunden ausbauen
+2010-03-19 10:14:37,ehenkes,aber notwendig ist das nicht
+2010-03-19 10:14:42,kwolf,"bluecode_: Ich glaube, es geht da eher um Sachen wie Reset oder so"
+2010-03-19 10:14:54,kwolf,"Also nichts, was man für jedes Paket machen würde"
+2010-03-19 10:15:12,ehenkes,"haiku und openSolaris verwenden da so ein delay(...) oder snooze(...), das mit Mikrosekunden läuft, steht meistens 10000 oder so"
+2010-03-19 10:15:50,ehenkes,ich bestimme momentan die CPU-Frequenz mittels Differenz-Messung von rdtsc
+2010-03-19 10:16:12,ehenkes,"da kam die Meinung auf, man sollte das mittels CDI-Interface zur CPU machen"
+2010-03-19 10:16:36,ehenkes,"bisher wird das bei uns aber anders gesehen, also CDI nur für bestimmte ""treiber"", nicht für alles"
+2010-03-19 10:16:56,ehenkes,"kwolf: du hattest das aber auch anders gesehen, also CDI für alles, was geht"
+2010-03-19 10:17:36,kwolf,"Also CPU-Treiber in CDI hatte ich bisher nicht vorgesehen. Das würde ziemlich knifflig werden, da ein vernünftigen Interface aufzustellen."
+2010-03-19 10:17:41,ehenkes,ich hätte das jetzt in meine ODA eingetragen und für ein sleep ohne Interrupt verwendet
+2010-03-19 10:18:02,ehenkes,kwolf: wie ist deine Meinung?
+2010-03-19 10:18:21,ehenkes,denn ich muss da eine Design-Entscheidung herbei führen
+2010-03-19 10:18:47,ehenkes,bei cmos wurde meine CDI-version sofort einhellig zurück gedreht
+2010-03-19 10:19:02,ehenkes,also ohne wrapper
+2010-03-19 10:19:11,kwolf,"Ich glaube, eine Funktion, um den TSC auszulesen ist nichts, was in CDI gehört"
+2010-03-19 10:19:35,kwolf,"Ganz einfach, weil ich im Moment den Nutzen für Treiber nicht sehe (und außerdem bezweifle, dass das Plattformunabhängig ist)"
+2010-03-19 10:19:50,bluecode_,ist es auch nicht
+2010-03-19 10:20:21,kwolf,"Es ist ja schon schwer genug, auf x86 den TSC richtig zu interpretieren"
+2010-03-19 10:20:29,ehenkes,"ok, dann schiebe ich das erstmal in meine ODA, man muss ja nicht alle Puristen befriedigen"
+2010-03-19 10:20:54,ehenkes,"rdtsc ist easy, hilft mir endlich ein sleep ohne interrupt zu bauen"
+2010-03-19 10:20:59,bluecode_,"ein µsleep wäre aber nicht schlecht, denke ich"
+2010-03-19 10:21:10,ehenkes,sieht lustig aus
+2010-03-19 10:21:13,ehenkes,mit dem µ
+2010-03-19 10:21:24,ehenkes,werde ich genauso bauen
+2010-03-19 10:21:53,kwolf,"ehenkes: Außer der Prozessor ändert seine Frequenz und hat keinen konstanten TSC, dann ist es nicht mehr so easy ;-)"
+2010-03-19 10:25:15,ehenkes,ich bestimme das jede Sekunde in meiner kernel-idle-loop durch Differenzmessung und aktualisiere
+2010-03-19 10:26:13,bluecode_,"das macht es in der Theorie nicht genauer (was aber natürlich nicht heißt, dass es keine Lösung ist)"
+2010-03-19 10:27:06,kwolf,Es gibt da natürlich eine einfache Lösung: Der CPU immer 100% Last geben *g*
+2010-03-19 10:27:40,ehenkes,"ok, thx"
+2010-03-19 10:29:03,bluecode_,kwolf: ach deswegen busywaited ihr so gern *g*
+2010-03-19 10:34:10,kwolf,*hust* ;-)
+2010-03-19 10:34:32,kwolf,Mit LIOv2 wird alles besser. Oder so ;-)
+2010-03-19 10:41:21,bluecode_,"when it's done, oder?"
+2010-03-19 10:43:52,kwolf,So ungefähr
+2010-03-19 10:44:03,kwolf,"Du kannst ja helfen, dann geht's vielleicht schneller ;-)"
+2010-03-19 10:54:04,JanDing,moinzen
+2010-03-19 10:54:07,JanDing,zup
+2010-03-19 10:54:11,bluecode_,moin JanDing
+2010-03-19 10:54:14,bluecode_,so fürh wach?
+2010-03-19 10:54:16,kwolf,Moin
+2010-03-19 10:55:30,JanDing,hab durchgemacht
+2010-03-19 10:55:42,JanDing,hab durch gemacht
+2010-03-19 10:55:53,JanDing,"das wird ""dörtsch"" ausgesprochen"
+2010-03-19 10:56:06,JanDing,das ist eigentlich ganz legger
+2010-03-19 10:56:21,bluecode_,^ welches der Wörter wird so ausgesprochen? *g*
+2010-03-19 10:56:35,JanDing,"na ""durchgemacht"""
+2010-03-19 13:38:35,ehenkes2,re
+2010-03-19 13:49:07,chris12,moin
+2010-03-19 13:53:19,kwolf,Moin
+2010-03-19 14:21:48,jonebohne,moin
+2010-03-19 14:22:55,JanDing,moin
+2010-03-19 15:42:29,Tobiking,"Bei DVDs aus Spielezeitschriften kommt ja ein richtiges Retrogefühl auf: ""Bitte DVD wenden"""
+2010-03-19 15:42:58,XanClic,Das ist bei den Herr-der-Ringe-DVDs auch so ;-)
+2010-03-19 15:45:07,DesL,moinsen
+2010-03-19 15:47:59,JanDing,moin
+2010-03-19 16:08:41,erik,Guten Abend
+2010-03-19 16:08:56,JanDing,MOIN
+2010-03-19 16:08:59,XanClic,Moin
+2010-03-19 16:11:28,erik,"Zumindest das Wette mag mich wieder. Nachdem es mich nun gut 2 Wochen als Lügner gestraft hat, werden die Röcke jetzt doch wieder/endlich langsam etwas kürzer."
+2010-03-19 16:11:32,DesL,moin
+2010-03-19 16:11:38,DesL,Abend?
+2010-03-19 16:11:39,XanClic,*g*
+2010-03-19 16:12:32,erik,Ich hoffe sehr das dieser Trend nun auch anhält. Wie ist es denn bei Euch so mit der Sonne?
+2010-03-19 16:13:51,XanClic,"Sie scheint, aber man kann noch alles am Bildschirm erkennen ;-)"
+2010-03-19 16:14:31,Homix,"ich kann auch im winter wenns blöd läuft nicht viel erkennen, weil die sonne genau von der seite kommt, wo auch der bildschirm steht ;)"
+2010-03-19 16:14:54,erik,Mit anderen Worte sie dürfte sich ruhig noch etwas ins Zeug legen?
+2010-03-19 16:14:54,XanClic,"Hm, von da kommt die bei mir auch, aber von hinten wär doch blöder, oder?"
+2010-03-19 16:15:08,XanClic,"Nö, die scheint schon voll"
+2010-03-19 16:15:17,XanClic,Nur steht mein Rechner günstig *g*
+2010-03-19 16:15:29,DesL,Gardinen zu machen?!
+2010-03-19 16:15:33,XanClic,Bah ;-)
+2010-03-19 16:16:37,Homix,"wenn sie von der richtung des bildschirmes kommt, sieht man halt nichts mehr auf dem schirm weil es blendet, von hinten spiegelt es nur ein wenig denk ich oder?"
+2010-03-19 16:18:36,erik,"Von hinten ist auch blöd weil man dann seinen Schaten sieht und es teilweise stark spiegelt, auch auf entspeigelten Displays."
+2010-03-19 16:18:38,DesL,Kommt drauf an wie Groß/breit man selber und Der Bildschirm ist...
+2010-03-19 16:18:59,XanClic,"Hm, beides klein bzw. dürr ;-)"
+2010-03-19 16:19:23,erik,"Man könnte sich ja einen schönen Hut aufsetzen, so wie Käpten Barbossa."
+2010-03-19 16:22:23,DesL,XD
+2010-03-19 16:40:44,DerHartmut,"Seid gegrüßt, Freunde der Nacht"
+2010-03-19 16:41:27,erik,hallo
+2010-03-19 16:43:41,DesL,moin
+2010-03-19 16:44:17,kwolf,Reh
+2010-03-19 16:45:01,FreakyPenguin,t
+2010-03-19 16:49:04,DerHartmut,"So, jett"
+2010-03-19 16:49:06,DerHartmut,+z
+2010-03-19 16:50:46,AGGROStar1991,hi
+2010-03-19 16:50:53,DerHartmut,Grüß dich AGGRODingens
+2010-03-19 16:50:57,DerHartmut,Tab geht hier nicht
+2010-03-19 16:51:49,AGGROStar1991,hab übrigens grad dein statement gelesen zu deiner architektur erik...RESPEKT scheint ja ne wirklich runde sache zu werden :)
+2010-03-19 16:53:03,erik,"naja, ""rund"" ist zwar kein Desgin-Ziel von mir aber ich hoffe es wird was gescheites werden."
+2010-03-19 16:53:24,AGGROStar1991,weisst wie ichs meine :D
+2010-03-19 16:53:31,erik,jaja
+2010-03-19 16:55:33,erik,"was haltet ihr von dem Namen ""Sentinel"" für ein Projekt wie das meine?"
+2010-03-19 16:55:58,DerHartmut,Kenn ich irgendwoher den Namen
+2010-03-19 16:56:27,erik,es gab mal ne TV-Serie mit dem Namen
+2010-03-19 16:56:51,AGGROStar1991,so heisst bei  DoTA die eine Partei :D
+2010-03-19 16:56:56,AGGROStar1991,ich bin dafür^^
+2010-03-19 16:57:07,DerHartmut,"Hm, Betriessysteme, die den gleichen Namen wie Fernsehsendungen haben? Total uncool..."
+2010-03-19 16:57:08,DerHartmut,;-)
+2010-03-19 16:57:26,DesL,Stadl-OS?
+2010-03-19 16:57:31,erik,mir geht es um die Bedeutung das Wortes
+2010-03-19 16:58:44,DesL,"Stadl-OS wäre wohl ein Media-OS, dass nur Volksmusik DVDs und Sendungen aus TV und Radio zulässt...."
+2010-03-19 17:00:14,DerHartmut,Einfach das Betriebssystem so unlustig und unlogisch wie möglich bennenen
+2010-03-19 17:00:16,DerHartmut,SIehe nusskuchen
+2010-03-19 17:00:44,DesL,"hm, im TODO Artikel ist ganz unten ein Verweiss auf Disskusion:Ausgabe2, ist das noch aktuell?"
+2010-03-19 17:01:10,kwolf,DesL: Existiert dazu auch mehr als nur der Name?
+2010-03-19 17:01:17,kwolf,*DerHartmut
+2010-03-19 17:01:33,XanClic,"Oja, ein Gitoriousrepo"
+2010-03-19 17:01:36,kwolf,"Nicks, die nach zwei Buchstaben immer noch nicht eindeutig sind, sind fies"
+2010-03-19 17:02:17,Tobiking,Ich bin ja gerade ganz baff. Man kann unter Windows Grafikkarten Treiber aktualisieren ohne Neustart?
+2010-03-19 17:02:19,DesL,XD
+2010-03-19 17:02:31,DesL,Hätte ich nicht gedacht.
+2010-03-19 17:02:38,kwolf,"Huch, seit wann das?"
+2010-03-19 17:02:48,DesL,Welche Version?
+2010-03-19 17:03:04,erik,3 +4 vermute ich
+2010-03-19 17:03:05,Tobiking,Hab grad Treiber aktualisiert und außer kurz umschalten ist nichts passiert.
+2010-03-19 17:03:26,DerHartmut,kwolf: Ein unglaublich aktuelle Git-repo
+2010-03-19 17:03:29,DerHartmut,Und ansonsten...
+2010-03-19 17:03:31,DerHartmut,Ja...
+2010-03-19 17:03:44,kwolf,Tobiking: Es geschehen noch Zeichen und Wunder ;-)
+2010-03-19 17:04:07,DesL,erik: ???
+2010-03-19 17:04:13,DesL,"achso, ^^"
+2010-03-19 17:04:49,DesL,mal eben on-the-fly denkernel austauschen hat ja schon was.
+2010-03-19 17:04:50,Tobiking,"Nvidia würd ich das ja zutrauen das die das schaffen, aber das Windows da mitmacht."
+2010-03-19 17:06:57,erik,"Die DataCenter-Edition von Windows-Server kann sogar hotswap, da kannst Du eine GraKa deinstallieren, rausziehen, ne neue reinstecken, neue Treiber installieren und schon läuft wieder alles. Okay die guten Unixe, so wie Linux, können das auch."
+2010-03-19 17:07:29,erik,auf den richtigen Mainboards natürlich nur
+2010-03-19 17:07:33,kwolf,"Die Frage ist, ob meine Hauptplatine das mitmacht *g*"
+2010-03-19 17:07:38,kwolf,"Jo, genau"
+2010-03-19 17:08:05,erik,"bei PCI-Express sollte das eingentlich kein Problem sein, theoretisch zumindest"
+2010-03-19 17:08:08,Tobiking,Also wenn ich unter Linux etwas an der Grafik mache muss ich meistens zumindest X neu starten
+2010-03-19 17:16:30,erik,"ich mus noch mal weg, vielleicht bis später, tschüß"
+2010-03-19 17:16:59,DerHartmut,"Ja, ich muss ebenfalls wweg"
+2010-03-19 17:17:17,DerHartmut,So in etwa
+2010-03-19 17:17:59,kwolf,"Dann mal viel Spaß, so in etwa"
+2010-03-19 17:18:39,DerHartmut,Dankesehr ;-)
+2010-03-19 17:18:43,DerHartmut,Euch nen erhabenes Wochenende
+2010-03-19 17:21:26,DesL,*aua* Mir ist gerade mein Stuhl unter mir zusammengebrochen...
+2010-03-19 17:22:31,AGGROStar1991,lol? :D
+2010-03-19 17:22:45,AGGROStar1991,sogar meiner hält unter mir dickem ding noch^^
+2010-03-19 17:23:32,DesL,du dickes ding? darf ich mal dezent fragen?
+2010-03-19 17:23:41,AGGROStar1991,joa frag :D
+2010-03-19 17:23:53,DesL,und?
+2010-03-19 17:24:05,AGGROStar1991,warn mal knapp 100kg^^
+2010-03-19 17:24:18,DesL,wie groß?
+2010-03-19 17:24:22,AGGROStar1991,174^^
+2010-03-19 17:24:45,DesL,"ich toppe zwar die 100, bin aber uach 192."
+2010-03-19 17:24:48,AGGROStar1991,aber mittlerweile gehts mit dem gewicht auch glücklicherweise abwärts^^
+2010-03-19 17:24:53,AGGROStar1991,ja siehst du :D
+2010-03-19 17:28:36,kwolf,"Abwärts geht es auch, wenn der Stuhl zusammenbricht ;-)"
+2010-03-19 17:28:44,DesL,XD
+2010-03-19 17:29:06,AGGROStar1991,xD
+2010-03-19 17:29:10,AGGROStar1991,auch wieder wahr :D
+2010-03-19 17:29:20,DesL,"wenn mal den BMI vergleicht, bist/warst du schlechter dran als ich jetzt."
+2010-03-19 17:29:47,AGGROStar1991,"jop ...aber ich war auch nicht soo fett, war ( und is) ne menge muskeln^^"
+2010-03-19 17:29:58,DesL,sgen doch alle^^
+2010-03-19 17:30:04,AGGROStar1991,und dem fett gehts nu an den kragen :D
+2010-03-19 17:30:08,DesL,"alter, so ungefähr?"
+2010-03-19 17:30:33,AGGROStar1991,ja ich war aber 5 jahre lang wettkämpfer inner Landesklasse Judo^^
+2010-03-19 17:30:35,AGGROStar1991,18
+2010-03-19 17:30:48,kwolf,Wie anhand des Nicks unschwer zu erraten ist
+2010-03-19 17:31:08,AGGROStar1991,mist er hats durchschaut :D
+2010-03-19 17:31:22,DesL,stimmt^^
+2010-03-19 17:32:00,DesL1993,XD
+2010-03-19 17:32:30,XanClic,Jetzt bitte mal alle Geburtsjahr und BMI in den Nickname...
+2010-03-19 17:32:53,kwolf,Ich fühl mich schon wieder alt ;-)
+2010-03-19 17:32:58,AGGROStar1991,:D
+2010-03-19 17:33:00,XanClic,*g*
+2010-03-19 17:33:03,AGGROStar1991,alter sack :D
+2010-03-19 17:33:09,kwolf,*g*
+2010-03-19 17:33:14,JanDing1998,ach geburtsjahr auch?
+2010-03-19 17:33:21,AGGROStar1991,Xd
+2010-03-19 17:33:24,kwolf,*lol*
+2010-03-19 17:33:37,AGGROStar1991,xD
+2010-03-19 17:33:48,XanClic,"Hm, muss ich jetzt echt mein Gewicht kontrollieren? ;-)"
+2010-03-19 17:33:56,AGGROStar1991,klar xD
+2010-03-19 17:34:12,DesL1993_30komma5,aber hallo
+2010-03-19 17:34:14,AGGROStar1991,"naja ich wills grad garnich kennen, ich weiss das es wieder hoch geht......................"
+2010-03-19 17:34:31,AGGROStar1991,gebrochener fuss tut der sportlichkeit und dem abnehmen nicht gut xD
+2010-03-19 17:34:45,kwolf,Ich kenn es eigentlich nie...
+2010-03-19 17:34:54,XanClic,"Hm, ""schade"", keine Waage gefunden"
+2010-03-19 17:34:58,XanClic,kwolf: Eben drum ;-)
+2010-03-19 17:34:59,AGGROStar1991,xD
+2010-03-19 17:35:03,AGGROStar1991,schätzen wir halt :D
+2010-03-19 17:35:05,XanClic,"Na, da muss ich eben raten"
+2010-03-19 17:35:17,AGGROStar1991,ich schätz mich auf so 20kg :D
+2010-03-19 17:35:27,DesL1993_30komma5,lol
+2010-03-19 17:35:29,XanClic,"Hm, ok, passt schon"
+2010-03-19 17:35:59,AGGROStar1991,wie benenn ich mich um? xD
+2010-03-19 17:36:12,XanClic,So schnell zugenommen?
+2010-03-19 17:36:27,DesL,"ne, mehr dünner aber mehr."
+2010-03-19 18:49:47,chris12,re
+2010-03-19 18:50:27,AGGROStar1991,hi
+2010-03-19 18:50:56,DesL,moin
+2010-03-19 19:24:38,DesL,"Ach Pool-Billiard ist doch ein doofes Spiel, zumindest wenn man es schreiben muss."
+2010-03-19 20:20:50,erik,Guten Abend
+2010-03-19 20:21:32,DesL,moin
+2010-03-19 20:25:57,JanDing,moin
+2010-03-19 20:30:30,erik,Hier ist ja richtig was los heute Abend. Ist heute Kneipenabend und keiner hat mir was gesagt?
+2010-03-19 20:31:20,DesL,"klar, ich habe hier 11 freunde."
+2010-03-19 20:31:32,DesL,davon sind 4 schon leer.
+2010-03-19 20:31:39,chris12,ich hab nur 10 stimmen in meinem kopf .....
+2010-03-19 20:32:32,DesL,9 von 10 stimmen in meinem Kopf sagen ich sei verrückt. eine summt die titelmelodie von Star wars.
+2010-03-19 20:33:22,erik,"ich hab nur eine Stimme in meinem Kopf und die sagt ""prgrammier heute mal noch was gescheites, vor allem weil die Frau schon schläft"""
+2010-03-19 20:33:47,DesL,lol
+2010-03-19 20:36:24,erik,"Ja, Personen die nur die Glotze laut drehen oder einem ständig mit uninteressantem Zeugs anlabern stören einfach beim coden. Wenn solche Störfaktoren weg sind kann man in Ruhe was schaffen. Deshalb hab ich meinem Sohn auch die Glotze nebenan erlaubt, der schläft bestimmt wieder davor ein."
+2010-03-19 20:36:59,XanClic,Klingt nach einem tollen Erziehungskonzept *g*
+2010-03-19 20:38:56,erik,"Naja, er hat alle Hausaufgaben gemacht und war ansonsten recht brav, da darf er mal Freitag abend länger aufbleiben. Und wenn er vor der Glotze einpennt ists mir auch recht (für den Stromverbrauch bräuchte ich da noch nen Bewegungsmelder damit die Glotze dann aus geht wenn er pennt)."
+2010-03-19 20:39:44,DesL,aber was ist wenn er letargisch vor der kiste liegt und guckt?
+2010-03-19 20:40:37,erik,"hm, stimmt, ist ein Problem, aber denke ich vielleicht mal drüber nach wenn mich die Langeweile packt"
+2010-03-19 20:42:03,erik,"zumindest für ""Pleiten Pech und Pannen"" oder was er da nachher schauen möchte ist das kein Problem, da lacht er oft so laut das ich das auch 3 Räume weiter noch höre"
+2010-03-19 20:43:12,erik,"vielleicht wäre es Zeit für ne Überwachungskammera mit guter Bilderkennung, damit die detekiert wenn er schlafen da liegt und die Augen zu sind"
+2010-03-19 21:27:14,DesL,wäre jemand bereit sich meinen semantisch inkorekten java-code anzuschauen der absolut nichts mit OSDev zu tun hat? ich komme einfach nicht hinter meinen Denkfehler....
+2010-03-19 21:32:44,erik,DesL: worum geht es denn?
+2010-03-19 21:34:53,DesL,"mh, ich habe ein billiardspiel geschrieben, allerdings scheinen sich die kugel ab und zu zufällig bei der Kollision zu verhaken bzw. durchtunneln sich auch mal gegenseitig. muss je irgendwie mit der Funktion zur Kollisionsbehandlung zu tun haben, aber sie scheint MIR korrekt."
+2010-03-19 21:36:41,erik,kollision bei Kugeln ist IMHO recht einfach wenn der Abstand der beiden Mittelpunkte kleiner gleich dem Durchmesser ist dann hast Du ne kollision (bei kleiner eigentlich schon ne verformung bzw. durchdringung)
+2010-03-19 21:37:09,erik,wenn ich arten soll fermute ich das Du nur auf geich prüffst aber das möglichweise verpasst wird
+2010-03-19 21:37:32,DesL,"hm, moment"
+2010-03-19 21:37:46,erik,"bei gleitkomma ist ""=="" sowieso keine gute Idee"
+2010-03-19 21:38:20,DesL,"nein, ich rechne via pythagora den abstand aus, und dann schaue ich ob er kleiner zwölf ist."
+2010-03-19 21:39:46,erik,"einmal raten war es wert, aber kleiner-gleich finde ich trotzdem besser (bei kleiner ist es ja eigentlich schon zu spät)"
+2010-03-19 21:40:14,DesL,"wenn kleiner, dann verrechen ich dir winkel, und tausche die geschwindigkeiten aus  (ich zweifle an der physikalischen korrektheit des letzten...)"
+2010-03-19 21:40:30,DesL,"der radius ist 5.72, da sollte 12 eigentlich passen^^"
+2010-03-19 21:41:21,erik,dann beschreibe doch mal was Du mit verhacken meinst
+2010-03-19 21:42:03,DesL,"sie bewegen sich völlig synchron, und überschneiden sich (zu zweit);"
+2010-03-19 21:42:37,erik,bei den Winkeln was schief gegangen?
+2010-03-19 21:43:04,DesL,"ich glaube nicht, sieht eigentlich gut aus."
+2010-03-19 21:44:02,erik,"hm, vielleicht baust Du mal ein debug-meldung ein wenn die Winkel nach der Kollision zu ähnlich sind (differenz kleiner 10 Grad)"
+2010-03-19 21:44:31,DesL,"hm, ich könnte das spiel dann mal anhalten."
+2010-03-19 21:52:02,DesL,"ich glaube das problem liegt noch wo anders, manchmal bleiben bälle einfach an der wand pappen."
+2010-03-19 21:55:23,erik,DesL: vielleicht übersieht der Code der alle Kugeln bewegt mal welche nachdem sie mit irgendetwas kollidiert sind
+2010-03-19 22:00:11,DesL,Da sollte eigentlic nichts durchschlüpfen: http://pastebin.com/DNiPz8Hw
+2010-03-19 22:05:38,DesL,"Kannst du da einen fehler entdecken, oder braucht es mehr erklärung des code?"
+2010-03-19 22:14:40,erik,"Eine Fehler sehe ich da auch nicht, probiere es mal mit Unit-Tests und prüfe die Funktion auf korrekte Funktionalität mit verschiedenen Werten, vielleicht fällt dabei was auf?"
+2010-03-19 22:15:09,erik,"Ansonsten finde ich das neue Jave hässlich, sieht irgentwie nach Java-Script aus."
+2010-03-19 22:19:11,DesL,^^
+2010-03-19 22:33:14,DesL,Ich ahne das etwas mit den Zeilen 22/23 nicht stimmt.
+2010-03-19 22:35:35,DesL,"ich habe auch eine andere Kolissions abfrage mit dem Feldrand, und wenn ich dort links und recht abfrage geht es mit (360 - ang), bei oben und untern nur mit (180 - ang)"
+2010-03-19 22:48:55,erik,ich kann Dir nur empfehlen eine if-Abfrage zu basteln die unerwartete Ergebnisse prüft und in the true-Zweig eine Debug-Message rein auf welche Du dann einen Break-Point legen kannst
+2010-03-19 22:49:46,erik,"ich mach dann schlus für heute, ich glaube mein Sohn schläft endlich, tschüß"
+2010-03-19 23:01:14,DesL,"Ah, ich habe  den Fehler: wenn sie sich schon überschneiden, und die Winkel siech nicht stark genug unterscheiden, sind sie nach dem nächsten rendern immer noch übereinander, und tauschen wieder und wieder die Winkel"
+2010-03-19 23:03:38,DesL,ich glaube ich sollte einfach in kleineren schriten updaten...
+2010-03-19 23:42:02,DesL,"so, ich horch dann auch mal anner Matraze..."

@@ -1,0 +1,187 @@
+date/time,nick,message
+2016-08-25 02:20:17,Quantenmagier,"hm mir is grad aufgefallen malloc wäre nen guter kandidat für ein conforming code segment, man brauch es im kernel wie im userland und es brauch keinen höheren ring als der aufrufende code, is bloß die frage ob es statisch gelinked nicht etwas schneller ist"
+2016-08-25 05:58:44,darklink,Hä?
+2016-08-25 05:59:06,darklink,userland und kernel haben ein eigenes malloc
+2016-08-25 07:30:54,darklink,Außer beim 3ds FIRM. Da benutzt der userspace den malloc des kernels
+2016-08-25 07:31:06,darklink,was im allgemeinen ne schlechte idee ist
+2016-08-25 07:32:05,darklink,"Weil wenn dann ne sicherheitslücke im userspace malloc gefunden wird, dann gilt die lücke auch für den kernelmode"
+2016-08-25 07:33:10,darklink,z.B: wenn realloc aufgerufen wird sind die mallocstrukturen kurz in den userspace gemappt
+2016-08-25 07:33:59,darklink,= Bei einem SMP system kann man u.U. die malloc-strukturen verändern
+2016-08-25 08:46:53,MasterQ32,moin darklink
+2016-08-25 09:16:19,darklink,Moin MasterQ32 
+2016-08-25 09:17:52,MasterQ32,du könntest in deinem OS eine unglaublich geile Architektur basteln:
+2016-08-25 09:18:08,MasterQ32,haben die beiden cores zugriff auf den selben RAM oder haben die auch getrennten RAM?
+2016-08-25 09:18:12,MasterQ32,und wie kommunizieren die beiden?
+2016-08-25 09:18:17,darklink,also
+2016-08-25 09:18:23,darklink,arm9 hat eigenen ram
+2016-08-25 09:18:27,darklink,1MB/1.5MB
+2016-08-25 09:18:50,darklink,und die sprechen über zwei FIFO-puffer miteinander
+2016-08-25 09:19:48,darklink,"der a9 kann auf sämtlichen ram zugreifen, auch an einiges vom MMIO"
+2016-08-25 09:20:36,MasterQ32,mach doch malloc im einen RAM und verwende den Speicher im anderen :D
+2016-08-25 09:20:42,darklink,"a11 kann auf den internen RAM zugreifen, auf FCRAM, VRAM und andere IO register"
+2016-08-25 09:20:44,darklink,^^
+2016-08-25 09:20:48,MasterQ32,damit sind die mallocstrukturen absolut safe :D
+2016-08-25 09:21:14,darklink,äh
+2016-08-25 09:21:36,darklink,auf den beiden cpus läuft unterschiedlicher code
+2016-08-25 09:21:54,MasterQ32,ich weiß
+2016-08-25 09:21:56,MasterQ32,genau darum
+2016-08-25 09:21:56,MasterQ32, :D
+2016-08-25 09:25:11,darklink,Ich glaube ich werde die ARM9 dsp:txt umbauen
+2016-08-25 09:25:18,darklink,sobald ich arm11 interrupts habe
+2016-08-25 09:25:45,darklink,scrollen auf dem arm9 braucht 1s
+2016-08-25 09:26:33,MasterQ32,:D
+2016-08-25 09:27:14,MasterQ32,http://tohad.deviantart.com/gallery/26155946/Fan-art
+2016-08-25 09:27:21,MasterQ32,das ist irgendwie richtig awesome was der macht
+2016-08-25 12:26:36,Quantenmagier,"hm naja die malloc strukturen sind natürlich die des jeweiligen programms, weil es ja nur auf datensegmente in der LDT (wenn ich die mal implementiert habe) zugreifen kann und daher nur ram zur ldt reservieren oder davon freigeben kann.. es geht bei dem conforming code segment nur um den codeteil, nicht um den datenteil"
+2016-08-25 12:28:28,Quantenmagier,"sehe da ehrlich gesagt keine schwachstelle im kernel wenn man den malloc code auch im userland benutzt, weil auf den kernel zugreifen kann es ja trotzdem nicht, und malloc ist einfach genug um da keine wirkliche schwachstelle einzubauen in den code"
+2016-08-25 12:28:53,Quantenmagier,zumindest keine die man nutzen könnte um rechte höherer priorität zu bekommen
+2016-08-25 12:30:48,Quantenmagier,der einzige nachteil ist aus meiner sicht halt bloß daß ich die variable für den freien heap dann nicht statisch in den malloc code packen kann sondern der die dynamisch aus dem datensegment oder den prozess-infos lesen muß und dadurch das malloc langsamer laufen könnte wegen den zusätzlichen speicherzugriffen dafür
+2016-08-25 12:34:24,darklink,äh
+2016-08-25 12:34:46,darklink,Das ist so 5 speicherzugriffe mehr
+2016-08-25 12:35:00,Quantenmagier,joa maximal
+2016-08-25 12:35:16,Quantenmagier,aber speicherzugriffe sind halt langsam
+2016-08-25 12:35:17,darklink,Wenn der malloc code oft benutzt wird liegt das teil im cache
+2016-08-25 12:35:24,Quantenmagier,aso
+2016-08-25 12:35:30,Quantenmagier,stimmt das is nen gutes argument
+2016-08-25 12:35:56,darklink,Ich kann auf meiner 4GHz CPU mit 2GB/s auf meinen RAM zugreifen
+2016-08-25 12:36:09,darklink,Ein speicherzugriff sind also ~2 zyklem
+2016-08-25 12:36:13,darklink,Das ist nix
+2016-08-25 12:36:13,Quantenmagier,dann bleibt noch die frage ob conforming code segmente wegen dem segment wechsel wesentlich langsamer sind als das codesegment des programms
+2016-08-25 12:36:24,darklink,Ja
+2016-08-25 12:36:29,Quantenmagier,wow 2 zyklen ist echt gut
+2016-08-25 12:36:44,darklink,Weil segmentation nicht optimiert ist
+2016-08-25 12:36:44,darklink,Punkt
+2016-08-25 12:38:21,darklink,"(Das ist natürlich eine milchmädchenrechnung. Erkennst du den fehler? Ich habe dual-channel ddr3 ram und 4 cores, 8 threads"
+2016-08-25 12:39:24,darklink,"Also hätte ich eine core, 1 thread wären es 32 zyklen"
+2016-08-25 12:39:31,darklink,Ungefähr
+2016-08-25 12:39:52,Quantenmagier,"hmm vllt sollte ich dann doch lieber über shared libraries nachdenken, weil dann kann ich den kernelcode so schnell wie möglich machen ohne die zusätzlichen speicherzugriffe oder segmentwechsel und progrmame können sich trotzdem das malloc teilen und man kann das eventuell mit paging später einfach in den speicher einblenden und so ohne segmentwechsel machen und shared libraries sind eh universeller"
+2016-08-25 12:41:03,darklink,Schreibt dein HPET-treiber direkt auf den VRAM
+2016-08-25 12:41:03,Quantenmagier,hmm aber die threadzahl verschlimmert doch die speicherzugriffe und verbessert sie nicht
+2016-08-25 12:41:22,darklink,Stimmt
+2016-08-25 12:41:48,darklink,Man kann es nicht wirklich sagen wie schnell RAM heute ist
+2016-08-25 12:42:02,Quantenmagier,"darklink, auch, also er hat für jedes programm nen videosegment und die einzelnen pixel werden wenn sie durch die transparenzprojektion durch kommen in den vram geschrieben"
+2016-08-25 12:42:02,darklink,mein ram ist 1.3GHz
+2016-08-25 12:42:44,Quantenmagier,wieso fragst du wegen dem hept?
+2016-08-25 12:42:45,darklink,1 oder 8-bit tranzparenz?
+2016-08-25 12:42:48,Quantenmagier,1bit
+2016-08-25 12:42:54,darklink,hmm
+2016-08-25 12:43:10,Quantenmagier,8bit wäre irgendwie overkill mit den arithmetischen operationen
+2016-08-25 12:43:19,darklink,Wäre es nicht sinnvoller den einzelnen projektionsebenen einen LFB zu geben
+2016-08-25 12:43:37,darklink,und dann den periodisch in den vram blitten?
+2016-08-25 12:43:57,Quantenmagier,hmm aber vesa hat doch keine native blitting hardware?
+2016-08-25 12:44:15,darklink,Du kannst doch kopieren
+2016-08-25 12:44:43,Quantenmagier,"naja jetzt kopier ich ja auch pixel für pixel wenn er durch die transparenz durch kommt, was hätte ich bei deiner methode gespart?"
+2016-08-25 12:46:26,darklink,"for(int y=y_start; y<y_start+height;y++) { memcpy(vram[y], win[y-y_start], width*BYTESPP); }"
+2016-08-25 12:46:57,darklink,Rechtecke kopieren ist einfacher als komplexe strukturen zu kopieren
+2016-08-25 12:47:28,darklink,branch predictor kann das einfacher vorhersagen
+2016-08-25 12:47:44,darklink,Und das window kann korrekt geprefetched werden
+2016-08-25 12:48:05,darklink,= Ist schneller
+2016-08-25 12:48:59,darklink,Außerdem würde ich ein write-burst cache bei dem vram anlegen
+2016-08-25 12:49:49,darklink,Also per msrr?
+2016-08-25 12:51:30,darklink,Write-combine*
+2016-08-25 12:52:06,darklink,MTRR*
+2016-08-25 12:54:31,Quantenmagier,"darklink, aber du hast dann nur transparenz über komplette rechtecke oder?"
+2016-08-25 12:58:13,darklink,Ja
+2016-08-25 12:58:37,darklink,Warum willst du komplexes rendering mit vesa?
+2016-08-25 12:58:57,Quantenmagier,zB für den mauscursor
+2016-08-25 12:59:10,Quantenmagier,der soll ja auch nciht rechteckig sein ^^
+2016-08-25 13:01:48,Quantenmagier,"und das volle transparenzmapping ist eigentlich vor allem für programme im hintergrund langsamer, weil die durch die transparenz von allen drübe rliegenden ebenen zeichnen müssen, die oberste ebene kann dafür quasi direkt in den vram kopieren"
+2016-08-25 13:06:16,darklink,Wenn du unbedingt tranzparenz willst (Die Maus würde ich anders behandeln) solltest du ein write-combine cache über dem VRAM anlegen
+2016-08-25 13:07:40,Quantenmagier,"und ich hab ja theoretisch noch 7 bit frei weil ich nur 1 bit für transparenz nutze, hatte eigentlich gedacht ich nutze die restlichen bits dafür um zu zeigen ob der pixel auf die maus reagieren soll (hover/klick) aber selbst dann hab ich noch 5 bit frei, vllt kann ich die verwenden um die projektion noch shcneller zu machen, zB sagen der pixel ist nicht gemapped, also muß man auch nicht durch die ebenen durchzeichnen we"
+2016-08-25 13:07:40,Quantenmagier,"il eh keine transparente ebene drüber liegt, dafür könnte ich noch 1-2 bit verwenden, das problem wäre dann daß das wechslen der ebene, das zeichnen transparenter pixel oder das entfernen oder hinzufügen von ebenen langsamer wird, weil man dann die darunter liegenden ebenen aktualisieren muß, aber ich denke das sind eher seltenere operationen und die können ruhig zu gunsten der projektion langsamer sein"
+2016-08-25 13:09:32,Quantenmagier,oh aber mir fällt grad auf auch das verschieben von ebenen/fenstern wäre dadurch langsamer das is natürlich shcon ein ziemlicher nachteil.. *grübel*
+2016-08-25 13:10:11,darklink,auf dem 3ds ist das ändern 100000 pixel 1s lanb
+2016-08-25 13:10:44,Quantenmagier,wtf? das ja voll langsam
+2016-08-25 13:11:20,Quantenmagier,aber man kann doch wenigstens alle pixel gemeinsam verschieben? oder dauert das auch so lange?
+2016-08-25 13:11:29,Quantenmagier,also blitting
+2016-08-25 13:12:04,Quantenmagier,der ds hat doch sicher shcnelles hw blitting?
+2016-08-25 13:20:48,darklink,Quantenmagier: also der 3ds hat dma
+2016-08-25 13:21:11,Quantenmagier,ah ok und das is dann aber doch schneller als 100000/s oder nicht?
+2016-08-25 13:21:21,darklink,allerdings kann man darauf vom arm9 aus nicht zugreifem
+2016-08-25 13:21:44,darklink,der arm9 schafft 100k px/s
+2016-08-25 13:21:54,Quantenmagier,welche auflösung hat der 3ds eigentlich?
+2016-08-25 13:21:58,darklink,der arm11 ähh 1M/s
+2016-08-25 13:22:10,darklink,QVGA und 800x240
+2016-08-25 13:22:32,Quantenmagier,ah ok und du nutzt nur arm9?
+2016-08-25 13:22:36,darklink,nein
+2016-08-25 13:22:40,Quantenmagier,arm11?
+2016-08-25 13:22:44,darklink,ich benutze beide gleichzeitig
+2016-08-25 13:22:58,Quantenmagier,oki dann dürfte die pixelrate ja kein problem sein
+2016-08-25 13:23:16,darklink,ohne arm9 kann ich nicht auf sd und HW crypto zugreifen
+2016-08-25 13:23:31,darklink,ohne arm11 nicht auf DSP und GPU
+2016-08-25 13:23:37,darklink,Etc
+2016-08-25 13:27:59,Quantenmagier,"mir is grad noch ne idee gekommen ich nutze 1-2 bit um zu sagen ob der pixel durch die transparenz gemapped ist oder nicht und dann kann ich noch ne ebene zur invalidierung nutzen, dann muß ich nicht immer durch die ebenen nach unten zeichnen wenn ich zb ne neue ebene erstelle, sondern die unteren ebenen werden beim zugriff auf den pixel aktualisiert, ist bloß die frage ob das wirklich so viel geschwindigkeitsvorteil bring"
+2016-08-25 13:28:00,Quantenmagier,"t zum direkt durch die ebenen aktualisieren, weil man bei transparenten pixeln eh durch die ebenen gehen muß und mit dem invalid bit nur die pixel die vorher transparent waren verzögern kann"
+2016-08-25 13:30:00,Quantenmagier,"also beim verschieben eines nicht transparenten fensters zb würde die alte position genauso langsam sein, aber die neue position wäre schneller weil man da nur invalidieren braucht."
+2016-08-25 13:30:32,darklink,ähh
+2016-08-25 13:32:42,Quantenmagier,im prinzip wäre damit das verschieben von ebenen fast genauso shcnell wie bisher und das obwohl ich untere ebenen schneller zeichnen kann wegen den zusätzlichen bits ob die pixel gemapped sind
+2016-08-25 13:34:22,Quantenmagier,"beim verschieben von ebenen käme halt das invalidieren hinzu und beim zeichnen niedriger ebenen das prüfen der invalidierung, aber das liegt ja dann beides in O(#pixel) und wäre somit ein überschaubarer overhead für das beschleunigen der projektion an sich"
+2016-08-25 13:35:46,Quantenmagier,weil momentan dauert das zeichnen eines pixels O(#pixel*#Ebenen_darüber) und mit den zusätzlichen bits wäre das halt sletener nötig die ebenen zu prüfen ^^
+2016-08-25 14:19:30,darklink,also mein renderer hat ne komplexität von O(n)
+2016-08-25 14:19:38,darklink,außer beim scrollen
+2016-08-25 14:19:51,darklink,wo es eher wie O(n!) Aussieht
+2016-08-25 14:21:39,darklink,Oder wie n^n?
+2016-08-25 14:21:42,darklink,keine ahnung
+2016-08-25 14:21:48,MasterQ32,"was heißt ""scrollen"" bei dir?"
+2016-08-25 14:21:55,darklink,auf jedem fall übertrieben lang
+2016-08-25 14:22:04,MasterQ32,"scrollen sollte auch O(N) sein, wenn du nur bildschirminhalt verschiebst"
+2016-08-25 14:22:14,darklink,das bild 8 pixel nach oben scrollen
+2016-08-25 14:22:34,darklink,da der bildschirm falschrum ist 8 pixel zur seite
+2016-08-25 14:22:59,MasterQ32,"joar, also O(n)"
+2016-08-25 14:25:56,Quantenmagier,"hm scrollen hat bei mir O((höhe+versatz)*breite) es sei denn man verschiebt transparente pixe, dann ist es noch *#ebenen"
+2016-08-25 14:28:01,MasterQ32,"@Quantenmagier: Dann bist du entweder in O(n) oder O(n²) (mit Ebenen), weil du den Bildschirm auch linear betrachten kannst und damit eine Vereinfachung von einer Potenz machen kannst ;)"
+2016-08-25 14:29:38,Quantenmagier,aso stimmt thx
+2016-08-25 15:06:00,darklink,MasterQ32: eher 2N
+2016-08-25 15:06:10,MasterQ32,@Darklink: O(2N) == (ON)
+2016-08-25 15:06:13,darklink,da ich die daten aus dem VRAM lese
+2016-08-25 15:06:14,MasterQ32,*== O(N)
+2016-08-25 15:06:14,darklink,oh
+2016-08-25 15:06:20,MasterQ32,there is no difference at all
+2016-08-25 15:08:30,darklink,"ich glaube ich könnte das vereinfachen, indem ich periodisch zwei dmas mache, die von nem puffer in der ersten hälfte/viertel des FCRAMS in den VRAM geht"
+2016-08-25 15:09:42,darklink,kernel .text und .data sind ja in internen speicherbereichen
+2016-08-25 15:09:46,darklink,= kein slowdown
+2016-08-25 15:13:04,darklink,Ich glaube ich würde erst dsp:ctxt oder dsp:fnt schreiben
+2016-08-25 15:13:51,darklink,"(das erste ist RGB-8 gefärbter text. dsp:fnt ist dasselbe, bloß mit ner fnt die mitgeladen werden muss)"
+2016-08-25 15:16:02,darklink,und DAVOR werde ich sys:int schreiben
+2016-08-25 15:59:30,Quantenmagier,woher kennt ein programm eigentlich sein working directory?
+2016-08-25 16:03:04,yayachiken,getenv(3)
+2016-08-25 16:03:42,Quantenmagier,aso also wenn ich zb fopen mache ist der pfad relativ zu der Umgebungsvariablen $PWD ?
+2016-08-25 16:04:13,yayachiken,afaik setzt die shell $PWD und das programm kann dann sein cwd auf PWD setzen
+2016-08-25 16:05:09,yayachiken,"ist aber vermutlich blödsinn weil getcwd wohl auch ein syscall ist, zumindest auf linux :D"
+2016-08-25 16:08:22,Quantenmagier,"hm also wenn ich fopen mit relativem pfad mache, dann macht linux ein getcwd um zu wissen zu welchen pfad es relativ sein muß?"
+2016-08-25 16:08:41,Quantenmagier,und ich cwd und $PWD nicht automatisch das selbe beim programmstart?
+2016-08-25 16:08:47,Quantenmagier,*ist
+2016-08-25 16:10:36,yayachiken,"nach man 7 environ wird $PWD tatsächlich von ""manchen shells"" gesetzt"
+2016-08-25 16:11:07,yayachiken,würde vermuten dass das dann optional ist und wenn das nicht gesetzt ist (oder gar immer?) getcwd aufgerufen wird
+2016-08-25 16:11:39,yayachiken,und dann gibts noch chdir() das ist sogar in posix anscheinend
+2016-08-25 16:12:32,yayachiken,und da open() ja auch ein syscall ist muss das programm beim dateien öffnen gar nicht wissen was das cwd ist
+2016-08-25 16:12:58,yayachiken,also kann auch gut sein dass das programm gar nichts in der richtung macht :)
+2016-08-25 16:13:19,Quantenmagier,ah ok thx
+2016-08-25 16:13:36,yayachiken,"wie gesagt keine ahnung, hab eben auch grade erst ein paar manpages dazu überflogen :D"
+2016-08-25 16:14:19,Quantenmagier,"joa ich denke ich werd das im usersace laden, weil ich mehr nach c auslagern will"
+2016-08-25 16:15:01,yayachiken,ja wenn du in deinem OS dann auch das interface so anpasst dass open() immer absolute pfade nimmt
+2016-08-25 16:15:14,Quantenmagier,jein
+2016-08-25 16:15:33,Quantenmagier,ok doch open akzepiert absolute pfade
+2016-08-25 16:16:10,Quantenmagier,"aber es akzeptiert auch relative, das problem ist die relativen sind nicht abhängig vom programm sodnern davon was zuletzt mit dem fat treiber geöffnet wurde xD"
+2016-08-25 16:19:25,Quantenmagier,ich würd dann das cwd nehmen und den relativen pfad concatenieren und das dann an open senden ^^
+2016-08-25 17:09:28,darklink,Ok. Freebsd 11.0 RC 2 auschecken
+2016-08-25 17:09:44,darklink,hab ja bloß noch nicht die ports neu gebaut :D
+2016-08-25 17:10:04,Svenska,was sind so die hauptunterschiede zwischen 10 und 11?
+2016-08-25 17:20:46,darklink,https://wiki.freebsd.org/WhatsNew/FreeBSD11
+2016-08-25 17:23:06,darklink,Nicht die größten
+2016-08-25 17:23:14,darklink,aber ich will up to date bleiben
+2016-08-25 17:23:28,yayachiken,ui freebsd hatte noch kein sendfile? krass
+2016-08-25 17:23:34,Svenska,"doch, hatte es"
+2016-08-25 17:23:42,Svenska,aber das neue ist nginx-/netflix-friendly
+2016-08-25 17:23:42,darklink,außerdem ist freebsd 10 vor ein paar jahren rausgekommen
+2016-08-25 17:25:41,darklink,Also 2014
+2016-08-25 17:25:48,Svenska,und?
+2016-08-25 17:26:08,Svenska,"ich bin ja nicht der meinung, dass man jedes jahr eine neue major-version rausbringen muss. insbesondere dann nicht, wenn sich nix großes geändert hat."
+2016-08-25 17:27:11,Svenska,"hmm, jetzt wird's zeit fuer userspace-daemons fuer IPX und AppleTalk"
+2016-08-25 17:32:02,darklink,So jetzt baue ich die tools zum bauen von freebsd
+2016-08-25 22:13:41,Quantenmagier,"wow die neue reactos version kann jetzt wohl ext lesen, hoffentlich haben die auch diesen netzwerktreiberbug behoben den ich hatte, mal testen.."
+2016-08-25 22:16:57,MasterQ32,ich wünsche ReactOS auf jeden fall gute Versionen
+2016-08-25 22:48:46,Quantenmagier,"hm schade das netzwerk unter qemu is leider immernoch kaputt, vllt sollte ich mal nen bugreport einschicken"
+2016-08-25 22:51:47,Quantenmagier,oder ich aktualisier mal qemu vllt liegts ja an qemu und nicht an reactos
+2016-08-25 22:53:54,Quantenmagier,boah ich schieb dieses file-interface so lange vor mir her
+2016-08-25 23:44:23,Quantenmagier,so dann update ich mal zu qemu 2.6.0

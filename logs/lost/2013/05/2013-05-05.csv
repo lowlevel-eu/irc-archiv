@@ -1,0 +1,476 @@
+date/time,nick,message
+2013-05-05 09:36:07,mroman,Die Adressen in der IVT sind hoffentlich physisch?
+2013-05-05 09:44:31,mgottschlag,"ne, virtuell"
+2013-05-05 09:44:57,mgottschlag,"geht ja nicht anders, sonst weiß der Prozessor nach einem Interrupt nicht, an welcher virtueller Adresse er ausführen soll"
+2013-05-05 09:49:39,mroman,Oh
+2013-05-05 09:49:47,mroman,und deshalb mappt man den Kernel in jeden Prozess.
+2013-05-05 09:50:53,mroman,Muss man ja fast wenn die Adresse virtuell ist
+2013-05-05 09:52:04,mroman,Zumindest der Interrupt Handler muss man in den Prozess mappen
+2013-05-05 09:52:10,mroman,damit er syscalls benutzen kann
+2013-05-05 09:52:13,mroman,*den
+2013-05-05 10:05:25,mgottschlag,"wenn man nur den handler mappt, muss der als erstes aber immer den Adressraum wechseln"
+2013-05-05 10:05:34,mgottschlag,und das ist je nach Prozessor mehr oder weniger teuer
+2013-05-05 10:11:04,mroman,Jop
+2013-05-05 10:11:17,mroman,Darum mappe ich dann wohl lieber Kernel in jeden Adressraum
+2013-05-05 11:35:39,mroman,Ein weiterer Grund -Wall -Werror zu benutzen:
+2013-05-05 11:35:53,mroman,ctx->buf[*ctx>pos] = ...;
+2013-05-05 11:36:32,mroman,Das wird zu ctx->buf[(*ctx)>pos]
+2013-05-05 11:50:54,mroman,awcrap :(
+2013-05-05 11:53:34,mroman,schon besser :)
+2013-05-05 12:06:51,oern,moinsen
+2013-05-05 12:12:35,oern,"kann mir jemand von euch verraten, warum ((""mod_init"")[0] != ((const char*)""mod_init"")[0]) in C wahr ist?"
+2013-05-05 12:13:54,oern,jedenfalls in meinem kernel
+2013-05-05 12:19:39,DerHartmut,Morgen
+2013-05-05 12:47:00,Paddy,"oern: Hast du dir mal ausgeben lassen, was das eine und was das andere ist?"
+2013-05-05 12:52:50,oern,"ich habe es mittlerweile gelöst, hatte etwas mit linkermagie zu tun"
+2013-05-05 12:53:25,oern,"ausgabe ist bei mir so ne sache, die soll erst später von grafiktreibern implementiert werden, um das ganze plattformunabhängig zu halten"
+2013-05-05 12:54:00,oern,die einzige debuggingmöglichkeit besteht im moment darin gezielt exceptions auszulösen und die von qemu loggen zu lassen
+2013-05-05 12:55:08,Paddy,"Also zum Debuggen würde ich wenigstens eine minimale Ausgabe auf der seriellen Konsole implementieren. Aber gut, jeder wie er mag."
+2013-05-05 12:55:28,Paddy,Kaputtes Linkerskipt wäre übrigens auch meine Vermutung gewesen
+2013-05-05 12:56:02,oern,"ich hatte vorher nämlich keine strings in meinen dateien und daher auch keine .rodata section, die dann hinten drangepackt wurde"
+2013-05-05 12:59:39,oern,"zu dem grafikinterface muss ich mir dann noch überlegen, wie ich damit sowohl text- als auch grafikmodi unterstützen kann und außerdem auch modi mit paletten handeln kann"
+2013-05-05 13:17:43,mroman,Hm.
+2013-05-05 13:19:15,mroman,Oh.
+2013-05-05 13:19:38,mroman,13bit hi und lo words in Hex ist ziemlich creepy :)
+2013-05-05 13:19:53,mroman,R1 = 00123456 (0091:1456)
+2013-05-05 13:21:24,DerHartmut,42bit is eh dir einzig zukunftsfähige Plattform
+2013-05-05 13:22:45,mroman,Warum
+2013-05-05 13:22:48,mroman,wer hat 42Bit?
+2013-05-05 16:20:31,oern,"yay, ich habe gerade mein erstes kernelmodul dynamisch linken und ausführen können"
+2013-05-05 16:26:10,martinFTW,Frage: Man könnte doch theoretisch auch Userspace-shared libraries in den kernel verlinken ...
+2013-05-05 16:27:17,oern,das kommt auf die verwendeten formate an
+2013-05-05 16:27:59,oern,wenn dein kernel z.b. elf-shared-objects als kernelmodule verwendet und deine userspace-libs auch shared-objects sind müsste das gehen
+2013-05-05 16:29:18,martinFTW,Okay Ich hab nur mal gehört das bei linux module objects und nicht ELF shared libraries sind.
+2013-05-05 16:30:00,oern,"ist auch so, deshalb geht es in linux auch nicht"
+2013-05-05 16:30:54,oern,bei mir sind es auch mehr oder weniger normale object-dateien
+2013-05-05 16:33:17,oern,"wenn jemand lust hat, kann er ja mal diesen code überprüfen: http://pastebin.com/nrYpCjeV"
+2013-05-05 16:33:42,oern,"er funktioniert zwar mit einem testmodul, aber ich trau dem ganzen nicht"
+2013-05-05 16:36:30,martinFTW,"ich will ja einen haybridkernel mit Userspace FS/VFS schreiben, bei dem die FS als Librarys des VFS geladen werden um Message Passing zu vermeiden ... das wird heiter"
+2013-05-05 16:37:02,oern,geht das dann nicht schon in richtung exokernel?
+2013-05-05 16:43:28,martinFTW,eigentlich nicht in einem Exokernel mit libOS ansatz werden die Treiber zur Verwaltung als librarys in jeden Prozess gelinkt
+2013-05-05 16:43:40,martinFTW,steht http://www.lowlevel.eu/wiki/Exokernel#Exokernel hier
+2013-05-05 16:44:18,oern,"aber die idee erinnert daran, finde ich"
+2013-05-05 16:46:40,martinFTW,"Aber wenn man die Treiber mit Zugriff auf direkt in den Userspace linkt, dann kann man die doch finden und patchen ..."
+2013-05-05 16:47:12,martinFTW,*Zugriff auf die HW
+2013-05-05 16:47:27,mroman,Apropos.
+2013-05-05 16:47:39,mroman,"outb, inb benoetigen ja immer einen Kontextswitch?"
+2013-05-05 16:48:23,mroman,oder gibt's da Tricks wie man das umgehen kann
+2013-05-05 16:48:52,mroman,bzw. so wenig kostenverursachend wie moeglich
+2013-05-05 16:49:22,oern,"outb und inb außerhalb des kernelspace willst du eh nicht haben, oder du willst eine iomap im tss"
+2013-05-05 16:49:53,mroman,Linux hat z.b ioperm
+2013-05-05 16:50:00,mroman,wie das auch immer funktioniert.
+2013-05-05 16:51:20,Paddy,Über besagt I/O-Bitmap
+2013-05-05 16:54:02,mroman,oern: Wuerde doch sinn machen fuer userspace treiber?
+2013-05-05 16:57:34,oern,"dann willst du aber besagte I/O-bitmap, damit nicht jeder prozess auf jeden port zugreifen kann"
+2013-05-05 16:58:02,oern,"und in den kernelspace wird dadurch afaik nicht gewechselt, außer dass im tss etwas überprüft wird"
+2013-05-05 16:58:39,mroman,Ja klar @nicht jeder Prezoss.
+2013-05-05 17:30:31,mroman,Bei 640*480 brauche ich 300K RAM
+2013-05-05 17:32:04,oern,dann hast du scheinbar 8 bits pro pixel ;-)
+2013-05-05 17:33:34,mroman,Ja
+2013-05-05 17:36:19,mroman,das ist zuviel
+2013-05-05 17:36:22,mroman,320x200 muss also reichen
+2013-05-05 17:36:32,mroman,das sind immerhin nur 64K
+2013-05-05 17:37:55,mgottschlag,du kannst auch mehrere vram-banks einführen
+2013-05-05 17:37:57,mroman,koennen das Grahpikkarten heute noch Fullscreen?
+2013-05-05 17:38:11,mgottschlag,"und dann ein Register, das zwischen mehreren RAM-Chips wechselt und so"
+2013-05-05 17:38:31,mroman,mgottschlag: Ich mach mir eher sorgen um SDL
+2013-05-05 17:38:42,mroman,kA wie effizient es ist 300K Pixel zu plotten via SDL
+2013-05-05 17:39:06,mroman,Der Buffer der Grahpikkarte ist im RAM gemappt
+2013-05-05 17:39:23,mroman,und denn mus ich auslesen und dann auf eine SDL Surface plotten
+2013-05-05 17:39:24,mroman,*den
+2013-05-05 17:39:33,mgottschlag,"wenn du das richrtig machst, brauchst du dir da keine Sorgen machen"
+2013-05-05 17:39:53,mgottschlag,"du darfst allerdings nicht für jeden VRAM-Zugriff einen Punkt per SDL malen, sondern musst immer den ganzen VRAM-Inhalt periodisch kopieren"
+2013-05-05 17:40:11,mgottschlag,dann sollten 640x480 bei 60Hz machbar sein
+2013-05-05 17:40:36,mgottschlag,"wenn du OpenGL benutzt, sogar noch wesentlich mehr, weil er da dann effizient DMA macht, bei SDL wär ich mir da nicht so sicher"
+2013-05-05 17:40:42,mroman,"Zur Zeit muss man dann der Graphikkarte sagen, ""Aktualisiere jetzt Buffer"""
+2013-05-05 17:41:03,mroman,Ich meine jetzt eine imaginaere emulierte Grahpikkarte
+2013-05-05 17:41:05,mroman,:)
+2013-05-05 17:41:28,Jidder,300000 bytes * 60 fps sind 18 megabyte pro sekunde
+2013-05-05 17:41:32,Jidder,das kriegt man wohl hin
+2013-05-05 17:41:35,mgottschlag,"ja klar, aber die kann ja bei nem Speicherzugriff einfach irgendwo ein Bit setzen, das dann periodisch abgefrag wird"
+2013-05-05 17:41:39,mgottschlag,mit SDL? :p
+2013-05-05 17:42:08,Jidder,ich würde da das interne format in ein SDL surface kopieren
+2013-05-05 17:42:30,mroman,Ich kann das ja mal kurz testen :)
+2013-05-05 17:42:32,Jidder,"wenn es 8 bit palette ist, muss man da eventuell nicht mal kopieren"
+2013-05-05 17:42:38,mgottschlag,"ich habs btw mal nachgemessen, direkter Speicherzugriff auf VRAM von ner aktuellen Grafikkarte ist ungecacht 15MB/s :D"
+2013-05-05 17:43:07,Jidder,schreibend?
+2013-05-05 17:43:13,mgottschlag,lesend
+2013-05-05 17:43:22,Jidder,lesen sollste da auch nicht ^^
+2013-05-05 17:43:35,mgottschlag,"das sollte eigentlich aber keinen großen Unterschied machen, oder?"
+2013-05-05 17:43:49,Jidder,doch schreiben ist ziemlich ineffizient. ich hab nur vergessen warum
+2013-05-05 17:43:53,mgottschlag,"okay, gut, lesen dauert theoretisch doppelt so lange, weils in beide Richtungen geht"
+2013-05-05 17:43:53,Jidder,äh lesen ist ineffizient
+2013-05-05 17:48:43,Jidder,"ich glaube es hat irgendwas mit caching zu tun. bei schreibzugriffen kann die cpu cachen und mehrere zugriffe kombinieren, während bei lesezugriffen jeder zugriff einzeln erfolgt"
+2013-05-05 17:49:02,Jidder,aber garantieren kann ich das auch nicht
+2013-05-05 17:53:42,mroman,Elapsed time : 717.439000 ms; (288939682 pixels/ms)
+2013-05-05 17:54:15,mroman,http://codepad.org/cqiuZTsH <- code dazu
+2013-05-05 17:56:22,mroman,ups
+2013-05-05 17:56:26,mroman,falsches format.
+2013-05-05 17:58:00,mroman,Fuer 60FPS brauche ich 300K Pixels alle 16ms
+2013-05-05 17:58:25,mroman,50K pro ms bringt SDL bei mir
+2013-05-05 17:58:35,mroman,also 800K pro 16ms
+2013-05-05 17:58:38,mroman,das reicht
+2013-05-05 17:58:46,mroman,ok
+2013-05-05 17:58:53,mroman,dann also 640x480 :)
+2013-05-05 17:59:32,Jidder,die virtuelle grafikkarte läuft dann mit 32-bit grafik?
+2013-05-05 17:59:57,mroman,Neh.
+2013-05-05 18:00:02,mgottschlag,warum nicht 13bit? :p
+2013-05-05 18:00:07,mroman,4K Farben
+2013-05-05 18:00:10,mroman,ist ja 13bit 
+2013-05-05 18:00:17,Jidder,ah okay
+2013-05-05 18:00:22,mroman,"R,G,B je 4bit"
+2013-05-05 18:00:30,mroman,es wird einfach hochgerechnet auf 32bit
+2013-05-05 18:00:38,mroman,momentan zumindest
+2013-05-05 18:02:26,mroman,die 4bit R werden mal 17 gerechnet
+2013-05-05 18:03:18,mroman,Erst habe ich den Fehler gemacht und es mal 16 gerechnet.
+2013-05-05 18:03:27,mroman,"weil 2^4 = 16, 256 / 16 = 16"
+2013-05-05 18:03:29,mroman,das ist aber total falsch.
+2013-05-05 18:05:07,mroman,und es ist ziemlich muehsam Bilder in 13bit Bilder zu konvertieren :D
+2013-05-05 18:05:28,mroman,"ok, so muehsam auch wieder nicht"
+2013-05-05 18:06:02,Mtgxyz,Hi! Kann man mit ld eigene binärformate linken?
+2013-05-05 18:07:56,mroman,ich lieber schweizer Recht
+2013-05-05 18:07:56,mroman,*liebe
+2013-05-05 18:08:06,mroman,Es gibt ja diese ganzen Bildgeneratoren
+2013-05-05 18:08:10,mroman,fuer Hintergruende etc.
+2013-05-05 18:08:22,Mtgxyz,Ja
+2013-05-05 18:08:31,mroman,die man aber dann aber trotzdem nicht frei erwaehnen kann
+2013-05-05 18:08:43,mroman,*verwenden
+2013-05-05 18:08:57,mroman,tja fu
+2013-05-05 18:09:09,mroman,"Schweizer Recht sagt, dass Softwaregeneriertes Zeugs nicht unter Urheberrecht faellt \o/"
+2013-05-05 18:09:48,mroman,"und wenn, dann unter gehoert es dem Nutzer"
+2013-05-05 18:09:53,mroman,(Dem Nutzer der Software)
+2013-05-05 18:10:35,Mtgxyz,Dann bunkern wir unser generiertes zeugs zusammen mit dem geld in der schweitz
+2013-05-05 18:19:42,mroman,80x25 Mode zu emulieren ueber SDL ist trickiger :)
+2013-05-05 18:21:36,mroman,eh
+2013-05-05 18:21:42,mroman,bitmap font und gut sollte das sein
+2013-05-05 18:22:14,mroman,macht sowieso sinn wenn ich 13bit CHAR_BITS habe
+2013-05-05 18:23:14,mroman,Eigenes Charset :D
+2013-05-05 18:24:39,mroman,und es gibt sicher tools die mir ein Bitmap aus einer TTF generieren koennen
+2013-05-05 18:24:44,mroman,(hoffe ich doch)
+2013-05-05 18:33:20,XanClic,"btw, zu ioperm/iopl/inb/outb und so"
+2013-05-05 18:33:25,XanClic,Ich seh ja das Problem nicht
+2013-05-05 18:33:40,XanClic,"Linux hat auch einen iopl-Befehl, mit dem man sich natürlich alle Ports holen kann"
+2013-05-05 18:34:00,XanClic,"Dafür müssen Prozesse dann ein Privileg haben, das im Allgemeinen nur root hat"
+2013-05-05 18:34:33,XanClic,"Und für ioperm weiß ich nun nicht genau, wo man da überprüfen sollte, welche Ports „in Ordnung“ sind (außer, dass man noch auf Überschneidungen testen kann)"
+2013-05-05 18:34:49,XanClic,"Der Tastaturtreiber braucht halt die Ports 0x60 und 0x64, aber damit kann er auch die CPU resetten"
+2013-05-05 18:35:01,XanClic,Insofern ist 0x64 eigentlich ein Paradebeispiel für „nicht in Ordnung“
+2013-05-05 18:36:03,XanClic,"Uh, man braucht für iopl und ioperm tatsächlich sogar das gleiche Privileg, CAP_SYS_RAWIO"
+2013-05-05 18:52:48,mroman,Ok. CPU resetten ist vielleicht nicht so toll :)
+2013-05-05 19:12:15,mroman,Ok.
+2013-05-05 19:12:20,mroman,"10 down, 100 to go "
+2013-05-05 19:14:07,Jidder,das ist ca. 10%
+2013-05-05 19:18:12,mroman,Ja
+2013-05-05 19:18:21,mroman,und das ist nur ein Teil des ganzen Projekts :)
+2013-05-05 19:18:37,Jidder,also ein teil vom teil
+2013-05-05 19:18:43,mroman,Ja
+2013-05-05 19:18:55,mroman,Phase 1 ist mal die wichtigsten Instruktionen des Instruction sets zu implementieren
+2013-05-05 19:19:11,mroman,"Dann die wichtigsten anderen CPU Funktionien wie Interrupts, MMU"
+2013-05-05 19:19:16,mroman,*Funktionen
+2013-05-05 19:19:49,mroman,aber der groesste Aufwand ist natuerlich die 100 Instruktionen alle zu implementieren.
+2013-05-05 19:20:35,mroman,とあるOS sieht nett aus
+2013-05-05 19:21:55,mroman,"dann sobald genug Funktionalitaet da ist, dazu parallel ein MiniOS schreiben"
+2013-05-05 19:22:39,Jidder,"das ist ein projekt für die schule, oder?"
+2013-05-05 19:23:03,mroman,"Nein, das ist ein privates Projekt"
+2013-05-05 19:23:06,mroman,momentan
+2013-05-05 19:23:13,mroman,aber ich habe die Anfrage gestelt
+2013-05-05 19:23:19,mroman,ob ich es als meine Projektarbeit fuehren darf
+2013-05-05 19:23:23,Jidder,achso
+2013-05-05 19:23:35,mroman,deshalb schreibe ich es mal praeventiv auf 26bit register mit MMU um
+2013-05-05 19:23:49,mroman,ansonsten waere ich schon ziemlich weit gewesen.
+2013-05-05 19:25:15,mroman,http://git.mroman.ch/?a=viewblob&p=13bitvm&h=ff3ae5110128448975c5338f64f4490d3f24168d&hb=8f8f85326af3078a2233eb6654b1517f9ffc4495&f=asm/bootloader_showpixels.S
+2013-05-05 19:25:27,mroman,^- das waere z.b fuer die alte Version ein kleines Graphikdemoprogramm gewesen
+2013-05-05 19:28:03,mroman,aber in 8K RAM bringst du keine Bilder :(
+2013-05-05 19:28:19,mroman,jetzt mit 64M RAM schon eher :)
+2013-05-05 19:30:58,mroman,Fancy Bootscreen waere ziemlich cool :)
+2013-05-05 19:31:31,mroman,"Wenn du jemanden ein OS zeigst ohne Graphik dann sagt er wohl nur ""meh..."""
+2013-05-05 19:31:37,mroman,"Wer weiss schon, wie aufwendig sowas ist."
+2013-05-05 19:37:12,mroman,irgendwann kann man das Ding an VHDLen :D
+2013-05-05 19:37:16,mroman,*dann
+2013-05-05 19:38:47,Jidder,na dann mal zu
+2013-05-05 19:57:32,martin_,wo bei mir die Idee das VFS mitsammt FS in jeden einzigen Prozess zu linken doch ganz clever vorkommt ...
+2013-05-05 19:58:07,martin_,das Problem ist nur wo bleibt die Sicherheit(wenn ich alle Dateien in jeden Prozess linke)
+2013-05-05 19:58:29,martin_,*Ümappe
+2013-05-05 19:58:32,martin_,*mappe
+2013-05-05 19:59:21,martin_,mhm na gut vllt mappt man dann nur die Dateien die Read rechte haben
+2013-05-05 20:00:01,martin_,mappt man dann nur die Dateien mit writable die write rechte haben(wieso bin ich da nicht gleich drauf gekommen^^)
+2013-05-05 20:01:04,martin_,"Wie nennt man so ein OS dann überhaupt? ""HybridExokernel"" vielleicht?"
+2013-05-05 20:01:13,XanClic,Ich nenne das Exokernel
+2013-05-05 20:01:46,martin_,Ich meine alle Geräte-Treiber sind ja weiterhin im Kernel
+2013-05-05 20:02:15,XanClic,"Dann weiß ich ja nicht genau, wieso du das VFS nicht auch in den Kernel packst"
+2013-05-05 20:04:35,martin_,weil man dafür nicht direkt( über IO z.b ) mit der HW interagiert wofür man (normal zumindest) Ring 0 sein muss
+2013-05-05 20:06:07,XanClic,Und wie machst du das Interface zu den Treibern im Kernel wenn nicht über ein VFS?
+2013-05-05 20:06:33,martin_,Syscalls what else?
+2013-05-05 20:06:41,XanClic,Für jeden Treiber verschiedene?
+2013-05-05 20:07:57,martin_,nein einheitliche Syscall schnittstellen für alle Datenträger/Grafikkarten/Netzwerkkarten :)
+2013-05-05 20:08:59,XanClic,"„Für alle Grafikkarten“ klingt ja sehr gewagt, aber nun gut"
+2013-05-05 20:10:26,martin_,von denen habe ich erstmal noch gar keine Ahnung aber bei den Datenträger und Netzwerkkarten ist sicher machbar
+2013-05-05 20:11:17,oern,jetzt wo ich module laden kann ist auch das treiberinterface das nächste problem
+2013-05-05 20:11:37,oern,mir schwebt so etwas wie der object manager von windows nt vor
+2013-05-05 20:11:45,martin_,COM?
+2013-05-05 20:12:22,martin_,ist das nicht irgendwas total umständliches ;) ?
+2013-05-05 20:13:28,oern,ich will jedenfalls alle geräte/treiber/prozesse von der sicherheit etc. einheitlich ansprechen können
+2013-05-05 20:14:46,martin_,dumm am exokernel ist nur das die Librarys ja auch vom kernel iwie genutzt werden sollten ...
+2013-05-05 20:15:18,XanClic,Beim Exokernel macht der Kernel mit den Librarys eigentlich gar nichts
+2013-05-05 20:15:23,XanClic,Weil dem Geräte vollkommen egal sind
+2013-05-05 20:16:49,Mtgxyz,Ich würde die syscalls a la bluecode bios machen (Für leute die im real mode hauptsächlich arbeiten)
+2013-05-05 20:17:25,Mtgxyz,Das bluecode muss weg im letzten satz
+2013-05-05 20:17:46,XanClic,"> Für Leute, die im Real Mode arbeiten"
+2013-05-05 20:18:09,XanClic,"Wenn die sich nicht an andere Interfaces anpassen können und deshalb verhungern müssen oder so, haben sie es nicht besser verdient"
+2013-05-05 20:18:42,Mtgxyz,So ist es aber einheitlicher
+2013-05-05 20:18:47,martin_,und dann muss wieder mit -mno-red-zone und -fno-rtti rein XanClic: beim HybridExokernel sind aber die Gerätetreiber im Kernel von daher hattest du teilweise schon recht
+2013-05-05 20:18:50,XanClic,Ööhh
+2013-05-05 20:19:00,XanClic,"RM benutzt ja keiner mehr, den man ernstnehmen kann"
+2013-05-05 20:19:05,XanClic,Insofern finde ich das nicht so einheitlich
+2013-05-05 20:19:37,XanClic,"martin_, bei deinem Kernel sind dann aber die Gerätetreiber im Kernel und die FS-Treiber im Userspace"
+2013-05-05 20:19:50,XanClic,Ich sehe da immer noch keine Überschneidung zwischen User- und Kernelspace
+2013-05-05 20:20:46,Mtgxyz,"Egal, in c++ ist dat sowieso nur Video << ""Hallo, Welt!\n"";"
+2013-05-05 20:21:23,XanClic,"Das Problem ist hauptsächlich, dass das BIOS-Interface in den 80ern begonnen wurde"
+2013-05-05 20:21:25,XanClic,Oder so
+2013-05-05 20:21:37,XanClic,Und dementsprechend für heutige Verhältnisse eher fragwürdig ist
+2013-05-05 20:21:59,XanClic,"CHS wäre jetzt Paradebeispiel, aber dafür gibts ja nun auch Extensions, s. Forum und so"
+2013-05-05 20:23:57,martin_,Also die Gerätetreiber sind im Kernel und FS/VFS in ihren Userspace-Libraries und wenn ich doch mal aufs VFS vom Kernel zugreifen will dann addiere ich auf einen pro-Prozess gespeicherte VFSvaddr das offset drauf das ich im Kernel in einem kleinen array hab drauf
+2013-05-05 20:24:28,martin_,sozusagen kann man Userspace-Libraries auch vom kernel zugreifen
+2013-05-05 20:25:50,Mtgxyz,"Und das wäre dann: while(*c) asm volatile(""movb $0x03,%al; movb %0,%al;int $0x10"" ::""a""*c);c++; "
+2013-05-05 20:27:37,martin_,"das Problem am RM ist nicht, dass er 40 Jahre jung ist sondern, dass 85 der i386 rauskam ..."
+2013-05-05 20:30:14,Mtgxyz,Hi! Kann man mit ld eigene binärformate linken?
+2013-05-05 20:30:29,XanClic,Du willst kein eigenes Binärformat
+2013-05-05 20:30:44,martin_,"@XanClic: klingt meine Idee nach verbuggtem, *it"
+2013-05-05 20:31:04,XanClic,Hm?
+2013-05-05 20:31:11,XanClic,Ach so
+2013-05-05 20:31:18,XanClic,"Na ja, kann man schon machen, denke ich"
+2013-05-05 20:31:36,XanClic,"Aber das Hauptproblem ist, dass du so keine Dateien, die vom VFS bereitgestellt werden, über das VFS einbinden kannst"
+2013-05-05 20:31:43,XanClic,Oder zumindest wird es nicht wirklich schön
+2013-05-05 20:32:03,XanClic,"Die schönste Lösung wäre ein Loopbacktreiber im Kernel, der auf das User-VFS zugreift"
+2013-05-05 20:32:15,XanClic,"Und auf das User-VFS zugreifen, wird wirklich hässlich, befürchte ich"
+2013-05-05 20:32:25,XanClic,Weil das sich anscheinend auch von Prozess zu Prozess unterscheiden kann
+2013-05-05 20:36:55,martin_,XanClic: für den Fall dass da wäre eine Datei (chmod 700) vom Kernel bereitgestellt und es läuft ein Prozess der nicht root user ist
+2013-05-05 20:37:59,XanClic,"Also, Privilegien kannst du damit eigentlich vergessen, behaupte ich"
+2013-05-05 20:38:20,XanClic,"Wenn der Privilegiencheck in der Benutzerbibliothek stattfindet, kann der Benutzer die im Zweifelsfall auch bypassen und somit ignorieren"
+2013-05-05 20:38:42,XanClic,Wobei ich persönlich Privilegien auch erstmal außen vor lassen würde
+2013-05-05 20:41:41,martin_,wahr ist: wird eine Datei vom RAMFS erstmal im Userspace eines Prozesses gemappt dann kann man die auch über reverse engineering leicht lesen( hier könnete man die entsprechenden Dateien gar nicht erst mappen )
+2013-05-05 20:42:29,XanClic,"Du kannst nicht nur Ausschnitte von einem Blockdevice in den Userspace mappen, auf die der Prozess über das FS auch zugreifen darf"
+2013-05-05 20:42:33,XanClic,Das geht prinzipiell nicht
+2013-05-05 20:42:46,XanClic,"Fängt schon damit an, wenn die Blockgröße kleiner als die Pagegröße ist (z. B. 512 < 4096)"
+2013-05-05 20:43:05,XanClic,Außerdem bräuchtest du dazu wieder einen mehr oder weniger rudimentären FS-Treiber für jedes FS im Kernel
+2013-05-05 20:43:13,XanClic,Und dann kannst du auch gleich den ganzen FS-Treiber in den Kernel packen
+2013-05-05 20:44:13,martin_,muss man ein RAMFS in einem Blockdevice arbeiten? das kann man auch verteilt auf einem großen Heap mappen.
+2013-05-05 20:45:00,XanClic,Was ist denn jetzt eigentlich dieses RAMFS?
+2013-05-05 20:47:33,martin_,was was von meinem VFS angesprochen wird mit open/close/read/write und die Dateien iwo auf der RAM speichert muss keine RAMDisk( also ein block device ) sein(keine Ahnung ob das andere Leute auch so sehen ich sags jetzt mal für mich :D)
+2013-05-05 20:48:16,XanClic,Und was muss die Dateien im RAM speichern?
+2013-05-05 20:49:06,martin_,temporäre daten werden da gespeichert Pipes und was das Herz begehrt
+2013-05-05 20:49:34,XanClic,"Na ja, gut, das ist eine Seite, wofür Berechtigungen benötigt werden"
+2013-05-05 20:49:42,martin_,Tschüss erstmal komm in 1h wieder
+2013-05-05 20:49:45,XanClic,Die andere sind immer noch normale Dateisysteme auf physischen Blockdevices
+2013-05-05 20:49:46,XanClic,bd
+2013-05-05 21:07:44,Mtgxyz,Also ich nutze eher shmemory (int[][][])
+2013-05-05 21:08:35,Mtgxyz,Ich meinte int[] und für program mem int[][][]
+2013-05-05 21:23:16,Mtgxyz,Ich glaub ich kann meinen bruder für dumm 
+2013-05-05 21:29:31,mroman,Hm. GCC optimiert zwei aufeinanderfolgende Dereferenzierungen derselben Variable sicher nicht weg
+2013-05-05 21:29:46,XanClic,Kommt drauf an
+2013-05-05 21:30:00,XanClic,"Wenn die Variable in der Zwischenzeit nicht verändert wird und das Ziel nicht volatile ist, sollte es"
+2013-05-05 21:30:09,mroman,Wird sie nicht.
+2013-05-05 21:30:32,Jidder,register pressure
+2013-05-05 21:30:33,mroman,Aber theoretisch kann die Variable von einem anderen Thread veraendert werden
+2013-05-05 21:30:46,XanClic,Dazu müsste die Variable selbst volatile sein
+2013-05-05 21:31:02,XanClic,Und das fällt unter „Wenn die Variable in der Zwischenzeit nicht verändert wird“
+2013-05-05 21:31:03,mroman,und dann zwei Derefs in einen Deref umzuwandeln veraendert alles :)
+2013-05-05 21:31:13,XanClic,"Tja, dann musst du die Variable volatilen"
+2013-05-05 21:31:22,mroman,"XanClic: Ja, aber GCC kann das ja nicht wissen @anderer Thread"
+2013-05-05 21:31:30,XanClic,Dafür gibt es volatile
+2013-05-05 21:31:36,mroman,XanClic: Ich frage mich gerade ob ich einfach schoen immer
+2013-05-05 21:31:36,XanClic,Hab ich noch nicht oft genug „volatile“ gesagt? :3
+2013-05-05 21:31:45,mroman,ctx->memory[...]; ctx->memory[...] schreiben soll
+2013-05-05 21:31:47,mroman,oder 
+2013-05-05 21:31:59,mroman,word* memory = ctx->memory; memory[...]; memory[...];
+2013-05-05 21:32:04,XanClic,"Wenn irgendwas nicht volatile ist, nimmt gcc an, dass die entsprechende Speicherstelle nur vom aktuellen Thread verwendet wird"
+2013-05-05 21:32:12,mroman,"Wenn das GCC nicht optimieren kann ist es besser, ich schreibe es gleichso"
+2013-05-05 21:32:19,mroman,als spaeter zu merken dass es nicht optimiert werden kann
+2013-05-05 21:32:23,mroman,und dann alles umzuschreiben.
+2013-05-05 21:32:25,XanClic,"Wenn du mir nicht glaubst, dann probiers halt aus"
+2013-05-05 21:32:38,XanClic,Kann ich auch gern für dich machen
+2013-05-05 21:33:46,mroman,"Normalerweise sagt man, man solle sich noch nicht um Optimierung kuemmern zu beginn"
+2013-05-05 21:33:56,mroman,aber wenn ich am Schluss alles umschreiben muss bringt mir das auch nichts.
+2013-05-05 21:34:38,Jidder,kompilierst du den code für x86 oder x86-64?
+2013-05-05 21:36:32,Jidder,"ich möchte darauf hinweisen, dass x86 nur 6 nutzbare register hat"
+2013-05-05 21:37:54,XanClic,"Hmmmmm wenn ich aus dem gcc-Code schlau würde, wäre mir viel geholfen"
+2013-05-05 21:38:01,Jidder,"vmi_add hat z.b. mindestens 8 variablen (ctx, ctx->memory, ctx->pos, ctx->regs, regs, hiword, loword und imm) als potentielle kandidaten für werte, die in register kommen"
+2013-05-05 21:38:11,Jidder,im else-teil
+2013-05-05 21:38:36,Jidder,"die frage ist jetzt: bist du schlauer als gcc um zu sagen, welche 6 von den 8 in register können?"
+2013-05-05 21:38:50,mroman,GCC ist imo ziemlich schlau :)
+2013-05-05 21:39:06,Jidder,es hat heuristiken ;)
+2013-05-05 21:39:25,Jidder,aber stroh wäre besser
+2013-05-05 21:39:30,Jidder,strohristiken
+2013-05-05 21:39:31,Jidder,haha
+2013-05-05 21:39:37,mroman,aber was meinst du mit in register?
+2013-05-05 21:39:38,XanClic,"Hm, gut, dann nehme ich das zurück, anscheinend dereferenziert der das tatsächlich zweimal"
+2013-05-05 21:39:41,XanClic,Erscheint mir sehr suspekt
+2013-05-05 21:39:55,XanClic,llvm auch
+2013-05-05 21:40:44,Jidder,vielleicht kann man da mit diesem noalias ding was machen
+2013-05-05 21:40:48,Jidder,wie heißt das nochmal?
+2013-05-05 21:41:35,XanClic,restrict
+2013-05-05 21:41:39,Jidder,restrict
+2013-05-05 21:41:44,Jidder,richtig
+2013-05-05 21:41:49,Jidder,^^
+2013-05-05 21:41:54,XanClic,Klingt tatsächlich gut
+2013-05-05 21:42:05,XanClic,"Stimmt, so könnte sich der Inhalt verändern, wenn ein anderer Pointer draufzeigt"
+2013-05-05 21:42:18,XanClic,"Wobei ich behaupten würde, dann müsste das Pointerziel dafür volatile sein"
+2013-05-05 21:42:19,XanClic,Aber gut
+2013-05-05 21:42:59,XanClic,"Hm, ne, ändert nichts"
+2013-05-05 21:43:28,XanClic,Also aus http://pastebin.com/2FH4DL18 wird http://pastebin.com/6wP4uRfR
+2013-05-05 21:43:38,XanClic,"Das ist jetzt clang, aber bei gcc und mit restrict siehts genauso aus"
+2013-05-05 21:43:44,XanClic,"gut, gcc benutzt edx statt ecx"
+2013-05-05 21:50:26,Paddy,"Wenn hier die ganze Zeit alle volatile sagen, sag ich einfach mal Barrier"
+2013-05-05 21:50:52,XanClic,Dann hab ich ein leicht anderes Beispiel
+2013-05-05 21:51:23,XanClic,Aus http://pastebin.com/UmJwRVFa wird http://pastebin.com/hUfSCd3P
+2013-05-05 21:51:48,XanClic,"Ich weiß ja nicht, was für Barrier ein Funktionsaufruf so auslöst"
+2013-05-05 21:52:08,martin_,Here I am again: Das mit den Berechtigungen würde ich wie gesagt so amchen das ich in die Prozesse nur Dateien mit read Berechtigung mappe wenn dann mittels sudo -s als root eingeloggt wird dann wird ausnahmsweise mit message-passing ein Daemon beauftragt die Dateien zu transferieren über Shared memory.
+2013-05-05 21:53:00,XanClic,"Aha, anscheinend zu viele"
+2013-05-05 21:53:17,XanClic,Mit __attribute__((pure)) und Verwendung von Rückgabewerten wird der Wert nur einmal ausgelesen
+2013-05-05 21:53:43,XanClic,"Auch wenn mir schleierhaft erscheint, wie der Wert, auf den gezeigt wird, verändert werden soll, wenn das Zeigerziel weiterhin nicht volatile ist"
+2013-05-05 21:54:25,mroman,Ok.
+2013-05-05 21:54:41,Paddy,"Hm, du hast doch gar keinen Funktionsaufruf zwischen den zwei Reads?"
+2013-05-05 21:54:41,mroman,Vlt. sollte ich einfach word* memory = ctx->memory; benutzen
+2013-05-05 21:55:08,XanClic,"Paddy, ich meine, im zweiten Beispiel"
+2013-05-05 21:55:15,martin_,oder man würde das dann zumindest anfragen  wenn eine Datei nicht gemappt der Prozess aber zumindest read rechte hat.
+2013-05-05 21:55:16,XanClic,Für jeden Funktionsaufruf wird der Wert einmal ausgelesen
+2013-05-05 21:55:50,Paddy,"Ah, die sehen so gleich, weil ich zweimal den oberen geöffnet habe *g*"
+2013-05-05 21:55:54,Paddy,+aus
+2013-05-05 21:55:59,XanClic,"martin_, wie gesagt, was machst du mit klassischen Dateisystemen auf Blockdevices?"
+2013-05-05 21:56:08,XanClic,"Da kann der Kernel ja nicht entscheiden, auf welche Blöcke der Prozess zugreifen darf"
+2013-05-05 21:56:23,Paddy,"use_some_val1/2 sind also extern, oder?"
+2013-05-05 21:56:28,XanClic,jo
+2013-05-05 21:56:41,Paddy,Dann muss es da logischerweise eine Compiler Barrier geben
+2013-05-05 21:57:45,XanClic,"Na ja, ich hatte gehofft, wenn es nicht volatile ist, darf auch eine Funktion die Speicherstelle nicht verändern"
+2013-05-05 21:57:55,XanClic,"Also, so lange sie keinen Pointer bekommt"
+2013-05-05 21:58:02,XanClic,Oder zumindest sollte restrict helfen oder so
+2013-05-05 21:58:23,Paddy,"Hm, in diesem Beispiel vielleicht schon, weil es eine Stackvariable ist, auf die niemand einen Pointer hat"
+2013-05-05 21:58:27,Paddy,"Keine Ahnung, ob gcc sowas erkennt"
+2013-05-05 21:58:35,XanClic,Es ist keine Stackvariable
+2013-05-05 21:58:43,XanClic,int *ptr = get_some_ptr();
+2013-05-05 21:58:43,Paddy,ptr selber schon
+2013-05-05 21:58:47,XanClic,Hm joar
+2013-05-05 21:58:54,XanClic,Aber ptr selbst wird ja auch nicht ausgelesen
+2013-05-05 21:59:04,XanClic,"Sondern nur einmal, nach rbx"
+2013-05-05 21:59:08,Paddy,"Stimmt, ob sich *ptr ändert, kann gcc erst recht nicht wissen"
+2013-05-05 22:00:01,Paddy,"get_some_ptr() kann ja ohne weiteres einen Pointer auf eine Variable zurückgeben, die von use_some_val*() verändert wird"
+2013-05-05 22:00:18,XanClic,"Wie gesagt, ich hatte gehofft, wenn es nicht volatile ist und dazu noch restrict, dass das dann nicht passieren darf"
+2013-05-05 22:00:43,Paddy,"Was heißt ""nicht passieren darf""?"
+2013-05-05 22:00:50,Paddy,Undefiniertes Verhalten?
+2013-05-05 22:01:03,XanClic,Dass dann keine andere Funktion einen Zeiger darauf halten darf
+2013-05-05 22:01:09,XanClic,"Geschweige denn, die Speicherstelle verändern"
+2013-05-05 22:01:15,Paddy,"Ich glaube, das ist keine realistische Annnahme"
+2013-05-05 22:01:29,XanClic,Wer will denn Realismus :3
+2013-05-05 22:01:50,XanClic,Hmmmmmm
+2013-05-05 22:01:56,XanClic,Aber tatsächlich sehr interessant
+2013-05-05 22:02:12,XanClic,"Wenn ich malloc statt get_some_ptr benutze, passiert das nicht"
+2013-05-05 22:02:15,Paddy,"Außerdem, was ändert nicht-volatile und restrict beim Pointertyp daran, was mit dem Wert, auf den gepointert wird, passiert?"
+2013-05-05 22:02:32,XanClic,"volatile int * heißt doch, dass der Pointee volatile ist"
+2013-05-05 22:02:37,XanClic,"Wenn da kein volatile ist, ist er es nicht"
+2013-05-05 22:03:11,Paddy,"Okay, ja. Und restrict verstehe ich eh nich. ;-)"
+2013-05-05 22:03:19,XanClic,Wer tut das schon *g*
+2013-05-05 22:03:46,martin_,XanClic: Oh wie löst man das in anderen FS?
+2013-05-05 22:04:00,martin_,XanClic: Oh wie löst man das in anderen Exokernel?
+2013-05-05 22:04:02,XanClic,Indem die Privilegien nicht im Nutzerprozess überprüft werden
+2013-05-05 22:04:08,martin_,nicht FS
+2013-05-05 22:04:09,XanClic,Exokerneln? Gute Frage.
+2013-05-05 22:04:54,XanClic,"Ich würde eh behaupten, dass Exokernel aus sicherheitstechnischer Sicht eher fragwürdig sind"
+2013-05-05 22:05:07,martin_,Das einzige halbwegs forgeschrittene das ich kenne ist xomb
+2013-05-05 22:05:15,martin_,https://github.com/xomboverlord/xomb
+2013-05-05 22:05:23,XanClic,Aber zu Exokerneln allgemein eher Naoe-Kanno fragen :3
+2013-05-05 22:05:56,Naoe-Kanno,als ob ich Ahnung hätte
+2013-05-05 22:06:03,XanClic,Du hast immer Ahnung
+2013-05-05 22:07:54,Naoe-Kanno,das wusste ich nicht
+2013-05-05 22:08:08,XanClic,War das jetzt der Bottest?
+2013-05-05 22:08:24,XanClic,"Wer mit Broken Pipe quittet, ist durch das Paradoxon lahmgelegt worden?"
+2013-05-05 22:09:01,XanClic,Respekt
+2013-05-05 22:09:14,XanClic,Aber Quit ist immer noch kein Leave
+2013-05-05 22:09:26,XanClic,[22:09:12] <XanClic> Aber Quit ist immer noch kein Leave
+2013-05-05 22:09:30,Naoe-Kanno,ha
+2013-05-05 22:09:40,Naoe-Kanno,aber ich hab keinen Bock 30 IRC-Verbindungen neu aufzubauen
+2013-05-05 22:09:43,Naoe-Kanno,*ja
+2013-05-05 22:09:54,XanClic,"Du kannst es nur nicht, das ist alles!"
+2013-05-05 22:10:07,Naoe-Kanno,/quit KANN ICH WOHL!
+2013-05-05 22:10:10,Naoe-Kanno,verdammt
+2013-05-05 22:10:16,XanClic,Das wär ja kein Broken Pipe
+2013-05-05 22:10:27,Naoe-Kanno,/quit Broken Pipe
+2013-05-05 22:10:28,martin_,"ach ja https://github.com/MartinErhardt/Hatebozzer läuft immerhin schon, Flames generieren geht damit noch nicht(noch keine mehrere nicks ) aber rumtrollen :D"
+2013-05-05 22:10:33,Naoe-Kanno,"hm, tut eh nicht"
+2013-05-05 22:10:35,XanClic,Das wär ja „Quit: Broken Pipe“
+2013-05-05 22:10:35,mroman,so
+2013-05-05 22:10:39,mroman,benutze ich halt Makros
+2013-05-05 22:10:53,mroman,#define VMI_GET_CONTEXT(ctx) word* memory = ctx->memory; dword* regs = ctx->regs;
+2013-05-05 22:10:55,Naoe-Kanno,Makros \o/
+2013-05-05 22:11:00,mroman,Ist zwar sicher verpoehnt so
+2013-05-05 22:11:11,Naoe-Kanno,"Protipp: benutze keine Makros, um im Header Funktionspointer zu initialisieren"
+2013-05-05 22:11:28,XanClic,"Protipp: Benutz ein ordentliches OS, bei dem sowas nicht nötig ist"
+2013-05-05 22:11:29,Naoe-Kanno,"...bevor dir nicht aufgefallen ist, dass du die nur einmal initialisieren darfst"
+2013-05-05 22:11:49,mroman,XanClic: Was?
+2013-05-05 22:11:52,Naoe-Kanno,"XanClic, ich mach das ja auch bei Libs, die das nicht nötig haben"
+2013-05-05 22:11:52,mroman,Makros?
+2013-05-05 22:11:52,Naoe-Kanno,:3
+2013-05-05 22:12:04,Naoe-Kanno,"mroman, nein dynamisches Linking"
+2013-05-05 22:12:06,XanClic,"mroman, nein, OpenGL auf Windows @Naoe-Kanno"
+2013-05-05 22:12:10,Naoe-Kanno,ist ne lange Geschichte
+2013-05-05 22:12:24,mroman,"Oh, achso."
+2013-05-05 22:12:32,XanClic,"Wobei wir eigentlich gerade festgestellt haben, dass gcc das mit den Pointern schon so lange richtig optimiert, wie man keine Funktionen dazwischen aufruft"
+2013-05-05 22:16:32,mroman,GCC wird das schon richtig optimieren.
+2013-05-05 22:16:40,mroman,Erstmal schauen
+2013-05-05 22:16:57,mroman,rumspielen mit __attribute__((hot)) etc. kann ich spaeter noch :)
+2013-05-05 22:23:12,martin_,Man könnte auch grundsätzlich nur root usern zugriff auf Blockdevices gewähren und dann einige Daemons schreiben die dazu veranlasst werden könnte Dateien vom Blockdevice ins RAMFS zu laden
+2013-05-05 22:23:24,martin_,interessiert dass noch wen?
+2013-05-05 22:23:29,martin_,^^
+2013-05-05 22:24:52,martin_,22:23 < martin_> Man könnte auch grundsätzlich nur root usern zugriff auf Blockdevices gewähren und dann einige Daemons schreiben die dazu veranlasst werden könnte Dateien vom Blockdevice ins RAMFS zu laden
+2013-05-05 22:25:23,martin_,nicht ganz soo exokernelig aber trotzdem
+2013-05-05 22:25:51,XanClic,Du kannst auf Berechtigungen auch erstmal verzichten
+2013-05-05 22:27:12,martin_,ich weiß aber Ich überlegs mir nur schonmal damit ich planen kann und am Ende nicht vor sonem nichts nützigen Kernel sitze
+2013-05-05 22:27:45,martin_, der löchrig wie ein Schweizer Käse in puncto sicherheit ist
+2013-05-05 22:27:48,Jidder,haha der war gut
+2013-05-05 22:27:53,XanClic,Ist er sowieso
+2013-05-05 22:27:56,XanClic,*duck*
+2013-05-05 22:31:09,martin_,Eine andere Möglichkeit wäre alles für den Root zu verschlüsseln mit einem Schlüssel den der Kernel speichert um dann gegebenenfalls mit dem Schlüssel(den man über ein Syscall anfordern kann) wieder zu entschlüsseln
+2013-05-05 22:31:26,martin_,geht aber auch nur fürs RAMFS
+2013-05-05 22:31:31,Jidder,welches problem versuchst du nochmal zu lösen?
+2013-05-05 22:32:29,martin_,Das Root User auf ihre Dateien zugreifen können und nicht roots (bei entsprechenden Berechtigungen)eben nicht
+2013-05-05 22:32:50,Jidder,okay da fehlt mir der kontext. muss ich dazu hochscrollen?
+2013-05-05 22:34:24,martin_,(im Exokernel wo die FSLib im Prozess selbst die Berechtigungen überprüfen müsste)
+2013-05-05 22:34:32,Jidder,2013-05-05 19:57:32	<martin_> wo bei mir die Idee das VFS mitsammt FS in jeden einzigen Prozess zu linken doch ganz clever vorkommt ...
+2013-05-05 22:34:39,Jidder,bezieht sich das noch darauf?
+2013-05-05 22:34:50,martin_,jap
+2013-05-05 22:34:57,martin_,:)
+2013-05-05 22:36:51,martin_,"das mit der Verschlüsselung ist auch total exokernel typisch, weil ich so gechickt die Sicherheit in den Kernel auslagere und die Verwaltung(90%)in den Userspace"
+2013-05-05 22:37:47,Jidder,naja
+2013-05-05 22:38:06,Jidder,warum mappst du irgendwas wenn dir die performance egal ist?
+2013-05-05 22:39:35,martin_,Ist das so rechenintensiv?):
+2013-05-05 22:40:21,Jidder,verschlüsselung läuft üblicherweise in der region von 10 bis 100 mb/sekunde
+2013-05-05 22:40:32,Jidder,schätz ich mal anhand der paar wenigen sachen die ich verschlüsselt habe
+2013-05-05 22:41:12,Jidder,und du bist anfällig für side channel attacks
+2013-05-05 22:41:17,Jidder,außer du verringerst die performance noch weiter
+2013-05-05 22:43:57,martin_,"das muss man ja bei entsprechender Implementierung nur bei open machen,und 50mb/sekunde sollte in meinem miniOS kein Problem sein außerdem sind die meisten Daten eh nicht read geschützt für normale user"
+2013-05-05 22:45:38,Jidder,ich glaube wir haben eine ganz andere vorstellung davon was ein exokernel ist
+2013-05-05 22:46:17,martin_,?
+2013-05-05 22:47:17,Jidder,ich würde einen exokernel eher mit einem supervisor für virtuelle maschinen vergleichen
+2013-05-05 22:47:54,Jidder,das heißt es gibt noch eine ebene zwischen exokernel und tatsächlichen anwendungsprogrammen
+2013-05-05 22:48:06,Jidder,ein betriebssystem nämlich
+2013-05-05 22:48:27,Jidder,das macht dann soch sachen wie lese/schreibberechtigungen verteilen und konzepte wie dateisysteme einführen
+2013-05-05 22:49:03,martin_,gut ich meinst du Xen?
+2013-05-05 22:49:25,Jidder,ja das wäre zum beispiel so ein supervisor
+2013-05-05 22:49:36,martin_,http://www.lowlevel.eu/wiki/Exokernel#Exokernel
+2013-05-05 22:49:55,martin_,hier steht aber auch was von libOS
+2013-05-05 22:50:25,Jidder,unser wiki würde ich schon mal als referenz für gar nichts hernehmen
+2013-05-05 22:50:33,Jidder,makrokernel haha
+2013-05-05 22:51:44,martin_,also Ich hab lieber ein leeres Wiki als eins wo nur schrott drinne steht.
+2013-05-05 22:52:05,martin_,Jidder was ist am makrokernel falsch?
+2013-05-05 22:52:33,Jidder,was ist denn etwas zwischen mikrokernel und monolithischer kernel?
+2013-05-05 22:52:45,Jidder,da ist doch alles dazwischen
+2013-05-05 22:52:50,Jidder,man muss doch nicht alles benennen
+2013-05-05 22:53:41,Jidder,ich werd mir die im artikel verlinkte thesis mal anschauen
+2013-05-05 22:54:00,Jidder,dann werd ich darüber urteilen ob der abschnitt zu exokernel was taugt
+2013-05-05 22:55:29,martin_,http://wiki.osdev.org/images/6/62/Exokernel.png im englischen Wiki sind sie jedenfalls auch allgemeiner.
+2013-05-05 22:56:49,martin_,wobei ich das garnicht recht verstehe: wie kann denn vom Userland her auf die HW zugegriffen werden da tanzt ja  alles auf dem kopf
+2013-05-05 22:58:06,martin_,Ich meine im Userland bräuchte man dann ja auch Paging infos um bestimme physische bereiche nach tabellen zu untersuchen
+2013-05-05 22:59:44,martin_,Ich werde das so wie in TRIPOS machen ist zwar ein kleinbisschen langsamer aber viel sicherer
+2013-05-05 23:00:10,martin_,Aller FS/VFS kram in einen Prozess und basta
+2013-05-05 23:00:19,martin_,*allen
+2013-05-05 23:01:28,martin_,Das mit Lib/Exokernel/whatthehellOS ist mir nicht sicher genug
+2013-05-05 23:04:33,martin_,bb
+2013-05-05 23:10:01,Jidder,ich bin gerade mal bei 1.1.1 vom paper angekommen -.-

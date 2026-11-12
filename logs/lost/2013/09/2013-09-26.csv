@@ -1,0 +1,109 @@
+date/time,nick,message
+2013-09-26 09:53:56,alexander,Morgen
+2013-09-26 10:09:29,kevin,Moin alexander | DerHartmut
+2013-09-26 13:28:52,Jonathan,moin
+2013-09-26 13:31:44,mgottschlag1,moin
+2013-09-26 13:43:26,kevin,Moin
+2013-09-26 17:37:28,tufel,huhu
+2013-09-26 17:41:48,mgottschlag,nabend
+2013-09-26 18:05:23,tufel,"mmh was tut der befehl ""after"" in vhdl"
+2013-09-26 18:08:17,mroman,after wie?
+2013-09-26 18:08:43,mroman,das ist sicher fuer delays
+2013-09-26 18:10:52,mroman,"da gibt's relativ viele, weirde modelle"
+2013-09-26 18:12:03,mroman,tufel: reale komponenten z.b reagieren ja nicht unendlich schnell
+2013-09-26 18:12:24,mroman,oder reagieren auf Impulse erst ab einer bestimmten Zeit
+2013-09-26 18:13:54,mroman,"bar <= transport foo after 1ns; z.b sagt, dass bar 1ns verzoegert den Wert von foo annimmt."
+2013-09-26 18:14:38,tufel,aja
+2013-09-26 18:14:45,mroman,bar <= inertial foo after 1ns; hat auch einen 1ns delay
+2013-09-26 18:15:02,mroman,"mit dem Unterschied, dass foo mindestens eine impulsbreite von 1ns haben muss"
+2013-09-26 18:15:07,mroman,sonst passiert gar nichts.
+2013-09-26 18:16:20,mroman,das ist jedoch nur fuer den Simulator
+2013-09-26 18:16:28,mroman,der Synthesizer baut dir keine Delays ein.
+2013-09-26 18:18:25,mroman,"schoen waere ja noch, falls man after random(2,5) ns maechen koennte"
+2013-09-26 18:18:28,mroman,aber kA ob das geht.
+2013-09-26 18:18:41,mroman,reale hardware hat auch nicht immer denselben delay :)
+2013-09-26 18:20:30,tufel,"hehe, was passiert eigentlich wenn eine komponente langsamer ist wie das takt signal?"
+2013-09-26 18:25:37,Jonathan,Dann gibt's Glitches - wie beim Übertakten von CPUs schmiert dann das Ding halt ab.
+2013-09-26 18:25:45,Jonathan,Ist der selbe Effekt.
+2013-09-26 18:28:24,tufel,aja ok
+2013-09-26 18:30:53,mgottschlag,"btw, als"
+2013-09-26 18:41:39,tufel,nun wie binde ich am besten z.b sram in vhdl ein? wann weiß ich das die daten vollständig aus dem sram geladen wurde?
+2013-09-26 18:52:52,mroman,tufel: nun
+2013-09-26 18:53:24,mroman,"wenn deine Komponente verlangt, dass der Clock-pulse mindestens 5ns hoch und 4ns tief ist"
+2013-09-26 18:53:29,mroman,und du erfuellst das nicht
+2013-09-26 18:53:35,mroman,kann so ziemlich alles passieren.
+2013-09-26 18:53:47,mroman,evtl. sogar Hardware beschaedigen
+2013-09-26 18:54:03,mroman,sram?
+2013-09-26 18:54:11,mroman,am einfachsten wohl ueber Arrays
+2013-09-26 18:55:12,mroman,type memory is array (0 to 1023) of integer range 0 to 255;
+2013-09-26 18:55:24,mroman,signal ram : memory
+2013-09-26 18:55:44,mroman,dout <= ram(adr_in)
+2013-09-26 18:55:48,mroman,sehr billig aber funktioniert
+2013-09-26 18:56:27,tufel,"cool, wo ist den das Taktsignal für den array-Sram ?"
+2013-09-26 18:56:46,mroman,wie meinen?
+2013-09-26 18:57:03,mroman,du brauchst theoretisch nicht mal ein Taktsignal ;)
+2013-09-26 18:57:18,tufel,cool
+2013-09-26 18:58:08,mroman,und ansonsten machst du halt eines
+2013-09-26 18:58:10,mroman,und dann kA
+2013-09-26 18:58:32,mroman,if(cl'event and clk = '1' and read_n = '0') then dout <= ...
+2013-09-26 18:58:38,mroman,was auch immer
+2013-09-26 18:58:48,mroman,musst du halt ueberlegen wie du dein Speicher ansteuern willst
+2013-09-26 18:59:01,mroman,du koenntest z.b auch asynchron
+2013-09-26 18:59:11,mroman,"und verlangen, dass ein memread signal 5ns anliegen muss"
+2013-09-26 18:59:16,mroman,mit reject + after
+2013-09-26 18:59:21,mroman,etc
+2013-09-26 19:00:28,mroman,im einfachsten fall hast du ein memr und ein memw (read/write) signal
+2013-09-26 19:00:41,mroman,10 adressleitungen
+2013-09-26 19:00:58,mroman,oder so
+2013-09-26 19:01:51,tufel,mmh ok
+2013-09-26 19:02:15,tufel,und die arrays werden in der fpga mit den Ram-Blöcken abgebildet?
+2013-09-26 19:05:06,tufel,"bzw, wie groß darf so ne array sein?"
+2013-09-26 19:25:54,mroman,puh
+2013-09-26 19:26:04,mroman,das kommt auf deinen synthesizer und hardware an
+2013-09-26 19:26:11,mroman,kA
+2013-09-26 19:26:22,mroman,"sehr sehr wahrscheinlich nicht, nein"
+2013-09-26 19:26:39,mroman,"ich gehe davon aus, dass er tatsaechlich flipflops nimmt"
+2013-09-26 19:26:49,mroman,die meisten fpga boards haben ja einen sram baustein
+2013-09-26 19:26:55,mroman,den man ansteuern kann
+2013-09-26 19:27:21,mroman,"aber ich gehe nicht davon aus, dass er sowas erkennt und einen controller fuer den sram baut der deine Schnittstelle dann umsetzt"
+2013-09-26 19:27:25,mroman,;)
+2013-09-26 19:27:28,mroman,das waere dann doch zuviel verlangt
+2013-09-26 19:30:02,tufel,"joar, wie müsste den so nen controller aussehen?"
+2013-09-26 19:30:34,mroman,da musst du das Datenblatt lesen 
+2013-09-26 19:31:00,mroman,oder suchen ob es schon welche in vhdl gratis zu haben gibt :)
+2013-09-26 19:31:12,mroman,fuer dein Board/deine FPGA whatever
+2013-09-26 19:32:20,mroman,"das RAM ist ja nicht Bestandteil des ""Prozessor"""
+2013-09-26 19:32:28,mroman,was hast du denn ueberhaupt fuer eine FPGA
+2013-09-26 19:32:51,mroman,"sondern das ist ein externen Bausten den du ansteuern musst ueber Pins am ""Prozessor"""
+2013-09-26 19:33:17,mroman,http://people.ece.cornell.edu/land/courses/ece5760/DE2/tut_DE2_sdram_verilog.pdf z.b
+2013-09-26 19:33:59,mroman,das wird dich ein paar Wochen beschaeftigen :D
+2013-09-26 19:41:16,tufel,"joar, wahrscheinlich :D Eine Fpga hab ich noch keine :("
+2013-09-26 19:41:51,tufel,werd mir aber wahrscheinlich bald ein de 1 board kaufen
+2013-09-26 19:51:04,tufel,"mmh dieses tutorial, ist das nicht für SDRam ?"
+2013-09-26 19:52:50,mgottschlag,sram ist generell einfacher als dram :)
+2013-09-26 19:56:05,tufel,mmh ok
+2013-09-26 19:59:10,tufel,wie steuere ich den am besten sram an ? muss ich da erst die Adresse anlegen und dann im nächsten takt-zyklus die daten auslesen oder geht das ihn einem takt-zyklus?
+2013-09-26 20:03:21,mroman,normalerweise adresse anlegen
+2013-09-26 20:03:31,mroman,dann ce_n auf 0 setzen
+2013-09-26 20:03:35,mroman,warten bis daten stabil
+2013-09-26 20:03:42,mroman,adresse und ce_n wieder wegnehmen
+2013-09-26 20:03:51,mroman,"wie lange du was wie wo setzen und warten musst, steht in deine Datenblatt"
+2013-09-26 20:05:17,mroman,je nach dem hast du noch Signale fuer word zugriffe etc etc etc
+2013-09-26 20:05:38,mroman,z.b haben manche 16bit rams high byte enable lines etc etc etc
+2013-09-26 20:06:59,mroman,tufel: http://www.premier-electric.com/files/STM/pdf/M48Z129.pdf
+2013-09-26 20:07:06,mroman,das waere zb ein SRAM Datenblatt
+2013-09-26 20:07:23,mroman,anscheinend ein eher langsameres :)
+2013-09-26 20:08:56,mroman,da tAVQV ist max 70ns :)
+2013-09-26 20:10:34,mroman,das sieht nach einer relativ einfachen schnittstelle aus
+2013-09-26 20:10:55,mroman,"e_n auf 0, g_n auf 0"
+2013-09-26 20:11:07,mroman,w_n auf 1
+2013-09-26 20:11:22,mroman,"adresse anlegen, warten"
+2013-09-26 20:11:52,mroman,daten latchen
+2013-09-26 20:16:25,mroman,sofern du nur lesen willst :D
+2013-09-26 20:18:53,mroman,70ns ist sicher fuer 8086 noch zu langsam :)
+2013-09-26 20:18:59,mroman,oder vlt auch nicht
+2013-09-26 20:19:08,mroman,was hat8086 nochmals fuer timing anforderungen?
+2013-09-26 20:47:29,tufel,"mmh kp,  wann weiß ich den das die daten stabil anliegen?"
+2013-09-26 20:48:28,mgottschlag,"nach der entsprechenden Wartezeit, die im Datenblatt steht"
+2013-09-26 20:48:36,mgottschlag,hätte ich zumindest jetzt mal so gesagt
+2013-09-26 21:04:22,tufel,"mmh  der sram auf dem de1 board hat wohl 10ns, 12ns oder 15ns"

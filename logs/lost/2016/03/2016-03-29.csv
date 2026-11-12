@@ -1,0 +1,90 @@
+date/time,nick,message
+2016-03-29 15:25:45,kevin,XanClic: Hast du noch Patches in der Queue?
+2016-03-29 15:25:50,XanClic,Ich glaube nicht
+2016-03-29 15:26:12,XanClic,rebase sagt “noop”
+2016-03-29 15:26:38,kevin,Ok
+2016-03-29 15:26:43,kevin,Wenigstens ein Problem weniger ;-)
+2016-03-29 15:27:26,kevin,Soll ich die WCE
+2016-03-29 15:27:29,kevin,meh
+2016-03-29 15:27:44,kevin,"Wenn ich die WCE-Patches jetzt in v2 rausschicke, schaust du eh nicht mehr drauf, oder?"
+2016-03-29 15:28:13,kevin,Ich will die jetzt heute noch mit reinpacken für -rc0
+2016-03-29 15:28:24,kevin,Und der Rest ist dann halt 2.7
+2016-03-29 15:28:54,XanClic,"Worauf ich schauen würde, wäre der diff zu v1, aber ich trau dir schon zu, dass die Änderungen in Ordnung sind ;-)"
+2016-03-29 15:29:13,kevin,"Okay, ich schick's kurz raus"
+2016-03-29 15:30:02,kevin,Bei den einfachsten Änderungen macht man meistens die blödesten Fehler ;-)
+2016-03-29 15:31:12,kevin,Mail ist unterwegs und im git ist es gepusht
+2016-03-29 15:31:36,kevin,"Hm, hab ich den Cover Letter überhaupt schon editiert? *g*"
+2016-03-29 15:31:46,kevin,"Ah, Glück gehabt"
+2016-03-29 16:00:07,kevin,"XanClic: Da schau an, dein qemu-img-Patch für -S 0 ist ja richtig einfach geworden :-)"
+2016-03-29 16:00:50,XanClic,Das ist so ziemlich genau der aus http://lists.nongnu.org/archive/html/qemu-block/2016-02/msg00575.html ;-)
+2016-03-29 16:01:13,XanClic,"Tja, wenn man sich nicht Mühe macht, es einfach zu machen, wird es offenbar erst tatsächlich einfach"
+2016-03-29 16:02:57,kevin,Jetzt wird's philosophisch *g*
+2016-03-29 16:11:55,kevin,"XanClic: 150 tut mit vmdk nicht, ich änder das mal heimlich auf ""raw qcow2"", okay?"
+2016-03-29 16:12:30,XanClic,"Hm, das ist ja schade"
+2016-03-29 16:12:44,XanClic,Bei mir tut der
+2016-03-29 16:12:45,kevin,"qcow1 hat auch unterschiedliche Größe. Und vpc ist ganz kaputt,."
+2016-03-29 16:13:05,XanClic,"Ja, vpc tut bei mir auch nicht"
+2016-03-29 16:13:11,XanClic,Aber qcow1 und vmdk schon
+2016-03-29 16:13:35,XanClic,Aber bei vpc ist bei mir gerade alles kaputt
+2016-03-29 16:13:41,XanClic,"Sehe ich, wo du das gerade erwähnst ;-)"
+2016-03-29 16:15:03,XanClic,"Vielleicht hängt das ja vom Host-Dateisystem ab, ob der Vergleich überhaupt ordentlich funktioniert…"
+2016-03-29 16:15:23,XanClic,Auf ext4 und tmpfs tut es bei mir zumindest mit qcow1 und vmdk
+2016-03-29 16:16:07,kevin," /dev/mapper/vg--rhel-home on /home type ext4 (rw,relatime,seclabel,data=ordered)"
+2016-03-29 16:16:16,XanClic,Dann wohl nicht ;-)
+2016-03-29 16:19:10,XanClic,"Prinzipiell hätte ich nicht unbedingt was dagegen, das auf raw und qcow2 zu ändern, aber ich kenne keinen Grund, warum es da funktionieren sollte und bspw. bei qcow1 nicht"
+2016-03-29 16:19:22,XanClic,"Und würde deshalb befürchten, dass bei jemand anderem dann eben qcow2 kaputtgeht"
+2016-03-29 16:22:25,XanClic,"Gut, qcow1 geht bei mir auf xfs kaputt"
+2016-03-29 16:22:28,kevin,"Ja, der Vorteil von qcow2 ist nur, das wird dauernd getestet"
+2016-03-29 16:23:57,XanClic,"Lass mich da nochmal reingucken, es wäre schön, wenn der Test funktionieren würde; und wenn nicht, wenn ich dann zumindest wüsste, wieso er bei manchen Formaten manchmal nicht geht"
+2016-03-29 16:24:20,kevin,Ok
+2016-03-29 16:31:17,XanClic,"Das ist ja schön, die genullte Datei ist 4 kB größer als die -S-0-Datei, aber nach einem cp (selbst mit --sparse=never) nicht mehr"
+2016-03-29 16:31:22,XanClic,"Also, dann ist sie genau die 4 kB kleiner"
+2016-03-29 16:31:52,XanClic,"Und vor allem belegt sie mehr Platz, als sie lang ist…"
+2016-03-29 16:31:57,kevin,XFS?
+2016-03-29 16:31:59,XanClic,Jo
+2016-03-29 16:32:04,kevin,XFS ist ja auch kaputt ;-)
+2016-03-29 16:32:10,XanClic,"1036 kB, aber die Dateilänge sind 1032 kB"
+2016-03-29 16:32:21,XanClic,"Also, nach dem cp belegt sie auch nur noch 1032 kB"
+2016-03-29 16:32:23,kevin,"Jo, das ist Präallokation"
+2016-03-29 16:32:32,XanClic,Schön *g*
+2016-03-29 16:32:38,XanClic,Nur kann das halt auch bei qcow2 passieren
+2016-03-29 16:32:41,kevin,"Wenn XFS merkt, dass eine Datei wächst, dann reserviert er gleich mal ein bisschen mehr"
+2016-03-29 16:32:58,kevin,"Bei anständigen Images ist das ""bisschen"" im Gigabytebereich"
+2016-03-29 16:33:15,kevin,Hatte ich schon BZs deswegen ;-)
+2016-03-29 16:33:19,XanClic,"Na ja, wenn der Platz frei ist und man nicht gerade einen Test macht, wo man das gar nicht brauchen kann, meinetwegen ;-)"
+2016-03-29 16:33:34,kevin,Tja ;-)
+2016-03-29 16:34:03,kevin,Und jetzt?
+2016-03-29 16:34:07,XanClic,Gute Frage
+2016-03-29 16:34:18,XanClic,"Ich überlege, einfach ein cp vor das Auslesen der Dateigröße zu packen"
+2016-03-29 16:34:41,kevin,*lol*
+2016-03-29 16:34:45,XanClic,truncate -r t.qcow t.qcow funktioniert leider nicht
+2016-03-29 16:35:36,XanClic,"Aber selbst das erklärt halt nicht, wieso es bei dir dann nicht geht…"
+2016-03-29 16:35:49,kevin,"Hm, qemu-img check und wr_high_offset benutzen stattdessen?"
+2016-03-29 16:35:53,kevin,Tut aber mit raw nicht
+2016-03-29 16:40:47,XanClic,Vielleicht eher qemu-img map
+2016-03-29 16:41:00,XanClic,"Dann weiß man nicht, ob das wirklich allokiert ist, aber na ja…"
+2016-03-29 16:43:16,kevin,"Hm, ja"
+2016-03-29 16:44:07,XanClic,"Und dann vielleicht trotzdem auf raw und qcow2 beschränken, weil das mit den lustigen vmdk-Subformaten eh kaputt geht"
+2016-03-29 16:49:08,kevin,Willst du das gleich machen oder soll ich mal den PR schicken und wir fixen das dann während dem Freeze?
+2016-03-29 16:49:19,XanClic,"Ich habs schon gemacht, müsste ich nur rausschicken ;-)"
+2016-03-29 16:49:28,XanClic,Aber wir können das auch später machen
+2016-03-29 16:49:32,XanClic,Ist ja ein Bugfix
+2016-03-29 16:49:40,kevin,"Jo, das ist kein Problem"
+2016-03-29 18:12:15,kevin,"XanClic: Ich schummle gern, weißt du doch"
+2016-03-29 18:12:21,XanClic,Wer nicht ;-)
+2016-03-29 18:17:17,XanClic,"kevin, ich nehme das mal als ein „Schade um die v3“ ;-)"
+2016-03-29 18:17:39,XanClic,"Und ein „Ein Patch, um den Test von v2 auf v3 zu aktualisieren, wäre jetzt schön“"
+2016-03-29 18:17:53,kevin,"XanClic: Da hättest du schon die PULL-Mails nehmen können, hatte nur vergessen, das auch zu vermelden ;-)"
+2016-03-29 18:18:04,XanClic,Hab ich schon *g*
+2016-03-29 18:18:23,kevin,"Ich hab ja noch gefragt, ob ich warten soll..."
+2016-03-29 18:18:45,XanClic,"Ich dachte, du meinst, dass du die Serie einfach gar nicht reinnimmst und bis zum nächsten PR wartest"
+2016-03-29 18:20:58,kevin,"Ach so. Naja, auch egal."
+2016-03-29 18:21:50,kevin,"Ich dachte, den Testcase zu fixen wäre ein Bugfix"
+2016-03-29 18:22:01,kevin,"Dass die ganze Serie einer ist, war mir da grad nicht so bewusst ;-)"
+2016-03-29 18:38:54,XanClic,"kevin, der LUKS-Test benutzt leider #!/usr/bin/python statt #!/usr/bin/env python – deshalb wird leider wirklich python (bei mir python3) und nicht python2 benutzt"
+2016-03-29 18:39:14,XanClic,"Soll ich das fixen, indem ich da env benutze, oder indem check auch auf die erste Variante prüft?"
+2016-03-29 18:39:35,XanClic,Oder soll ich einfach meckern und es fixen lassen? ;-)
+2016-03-29 18:44:27,XanClic,"Und abgesehen davon läuft der Test allgemein recht schlecht, ohne dass -luka funktioniert…"
+2016-03-29 18:56:31,kevin,"XanClic: Tja, doof. Hätte ich die Tests doch komplett rauslassen sollen."
+2016-03-29 23:53:24,Paddy,"Hm, weiß hier zufällig noch jemand, wie tyndur vor servmgr gebootet hat? Das muss doch irgendwie gehen."
+2016-03-29 23:58:05,Paddy,"Oh, da hat die Shell noch manuell auf alle Services gewartet. Gut, dann geht das wohl nicht mehr."

@@ -1,0 +1,441 @@
+date/time,nick,message
+2009-01-24 09:06:17,bluecode,moin
+2009-01-24 09:16:38,Homix,hi
+2009-01-24 09:17:04,FreakyPenguin,Moin
+2009-01-24 09:20:17,Homix,so früh schon so viele wach :D
+2009-01-24 09:21:07,bluecode,ich muss leider jetzt dann mal was lernen...
+2009-01-24 09:29:49,bluecode,"FreakyPenguin: Hast du zufällig verstanden was fdopen() macht? Mich verwirrt das irgendwie... Kann ich da von einem bereits geöffneten FILE den POSIX int filedescriptor nochmal übergeben und krieg ein zweiten (oder das gleiche?) FILE? Oder kann man damit was öffnen wenn man nur den POSIX file descriptor kennt (als zB die stdin/out/err mit 0, 1 und 2)?"
+2009-01-24 09:31:47,FreakyPenguin,"So wie ich das verstanden habe, bastelt das einfach einen stdio-Stream mit dem Posix-Filedeskriptor, und der wird auch weiter benutzt (kann also nicht geschlossen werden)."
+2009-01-24 09:32:02,FreakyPenguin,Also der stdio-Stream wäre ja ein FILE*
+2009-01-24 09:33:38,bluecode,wieso kann der nicht geschlossen werden?
+2009-01-24 09:34:37,FreakyPenguin,"Weil der im Stream noch benutzt wird, der wird nicht kopiert wenn ich mich richtig erinnere."
+2009-01-24 09:35:06,bluecode,"achso, jetzt versteh ich was du meinst, jo"
+2009-01-24 09:35:26,bluecode,aber mit einem fclose auf das FILE wird er dann aber wohl auch geschlossen
+2009-01-24 09:36:15,FreakyPenguin,"Jo vermutlich schon. Wenn du das nicht willst, musst du wohl dup benutzen."
+2009-01-24 09:38:28,bluecode,sag mal weißt du welches Paket die libc manpages enthält=
+2009-01-24 09:39:34,FreakyPenguin,Vielleicht manpages-dev oder sowas?
+2009-01-24 09:40:11,FreakyPenguin,"Irgendwo gibts die auch noch in deutsch, aber da weiss ich nicht wie das paket heisst."
+2009-01-24 09:40:13,bluecode,ah manpages ist schonmal gut :-)
+2009-01-24 09:40:21,bluecode,wer wll schon deutsch...
+2009-01-24 09:41:36,bluecode,dankeschön
+2009-01-24 10:33:42,FreakyPenguin,"bluecode: Hm warst du das, der gesagt hat, die Spurious Int-Detection in tyndur wäre kaputt?"
+2009-01-24 10:38:25,bluecode,ja
+2009-01-24 10:38:57,bluecode,ihr habt ungefähr das gleiche gehabt wie ich und ich hatte festgestellt meine war humbug
+2009-01-24 10:39:24,FreakyPenguin,Ich habe nämlich das Gefühl da kommt was nicht durch... ;-)
+2009-01-24 10:39:46,bluecode,wart kurz ich such die rev in der ichs geändert hab
+2009-01-24 10:40:31,bluecode,https://lightos.bountysource.com/svn/!revision/440#trunkkernelx86_sharedpiccpp
+2009-01-24 10:40:51,FreakyPenguin,thx
+2009-01-24 10:41:20,bluecode,bzw https://lightos.bountysource.com/svn/!source/456/trunk/kernel/x86_shared/pic.cpp Zeile 60+
+2009-01-24 10:43:19,bluecode,"wobei ihr euch doch überhaupt nicht um den irq15 gekümmert habt, oder? Was soll dann da passieren?"
+2009-01-24 10:43:50,bluecode,wobei nen spurious interrupt an ata weiterleiten ist vielleicht auch nicht so geschickt
+2009-01-24 10:47:41,Homix,ist ja cool dass lightOS wiederbelebt wurde :D
+2009-01-24 11:10:15,bluecode,:-)
+2009-01-24 11:10:29,bluecode,FreakyPenguin: hat nichts gebracht oder?
+2009-01-24 11:13:39,Homix,"hm ich werde es jetzt wohl so machen, dass man Handles, Prozesse und Threads nicht nur Erstellen und Löschen kann, sondern dass man für einen Zugriff auch diese erst Öffnen und danach wieder Schließen muss, sonst schaff ich das nie mit Thread-safety :)"
+2009-01-24 11:23:24,Homix,"ich frag mich auch noch ob es sinnvoll ist, den kernel in mehrere Dateien aufzuteilen"
+2009-01-24 11:24:18,bluecode,zu welchem Zweck?
+2009-01-24 11:24:38,Homix,es wäre sicherlich übersichtlicher und das OS würde flexibler werden
+2009-01-24 11:25:31,bluecode,?
+2009-01-24 11:26:03,FreakyPenguin,"bluecode: Doch, jetzt kriege ich keinen Spurious int mehr, und ich glaube das ist gut. *g*"
+2009-01-24 11:26:11,bluecode,funktionierts denn?
+2009-01-24 11:26:12,Homix,"wenn es nicht nur eine kernel.dll geben würde sondern auch noch eine usermgr.dll, diskmgr.dll, cpu.sys, input.dll , ..."
+2009-01-24 11:26:36,bluecode,"das gehört doch irgendwie nicht zum kernel, oder?"
+2009-01-24 11:26:45,bluecode,ist das nicht nur das userspace interface?
+2009-01-24 11:27:48,FreakyPenguin,"bluecode: Nein, aber ata war mit Interrupts schon immer kaputt, deshalb habe ich immer auf Polling umgestellt. *g*"
+2009-01-24 11:28:58,FreakyPenguin,"Und jetzt sag mir nicht, dass man da eigentlich nichts falsch machen kann, das weiss ich selbst auch. *g*"
+2009-01-24 11:29:28,bluecode,kann man
+2009-01-24 11:31:08,bluecode,"ich wollte letztes WE ein wait_interrupt implementieren, welches zum einen auf den interrupt zum anderen auf einen timeout-timer wartet. Nach 1-2h debuggen habe ich festgestellt, dass ich die falsche Funktion zum registrieren des Timers aufgerufen habe. Nach weiteren 1-2h ist mir dann aufgefallen, dass das warten auf 2 messages kernelseitig noch nicht implementiert war LOL"
+2009-01-24 11:31:45,FreakyPenguin,*lol*
+2009-01-24 11:32:02,bluecode,"und jo, beim ata-treiber ist mir dann auch aufgegangen, das die spurious interrupts falsch waren"
+2009-01-24 11:32:11,bluecode,weil der int eben nicht ankam...
+2009-01-24 11:37:28,FreakyPenguin,"Hm wenn man da ein ! vor das wait_for_irq tut, geht das auch schon besser. *g*"
+2009-01-24 11:37:39,bluecode,*lol*
+2009-01-24 11:39:34,FreakyPenguin,Das Beste daran ist ja: Das ist sogar korrekt. ;-)
+2009-01-24 11:40:11,bluecode,wie weit seid ihr eigentlich mit kernel2?
+2009-01-24 11:40:19,bluecode,kann der schon irgendwas userspace mäßiges?
+2009-01-24 11:43:51,FreakyPenguin,Jo zumindest in qemu hat taljeth darin schon irc benutzt. ;-ö)
+2009-01-24 11:44:54,bluecode,"oh, wow :-)"
+2009-01-24 11:53:27,bluecode,d.h. RPC wird erstmal so kaputt übernommen?
+2009-01-24 12:04:00,SHyx0rmZ,Moin
+2009-01-24 15:49:16,bluecode,FreakyPenguin?
+2009-01-24 15:52:02,Homix,nein? :)
+2009-01-24 15:52:20,Homix,du wolltest sicher mich mit meinem Know-How was fragen ;)
+2009-01-24 15:53:03,bluecode,"nein, wenn du mal extrem weit (4h) zurück""blätterst"" wirst du feststellen, dass da noch eine Frage an FreakyPenguin offen ist"
+2009-01-24 15:53:06,bluecode,:-)
+2009-01-24 15:54:02,Homix,"ich bin erst vor 1h zurückgekommen, also war das ""<@bluecode> FreakyPenguin?"" das erste was ich sehen kann :D und logs will ich nicht öffnen extra deswegen ;)"
+2009-01-24 15:55:36,bluecode,das habe ich dann wohl bewusst übersehen
+2009-01-24 15:55:54,SHyx0rmZ,:D
+2009-01-24 15:57:05,bluecode,"aber du darfst mir gern was erzählen, Homix :-)"
+2009-01-24 16:00:38,Homix,"jo ich frag mich grad was in der Funktion ""InitTSS"" der Kommentar ""// Hä ?"" bedeutet :D"
+2009-01-24 16:01:19,bluecode,"ich hoffe, dass ist jetzt nicht in lightOS *g*"
+2009-01-24 16:01:38,Homix,ich meine natürlich in meinem OS ;)
+2009-01-24 16:01:40,bluecode,"nope, ich hab die funktion nicht :-)"
+2009-01-24 16:02:01,bluecode,"das bedeutet, dass du keine Ahnung hast ;-)"
+2009-01-24 16:02:29,Homix,warscheinlich verbirgt sich hier irgendwo ein Hack ;)
+2009-01-24 16:02:48,bluecode,das kenn ich *g*
+2009-01-24 16:02:53,Homix,"oder es funktioniert, obwohl es theoretisch nicht funktionieren soll :D"
+2009-01-24 16:31:29,Homix,hm ich stell jetzt überall im Kernel von Arrays auf Listen um :)
+2009-01-24 16:31:53,bluecode,ehm... warum?
+2009-01-24 16:32:29,Homix,arrays sind blöd :D
+2009-01-24 16:37:02,Homix,"das Problem ist, wenn man z.B. ein Array of TProcess hat, bei jedem Zugriff auf das Array ein Lock setzen muss, weil sich theoretisch ja sogar die Adresse des Arrays plötzlich ändern kann (bei einem Resize), und das passiert mir bei listen nicht (zumindest keine Locks bei read-only)"
+2009-01-24 16:38:03,bluecode,"wenn dir dein Prozess ""unterm Arsch"" gekillt wird ist das aber auch ungeschickt..."
+2009-01-24 16:38:41,Homix,ja dann darf man den Speicher des Listenelements halt nicht sofort freigeben
+2009-01-24 16:39:07,bluecode,man muss halt den TProcess (also den einzelnen) locken
+2009-01-24 16:39:11,Homix,genauso wie du in ExitProcess das PageDir/PT nicht sofort freigeben solltest ;)
+2009-01-24 16:39:29,Homix,"ja, und bei einem Array wäre das problem, dass ich das ganze Array immer locken müsste ;)"
+2009-01-24 16:39:32,bluecode,^ geht schon...
+2009-01-24 16:39:51,Homix,aber ist blöd
+2009-01-24 16:40:07,Homix,"ich denke, ihr verwendet alle listen oder? :D"
+2009-01-24 16:41:13,bluecode,"jo, momentan, aber im kernel wird sich in der vorlesungsfreien Zeit einiges ändern :-)"
+2009-01-24 16:41:38,Homix,bei mir ändert sich sogar jetzt schon was :D
+2009-01-24 16:42:25,bluecode,"ich hab trotzdem für meine Prozesse eine andere Idee, die ist aber Arraybasiert"
+2009-01-24 16:43:00,Homix,"ja und wie geht die, wenn die arraybasiert ist? :)"
+2009-01-24 16:43:07,bluecode,gut :-)
+2009-01-24 16:43:47,Homix,würd mich bloß mal interessieren wie du dir das vorstellst ;)
+2009-01-24 16:43:49,bluecode,"ne ernsthaft, ich möchte das Suchen von prozessen optimieren, da ist eine Liste ungemein d00f"
+2009-01-24 16:44:44,Homix,ja das problem ist dass meist der ArrayId und der ProcessId unterschiedlich sind ;)
+2009-01-24 16:46:01,Homix,insofern musst du dann trotzdem das ganze arrays nach einer pid durchsuchen
+2009-01-24 16:46:18,bluecode,hast du nicht mal vorgeschlagen einen teil der pid als arrayindex herzunehmen?
+2009-01-24 16:46:37,Homix,ja :)
+2009-01-24 16:46:45,bluecode,hat das nicht hingehauen?
+2009-01-24 16:48:17,Homix,"der nachteil dieser sache ist dass du die 32-Bit PID in 2x 16 aufteilen musst und du pro Array-Eintrag dann vlt nur 65535 Prozesse haben kannst und spätestens ab da dann, dieser Array-Eintrag nur noch benutzt werden darf, wenn PIDs doppelt vorkommen dürfen"
+2009-01-24 16:48:31,Homix,65535 ist zwar enorm viel
+2009-01-24 16:49:00,Homix,"aber es gibt sicher anwendungen, v.a. apache, wo im sekundentakt prozesse erstellt und gekillt werden"
+2009-01-24 16:49:44,bluecode,64k ist nur das Limit der momentanen Prozesse wenn man etwas darüber nachdenkt ;-)
+2009-01-24 16:50:28,Homix,willst du PIDs nach einer gewissen zeit neu vergeben?
+2009-01-24 16:50:37,bluecode,:-)
+2009-01-24 16:52:32,Homix,"und ich glaube, dass das durchsuchen einer Liste oder eines Arrays nicht ganz so viel Zeit in anspruch nimmt wenn man nicht grad ein System ausgelegt auf 10000 gleichzeitig laufende Prozesse haben will"
+2009-01-24 16:53:31,bluecode,"ich würde sagen, dass das einen krasses Unterschied macht (va. beim Microkernel mit ewig viel IPC)"
+2009-01-24 16:53:56,Homix,ok bei einem Mikrokernel ist das natürlich was anderes ;)
+2009-01-24 16:54:10,bluecode,zumindest werde ich es versuchen
+2009-01-24 16:54:24,bluecode,aber ansonsten habe ich noch eine zweite Idee wie ich es implementieren könnte
+2009-01-24 16:54:53,Homix,"mich wunderts, dass du das noch weisst dass ich das mal vorgeschlagen hab .. ist ja schon länger her :D"
+2009-01-24 16:55:06,bluecode,ich fand die Idee nicht doof
+2009-01-24 16:55:35,Homix,"aber wie gesagt, das Konzept mit den Arrays ist dafür nicht so toll"
+2009-01-24 16:56:38,Homix,weil man jeden noch so kleinen lese zugriff locken muss
+2009-01-24 16:56:41,bluecode,"das ist halt die Frage, ob das holen des Locks im MP System länger braucht oder eher das durchnuddeln der Liste wegen sehr vielen Cache misses"
+2009-01-24 16:57:13,bluecode,aber dem kommt man ohne Implementierung & Messung nicht bei ;-)
+2009-01-24 16:58:11,Homix,du müsstest sogar im Timer IRQ beim Taskswitch locken ;)
+2009-01-24 16:59:20,bluecode,das timer irq ist im Vergleich zu IPC selten...
+2009-01-24 16:59:51,bluecode,wäre zumindest eine grobe Schätzung von mir bei einem System unter Last
+2009-01-24 16:59:55,bluecode,Microkernel wohlgemerkt
+2009-01-24 17:00:15,bluecode,"ok, ist natürlich auch noch abhängig davon welche Last, klar"
+2009-01-24 17:02:02,Homix,auch kann immer nur ein Thread/Process und CPU auf die ganze Prozessstruktur zugreifen
+2009-01-24 17:02:08,Homix,gleichzeitig
+2009-01-24 17:02:20,bluecode,"jo, das sehe ich ja als Problem"
+2009-01-24 17:02:20,Homix,"das stell ich mir auch blöd vor, wenn die IPCs die Processstruktur brauchen ;)"
+2009-01-24 17:02:24,bluecode,locken an sich geht ja schnell
+2009-01-24 17:02:29,bluecode,es sei denn jemand anders will
+2009-01-24 17:03:11,Homix,angenommen du hast 10 Prozesse und die senden und empfangen die ganze Zeit IPCs ... ich glaube das ist dann sehr sehr doof :)
+2009-01-24 17:03:35,bluecode,"glaube ich nichtmal, du lockst das array extrem kurz"
+2009-01-24 17:03:46,bluecode,locken - pointer für class Process auslesen - unlock
+2009-01-24 17:04:03,bluecode,und dann lockst du sowieso gleich Process wenn du daran rumnudelst
+2009-01-24 17:05:07,bluecode,ich werde sicher nicht die ges. Prozessstruktur in dem array halten
+2009-01-24 17:05:13,bluecode,das wäre wahrscheinlich selbstmord
+2009-01-24 17:05:35,Homix,ja so mache ich es derzeit ;)
+2009-01-24 17:05:45,Homix,ein Array auf Prozesspointer wäre sicherlich besser :D 
+2009-01-24 17:07:35,Homix,oder du nimmst 64-Bit Handles
+2009-01-24 17:07:51,bluecode,und weiter?
+2009-01-24 17:08:05,Homix,dann musst du nicht den Array-Index reincodieren sondern kannst einfach die Speicheradresse reinspeichern :D
+2009-01-24 17:08:23,bluecode,und die wird bestimmt nicht nochmal vergeben...
+2009-01-24 17:08:33,Homix,doch das kann schon vorkommen ;)
+2009-01-24 17:08:41,bluecode,das ist ein Problem ;-)
+2009-01-24 17:09:17,Homix,du hast die anderen 32-Bit des Handles auch noch zur verfügung ;)
+2009-01-24 17:09:59,Homix,"dann darfst du halt das prozessobjekt nicht gleich aus dem Speicher rauslöschen, sondern setzt ein INACTIVE Flag und erhöhst irgendein References-Wert :D"
+2009-01-24 17:10:01,bluecode,"uh... fricklig, was machst du bei einem 64bit system? Wie verifizierst du dass jemand keine ungültige pid übergibt?"
+2009-01-24 17:10:31,Homix,das mit einer ungültigen Adresse hätte ich jetzt als nachteil gleich aufgeführt ;89
+2009-01-24 17:10:53,bluecode,kannst ja ne liste mit gültigen durchgehen :-P
+2009-01-24 17:10:57,Homix,lol
+2009-01-24 17:13:10,Homix,"bei Pointer in Syscalls sollte man im kernel eh mit sowas wie IsValidVirtualAddress(x) nachprüfen, da kann man das mit der PID auch gleich machen :D"
+2009-01-24 17:14:34,bluecode,"problematisch ist es halt wenn es eine gültige virtuelle adresse ist, aber aber keine prozessstruktur"
+2009-01-24 17:15:44,bluecode,das problem kriegst du so einfach nicht gelöst ;-)
+2009-01-24 17:16:44,Homix,checksumme ;)
+2009-01-24 17:17:09,bluecode,können auch einfach mal so im Speicher stehen
+2009-01-24 17:18:08,Homix,"ich bezweifle, dass ein User-Programm genau die Adresse im Kernelspeicher(!) auswählt, wo eine 200 Byte Struktur mit korrekter Checksumme ist :D"
+2009-01-24 17:18:47,bluecode,auf dieser Annahme würde ich keinen Kernel aufbauen
+2009-01-24 17:19:50,Homix,dann doch lieber listen :D
+2009-01-24 17:22:32,Homix,wie kann man per svn eigentlich lightOS herunterladen? :D
+2009-01-24 17:22:45,bluecode,sag ich nicht :-P
+2009-01-24 17:22:59,Homix,lol
+2009-01-24 17:23:32,bluecode,svn checkout https://svn.bountysource.com/lightos/
+2009-01-24 17:23:47,Homix,ah ok thx :D
+2009-01-24 17:24:32,Homix,"komisch ich dachte ich hätte genau das ausprobiert vorher, aber jetzt gehts ;)"
+2009-01-24 17:24:56,bluecode,"du hast evtl. die andere adresse genommen, die unter dem Reiter Subversion steht"
+2009-01-24 17:25:04,bluecode,alles Tarnung
+2009-01-24 17:26:10,bluecode,aber der kernel ist momentan vom Code her nicht das was ich mir vorstelle
+2009-01-24 17:28:05,Homix,hehe
+2009-01-24 17:28:07,Homix,ja mein kernel auch nicht ;)
+2009-01-24 17:28:23,Homix,"viel zuu groß, aber wenn ich dann durchschau find ich nichts, was ich raushaun könnte *g*"
+2009-01-24 17:28:39,bluecode,inwiefern zu groß?
+2009-01-24 17:29:36,Homix,die kernel.dll hat schon fast 100 KB ;)
+2009-01-24 17:29:53,bluecode,ist das der kernel oder was ist das?
+2009-01-24 17:30:07,Homix,ja der kernel ;)
+2009-01-24 17:30:10,bluecode,"abgesehen davon, mein kernel hat momentan auch 64k"
+2009-01-24 17:30:24,bluecode,und da sind ein paar sachen nicht reinkompiliert
+2009-01-24 17:30:25,Homix,meiner hat keine debug informationen ;)
+2009-01-24 17:30:33,bluecode,dito
+2009-01-24 17:30:39,Homix,"na gut, ich hab Pascal :D"
+2009-01-24 17:31:38,Homix,"na ja das eigentliche Problem ist bei mir, dass sich auf sich gegenseitig zugreift ;) also in taskswitch.pas oder in usermgr.pas steht plötzlich sowas wie _Process[GetCurrentProcessArrayId].x = y; und so drin ;) und sowas muss aufhören :D"
+2009-01-24 17:32:22,bluecode,gescheite Interfaces
+2009-01-24 17:33:11,Homix,"wenn ich _Process[x].CR3 haben will, dann müsste ich sowas wie GetProcessPD(x) oder so schreiben ^^ und das für alles :D"
+2009-01-24 17:33:12,Homix,das ist doof :D
+2009-01-24 17:33:56,bluecode,ehm...
+2009-01-24 17:34:26,bluecode,"oder halt prozess in ne klasse packen, das halte ich für sinnvoller"
+2009-01-24 17:34:38,Homix,und jetzt mache ich es halt mit Listen und Datenstrukturen (Objekte simulieren)
+2009-01-24 17:34:46,Homix,ja ich auch ;)
+2009-01-24 17:35:16,Homix,jetzt ruft man Process := GetCurrentProcess; auf und man kann easy auf Process^.CR3 zugreifen ;)
+2009-01-24 17:35:25,Homix,und ohne array locks :D
+2009-01-24 17:35:46,bluecode,geht bei mir auch ohne locks momentan...
+2009-01-24 17:35:53,bluecode,"wie gesagt, kernel wird umgebaut"
+2009-01-24 17:37:11,Homix,"ah ne ich wollte das so machen, dass man per Process := OpenProcessObject(Pid); die Datenstruktur bekommt, per Process^.x zugreift und per CloseProcessObject(Process); wieder schließt"
+2009-01-24 17:38:05,bluecode,ist doch das gleiche wie locks
+2009-01-24 17:39:23,Homix,"OpenProcessObject und CloseProcessObject sind bloß für die Zugriffe da, es können trotzdem mehrere Prozesse das Objekt eines Prozesses öffnen und bearbeiten"
+2009-01-24 17:39:45,bluecode,dann musste halt intern locken
+2009-01-24 17:40:01,Homix,"die beiden Funktionen stellen bloß sicher, dass während der Bearbeitung das Objekt nicht freigegeben wird"
+2009-01-24 17:41:56,Homix,"ja aber die meisten werte in dem objekt sind einfache variablen, und dafür braucht man keinen lock ;)"
+2009-01-24 17:42:19,bluecode,"entweder lock oder atomic ops, sonst kannst du dir nciht sicher sein"
+2009-01-24 17:43:26,Homix,die meisten werte da drin werden eh nur beim erstellen des prozesses beschrieben und sind danach read-only
+2009-01-24 17:47:53,Homix,wird bei euch bei einem IPC ein Syscall zum Kernel aufgerufen?
+2009-01-24 17:49:08,bluecode,jo natürlich
+2009-01-24 17:50:29,Homix,achso
+2009-01-24 17:52:05,Homix,ok dann bastle ich in meinem OS eins ohne Kernel Calls :D lol
+2009-01-24 17:52:32,Homix,"sind IPC eigentlich nur ""Event-Nachrichten"" oder gibts da dann auch ein Rückgabewert?"
+2009-01-24 17:53:11,bluecode,kommt drauf an... es gibt synchrone und asynchrone IPC
+2009-01-24 17:54:47,Homix,also synchrone sind wohl mit Rückgabewert
+2009-01-24 17:54:59,bluecode,"nein, mit"
+2009-01-24 17:55:08,Homix,sagte ich ja :D
+2009-01-24 17:55:22,bluecode,lol
+2009-01-24 17:55:59,Homix,"mich würde auch noch interessieren, wie viele CPU Takte in durchschnitt senden bis fertigstellen eines asynchronen IPCs sind ;)"
+2009-01-24 17:56:04,bluecode,"wobei auch die Frage ist, was du unter Rückgabewert verstehst..."
+2009-01-24 17:56:20,Homix,ein LongWord z.B. ?
+2009-01-24 17:56:56,bluecode,und was soll da zurückgeben werden so konkret?
+2009-01-24 17:56:57,mgottschlag,Rückgabe ohne Wert ftw
+2009-01-24 17:57:19,mgottschlag,also beim synchronen RPC mein ich ^^
+2009-01-24 17:57:26,mgottschlag,*IPC
+2009-01-24 17:57:53,Homix,hat irgendjemand die ungefähre anzahl der cpu takte im kopf die euer IPC braucht? (vom senden bis rückgabe/fertrigstellung)
+2009-01-24 17:58:21,mgottschlag,zu viele
+2009-01-24 17:58:42,bluecode,ich habe das noch niemals gemessen
+2009-01-24 17:58:56,Homix,oder IPCs pro Sekunde ;(
+2009-01-24 17:58:58,Homix,;)
+2009-01-24 17:59:26,bluecode,ausreichend :-)
+2009-01-24 18:00:07,Homix,also so ungefähre werte wären schon mal ganz interessant :D
+2009-01-24 18:00:56,Homix,da macht das optimieren ja keinen spaß wenn man keine vergleichswerte hat ;)
+2009-01-24 18:01:36,bluecode,was willst du denn vergleichen?
+2009-01-24 18:02:07,Homix,nichts? ich will bloß einen ungefähren wert haben ;)
+2009-01-24 18:02:30,Homix,weil ich wüssen will wie das im vergleich zu einem mono kernel ohne IPC so ist
+2009-01-24 18:03:31,bluecode,"nochmal, was genau willst du vergleichen"
+2009-01-24 18:04:23,Homix,"nichts! mich interessiert es, wie viele cpu takte da z.B. draufgehen und so"
+2009-01-24 18:04:47,bluecode,_für_was_genau_
+2009-01-24 18:05:08,Homix,weil es mich interessiert? :D
+2009-01-24 18:05:35,bluecode,ich meinte was genau soll ich messen... ich kann nicht einfachmal irgendwas messen
+2009-01-24 18:06:08,Homix,zum beispiel wie lange ein IPC von einem zum anderen und zurück (also mit Rückgabewert) braucht ;)
+2009-01-24 18:06:29,Homix,"aber egal, ich versuche sowas mal in Tyndur"
+2009-01-24 18:06:37,Homix,wenn ich es kompiliert krieg *g*
+2009-01-24 18:08:11,Homix,ich hab mir nebenbei auch ein interessantes OS Design vorgestellt mit nur ein oder zwei Syscalls ;)
+2009-01-24 18:08:17,Homix,aber das ist irgendwie kaputt :)
+2009-01-24 18:08:38,bluecode,und zwarß
+2009-01-24 18:10:20,Homix,es kann nicht funktionieren ;)
+2009-01-24 18:11:09,bluecode,"das heißt noch lang nicht, dass man es nicht implementieren sollte :-D"
+2009-01-24 18:11:14,Homix,lol
+2009-01-24 18:12:08,bluecode,d00
+2009-01-24 18:12:09,bluecode,f00
+2009-01-24 18:12:32,Homix,ich glaube Xantorix entwickelt sich zu einer Mischung aus Mono.- und Mikrokernel :D
+2009-01-24 18:12:43,bluecode,warum kommt make auf die idee ein fclose auf stdout auszuführen
+2009-01-24 18:13:13,FreakyPenguin,bluecode: Was für eine Antwort brauchst du noch von mir? ;-)
+2009-01-24 18:13:17,bluecode,das durchkreuzt all meine Weltherrschaftspläne
+2009-01-24 18:13:30,bluecode,[11:52:59] <bluecode> d.h. RPC wird erstmal so kaputt übernommen?
+2009-01-24 18:13:38,bluecode,oder hat sich da designtechnisch schon was getan?
+2009-01-24 18:13:53,Homix,mist ... was ist denn der Unterschied zwischen IPC und RPC? :D
+2009-01-24 18:14:03,bluecode,RPC ist eine spezielle IPC
+2009-01-24 18:14:18,FreakyPenguin,"Jo der Code wurde erstmal nur kopiert damit es zumindest mal läuft. Sobald es das dann sauber tut, kommt Lio2 und wohl sonst noch neues RPC"
+2009-01-24 18:14:24,Homix,und was ist daran speziell?
+2009-01-24 18:14:39,FreakyPenguin,"bluecode: Oder eher IPC, da das wohl etwas Message-Basiertes wird, so wie ich taljeth verstanden habe."
+2009-01-24 18:16:02,bluecode,Homix: es ist eben eine konkrete Art von IPC
+2009-01-24 18:16:25,bluecode,genauso wie Spinnen eine Art von Tier ist
+2009-01-24 18:16:43,FreakyPenguin,*sind ;-)
+2009-01-24 18:17:01,FreakyPenguin,Oder klingt das nur für mich falsch? ;-)
+2009-01-24 18:17:03,bluecode,korrigiert von einem Schweizer...
+2009-01-24 18:17:08,Homix,lol
+2009-01-24 18:17:08,bluecode,das ist schon falsch
+2009-01-24 18:17:17,FreakyPenguin,*g*
+2009-01-24 18:18:35,Homix,"wenn man für gewähnlich eine IPC-Kommunikation mit einem Prozess startet, geht das dann nur in eine Richtung oder in beide?"
+2009-01-24 18:18:59,bluecode,kommt auf die Implementierung an
+2009-01-24 18:19:41,Homix,wie ist es in tyndur?
+2009-01-24 18:20:07,bluecode,"man kommuniziert einfach, gestartet wird da nicht wirklich was"
+2009-01-24 18:20:30,bluecode,dh man kann in beide richtungen
+2009-01-24 18:20:53,Homix,hm dann sieht die Xantorix IPC Implementierung wohl anders aus :D
+2009-01-24 18:21:22,bluecode,würde sie doch unabhängig von der Antwort sowieso ;-)
+2009-01-24 18:21:22,FreakyPenguin,"bluecode: Hm du hattest ports, oder?"
+2009-01-24 18:21:39,bluecode,so habs ich zumindest genannt
+2009-01-24 18:21:47,bluecode,trotzdem öffnet/startet man nichts
+2009-01-24 18:21:54,bluecode,man kommuniziert einfach drauf los
+2009-01-24 18:22:08,FreakyPenguin,"Jo klar, macht man ja bei udp auch nicht und man hat trotzdem Ports ;-)"
+2009-01-24 18:22:50,FreakyPenguin,Ich war nur nicht mehr sicher wie es ging bei dir. ;-)
+2009-01-24 18:22:50,bluecode,ich hab halt kA was genau unter message ports verstanden wird ;-)
+2009-01-24 18:23:14,Homix,"hm man bräuchte managed code, dann wären die IPC ziemlich schnell :D"
+2009-01-24 18:23:38,FreakyPenguin,Da kann ich dann mit meinem LUA-Kernel kommen *g*
+2009-01-24 18:24:14,Homix,"wobei, nur managed code auszuführen kommt bei mir eh nicht in frage"
+2009-01-24 18:24:33,Homix,"sonst könnte ich keine NDIS-, Windows Display Treiber und Win32 Programme ausführen lassen"
+2009-01-24 18:33:36,SHyx0rmZ,"Wenn man eines nie tuen sollte, dann ist dies definitv ein   dir /b /s C:\ | findstr /r /i /x "".*\.asm$"" > AlleASMDateien.lst"
+2009-01-24 19:46:53,Homix,mein erstes kernel umbauen ohne kompletten rewrite :D
+2009-01-24 19:48:24,SHyx0rmZ,das liegt auch grad vor mir ^^
+2009-01-24 19:48:56,Homix,;)
+2009-01-24 19:49:06,SHyx0rmZ,"obwohl, eigentlich nicht, dafür ist der noch viel zu klein ^^"
+2009-01-24 19:49:27,SHyx0rmZ,"naja, abendbrot machen und dann paging ans laufen bringen -.-"
+2009-01-24 19:49:44,Homix,"aber einer nähert sich langsam dem Zustand, den ich dann final haben will ;) nach mind 4 rewrites :D"
+2009-01-24 19:51:03,SHyx0rmZ,"Ich würd ja gern mal den Source sehen, um ein wenig ""Inspiration"" zu ergattern ^^"
+2009-01-24 19:51:32,Homix,>>> tyndur :D
+2009-01-24 19:51:45,SHyx0rmZ,Das hab ich ja schon längst :D
+2009-01-24 19:51:59,Homix,außerdem schreibe ich in Pascal :D
+2009-01-24 19:52:30,SHyx0rmZ,wenn interesssiert schon die Sprache? ;)
+2009-01-24 19:53:06,SHyx0rmZ,Ach du allmächtiger De-Compiler
+2009-01-24 19:53:11,Homix,:D
+2009-01-24 19:53:12,SHyx0rmZ,Das sieht ja schrecklich aus
+2009-01-24 19:56:09,SHyx0rmZ,"Naja, mein decompileter Source sieht auch nicht viel besser aus, aber immerhin ein wenig :D"
+2009-01-24 20:01:41,Homix,? wie geht denn das :D richtig decompiliert oder disassembliert?
+2009-01-24 20:02:45,SHyx0rmZ,"nene, disassembliert"
+2009-01-24 20:02:57,SHyx0rmZ,Alles Andere wäre ein Wunderwerk der Technik ^^
+2009-01-24 20:02:59,Homix,dann schreibst du in Assembler? :D
+2009-01-24 20:03:01,SHyx0rmZ,ja
+2009-01-24 20:03:05,SHyx0rmZ,100% ^^
+2009-01-24 20:03:20,Homix,omg :D
+2009-01-24 20:03:26,mgottschlag,http://de.youtube.com/watch?v=J5LNTTGDKYo
+2009-01-24 20:03:26,SHyx0rmZ,Was denn?
+2009-01-24 20:03:37,SHyx0rmZ,"Verrecken sollen sie, die scheiß Intel CPUs ^^"
+2009-01-24 20:04:27,SHyx0rmZ,"Wehe, das ist wieder das C Video"
+2009-01-24 20:04:38,SHyx0rmZ,War ja klar...
+2009-01-24 20:05:11,SHyx0rmZ,http://de.wikipedia.org/wiki/Assemblersprache#Beispielprogramme
+2009-01-24 20:05:40,SHyx0rmZ,MASM lässt Assembler richtig böse aussehen
+2009-01-24 20:07:08,janosch,"""If you cast a pointer to a struct it becomes the struct"". Aber wie kann man denn einen Pointer in ein Struct casten. Wenn dann kann man den pointer nur in einen pointer auf das struct casten"
+2009-01-24 20:07:28,mgottschlag,das is ja wohl gemeint?
+2009-01-24 20:07:47,janosch,das ist aber nicht was da steht ;)
+2009-01-24 20:08:06,SHyx0rmZ,"""Wenn man den Pointer auf ein Struct castet, dann wird er zum Struct"""
+2009-01-24 20:09:25,janosch,Da steht struct foo bar = (struct foo)ptr;
+2009-01-24 20:09:47,mgottschlag,sieht interessant aus o.O
+2009-01-24 20:09:51,SHyx0rmZ,http://jp.youtube.com/watch?v=Jt3aUqDxW_8&feature=PlayList&p=9767134076A7922B&playnext=1&index=8
+2009-01-24 20:10:00,SHyx0rmZ,"lol, die Stimme ^^"
+2009-01-24 20:13:36,bluecode,janosch: und warum sollte das nicht gehen?
+2009-01-24 20:14:03,janosch,wenn dann muss man doch struct foo *bar = (struct foo *)ptr; machen
+2009-01-24 20:14:35,Homix,vielleicht wird dann wirklich das ganze struct da reinkopiert ;)
+2009-01-24 20:14:47,Homix,wobei ich das bei C bezweifle ;)
+2009-01-24 20:14:52,bluecode,"das andere wird doch wohl auch gehen oder nicht? ob das richtig ist, ist doch sowieso eine andere Frage"
+2009-01-24 20:15:44,Homix,"dem ""struct foobar"" kann man aber doch nichts zuweisen? wenn dann foobar.irgendwas = 0 ;)"
+2009-01-24 20:16:17,janosch,"das struct heißt ""foo"""
+2009-01-24 20:16:37,bluecode,^ kann man schon
+2009-01-24 20:17:23,Homix,"janosch: ja irgendwie musste ich das ""struct foo bar = "" ja interpretieren, außer C kann für den namen leerzeichen miteinbeziehen (""foo bar"")"
+2009-01-24 20:18:12,janosch,"""struct foo"" => das struct. ""bar"" => die Variable"
+2009-01-24 20:18:41,Homix,ah noch nie sowas gesehen?
+2009-01-24 20:18:43,Homix,!
+2009-01-24 20:18:50,Homix,komisches C ;)
+2009-01-24 20:19:15,janosch,das ist eine normale deklaration
+2009-01-24 20:31:09,DickHuuhn,Moin
+2009-01-24 20:31:18,SHyx0rmZ,Moin
+2009-01-24 22:16:54,FreakyPenguin,Ach unsere RPCs sind doch kaputt :-/
+2009-01-24 22:28:04,FreakyPenguin,"Ach taljeth ist d00f, der hat auch die IRQ-Behandlung in unserer CDI-Implementierung kaputt gemacht. ;-)"
+2009-01-24 22:30:07,DickHuuhn,Was ist denn im Moment nun alles kaputt?
+2009-01-24 22:30:22,FreakyPenguin,"Einfach alles, wie immer. *g*"
+2009-01-24 22:30:37,FreakyPenguin,Aber mit kernel2 wird alles besser. ;-)
+2009-01-24 22:31:05,mgottschlag,"was sind da denn noch für Kaputtmachhilfen drin, die ich übersehen hab? o.O"
+2009-01-24 22:31:48,FreakyPenguin,"Wenn du bei uns mehr als einen interrupt hast, kommen halt alle beim zuletzt registrierten Handler, egal welche nummer sie haben. *g*"
+2009-01-24 22:32:07,mgottschlag,hm.
+2009-01-24 22:32:10,mgottschlag,kreativ.
+2009-01-24 22:32:32,mgottschlag,das hab noch nicht mal ich geschafft.
+2009-01-24 22:32:33,FreakyPenguin,"Und das ist bei ata etwas, sagen wir mal, unpraktisch"
+2009-01-24 22:33:02,FreakyPenguin,"Das hat er aber vermutlich so gemacht, weil unsere RPCs kaputt sind ;-)"
+2009-01-24 22:33:17,mgottschlag,das waren sie aber schon immer :D
+2009-01-24 22:34:12,FreakyPenguin,"Naja ich mache jetzt halt mal das Interface kaputt, da wird der Kevin wohl auch keine Freude daran haben, aber wenn er DMA will, muss das halt sein. ;-)"
+2009-01-24 22:35:12,Noooooooooos,hiho
+2009-01-24 22:35:21,FreakyPenguin,Moin Noooooooooos 
+2009-01-24 22:55:49,chris12,moin
+2009-01-24 22:56:07,DickHuuhn,moin
+2009-01-24 22:56:16,FreakyPenguin,Moin chris12 
+2009-01-24 22:57:50,chris12,"ich glaub ich hab das einzig vernümpftige getan, was ein mensch tun kann..."
+2009-01-24 22:58:11,DickHuuhn,Was denn? :D
+2009-01-24 22:58:18,kiml9,jemand ne idee warum ich mit ner ps2 maus nicht scrollen kann?
+2009-01-24 22:58:21,FreakyPenguin,chris12: Linux installiert? ;-)
+2009-01-24 22:58:29,FreakyPenguin,"Ah nein sorry, tyndur ;-)"
+2009-01-24 22:59:11,chris12,"ich hab Windoofs den kampf angesagt, sprich ich hab es von meine festplatte verbannt und linux installiert ;)"
+2009-01-24 22:59:22,FreakyPenguin,Richtig so ;-)
+2009-01-24 22:59:23,DickHuuhn,Welche Distro? :)
+2009-01-24 22:59:37,DickHuuhn,"Ich suche nämlich ne neue, Ubuntu  ist in letzter Zeit auch nicht mehr so Bombe"
+2009-01-24 22:59:47,FreakyPenguin,DickHuuhn: Ach wer braucht schon Distros. LFS ftw *g*
+2009-01-24 23:00:11,DickHuuhn,"Ne, wollte eigentlich nächstes Halbjahr ein besseres Zeugnis haben, da sollt eich was lernen *g*"
+2009-01-24 23:00:25,mgottschlag,"Arch ist gut. Das tut so, als würd es sich um alles selber kümmern bei der Installation, und nachher hat es rein garnix gemacht ^^"
+2009-01-24 23:00:31,FreakyPenguin,Aber ich kann auch gentoo empfehlen ;-)
+2009-01-24 23:00:36,chris12,Ubuntu ;) das unterstützt sogar Belkins wLan adapter ;)
+2009-01-24 23:01:39,DickHuuhn,"Bei mir unterstützt das ja auch alles (außer die Aufnahme von SoKa), ich hab viel mehr Probleme mit Pulseaudio, Firefox und Compiz (letzteres könnte ich ja auch abschalten, so schlimm istd as aber net)"
+2009-01-24 23:02:24,DickHuuhn,"Und bei Firefox könnte ich einfach mal Vanilla testen, war bis jetzt aber zu faul dazu"
+2009-01-24 23:03:50,chris12,kann man eig das fs wechseln ohne zu formatieren?
+2009-01-24 23:04:16,FreakyPenguin,"Nein, ausser vielleicht von ext2 nach ext3 ;-)"
+2009-01-24 23:04:48,chris12,schade ich wollte von NTFS auf ext2
+2009-01-24 23:06:14,FreakyPenguin,Vermutlich willst du eher auf ext3 ;-)
+2009-01-24 23:06:26,FreakyPenguin,Ausser du weisst warum du ext2 willst ;-)
+2009-01-24 23:08:00,mgottschlag,"""Pulseaudio, Firefox und Compiz"" - 1 und 3 hab ich durch KDE einfach mal weg bekommen."
+2009-01-24 23:08:47,mgottschlag,"""Ausser du weisst warum du ext2 willst ;-)"" - ext2 ist cool!!!1einszwölf"
+2009-01-24 23:09:42,FreakyPenguin,Das ist sogar oldscool ;-)
+2009-01-24 23:09:48,DickHuuhn,"Also aber nicht falsch verstehen: Ubuntu ist cool, hab icha uch auf dem eeePC, läuft fehlerlos bis jetzt"
+2009-01-24 23:10:01,DickHuuhn,ext2 hab ich da auch ^^
+2009-01-24 23:10:10,mgottschlag,wtf? :D
+2009-01-24 23:10:11,DickHuuhn,Soll angeblich weniger Schreibzugriffe erzeugen
+2009-01-24 23:10:15,mgottschlag,aso
+2009-01-24 23:10:20,FreakyPenguin,Jo würde ich für Flash auch nehmen
+2009-01-24 23:10:54,FreakyPenguin,"Habe ich zumindest bei meinem Router so gemacht, der schreibt eh nichts, da geht das Dateisystem auch nicht soschnell hops ;-)"
+2009-01-24 23:10:54,DickHuuhn,Ich will da eh ne SD-Karte reinmachen und da so Sachen wie /var und /tmp drüber laufen lassen
+2009-01-24 23:11:28,DickHuuhn,Oder wieviel Daten fallen so bei /tmp an? ^^
+2009-01-24 23:11:38,DickHuuhn,Sonst könnte ich auch ne Ramdisk nehmen :D
+2009-01-24 23:11:45,FreakyPenguin,"Kommt darauf an, wie du dich benimmst ;-)"
+2009-01-24 23:11:51,mgottschlag,wie viel RAM hat das Ding? :D
+2009-01-24 23:12:00,DickHuuhn,512MB ^^
+2009-01-24 23:12:02,mgottschlag,wie war das mit /tmp/tmp/tmp?
+2009-01-24 23:12:04,chris12,Freaky: wiso will ich ext3 haben?
+2009-01-24 23:12:13,mgottschlag,"chris12, falsche Frage"
+2009-01-24 23:12:17,mgottschlag,wieso willst du ext2
+2009-01-24 23:13:27,FreakyPenguin,"chris12: Weil ext3 ein besseres ext2 ist, das geht nicht so schnell kaputt (Journaling ist da das Stichwort)."
+2009-01-24 23:13:54,DickHuuhn,Journaling ist doch auch der einzige Unterschied?
+2009-01-24 23:14:08,DickHuuhn,Und ist ext4 nicht inzwischen auch fertig? :D
+2009-01-24 23:14:24,chris12,und wie komme ich von ext2 auf 3?
+2009-01-24 23:14:46,DickHuuhn,Kannste auch recht einfach nachträglich machen
+2009-01-24 23:14:47,mgottschlag,einfach als ext3 mounten?
+2009-01-24 23:14:49,DickHuuhn,tune2fs glaube ich
+2009-01-24 23:15:04,mgottschlag,macht der das nicht auch selbstständig?
+2009-01-24 23:15:11,DickHuuhn,tune2fs -j
+2009-01-24 23:15:15,DickHuuhn,kP :)
+2009-01-24 23:15:39,mgottschlag,"jo, stimmt, braucht man anscheinend"
+2009-01-24 23:16:48,DickHuuhn,"tune2fs kann man doch aber nicht im laufenden Betrieb nutzen, oder? ^^"
+2009-01-24 23:17:39,mgottschlag,joa
+2009-01-24 23:18:09,chris12,ok ubuntu hat NTFS schreibsupport
+2009-01-24 23:18:25,mgottschlag,"""This can be done on an unmounted or on a mounted filesystem. If you create the journal on a mounted filesystem you will see a .journal file. Don't try to delete this and don't back this up or restore it from backup! If you run  tune2fs -j  on an unmounted partition an unvisible journal file will be created. """
+2009-01-24 23:18:32,DickHuuhn,"Aber du willst doch net etwa / auf NTFS machen, oder? :D"
+2009-01-24 23:18:34,mgottschlag,"chris12, versuchs garnich erst"
+2009-01-24 23:19:36,DickHuuhn,Wenn du nur noch Linux hast gibt es eigentlich kaum Gründe noch ne NTFS-Partition zu behalten
+2009-01-24 23:19:36,mgottschlag,"also, ich meine, auf NTFS zu installieren geht garnich, natürlich kannst du deine Windows-Partition damit für andere Dateien benutzen, aber selbst damit dürftest du ab und zu noch auf Inkompatibilitäten stoßen"
+2009-01-24 23:19:54,mgottschlag,es gibt übrigends nen guten ext2-Treiber für Windows
+2009-01-24 23:20:04,DickHuuhn,fs-driver.org :D
+2009-01-24 23:20:14,chris12,"DickHuuhn: neinein keine sorge ich hab nur noch zwei NTFS partitionen einmal meine Spiele, funzten sogar mit Wine, und dann noch die Daten, wo sich auch meine arbeit drauf befindet :)"
+2009-01-24 23:20:44,mgottschlag,also wine funzt oft mit NTFS nicht gut
+2009-01-24 23:21:05,mgottschlag,"ich hab für sowas ne große ext3-Partition, die von beiden gelesen/beschrieben werden kann"
+2009-01-24 23:21:36,chris12,mgottschlag: weiss ich hatte ihn auch installiert aber dann hat mein Antivir in windoof datein viren gefunden und dann wollte win nicht mehr starten :(
+2009-01-24 23:23:30,DickHuuhn,"Naja, ich wär mir nicht so sicher, dass es dann am ext2 treiber liegt"
+2009-01-24 23:28:05,chris12,son scheiß jetzt muss ich windoof doch wieder installieren :(
+2009-01-24 23:28:22,DickHuuhn,wo drückt denn der schuh? :D
+2009-01-24 23:28:31,FreakyPenguin,Gute Nacht
+2009-01-24 23:28:36,chris12,nacht
+2009-01-24 23:28:36,DickHuuhn,n8
+2009-01-24 23:28:53,mgottschlag,"chris12, hm?"
+2009-01-24 23:28:56,mgottschlag,gn8
+2009-01-24 23:29:05,chris12,ICH KANN UNTER LINUX KEIN SPORE SPIELEN  :'( 
+2009-01-24 23:29:33,DickHuuhn,als zocker braucht man sowieso immer xp ^^
+2009-01-24 23:29:51,DickHuuhn,Dazu direkt mal ne Frage: Hat hier wer Erfahrungen mit andLinux?
+2009-01-24 23:30:33,DickHuuhn,Wenn ich die ganze Linux-Software so toll wie jetzt unter Windows nutzen könnte wäre das toll
+2009-01-24 23:39:36,chris12,"was ist eig eine ""ausführbare textdatei""? ist das so, wie unter windows die bat datein?"
+2009-01-24 23:39:49,DickHuuhn,Auch
+2009-01-24 23:39:53,DickHuuhn,Und meistens :)
+2009-01-24 23:40:20,DickHuuhn,Kann aber auch ein anderes Script als für die Shell sein (bei Python nennt der die auch so)
+2009-01-24 23:40:31,chris12,aso
+2009-01-24 23:40:52,DickHuuhn,Und zu guter letzt sagt der das manchmal auch bei normalen textdateien :)
+2009-01-24 23:42:08,DickHuuhn,Wieso eigentlich erst so spät zu Linux? :D
+2009-01-24 23:42:20,DickHuuhn,"Was hat dich jetzt dazu bewogen (und dann noch so extrem, mit Windows weg und so)"
+2009-01-24 23:44:04,chris12,Antivir+Virus in Windows wichtigen Datein=KEIN STARTEN MEHR
+2009-01-24 23:46:22,DickHuuhn,"Hehe, passiert dir bei Ubuntu nie"
+2009-01-24 23:46:34,DickHuuhn,"Was dir da aber passiert ist, dass du selber was verkorkst xD"
+2009-01-24 23:48:57,chris12,dann kann ichs ja neu installieren

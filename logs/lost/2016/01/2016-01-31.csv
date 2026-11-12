@@ -1,0 +1,372 @@
+date/time,nick,message
+2016-01-31 00:46:45,Jonathan,"Svenska: So, jetzt hab ich eine Klasse CompactGrid, die ein 2-dimensionales Array darstellt, welches seinen Inhalt selbstständig auf Platte swappen kann..."
+2016-01-31 00:47:02,Svenska,hm
+2016-01-31 00:47:47,Jonathan,"Initialisiert wird es komplett ""weggeswapt"", allen Inhalt holt es sich dann von dem Objekt, das für's Laden/Speichern von Chunks zuständig ist"
+2016-01-31 00:47:48,Svenska,irgendwie klingt das ...
+2016-01-31 00:47:53,Jonathan,*g*
+2016-01-31 00:47:58,Jonathan,"Nee, so ... ist das nicht :D"
+2016-01-31 00:48:15,Jonathan,"Am Anfang isses leer, bei Zugriff holt es sich Inhalte vom Store"
+2016-01-31 00:48:34,Jonathan,"Falls noch nix auf Platte serialisiert wurde, fragt es den Store danach, bitte einen Inhalt zu generieren"
+2016-01-31 00:48:46,Jonathan,Ansonsten lädt's nen Chunk vom Store
+2016-01-31 00:49:16,Jonathan,"Und wenn ein Chunk inaktiv ist, schubst es den wieder zurück zum Store, welcher den Chunk dann serialisieren und speichern kann"
+2016-01-31 00:49:36,Jonathan,Nach außen hin hat CompactGrid nur get und set.
+2016-01-31 00:49:47,Svenska,"wie definierst du ""inaktiv""?"
+2016-01-31 00:50:08,Jonathan,Momentan mit nem einstellbaren Timeout
+2016-01-31 00:50:27,Svenska,"d.h. du hast ein array, welches die systemzeit lesen kann und auf die festplatte zugreift?"
+2016-01-31 00:50:49,Jonathan,"Systemzeit: Ja, Festplatte: Nein"
+2016-01-31 00:51:11,Jonathan,Laden/Speichern passiert über ein Interface
+2016-01-31 00:51:21,Jonathan,"(Das kann man dann noch implementieren, wie man will)"
+2016-01-31 00:51:33,Svenska,hm
+2016-01-31 00:51:53,Svenska,ich weiß ja nicht... praktisch bin ich ein freund von expliziten dingen
+2016-01-31 00:51:57,Jonathan,Joa
+2016-01-31 00:52:25,Svenska,"ein interface aus ""get/set"", welches massiv dinge hinter meinem rücken tut, ist mir immer irgendwie unsympathisch"
+2016-01-31 00:52:29,Jonathan,"Mir ist aber nix besseres eingefallen, was nicht so stark ins API vom CompactGrid schlägt"
+2016-01-31 00:52:50,Jonathan,"Naja, hmm... Ist das mit normalem Swap nicht auch so? ;)"
+2016-01-31 00:53:03,Jonathan,"Es tut die Dinge zumindest so, dass du nichts davon merkst"
+2016-01-31 00:53:20,Svenska,"nein, wenn mein system anfängt zu swappen, dann merke ich davon verdammt viel"
+2016-01-31 00:53:43,Svenska,weil plötzlich sämtliche timing-annahmen failen
+2016-01-31 00:53:48,Jonathan,"Naja, ""swappen"" im Sinne von ""ein paar ints serialisieren"""
+2016-01-31 00:54:22,Jonathan,"Sind jetzt tatsächlich nur noch 4 Bytes pro ""normalem"" Objekt"
+2016-01-31 00:54:29,Svenska,"naja, mach mal :)"
+2016-01-31 00:54:35,Jonathan,*g*
+2016-01-31 00:55:00,Jonathan,"Hey, bei 100x100-Chunks hätte ich nur 40k pro Chunk zu serialisieren! :P"
+2016-01-31 00:55:23,Svenska,ein chunk ist ein block?
+2016-01-31 00:55:23,Jonathan,Merkst du davon was? *g*
+2016-01-31 00:55:28,Jonathan,Nein
+2016-01-31 00:55:36,Jonathan,100x100-Chunk = 100 x 100 Blöcke.
+2016-01-31 00:55:50,Svenska,hm
+2016-01-31 01:00:25,Jonathan,Svenska: http://pastebin.com/XpgbgkjH
+2016-01-31 01:00:39,Jonathan,Falls du es dir antun willst *g*
+2016-01-31 01:01:57,Svenska,"bäh, java. viel zu wortreich."
+2016-01-31 01:02:01,Svenska,:-)
+2016-01-31 01:06:14,Jonathan,Hmm ;)
+2016-01-31 01:06:28,Jonathan,"Svenska: Eine große Frage ist jetzt natürlich auch wieder, wie groß ich die Chunks machen soll."
+2016-01-31 01:06:59,Jonathan,Bei dem aktuellen Speicherverbrauch davon würde ich spontan sagen: groß
+2016-01-31 01:07:16,Svenska,"ich hätte gesagt ""ungefähr 1 MB"""
+2016-01-31 01:07:23,Jonathan,Joa
+2016-01-31 01:07:30,Svenska,oder irgendwas in der größenordnung
+2016-01-31 01:07:37,Jonathan,Wären so um die 512 x 512 Blöcke
+2016-01-31 01:07:51,Jonathan,Klingt ganz gut
+2016-01-31 01:08:02,Jonathan,Braucht dann sogar auch im Speicher nur 1MB
+2016-01-31 01:08:24,Svenska,"plus die metadaten, die außerhalb vom java liegen und für GC u.ä. nötig sind"
+2016-01-31 01:08:28,Jonathan,Ja
+2016-01-31 01:08:35,Jonathan,Aber für ein int-Array ist das nicht viel :)
+2016-01-31 01:09:02,Svenska,:)
+2016-01-31 01:09:03,Jonathan,Plus die dauerhaft gespeicherten einzigartigen und geteilten Objekte
+2016-01-31 01:09:30,Jonathan,"Da könnten auch nochmal 10MB zusammen kommen, oder so"
+2016-01-31 01:09:48,Jonathan,"Auf jeden Fall nicht mit den 4GB vergleichbar, die die alte Version gleichzeitig im RAM gehalten hat *g*"
+2016-01-31 01:11:04,Jonathan,"Ich muss nur mit meinen equals-Methoden aufpassen, denn alles, was es bereits irgendwo auf der Map gibt, wird weggeworfen und als Referenz auf das alte gespeichert. *g*"
+2016-01-31 01:11:29,Svenska,öh
+2016-01-31 01:11:35,Svenska,"""irgendwo auf der map""?"
+2016-01-31 01:11:45,Svenska,wieviele verschiedene blöcke kann es denn in deinem spiel map-weit geben?
+2016-01-31 01:12:00,Jonathan,"Naja, vielleicht ein paar dutzend/hundert? :D"
+2016-01-31 01:13:20,Svenska,zweite frage
+2016-01-31 01:13:42,Svenska,"wenn du einen block hast, und irgendwo im spiel existiert ein exakt gleicher block, der aber nicht geladen ist"
+2016-01-31 01:13:56,Svenska,"wie kannst du darauf eine referenz speichern, ohne erstmal alles zu laden und anzuschauen?"
+2016-01-31 01:14:38,Jonathan,Alle eingefügten Blöcke werden in ne Liste und ne HashMap gehauen
+2016-01-31 01:15:06,Jonathan,Die Liste ist sowieso nötig für den Lookup (Nummer --> Object)
+2016-01-31 01:15:07,Svenska,d.h. du jeder im spiel existierende block existiert dauerhaft in einer kopie im ram
+2016-01-31 01:15:18,Svenska,s/du //
+2016-01-31 01:15:26,Jonathan,Jo
+2016-01-31 01:15:45,Jonathan,"Wie gesagt, das sind eventuell ein paar hundert."
+2016-01-31 01:15:54,Jonathan,Mit jeweils ein paar hundert Bytes.
+2016-01-31 01:20:23,Jonathan,"Svenska: Bin mal weg, gute Nacht :D"
+2016-01-31 01:20:27,Svenska,gn8
+2016-01-31 11:47:13,Paddy,Moin
+2016-01-31 11:48:34,Jonathan,Moin Paddy
+2016-01-31 12:02:48,darklink,hey oaddy
+2016-01-31 12:02:52,darklink,Paddy*
+2016-01-31 12:03:35,Paddy,"War das der Versuch, mich doch noch in die o-Deklination zu quetschen? ;-)"
+2016-01-31 12:03:52,darklink,"Paddus, a, um"
+2016-01-31 12:04:00,darklink,jetzt bist du ein adjektiv
+2016-01-31 12:04:59,Paddy,Ich nehme lieber ein zweiendiges paddis/padde
+2016-01-31 12:07:59,Paddy,Ui. Wtf ist das für eine Deklination? https://en.wiktionary.org/wiki/nymphe#Inflection
+2016-01-31 12:09:07,Paddy,Akkusativ auf -en haben wir nie gelernt
+2016-01-31 12:09:30,darklink,"colere, colo, colui, cultus"
+2016-01-31 12:09:58,darklink,"und verwechsele bloß ""cultus"" nicht mit ""cultus""!"
+2016-01-31 12:09:59,Paddy,"Das ist ja normal, oder?"
+2016-01-31 12:12:03,darklink,"cultus a parentes cultus colo. (Macht keinen sinn, aber egal)"
+2016-01-31 12:12:23,Paddy,"Lustig, dass die damals auch schon nicht recht wussten, wie sie griechische Wörter vernünftig einlateinischen"
+2016-01-31 12:12:39,Paddy,Und ob man da jetzt eine griechische oder lateinische Endung ranhängen soll
+2016-01-31 12:13:24,darklink,colitur*
+2016-01-31 13:11:50,CarpeNoctem,wo bekomme ich gcc für tyndur?
+2016-01-31 13:12:37,Paddy,"Hm, mal vorne anfangen. Hast du das git-Repo schon geklont?"
+2016-01-31 13:14:19,Paddy,Also tyndur.git jetzt erstmal
+2016-01-31 13:14:28,CarpeNoctem,nein ^^
+2016-01-31 13:14:45,Paddy,Wäre ein guter erster Schritt ;-)
+2016-01-31 13:14:49,CarpeNoctem,muss kur windows schlüssel deaktivieren -> kurz afk
+2016-01-31 13:31:09,CarpeNoctem,"ok ^^, jetzt ist git drann"
+2016-01-31 13:33:15,CarpeNoctem,was sollte ich nochmal clonen?
+2016-01-31 13:34:29,Paddy,git clone git://git.tyndur.org/tyndur.git
+2016-01-31 13:34:38,CarpeNoctem,ok
+2016-01-31 13:35:27,CarpeNoctem,hab
+2016-01-31 13:37:18,Paddy,"Hast du gcc, ld und nasm installiert?"
+2016-01-31 13:37:51,Paddy,"Oder vergiss ld, binutils ist eh eine Abhängigkeit von gcc"
+2016-01-31 13:37:52,CarpeNoctem,"gcc ja, das andere kommt sofort ^^"
+2016-01-31 13:38:01,CarpeNoctem,ok
+2016-01-31 13:38:13,CarpeNoctem,nasm ist schon fertig
+2016-01-31 13:38:30,Paddy,Dann kannst du einfach mal ein make in dem Verzeichnis probieren
+2016-01-31 13:38:47,Paddy,tyndur.git lässt sich normal mit deinem Linux-Systemcompiler bauen
+2016-01-31 13:38:55,CarpeNoctem,ok
+2016-01-31 13:39:10,Paddy,Den Crosscompiler brauchst du erst für lbuilds (wo die ganzen portierten Programme herkommen)
+2016-01-31 13:39:13,CarpeNoctem,läuft
+2016-01-31 13:39:20,CarpeNoctem,ok
+2016-01-31 13:40:26,CarpeNoctem,ist bei den source dateien die shell mit bei?(make ist fertig)
+2016-01-31 13:41:18,Paddy,"Jo, wenn make durchgelaufen hast, kannst du daraus schon ein lauffähiges Image bauen"
+2016-01-31 13:41:39,CarpeNoctem,ok
+2016-01-31 13:41:53,Paddy,make image-hd (oder gleich make test-qemu-hd)
+2016-01-31 13:42:09,CarpeNoctem,wo ist denn jetzt gcc für tyndur :D?
+2016-01-31 13:42:49,Paddy,"Wie gesagt, tyndur.git hat genug Magie drin, dass es mit deinem Linux-gcc läuft"
+2016-01-31 13:43:01,CarpeNoctem,"ps: wenn das alle sourcen sind, darf man dann tyndur alleine weiterentwickeln, abändern isw?"
+2016-01-31 13:43:05,Paddy,"Dadurch dass es den gcc nicht linken lässt, sondern das manuell mit ld und Linkerscripts macht"
+2016-01-31 13:44:04,Paddy,Die Lizenzbedingungen stehen am Anfang jeder Datei (sind teilweise unterschiedlich). Aber alleine weiterentwickeln erlauben alle.
+2016-01-31 13:44:27,CarpeNoctem,ok
+2016-01-31 13:48:05,CarpeNoctem,"make ist jetzt also fertig, wie erstellt man nun das image daraus?"
+2016-01-31 13:49:28,Paddy,[13:41] <Paddy> make image-hd (oder gleich make test-qemu-hd)
+2016-01-31 13:49:39,Paddy,Danach liegt das Image in build/images/
+2016-01-31 13:49:40,CarpeNoctem,ok
+2016-01-31 13:49:56,Paddy,Also falls es tut jedenfalls ;-)
+2016-01-31 13:50:01,CarpeNoctem,"ahh, so einfach? das ist ja toll :D"
+2016-01-31 13:50:33,Paddy,"Wenn er erkennt, was für einen GRUB du auf der Platte hast, sollte es so einfach gehen, ja"
+2016-01-31 13:50:44,CarpeNoctem,ok
+2016-01-31 13:50:52,Paddy,"Manchmal machen die Bootloader Probleme, dann ist es halt etwas mehr Gebastel"
+2016-01-31 13:51:08,CarpeNoctem,kann ich das hd image auf nen usb stick draufpacken?
+2016-01-31 13:56:15,Paddy,"Ne, USB geht im Moment noch nicht"
+2016-01-31 13:56:36,Paddy,"Da fehlen noch ein paar Patches, auf denen XanClic sitzt"
+2016-01-31 13:57:16,CarpeNoctem,ok
+2016-01-31 13:57:29,CarpeNoctem,dann hald cd-rw ^^
+2016-01-31 13:57:38,CarpeNoctem,bzw festplatte
+2016-01-31 13:58:26,CarpeNoctem,welche medien werden denn bis jetzt alle unterstützt?
+2016-01-31 13:58:50,Paddy,Das Plattenimage ist für Emulatoren am besten
+2016-01-31 13:59:07,Paddy,"Ansonsten geht halt noch CD, aber CDs sind auffallend readonly ;-)"
+2016-01-31 13:59:31,CarpeNoctem,ok
+2016-01-31 13:59:46,Paddy,"Floppy ging irgendwann mal, aber inzwischen kriegt man nicht mehr das komplette System auf eine"
+2016-01-31 14:00:04,CarpeNoctem,ich versuche mir mal quemu runterzuladen
+2016-01-31 14:00:57,CarpeNoctem,"pacman will nicht :D, gibt es eine alternative quelle?"
+2016-01-31 14:03:18,Paddy,"Will er, wenn du es qemu schreibst? ;-)"
+2016-01-31 14:04:14,CarpeNoctem,ähhmmm :D anfängerfehler ^^
+2016-01-31 14:04:35,CarpeNoctem,fertig
+2016-01-31 14:06:27,CarpeNoctem,"so qemu.img sieht interessant aus, kannst du mir nochmal auf die sprünge helfen :)?"
+2016-01-31 14:06:38,CarpeNoctem,qemu-img*
+2016-01-31 14:07:03,CarpeNoctem,+ --help* :D
+2016-01-31 14:13:01,Paddy,Das Image hast du doch schon?
+2016-01-31 14:13:25,Paddy,qemu brauchst du nur als Emulator um es laufen zu lassen
+2016-01-31 14:14:30,CarpeNoctem,"ja, aber er will es nicht so ganz starten ^^ denn den befehl qemu alleine gibt es irgendwie nicht"
+2016-01-31 14:15:37,Paddy,qemu-system-x86_64 willst du
+2016-01-31 14:15:56,CarpeNoctem,*testen* :D
+2016-01-31 14:16:18,CarpeNoctem,funzt nicht ^^
+2016-01-31 14:16:33,CarpeNoctem,jetzt..
+2016-01-31 14:19:06,CarpeNoctem,"qemu geht, aber das image startet er noch nicht, ich versuchs mal mit sudo"
+2016-01-31 14:19:45,CarpeNoctem,AHA
+2016-01-31 14:20:34,CarpeNoctem,jetzt kann ich versuchen meine eigene shell einzubauen...
+2016-01-31 14:20:44,CarpeNoctem,+ die von tyndur
+2016-01-31 14:23:11,Paddy,Die von tyndur sollte doch drauf sein?
+2016-01-31 14:28:06,CarpeNoctem,"ja, aber ich versuch jetzt  mal meine für tyndur umzuprogrammieren und im build zu implementieren"
+2016-01-31 14:34:20,CarpeNoctem,das wird ja toll ^^
+2016-01-31 14:36:18,Paddy,Wieso?
+2016-01-31 14:38:04,CarpeNoctem,habe doch alles in c++ geschrieben und muss jetzt extra includes usw entfernen und umbauen ^^
+2016-01-31 14:40:46,Paddy,Ach so *g*
+2016-01-31 14:48:45,CarpeNoctem,jop ^^
+2016-01-31 14:54:55,CarpeNoctem,wissz ihr wie ich die anzahl der elemente eines arrays herausfinde? in java gings immer mot array.length...
+2016-01-31 14:55:01,CarpeNoctem,mit*
+2016-01-31 14:55:32,Jonathan,#define NELEMS(x) (sizeof(x) / sizeof(x[0]))
+2016-01-31 14:55:55,CarpeNoctem,danke
+2016-01-31 14:56:00,Jonathan,:)
+2016-01-31 15:01:07,CarpeNoctem,"warte mal :D bin grade noch etwas verwirrt (arbeite nicht oft mit #define), wie speichere ich diesen wert dann in einen int ab?"
+2016-01-31 15:09:52,darklink,das ist ein int
+2016-01-31 15:10:05,Jonathan,int size = NELEMS(...)
+2016-01-31 15:10:06,Jonathan,? :D
+2016-01-31 15:10:33,darklink,"wenn dein array arr heißt, dann wird das ganze erweitert zu sizeof(arr) / sizeof(x[0])"
+2016-01-31 15:10:38,CarpeNoctem,^^ so ist das wenn man nicht damot arbeitet ^^
+2016-01-31 15:10:48,CarpeNoctem,damit*
+2016-01-31 15:13:56,Paddy,Das geht auch nicht C++ ;-)
+2016-01-31 15:14:04,Paddy,s/nicht/in/
+2016-01-31 15:15:00,CarpeNoctem,#include <stdlib.h>! ^^
+2016-01-31 15:15:11,CarpeNoctem,bzw stdio.h
+2016-01-31 15:15:19,CarpeNoctem,oder?
+2016-01-31 15:15:31,Paddy,Kann man machen
+2016-01-31 15:15:44,Paddy,Wenn man den Header braucht ;-)
+2016-01-31 15:17:20,CarpeNoctem,ich scheitere schon beim versuch einen array in einen string zu speichern :D mal sehen wo der fehler liegt
+2016-01-31 15:18:13,darklink,ein string ist ein array
+2016-01-31 15:18:16,darklink,aus chars
+2016-01-31 15:18:55,CarpeNoctem,"nein, ich meine ich habe einen array den  ich in einen string speichern will, also aus vielen kleinen mach ein großes"
+2016-01-31 15:25:51,darklink,strncat
+2016-01-31 15:26:05,CarpeNoctem,ok
+2016-01-31 15:27:28,CarpeNoctem,"danke, gleich mal testen auch wenn ich es in c++ mache ^^ sollte ja klappen"
+2016-01-31 15:28:21,darklink,"außerdem ist es ja kein problem mit c++, wenn man std::vector benutzt"
+2016-01-31 15:28:37,Paddy,Er will doch aber seinen C++-Code in C umschreiben
+2016-01-31 15:28:42,darklink,oh
+2016-01-31 15:28:55,darklink,zeig her CarpeNoctem 
+2016-01-31 15:29:07,CarpeNoctem,"jop, warte kurz ^^"
+2016-01-31 15:31:33,CarpeNoctem,bin aber gerade bei der shell funktion bei(war erst als shell für android gedacht): http://pastebin.com/Xe4YfexK
+2016-01-31 15:35:39,CarpeNoctem,der code könnte etwas verwirrend sein...
+2016-01-31 15:35:42,CarpeNoctem,^^
+2016-01-31 15:55:59,darklink,AFK
+2016-01-31 15:56:50,mgottschlag,"CarpeNoctem: ""else if(args[0] == ""whoami"")"" - das funktioniert so nicht"
+2016-01-31 15:57:05,CarpeNoctem,bei mir schon ^^
+2016-01-31 15:57:09,mgottschlag,"man kann C-Strings nicht per Pointervergleich vergleichen, weil die an unterschiedlichen Adressen liegen"
+2016-01-31 15:57:11,mgottschlag,huh?
+2016-01-31 15:57:33,CarpeNoctem,"naja, arbeite ja auch gerade mit c++, also, was muss ich ändern?"
+2016-01-31 15:57:37,darklink,"CarpeNoctem, string exit =rawin; <- machst du gerade was ich glaube, dass du machst?"
+2016-01-31 15:58:07,Paddy,argv dürfte auch unter C++ nur ein const char** sein
+2016-01-31 15:58:07,CarpeNoctem,manche sachen vergesse ich einfach zu löschen bzw umzuschreiben ^^
+2016-01-31 15:58:37,XanClic,"argv ja, aber args halt nicht"
+2016-01-31 15:58:49,CarpeNoctem,schauen jatzt allem
+2016-01-31 15:58:53,mgottschlag,"ach, moment"
+2016-01-31 15:58:56,mgottschlag,"args, nicht argv"
+2016-01-31 15:59:05,mgottschlag,"ja, dann passts"
+2016-01-31 15:59:12,mgottschlag,hab mich verlesen
+2016-01-31 15:59:18,CarpeNoctem,schauen jetzt alle meinen quellcode an ? :D
+2016-01-31 15:59:26,Svenska,scheint so? :)
+2016-01-31 15:59:31,CarpeNoctem,^^
+2016-01-31 15:59:38,Svenska,*log guck*
+2016-01-31 15:59:50,mgottschlag,Shell für Android klang interessant :p
+2016-01-31 15:59:57,CarpeNoctem,jop ^^
+2016-01-31 16:00:05,Paddy,Bis du den Code gesehen hast? *g*
+2016-01-31 16:00:06,CarpeNoctem,soll mal was werden
+2016-01-31 16:00:12,CarpeNoctem,^^
+2016-01-31 16:00:51,CarpeNoctem,"also bisher geht alles, ich baue jetzt eine script unterstützung ein"
+2016-01-31 16:01:07,mgottschlag,"Paddy: ja, ich hatte was anderes erwartet :D"
+2016-01-31 16:01:17,mgottschlag,"entweder was grafisches, oder halt irgendwas Android-spezifisches :D"
+2016-01-31 16:01:24,mgottschlag,aber das hier passt wesentlich besser zu einem eigenen OS
+2016-01-31 16:01:51,CarpeNoctem,"nein, bloß nicht ^^ wer mich kennt weiß das ich gui an sich (außer spiele:D) hasse"
+2016-01-31 16:02:18,Svenska,"system(""echo -e \""\\e[36m\\c\""""); << wtf?"
+2016-01-31 16:02:25,CarpeNoctem,farbe -
+2016-01-31 16:02:49,Svenska,"wie wärs mit: cout << ""\033[36m""; ?"
+2016-01-31 16:03:04,CarpeNoctem,ähhmm ^^ jaaaaaa....
+2016-01-31 16:03:05,Paddy,Das könnte ja jeder
+2016-01-31 16:03:18,CarpeNoctem,genau so siehts aus!
+2016-01-31 16:03:21,CarpeNoctem,:D
+2016-01-31 16:03:36,Svenska,oder einer abstraktion dafuer? :)
+2016-01-31 16:04:05,CarpeNoctem,^^
+2016-01-31 16:04:21,Paddy,Abstrawas?
+2016-01-31 16:04:31,CarpeNoctem,mir is in dem moment einfach nicht eingefallen das das auch mit cout geht ^^
+2016-01-31 16:08:37,Svenska,die help-ausgabe fetzt auch auf ihre art
+2016-01-31 16:08:51,Svenska,"also, man kann strings auch auf mehrere zeilen verteilen, das macht den code lesbarer ^^"
+2016-01-31 16:09:20,CarpeNoctem,"ja ^^, bin immer für kritik offen"
+2016-01-31 16:09:45,Svenska,dann wuerde ich ja einen ganz klassischen ansatz wählen
+2016-01-31 16:10:15,Svenska,"eine tabelle, die jeweils ein keyword und eine handler-funktion enthält"
+2016-01-31 16:10:29,CarpeNoctem,ok
+2016-01-31 16:11:12,Svenska,"dann kann man nämlich jeden befehl unabhängig von allen anderen befehlen implementieren, kann ganz einfach befehle hinzufuegen oder entfernen, und es gibt direkt auch eine liste aller gueltigen befehle :)"
+2016-01-31 16:11:12,CarpeNoctem,"ich mach das mit den if's nur weil ich es so bei meiner ersten shell auch ge,acht hab, die ist aber in c# geschrieben, also...."
+2016-01-31 16:11:33,Svenska,"naja, in C kann man leider kein switch/case mit strings machen, sonst wäre das auch nett"
+2016-01-31 16:12:02,Svenska,"hat jemand ne ahnung, warum unter linux jeder sound erst mal mit knarzen anfängt, bzw wo ich an pulseaudio drehen muss, damit das aufhört?"
+2016-01-31 16:12:19,Paddy,"Ein switch würde dir auch keine Hilfefunktion geben, die alles auflistet"
+2016-01-31 16:12:42,Svenska,"stimmt, aber ein switch ist schöner als eine elendige if/elseif/elseif/.../endif folge"
+2016-01-31 16:13:12,Paddy,Ein bisschen
+2016-01-31 16:13:31,Paddy,Aber den ganz großen Unterschied macht es nicht
+2016-01-31 16:19:09,CarpeNoctem,es klappt
+2016-01-31 16:19:11,CarpeNoctem,!
+2016-01-31 16:19:35,CarpeNoctem,die skriptimplementation ist einen schritt weiter!
+2016-01-31 16:46:38,Svenska,"weiß wer, wie pulseaudio gestartet wird?"
+2016-01-31 16:46:55,Svenska,"wenn ich mich einlogge, ist es an. aber ich finde keine stelle, wo es gestartet wird"
+2016-01-31 16:48:16,CarpeNoctem,"musst es manuell nochmal starten, bzw per terminal"
+2016-01-31 16:48:30,Svenska,"nein, es ist ja an :-)"
+2016-01-31 16:49:35,CarpeNoctem,"schließen per taskmanager und neustarten, oder habe ich was falsch verstenaden?"
+2016-01-31 16:49:52,Svenska,"ich will einen daemon starten, der zwingend ein laufendes pulseaudio voraussetzt"
+2016-01-31 16:50:10,Svenska,"...denn sonst greift er sich die soundkarte, pulseaudio startet nicht, und ich hab keinen sound"
+2016-01-31 16:50:25,CarpeNoctem,neuinstallieren?
+2016-01-31 16:50:31,Svenska,ändert nix
+2016-01-31 16:50:39,CarpeNoctem,hmm...
+2016-01-31 16:50:50,CarpeNoctem,dann hab ich k a ^^
+2016-01-31 16:51:19,Svenska,"oh, schick, in /etc/xdg/autostart liegt ein start-pulseaudio-x11 rum"
+2016-01-31 16:51:27,darklink,Vielleicht BSD benutzen?
+2016-01-31 16:51:27,darklink,Da gibts ja nr OSS
+2016-01-31 16:51:27,darklink,und es eist besser als das OSS unter linux
+2016-01-31 16:51:42,Svenska,"...wie kriege ich jetzt fluidsynth so hin, dass es das als abhängigkeit hat"
+2016-01-31 17:01:00,Svenska,JA!
+2016-01-31 17:02:14,Svenska,"fluidsynth scheint besser zu tun als timidity, zumindest hab ich keine 2 sekunden delay mehr zwischen ""note wird gespielt"" und ""note kommt aus lautsprecher"""
+2016-01-31 17:02:35,darklink,wieviel delay ist es jetzt? 4?
+2016-01-31 17:02:41,Svenska,"nein, gefuehlt 0"
+2016-01-31 17:03:59,Svenska,"naja, bin erstmal afk fuer n stuendchen oder auch 3 :-) bis spæter"
+2016-01-31 17:41:40,darklink,../cookiebot-mods/say.so: undefined symbol: _ZTV3Mod
+2016-01-31 18:07:15,darklink,"hey, das ist ja eine klasse root app, die keinen PC braucht!"
+2016-01-31 18:07:32,darklink,"Requirements: Windows PC, USB Cable"
+2016-01-31 19:38:22,CarpeNoctem,immer dieses windows...
+2016-01-31 19:49:01,darklink,"Hey! Es gibt ein neues Systemupdate für den iQue 3DS XL! Obwohl - das interresiert mich ja nicht, weil ich keinen IQue habe!"
+2016-01-31 19:50:46,darklink,warum springt dieser code zu 0x00000000? lol
+2016-01-31 19:53:24,darklink,"Jetzt freed er etwas, was nicht gefreed werden darf o.o"
+2016-01-31 19:56:58,quantenmagier,"ahh joa ich hatte jahrelang ne speicherverwaltung die sachen nicht gefreed hat obwohl sie es sollte, war nie aufgefallen bei 4GB Ram den bekommt man mit eigenem OS eh so schnell nicht voll ^^"
+2016-01-31 19:58:09,darklink,"Ich programmiere derzeitig nicht an meinem OS, weil mein PC im eimer ist"
+2016-01-31 19:58:17,darklink,aber irgendetwas anderes läuft gerade schief
+2016-01-31 20:12:17,quantenmagier,ah ok
+2016-01-31 20:12:39,quantenmagier,joa ich hab bei meinem os auch ne pause gemacht und schrieb grad an nem neuronalen netz
+2016-01-31 20:13:03,darklink,^^
+2016-01-31 20:13:05,darklink,Ich habs
+2016-01-31 20:13:30,darklink,problem war das die std::string's garbage collected worden sind.
+2016-01-31 20:15:07,darklink,jetzt muss ich nurnoch den modulunload ficxen
+2016-01-31 20:42:53,Jonathan,Svenska: Hab jetzt keine Probleme mehr mit ner 50kx20k-Map :D
+2016-01-31 20:43:13,Jonathan,Bei insgesamt 70MB RAM-Verbrauch *g*
+2016-01-31 20:43:41,Jonathan,Irgendwas muss ich also richtig gemacht(tm) haben
+2016-01-31 20:46:03,Svenska,klingt gut
+2016-01-31 20:52:10,darklink,"5575 morten    20   0    4.6m   2.7m   0.0  0.3   0:00.02 S                                  `- cookiebot                             <- geht noch ein bisschen kleiner mit dem RAM verbauch, oder?"
+2016-01-31 20:53:39,Svenska,"ich mag pulseaudio immernoch nicht. wenn ich die mute-taste auf dem laptop druecke, mutet pulseaudio sich und die alsa-karte; wenn ich nochmal druecke, unmutet es die alsa-karte"
+2016-01-31 20:53:47,Svenska,folge: audio ist mute.
+2016-01-31 20:54:39,darklink,dann drück  die mute taste nicht :P
+2016-01-31 20:55:33,Svenska,naja
+2016-01-31 20:56:06,darklink,"Ich frage mich gerade warum socket.cpp auch windoofs-kompatibel ist, aber mod.cpp nicht"
+2016-01-31 20:56:25,Svenska,"windows 95 konnte viele nifty features bzgl sound nicht, aber dafuer funktionierte selbiger zuverlässig"
+2016-01-31 20:56:46,Svenska,und audio unter win7 kann das und tut auch zuverlässig. warum kann linux das nicht?
+2016-01-31 20:57:07,darklink,weil es ein audiowirrwarr ist
+2016-01-31 20:57:30,darklink,BSD hat nur OSS
+2016-01-31 20:57:37,Svenska,linux hat nur alsa
+2016-01-31 20:57:44,Svenska,_das_ ist nicht das problem
+2016-01-31 20:57:46,darklink,und OSS
+2016-01-31 20:57:50,darklink,und pulseaudio
+2016-01-31 20:57:52,darklink,und libao
+2016-01-31 20:57:53,darklink,und und und
+2016-01-31 20:58:00,Svenska,wann hast du unter linux zum letzten mal einen OSS-treiber gesehen?
+2016-01-31 20:58:12,darklink,mein rechner hatte OSS
+2016-01-31 20:58:15,darklink,auf linux
+2016-01-31 20:58:27,Svenska,was fuer ne soundkarte?
+2016-01-31 20:58:37,darklink,irgend eine realtek soundkarte
+2016-01-31 20:58:46,Svenska,"und sag jetzt nicht ac97 oder hda, weil dann war es deine eigene schuld :)"
+2016-01-31 20:58:47,darklink,aber es war nur eine OSS emulationsebene
+2016-01-31 20:58:52,Svenska,m(
+2016-01-31 20:59:13,Svenska,"nein, war es nicht. dann hattest du einen hda mit realtek-codec, einem alsa-treiber und alsas oss-emulation"
+2016-01-31 20:59:29,Svenska,d.h. einen alsa-treiber.
+2016-01-31 20:59:35,darklink,?
+2016-01-31 21:00:03,darklink,"Ich glaube ich habe beim kernel ""OSS"" angekreuzt"
+2016-01-31 21:00:08,Svenska,und?
+2016-01-31 21:00:14,darklink,als audiotreiber
+2016-01-31 21:00:15,Svenska,das brauchst du fuer die nicht
+2016-01-31 21:00:42,Svenska,"der kernel muss keine oss-unterstuetzung haben, damit alsas oss-emulation greift (weil das ne userspace-lib sit)"
+2016-01-31 21:06:33,darklink,"Svenska, das ist der grund, warum es so schwer ist audio richtig auf linux einzurichten: http://harmful.cat-v.org/software/operating-systems/linux/audio-mess.png"
+2016-01-31 21:08:02,darklink,"Was wäre, wenn Pulseaudio den sound über ALSA ausgibt und ALSA den sound über pulseaudio?"
+2016-01-31 21:09:39,Svenska,pulse gibt ueber alsa aus
+2016-01-31 21:09:50,darklink,und alsa über pulse
+2016-01-31 21:09:51,Svenska,also gibt uebrigens immer ueber pulse aus
+2016-01-31 21:10:00,Svenska,*alsa
+2016-01-31 21:10:35,darklink,außer man hat kein pulse?
+2016-01-31 21:10:41,Svenska,"wobei alsa genau das nicht ueber pulse ausgibt, was von pulse kommt. liegt daran, dass programme die alsa-lib benutzen wollen, um ohne pulse zu funktionieren, pulse aber weltherrschaft anstrebt"
+2016-01-31 21:13:23,darklink,"openal -> SDL -> aRts -> ALSA -> Pulse -> JACK -> PortAudio -> OSS -> Output <- Kein wunder, dass da delay kommen kann"
+2016-01-31 21:13:37,Svenska,gleiches phänomen wie systemd: wir sind besser und alle muessen uns benutzen sonst interessiert's uns nicht
+2016-01-31 21:14:18,darklink,"nur, dass pulse kritische bugs nicht mit wontfix schließt?"
+2016-01-31 21:14:23,Svenska,"mir reicht fluidsynth -> pulse -> alsa, damit es nicht funktioniert"
+2016-01-31 21:14:44,Svenska,"und das wäre so der standardfall, meistens"
+2016-01-31 21:16:52,Svenska,"gab vor nicht allzulanger zeit ein längliches CRE mit poettering, wo er mal in ruhe erklären kann, und das ist interessant"
+2016-01-31 21:17:30,darklink,gib link
+2016-01-31 21:17:33,Svenska,"aber wenn man sich dann das ergebnis anschaut, dann sieht man irgendwo den bruch zwischen ""wenn man ein system neu auf diesen technologien aufbaut, dann ist es genial"" und ""$distribution mit compat"""
+2016-01-31 21:17:35,Svenska,cre.fm
+2016-01-31 21:18:05,Svenska,"da gehts primär um linux-userspace, aber er redet auch ueber avahi und pulseaudio, die er verbrochen :-) hat"
+2016-01-31 21:18:37,Svenska,http://cre.fm/cre209-das-linux-system
+2016-01-31 21:19:15,darklink,ich würde gerne auf sysvinit zurückgehen
+2016-01-31 21:19:23,darklink,aber gibts überhaupt noch distributionen mit sysvinit?
+2016-01-31 21:19:25,Svenska,ich nicht mehr
+2016-01-31 21:19:40,Svenska,debian unterstuetzt es als first-class citizen
+2016-01-31 21:19:58,darklink,Dann sollte ich ein eigenes linux-system aufsetzen
+2016-01-31 21:20:23,Svenska,hast du mal poetterings blog zu systemd gelesen?
+2016-01-31 21:21:03,darklink,nö
+2016-01-31 21:21:09,Svenska,sehr zu empfehlen
+2016-01-31 21:21:27,Svenska,v.a. die background-dinge
+2016-01-31 21:24:59,darklink,was ist jetzt genau an sysvinit falshc?
+2016-01-31 21:25:22,darklink,"außer, dass es veraltet ist"
+2016-01-31 21:25:41,Svenska,an sysvinit ist nichts falsch und es ist auch nicht veraltet
+2016-01-31 21:26:26,Svenska,an einem opel kadett von 1992 ist auch nichts falsch
+2016-01-31 21:26:40,Svenska,"trotzdem ""geht es inzwischen deutlich besser"""
+2016-01-31 21:28:05,darklink,"ich glaube ich sollte mal meine SD-karte defragmentieren, damit ich die partition verkleinern kann"
+2016-01-31 21:28:24,Svenska,m(
+2016-01-31 21:29:21,darklink,(Man defragmentiert kein NAND. ich weiß)
+2016-01-31 21:55:52,Svenska,hmm. Strg+ScrollLock ist unter windows ein bluescreen?
+2016-01-31 21:57:07,darklink,nur wenn der registry hack aktiv ist
+2016-01-31 21:57:23,Svenska,"ah, stimmt. muss man erst einschalten. schade ^^"

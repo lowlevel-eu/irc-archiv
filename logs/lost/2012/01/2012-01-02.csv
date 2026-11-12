@@ -1,0 +1,532 @@
+date/time,nick,message
+2012-01-02 00:17:04,taljeth,"stultus: Und, tut es?"
+2012-01-02 00:17:45,Homix,er probiert doom?
+2012-01-02 00:17:56,taljeth,Dachte ich
+2012-01-02 00:18:10,Homix,wie wärs mit einem fertigen test image? ;)
+2012-01-02 00:21:20,taljeth,Irgendwann releasen wir ;-)
+2012-01-02 00:21:48,Homix,ein pre-alpha test kann nie schaden ;)
+2012-01-02 00:22:30,taljeth,Vielleicht könnte mich ein Xantorix-Release überzeugen ;-)
+2012-01-02 00:22:51,Homix,immernoch kein usermode ;)
+2012-01-02 00:23:39,Homix,dafür funzt Multiasking auf meheren CPUs .. und das nicht nur wegen geringer last ;)
+2012-01-02 00:26:06,taljeth,Wie arbeitet denn dein Scheduler dabei?
+2012-01-02 00:26:28,taljeth,"Ich stell mir das relativ schwer vor, was vernünftiges zu bauen, dass die Tasks nicht ständig migrieren"
+2012-01-02 00:26:54,Homix,hahaha
+2012-01-02 00:27:22,Homix,"sry, hab nur an meine implementierung gedacht ;)"
+2012-01-02 00:27:27,Svenska,"aah, du initialisierst alle cpus und alle bis auf die primäre machen NOPs ? :-)"
+2012-01-02 00:27:52,taljeth,Homix: Das heißt? Sie migrieren ständig oder sie sind auf eine CPU gepinnt? ;-)
+2012-01-02 00:28:24,Homix,"naja ich hab eine sehr faire implementierung, eine cpu nimmt sich immer den nächsten zu bearbeitenden thread, wie auf single-cpu systemen, nur dass die cpus nacheinander dsich threads holen"
+2012-01-02 00:28:40,Svenska,sehr fair... ;-)
+2012-01-02 00:28:49,Homix,*g*
+2012-01-02 00:29:33,Homix,interessanterweise bleiben zB 4 aktive threads auf 4 Cores auch immer auf dem gleichen core dann ;) 
+2012-01-02 00:29:45,Svenska,und bei 3 threads?
+2012-01-02 00:29:49,Homix,dann nicht ;)
+2012-01-02 00:29:52,taljeth,Oder 5?
+2012-01-02 00:29:58,Homix,"doch bei 1,2,3 auch!"
+2012-01-02 00:30:09,Homix,nur > cpu_count welchseln sie oft
+2012-01-02 00:30:20,Homix,damit alle threads gleich oft drankommen ;)
+2012-01-02 00:30:35,taljeth,Außer wenn threads % cpus == 0
+2012-01-02 00:30:42,taljeth,Nehme icha n
+2012-01-02 00:30:58,Homix,naja bei 3 threads auf 4 cpus migrieren die threads auch nicht ;)
+2012-01-02 00:31:13,Homix,"die vierte CPU geht halt immer leer aus, weil alle threads dann bereits vergeben sind ;)"
+2012-01-02 00:31:32,taljeth,Der Idletask macht der CPU doch sicher auch Spaß
+2012-01-02 00:31:57,Homix,"optimaler wäre es natürlich, wenn sich die cores mit dem idletask abwechseln ;)"
+2012-01-02 00:32:10,Svenska,"also hast du eine globale run-queue, die sequentiell von den cpus ausgelesen wird"
+2012-01-02 00:32:26,Homix,"wenn das das ist, was ich gesagt hab, dann ja ;)"
+2012-01-02 00:32:32,Homix,ja klingt gut :)
+2012-01-02 00:33:05,Svenska,skaliert nicht besonders :-)
+2012-01-02 00:33:15,Homix,"aber einen scheduler, der alle cores gleich threads zuweist und dann all das berücksichtigt wie gleichmäßige cpu auslastung und möglichst wenig migration, ist einfach zu viel arbeit für ein Hobby OS^^ und man kann es jederzeit nachher noch einbauen ;)"
+2012-01-02 00:33:21,Homix,warum?^^
+2012-01-02 00:33:34,Homix,"warum ""skaliert"" es nicht gut?"
+2012-01-02 00:33:46,taljeth,"Die Caches freuen sich aber, dass sie sich ein bisschen miteinander unterhalten dürfen"
+2012-01-02 00:34:07,taljeth,"Ich finde, das ist ein Argument für den Algorithmus"
+2012-01-02 00:34:10,Svenska,weil du keine art von festpinning hast
+2012-01-02 00:34:49,Svenska,"also mitigation als das eine, das zweite ist, dass die cpus sich um den zugriff auf die run-queue streiten (und du die locken musst)"
+2012-01-02 00:34:54,Homix,theoretisch kann ich aber recht simpel threads fest auf cores pinnen ;)
+2012-01-02 00:35:04,Svenska,"je mehr cpus du hast, umso teurer wird das einfügen in die queue :)"
+2012-01-02 00:35:27,Homix,"die GetNextThread Funktion kann ruhig testen, ob der thread auf auf der cpu laufen darf"
+2012-01-02 00:36:03,Homix,"und stimmt, diese getNextThread funktion muss gelockt sein, aber in der praxis wird der lock nie wirklich blockieren, beim normnalen taskswitching"
+2012-01-02 00:36:24,Homix,weil nicht alle Cores gleichzeitig einen Taskswitch Int/IRQ bekommen ;)
+2012-01-02 00:36:25,taljeth,Warum nicht?
+2012-01-02 00:36:28,Homix,sondern nacheinander
+2012-01-02 00:36:35,Svenska,wenn ein thread seine zeitscheibe nicht aufbraucht - steht die cpu dann still oder holt sie sich den nächsten thread?
+2012-01-02 00:37:12,Homix,"ok ja, den manuellen taskswitch ..."
+2012-01-02 00:37:36,Homix,aber so ein taskswitch fällt kaum ins gewicht im verglichen zu der prozessorleistung
+2012-01-02 00:37:44,Svenska,"bei ""viele aktive threads"" oder multimedia und so hast du dann ständig ereignisse ""ich will nächsten thread"""
+2012-01-02 00:38:10,Homix,"ich hatte einen testcase mit 384 threads auf 4 Cores, die alle ständig manuellen Taskswitch gemacht haben"
+2012-01-02 00:38:25,taljeth,Und da hast du die Contention gemessen?
+2012-01-02 00:38:31,Homix,"um einen bug zu finden .. der bug war, dass teilweise stacks zeitgleich benutzt wurden ..."
+2012-01-02 00:38:52,Homix,und der bug trat trotzdem sehr selten auf^^ 
+2012-01-02 00:39:39,Homix,"und wenn, sobald 2 cores zeitlich einen neuen thread/task haben wollen, kann man es eigentlich nicht vermeiden, in einen lock zu laufen"
+2012-01-02 00:39:52,Svenska,"doch, bei per-cpu-run-queues xD"
+2012-01-02 00:40:15,Homix,dann kann ich aber nicht mehr allen threads die gleiche cpuzeit zuweisen
+2012-01-02 00:40:26,Svenska,willst du das denn?
+2012-01-02 00:40:32,Homix,"dann kann ein thread einfach nur glück haben, weil er in einer local queue ist ..."
+2012-01-02 00:40:43,Homix,und das .. vlt sogar ne ganze sekunde lang!?
+2012-01-02 00:40:51,Svenska,"du brauchst dann ""nur"" einen algorithmus, der die runqueues gleichmäßig auslastet"
+2012-01-02 00:41:09,Svenska,bzw. befüllt
+2012-01-02 00:41:42,Homix,"um so einen mini-lock zu vermeiden, der um diese minimale GetNextThread-Funktion eingebaut ist? naja ... ;)"
+2012-01-02 00:42:07,Svenska,"(wenn du 4 threads hast, die du auf 4 cores verteilst, sind doch 4 queues mit je einem element optimal?)"
+2012-01-02 00:42:39,Homix,"wenn ich 4 threads auf 4 cores hab, werden in der regel keine manuellen taskswitches gebraucht ;)"
+2012-01-02 00:42:47,Homix,die führen dann eh nur zum leerlauf 
+2012-01-02 00:42:51,Svenska,wenn die alle unregelmäßig feuern?
+2012-01-02 00:43:03,Svenska,also unregelmäßig blockieren?
+2012-01-02 00:43:15,Svenska,"dann muss deine cpu jedesmal in die runqueue, deswegen skalierts nicht"
+2012-01-02 00:44:54,Homix,"ich würde behaupten, dass mein scheduler mit dieser einfachen liste schneller ist als jede andere implementierung eines schedulers in einem größeren OS ;)"
+2012-01-02 00:45:12,Svenska,ich behaupte das gegenteil xD
+2012-01-02 00:45:15,Homix,allein weil kein algo nötig ist ;)
+2012-01-02 00:45:25,Jidder,ich behaupte auch vieles wenn der tag lang ist
+2012-01-02 00:45:30,Jidder,mehr als 23 stunden noch
+2012-01-02 00:45:43,Svenska,"besonders, weil große systeme (mehrere cpus, nicht nur mehrere cores) ein NUMA-verhalten zeigen"
+2012-01-02 00:46:12,Homix,ich hab ein hobbyos
+2012-01-02 00:46:12,Homix,;)
+2012-01-02 00:46:21,Homix,und das ist noch nicht auf numa systeme ausgelegt ;)
+2012-01-02 00:46:26,Jidder,gibt eigentlich noch x86 multicpu boards zu kaufen?
+2012-01-02 00:46:26,Svenska,"also ram, der einer cpu zugeordnet ist (deine runqueue) wesentlich teurer von der anderen cpu anzusprechen ist :)"
+2012-01-02 00:46:39,Svenska,"Jidder: türlich, dual-hexacore-i7 z.B."
+2012-01-02 00:46:40,Jidder,wo?
+2012-01-02 00:46:53,Svenska,"namen vergessen, serverhardware halt xD"
+2012-01-02 00:47:06,Homix,xeon ;)
+2012-01-02 00:47:23,Homix,"aber es gibt dann einen ""haupt-scheduler"", der die local queues füllt?"
+2012-01-02 00:47:32,Jidder,xeon?
+2012-01-02 00:47:32,Svenska,"ja, den muss es geben"
+2012-01-02 00:47:38,Jidder,sind die nicht steinalt?
+2012-01-02 00:47:42,Homix,wie oft macht der das? jede sekunde?
+2012-01-02 00:47:47,Svenska,Jidder: intel xeon ist der markennamen :)
+2012-01-02 00:47:57,Svenska,"für die dicken kisten, steckt aber auch nur ein i7 drin"
+2012-01-02 00:48:12,Jidder,googel bestätigt die nicht-existenz von multicpu boards
+2012-01-02 00:48:29,Svenska,"Homix: ich würde vermuten, der scheduler läuft ereignisgesteuert"
+2012-01-02 00:49:09,Homix,"ich stell mir das mit den local queues furchtbar unflexibel vor, wenn man schnell auf einen IRQ in einem Thread reagieren muss zB^^"
+2012-01-02 00:49:36,Homix,"und wenn die local queue vom hauptscheduler gefüllt wird, tritt der numa-effekt vom weit entfernten RAM genauso auf^^"
+2012-01-02 00:49:36,Svenska,Jidder: http://www.supermicro.com/Aplus/motherboard/Opteron2000/MCP55/H8DM3-2.cfm
+2012-01-02 00:50:02,Svenska,"Homix: der sinn von local queues ist, dass das system vollautomatisch ohne globale locks läuft, wenn nichts passiert"
+2012-01-02 00:50:28,Svenska,"der hauptscheduler sortiert die local queues ja nur, wenn auch ein grund dazu besteht (eine cpu läuft leer, ein neuer prozess/thread taucht auf, ...)"
+2012-01-02 00:50:36,Homix,nur ist es vlt besser wenn die cpu danach den thread dann wieder in die local queue tut und nicht in die globale^^ aber dann kann man nicht schnell reagieren wenn man zB einen IRQ schnell mal abfertigen muss und alle cores sind belegt
+2012-01-02 00:50:54,Svenska,ist doch präemptiv - dann kickst du halt einen?
+2012-01-02 00:51:00,Homix,hm ich glaub ich muss da nochmal in ruhe drüber nachdenken ;)
+2012-01-02 00:51:06,Svenska,IRQs unterbrechen doch den programmfluss sowieso
+2012-01-02 00:51:46,Homix,ich geh lieber^^
+2012-01-02 00:51:47,Homix,ciao ;)
+2012-01-02 00:51:56,Svenska,guck mal ins forum
+2012-01-02 00:52:04,Svenska,ich hatte da ein paar dinge zu verschiedenen schedulern gepostet
+2012-01-02 00:52:18,Svenska,u.a. ne abhandlung über den ULE-scheduler von freebsd und einen mini-scheduler für linux
+2012-01-02 00:52:39,Homix,"ob ich da alte threads find, wenn ich nie im forum unterwegs bin?"
+2012-01-02 00:52:44,Svenska,mom
+2012-01-02 00:53:05,Homix,"ah .. zB ""Scheduling, Taskverwaltung und Timing … Ich brauche meinungen :)"" ? ;)"
+2012-01-02 00:53:20,Svenska,"jo, den zB"
+2012-01-02 00:53:39,Homix,"hm aber ganz ehrlich, für mein kleines hobbyos brauch ich nicht so einen komplexen scheduler ;)"
+2012-01-02 00:54:00,Svenska,also den ULE-scheduler find ich relativ einfach (von der beschreibung)
+2012-01-02 00:54:13,Svenska,und der BFS dürfte besser als dein jetziger sein ;)
+2012-01-02 00:54:42,Homix,meinst du mein jetziger reicht nicht aus? ;)
+2012-01-02 00:54:52,Svenska,sonst hätten wir die diskussion grad nicht
+2012-01-02 00:55:18,Jidder,waaaas?
+2012-01-02 00:55:22,Jidder,das internet ohne diskussion?
+2012-01-02 00:55:28,Jidder,da kann ich ja gleich ins bett gehen
+2012-01-02 00:55:35,Svenska,http://www.supermicro.nl/products/motherboard/Xeon7000/7500/X8OBN-F.cfm
+2012-01-02 00:55:37,taljeth,"Homix: Wenn du ständig mit Hobby-OS argumentierst... Der einzige Grund, überhaupt in einem Hobby-OS SMP zu haben ist, dass der Kernel mehrere Leben hat und nicht schon nach dem ersten Absturz alles steht ;-)"
+2012-01-02 00:55:39,Svenska,mää -.-
+2012-01-02 00:55:42,Homix,"naja ... mein OS lieg auch ohne SMP schnell genug ... zumindest wüsste ich nicht, wie ich es mit SMP beschleunigen könnte^^ ob der scheduler dann was rausreißt? ;)"
+2012-01-02 00:56:15,Svenska,da wollte ich jidder multicpuboards zeigen und dann haut der einfach ab. gemein sowas.
+2012-01-02 00:56:27,Homix,"taljeth: genau, jetzt sind 4 pagefaults notwenig und nicht nur einer ;) aber bei triple faults zählt das nicht :("
+2012-01-02 00:57:18,taljeth,Tja
+2012-01-02 00:57:41,taljeth,Da zahlt sich ein anständiger Double-Fault-Handler aus ;-)
+2012-01-02 00:58:15,Homix,"was kann man denn im double fault handler noch retten, was im pagefault/gpf handler nicht zu retten wäre? ;)"
+2012-01-02 00:58:37,taljeth,"Im DF kann man nichts mehr retten, aber es ist halt nur die eine CPU weg ;-)"
+2012-01-02 00:58:49,taljeth,"Bzw. Task abschießen geht immer, wenn der Userspace schuld war"
+2012-01-02 00:58:51,Homix,ah stimmt ;)
+2012-01-02 00:59:08,taljeth,Wobei Userspace schuld und DF passt nicht zusammen
+2012-01-02 00:59:15,Homix,meistens ist der userspace aber nicht schuld^^
+2012-01-02 00:59:45,Homix,naja ich geh schlafen ;)
+2012-01-02 00:59:45,Homix,ciao
+2012-01-02 00:59:45,taljeth,Also zumindest #GP macht unter tyndur meistens der Userspace ;-)
+2012-01-02 00:59:52,Svenska,gn8
+2012-01-02 00:59:59,taljeth,"Hm, und #PF benutzen wir auch regulär"
+2012-01-02 01:00:14,taljeth,Obwohl wir kein COW haben
+2012-01-02 01:00:23,taljeth,gn8 Homix
+2012-01-02 01:00:27,Homix,demand paging reicht ja ;)
+2012-01-02 01:00:34,taljeth,Nur für den Stack
+2012-01-02 01:00:45,Homix,ich nutz das für alles^^
+2012-01-02 10:20:35,Threadcore,Hi
+2012-01-02 10:48:43,bluecode,moin
+2012-01-02 13:06:54,DerFastUrlaubsMut,Morgen
+2012-01-02 13:41:43,tibor,"Wie sieht es eigentlich die lizensrechtliche Situtation aus, wenn man seinen Kernel unter Anleitung des Tutorials aufbaut?"
+2012-01-02 13:42:27,taljeth,Moin
+2012-01-02 13:42:56,DerFastUrlaubsMut,"Der Tutorial-Kernel hat keine direkte Lizenz, untersteht also dem deutschen Urheberrecht -  oder so"
+2012-01-02 13:42:58,DerFastUrlaubsMut,Hi taljeth 
+2012-01-02 13:43:53,taljeth,"Ja, der Tutorialkernel ist nicht zum Kopieren gedacht"
+2012-01-02 13:44:23,taljeth,"Aber was du selbst produzierst, ist deins"
+2012-01-02 13:45:01,taljeth,"Das Urheberrecht schützt die konkrete Implementierung, aber nicht die Konzepte oder Ideen, die das Tutorial vorstellt"
+2012-01-02 13:45:12,DerFastUrlaubsMut,Ah
+2012-01-02 13:45:43,DerFastUrlaubsMut,taljeth: descriptiontyndur - Community-Betriebssystem von lowlevel.brainsware.org unter git.tyndur.org - sollte man da nicht mal den URL ändern?
+2012-01-02 13:46:02,taljeth,Wo?
+2012-01-02 13:46:04,DerFastUrlaubsMut,Also den URL in der Berschreibung natürlich
+2012-01-02 13:46:10,DerFastUrlaubsMut,http://git.tyndur.org/?p=tyndur.git;a=summary
+2012-01-02 13:46:16,taljeth,Ah
+2012-01-02 13:46:50,DerFastUrlaubsMut,Und bei Tutorial.git den Link zum tatsächlichen Tutorial mitaufnehmen
+2012-01-02 13:46:58,taljeth,Besser?
+2012-01-02 13:47:16,DerFastUrlaubsMut,Oder so *g*
+2012-01-02 13:47:49,DerFastUrlaubsMut,"Ich persönlich hätte ja Lowlevel (lowlevel.eu) geschrieben, aber das ist jetzt nur Korinthenkackerei"
+2012-01-02 13:48:57,taljeth,"Beim Tut hab ich mal die URL dazu, aber ich glaube kaum, dass irgendjemand nur das Repo, aber nicht Lowlevel kennt"
+2012-01-02 13:49:33,DerFastUrlaubsMut,Stimmt
+2012-01-02 13:50:11,DerFastUrlaubsMut,http://git.tyndur.org/?p=libext2.git;a=commit;h=cc7f6ad0993f20e36389ac596961603e28534d71 *g*
+2012-01-02 13:50:33,Jidder,oh mann meine birne
+2012-01-02 13:50:42,Jidder,ich hätte silvester echt nicht so viel trinken sollen
+2012-01-02 13:50:47,DerFastUrlaubsMut,"Sei froh, dass es kein Apfel ist"
+2012-01-02 13:50:54,DerFastUrlaubsMut,Und frohes Neues Jidder!
+2012-01-02 13:51:30,Jidder,danke. dir auch ein frohes neues 
+2012-01-02 13:53:07,taljeth,DerFastUrlaubsMut: *g* Stöberst du in alten Commits? Da gibt es noch ein paar andere nette Commitmessages ;-)
+2012-01-02 13:54:08,DerFastUrlaubsMut,Ich seh schon *g*
+2012-01-02 13:55:53,DerFastUrlaubsMut,xD http://git.tyndur.org/?p=tyndur.git;a=commit;h=ddbe139259bf0c682281e85ce33ae839c66cdb19
+2012-01-02 13:56:08,taljeth,Sonst wär OS-Dev ja noch trostloser als sowieso schon *g*
+2012-01-02 13:56:20,DerFastUrlaubsMut,*g*
+2012-01-02 14:06:40,tibor,"Da muss ich mal schaun, dass ich meinen Code säuber"
+2012-01-02 14:07:16,DerFastUrlaubsMut,Basierend auf Tutorial-Kernel ist generell eine schlechte Idee - du sollst ja lernen wie es geht und nicht die Grundlagen kopieren
+2012-01-02 14:09:00,tibor,"Es sind auch eher Kleinigkeiten. Das meiste sieht bei mir ganz anders aus, weil ich es so wie es im Tutorial gelöst ist nicht gebrauchen konnte"
+2012-01-02 14:10:50,tibor,Aber rechtlich gesehen ist es halt ein Urheberverstoß
+2012-01-02 14:13:45,taljeth,"Wenn du den Code behalten willst, lass ihn drin, mir ist das egal"
+2012-01-02 14:14:26,taljeth,"Ich will nur nicht im Tut sagen, dass ihr alle kopieren dürft/sollt/whatever"
+2012-01-02 15:50:22,XanClic,Moin
+2012-01-02 15:50:29,Svenska,moin
+2012-01-02 15:55:16,taljeth,Moin
+2012-01-02 16:00:12,Homix,hi
+2012-01-02 16:33:22,taljeth,"Hm, meine Inbox hat ja gar keinen Fix für die Testfälle... :-)"
+2012-01-02 16:33:38,XanClic,"Meh, ich hab gehofft, es fällt nicht auf *g*"
+2012-01-02 16:33:50,taljeth,*g*
+2012-01-02 16:34:05,taljeth,Erst laut schreien und dann kommt nix ;-)
+2012-01-02 16:34:18,XanClic,"Ja, ich mach ja schon *g*"
+2012-01-02 16:50:45,XanClic,"Hm, irgendwie gefällt mir die Commitmessage „tests: sprintf: no u“, aber ich glaube, das wäre eher was für niwohlOS als für týndur *g*"
+2012-01-02 17:02:07,DesL,moin
+2012-01-02 17:23:25,DesL,http://www.youtube.com/watch?v=xpcUxwpOQ_A 
+2012-01-02 18:01:22,DesL,nick desl
+2012-01-02 18:01:48,Svenska,du schummelst
+2012-01-02 18:07:43,tibor,Muppets :)
+2012-01-02 18:09:08,tibor,http://www.youtube.com/watch?v=qXt6f5WS0vg
+2012-01-02 18:30:44,alexander,Reh
+2012-01-02 18:36:33,taljeth,Hirsch
+2012-01-02 18:39:48,Homix,hm mein PE-loader hat sich von 100 auf 1000 zeilen vergrößert^^
+2012-01-02 18:39:58,taljeth,Und er tut trotzdem noch? ;-)
+2012-01-02 18:40:06,Homix,ne eben nicht ;)
+2012-01-02 18:40:18,Homix,weil ich nicht mal die hälfte aller erwünschten features drin hab ;)
+2012-01-02 18:40:45,bluecode,^ *g*
+2012-01-02 18:45:51,Homix,"dafür wird er toll, falls er fertig wird ;)"
+2012-01-02 18:46:55,taljeth,Hauptsache viel rot ;-)
+2012-01-02 18:47:13,Svenska,was sind denn so die erwünschten features?
+2012-01-02 18:49:08,bluecode,viel rot ;-)
+2012-01-02 18:49:30,Homix,"nicht nur 32-Bit sondern auch 64-Bit PE-Dateien, Copy-On-Write (mehrere prozesse verwenden Pages einer .exe/.dll bis auf sie schreibend zugegriffen wird), Code Pages sind readonly, Data Pages Non-executable, ..."
+2012-01-02 18:49:30,Svenska,hmm. das braucht aber keine tausend zeilen. :-)
+2012-01-02 18:49:36,Homix,die standard sachen halt ;)
+2012-01-02 18:50:03,Homix,"ah, und neben dem Copy-On-Write will ich auch ein Load-On-Use Feature ;)"
+2012-01-02 18:50:04,Svenska,"okay. du unterstützt also das NX-Bit, sofern vorhanden? ;-)"
+2012-01-02 18:50:07,Homix,jop
+2012-01-02 18:50:18,Svenska,und wenns nicht vorhanden ist?
+2012-01-02 18:50:32,Homix,dann .... *trommelwirbel* dann nicht! :)
+2012-01-02 18:50:36,Svenska,(und: kann man es abschalten?)
+2012-01-02 18:50:46,Homix,man kann alles in meinem kernel bisher abschalten ;)
+2012-01-02 18:50:54,Svenska,klingt prima ^^
+2012-01-02 18:51:06,Svenska,(auch die funktion? ;-))
+2012-01-02 18:51:13,Svenska,"(also das ""funktionierend"" abschalten)"
+2012-01-02 18:51:36,Homix,"bloß ich weiß nicht, ob das Load-On-Use so performant ist ;)"
+2012-01-02 18:51:58,Homix,"das wird wohl nur verwendet, wenn die .exe/.dll >= 1 oder 2 MB ist ;)"
+2012-01-02 18:52:01,taljeth,"Svenska: Die größere Frage ist, ob man es anschalten kann"
+2012-01-02 18:52:01,Svenska,"ist es wahrscheinlich nicht, aber es spart speicher"
+2012-01-02 18:53:00,Homix,"naja man kann in ne PE Datei halt Resosurcen reintun, die teilweise viele hundert MB sind .. deswegen ist das auf jeden Fall sinnvoll"
+2012-01-02 18:54:05,Homix,"und ich kann ziemlich leicht das so einrichten, dass er sofort mit der codeausführung startet^^ er muss zwar ab und zu code-pages dann reinladen, aber ich kann während der codeausführung noch im hintergrund die pages nachladen"
+2012-01-02 18:56:43,Svenska,klingt gut
+2012-01-02 19:03:33,Homix,"hm würde es eigentlich sinn machen, einem Prozess zu verbieten, Pages, von denen man Code ausführen kann, zu allozieren?"
+2012-01-02 19:03:57,Homix,"ich denke mal, das würde die meisten Programme nicht stören?"
+2012-01-02 19:04:40,alexander,Wie kann ich PDFs in ihrer Größe verkleinern?
+2012-01-02 19:11:35,taljeth,"Es würde einige Programme aber stören, Homix"
+2012-01-02 19:12:45,Homix,welche zB?
+2012-01-02 19:12:54,Homix,"sowas wie IDEs, Debugger, ...?"
+2012-01-02 19:12:54,taljeth,Zum Beispiel alle mit einem JIT
+2012-01-02 19:13:21,Homix,"ich würde fast sagen, dass es nicht viele Programme auf Xantorix geben wird, die einen JIT haben ;)"
+2012-01-02 19:13:30,taljeth,"Jo, Debugger könnten sowas auch brauchen"
+2012-01-02 19:13:51,Homix,"ich überleg nur, ob ich eine eigene rechtegruppe dafür einführen möchte ;)"
+2012-01-02 19:13:55,taljeth,"Dann wird es noch weniger Programme auf Xantorix, die Sicherheitslücken ausnutzen ;-)"
+2012-01-02 19:14:54,Homix,hm die modernen browser haben glaub ich auch schon einen JIT dabei^^
+2012-01-02 19:15:58,Svenska,"moderne javascript-interpreter sind JIT-compiler, ebenso wie java selbst sowie alles, was unter ""managed code"" fällt"
+2012-01-02 19:16:27,Svenska,"und das wird definitiv nicht weniger, da native/unmanaged code außer bei apple und unix mehr oder sterben soll"
+2012-01-02 19:16:43,Svenska,vgl. .net und android :)
+2012-01-02 19:18:06,Svenska,"wobei ich nicht weiß, ob es sinnvoll ist, spezielle codeausführungs-pages alloziieren zu lassen, sondern das eher je prozess zu regeln (wie machen aktuelle betriebssysteme da eigentlich?)"
+2012-01-02 19:19:15,Homix,jo das meinte ich mit einer eigenen rechtegruppe ;)
+2012-01-02 19:19:33,Homix,hm auf aktuellen betriebssystemen kann man sicher beliebig viele code-pages allozieren
+2012-01-02 19:19:56,Svenska,also bei windows xp kann man sowohl ein whitelist- als auch ein blacklist-verfahren für das NX-bit einstellen
+2012-01-02 19:20:33,Homix,"aber dieses NX-Bit wird dann nur für die Pages verwendet, die man offiziell als readwrite_no_execute alloziert hat!?"
+2012-01-02 19:22:00,Svenska,"keine ahnung, das gilt systemweit und gibt die standardeinstellung für alle prozesse an"
+2012-01-02 19:22:51,Svenska,für .net u.ä. gibt es im system ausnahmen
+2012-01-02 19:23:03,Homix,hm achso
+2012-01-02 20:07:30,tyndur,>> Commit in tyndur.git:refs/heads/master
+2012-01-02 20:07:31,tyndur,Autor: Max Reitz
+2012-01-02 20:07:31,tyndur,tests: sprintf: signed ist nicht immer unsigned
+2012-01-02 20:07:31,tyndur,"* %[uoxX] erwarten einen unsigned int, keinen signed int."
+2012-01-02 20:11:59,alexander,bis nachher
+2012-01-02 20:13:47,tibor,Schreibt tyndur automatisch bei einem commit in den Channel?
+2012-01-02 20:14:40,bluecode,"nope, wir benutzen biologisch angebaute Inder"
+2012-01-02 20:14:53,bluecode,+glückliche
+2012-01-02 20:15:42,tibor,Wen interessiert es schon ob die glücklich sind....
+2012-01-02 20:16:16,DesL,"na gut, sie sind aus käfig haltung - zufrieden?"
+2012-01-02 20:16:46,tibor,Hauptsache man kann sie über die Biotonne entsorgen. Alles andere ist zu teuer
+2012-01-02 20:17:33,stultus,*hust*
+2012-01-02 20:17:59,tibor,Bazinga!
+2012-01-02 20:18:28,Svenska,"*seufz* so sieht die menschheit aus, im angesicht ihres kulturellen untergangs"
+2012-01-02 20:19:03,bluecode,"ah, ein TBBT-Schaur"
+2012-01-02 20:19:03,bluecode,sehr gut
+2012-01-02 20:19:06,Svenska,?
+2012-01-02 20:19:11,Svenska,tbbt?
+2012-01-02 20:19:15,bluecode,the big bang theory
+2012-01-02 20:19:22,Svenska,"achso, nö, guck ich nich ^^"
+2012-01-02 20:19:25,bluecode,bezog sich auf tibor
+2012-01-02 20:19:32,Svenska,dachte schon ^^
+2012-01-02 20:20:32,tibor,"Jo, kommt hier dreimal am Tag"
+2012-01-02 20:20:56,bluecode,im fernsehen?
+2012-01-02 20:21:16,tibor,"Ne, zu besuch"
+2012-01-02 20:21:21,bluecode,und auf englisch? Oder sagt der ernsthaft im deutschen auch bazinga? Oo
+2012-01-02 20:21:22,tibor,Bazinga!
+2012-01-02 20:21:53,tibor,Ich empfang hier kein deutsches Fernsehn
+2012-01-02 20:22:14,bluecode,ist auch kein wesentlicher verlust würde ich vermuten
+2012-01-02 20:22:15,stultus,"Naja, viel verpassen tut man da ja auch nicht *g*"
+2012-01-02 20:22:15,Svenska,echt nicht?
+2012-01-02 20:23:11,bluecode,bazinga?
+2012-01-02 20:23:23,Svenska,mal ne andere frage... funktioniert der plattencache in tyndur auf block- oder auf dateibasis? :-)
+2012-01-02 20:25:16,Svenska,"und... weiß einer, wie man die ~/.xsession-errors am ständigen wachsen hindern kann? alle paar monate legt die hier ~1GB zu..."
+2012-01-02 20:29:01,tibor,"Meine wächst so unwesendlich, da war ich noch ein paar Jahrzehnte brauchen, bis ich ein GB hab"
+2012-01-02 20:29:24,Svenska,du benutzt gnome oder kde? :)
+2012-01-02 20:29:48,tibor,Gnome 3
+2012-01-02 20:29:56,Svenska,da passiert das nicht
+2012-01-02 20:30:10,Svenska,bei mir spammt sich die ständig mit gtk-fehlermeldungen zu :(
+2012-01-02 20:30:54,tibor,"Du könntest die mit einem cron job löschen, ober vielleicht mit logrotate was tun"
+2012-01-02 20:31:07,bluecode,wird die nicht bei jedem Start neu angelegt? (ich frag weil da bei mir sachen von heute drinstehen)
+2012-01-02 20:31:35,Svenska,mit meldungen wie:
+2012-01-02 20:31:36,Svenska,** (evince:16478): WARNING **: Failed to create dbus proxy for org.gnome.SettingsDaemon: Could not get owner of name 'org.gnome.SettingsDaemon': no such name
+2012-01-02 20:31:37,taljeth,"Svenska: Wie kommst du auf die Idee, dass der Plattencache in tyndur existiert und auch noch funktioniert? ;-)"
+2012-01-02 20:32:04,Svenska,"taljeth: okay, das beantwortet meine frage auch. ich überlege nur, was sinnvoller ist - oder ob man beides braucht"
+2012-01-02 20:32:25,taljeth,"Also ich kann dir sagen, wie es theoretisch mit LIOv2 laufen soll"
+2012-01-02 20:33:09,taljeth,"Gecacht wird erstmal im Kernel alles, weil der keinen Unterschied zwischen Block und Dateisystem kennt. Es sind alles Dateisysteme."
+2012-01-02 20:33:33,taljeth,"Aber das Dateisystem kann statt eigene Daten im Cache zu halten, auf den Cache einer anderen Ressource verweisen"
+2012-01-02 20:33:46,taljeth,"Das heißt, ext2 würde einfach nur Verweise auf den Plattencache haben"
+2012-01-02 20:34:01,taljeth,Was letztendlich auf deine Blockebene rausläuft
+2012-01-02 20:34:32,taljeth,"Der wesentliche Unterschied ist, dass es auch Metadaten des Dateisystems betrifft. Ob das ein Vor- oder Nachteil ist, kannst du dir selber raussuchen."
+2012-01-02 20:35:23,Svenska,hmm.
+2012-01-02 20:35:27,Svenska,hä? :-)
+2012-01-02 20:35:56,Svenska,"also ext2 stellt fest, dass die datei /xyz auf den blöcken 4, 15, 63 liegt"
+2012-01-02 20:36:31,Svenska,"der plattentreiber (ata?) mappt das zu 1004, 1015, 1063"
+2012-01-02 20:36:58,Svenska,"und das liegt dann im kernel als irgendeine ressource rum, die bei speicherknappheit rausgeschmissen wird?"
+2012-01-02 20:42:30,Svenska,stimmt das so grob?
+2012-01-02 20:42:39,taljeth,"Genau, der Kernel hat die Plattendaten für ata:/ata00_p0 ganz normal im Cache"
+2012-01-02 20:43:06,taljeth,"Und für ata:/ata00_p0|ext2:/ hat der ext2-Treiber ein Mapping von 4 => 1004 usw. angelegt, das auch im Kernel vorgehalten wird"
+2012-01-02 20:43:40,Svenska,"also gibt es nur einen einzigen kernelweiten cache für ""alle ressourcen"" und jedes gerät, was diesen cache nutzen möchte, muss die elemente selbst da reintun und rausholen?"
+2012-01-02 20:43:55,taljeth,"Ja, mehr oder weniger"
+2012-01-02 20:44:31,taljeth,"Hm, oder eigentlich tut es das nicht aktiv. Es registriert eine Ressource mit einer gegebenen Größe und der Kernel entscheidet selber, wann er einliest und rausschreibt"
+2012-01-02 20:44:41,taljeth,Der Treiber kriegt dann halt eine Nachricht
+2012-01-02 20:47:08,Svenska,"d.h. was (und warum) gecached wird, kann nicht frei entschieden werden, sondern das weiß nur der kernel?"
+2012-01-02 20:48:34,Svenska,muss ich mal näher drüber nachdenken
+2012-01-02 21:00:52,taljeth,"Nur der Kernel weiß ja auch, wie viel Speicher überhaupt für den Cache verfügbar ist"
+2012-01-02 21:07:35,Svenska,"das spielt ja keine rolle... ich dachte eher an funktionen add_to_cache() und get_from_cache(), die beide auch fehlschlagen dürfen"
+2012-01-02 21:09:32,Svenska,"aber stimmt schon, der ansatz ist suboptimal. am ende cachen plattentreiber und dateisystem ihre dinge auch noch jeder für sich :-)"
+2012-01-02 21:39:57,stultus,"Linux, intel_prepare_page_flip <-- kennt jemand die Meldung?"
+2012-01-02 21:40:18,Svenska,klingt nach i915/i965 grafikchips
+2012-01-02 21:40:30,Svenska,abgeraucht?
+2012-01-02 21:40:47,stultus,hardware nicht
+2012-01-02 21:41:00,Svenska,aber software
+2012-01-02 21:41:03,stultus,aber das volle / mochte er wohl nicht sonderlich... syslog von 23gb muss man erstmal schaffen
+2012-01-02 21:41:31,Svenska,du kannst es aber abschalten
+2012-01-02 21:43:26,stultus,glücklicherweise ja nicht mein Problem *g*
+2012-01-02 21:43:37,stultus,Aber ist das ne neue Reihe?
+2012-01-02 21:43:40,Svenska,"achso, ich dachte schon :-) phoronix hatte zum page-flipping einiges"
+2012-01-02 21:43:54,Svenska,"aber wie ich grad sehe, bezieht sich das größtenteils auf radeon"
+2012-01-02 21:43:56,stultus,"Von der Nummerierung her hätte ich ja jetzt an intel gma gedacht, aber die sind ja uralt, und das betroffene notebook soll neu sein "
+2012-01-02 21:44:05,stultus,soweit ich das mitbekommen hab jedenfalls *g*
+2012-01-02 21:44:15,Svenska,ja - und? :-)
+2012-01-02 21:44:20,Svenska,die treiber heißen immernoch gleich
+2012-01-02 21:45:14,stultus,"Klar das die Treiber gleich heißen, mich überraschte nur die hardwarebezeichnung"
+2012-01-02 21:45:24,Svenska,"die sandy bridge chipsätze hatten anfangs keinen support unter linux, als er dann kam, war er broken und später dann instabil :-)"
+2012-01-02 21:45:36,Svenska,"inzwischen soll es wohl gehen, aber es wird viel gebastelt, wie es scheint"
+2012-01-02 21:47:06,Svenska,"die neuen chips sind ja irgendwo immernoch i915/i945/i965-abkömmlinge, deswegen kann es dir auch mal passieren, dass eine funktion ein ""i915_"" enthält"
+2012-01-02 21:47:59,stultus,"grad nachgehakt, geht doch um nen altes, tatsächlich i915 drin ^^"
+2012-01-02 21:48:46,Svenska,"ja, dann soll der betreffende halt einfach das pageflipping ausschalten, fertig :D"
+2012-01-02 21:49:26,stultus,:D gegoogelt und Weitergegeben.
+2012-01-02 21:49:53,stultus,Anfänger und Linux ^^ Aber immerhin das richtige System *g*
+2012-01-02 21:49:56,Svenska,ist halt ne relativ neue technologie im treiber und alte chips werden von intel nur mäßig supported/getestet
+2012-01-02 21:50:00,Svenska,ubuntu?
+2012-01-02 21:50:09,stultus,linux an sich
+2012-01-02 21:50:15,Svenska,aso
+2012-01-02 21:50:16,stultus,gegen ubuntu protestier ich persönlich ja *g*
+2012-01-02 21:50:20,Svenska,dito
+2012-01-02 21:50:23,stultus,auch wenn eins drauf ist
+2012-01-02 21:50:41,stultus,"Aber naja, wenns an grundlegendem scheitert ist Debian stable wohl nicht unbedingt das richtige... *g*"
+2012-01-02 21:51:18,Svenska,"squeeze ist hinreichend alt, um auf dem grafikchip gut zu funktionieren ^^"
+2012-01-02 21:51:55,Svenska,"aber nachdem mich die erste webseite darauf hinwies, dass mein iceweasel doch etwas alt ist (3.5.16...), hab ich per backports ein aktuelles draufgemacht - und wie üblich keine deutsche oberfläche und irgendwie langsamer als vorher"
+2012-01-02 21:51:58,stultus,"ja, aber wie das halt mit nutzern so ist, dann kommen die softwarewünsche..."
+2012-01-02 21:52:02,stultus,pidgin tat wohl nicht mit icq
+2012-01-02 21:52:08,Svenska,?
+2012-01-02 21:52:25,Svenska,pebkac würd ich vermuten. bei mir tuts.
+2012-01-02 21:52:41,stultus,"überraschte mich auch, aber tjo"
+2012-01-02 21:52:49,stultus,mit squeeze?
+2012-01-02 21:52:57,Svenska,ja
+2012-01-02 22:13:16,taljeth,stultus: Bist du eigentlich noch zu einem Ergebnis gekommen mit dem sdldoom-lbuild?
+2012-01-02 22:17:35,stultus,"lbuilds tun, bei doom hab ich noch nicht weiter gesehn gehabt"
+2012-01-02 22:17:50,stultus,"ach genau, autoconf fehlte"
+2012-01-02 22:17:53,stultus,grad mal nachholen *g*
+2012-01-02 22:19:36,taljeth,"Ach ja, autoconf. Das ist immer der spaßigste Teil beim Portieren. ;-)"
+2012-01-02 22:48:43,stultus,"hm, kann es sein das lpt install irgendwann kaputtgegangen ist?"
+2012-01-02 22:48:58,taljeth,Also bei mir tut es
+2012-01-02 22:49:12,taljeth,"Ach install meinst du, nicht get"
+2012-01-02 22:49:18,taljeth,Dann kann es sein ;-)
+2012-01-02 22:49:24,stultus,jup *g*
+2012-01-02 22:49:36,stultus,"Hm, woher kann ich dann denn jetzt sdldoom installieren?"
+2012-01-02 22:49:48,taljeth,Aus ~/public_html? ;-)
+2012-01-02 22:50:05,stultus,brauch ich ja immernoch nen lokalen webserver *g*
+2012-01-02 22:50:12,taljeth,Alternativ halt von Hand nach build/root-local entpacken
+2012-01-02 22:50:18,taljeth,Und das Postinstallskript manuell aufrufen
+2012-01-02 22:50:30,XanClic,Postinstallscript? Sowas gibts? *g*
+2012-01-02 22:51:01,taljeth,"Das ist das, was die Links nach file/system/lpt-bin anlegt ;-)"
+2012-01-02 22:51:12,taljeth,doom nicht im Pfad zu haben wär doch doof
+2012-01-02 22:51:26,XanClic,Ich hab immer so eine Zeile wie cd packages && tar -xf sdldoom-1.10.tar && cp packages/sdldoom/bin/doom ../../tyndur/build/root-hd/apps && rm -r packages && cd .. *g*
+2012-01-02 22:51:40,taljeth,"Hm, auch eine Möglichkeit"
+2012-01-02 22:51:49,taljeth,Nimmt halt doppelt Platz weg für die Binaries
+2012-01-02 22:53:40,stultus,hm
+2012-01-02 22:53:43,stultus,Fehlerhandling wäre gut :D
+2012-01-02 22:53:51,stultus,sdldoom startet wunderbar. leider auch ohne vesa :D
+2012-01-02 22:54:12,taljeth,Wird überbewertet
+2012-01-02 22:54:25,taljeth,"Toll wäre es erstmal, wenn man Doom auch wieder beenden könnte *g*"
+2012-01-02 22:54:47,alexander,Reh again
+2012-01-02 22:54:51,stultus,"Hm, gegen welchen Branch habt ihr das getestet, und wann? ^^"
+2012-01-02 22:54:55,alexander,Du isch möschte disch heut noch senn
+2012-01-02 22:55:06,taljeth,Krónhjörtur
+2012-01-02 22:55:20,taljeth,stultus: Gegen irgendeinen halbwegs aktuellen video-Branch?
+2012-01-02 22:55:33,taljeth,Also halbwegs aktuell heißt der von gestern *g*
+2012-01-02 22:55:43,stultus,Ok... Das ist doof :D
+2012-01-02 22:55:47,taljeth,Weil?
+2012-01-02 22:55:53,taljeth,Kein update_env gemacht?
+2012-01-02 22:56:02,stultus,[CPU0] Exception 14; Error Code = 0x6
+2012-01-02 22:56:03,stultus,PID 23: file:/system/lpt-bin/doom
+2012-01-02 22:56:06,stultus,"hm, eigentlich schon"
+2012-01-02 22:56:17,taljeth,"Beim normalen Spielen, nicht beim Beenden?"
+2012-01-02 22:56:25,stultus,bevor ich in ein menü komme.
+2012-01-02 22:56:37,taljeth,"Hm, klingt nicht gut"
+2012-01-02 22:56:41,stultus,irgendwo zwischen Modeset und erstem Bild.
+2012-01-02 22:56:49,stultus,upload_buffer steht noch im Log
+2012-01-02 22:57:49,taljeth,"Also der oberste Commit bei mir ist ""! Jede Menge alten Code rausgeworfen"""
+2012-01-02 22:57:50,XanClic,0x06 klingt auch kaputt
+2012-01-02 22:57:54,XanClic,Das wäre gesetztes IDT- und TI-Bit
+2012-01-02 22:58:03,XanClic,"ach, PF m("
+2012-01-02 22:58:06,taljeth,"Das ist ein PF, kein GPF"
+2012-01-02 22:58:15,stultus,hm
+2012-01-02 22:58:19,taljeth,"Userspace, Write, das klingt schon vernünftig"
+2012-01-02 22:58:24,stultus,dadrauf liegt eigentlich nur der Compile-Fix.
+2012-01-02 22:58:46,taljeth,"Jo, einen eigenen Compilefix habe ich auch noch obendrauf"
+2012-01-02 22:59:26,taljeth,Dann schau halt mal den Stacktrace an
+2012-01-02 23:03:28,stultus,Hm :/
+2012-01-02 23:03:30,stultus,Denkbar unhilfreich
+2012-01-02 23:04:33,taljeth,Das heißt?
+2012-01-02 23:04:50,stultus,Nicht einer der Calls hängt in meinem Code? ^^
+2012-01-02 23:05:14,taljeth,"Aber irgendwo in der libc, oder in Doom-Code?"
+2012-01-02 23:05:23,stultus,"5x sdl, danach in doom"
+2012-01-02 23:05:26,stultus,ganz obendrauf memset.
+2012-01-02 23:06:37,stultus,"ok, nicht 5x, 3x."
+2012-01-02 23:06:50,stultus,irgendwo im Modeset
+2012-01-02 23:07:07,taljeth,"Ah, ich kann's reproduzieren"
+2012-01-02 23:07:13,taljeth,-vga std ist der Unterschied ;-)
+2012-01-02 23:07:16,stultus,ah
+2012-01-02 23:10:47,stultus,nett :)
+2012-01-02 23:10:56,stultus,Das man sich mit der Maus nicht umsehn kann ist normal?
+2012-01-02 23:11:07,XanClic,jo
+2012-01-02 23:11:09,SHyx0rmZ,jo
+2012-01-02 23:14:31,taljeth,"Hm, wie großzügig ist libvideo_change_display_resolution() bei der Interpretation seiner Parameter?"
+2012-01-02 23:14:46,taljeth,"Könnte da sowas wie ""ach, 24 Bit sind doch auch fast 32"" vorkommen?"
+2012-01-02 23:14:58,stultus,Normalerweise sollte er sich auf die Auflösung verlassen.
+2012-01-02 23:15:05,stultus,Das er sich an die Farbtiefe nicht hält kann passieren
+2012-01-02 23:15:08,stultus,wenn sie nicht vorhanden ist.
+2012-01-02 23:15:21,taljeth,"Hm, okay, und es schlägt dann trotzdem nicht fehl?"
+2012-01-02 23:15:24,stultus,dann nimmt er das größte verfügbare
+2012-01-02 23:15:33,taljeth,"Gut, damit rechnet SDL halt nicht ;-)"
+2012-01-02 23:15:43,stultus,Dann ist also nur der sdl-port doof :D
+2012-01-02 23:15:49,taljeth,"Hm, obwohl, größer wäre kein Problem"
+2012-01-02 23:15:52,stultus,Ne Funktion um sich den Modus zu holen gibts ja
+2012-01-02 23:16:11,stultus,wenn man sich an die hält sollte es da nirgends Probleme geben
+2012-01-02 23:16:12,taljeth,"Das memset kann nur faulten, wenn der Buffer, der zurückkommt, kleiner als width * height * (bpp / 8) ist"
+2012-01-02 23:16:24,stultus,"hm, kleinere bpp?"
+2012-01-02 23:16:32,stultus,Lass mich kurz innen Code schauen
+2012-01-02 23:16:41,stultus,Er sollte das eigentlich nicht machen... außer... hm :/
+2012-01-02 23:16:45,taljeth,"Um es genau zu sagen, müsste ich mehr Debugcode einbauen"
+2012-01-02 23:17:22,taljeth,"SDL macht erstmal libvideo_change_display_resolution(0, width, height, bpp), da kommt 0 zurück, also Erfolg"
+2012-01-02 23:17:35,taljeth,front = libvideo_get_frontbuffer_bitmap(0);
+2012-01-02 23:17:42,taljeth,"this->hidden->buffer = libvideo_open_upload_buffer(front, &buffer_size);"
+2012-01-02 23:17:54,taljeth,"SDL_memset(this->hidden->buffer, 0, width * height * (bpp / 8));"
+2012-01-02 23:18:03,stultus,Arghs
+2012-01-02 23:18:21,stultus,"Also, im Code wäre eine Möglichkeit tatsächlich drin wo das passiert."
+2012-01-02 23:18:22,taljeth,"Falls buffer_size nicht stimmt, versucht er noch zu meckern, macht aber kein return NULL wie er wohl besser sollte"
+2012-01-02 23:18:35,stultus,Wenn er aus irgendeinem Grund die Modi tatsächlich bpp absteigend sortiert hat.
+2012-01-02 23:18:50,taljeth,-vga cirrus hat doch nur 24bpp?
+2012-01-02 23:18:56,stultus,"Dann ist er an den größeren vorbei, hat noch garkeinen best_match, und findet dann nurnoch den kleineren bpp."
+2012-01-02 23:19:18,taljeth,Welche Datei muss ich denn anschauen?
+2012-01-02 23:19:40,stultus,cdi/lib/video/rpc_device.c
+2012-01-02 23:19:52,stultus,80-95
+2012-01-02 23:20:18,taljeth,Ok
+2012-01-02 23:20:42,stultus,Da kanns also wirklich vorkommen dasser nen nächstkleineren kriegt.
+2012-01-02 23:20:49,taljeth,"Wenn es keinen größeren gibt, nimmt er einfach irgendeinen"
+2012-01-02 23:20:55,taljeth,(!best_match  || mode->depth >= best_match->depth))
+2012-01-02 23:21:44,taljeth,"Kommt davon, wenn man mich Code anfassen lässt *g*"
+2012-01-02 23:22:09,taljeth,"Sollte wohl best_match && ... sein, oder?"
+2012-01-02 23:22:49,taljeth,"Hm, nein, auch nicht"
+2012-01-02 23:22:59,taljeth,Alles kaputt :-)
+2012-01-02 23:23:03,stultus,Stimmt *g*
+2012-01-02 23:23:18,stultus,"Also, setmode morgen mal neuschreiben"
+2012-01-02 23:24:02,taljeth,Ein zusätzliches && mode->depth >= rpc->depth düfte es tun
+2012-01-02 23:24:25,taljeth,Der else-Zweig ignoriert rpc->depth bisher komplett
+2012-01-02 23:24:40,stultus,jo
+2012-01-02 23:24:53,stultus,"ok, damit sollte er dann aufjedenfall nicht crashen *g*"
+2012-01-02 23:25:03,stultus,Farben können immernoch komisch werden *g*
+2012-01-02 23:25:11,stultus,"Bzw, allgemein Bildmüll."
+2012-01-02 23:25:21,taljeth,"Ich würde eher sagen, er gibt einen Fehler zurück"
+2012-01-02 23:25:34,taljeth,"Weil Doom 32 Bit will, aber es nur 24-Bit-Modi gibt"
+2012-01-02 23:25:53,stultus,"ah, in dem speziellen fall ja"
+2012-01-02 23:26:06,stultus,"Ich dachte jetzt ganz generell, 24 ordern und 32 kriegen ist halt genauso hirnrissig"
+2012-01-02 23:26:13,stultus,auch wenn der Code das erlauben würde.
+2012-01-02 23:26:43,taljeth,"Hm, die Implementierung von TYNDUR_ListModes in SDL ist auch irgendwie kaputt"
+2012-01-02 23:26:49,stultus,"Wie gesagt, korrekter selbstrendernder Code müsste sich hinterher das Format holen und damit arbeiten, dann darf eigentlich nichts schiefgehn *g*"
+2012-01-02 23:27:20,taljeth,Jo...
+2012-01-02 23:27:26,taljeth,Du darfst gern SDL fixen ;-)
+2012-01-02 23:27:37,stultus,Besser nicht *g*
+2012-01-02 23:27:49,taljeth,Das ist alles nur ein großer Hack
+2012-01-02 23:28:04,stultus,Außer vielleicht dahingehend das er nicht mehr selber rendert sondern ordentlich die Primitivenfunktionen nimmt.
+2012-01-02 23:28:25,taljeth,"Da ist zum Beispiel hartkodiert, dass wir mit 24 und 32 Bit drei Modi haben und sonst keine"
+2012-01-02 23:28:33,taljeth,"Wer weiß, wenn das richtig wäre, würde Doom vielleicht gar keine 32 Bit verlangen *g*"
+2012-01-02 23:29:00,taljeth,"stultus: Wenn du dich so weit reinknien willst, gern"
+2012-01-02 23:29:11,stultus,würde das die sache so viel schlimmer machen?
+2012-01-02 23:29:24,stultus,SDL hab ich einmal überflogen und fand dann dass das doch etwas verrückt ist *g*
+2012-01-02 23:29:38,stultus,"Ok, beantwortet meine Frage eigentlich"
+2012-01-02 23:30:58,taljeth,"Naja, verrückt ist Normalzustand bei Software"
+2012-01-02 23:31:25,stultus,*g*
+2012-01-02 23:31:34,stultus,Nur das diese Grafiksachen immer eine schippe drauflegen.
+2012-01-02 23:31:41,stultus,Xorg fand ich ja auch schon eher gruselig.
+2012-01-02 23:32:00,stultus,Könnte aber da vllt. sogar einfach an undokumentiert liegen.
+2012-01-02 23:32:18,taljeth,"Keine Ahnung, ich weiß, warum ich mir das noch nicht näher angeschaut habe *g*"
+2012-01-02 23:33:20,stultus,Dürfte ohne weiteres mit LIOv2 konkurrieren können *g*
+2012-01-02 23:34:01,taljeth,"Da weißt wiederum du nicht, wovon du redest, oder? ;-)"
+2012-01-02 23:34:33,stultus,Nicht zu viel. Aber so chaotisch kanns eigentlich nicht sein *g*
+2012-01-02 23:34:56,taljeth,LIOv2 ist eigentlich recht anständig. Aber genau das macht es halt so langwierig...
+2012-01-02 23:35:46,stultus,Das Hauptproblem bei Xorg-video-driver-* ist an sich das X Einzelteile ineinandergreifen und man nicht sicher sagen kann wie. 
+2012-01-02 23:35:57,taljeth,Und ich bin mir immer noch nicht schlüssig wie ich den Rest von LIOv2 mergen soll
+2012-01-02 23:36:05,stultus,so schlimm?
+2012-01-02 23:36:15,taljeth,"Meine Hoffnung war ja, dass das einfach Antoine irgendwann macht, aber das scheint nicht funktioniert zu haben ;-)"
+2012-01-02 23:36:53,taljeth,"Hm, so schlimm eigentlich nicht. Es ist halt einfach eine Menge Zeug"
+2012-01-02 23:37:33,taljeth,Und die Commit-History kannst du vergessen
+2012-01-02 23:37:52,stultus,Das ist natürlich doof.
+2012-01-02 23:37:55,taljeth,"Man muss es halt zu vernünftigen Einzelschritten zusammenfassen, damit man es einigermaßen reviewen kann"
+2012-01-02 23:38:23,taljeth,"Ich schätze, du kennst das Problem"
+2012-01-02 23:38:38,taljeth,Stell dir den Grafikcode in zehnmal größer vor ;-)
+2012-01-02 23:38:52,stultus,"Ähm, ja. Das wäre doof :D"
+2012-01-02 23:39:16,stultus,Die größten blobs da sind ja wirklich nur einmal der lib-kram von cdi und der treiber an sich.
+2012-01-02 23:39:19,taljeth,"Und das andere Problem ist, dass manche Sachen im Moment noch eher hacky sind"
+2012-01-02 23:39:27,stultus,aber selbst die sind für sich relativ harmlos 
+2012-01-02 23:39:31,taljeth,Zum Beispiel nimmt der LIO-Cache statisch 20 MB Speicher weg
+2012-01-02 23:39:39,taljeth,Das ist natürlich totaler Blödsinn
+2012-01-02 23:40:11,taljeth,"stultus: Ja, da bieten sich ein paar natürliche Trennlinien an, das ist ganz geschickt"
+2012-01-02 23:48:12,Fukano,Moin
+2012-01-02 23:48:34,stultus,moin
+2012-01-02 23:49:07,Svenska,moin
+2012-01-02 23:51:14,Fukano,Hätte mich mal einer vorwarnen können wie alt man sich mit 18 fühlt :(
+2012-01-02 23:51:29,alexander,Mit 18 hat man noch Träume
+2012-01-02 23:51:44,alexander,Da wachsen noch alle Bäumee iiiiiiiiiiiiin den Hiiiiiiiiiimmeeeeeeeeeeel der Lieeeeeeeeeeeebeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+2012-01-02 23:52:21,alexander,Aber wenn du dich mit 18 fühlst komm mal in mein Alter
+2012-01-02 23:52:30,stultus,"Hm, heute Geburtstag gehabt oder wie? *g*"

@@ -1,0 +1,167 @@
+date/time,nick,message
+2013-02-08 08:48:44,DesL,moin
+2013-02-08 09:25:03,alexander,morgen
+2013-02-08 09:26:31,DesL,moin
+2013-02-08 09:39:36,kevin,Genau
+2013-02-08 09:45:37,DesL,ich finde es immer schön wenn leute in der datenbank rumpfuschen die keine ahnung haben was sie da eigentlich genau tun -.-
+2013-02-08 09:45:47,DesL,und ich darf es dann fixen...
+2013-02-08 09:46:23,DesL,da gehört talent zu das auszugsdatum VOR das einzugsdatum zu legen
+2013-02-08 09:46:39,DesL,mit dem script frontend eigentlich gar nicht möglich
+2013-02-08 09:46:58,DesL,"aber neee, da wusste es ja jemand mal wieder besser"
+2013-02-08 13:25:48,tyndurcgi65,Hello ? bzw Hallo ?
+2013-02-08 13:27:19,tyndurcgi65,somebody available ??
+2013-02-08 13:27:32,kevin,Hello . bzw Hallo .
+2013-02-08 13:27:52,tyndurcgi65,"Ich hätte mal ne frage zu ""ld"""
+2013-02-08 13:28:07,kevin,Ok
+2013-02-08 13:28:17,tyndurcgi65,isses möglich flat binaries zu erzeugen ? bzw wie :/
+2013-02-08 13:29:34,kevin,"Ja, du musst das Ausgabeformat entsprechend einstellen. Dafür gibt es sowohl eine Kommandozeilenoption als auch eine Anweisung, die man ins Linkerskript packen kann."
+2013-02-08 13:29:37,tyndurcgi65,"Damit ich es zu nem floppy image machen kann, es geht um nen kernel.. unter windows habe ichs ohne probleme geschafft mit flat assembler, aber unter linux mit gcc, as und ld.. :/"
+2013-02-08 13:30:02,tyndurcgi65,"im linkerscript habe ich es eingetragen = OUTPUT_FORMAT(""binary"")"
+2013-02-08 13:30:34,kevin,Das sollte eigentlich tun
+2013-02-08 13:30:53,tyndurcgi65,"so wie ich es kannte  => cp -b kernel kernel.img, aber da ""kernel"" immer noch ne elf-binary ist, gehts nicht"
+2013-02-08 13:31:23,kevin,Wie sieht dein ld-Aufruf aus?
+2013-02-08 13:31:32,tyndurcgi65,ld -melf_i386 -Tkernel.ld -o kernel start.o includes/string.o shell/shell.o kernel-src/init.o
+2013-02-08 13:31:47,kevin,-melf_i386 -- fällt dir was auf?
+2013-02-08 13:32:11,tyndurcgi65,"ja ist klar, aber wenn ich es weglasse meckert er rum, vonwegen nicht kompatibel ;D irgend wie ein teufelskreis xD"
+2013-02-08 13:32:20,kevin,"Das macht es nicht richtiger, es hinzuschreiben ;-)"
+2013-02-08 13:32:30,kevin,Was genau von wegen nicht kompatibel?
+2013-02-08 13:32:37,tyndurcgi65,sekunde
+2013-02-08 13:32:58,kevin,"Übrigens sind flache Binaries für den Kernel genauso unschön wie ihn zu einem Floppyimage zu ""kompilieren"""
+2013-02-08 13:33:20,tyndurcgi65,haste ne schönere lösung ?
+2013-02-08 13:33:22,kevin,"Die müssen eigentlich nur für den Bootloader sein, und da nimmt man idealerweise was fertiges"
+2013-02-08 13:34:11,kevin,"Jo, Multiboot-Kernel in ELF und dann z.B. mit GRUB oder qemu -kernel foo.elf booten"
+2013-02-08 13:34:34,kevin,So wie hier: http://www.lowlevel.eu/wiki/Teil_4_-_Hello_World
+2013-02-08 13:35:34,tyndurcgi65,"ja qemu ist auch son ding, wenn ich den kernel über qemu starte, kommt, dass was ich ausgeben will - hello world, oder so - und dann folgen die ganzen bios ausgaben und qemu belibt stehen und versucht von ner ROM zu booten"
+2013-02-08 13:36:01,kevin,"Nein, andersrum"
+2013-02-08 13:36:11,kevin,Erst kommt das BIOS und schreibt das ganze Zeug auf den Bildschirm
+2013-02-08 13:36:19,kevin,Dann kommt aus dem ROM der Multiboot-Loader und lädt dein Kernel
+2013-02-08 13:36:31,kevin,Und dann schreibt dein Kernel einfach links oben was hin ohne vorher den Bildschirm zu löschen
+2013-02-08 13:37:40,tyndurcgi65,"ja  meinte ich doch. weswegen ich versuche nen floppy image zu bekommen, weil qemu bzw das BIOS dann immer stehen bleibt, bei der Ausgabe: Try to boot from ROM, oder so.. und wenn ich dann was ausgeben, kommt nichts"
+2013-02-08 13:38:00,tyndurcgi65,"wenn ich den bildschirm lösche und dann was ausgeben, bleibt er schwarz.."
+2013-02-08 13:38:34,tyndurcgi65,void clear(void) { 	char* mem = (char*)0xb8000; 	while(mem != 0) { 		*mem = 0; 		++mem;	 	}  }
+2013-02-08 13:42:12,tyndurcgi65,Jetzt nochmal zum error von ld =>
+2013-02-08 13:42:13,tyndurcgi65, i386 architecture of input file `start.o' is incompatible with i386:x86-64 output
+2013-02-08 13:42:29,tyndurcgi65,wenn ich versuche die besagte option weg zu lassen
+2013-02-08 13:43:06,kevin,"Bist du sicher, dass du in clear() den kompletten Speicher von 0xb8000 bis 4 GB nullen willst...?"
+2013-02-08 13:43:45,kevin,"Ah, dann musst du mal schauen, wie du ihm klar machst, dass du i386-Binaries meinst und nicht x86_64-Binaries"
+2013-02-08 13:44:06,kevin,Analog zu deinem ELF-Parameter würde ich es mal mit binary_i386 probieren
+2013-02-08 13:46:10,tyndurcgi65,"daist kein parameter, also binary_i386 .. ich schau grade mal auf der manpage"
+2013-02-08 13:47:40,mgottschlag,tyndurcgi65: hast du ein linker-script?
+2013-02-08 13:49:14,tyndurcgi65,ja
+2013-02-08 13:49:52,tyndurcgi65,"OUTPUT_FORMAT(""binary"")  ENTRY(_start)  SECTIONS {      . = 0x100000;      .text : {         *(multiboot)         *(.text)     }     .data ALIGN(4096) : {         *(.data)     }     .rodata ALIGN(4096) : {         *(.rodata)     }     .bss ALIGN(4096) : {         *(.bss)     } }"
+2013-02-08 13:50:17,mgottschlag,dann änder doch mal das Ausgabeformat da entsprechend auf was mit i386
+2013-02-08 13:50:32,tyndurcgi65,eigtich brauche aber nen flat binary
+2013-02-08 13:50:48,mgottschlag,"irgendwo in ""ld --help"" steht, wie der Parameter für i386-flat-binary heißt"
+2013-02-08 13:50:52,mgottschlag,vermutlich binary_i386
+2013-02-08 13:51:37,tyndurcgi65,ne
+2013-02-08 13:51:38,tyndurcgi65,ld -A i386 -Tkernel.ld -o kernel start.o includes/string.o shell/shell.o kernel-src/init.o ld: target binary_i386 not found
+2013-02-08 13:52:27,mgottschlag,"hm, tatsache"
+2013-02-08 13:52:38,mgottschlag,"mom, mal nachsehen, wie das in meinem letzten Kernel war"
+2013-02-08 13:53:14,mgottschlag,"ah, ne, ich hab auch nur elf benutzt"
+2013-02-08 13:53:23,tyndurcgi65,:(
+2013-02-08 13:53:49,mgottschlag,"wobei ich auch nicht wirklich weiß, warum man nicht grub + elf benutzen sollte :)"
+2013-02-08 13:54:50,tyndurcgi65,"damit habe ich mich noch nciht befasst,bzw der tut der vorhanden ist funktioniert nicht"
+2013-02-08 13:56:02,tyndurcgi65,"oder haste da einen ratschlag wie es mit debian squeeze, funktionieren würde, grub dazu zu bringen den kernel zu laden beim start"
+2013-02-08 13:57:26,mgottschlag,"was hast du denn bis jetzt versucht? ich benutzte immer einfach grub-mkrescue, um mir ein CD-Image erstellen zu lassen"
+2013-02-08 13:58:40,tyndurcgi65,wie würde das gehen
+2013-02-08 14:00:01,mgottschlag,"http://codepad.org/YGhKyzgx <- das war mein script dafür, der Kernel liegt in boot/kernel"
+2013-02-08 14:00:25,mgottschlag,und der kernel war halt ein 32-bit-elf
+2013-02-08 14:01:28,mgottschlag,"hm. warum findet man Fehler eigentlich erst, wenn der Code auf nem pastebin ist?"
+2013-02-08 14:06:03,tyndurcgi65,"was meinste in dem source mit ""path-to-build-dir"" ? meinste das wo kernel liegt?"
+2013-02-08 14:06:39,mgottschlag,"naja, das Verzeichnis, wo meine Makefiles die ganzen Ausgabedateien hinlegen (in Unterordner davon)"
+2013-02-08 14:07:34,tyndurcgi65,"#!/bin/bash  if [ $# -ne 2 ] then 	echo ""Usage: `basename $0` <architecture> <path-to-build-directory>"" 	echo ""  where <architecture> is one of x86/x86_64."" 	exit 1 fi  ARCH=$1 BUILD_DIR=$2  case ""$ARCH"" in 	""x86"") 		echo ""Building an x86 cd image..."" 		;; 	""x86_64"") 		echo ""Building an x86 cd image..."" 		;; 	*) 		echo ""Error: Unknown architecture!"" 		exit 2 		;; esac  if [ ! -e ""$BUILD_DIR/$ARCH/boot/kernel"" ] then 	echo "
+2013-02-08 14:07:38,tyndurcgi65,sry
+2013-02-08 14:07:46,tyndurcgi65,Building an x86 cd image... Error: The kernel for the specified architecture does not exist.
+2013-02-08 14:07:50,tyndurcgi65,?
+2013-02-08 14:07:51,tyndurcgi65,lol
+2013-02-08 14:08:19,mgottschlag,"verstehst du die Zeile ""if [ ! -e ""$BUILD_DIR/$ARCH/boot/kernel"" ]""?"
+2013-02-08 14:08:38,tyndurcgi65,klar.. da fehlt bei mir dann ein sub dir
+2013-02-08 14:08:39,tyndurcgi65,-.-
+2013-02-08 14:08:45,mgottschlag,"du musst die ganzen Pfade auf dein Setup anpassen, oder dir aus den letzten 10 Zeilen ein neues Skript bauen"
+2013-02-08 14:09:44,mgottschlag,"wichtig ist wirklich nur, dass du, wenn du grub_mkrescue aufrufst, irgendwie ein grup-Skript angelegt hast, das in einem Ordner liegt, in dem an der entsprechenden Stelle auch dein Kernel liegt"
+2013-02-08 14:10:14,tyndurcgi65,?
+2013-02-08 14:10:38,mgottschlag,*grub
+2013-02-08 14:10:58,mgottschlag,"kP, halt der Ordner makecdrom_iso aus dem Skript, das ist der Inhalt der CD"
+2013-02-08 14:11:08,tyndurcgi65,"ich versteh nicht was du damit meinst, bin nicht der grub guru"
+2013-02-08 14:11:34,tyndurcgi65,und was fürn skript soll da rein ?
+2013-02-08 14:11:59,mgottschlag,"ähm, nicht Skript, halt die grub.cfg, die der da erstellt"
+2013-02-08 14:12:09,tyndurcgi65,klar
+2013-02-08 14:12:51,tyndurcgi65,"was liegt im ""system"" ordner ?"
+2013-02-08 14:13:38,mgottschlag,"nichts interessantes, lass ihn weg ^^"
+2013-02-08 14:13:46,mgottschlag,(Programme...)
+2013-02-08 14:16:00,tyndurcgi65,mhm...
+2013-02-08 14:16:03,tyndurcgi65,Building an x86 cd image... Enabling BIOS support ... /usr/bin/grub-mkrescue: 382: /usr/bin/grub-mkrescue: xorriso: not found
+2013-02-08 14:21:05,tyndurcgi65,"Das skript erstellt die ordner nicht o,0"
+2013-02-08 14:21:15,tyndurcgi65,mkdir $BUILD_DIR/makecdrom_iso mkdir $BUILD_DIR/makecdrom_iso/boot mkdir $BUILD_DIR/makecdrom_iso/boot/grub
+2013-02-08 14:21:42,tyndurcgi85,nichts davon ist vorhanden
+2013-02-08 14:21:53,tyndurcgi85,"bin grade irgendwie gekickt worden.. o,0"
+2013-02-08 14:25:30,mgottschlag,"im Zweifelsfall leg die Ordner von Hand an und lösch die Teile vom Skript, die für dich nicht relevant sind"
+2013-02-08 14:26:17,tyndurcgi85,Ahh danke alles klappt und der kernel läuft :** 
+2013-02-08 14:26:37,tyndurcgi85,vielen dank :)
+2013-02-08 14:29:22,tyndurcgi85,"Weis einer, wo man die ganzen Informationen her bekommt, bzgl. hintergund farben und welche interrupts das sind etc pp ?"
+2013-02-08 14:34:28,Dimension,hallo
+2013-02-08 14:36:55,ultr0x00r,jemand da?
+2013-02-08 14:37:09,mgottschlag,"ne, sind alle schon schlafen gegangen"
+2013-02-08 14:37:13,mgottschlag,moin
+2013-02-08 14:39:28,tyndurcgi85,moin
+2013-02-08 14:39:48,alexander,Eine Flut neuer Menschen
+2013-02-08 14:40:52,tyndurcgi85,"mgottshlag wenn der pc nun in Textmodus ist, wie bekomme ich dort nen einfachen Zeilen umbruch ? \n geht nicht.. bzw da steht dann ein nettes sonderzeichen "
+2013-02-08 14:41:37,mgottschlag,"das musst du selber machen, du hast einfach ein 2D-Array mit fester Größe und berechnest Positionen darin"
+2013-02-08 14:42:02,mgottschlag,"z.B. scrollen geht dann einfach so, dass du den ganzen Inhalt verschiebst"
+2013-02-08 14:42:28,tyndurcgi85,etwas erklärlicher mit dem array ? :P
+2013-02-08 14:43:17,mgottschlag,"naja, oben links ist eintrag 0 * width + 0, oben rechts ist 0*width+79"
+2013-02-08 14:43:27,mgottschlag,"nächste Zeile dann 1*width+0, etc"
+2013-02-08 14:43:40,mgottschlag,und bei nem Zeilenumbruch berechnest du die Position in deinem Speicherbereich einfach neu
+2013-02-08 14:43:52,ultr0x00r,scrollen um rows/2 beschleunigt das scrollen
+2013-02-08 14:44:39,tyndurcgi85,:/
+2013-02-08 14:45:56,mgottschlag,tyndurcgi85: hast du schonmal auf nem anderen OS im Code ein Bitmap generiert oder so?
+2013-02-08 14:46:01,ultr0x00r,"der ""framebuffer"" im textmode hat die größe rows*cols*2 da für jedes zeichen auch die farbe gespeichert wird"
+2013-02-08 14:47:49,ultr0x00r,"da einfach ein memcpy(fb, fb+size/2,size/2) und ein memset(fb+size/2, 0, size/2)"
+2013-02-08 14:48:00,tyndurcgi85,n0pe
+2013-02-08 14:48:29,tyndurcgi85,mgottschlag: ne
+2013-02-08 14:48:44,mgottschlag,"tyndurcgi85: alle Felder auf deinem Textbildschirm sind ja im Speicher linear angeordnet, also kannst du einfach den Rest der Zeile überspringen, um in die nächste zu gelangen"
+2013-02-08 14:49:40,tyndurcgi85,"mgottschlag: wie würde ich sowas anstelle, alles was mit meiner printf geschrieben wird, landet in einem char array:"
+2013-02-08 14:49:48,tyndurcgi85,output_buffer
+2013-02-08 14:50:07,mgottschlag,einfach ein paar Stellen in dem Array überspringen?
+2013-02-08 14:50:19,ultr0x00r,aso und ein /n einfach abfangen und x=0; y++; if (y>=rows)scroll();
+2013-02-08 14:50:34,mgottschlag,also wenn du mit dem char array grad die Adresse des Grafikspeichers meinst
+2013-02-08 14:51:04,tyndurcgi85,"ja das array zeigt auf den grafikspeicher, 0xb8000"
+2013-02-08 14:51:08,mgottschlag,"der Code von ultr0x00r geht natürlich nur, wenn du bereits x und y berechnest - muss man nicht unbedingt"
+2013-02-08 14:51:52,tyndurcgi85,"also wenn ich weis, wieviele zeichen in eine zeile passen, kann ich wenn ein zeilenumbruch kommt folgendes mache:"
+2013-02-08 14:52:10,ultr0x00r,caret=(y*cols+x)*2 und x++ if(x>=cols)nl(); in putc()
+2013-02-08 14:53:16,tyndurcgi85,int skipp = strlen(output_buffer) - chars_per_line; output_buffer[strlen(output_buffer) -1 + skipp]  <= ab da dann weiter schreiben ?
+2013-02-08 14:53:23,kevin,"Hm, git checkout -p ist ja richtig praktisch :-)"
+2013-02-08 14:54:11,tyndurcgi85,weiß einer ausm kopf wieviele zeichen in eine Line passen ?
+2013-02-08 14:54:38,kevin,80 für den normalen Textmodus
+2013-02-08 14:54:43,ultr0x00r,"der echte krampf kommt eh erst bei utf8, wobei da wohl eher mit bitmaps"
+2013-02-08 14:57:31,ultr0x00r,freetype *liebhab*
+2013-02-08 14:59:32,kevin,"Freetype hat mir immer nur verschmiertes Zeug geliefert. Außer mit Bitmapfonts, aber das ist ja witzlos."
+2013-02-08 15:05:25,ultr0x00r,"vorrendern mit ner grafiklib, wie sdl"
+2013-02-08 18:32:04,tyndurcgi84,Jemand da ?
+2013-02-08 18:33:16,kevin,Nein
+2013-02-08 18:34:12,tyndurcgi84,Ok
+2013-02-08 18:45:10,bluecode,und jetzt?
+2013-02-08 18:46:17,kevin,"Du meinst, er wollte noch mehr?"
+2013-02-08 19:10:29,tyndurcgi84,:)
+2013-02-08 22:39:25,ultr0x00r,hallo leute
+2013-02-08 22:42:28,ultr0x00r,ist denn schon schlafenszeit? ??
+2013-02-08 22:43:00,XanClic,Eher Aufstehzeit
+2013-02-08 22:45:16,ultr0x00r,ah... ein wachender
+2013-02-08 22:46:19,ultr0x00r,ich habe mal wieder ein jobangebot bekommen und brauche meinungen zum gehaltswunsch
+2013-02-08 22:47:31,ultr0x00r,"html/javasccript/css, festanstellung, remote"
+2013-02-08 22:48:13,bluecode,∞
+2013-02-08 22:48:28,ultr0x00r,sind 3000 OK oder zuviel (vollzeit)
+2013-02-08 22:50:04,ultr0x00r,"meine milliarden mache ich eh mit dem verteilten,massiv parallelen kernel, falls ich lang genug lebe"
+2013-02-08 22:52:58,ultr0x00r,"aso, das unternehmen um was es geht hat wohl einen festen kundenstamm und mehrere anwendungen"
+2013-02-08 22:53:19,ultr0x00r,oh php gehört auch noch dazu
+2013-02-08 22:54:46,ultr0x00r,und btw ich behaupte mal php durchzuchecken
+2013-02-08 23:03:16,ultr0x00r,"ich werde das gehalt nächste woche telefonisch mit dem kerl besprechen, nachdem wir noch einige technische details ausgetauscht haben. inwiefern mein wunsch mit seinen vorstellungen vereinbar ist werde ich an seiner reaktion feststellen können, aber ich will mich nicht beschwatzen lassen"
+2013-02-08 23:04:13,ultr0x00r,im endeffekt will ich einfach nur arbeiten und das gehalt sollte nicht lächerlich gering sein
+2013-02-08 23:07:13,ultr0x00r,"ich wäre übrigens für klare meinungen und/oder zahlen dankbar, da meine telepathischen fähigkeiten nachgelassen haben"
+2013-02-08 23:15:31,ultr0x00r,hat jemand meine nachrichten gelesen?
+2013-02-08 23:16:11,XanClic,"Ja, aber ich hab keine Ahnung"
+2013-02-08 23:17:43,ultr0x00r,und was sagt dir dein gefühl?
+2013-02-08 23:18:05,XanClic,"Ich hab bisher noch nie als etwas anderes als studentische Hilfskraft gearbeitet und daher keine Ahnung, sagt mir das"
+2013-02-08 23:18:05,SHyx0rmZ,nach der Diskussion die wir letztens hatten ist das als Einstieg in Ordnung
+2013-02-08 23:19:22,ultr0x00r,"OK, damit kann ich was anfangen, vielen dank dafür"
+2013-02-08 23:20:49,ultr0x00r,"du hattest mir die heise-statistiken empfohlen, wenn ich mich nicht irre"

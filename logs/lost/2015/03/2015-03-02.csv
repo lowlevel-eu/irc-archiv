@@ -1,0 +1,332 @@
+date/time,nick,message
+2015-03-02 08:51:41,iksnagreb,moin
+2015-03-02 09:15:52,ehenkes,wie verfolgt ihr änderungen an hubs (nicht root hub)? Via interrupt Transfers oder mit einem usb-hub-watchdog-system?
+2015-03-02 09:53:30,ehenkes,mgottschlag: wie verfolgst Du änderungen an hubs (nicht root hub)? Via interrupt Transfers oder mit einem usb-hub-watchdog-system?
+2015-03-02 09:54:00,mgottschlag,"das letzte Mal, dass ich so richtig osdev gemacht hab, ist schon ewig her, und USB hab ich noch nie gemacht :p"
+2015-03-02 09:54:10,mgottschlag,"(außer auf Microcontrollern, aber das ist die falsche Seite)"
+2015-03-02 09:59:12,ehenkes,hier scheinen viele karteileichen zu gastieren ^^
+2015-03-02 09:59:35,ehenkes,kevin: wie verfolgst Du änderungen an hubs (nicht root hub)? Via interrupt Transfers oder mit einem usb-hub-watchdog-system?
+2015-03-02 10:03:17,kevin,Moin
+2015-03-02 10:03:29,kevin,"Gar nicht, ich überlasse USB anderen ;-)"
+2015-03-02 10:04:08,kevin,Interrupt Transfer habe ich immerhin schon einmal gehört. Was macht das Watchdog-Ding anders?
+2015-03-02 10:04:27,kevin,"Das ist aber beides Polling, oder?"
+2015-03-02 11:26:36,fishkopf,hi
+2015-03-02 11:26:47,crsdr,hi
+2015-03-02 11:41:15,kevin,Moin
+2015-03-02 11:45:43,Jonathan,Moin
+2015-03-02 13:13:16,ehenkes,"kevin: Das ist aber beides Polling, oder? Ja."
+2015-03-02 13:13:30,ehenkes,http://de.wikipedia.org/wiki/Universal_Serial_Bus#Interrupt-Transfer
+2015-03-02 13:14:13,ehenkes,ich halte eine liste aller hubs und frage die z.Z. im 1 sec rhytmus ab
+2015-03-02 13:14:34,ehenkes,kritisch sind ganze hub-trees
+2015-03-02 13:15:05,ehenkes,"wenn man den hub am root port abzieht, muss ja der ganze baum an devices gekillt werden"
+2015-03-02 13:15:14,ehenkes,also alle structs auf dem heap usw.
+2015-03-02 13:15:42,kevin,"Wäre sinnvoll, ja"
+2015-03-02 13:16:03,ehenkes,"bis das alles via for-loops gelaufen ist, schlägt z.Z. diese 1 sec schleife im kernel zu"
+2015-03-02 13:16:09,ehenkes,und macht blödsinn
+2015-03-02 13:16:47,ehenkes,"muss ich wohl eher abfangen, man kann ja immer ein device heraus reissen"
+2015-03-02 13:16:58,kevin,Habt ihr vernünftige Unterstützung für Hotplug oder schwieriger noch Unplug? Devices killen kommt mir nämlich irgendwie knifflig vor.
+2015-03-02 13:17:31,kevin,"Naja, dann brauchst du halt Locking, dass keine neue Abfrage gemacht wird, während du noch am Löschen bist"
+2015-03-02 13:17:31,ehenkes,sagt mir noch nichts
+2015-03-02 13:17:44,ehenkes,das ist eine guet idee
+2015-03-02 13:18:50,kevin,"Was macht ihr denn, wenn ein USB-Stick plötzlich verschwindet?"
+2015-03-02 13:19:03,kevin,"Das Dateisystem ist damit ja im Zweifelsfall nicht ganz glücklich, oder?"
+2015-03-02 13:19:20,ehenkes,"diese abfrage dient ja genau dazu, das anstecken/abziehen an hubs festzustellen"
+2015-03-02 13:19:39,kevin,"Ja, klar. Aber dann muss man immer noch irgendwie darauf reagieren"
+2015-03-02 13:19:41,ehenkes,du meinst beim Laden? das klappt irgendwie
+2015-03-02 13:19:52,ehenkes,wichtig ist ja kein absturz
+2015-03-02 13:20:04,kevin,Beim Einstecken ist das relativ einfach. Aber beim Abstecken könnte das Gerät ja in Benutzung sein.
+2015-03-02 13:20:20,ehenkes,"ja, das klappt, fangen wir ab"
+2015-03-02 13:20:34,ehenkes,"das problem ist, das wir u/o/e/xHCI haben"
+2015-03-02 13:20:51,ehenkes,mit ganzen hub-ketten muss man da einiges an hardware testen
+2015-03-02 13:21:02,ehenkes,"angesteckt booten, anstecken, abziehen"
+2015-03-02 13:21:29,ehenkes,dann noch die ports/disks-verwaltung
+2015-03-02 13:21:30,kevin,"Hm, ja, da kommt was zusammen"
+2015-03-02 13:21:43,kevin,Aber kann man da nicht in Emulatoren einiges an Testfällen automatisieren?
+2015-03-02 13:21:48,ehenkes,nein
+2015-03-02 13:22:01,kevin,"Ersetzt Tests auf echter Hardware natürlich nicht, aber als Testfälle, die man regelmäßig laufen lassen kann"
+2015-03-02 13:22:08,ehenkes,"VBox reicht die devices am Hub einfach durch, wie wenn sie am root-port hängen"
+2015-03-02 13:22:30,ehenkes,qemu mag kein xhci bei devices durchreichen
+2015-03-02 13:22:40,ehenkes,"vmware geht, wenn es lust hat"
+2015-03-02 13:23:13,ehenkes,"ich ""brenne"" immer kernel.bin auf die floppy, während der test-pc bootet"
+2015-03-02 13:23:22,ehenkes,das geht flott
+2015-03-02 13:23:29,ehenkes,hardware ist das Beste
+2015-03-02 13:23:53,ehenkes,"nur dort hast du das echte zeitverhalten, kannst verschiedene devices testen"
+2015-03-02 13:24:01,ehenkes,sticks sind sehr verschieden
+2015-03-02 13:24:13,ehenkes,auch HID
+2015-03-02 13:24:19,ehenkes,selbst usb-floppy
+2015-03-02 13:24:37,ehenkes,dafür haben wir sogar UFI gebastelt
+2015-03-02 13:25:10,ehenkes,dann die ganzen transfer-arten für alle vier module
+2015-03-02 13:25:23,ehenkes,bisher haben wir nur control und bulk
+2015-03-02 13:25:39,ehenkes,wir denken jetzt über interrupt-transfer nach
+2015-03-02 13:25:59,ehenkes,"aber dein einwand, dass dies auch polling ist, sticht"
+2015-03-02 13:26:59,kevin,"Naja, zumindest [OUE]HCI sind bescheiden designt. Bei xHCI habe ich gehört, er soll besser sein, aber ich weiß nicht genau warum und wie."
+2015-03-02 13:27:31,ehenkes,"wir haben xhci, habe ich selbst gebaut"
+2015-03-02 13:27:32,kevin,Kann der dann vielleicht in Hardware pollen oder so?
+2015-03-02 13:27:52,ehenkes,der wesentliche unterschied sind ringe
+2015-03-02 13:28:04,ehenkes,"für commands, events, transfers"
+2015-03-02 13:28:13,ehenkes,da hängst Du TRBs drauf
+2015-03-02 13:28:25,ehenkes,also ein einheitlicher mechanismus
+2015-03-02 13:28:50,ehenkes,wenn du z.B. ein command-TRB schickst
+2015-03-02 13:29:13,ehenkes,merkst Du dir die speicheradresse und wartest auf das event
+2015-03-02 13:29:21,ehenkes,das dazu passt
+2015-03-02 13:29:29,ehenkes,dann siehst du das ergebnis
+2015-03-02 13:29:41,kevin,qemu sollte übrigens seit spätestens 2.1 USB-3.0-Passthrough unterstützen
+2015-03-02 13:29:46,ehenkes,bei transfers läuft das ähnlich
+2015-03-02 13:30:11,ehenkes,ich verwende qemu auf windows
+2015-03-02 13:30:29,ehenkes,da klappt das mit pass thru überhaupt nicht
+2015-03-02 13:30:40,ehenkes,man kann simuliert auch nur bis ehci anhängen
+2015-03-02 13:31:05,ehenkes,"ich hoffe, dass VBox bald xhci anbietet"
+2015-03-02 13:31:30,ehenkes,da kann man sehr schön externe devices anstecken/abziehen
+2015-03-02 13:31:38,ehenkes,per mausklick
+2015-03-02 13:31:50,kevin,"Hm, okay. Unter Windows wird automatisieren wahrscheinlich eh schwierig."
+2015-03-02 13:32:11,ehenkes,aber bei hub/devices-trees hilft nur hardware wirklich weiter
+2015-03-02 13:32:44,kevin,Wieso das?
+2015-03-02 13:33:00,kevin,"Meinst du, dass sich virtuelle Hubs so viel anders verhalten?"
+2015-03-02 13:33:05,ehenkes,"ich habe meinen PC von ca. 2006, der hat noch echte floppy zum booten und dem habe ich eine xhci-Karte an den PCIe gehängt"
+2015-03-02 13:33:29,ehenkes,Hubs sind sehr komplex
+2015-03-02 13:34:01,kevin,"Hab grad nachgeschaut, der simulierte USB-MSD sollte eigentlich seit qemu 1.3 Unterstützung für USB 3 haben"
+2015-03-02 13:34:02,ehenkes,"ach, bei xhci ist endlich schluss mit diesen Toggles"
+2015-03-02 13:34:54,ehenkes,"dafür hast du in den ringen ein Bit, das immer verkehrt wird, damit kennen HC-treiber und HC den jeweiligen anfang/ende"
+2015-03-02 13:35:18,ehenkes,"wenn der ring mit 256 elementen zu klein wird, kann man via link-TRB erweitern"
+2015-03-02 13:35:27,ehenkes,haben wir aber noch nie gebraucht
+2015-03-02 13:35:51,ehenkes,"den überlauf über den link-TRB muss man gut testen, da kann ein iges schief gehen"
+2015-03-02 13:36:20,ehenkes,"also link-TRB btaucht man auch bei einfachem ring, weil er anfnag und ende verbindet"
+2015-03-02 13:36:52,ehenkes,"bis mann 255 commands abgesetzt hat, das dauert"
+2015-03-02 13:37:10,ehenkes,Transfers und events kann man leichter testen
+2015-03-02 13:37:42,ehenkes,"blöd ist bei xhci, dass man slots und ports miteinander verwalten muss"
+2015-03-02 13:38:30,ehenkes,"also: port 1 anstecken, erhält slot 1, port 2 anstecken, erhält slot 2"
+2015-03-02 13:38:35,ehenkes,dann beide abziehen
+2015-03-02 13:38:43,ehenkes,und an port 2 anstecken
+2015-03-02 13:38:49,ehenkes,das erhält dann slot 1
+2015-03-02 13:40:20,ehenkes,uint8_t slotNr = x->portSlotLink[j].slotNr;
+2015-03-02 13:40:21,ehenkes,xhci_xfer_NormalTRB_t* trb = x->trb[slotNr-1][i];
+2015-03-02 13:40:28,ehenkes,das ist so typischer code
+2015-03-02 13:41:10,ehenkes,am anfang etwas verwirrend
+2015-03-02 13:41:27,ehenkes,wer ist denn hier der usb-Spezialist?
+2015-03-02 13:42:44,kevin,Du ;-)
+2015-03-02 13:43:58,ehenkes,stimmt
+2015-03-02 13:44:48,ehenkes,"ich habe von anfang an stark auf usb gesetzt, prettyos gibt es jetzt schon seit maärz 2009"
+2015-03-02 13:44:55,ehenkes,6 jahre
+2015-03-02 13:44:59,kevin,Ja
+2015-03-02 13:45:15,kevin,"Wenn man sich mal ein bisschen in ein Spezialgebiet reingräbt, dann gibt es schnell nur noch wenige, die mitdiskutieren können"
+2015-03-02 13:45:59,kevin,"Um ehrlich zu sein: Wenn ich irgendwann USB-Support wollte, würde ich vermutlich einfach euren Code hernehmen"
+2015-03-02 13:46:01,ehenkes,"ja, uns fehlen nur noch einige developer, um das usb-gebiet rascher zu bearbeiten"
+2015-03-02 13:46:50,ehenkes,MrX und ich sind weitgehend alleine
+2015-03-02 13:47:06,ehenkes,zum Glück hält er treu zu prettyOS
+2015-03-02 13:47:31,ehenkes,wir sind ja auch beide keine Informatiker o.ä.
+2015-03-02 13:51:18,kevin,"Zwei Leute, die dauerhaft Zeit dafür aufbringen können, ist doch gar nicht mal so schlecht"
+2015-03-02 13:51:32,kevin,Die meisten Hobby-OS müssen mit weniger auskommen
+2015-03-02 13:57:49,Jonathan,"Ist immerhin mehr als der eine komische Typ, der mein Drahthaufensystem gebaut hat ;)"
+2015-03-02 13:59:32,kevin,"Der eine komische Typ ist dafür aber komisch genug, um das auszugleichen ;-)"
+2015-03-02 14:01:14,Jonathan,Kann schon sein ;)
+2015-03-02 14:02:15,Jonathan,"Übrigens hab ich jetzt den i8042 am Laufen, ein Kernelmodul für den Tastaturtreiber gebaut und kann das System jetzt mit ner Tastatur bedienen"
+2015-03-02 14:02:22,crsdr,"und die frage ist ja an sich erstmal wie sehr ein informatikstudium für osdev hilft,also für den programmierteil."
+2015-03-02 14:02:43,Jonathan,Ist jetzt also komplett unabhängig von anderen Computern :D
+2015-03-02 14:02:52,crsdr,"Jonathan, nice"
+2015-03-02 14:04:31,kevin,"Dann kannst du dich ja jetzt daran machen, einen USB-Controller zu bauen *g*"
+2015-03-02 14:06:02,kevin,"crsdr: Also schaden wird ein Informatikstudium schon nicht. Was natürlich nicht heißt, dass man nicht alles notwendige auch ohne Studium können kann."
+2015-03-02 14:06:53,crsdr,"kevin, true. schaden klar nicht, aber die frage ist wieviel es hilft... ich erlebe bei mir bspw. dass ich extrem wenig programmiere verglichen mit anderen leuten. Ich durchdenke vieles viel mehr"
+2015-03-02 14:07:12,crsdr,"aber okay, ich hab auch nicht ""richtige"" informatik studiert, hatte nur theoretische informatik als vertiefungsbereich im mathestudium"
+2015-03-02 14:08:16,kevin,"Wenn du durch das Durchdenken zwar doppelt so lang brauchst wie der andere, aber der andere dafür alles fünfmal schreiben muss, dann bist du im Vorteil"
+2015-03-02 14:08:27,kevin,"Wenn du ewig Rumüberlegst, ohne jemals zu Potte zu kommen, dann ist der andere im Vorteil"
+2015-03-02 14:08:34,kevin,-R+r
+2015-03-02 14:09:16,crsdr,die frage ist halt wieviel rumüberlegen hilft und was das ziel ist. Siehe Linus Torvalds ^^ Der ist auch ohne besonders sauberes design zu einem nutzbaren system gekommen das alle welt benutzt. Das ist eben was bei mir die Frage aufwarf
+2015-03-02 14:17:13,ehenkes,"die frage ist ja an sich erstmal wie sehr ein informatikstudium für osdev hilft, also für den programmierteil <== ich denke sogar, dass das eher schadet, weil man sich zu ""fein"" ist für die drecksarbeit, z.B. usb-Treiberprogrammierung"
+2015-03-02 14:17:45,ehenkes,"die Wahrheit ist, dass viele Informatiker wohl zu unbegabt sind für solche Dinge"
+2015-03-02 14:18:32,crsdr,ich denke die frage ist auch was die zielsetzung ist
+2015-03-02 14:18:50,crsdr,"bei ""möglichst schnell ein system haben das x kann"" ist es denke ich wie du sagst."
+2015-03-02 14:18:56,ehenkes,als informatiker würde ich etwas ganz neues Tolles entwicklen wollen
+2015-03-02 14:19:04,ehenkes,daher passiert dann zumeist nix
+2015-03-02 14:19:07,kevin,"Seine Theorie zu können und z.B. zu wissen, welche Datenstrukturen es so gibt und wo man sie am besten einsetzt, schadet definitiv nicht"
+2015-03-02 14:19:22,kevin,Nur Theorie allein hilft aber natürlich auch nichts
+2015-03-02 14:19:42,crsdr,"kevin, true."
+2015-03-02 14:19:56,crsdr,"ehenkes, jop das ist was ich z.B. wohl erlitten habe :D"
+2015-03-02 14:20:00,ehenkes,"ja, dafür gibt es Bücher über Algorithmen mit C (oder C++), selbst im K&R kann man noch vieles lernen"
+2015-03-02 14:21:03,ehenkes,"interessant sind praktische erfahrungen anderer, z.B. hier: http://blogs.msdn.com/b/usbcoreblog/archive/2009/10/31/how-does-usb-stack-enumerate-a-device.aspx"
+2015-03-02 14:21:55,ehenkes,software developer on the Windows USB team
+2015-03-02 14:22:01,crsdr,nice
+2015-03-02 14:22:14,ehenkes,das sind kleine schätzkästchen
+2015-03-02 14:23:48,ehenkes,"sowas steht in keinem lehrbuch: ""When requesting the device descriptor the hub driver will specify a transfer size of 64 bytes.  This is done because some older USB devices will behave badly if the request size is smaller.  We’ve also found some USB devices will babble when returning the device descriptor, but will still return valid data in at least the first 8 bytes.  For this reason transfer errors will be"
+2015-03-02 14:23:48,ehenkes," ignored if at least 8 bytes of data were returned by the device.  """
+2015-03-02 14:24:41,ehenkes,Theoretiker würden nur sagen: sowas darf doch gar nicht sein ^^
+2015-03-02 14:25:00,crsdr,nö. Ich würde sagen sowas SOLLTE nicht sein.
+2015-03-02 14:25:07,ehenkes,genau
+2015-03-02 14:25:12,ehenkes,ist es aber
+2015-03-02 14:25:23,crsdr,"""darf nicht"" und ""missstand den man beheben sollte"" sind zwei andere sachen ;)"
+2015-03-02 14:25:53,ehenkes,ich habe hier alleine über 10 sticks auf dem tisch
+2015-03-02 14:25:57,ehenkes,drei hubs
+2015-03-02 14:26:06,ehenkes,vier test-PCs
+2015-03-02 14:31:10,kevin,"Das läuft eher unter ""Missstand, mit dem man leben muss"""
+2015-03-02 14:31:24,kevin,Von der Kategorie gibt es leider auch genug
+2015-03-02 14:32:07,crsdr,"true. Aber beheben hieße für mich schon ""daraus lernen und es in zukunft besser machen"", technik entwickelt sich ja schnell"
+2015-03-02 14:32:34,crsdr,"aber manche sachen bleiben uns ja, grad dank ""abwärtskompatibilität"" sehr lang erhalten"
+2015-03-02 14:37:41,kevin,"Ja, Kompatibilität macht alles kompliziert."
+2015-03-02 14:40:20,crsdr,"vor allem ""abwärtskompatibilität"".... nur kompatibel halte ich weniger für ein problem."
+2015-03-02 14:40:38,crsdr,dafür würden ja saubere standards an die sich alle halten reichen.
+2015-03-02 14:40:51,crsdr,nur dass man designfehler über jahrzehnte durchschleppen muss... naja
+2015-03-02 14:44:08,kevin,Aufwärtskompatibilität macht alles nochmal viel komplizierter ;-)
+2015-03-02 14:44:26,kevin,"Und ja, Designfehler durchschleppen zu müssen ist ärgerlich, aber in der Praxis eben nicht zu vermeiden"
+2015-03-02 14:46:24,crsdr,"hmmm naja ich bin ein fan der these dass man das dennoch verringern sollte soviel wie geht, ein zusätzlicher abstraction-layer hilft ja oft schon :D"
+2015-03-02 14:48:34,kevin,"Intern kann du fixen, was du willst"
+2015-03-02 14:48:43,kevin,Aber auf externe APIs oder Dateiformate bist du festgenagelt
+2015-03-02 14:49:04,crsdr,klar.
+2015-03-02 15:27:56,ehenkes,dafür würden ja saubere standards an die sich alle halten reichen <== Vereinbarte Interfaces sind absolut entscheidend für den breiten Fortschritt
+2015-03-02 15:28:07,ehenkes,"PCI, USB, ..."
+2015-03-02 15:28:22,max,vorwärts immer
+2015-03-02 15:28:24,max,rückwärts nimmer
+2015-03-02 15:28:27,ehenkes,"es sind immer die ""verkehrswege"""
+2015-03-02 15:35:41,max,"kevin, das hab ich jetzt mal überlesen"
+2015-03-02 15:36:39,kevin,max: Was hab ich denn heute schon böses geschrieben?
+2015-03-02 15:37:22,max,"kevin, das mit woher man USB-Support herbekommt"
+2015-03-02 15:37:29,max,s/herb/b/
+2015-03-02 15:37:32,max,"> <ehenkes> sowas steht in keinem lehrbuch: ""When requesting the device descriptor the hub driver will specify a transfer size of 64 bytes. This is done because some older USB devices will behave badly if the request size is smaller."
+2015-03-02 15:37:34,max,doch
+2015-03-02 15:37:40,max,"Udo Eberhardt, Hans-Joachim Kelm: USB 2.0. Franzis, Poing 2001, ISBN 3-7723-7965-6"
+2015-03-02 15:37:48,max,http://www.lowlevel.eu/wiki/USB#Literatur
+2015-03-02 15:37:55,max,"Das weiß ich, weil ich das gelesen hab"
+2015-03-02 15:38:03,kevin,"max: Ich bin nicht davon ausgegangen, dass du noch irgendwann die ganzen Treiber schreiben willst?"
+2015-03-02 15:38:28,ehenkes,max: interessant
+2015-03-02 15:38:32,max,"kevin, wollen? Nö, aber ich stehe der Aussage trotzdem äußerst skeptisch gegenüber ;-)"
+2015-03-02 15:39:19,kevin,"max: Fragt sich dann nur, in welchem Code du die Alternative siehst ;-)"
+2015-03-02 15:39:24,ehenkes,gute bücher über usb findet man bei http://janaxelson.com/usb.htm
+2015-03-02 15:39:37,max,"kevin, gar nichts nehmen erscheint mir immer noch besser"
+2015-03-02 15:39:44,ehenkes,"das sind aber eher praktische Bücher, keine theoretischen"
+2015-03-02 15:40:05,ehenkes,da würde ich auch lowlevel oder osdev.org dazub z
+2015-03-02 15:40:06,ehenkes,ählen
+2015-03-02 15:40:28,ehenkes,"kurze erklärung, klare praxishinweise"
+2015-03-02 15:40:41,kevin,"max: Gegenüber Argumentationen wie ""besser gar kein Treiber als ein hässlicher/proprietärer/usw."" bin dann wiederum ich eher skeptisch"
+2015-03-02 15:40:52,max,"Gut, meinetwegen"
+2015-03-02 15:41:02,ehenkes,"wenn ich allerdings am scheduler optimieren will, sollte ich auch theoretische werke berücksichtigen"
+2015-03-02 15:41:27,ehenkes,"das ist bei osdev das Interessante, die Bandbreite"
+2015-03-02 15:47:47,ehenkes,und man muss weltweit unterwegs sein aufgrund der geringen dichte von experten
+2015-03-02 16:14:43,DerAlex,Tag auch
+2015-03-02 16:17:51,ehenkes,Buenas Tardes
+2015-03-02 16:29:40,ehenkes,mal eine theoretische frage ^^
+2015-03-02 16:29:59,ehenkes,ich habe hub-/device-Trees an hubs hängen
+2015-03-02 16:30:29,ehenkes,"jetzt ziehe ich nicht von außen nach innen ab, sondern irgendwo innen, z.B. am root-Port"
+2015-03-02 16:31:04,ehenkes,bisher habe ich den hub-/device-Tree eines Hubs noch nicht gespeichert
+2015-03-02 16:31:14,ehenkes,wie macht man so etwas am besten?
+2015-03-02 16:31:25,ehenkes,Tree
+2015-03-02 16:31:35,ehenkes,Listen von Listen von Listen?
+2015-03-02 16:32:57,kevin,"Ja, jeder Hub bekommt eine Liste von Kindern"
+2015-03-02 16:33:09,kevin,Optional auch noch ein Pointer zum Elternhub
+2015-03-02 16:34:00,ehenkes,"das problem ist ja, dass man diese listen vion außen nach innen abarbeiten muss"
+2015-03-02 16:34:15,max,Dafür gibts den zweiten Punkt
+2015-03-02 16:34:20,max,Pointer zum Elternhub
+2015-03-02 16:34:36,kevin,"Listen haben kein außen und innen. Du meinst vermutlich, du willst im Baum in Richtung Wurzel gehen."
+2015-03-02 16:34:48,ehenkes,ja
+2015-03-02 16:34:57,kevin,"Und wie max sagt, dafür ist der Pointer zum Elternhub dann da"
+2015-03-02 16:35:16,ehenkes,"ich zerstöre die device/hub structs, anschließend lösche ich das element in der liste"
+2015-03-02 16:35:45,kevin,"Erst aus Listen austragen, dann Speicher freigeben"
+2015-03-02 16:36:11,ehenkes,ja
+2015-03-02 16:36:48,ehenkes,falls andere systeme von der wurzel kommen dirgendetwas abarbeiten wollen
+2015-03-02 16:37:27,ehenkes,die hubs haben ihre eigene portNr Ordnung
+2015-03-02 16:38:04,ehenkes,"da werde ich jetzt doch mal ""Algorithmen mit C"" hervorholen, wie man trees sauber traversiert"
+2015-03-02 16:38:17,ehenkes,so schnell gehts ^^
+2015-03-02 16:39:02,ehenkes,habt ihr da ein eigenes tree.h/c modul für solche dinge?
+2015-03-02 16:39:21,ehenkes,oder arbeitet ihr da mit listen von listen von ... ?
+2015-03-02 16:40:05,ehenkes,also bei listen:
+2015-03-02 16:40:05,max,"Der USB-Treiber, den týndur hat, traversiert den Baum offenbar wenn dann nur vom Gerät zur Wurzel"
+2015-03-02 16:40:10,ehenkes,for (elem = hubs.head; elem; elem = elem->next)        {
+2015-03-02 16:40:10,ehenkes,            usb_device_t* device = (usb_device_t*)elem->data;
+2015-03-02 16:40:10,max,Jedenfalls ist das nur ein Backpointer drin
+2015-03-02 16:40:26,max,"Und ansonsten hat týndur (CDI?) auch eine Implementierung für Bäume, ja"
+2015-03-02 16:40:34,max,Ob die sich bei bis zu 127 Elementen pro Bus auch lohnt…
+2015-03-02 16:40:41,ehenkes,"wir haben sogar CDI, mal schauen"
+2015-03-02 16:41:13,ehenkes,cdi_list ist da
+2015-03-02 16:41:44,ehenkes,kein tree
+2015-03-02 16:41:56,max,"Wobei das von týndur ein AVL-Baum ist, der bringts hier eher nicht so"
+2015-03-02 16:41:59,max,Wobei das auch lustig wäre
+2015-03-02 16:42:11,ehenkes,was ist AVL?
+2015-03-02 16:42:20,max,"„Bitte den Stick an den anderen Hub stecken, dieser hier wird sonst überbelastet“"
+2015-03-02 16:42:27,max,http://de.wikipedia.org/wiki/AVL-Baum das
+2015-03-02 16:42:37,kevin,"Ach, Mailinglisten sind doch doof... Heute morgen habe ich den qemu-block-Filter schonmal gefixt und jetzt tut er wieder nicht, was er soll :-/"
+2015-03-02 16:42:49,max,"kevin, wenn du fertig bist, sagst du mir, wie du es geschafft hast? *g*"
+2015-03-02 16:43:13,ehenkes,nein AVL ist sinnlos
+2015-03-02 16:43:13,kevin,Du solltest doch eigentlich kein Problem damit haben?
+2015-03-02 16:43:14,max,"kevin, bei mir verschwinden alle E-Mails außer eigenen Antworten und einer E-Mail von Markus…"
+2015-03-02 16:43:27,ehenkes,"ich muss mich schon an das halten, was die leute zusammen stöpseln"
+2015-03-02 16:43:27,max,"kevin, weiß nicht, ich hab den Duplicate-Filter ausgemacht"
+2015-03-02 16:43:31,max,Aber irgendwie… Hm.
+2015-03-02 16:43:43,max,"Auch Johns Serie, die nur an qemu-block ging, kam da nicht rein"
+2015-03-02 16:43:55,kevin,"Mein Problem ist nur, dass ich qemu-devel-Mails mit CC an mich in denselben Ordner filtern will"
+2015-03-02 16:44:03,kevin,Aber natürlich nicht doppelt
+2015-03-02 16:44:13,max,Aber bisher hats bei dir funktioniert?
+2015-03-02 16:44:21,max,Also dass die E-Mails ankamen?
+2015-03-02 16:44:30,kevin,"Jo, sie kommen an, nur nicht im richtigen Ordner"
+2015-03-02 16:44:34,max,Schade
+2015-03-02 16:44:40,max,"Also, für mich ;-)"
+2015-03-02 16:58:50,kevin,*argh* Jetzt landen _alle_ Mails in diesem Ordner...
+2015-03-02 16:59:54,mgottschlag,"kann ich nicht bestätigen, an der Sortierung meines E-Mail-Kontos hat sich nichts geändert."
+2015-03-02 17:01:13,kevin,"Hm, dann muss ich wohl nochmal dran feilen ;-)"
+2015-03-02 17:01:30,ehenkes,jetztb weiß ich zumindest wei man da sgenau nennt ^^
+2015-03-02 17:01:54,ehenkes,"portorder-traversierung: besuche zuerst alle unterbäume, dann die wurzel"
+2015-03-02 17:02:08,ehenkes,*postorder
+2015-03-02 17:02:28,ehenkes,eigentlich trivial
+2015-03-02 17:02:56,ehenkes,gibt aber auch preorder und levelorder
+2015-03-02 17:03:10,ehenkes,aber für meinen fall nutzlos
+2015-03-02 17:06:10,DerAlex,"nutzlos ist nur das, was man als nutzlos anerkennt"
+2015-03-02 17:06:21,ehenkes,ja
+2015-03-02 17:06:32,ehenkes,es geht um Hub-/Device-Trees
+2015-03-02 17:06:50,ehenkes,wenn einer irgendwo den stecker zieht
+2015-03-02 17:07:14,ehenkes,dann brauche ich eine postorder-traversierung dieses Baumes
+2015-03-02 17:07:36,ehenkes,daher machen listen mit children und parent absolut sinn
+2015-03-02 17:09:49,kevin,Genau das
+2015-03-02 17:10:14,ehenkes,vor dem traversieren muss ich aber immer erst zum linkesten blatt laufen ^^
+2015-03-02 17:10:16,max,"Weiß nicht, brauch man dann noch children? :3"
+2015-03-02 17:10:23,kevin,"Übrigens ist das ein Beispiel für das Sachen, die man in dem so schädlichen Studium lernt ;-)"
+2015-03-02 17:10:23,max,*braucht
+2015-03-02 17:10:37,kevin,"Jo, wenn ein Hub ausgesteckt wird, willst du erstmal die Kinder loswerden, oder?"
+2015-03-02 17:10:49,max,"Pah, geht auch ohne"
+2015-03-02 17:11:05,kevin,"Genau, Leaks machen nichts, kauft man halt mehr Speicher ;-)"
+2015-03-02 17:11:06,max,Man hat davon unabhängig eine Liste von devices und da sucht man alle mit device.hub == hub
+2015-03-02 17:11:08,max,!
+2015-03-02 17:11:13,ehenkes,enkel/urenkel/ururenkel/...
+2015-03-02 17:11:18,max,"Eben um Speicher zu sparen, da braucht man die children-Liste nicht mehr!"
+2015-03-02 17:11:19,max,Ist ja klar
+2015-03-02 17:11:28,max,Und hoffentlich auch in Assembler geschrieben
+2015-03-02 17:11:49,ehenkes,"nein, da gibts nix mehr zu suchen, weil alles weg ist, also muss vorher alles sauber mitloggen in listen"
+2015-03-02 17:12:17,max,"ich meine eben genau diese liste, die man sowieso hat"
+2015-03-02 17:12:22,ehenkes,das Ganze ist aber viel Komplizierter
+2015-03-02 17:12:33,max,"Ich nehme mal an, dass man nämlich eine Liste von Devices haben will, unabhängig von der Baumstruktur"
+2015-03-02 17:12:38,kevin,"ehenkes: Das ""zum linkesten Blatt laufen"" ist Teil der Traversierung"
+2015-03-02 17:12:38,max,Weil man die Baumstruktur meistens eh nicht braucht
+2015-03-02 17:12:50,ehenkes,man kann ja halbe bäume an einen anderen knoten stecken
+2015-03-02 17:13:21,ehenkes,da muss man in den listen dann die neue speicheradrr des dev/hub pflegen
+2015-03-02 17:13:42,max,Da braucht man dann wohl ein bdrv_swap()
+2015-03-02 17:13:47,max,"Nu weiß ich, warum ich USB nicht mag"
+2015-03-02 17:15:37,Jonathan,Wie wäre es mit dem UPB? ;)
+2015-03-02 17:22:40,kevin,Oder warum nicht den Bus durch eine Bahn ersetzen?
+2015-03-02 17:23:01,max,Meine Rede
+2015-03-02 17:23:05,max,Firewire ist bestimmt viel besser
+2015-03-02 17:23:26,kevin,Ist das mit den Brandschutzbestimmungen vereinbar?
+2015-03-02 17:23:51,max,Fragen wir doch mal in Berlin nach
+2015-03-02 17:24:14,max,"Das ist lustig, in Schönefeld steht auf den Absperrbändern überall BER drauf"
+2015-03-02 17:24:17,kevin,"Hm, stimmt, wir brauchen weder Bus noch Bahn, sondern Flugzeuge"
+2015-03-02 17:24:30,kevin,"Oder gleich Brieftauben, mit IPoAC"
+2015-03-02 17:24:43,max,"oh ja, dann ist es auch nicht mehr so schlimm, wenn das VFS zu langsam ist"
+2015-03-02 17:25:00,kevin,Latenz interessiert doch eh niemanden und Durchsatz müsste damit hinzubekommen sein
+2015-03-02 17:25:08,max,Wieso dann nicht Lastwagen?
+2015-03-02 17:25:24,max,"(Lastwagen sind keine Busse, C ist ja nicht D)"
+2015-03-02 17:26:54,kevin,Na ich werde doch nicht in einem grün regierten Bundesland Lastwagen statt Brieftauben nehmen
+2015-03-02 17:28:43,max,Aber das findet doch sogar euer Ministerpräsident
+2015-03-02 17:28:56,max,Dass man als Ministerpräsident schon einen Benz fahren muss und keinen… Was wars?
+2015-03-02 17:29:03,max,Jedenfalls ein Auto mit höherem Verbrauch
+2015-03-02 17:29:13,max,"Da kann man sich auch Lastwagen leisten, solange sie Hybridantrieb haben"
+2015-03-02 17:29:23,max,Oder zumindest mit Biodiesel fahren
+2015-03-02 17:29:59,kevin,"Hm, ja dann"
+2015-03-02 17:30:58,max,Außerdem sind Brieftauben inkompatibel mit Windkraftwerken
+2015-03-02 17:31:15,kevin,Muss man halt TCP nehmen
+2015-03-02 17:31:34,kevin,Ab und zu ein paar Paketverluste sind verschmerzbar
+2015-03-02 17:31:46,max,Auch wieder wahr
+2015-03-02 17:32:04,max,Und Brieftauben vermehren sich ja auch
+2015-03-02 17:32:27,kevin,"Ui, Scalability! *g*"
+2015-03-02 17:32:28,max,"Elektronen vermehren sich nicht, das heißt, wenn da mal eins verloren geht, das ist schon schlimmer"
+2015-03-02 17:32:48,max,"Stimmt, wenn wir die Nachricht ins Erbgut bringen, bekommen wir gute Fehlertoleranz"
+2015-03-02 17:50:46,kevin,"max: Stefan hat anscheinend was mit qemu-block gefixt und meint, dass es jetzt tun sollte"
+2015-03-02 17:51:00,max,"Okay, danke"
+2015-03-02 21:47:14,Jidder,eben mal mit einem speedtest die rohre freigepustet
+2015-03-02 21:47:23,Jidder,ganze 7 mbit/s auf der 25er leitung
+2015-03-02 21:47:38,Jidder,besser als 6 mbit
+2015-03-02 21:49:34,Jonathan,Du hast nicht 7 mbit/s...
+2015-03-02 21:49:38,Jonathan,Du hast bis zu 25mit/s ;)

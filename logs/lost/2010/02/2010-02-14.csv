@@ -1,0 +1,898 @@
+date/time,nick,message
+2010-02-14 00:02:11,SHyx0rmZ,"Wo liegt das Problem bei  ""error: deleting array ‘MemoryStack b [2]""?"
+2010-02-14 00:07:46,feuermonster,code?
+2010-02-14 00:08:11,SHyx0rmZ,Hat sich schon erledigt ^^
+2010-02-14 00:11:55,SHyx0rmZ,Hm
+2010-02-14 00:12:15,SHyx0rmZ,Wo ist der Unterschied zwischen new und new[] oder delete und delete[] ?
+2010-02-14 00:12:43,SHyx0rmZ,Implementierungstechnisch
+2010-02-14 00:12:44,DesL,normal/array?
+2010-02-14 00:13:01,SHyx0rmZ,"Das weiß ich ja, DesL ^^"
+2010-02-14 00:13:26,DesL,wer weiß^
+2010-02-14 00:13:29,DesL,^^
+2010-02-14 00:15:21,DesL,"new[] alloziert mehr speicher, entsprechend der arry größe?"
+2010-02-14 00:15:34,feuermonster,ja
+2010-02-14 00:15:46,feuermonster,malloc(sizeof(type)*size);
+2010-02-14 00:16:18,DesL,"wobei new[] ja auch mehr mal new aufrufen könnte, bzw new = new[1]"
+2010-02-14 00:16:50,mgottschlag,"DesL, nee. malloc mit mehr speicher, dann placement new für jedes element"
+2010-02-14 00:17:34,SHyx0rmZ,hm
+2010-02-14 00:17:41,DesL,höngt das nicht von der Implemetierung von new ab?
+2010-02-14 00:17:50,SHyx0rmZ,Ich sehe da jetzt keinen Unterschied zwischen den Beiden
+2010-02-14 00:17:56,SHyx0rmZ,Ich lass new[] einfach new aufrufen
+2010-02-14 00:17:59,SHyx0rmZ,und delete[] delete
+2010-02-14 00:18:21,DesL,sag ich ja^^
+2010-02-14 00:18:29,mgottschlag,"""Ich lass new[] einfach new aufrufen"" - öhm. Wie das?"
+2010-02-14 00:18:33,DesL,oder anders herum?
+2010-02-14 00:18:35,mgottschlag,wie soll das gehen
+2010-02-14 00:18:41,mgottschlag,"anders herum geht, sonst nich."
+2010-02-14 00:18:46,DesL,man könnte new[] auch sicher rekursiv machen.
+2010-02-14 00:19:04,mgottschlag,"ne, kann man nicht. Weil new nur *einmal* Speicher reserviert,"
+2010-02-14 00:19:07,SHyx0rmZ,void *operator new[](size_t size) { return operator new(size); }
+2010-02-14 00:19:07,DesL,"new[3] :: new new new, so ungefähr"
+2010-02-14 00:19:22,mgottschlag,"DesL, nee"
+2010-02-14 00:19:32,mgottschlag,"new[3] macht erst ein malloc, dann 3x placement new"
+2010-02-14 00:19:36,DesL,why?
+2010-02-14 00:19:53,DesL,"kommt doch wohl uaf das new an, oder?"
+2010-02-14 00:20:00,mgottschlag,weil die 3 Objekte direkt hintereinander im Speicher liegen müssen
+2010-02-14 00:20:09,mgottschlag,new selbst reserviert aber selber speicher
+2010-02-14 00:20:12,mgottschlag,placement new nicht
+2010-02-14 00:20:22,mgottschlag,"d.h., erst speicher reservieren, dann placement new für jedes Element"
+2010-02-14 00:20:36,DesL,mh
+2010-02-14 00:20:38,mgottschlag,"und, ganz wichtig für delete[], die Anzahl der Elemente notieren, ne? ^^"
+2010-02-14 00:20:49,SHyx0rmZ,"Ah, in C ist das komplizierter"
+2010-02-14 00:20:57,mgottschlag,(delete ruft dann x mal Destruktoren auf und 1 mal free)
+2010-02-14 00:20:58,SHyx0rmZ,In C++ wird nur die Größe übergeben
+2010-02-14 00:21:05,SHyx0rmZ,Deswegen macht das wohl keinen Unterschied
+2010-02-14 00:21:12,DesL,placement new wäre new auf einer bestimmten adresse?
+2010-02-14 00:21:16,mgottschlag,jo
+2010-02-14 00:21:32,mgottschlag,"SHyx0rmZ, hm? Auch C++ muss das hinter den Kulissen iwie definieren."
+2010-02-14 00:21:44,DesL,"new überladen, und drei mal ausführen."
+2010-02-14 00:22:31,DesL,"kommt aber aufs gleiche raus, also vom aufwand"
+2010-02-14 00:24:13,feuermonster,SHyx0rmZ: Wieso komplizierter?
+2010-02-14 00:24:31,feuermonster,void* ptr = malloc(sizeof(type)*size); free(ptr);
+2010-02-14 00:24:31,SHyx0rmZ,Weil mehr Parameter
+2010-02-14 00:24:45,SHyx0rmZ,"mgottschlag, Scheint es aber so zu machen, wie ich gesagt hab"
+2010-02-14 00:24:52,SHyx0rmZ,Es tut nämlich ohne Probleme
+2010-02-14 00:25:01,mgottschlag,zeig ma deinen code
+2010-02-14 00:27:26,SHyx0rmZ,http://pastebin.org/91325
+2010-02-14 00:29:19,mgottschlag,"nee, das tut so nich"
+2010-02-14 00:29:37,mgottschlag,"mach ma ein array, und guck, ob für jeden Arrayeintrag der Destruktor aufgerufen wird"
+2010-02-14 00:29:40,mgottschlag,"ansonsten, http://www.cplusplus.com/reference/std/new/operator%20delete[]/"
+2010-02-14 00:30:46,mgottschlag,"hm, obwohl"
+2010-02-14 00:31:01,mgottschlag,jo. die Anzahl der Objekte musst du ja selbst in delete[] ermitteln
+2010-02-14 00:31:10,mgottschlag,"also kann das garnich funzen atm, weil diese Info fehl, oder?"
+2010-02-14 00:31:53,SHyx0rmZ,Aufgerufen werden die Destruktoren
+2010-02-14 00:31:53,mgottschlag,"hm, ne, quatsch, doch, scheint zu funzen"
+2010-02-14 00:31:56,mgottschlag,bin grad verwirrt
+2010-02-14 00:31:56,mgottschlag,jo
+2010-02-14 00:32:06,SHyx0rmZ,"Nein, die Info ist in der Referenz nicht vorgesehen"
+2010-02-14 00:32:11,mgottschlag,"das passiert ja vorher, weil der compiler die Info selber extern speichert"
+2010-02-14 00:32:12,SHyx0rmZ,Braucht der auch nicht
+2010-02-14 00:32:16,SHyx0rmZ,Ich bekomm trotzdem nen Int
+2010-02-14 00:32:31,SHyx0rmZ,"Liegt aber an was Anderem, anscheinend nen Bug im Handler"
+2010-02-14 00:34:51,SHyx0rmZ,Der GCC hat schon wieder verbuggten Code erzeugt -.-
+2010-02-14 00:35:11,SHyx0rmZ,"Ah, doch nicht"
+2010-02-14 00:35:13,SHyx0rmZ,Gut
+2010-02-14 00:35:15,SHyx0rmZ,Es funktioniert
+2010-02-14 00:35:17,SHyx0rmZ,Theoretisch
+2010-02-14 00:35:25,SHyx0rmZ,Ich sollte nur in VAlloc auch mappen :D
+2010-02-14 00:35:35,SHyx0rmZ,"Dann bleibt auch der Fehler weg, nehme ich an"
+2010-02-14 00:42:02,SHyx0rmZ,Hui
+2010-02-14 00:42:12,SHyx0rmZ,Ich hab deswegen nen Bug gefunden
+2010-02-14 00:50:58,SHyx0rmZ,"Argh, ich wusste, dass mich der Ganze VAlloc / Map Mist nochmal fertigmacht"
+2010-02-14 00:57:50,DesL,gn8
+2010-02-14 11:00:53,chris12,moin
+2010-02-14 11:01:10,XanClic,"moin, chris12"
+2010-02-14 11:02:33,bluecode,moinsen0rn
+2010-02-14 11:02:41,XanClic,"Moin, bluecode"
+2010-02-14 11:04:50,jonebohne,hi
+2010-02-14 11:04:58,XanClic,"moin, jonebohne"
+2010-02-14 11:05:23,chris12,warum bekommt man bei &var und var (var ist ein zeiger) verschiedene adressen?
+2010-02-14 11:10:07,XanClic,Weil &var ein Zeiger auf einen Zeiger ist
+2010-02-14 11:10:15,jonebohne,ist &var nicht die adresse wo var liegt?
+2010-02-14 11:10:17,XanClic,"var ist ja nicht nur ein Zeiger, sondern eine Zeigervariable"
+2010-02-14 11:16:45,XanClic,"Hui, man kann mit VB ja richtig debuggen"
+2010-02-14 11:16:51,XanClic,--debug ftw
+2010-02-14 11:21:38,XanClic,"Hm, cool, erinnert mich an týndur"
+2010-02-14 11:21:42,XanClic,dt soll das TSS dumpen
+2010-02-14 11:21:44,XanClic,"""dt is not implemented yet, feel free to do it."""
+2010-02-14 11:59:19,XanClic,"Hm, was macht man nochmal, wenn man bei git-bisect einen Commit fälschlicherweise als bad markiert hat?"
+2010-02-14 12:02:25,jonebohne,wurde die sperre mit den 4 zeilen hintereinander aufgehoben?
+2010-02-14 12:02:36,XanClic,Hier im Channel?
+2010-02-14 12:02:39,jonebohne,jo
+2010-02-14 12:02:43,XanClic,http://lowlevel.brainsware.org/wiki/index.php/IRC
+2010-02-14 12:02:44,XanClic,NEIN
+2010-02-14 12:02:58,jonebohne,aha
+2010-02-14 12:03:03,XanClic,"Außer, dass es immer 5 waren :-P"
+2010-02-14 12:09:25,jonebohne,:D
+2010-02-14 12:13:26,bluecode,jonebohne: das gilt allgemein im IRC
+2010-02-14 12:13:34,bluecode,also in jedem channel
+2010-02-14 12:13:35,XanClic,Außer in #PrettyOS
+2010-02-14 12:13:39,jonebohne,aha
+2010-02-14 12:13:49,bluecode,ich dachte jetzt eher an offiziellere Channels
+2010-02-14 12:13:59,bluecode,sowas wie ##c++ oder ##c auf freenode
+2010-02-14 12:13:59,jonebohne,ja mit irc kenn ich mich nicht so gut aus :D
+2010-02-14 12:14:00,XanClic,Aso ;-)
+2010-02-14 12:14:13,bluecode,oder auch #osdev
+2010-02-14 12:14:13,XanClic,"Nicht nur, dass es uns alles zuspammt"
+2010-02-14 12:14:25,XanClic,"Das imo größte Problem ist, dass es Minuten dauern kann, bis du alles gesendet hast"
+2010-02-14 12:14:35,XanClic,Und in der Zeit ist so ein Channel halt praktisch unbenutzbar
+2010-02-14 12:14:36,bluecode,und es ist unglaublich unübersichtlich
+2010-02-14 12:17:26,mastamind,und die formatierung geht flöten.
+2010-02-14 12:17:29,mastamind,also das einrücken.
+2010-02-14 12:21:21,bluecode,moin Homix
+2010-02-14 12:21:56,chris12,habt ihr ne idee: bei gcc und ld giebts keine fehler und trotzdem gibt mir make Error -1 zurück
+2010-02-14 12:23:37,bluecode,pastebine mal dein makefile
+2010-02-14 12:24:00,bluecode,oder auch: lasse make mit -d rennen
+2010-02-14 12:24:38,chris12,http://nopaste.info/787c16ef01.html
+2010-02-14 12:26:27,bluecode,und was ist die ausgabe?
+2010-02-14 12:26:58,bluecode,"uh, du hast 2 %.o regeln, das wird sicher nichts"
+2010-02-14 12:27:32,chris12,http://nopaste.info/8ffb02cc80.html
+2010-02-14 12:28:24,bluecode,"hm, das scheint wohl mit %.o zu tun"
+2010-02-14 12:28:43,bluecode,was sagt make -d?
+2010-02-14 12:30:56,chris12,sehr viel text
+2010-02-14 12:30:59,chris12,mom
+2010-02-14 12:31:39,bluecode,der unterste teil ist der wichtigste
+2010-02-14 12:32:23,chris12,http://nopaste.info/9400c70d8b.html (das ganze):: http://nopaste.info/e3f9f71d5b.html (letzte)
+2010-02-14 12:33:11,SHyx0rmZ,moin
+2010-02-14 12:33:18,XanClic,"Moin, moin, SHyx0rmZ"
+2010-02-14 12:33:20,chris12,moin
+2010-02-14 12:34:50,chris12,"wenn ich kernel\console.c aus der makefile nehme, die funktion im kernel auskommentiere klappts"
+2010-02-14 12:37:09,bluecode,ist den die kern datei eigentlich erstellt am ende?
+2010-02-14 12:37:41,chris12,nein
+2010-02-14 12:39:48,bluecode,hm
+2010-02-14 12:39:55,bluecode,kannst du mir das Projekt mal schicken?
+2010-02-14 12:40:22,Homix,hi zusammen
+2010-02-14 12:40:30,XanClic,"Moin, Homix"
+2010-02-14 12:41:45,bluecode,email ;-)
+2010-02-14 13:06:23,X-Mind,hi
+2010-02-14 13:06:50,X-Mind,"Und, alles senkrecht?"
+2010-02-14 13:07:12,XanClic,"Ja, ich bekomme immer eine Latte, wenn jemand joint"
+2010-02-14 13:07:17,SHyx0rmZ,TMI
+2010-02-14 13:07:18,XanClic,Normalerweise schreibe ich sowas aber eher in #niwohlos
+2010-02-14 13:07:42,XanClic,"SHyx0rmZ: Du hast SHyx0rmZ Account gehackt! Was soll das, Chiken? :O"
+2010-02-14 13:14:58,X-Mind,Weiß einer was mir der gcc damit sagen möchte:  C:\OS\nasm>gcc  -Wall -O  -c video.c -o video.o -O1
+2010-02-14 13:14:59,X-Mind,c:/djgpp/tmp/cckTNQWC.s: Assembler messages:
+2010-02-14 13:15:01,X-Mind,c:/djgpp/tmp/cckTNQWC.s:151: Error: suffix or operands invalid for `int'
+2010-02-14 13:15:18,XanClic,Dass du int 0x80 statt int $0x80 geschrieben hast
+2010-02-14 13:15:22,XanClic,z. B. jedenfalls
+2010-02-14 13:16:16,X-Mind,aber unter C:\djgpp\tmp ist kein cckTNQWC.s
+2010-02-14 13:16:37,XanClic,Jo
+2010-02-14 13:16:42,XanClic,Das ist eine temporär erzeugte Datei
+2010-02-14 13:16:59,XanClic,gcc kompiliert den Code zu Assemblercode (afaik) und legt den Code dort ab
+2010-02-14 13:17:03,XanClic,Dann gibt er das dem gas
+2010-02-14 13:17:19,XanClic,"Und wenn Kompilieren fertig ist (egal ob erfolgreich oder nicht), dann wird die Datei gelöscht"
+2010-02-14 13:17:19,X-Mind,kann der fehler auch in irgendwelchen headern liegen?
+2010-02-14 13:17:37,XanClic,"Irgendwo jedenfalls, wo du einen Softwareinterrupt aufrufst"
+2010-02-14 13:17:43,XanClic,Denn das tust du definitiv
+2010-02-14 13:17:44,DesL,moin
+2010-02-14 13:17:49,XanClic,"moin, DesL"
+2010-02-14 13:17:51,X-Mind,moin
+2010-02-14 13:18:06,JanDing,moinsen
+2010-02-14 13:18:08,DesL,moin
+2010-02-14 13:18:21,XanClic,"Moinle, JanDing"
+2010-02-14 13:18:22,X-Mind,moin
+2010-02-14 13:18:27,X-Mind,nur das problem ist das die Datei sonst immer kompiliert hat.
+2010-02-14 13:18:28,JanDing,"ich hab heute nacht geträumt, dass ich heute morgen um 10 uhr schon mal hier war"
+2010-02-14 13:18:36,XanClic,Schon wieder?
+2010-02-14 13:18:42,XanClic,Du solltest mal was gegen deine Albträume machen
+2010-02-14 13:18:43,X-Mind,gestern war das doch um 11?
+2010-02-14 13:18:51,XanClic,"Na ja, irgendwann vormittags aber"
+2010-02-14 13:19:10,X-Mind,"JanDing: egel was du nimmst, du musst weniger nehmen"
+2010-02-14 13:19:14,JanDing,^^
+2010-02-14 13:19:35,XanClic,Weniger echte Hardware also
+2010-02-14 13:19:38,DesL,"oder mehr, je nach dem..."
+2010-02-14 13:19:38,SHyx0rmZ,:D
+2010-02-14 13:20:02,JanDing,nene virtuelle hw geht gar nich
+2010-02-14 13:20:15,XanClic,Probiers doch mal aus
+2010-02-14 13:20:22,XanClic,VMware soll auch hartes Zeug sein
+2010-02-14 13:20:30,X-Mind,lol
+2010-02-14 13:20:32,DesL,^^
+2010-02-14 13:20:53,JanDing,die haben keine vielfalt und meistens nicht mal alle features
+2010-02-14 13:21:29,DesL,dan muddu mehr falten?
+2010-02-14 13:21:33,Tobiking,"Wenn Software hart wäre, dann wäre es Hardware"
+2010-02-14 13:21:33,XanClic,Aber hauen richtig rein
+2010-02-14 13:21:38,XanClic,xD
+2010-02-14 13:22:36,X-Mind,"JanDing: doch, haben sie, sie haben ein vielfalt an fehlermeldungen, und ein haufen absturtzfeatures."
+2010-02-14 13:23:34,DesL,"In Dresedn gings ja unerwartet friedlich vor, nach dem was man hört."
+2010-02-14 13:23:41,XanClic,Jo
+2010-02-14 13:23:43,XanClic,Das war WRIN
+2010-02-14 13:23:51,XanClic,Die Rechten saßen auf dem Bahnhof fest xD
+2010-02-14 13:23:57,DesL,^^
+2010-02-14 13:24:14,X-Mind,rolf
+2010-02-14 13:27:50,X-Mind,kann der fehler jetzt auch in irgendwelchen headern liegen?
+2010-02-14 13:28:49,XanClic,"Wenn du da einen Interrupt aufrufst, ja"
+2010-02-14 13:28:51,XanClic,Wie bereits gesagt
+2010-02-14 13:29:19,X-Mind,also ich mach nen outb in inlineassembler.
+2010-02-14 13:29:46,X-Mind,"asm volatile (""outb %b0,%w1"" : : ""a""(val), ""d""(port));"
+2010-02-14 13:30:32,XanClic,Kein anderer Inline-Assemblercode?
+2010-02-14 13:30:51,X-Mind,"asm volatile (""inb %w1,%b0""	: ""=a""(ret_val)	: ""d""(port));"
+2010-02-14 13:31:18,XanClic,"Hm, dann ist das komisch"
+2010-02-14 13:31:34,XanClic,"Weil gcc eigentlich keinen ""int"" von sich aus generieren sollte"
+2010-02-14 13:32:34,X-Mind,der Fehler liegt im video teil des Codes.
+2010-02-14 13:35:08,JanDing,mit gcc -S kannst du dir den assembler code ausgeben lassen
+2010-02-14 13:37:02,X-Mind,"ok, werde ich mal versuchen"
+2010-02-14 13:39:06,X-Mind,"das ist das was an der Zeile 151 Steht, die laut dem gas die Fehlerquelle ist: leal	-16(%ebp), %eax"
+2010-02-14 13:39:57,X-Mind,weis einer was die Zeile Macht?
+2010-02-14 13:40:09,SHyx0rmZ,einfach nur eine Adresse berechnen
+2010-02-14 13:40:14,SHyx0rmZ,Daran kanns IMHO nicht liegen
+2010-02-14 13:42:45,X-Mind,"Hier mal mehr code: L17:     leal  -16(%ebp), %eax    incl  (%eax)    movl  8(%ebp), %eax   cmpb  $10, (%eax)   jne  L18"
+2010-02-14 13:43:31,XanClic,"Such doch mal in der Datei nach einem ""int"""
+2010-02-14 13:44:12,X-Mind,Zeile 198:
+2010-02-14 13:44:17,X-Mind,L14:
+2010-02-14 13:44:19,X-Mind,/APP
+2010-02-14 13:44:20,X-Mind,	int
+2010-02-14 13:44:22,X-Mind,/NO_APP
+2010-02-14 13:44:23,X-Mind,L20:
+2010-02-14 13:44:39,XanClic,"Hm, sieht aus, als ob alt was fehlt *g*"
+2010-02-14 13:44:44,XanClic,s/alt/halt/
+2010-02-14 13:45:56,X-Mind,alsob was fehlt?
+2010-02-14 13:46:30,XanClic,"Na ja, normalerweise braucht der int-Befehl ja einen Operanden"
+2010-02-14 13:46:40,XanClic,"Nun weiß ich nicht, ob da bei gas irgendwas besonders ist..."
+2010-02-14 13:46:53,XanClic,Also dass /APP irgendeine besondere Sequenz einleitet oder sowas
+2010-02-14 13:47:43,SHyx0rmZ,"The assembly code you included is clearly indicated by the compiler, between the #APP and #NO_APP delimiters."
+2010-02-14 13:48:07,XanClic,Tja ;-)
+2010-02-14 13:48:18,XanClic,Also doch mehr Inline-Assembler als die zwei Sachen
+2010-02-14 13:48:21,SHyx0rmZ,Jo
+2010-02-14 13:53:50,X-Mind,"also ist irgentwo ein ""asm volatile (""int"");"" ?"
+2010-02-14 13:54:08,XanClic,Vermutlich
+2010-02-14 13:54:14,DesL,schau nach^^
+2010-02-14 14:00:14,DesL,java ist dohc doof.
+2010-02-14 14:00:15,DesL,*doch
+2010-02-14 14:01:07,SHyx0rmZ,"DesL, Das merkst du erst jetzt?"
+2010-02-14 14:01:18,DesL,wieso erst jetzt?
+2010-02-14 14:01:40,XanClic,xD
+2010-02-14 14:01:56,XanClic,"Hm, wo hat DickHuuhn gleich sein CCC-Video dazu? *g*"
+2010-02-14 14:02:15,DesL,"Unser Informatik Lehrer hat uns vor die Wahl gestellt, Delphi oder Java..."
+2010-02-14 14:02:20,DesL,was für ein video?
+2010-02-14 14:02:20,XanClic,ok
+2010-02-14 14:02:25,XanClic,Wir müssen einfach Delphi machen... -.-
+2010-02-14 14:02:29,DesL,^^
+2010-02-14 14:02:34,SHyx0rmZ,http://www.youtube.com/watch?v=Vjng_gRiK3A
+2010-02-14 14:02:38,DesL,Stufe?
+2010-02-14 14:02:41,XanClic,Genau
+2010-02-14 14:02:49,XanClic,DesL: 11. Klasse
+2010-02-14 14:02:51,SHyx0rmZ,1:00
+2010-02-14 14:03:02,XanClic,Also jetzt dann Kurs 2
+2010-02-14 14:03:13,DesL,Dresden? was steht denn bei euch aufm Lehrplan?
+2010-02-14 14:03:24,XanClic,Hm
+2010-02-14 14:03:30,XanClic,Datenbanken waren jetzt lange dran :-P
+2010-02-14 14:03:33,DesL,2. Jahr schon? Info in der 10?
+2010-02-14 14:03:36,XanClic,Und danach kurz Kryptographie
+2010-02-14 14:03:44,XanClic,Info ab 8. Klasse
+2010-02-14 14:03:50,DesL,schick
+2010-02-14 14:03:51,XanClic,"Ne, 7."
+2010-02-14 14:03:58,XanClic,"Ich meine, 2. Halbjahr"
+2010-02-14 14:04:03,XanClic,Hier werden Halbjahre als Kurse bezeichnet
+2010-02-14 14:04:08,DesL,aso
+2010-02-14 14:04:10,DesL,ossies
+2010-02-14 14:04:11,DesL,^^
+2010-02-14 14:04:13,XanClic,*g*
+2010-02-14 14:04:25,XanClic,"Na ja, 9. und 10. Klasse ist das im ""Naturwissenschaftlichen Profilunterricht"" drin"
+2010-02-14 14:04:32,XanClic,Das ist aber ausgemachter Schwachsinn
+2010-02-14 14:04:59,DesL,Bei und hies das Diferenzierung Ma/Ph bzw. Bio/Chem.
+2010-02-14 14:05:22,XanClic,Das ist bestimmt nicht so ein Unsinn
+2010-02-14 14:05:34,XanClic,"Bei uns ist das Problem, dass der Infolehrer einfach den Infostuff durchbringen musste"
+2010-02-14 14:05:47,DesL,"Wie haben jetzt erst in der 11 info gekriegt, und die ganzen Flaschen (sry) können nach nem Halben jahr nicht mal nen Kreis zeichnen."
+2010-02-14 14:05:55,XanClic,"Als wir das Thema ""Boden"" behandelt haben, ging das in Bio und Chemie vielleicht noch"
+2010-02-14 14:05:58,jonebohne,hehe das video is geil :D
+2010-02-14 14:06:04,XanClic,Aber für Info ist das halt nix...
+2010-02-14 14:06:08,DesL,^^
+2010-02-14 14:06:18,XanClic,"Und da haben wir dann HTML drangehabt, also eine HTML-Seite zu Boden gestaltet :-P"
+2010-02-14 14:06:18,DesL,Kennste SuM?
+2010-02-14 14:06:35,XanClic,Ich? Bis jetzt nicht
+2010-02-14 14:06:54,SHyx0rmZ,"DesL, Bei uns hat ma einer in der 12 gefragt (Info LK), ob man in Variablen auch Daten speichern kann"
+2010-02-14 14:07:11,DesL,ROFL
+2010-02-14 14:07:12,XanClic,Unter Daten versteht der bestimmt aber auch Megabytes
+2010-02-14 14:07:12,DesL,http://www.learnline.de/angebote/oop/
+2010-02-14 14:07:23,DesL,Oder Rezessiv.
+2010-02-14 14:08:41,SHyx0rmZ,"Ist jemandem so langweilig, dass ihm was zu meinem Forenpost einfällt? Ich wär für jede Hilfe dankbar und mir ist grad echt langweilig -.-"
+2010-02-14 14:09:15,DesL,VOn wann denn=
+2010-02-14 14:09:17,DesL,?
+2010-02-14 14:09:45,DesL,zu Paging das?
+2010-02-14 14:10:28,SHyx0rmZ,jup
+2010-02-14 14:12:17,DesL,"Ich habe ja keine ahnung von paging, aber könntest du nicht dafür sorgen, das die höhren Level (oder das Höchste?) schon vorhanden sind?"
+2010-02-14 14:12:37,SHyx0rmZ,Wenn ich 1 GB Speicher pro Task verschwenden will schon
+2010-02-14 14:12:47,DesL,Wieso so viel?
+2010-02-14 14:12:53,SHyx0rmZ,Weil x86-64
+2010-02-14 14:13:04,DesL,ah
+2010-02-14 14:13:47,DesL,"Info HA: programmiere ein Strichmänchen, das Animiert einen Pfeil in einem Zufälligen winkel auf eine Zielscheibe wirft. Frage ab, ob der Pfeil trift. Wie anspruchsvoll. Ob wohl, wenn man nichtmal nen Kreis auf die Reihe kriegt...."
+2010-02-14 14:14:23,jonebohne,wie legt man unter linux virt. diskettenlaufwerke an?
+2010-02-14 14:14:43,XanClic,dd if=/dev/zero of=floppy.img bs=512 count=2880
+2010-02-14 14:14:50,jonebohne,thx
+2010-02-14 14:14:56,XanClic,Das warn Witz :-P
+2010-02-14 14:15:01,XanClic,Das erstellt ein leeres Image
+2010-02-14 14:15:16,XanClic,"Aber weil auf Linux ja jedes echte Diskettenlaufwerk nur eine Datei ist, kommts ja aufs gleiche raus"
+2010-02-14 14:15:23,jonebohne,lol :D
+2010-02-14 14:15:29,XanClic,Zumindest ein Dateisystem will man da noch erstellen
+2010-02-14 14:15:32,DesL,und dann das img mounten?
+2010-02-14 14:15:41,XanClic,Wenn man will
+2010-02-14 14:15:54,XanClic,"Beim Buildprozess bieten sich für FAT12 aber eher mtools an, wenn es darum ging"
+2010-02-14 14:16:00,XanClic,Weil die kein root brauchen
+2010-02-14 14:16:11,jonebohne,aber ich brauche den inhalt einer .img-datei im laufwerk
+2010-02-14 14:16:13,DesL,wie denn? mkdir /dev/fdv/ mnt flppy.img /dev/fd/ ?
+2010-02-14 14:16:26,XanClic,Vorher noch mkdosfs
+2010-02-14 14:16:41,DesL,aber wenn man das FS hat gehts do?
+2010-02-14 14:16:46,DesL,*so
+2010-02-14 14:16:50,XanClic,"Jo, dann schon"
+2010-02-14 14:16:54,XanClic,"Ach so, du hast schon eins?"
+2010-02-14 14:16:58,XanClic,"Na ja, dann so, ja *g*"
+2010-02-14 14:17:03,XanClic,Aber nicht in /dev bitte.
+2010-02-14 14:17:11,DesL,wo denn dann?
+2010-02-14 14:17:18,DesL,usr ?
+2010-02-14 14:17:18,XanClic,mkdir /mnt/fd && mount floppy.img -o loop /mnt/fd
+2010-02-14 14:17:22,XanClic,Besser in /mnt oder so
+2010-02-14 14:17:26,DesL,OK^^
+2010-02-14 14:17:27,XanClic,Aber in /dev sind Gerätedateien
+2010-02-14 14:17:45,DesL,würde nicht ein echtes Floppy in Dev liegen?
+2010-02-14 14:17:50,XanClic,Jo
+2010-02-14 14:18:04,DesL,aber wäre in mnt gemountet?
+2010-02-14 14:18:06,XanClic,/dev/fd0 bei einem ganz echten (ISA) oder /dev/sdb oder sowas bei USB
+2010-02-14 14:18:15,XanClic,Kommt auf /etc/fstab und so an
+2010-02-14 14:18:36,XanClic,"Kann sein, dass der Dateimanager das automatisch beim Zugriff mountet"
+2010-02-14 14:18:40,DesL,Delphi erinnert rein Syntaktisch doch stark an Basic....
+2010-02-14 14:18:42,XanClic,Sonst muss man das halt auch manuell mounten
+2010-02-14 14:18:45,XanClic,Och ne
+2010-02-14 14:18:47,XanClic,Igitt
+2010-02-14 14:18:47,DesL,ein +.img?
+2010-02-14 14:18:54,XanClic,"Ach so, das war ja Pascalabkömmling"
+2010-02-14 14:19:00,XanClic,"Nein, /dev/fd0 z. B."
+2010-02-14 14:19:13,XanClic,Also wieder mkdir -p /mnt/fd && mount /dev/fd0 /mnt/fd
+2010-02-14 14:19:14,XanClic,Oder sowas halt
+2010-02-14 14:19:15,DesL,aso
+2010-02-14 14:19:59,DesL,"kann man das GRUB von der Knoppix DVD aus auf nem Rechner installieren? egal wie ich es anstelle, nichts geht."
+2010-02-14 14:21:11,XanClic,"Von Live-CDs berichten viele über Probleme, mehr kann ich dir nicht sagen *g*"
+2010-02-14 14:21:53,SHyx0rmZ,"grub aufrufen, dann root setzen und dann kann man da mit setup was drehen"
+2010-02-14 14:22:19,SHyx0rmZ,"genauer möchte ich mich da jetzt nciht festlegen, hat mich schonmal Stunden gekostet nach dem falschen Befehl mein System zu retten :D"
+2010-02-14 14:24:14,DesL,bei mir hat es stunden gedauert mit dem richtigen befehl nichts zu erwirken...
+2010-02-14 14:24:38,DesL,mbr gekillt?
+2010-02-14 14:25:47,jonebohne,wie installiert man grub auf einer diskette?
+2010-02-14 14:26:14,XanClic,"echo -e ""device (fd0) floppy.img\nroot (fd0)\nsetup (fd0)\nquit"" | grub --batch &> /dev/null"
+2010-02-14 14:26:19,XanClic,Installiert GRUB auf floppy.img
+2010-02-14 14:26:27,XanClic,bzw.
+2010-02-14 14:26:29,XanClic,"echo -e ""device (fd0) floppy.img\nroot (fd0)\nsetup (fd0)\nquit"" | grub --batch"
+2010-02-14 14:26:32,XanClic,Wenn du auch was sehen willst
+2010-02-14 14:28:38,DesL,"""device (fd0) floppy.img\nroot (fd0)\nsetup (fd0)\nquit"" in eine zeile? oder ist dein \ ein Zeilen umbruch?"
+2010-02-14 14:28:46,XanClic,Das ist eine Zeile
+2010-02-14 14:29:05,DesL,und wasrum in ein echo?
+2010-02-14 14:29:06,DesL,*warum
+2010-02-14 14:29:06,XanClic,Man kann auch einfach so grub aufrufen und die Befehle dann einzeln eingeben
+2010-02-14 14:29:12,XanClic,device (fd0) floppy.img
+2010-02-14 14:29:14,XanClic,root (fd0)
+2010-02-14 14:29:16,XanClic,setup (fd0)
+2010-02-14 14:29:17,XanClic,quit
+2010-02-14 14:29:23,XanClic,Aber so geht das halt schön im Buildprozess
+2010-02-14 14:29:30,DesL,"und voher ""grub --batch""?"
+2010-02-14 14:29:35,XanClic,"Nein, nur grub"
+2010-02-14 14:29:41,DesL,aso
+2010-02-14 14:29:54,DesL,dürfte bei ner HD doch ähnlich sein?
+2010-02-14 14:29:56,XanClic,grub --batch ist nur für solche Einzeiler
+2010-02-14 14:30:03,XanClic,Jo
+2010-02-14 14:30:15,XanClic,Irgendwas mit hd0 statt fd0 dann halt
+2010-02-14 14:30:18,XanClic,Und ohne den device-Befehl
+2010-02-14 14:30:28,DesL,wieso ohne device?
+2010-02-14 14:30:41,DesL,ach
+2010-02-14 14:30:46,XanClic,Weil (hd0) eigentlich schon auf die erste Festplatte gemappt sein sollte
+2010-02-14 14:31:03,XanClic,"Wenn nicht, dann device (hd0) /dev/sda"
+2010-02-14 14:31:09,DesL,ok
+2010-02-14 14:31:15,XanClic,"Oder hda, oder wo auch immer die Festplatte hängt"
+2010-02-14 14:31:16,DesL,mal aufschreiben
+2010-02-14 14:31:26,XanClic,"Ich geb auch keine Garantie, btw *g*"
+2010-02-14 14:31:48,DesL,funzt dat auch mit NTFS?
+2010-02-14 14:32:17,XanClic,"Hm, das wird mit Partitionen sowieso nicht so einfach sein"
+2010-02-14 14:32:32,XanClic,Und irgendwo muss dann btw auch eine stage1 und stage2 rumliegen
+2010-02-14 14:32:42,DesL,auf der part?
+2010-02-14 14:32:50,XanClic,NTFS wäre schlecht dafür
+2010-02-14 14:32:53,XanClic,ext3 wäre besser
+2010-02-14 14:33:02,DesL,WIndoze...
+2010-02-14 14:33:04,XanClic,Oder FAT12
+2010-02-14 14:33:07,DesL,^^
+2010-02-14 14:33:25,XanClic,"Du könntest ja ein Linux installieren, da passiert das dann alles hübsch automatisch ;-)"
+2010-02-14 14:33:36,XanClic,"Ja, ja ich weiß *g*"
+2010-02-14 14:33:50,DesL,hatten wir alles schon mal....
+2010-02-14 14:34:37,DesL,"aber ich hoffe, das ich mein Modem mit Windoze7 32-Bit ans laufen kriege, dann kriegt der PC Windoze7, und das notebook Linux^^"
+2010-02-14 14:34:39,X-Mind,"Habe das Prob gelöst. In der Videoausgabe war ein fehler drinn(Habe mal ne Debugexception eingebaut, um irgend nen fehler zu finden, aber jetzt gehts wieder)."
+2010-02-14 14:35:06,DesL,Was hatt XanClic gerade abgezogen?
+2010-02-14 14:35:11,XanClic,Das übliche
+2010-02-14 14:35:27,XanClic,Wenn der Server mich nicht mag und mich rausschmeißt
+2010-02-14 14:35:36,XanClic,Oder wenn ich Ping Timeout hab
+2010-02-14 14:35:47,DesL,^^
+2010-02-14 14:36:20,DesL,"Welche Linux Dis würdet ihr mir empfehlen? ich kenn nur Suse, Knoppix und DSL aus erster Hand."
+2010-02-14 14:36:27,XanClic,openSUSE :D
+2010-02-14 14:36:33,XanClic,/kick SHyx0rmZ
+2010-02-14 14:36:35,XanClic,*g*
+2010-02-14 14:36:40,jonebohne,ich hab jetzt openSuSE und bin sehr zufrieden
+2010-02-14 14:36:58,XanClic,So take it before anyone recommends not to do so :D
+2010-02-14 14:37:08,DesL,XD
+2010-02-14 14:37:12,SHyx0rmZ,Ubunchu D:
+2010-02-14 14:37:18,XanClic,PEER
+2010-02-14 14:37:33,XanClic,SHyx0rmZ: Nur eine Antwort erlaubt
+2010-02-14 14:37:38,XanClic,Leider war diese ungültig
+2010-02-14 14:38:00,XanClic,Japanisch will er nämlich nicht
+2010-02-14 14:38:07,XanClic,"Hm, damn"
+2010-02-14 14:38:10,XanClic,Das ist ja auf Englisch
+2010-02-14 14:38:41,jonebohne,"wie lege ich jetzt ein floppy-drive fd0 an? geht das als virtuelles, oder kann man das nicht fd0 nennen?"
+2010-02-14 14:38:52,XanClic,Wieso willst du das fd0 nennenß
+2010-02-14 14:38:54,XanClic,-ß +?
+2010-02-14 14:39:01,XanClic,"Das ist doch das tolle auf Linux, dass es egal ist, wie das heißt"
+2010-02-14 14:39:09,XanClic,Sondern dass es eine normale Datei ist
+2010-02-14 14:39:16,DesL,z.b. fdv
+2010-02-14 14:39:25,DesL,mein favorit^^
+2010-02-14 14:39:27,jonebohne,name ist eigentlich egal
+2010-02-14 14:39:34,XanClic,"Wenn du willst, dann verschiebst du dein Image halt nach /dev und nennst es fd0... :-P"
+2010-02-14 14:39:46,jonebohne,fdj für j-os :D
+2010-02-14 14:40:05,jonebohne,is dann doch nicht gemounted?
+2010-02-14 14:40:09,XanClic,Nö
+2010-02-14 14:40:20,XanClic,Dafür brauchst du irgendein möglichst leeres Verzeichnis
+2010-02-14 14:40:25,jonebohne,bin linux-noob also nich böse sein :D
+2010-02-14 14:40:29,XanClic,"Und dann ""mount <Image> -o loop <Verzeichnis>"""
+2010-02-14 14:40:33,jonebohne,das lässt sich ja erstellen
+2010-02-14 14:40:39,jonebohne,ah
+2010-02-14 14:40:46,DesL,"ich auch, aber bei Linux geht soo schnell nicht kaputt."
+2010-02-14 14:40:55,XanClic,Hm
+2010-02-14 14:41:02,XanClic,Ich hab bei dd schonmal sdb mit sda verwechselt
+2010-02-14 14:41:06,XanClic,bzw. mich vertippt
+2010-02-14 14:41:10,SHyx0rmZ,ups :D
+2010-02-14 14:41:12,XanClic,War ganz schön doof und ziemlich kaputt
+2010-02-14 14:41:28,jonebohne,mount misc/floppy_fat.img -o loop misc/floppy - so etwa?
+2010-02-14 14:41:29,XanClic,"Ich wollte nur meinen USB-Stick mit 0 überschreiben... Tja, ""dd if=/dev/zero of=/dev/sda"" war dann doof"
+2010-02-14 14:41:39,XanClic,jonebohne: Jo
+2010-02-14 14:41:41,XanClic,Aber als root
+2010-02-14 14:41:43,jonebohne,okay
+2010-02-14 14:42:05,DesL,dd if=/dev/zero of=sdb bs=999999999 count=9999999... viel spass^^
+2010-02-14 14:42:25,XanClic,Write error: No space left on device
+2010-02-14 14:42:27,XanClic,Mist
+2010-02-14 14:42:30,DesL,^^
+2010-02-14 14:42:44,DesL,er hat es getan....
+2010-02-14 14:43:13,XanClic,Das wär nicht so schnell gegangen ;-)
+2010-02-14 14:43:24,XanClic,"Also weder der Timeout noch, bis die Platte voll ist"
+2010-02-14 14:43:27,DesL,"ich musste gerade an diesen Text mit dem Scriptkiddie denken, weist welchen ich meine..."
+2010-02-14 14:43:28,DesL,?
+2010-02-14 14:43:30,XanClic,Jo
+2010-02-14 14:43:41,DesL,der ist einfach zu geil.
+2010-02-14 14:43:43,XanClic,bitchecker
+2010-02-14 14:44:12,jonebohne,*lol*
+2010-02-14 14:44:24,DesL,Hacking 127.0.0.1...
+2010-02-14 14:44:30,jonebohne,der verursacht lachkrämpfe :D
+2010-02-14 14:44:43,jonebohne,Quit: Ping timeout
+2010-02-14 14:44:47,DesL,hat wer gerade den link?
+2010-02-14 14:44:52,XanClic,Google
+2010-02-14 14:45:10,jonebohne,http://www.blogwave.de/bitchchecker-der-gefahrlichste-hacker-der-welt.html
+2010-02-14 14:45:14,XanClic,http://lmgtfy.com/?q=bitchecker halt
+2010-02-14 14:45:36,jonebohne,das mit der sommerzeit war auch geil :D
+2010-02-14 14:45:36,XanClic,"Hm, ich brauch mal ein Konversation-lmgtfy-RegEx"
+2010-02-14 14:45:57,jonebohne,mount sagt ich soll den dateisystemtyp angeben
+2010-02-14 14:46:02,DesL,^^
+2010-02-14 14:46:26,XanClic,Du solltest das Image schon formatieren
+2010-02-14 14:46:37,jonebohne,mkisofs ?
+2010-02-14 14:46:45,XanClic,Ist das ein CD-Image? ;-)
+2010-02-14 14:46:50,XanClic,iso steht für ISO9660
+2010-02-14 14:46:51,jonebohne,"mkdosfs is besser, oder?"
+2010-02-14 14:46:52,XanClic,Jo
+2010-02-14 14:46:53,DesL,das hat er mal bei meiner HD gesagt. Er konnte kein NTFS
+2010-02-14 14:47:04,XanClic,Das muss doch ewig her sein *g*
+2010-02-14 14:47:18,XanClic,Inzwischen kann ja sogar der native NTFS-Treiber Schreibzugriff
+2010-02-14 14:47:40,XanClic,"jonebohne: Guck dir mal ""man mtools"" an"
+2010-02-14 14:48:04,XanClic,"Diese Programme haben den Vorteil, dass man nichts mounten muss"
+2010-02-14 14:48:09,XanClic,Und somit auch keine root-Rechte braucht
+2010-02-14 14:50:47,DesL,mtools bigt es sogar teilweise für windows.
+2010-02-14 14:50:52,jonebohne,wie müsste man das dann aufrufen?
+2010-02-14 14:52:54,jonebohne,mmount ?
+2010-02-14 14:53:47,DesL,gar kein mount?
+2010-02-14 14:53:59,DesL,mkdosfs?
+2010-02-14 14:54:14,XanClic,Mom
+2010-02-14 14:58:07,jonebohne,mkdosfs floppy_fat.img sagt: attempting to create a too large file system
+2010-02-14 14:58:35,DesL,was sagt denn mkdosfs --help?
+2010-02-14 14:59:16,jonebohne,invalid option -- '-'
+2010-02-14 14:59:34,DesL,was sagt denn mkdosfs -help?
+2010-02-14 14:59:40,jonebohne,und dann die usage
+2010-02-14 14:59:43,XanClic,"Ach, ich wollte dir ja noch was geben ^^"
+2010-02-14 15:00:03,XanClic,http://mtools.pastebin.com/d85c134d
+2010-02-14 15:00:15,XanClic,"Das ist mein Script, um das Diskettenimage von paloxena3 zu erstellen"
+2010-02-14 15:00:36,XanClic,Man braucht für mtools vor allem eine Konfigurationsdatei
+2010-02-14 15:00:47,jonebohne,aha
+2010-02-14 15:00:47,XanClic,Zeilen 12 und 13
+2010-02-14 15:01:01,XanClic,"Wo die liegt, das muss man in die Umgebungsvariable MTOOLSRC schreiben"
+2010-02-14 15:01:27,XanClic,"Danach kann man das Image mit ""mformat -l <Label> x: > /dev/null"" formatieren"
+2010-02-14 15:01:41,XanClic,"Oder einfach mit ""mformat -l <Label> x:"""
+2010-02-14 15:01:49,jonebohne,wie schreibt man umgebungvars ? (noob-frage)
+2010-02-14 15:01:53,DesL,x: ?
+2010-02-14 15:01:53,XanClic,export
+2010-02-14 15:02:05,XanClic,export <Variable>=<Wert>
+2010-02-14 15:02:08,jonebohne,ah ja das steht auch da drüber
+2010-02-14 15:02:10,XanClic,Siehe Zeile 4
+2010-02-14 15:02:17,jonebohne,ja
+2010-02-14 15:02:21,XanClic,"DesL: Jo, das kann man wählen, wie man will"
+2010-02-14 15:02:29,XanClic,Muss man eben in der Konfigurationsdatei eintragen
+2010-02-14 15:02:45,XanClic,"Wenn man da ""drive a:"" anstatt ""drive x:"" hinschreibt, dann eben ""mformat a:"""
+2010-02-14 15:03:12,XanClic,Mit mcopy kann man dann Dateien auf so ein Image kopieren
+2010-02-14 15:03:37,XanClic,"Die Option -s führt dazu, dass auch Verzeichnisse rekursiv kopiert werden"
+2010-02-14 15:04:38,jonebohne,und zeile 12 und 13 müssen in der config stehen?
+2010-02-14 15:04:56,DesL,wofür x:?
+2010-02-14 15:05:02,XanClic,jonebohne: Jo
+2010-02-14 15:05:12,XanClic,"DesL: Na ja, weil X mein Lieblingsbuchstabe ist ;-)"
+2010-02-14 15:05:29,XanClic,Und ansonsten arbeiten die mtools eben mit solchen DOS-Laufwerksbuchstaben
+2010-02-14 15:06:10,jonebohne,hab mich schon gefragt was die in linux zu suchen haben ;)
+2010-02-14 15:06:59,DesL,ich mich ja auch.
+2010-02-14 15:07:19,DesL,aber wo für die gebraucht wernden...
+2010-02-14 15:08:26,jonebohne,"und wenn die variable gestzt ist, kann man mformat benutzen?"
+2010-02-14 15:08:35,XanClic,Jo
+2010-02-14 15:08:41,jonebohne,okay
+2010-02-14 15:09:00,XanClic,"Wenn man kein Label will, einfach nur ""mformat <Laufwerksbuchstabe>"", also z. B. ""mformat a:"" oder ""mformat x:"""
+2010-02-14 15:09:39,jonebohne,cant open :0.0: Datei oder Verzeichnis nicht gefunden
+2010-02-14 15:09:46,jonebohne,bei mformat x:
+2010-02-14 15:09:51,XanClic,LOL
+2010-02-14 15:09:53,XanClic,xDDD
+2010-02-14 15:10:00,XanClic,Dann nenn das drive a:
+2010-02-14 15:10:03,XanClic,und mformat a:
+2010-02-14 15:10:08,jonebohne,ok
+2010-02-14 15:10:11,XanClic,"Hätte nicht gedacht, dass der das x ersetzt xD"
+2010-02-14 15:11:42,jonebohne,braucht der root-rechte für mformat ?
+2010-02-14 15:11:45,XanClic,Nein
+2010-02-14 15:11:49,XanClic,Das ist ja das schöne
+2010-02-14 15:11:55,jonebohne,keine Berechtigung
+2010-02-14 15:11:59,jonebohne,sagt er
+2010-02-14 15:12:00,XanClic,"Hm, lol?"
+2010-02-14 15:12:16,XanClic,Hast du das Image als root erstellt?
+2010-02-14 15:12:19,jonebohne,cant open /dev/fd0
+2010-02-14 15:12:22,jonebohne,nein
+2010-02-14 15:12:26,XanClic,Hm
+2010-02-14 15:12:30,XanClic,mformat ist lustig
+2010-02-14 15:12:44,XanClic,Probier mal andere Laufwerksbuchstaben
+2010-02-14 15:12:49,jonebohne,ja
+2010-02-14 15:12:50,XanClic,t oder y oder r oder was weiß ic
+2010-02-14 15:12:52,XanClic,*ich
+2010-02-14 15:12:53,DesL,sudo?
+2010-02-14 15:13:16,XanClic,"Vermutlich ""übersetzt"" der A: automatisch in /dev/fd0"
+2010-02-14 15:13:50,DesL,bitte
+2010-02-14 15:13:51,DesL,*bitter
+2010-02-14 15:14:28,jonebohne,lol: bei z: /dev/sdb4: datei oder verzeichnis nicht gefunden
+2010-02-14 15:14:58,XanClic,Uhm
+2010-02-14 15:15:08,jonebohne,bei d: Drive D: not supported
+2010-02-14 15:15:31,DesL,hö?
+2010-02-14 15:15:44,jonebohne,"genauso bei E,F,G,H,I"
+2010-02-14 15:15:45,DesL,b?
+2010-02-14 15:15:54,XanClic,"Hm, du hast ja lustige mtools ^^"
+2010-02-14 15:16:59,DesL,wie das klingt...
+2010-02-14 15:17:23,jonebohne,wie deinstalliert man ein programm? sudo zypper uninstall mtools geht nich
+2010-02-14 15:17:53,DesL,dis?
+2010-02-14 15:17:54,jonebohne,ah remove
+2010-02-14 15:18:53,jonebohne,so hab neu installiert
+2010-02-14 15:19:21,DesL,"muss mal kurz weg, Spülmaschiene aus räumen..."
+2010-02-14 15:19:24,jonebohne,gar kein drive geht...
+2010-02-14 15:21:25,XanClic,Hast du schon irgendwas mit wine gemacht?
+2010-02-14 15:21:34,jonebohne,auch nich mit nem anderen terminal
+2010-02-14 15:21:38,jonebohne,nee
+2010-02-14 15:21:39,XanClic,"Ich könnte mir vorstellen, dass der die Laufwerke irgendwie belegt..."
+2010-02-14 15:21:49,jonebohne,kenn wine nicht
+2010-02-14 15:22:00,XanClic,"Bei mir werden da z. B. C:, D:, E:, F: und Z: verwendet"
+2010-02-14 15:22:11,XanClic,"Das ist ein Programm, um Windows-EXEs auszuführen"
+2010-02-14 15:22:50,jonebohne,"würd mir nix bringen, weil mein linux in Virtual Box unter windows läuft"
+2010-02-14 15:23:11,jonebohne,wine hab ich auch nicht drauf
+2010-02-14 15:24:04,XanClic,"Hm, ich hab mit mtools keine Probleme und auch týndur nimmt die..."
+2010-02-14 15:24:13,XanClic,Dort wird das Laufwerk L: genannt
+2010-02-14 15:25:09,jonebohne,Drive 'L:' not supported
+2010-02-14 15:26:15,XanClic,Du benennst das auch immer schön in deiner Config um und hast die Umgebungsvariable MTOOLSRC gesetzt?
+2010-02-14 15:26:23,jonebohne,ja
+2010-02-14 15:26:30,XanClic,Auch korrekt gesetzt? *g*
+2010-02-14 15:26:31,XanClic,Hm
+2010-02-14 15:26:35,jonebohne,ja
+2010-02-14 15:27:52,XanClic,Du hast das Image in der Config auch schön gesetzt?
+2010-02-14 15:28:11,jonebohne,ja
+2010-02-14 15:28:12,XanClic,"Also bei dir steht nicht mehr file=""floppy.img"" sondern dein Image?"
+2010-02-14 15:28:15,XanClic,Schade :D
+2010-02-14 15:28:36,jonebohne,das ist auch floppy.img und liegt im gleichen ordner wie die j-os.cfg
+2010-02-14 15:28:56,DesL,back
+2010-02-14 15:29:06,jonebohne,habs nochmal mit dem vollen pfad probiert
+2010-02-14 15:29:10,jonebohne,ging nich
+2010-02-14 15:30:00,XanClic,"Also, ich bekomme die Meldung dann, wenn ich MTOOLSRC nicht korrekt habe oder dort der falsche Imagename drinsteht..."
+2010-02-14 15:30:19,jonebohne,"aber wenn ich eine nicht existierende datei als MTOOLSRC nehme, macht ers genauso..."
+2010-02-14 15:30:25,XanClic,"Und dann bekomme ich auch""mformat: Can't open :0.0: Datei oder Verzeichnis nicht gefunden"""
+2010-02-14 15:30:34,XanClic,Wenn ich mformat x: benutze
+2010-02-14 15:31:51,XanClic,"OK, du musst was falsch haben *g*"
+2010-02-14 15:32:07,XanClic,"Denn ich bekomme die von dir geschilderten Meldungen nur, wenn eins von den drei Sachen kaputt ist"
+2010-02-14 15:32:23,jonebohne,"jetzt hat er ""Error reading from 'floppy.img', wrong parameters?"
+2010-02-14 15:32:24,XanClic,"Dann versucht der auch, /dev/fd0 bei A: und :0.0 bei X: zu öffnen"
+2010-02-14 15:32:41,XanClic,Poste mal deine cfg
+2010-02-14 15:32:49,XanClic,"Das sind ja nur zwei Zeilen, geht also auch hier"
+2010-02-14 15:33:11,jonebohne,drive x:
+2010-02-14 15:33:11,jonebohne,"  file=""floppy.img"" cylinders=80 heads=2 sectors=18 filter"
+2010-02-14 15:33:18,XanClic,Schade *g*
+2010-02-14 15:33:43,jonebohne,muss die floppy.img leer sein?
+2010-02-14 15:33:46,XanClic,Nein
+2010-02-14 15:33:51,jonebohne,darf aber?
+2010-02-14 15:33:54,XanClic,Jo
+2010-02-14 15:33:57,XanClic,Na ja
+2010-02-14 15:34:02,XanClic,"Sollte schon 1,44 MB groß sein"
+2010-02-14 15:34:07,jonebohne,aha
+2010-02-14 15:34:11,jonebohne,sry muss gehen
+2010-02-14 15:34:16,XanClic,Also besagtes dd if=/dev/zero of=floppy.img bs=512 count=2880
+2010-02-14 15:34:25,jonebohne,thx
+2010-02-14 15:34:56,DesL,"Und, was macht ihr morgen?"
+2010-02-14 15:35:01,XanClic,Nix
+2010-02-14 15:35:11,DesL,?
+2010-02-14 15:35:13,XanClic,Fasching in Radeburg war heute
+2010-02-14 15:35:27,DesL,aso
+2010-02-14 15:35:55,XanClic,Aber ich war nicht da ;-)
+2010-02-14 15:35:58,DesL,^^
+2010-02-14 15:57:57,XanClic,Mal so eine Frage
+2010-02-14 15:58:04,XanClic,ext3 hat doch Superblockkopien?
+2010-02-14 15:58:06,XanClic,Falls einer kaputt geht?
+2010-02-14 15:58:28,XanClic,"Wie kann man ein ext3-Dateisystem ansatzweise wiederherstellen bzw. es versuchen, wenn man es mit FAT32 überschrieben hat? D:"
+2010-02-14 15:59:11,DesL,"Wenn es komplet überschrieben ist, und nicht nur schnell formatiert wurde, gar nicht."
+2010-02-14 15:59:26,XanClic,"Ne, schnell war schon"
+2010-02-14 15:59:34,XanClic,Sonst hätte es nicht nur eine halbe Minute gedauert...
+2010-02-14 15:59:47,DesL,War das der grund für den Ping out?
+2010-02-14 15:59:53,DesL,^^
+2010-02-14 15:59:57,XanClic,"Da hab ich den Stecker gezogen, ja"
+2010-02-14 16:00:06,DesL,Wieso machst du so was?
+2010-02-14 16:00:07,XanClic,Weil plötzlich alle meine Dateien vom Desktop verschwunden sind
+2010-02-14 16:00:11,XanClic,Und man nie wissen kann
+2010-02-14 16:00:18,XanClic,Obwohl mein SSH-Server down ist und so
+2010-02-14 16:01:00,XanClic,"Ein hoch auf git jetzt, btw"
+2010-02-14 16:01:08,XanClic,Sonst wären auch noch meine Projekte weg
+2010-02-14 16:04:20,DesL,das wäer doof
+2010-02-14 16:07:18,FreakyPenguin,"XanClic: Im zweifelsfall mal testdisk probieren, ich glaube das müsste auch ext3 können"
+2010-02-14 16:08:09,XanClic,Jo
+2010-02-14 16:08:12,XanClic,Grad gefunden
+2010-02-14 16:08:17,XanClic,Und findet auch ein paar Superblocks
+2010-02-14 16:11:14,XanClic,"Hm, wie bescheuert ist das dnn"
+2010-02-14 16:11:15,XanClic,*denn
+2010-02-14 16:11:20,XanClic,Das findet einen Superblock im Block 2
+2010-02-14 16:11:26,XanClic,"Na, dann ist das doch ext2/ext3"
+2010-02-14 16:12:59,mastamind,XanClic: klappts wieder?
+2010-02-14 16:13:09,XanClic,"Hm, ne"
+2010-02-14 16:13:20,mastamind,was genau geht nicht?
+2010-02-14 16:13:21,XanClic,"Im Internet steht dann immer was von einem Eintrag ""Undelete"""
+2010-02-14 16:13:25,XanClic,Aber da gibts keinen bei mir
+2010-02-14 16:13:31,XanClic,Und mount sagt immer bad superblock etc.
+2010-02-14 16:14:08,mastamind,"dan is wohl der superblock kaputt. du kannst einen anderen angeben beim mounten. das problem ist, dass du ein paar infos wissen musst. vor allem die blockgröße."
+2010-02-14 16:14:16,XanClic,4096
+2010-02-14 16:14:18,XanClic,Sagt testdisk
+2010-02-14 16:14:56,mastamind,"hast du damals beim erstellen besondere parameter angegeben? wenn nicht, kannst du mkfs.ext3 mit der option -n neu laufen lassen."
+2010-02-14 16:15:07,XanClic,"Nein, keine besonderen Parameter"
+2010-02-14 16:15:09,XanClic,Mal sehen
+2010-02-14 16:15:12,XanClic,thx schonmal
+2010-02-14 16:15:17,mastamind,"dann sagt er dir, wo er die superblöcke schreiben würde, aber ohne das wirklich zu tun."
+2010-02-14 16:15:22,mastamind,die option -n ist wichtig. nicht vergessen.
+2010-02-14 16:16:06,XanClic,"Hm, andere Blöcke als testdisk sagt"
+2010-02-14 16:16:50,mastamind,probier mal read only mounten mit einem alternativen superblock.
+2010-02-14 16:17:05,XanClic,Erstmal die Option für alternativen Superblock finden *g*
+2010-02-14 16:18:11,mastamind,sb=
+2010-02-14 16:18:16,XanClic,thx
+2010-02-14 16:21:31,XanClic,"Ah, jetzt hat e2fsck was gefundn"
+2010-02-14 16:21:33,XanClic,23887872
+2010-02-14 16:26:44,JanDing,was das? primzahl?
+2010-02-14 16:27:08,XanClic,"Hm, týndur hats erwischt *g*"
+2010-02-14 16:33:29,XanClic,"Hm, man sollte mal ein Dateisystem erfinden, bei dem die Kontrollstrukturen am Ende liegen und nicht am Anfang..."
+2010-02-14 16:35:38,mastamind,ext3 müsste nur den superblock an fixen stellen im dateisystem haben.
+2010-02-14 16:35:44,mastamind,dann wäre das kein so großes problem.
+2010-02-14 16:36:11,DesL,und demnöchst formatiert windoof dann von hinten her....
+2010-02-14 16:36:47,XanClic,*g*
+2010-02-14 16:36:54,XanClic,"Na ja, sieht gar nicht mehr so schlecht aus"
+2010-02-14 16:37:01,XanClic,Ist zwar jetzt alles in lost+found
+2010-02-14 16:37:05,XanClic,Aber danke nochmal :D
+2010-02-14 16:37:14,mastamind,:-)
+2010-02-14 16:44:19,SHyx0rmZ,Muss beim Pagewalk das PD gemappt sein? Eigentlich arbeitet der da ja mit physischem Speicher?
+2010-02-14 16:47:10,mastamind,muss nicht.
+2010-02-14 16:52:11,SHyx0rmZ,"Perfekt, das macht das Paging 800000000 mal einfacher"
+2010-02-14 17:51:56,DesL,"Na klasse, neues Spiel gekauft, und was fehlt? Der Registrierungsschlüssel! Argh!"
+2010-02-14 17:52:09,XanClic,Windows lässt grüßen
+2010-02-14 17:52:32,DesL,Doofes EA-games^^
+2010-02-14 18:03:08,Homix,"XanClic: der key vom spiel fehlt, nicht der von windows ;)"
+2010-02-14 18:03:32,Homix,"aber eig hatte ich das noch nie, dass ein key gefehlt hat :D der is meistens gut versteckt ;)"
+2010-02-14 18:06:04,XanClic,"Homix: Unter Linux habe ich aber selten Programme, die einen Key verlangen ;-)"
+2010-02-14 18:07:08,Homix,das hat aber wirklich nichts mit dem OS zu tun ;)
+2010-02-14 18:07:51,XanClic,Na ja ;-)
+2010-02-14 18:07:59,Homix,"wenn die programme, die einen key brauchen, nicht drauf laufen ;)"
+2010-02-14 18:08:07,XanClic,Aber mit der Philosophie vielleicht schon eher ;-)
+2010-02-14 18:08:27,XanClic,Und bis zur Key-Eingabe kommt man bestimmt auch mit Wine *g*
+2010-02-14 18:08:44,Homix,"die philosophie der spieleentwickler, das nicht auf Linux zu bringen, hat auch nichts mit dem OS zu tun ;)"
+2010-02-14 18:09:02,Homix,na ja doch das eig schon ;)
+2010-02-14 18:14:11,JanDing,"das problem ist doch eher, dass nicht genug leute linux benutzen"
+2010-02-14 18:14:20,JanDing,"wäre linux von anfang an dos kompatibel, würden mehr leute linux nutzen"
+2010-02-14 18:14:21,XanClic,Hat doch was mit dem OS zu tun *g*
+2010-02-14 18:14:32,JanDing,aber das DOS wurde in linux ja erst später eingebaut
+2010-02-14 18:14:34,XanClic,"Wäre Linux auf jedem Rechner vorinstalliert, auch :-P"
+2010-02-14 18:15:14,JanDing,http://www.youtube.com/watch?v=6WHu1EM8CgY&feature=response_watch
+2010-02-14 18:16:00,XanClic,"Ich dachte schon, das wäre das Video vom ALDI-Pfandautomaten"
+2010-02-14 18:16:02,Homix,ok hat was mit dem OS zu tun ;) aber eher wegen linux und nicht wegen windows ;)
+2010-02-14 18:16:08,XanClic,Oder läuft da neuerdings JanDingOS drauf? ;-)
+2010-02-14 18:17:02,JanDing,"ne ich beklebe plastikflaschen mit den source code und tu die in das laufwerk rein, aber das macht dann immer so ein komisches geräusch"
+2010-02-14 18:17:08,JanDing,als wäre das laufwerk defekt
+2010-02-14 18:17:10,JanDing,und dann ist die flasche weg
+2010-02-14 18:17:16,XanClic,lol
+2010-02-14 18:17:16,JanDing,bei lidl dasselbe
+2010-02-14 18:21:08,Homix,die 6 verschiedenen Xantorix 0.1.2 Download-Versionen wurden insgesamt über 650 mal runtergeladen ;)
+2010-02-14 18:22:00,XanClic,Von dir? ;-)
+2010-02-14 18:22:23,Homix,nein :D
+2010-02-14 18:23:05,DesL,bb
+2010-02-14 19:31:01,XanClic,"Muss man sich eigentlich Gedanken machen, wenn in einem Segmentregister ein größerer Wert als 0xFFFF ""drinsteht""?"
+2010-02-14 19:31:16,XanClic,Also wenn man das auf den Stack pusht
+2010-02-14 19:31:32,XanClic,Da kommt bei mir für ES auf einem echten Computer 0xC0200010 raus
+2010-02-14 19:51:26,Homix,klingt eher nach einer virtuellen kerneladresse ;)
+2010-02-14 19:52:02,XanClic,Jo
+2010-02-14 19:52:04,XanClic,Stack
+2010-02-14 19:52:15,XanClic,0xC020FFB8 etc.
+2010-02-14 19:53:03,SHyx0rmZ,"Haha, struct kaputt"
+2010-02-14 19:53:10,SHyx0rmZ,"Lern mal Offsets, XanClic ^^"
+2010-02-14 19:53:45,XanClic,Nein
+2010-02-14 19:53:50,XanClic,In einer VM ist ja alles OK
+2010-02-14 19:53:58,XanClic,"Und du siehst ja, das Low-Word ist 0x0010"
+2010-02-14 19:54:00,XanClic,Und das ist korrekt
+2010-02-14 19:54:14,SHyx0rmZ,Der Rest wird auch gern mal von der CPU selbst gemanaged
+2010-02-14 19:54:18,SHyx0rmZ,Das ist schon richtig so
+2010-02-14 19:54:29,XanClic,"Also muss ich mir keine Gedanken machen, gut ;-)"
+2010-02-14 19:54:30,SHyx0rmZ,"Ich weiß nur nicht mehr, wo das stand..."
+2010-02-14 19:55:11,Homix,"ich glaub nicht, dass das High-Word was anderes außer 0 hat oder?"
+2010-02-14 19:55:19,XanClic,Bei mir offensichtlich
+2010-02-14 19:55:25,XanClic,An sich hat das ja gar kein High-Word
+2010-02-14 19:55:32,XanClic,"Hm, win"
+2010-02-14 19:55:37,XanClic,Der Stack wird ja nur aligned...
+2010-02-14 19:55:42,XanClic,"Das heißt, es wird ES gepusht"
+2010-02-14 19:55:53,XanClic,"Und dann einfach ESP an 4 aligned, kann das sein?"
+2010-02-14 19:56:05,Homix,hm vielleicht wird wirklich nur das word gepusht und esp-4 genommen
+2010-02-14 19:56:05,XanClic,"Das heißt, da stand vorher ein Wert, der 0xC020 im High-Word hatte"
+2010-02-14 19:56:17,Homix,stimmt das könnte sein :)
+2010-02-14 19:56:22,Homix,könnte man mal ausproieren ;)
+2010-02-14 19:56:32,XanClic,Jo ;-)
+2010-02-14 19:56:38,XanClic,Mach ich gleich mal
+2010-02-14 19:56:48,XanClic,"Hm, aber ob VMs das korrekt simulieren..."
+2010-02-14 19:57:07,SHyx0rmZ,"Die CPU macht da aber noch irgendwas mit den höheren Bits, ich suchs gleich aus den Docs raus"
+2010-02-14 19:58:56,XanClic,"Also wenn, dann emuliert qemu das zumindest nicht korrekt ;-)"
+2010-02-14 19:59:05,Homix,zero und sign extends gibts da doch auch?
+2010-02-14 19:59:25,XanClic,Dann wäre das ja aber 0x00000010
+2010-02-14 19:59:29,XanClic,"So, wie ich es erwarte"
+2010-02-14 19:59:33,XanClic,Und nicht 0xC0200010
+2010-02-14 20:03:50,SHyx0rmZ,Also
+2010-02-14 20:04:03,SHyx0rmZ,"Ich finds grad nicht, emuliert wirds wohl nciht, weil das auch Herstellerspezifisch ist"
+2010-02-14 20:04:21,SHyx0rmZ,Aber ich hab das auf JEDEN Fall mal so in den Docs gelesen
+2010-02-14 20:15:39,X-Mind,hi
+2010-02-14 20:41:02,X-Mind,"ich habe ein problem, und zwar wenn ich EIN TSS anlege funktioniert mein OS. Wenn ich aber 2 TSS anlege, stürtzt bochs mit der meldung ""Interrupt(): not accessable or not code segment CS= Irgendeine Hex-Zahl"
+2010-02-14 20:41:23,X-Mind,ab
+2010-02-14 20:41:28,SHyx0rmZ,Lass mich raten
+2010-02-14 20:41:43,SHyx0rmZ,"Du beachtest nicht, dass das TSS doppelt so groß ist?"
+2010-02-14 20:41:56,SHyx0rmZ,Du musst einen GDT-Eintrag auslassen
+2010-02-14 20:42:02,X-Mind,wie doppelt so groß?
+2010-02-14 20:42:36,SHyx0rmZ,Oh
+2010-02-14 20:42:40,XanClic,Hä?
+2010-02-14 20:42:40,SHyx0rmZ,Vergiss was ich sagte
+2010-02-14 20:42:43,SHyx0rmZ,64-Bit -.-
+2010-02-14 20:42:50,taljeth,"Wollte grad sagen, wäre mir neu auf i386 ;-)"
+2010-02-14 20:43:37,X-Mind,Ich benutze übrigens HW-MT.
+2010-02-14 20:44:27,X-Mind,also doch keinen Eintrag auslassen?
+2010-02-14 20:44:36,XanClic,Nein
+2010-02-14 20:45:08,X-Mind,was mach ich dan falsch?
+2010-02-14 20:45:15,X-Mind,*dann
+2010-02-14 20:45:49,XanClic,"Hm, hast du das GDT-Limit korrekt angepasst?"
+2010-02-14 20:46:08,X-Mind,nein
+2010-02-14 20:46:08,XanClic,Und auch alle TSS korrekt initialisiert?
+2010-02-14 20:46:43,X-Mind,"gdt_set_entry( 5, (unsigned int) &task_state_segment_1 , sizeof(struct tss)-1, 0, GDT_TYPE_TSS); // TSS 1"
+2010-02-14 20:47:22,XanClic,"Na ja, GDT != TSS"
+2010-02-14 20:47:44,X-Mind,Hä?
+2010-02-14 20:47:55,XanClic,"Ich hab gefragt, ob du alle TSS korrekt initialisierst"
+2010-02-14 20:48:01,XanClic,"Und nicht, ob du die GDT korrekt initialisierst"
+2010-02-14 20:48:31,XanClic,"Oder hast du an sich den gleichen Code, nur dass du jetzt eben einen weiteren Eintrag in der GDT hast?"
+2010-02-14 20:48:32,X-Mind,"dumme frage, aber wie Initialisiert man ein TSS?"
+2010-02-14 20:48:41,XanClic,"Ach, du benutzt es gar nicht?"
+2010-02-14 20:49:09,X-Mind,Habe ich noch vor.
+2010-02-14 20:49:14,XanClic,Also nicht ;-)
+2010-02-14 20:49:27,X-Mind,Ja
+2010-02-14 20:49:29,XanClic,"Na ja, wie ich aus dem gdt_set_entry() ablese, hast du so ziemlichen Wikicode?"
+2010-02-14 20:49:38,XanClic,"Da bietet es sich schon an, das GDT-Limit anzupassen"
+2010-02-14 20:49:52,XanClic,Also GDT_ENTRIES
+2010-02-14 20:50:19,XanClic,Weil man sonst einen hübschen Out-of-bounds-Fehler bekommen dürfte
+2010-02-14 20:50:23,XanClic,bzw. nicht so explizit
+2010-02-14 20:52:50,X-Mind,Macht es was wennn das Limmit Größer ist als die GDT?
+2010-02-14 20:52:56,XanClic,Nein
+2010-02-14 20:54:36,X-Mind,"thx, jetzt gehts."
+2010-02-14 20:59:44,X-Mind,"Wenn ich bei der Videoausgabe Immer nur den Video-Pointer erhöhe, ohne das er begrenzt wird,  könnte es dann sein das ich mir nach ein paar Stunden Tippen Stack überschreibe?"
+2010-02-14 21:00:16,XanClic,Vor allem siehst du dann nach ein paar Minuten Tippen nichts mehr
+2010-02-14 21:00:30,XanClic,"Aber zuallerstmal landest du im BIOS-ROM, was die CPU abwürgen könnte"
+2010-02-14 21:00:32,SHyx0rmZ,Ich bin für ein paar Sekunden
+2010-02-14 21:00:42,XanClic,Du bist ja auch schnell :D
+2010-02-14 21:01:20,SHyx0rmZ,10 Finger ftw
+2010-02-14 21:01:26,XanClic,Hm
+2010-02-14 21:01:30,XanClic,Ich fand 10 Finder zu langsam
+2010-02-14 21:01:46,XanClic,Wobei ich mittlerweile glaub ich auch mit zehn Fingern tippe
+2010-02-14 21:01:49,XanClic,Zumindest mit acht
+2010-02-14 21:01:56,XanClic,"Na ja, neun"
+2010-02-14 21:02:11,taljeth,Immer gleich übertreiben ;-)
+2010-02-14 21:02:13,XanClic,Den rechten Ringfinger benutze ich im Gegensatz zu meinem linken für Backspace
+2010-02-14 21:04:05,X-Mind,"[21:00]	<XanClic>	Aber zuallerstmal landest du im BIOS-ROM, was die CPU abwürgen könnte <- ROM?!?"
+2010-02-14 21:04:19,XanClic,Read-Only-Memory
+2010-02-14 21:04:23,XanClic,Das wird dir auch WP sagen
+2010-02-14 21:04:25,X-Mind,wie soll man nen ROM Überschreiben
+2010-02-14 21:04:30,XanClic,Gar nicht
+2010-02-14 21:04:33,XanClic,Das ist ja das Problem
+2010-02-14 21:04:38,X-Mind,außerdem weiß ich was ROM ist
+2010-02-14 21:04:45,XanClic,Das dachte ich mir ;-)
+2010-02-14 21:04:57,XanClic,"Aber wenn man doch auf ROM schreibt, könnte das Probleme geben"
+2010-02-14 21:05:03,XanClic,"Wobei taljeth damals keine hatte, oder? *g*"
+2010-02-14 21:05:11,XanClic,"Also, außer dass es halt nicht geschrieben hat"
+2010-02-14 21:05:38,taljeth,"Jo, die d00fe Variable hat sich einfach nicht ändern lassen ;-)"
+2010-02-14 21:06:03,taljeth,Das gab _sehr_ seltsame Pagefaults
+2010-02-14 21:06:28,taljeth,Und ein sehr großes *ARGH* als ich es rausgefunden hatte ;-)
+2010-02-14 21:06:38,XanClic,Das glaub ich *g*
+2010-02-14 21:06:41,X-Mind,Ich benutze zum glück(noch)kein Pageing.
+2010-02-14 21:06:49,XanClic,Das hat nichts mit Paging zu tun
+2010-02-14 21:07:12,X-Mind,Wie darf meine wenigkeit das verstehen?
+2010-02-14 21:07:18,XanClic,"Na ja, ROM gibts immer"
+2010-02-14 21:07:25,XanClic,Mindestens von 0xF0000 bis 0xFFFFF
+2010-02-14 21:07:33,XanClic,Also an den physischen Adressen
+2010-02-14 21:07:33,X-Mind,ach ne.
+2010-02-14 21:07:37,XanClic,Na ja
+2010-02-14 21:08:06,X-Mind,"hast in info aufgepasst, krigst ein Keks ;-)"
+2010-02-14 21:08:11,XanClic,Ne
+2010-02-14 21:08:13,XanClic,Nur im Wiki
+2010-02-14 21:08:23,SHyx0rmZ,http://pastebin.org/91699 ?
+2010-02-14 21:08:27,XanClic,Ich müsste das eher noch unserem Infolehrer beibringen
+2010-02-14 21:08:33,X-Mind,lol
+2010-02-14 21:08:36,XanClic,Wobei das keine Kritik an Infolehrern ist
+2010-02-14 21:08:46,SHyx0rmZ,Kann sich das jemand erklären?
+2010-02-14 21:08:51,XanClic,"Das ""WTF""?"
+2010-02-14 21:08:53,XanClic,"Jo, das warst du"
+2010-02-14 21:08:55,XanClic,Und nicht bochs
+2010-02-14 21:09:12,SHyx0rmZ,"Nein, dass der Wert nicht im Speicher steht"
+2010-02-14 21:10:49,SHyx0rmZ,"Hm, könnte das was mit Writethrough zu tun haben?"
+2010-02-14 21:10:52,X-Mind,Bei mir hats mit dem überschreiben geklappt.
+2010-02-14 21:11:02,X-Mind,nach 2h
+2010-02-14 21:11:07,XanClic,Vom Stack?
+2010-02-14 21:11:17,XanClic,"Ah, jetzt hat er den Stack vom IRC-Clienten überschrieben"
+2010-02-14 21:11:19,XanClic,Respekt
+2010-02-14 21:12:55,taljeth,Solange die Quitmessage nicht 0xd00fc0de ist... ;-)
+2010-02-14 21:13:18,XanClic,"Hm, seit wann gibt es Chatzilla/Firefox für týndur? ;-)"
+2010-02-14 21:13:25,XanClic,Ich hätte ja eigentlich Konqueror zuerst erwartet
+2010-02-14 21:16:05,SHyx0rmZ,Möcht mir jemand beim Paging helfen? Er überschreibt den Wert eifnach nicht
+2010-02-14 21:16:41,JanDing,musst es so wie erhard machen
+2010-02-14 21:16:44,JanDing,einfach 10 mal versuchen
+2010-02-14 21:16:50,XanClic,xD
+2010-02-14 21:16:57,SHyx0rmZ,Hahaha
+2010-02-14 21:17:01,taljeth,"Er hat das passende Tut zum Kopieren noch nicht gefunden, glaube ich"
+2010-02-14 21:17:08,SHyx0rmZ,Ich bin grad echt nicht zu Späßen aufgeleft
+2010-02-14 21:17:24,taljeth,Was soll mir dein Paste überhaupt sagen?
+2010-02-14 21:18:44,SHyx0rmZ,Nichts
+2010-02-14 21:18:59,XanClic,Dass er nicht zu Späßen aufgelegt ist
+2010-02-14 21:19:03,XanClic,*aufgeleft
+2010-02-14 21:19:09,XanClic,Und das zu Karneval
+2010-02-14 21:19:23,XanClic,Bei uns allen wäre das verständlich
+2010-02-14 21:19:34,XanClic,"Aber nicht bei DickHuuhn, Hardy und dir, SHyx0rmZ"
+2010-02-14 21:19:53,XanClic,"Ach, jetzt versteh ich"
+2010-02-14 21:20:00,XanClic,In der ARD kommt Kölner Karneval
+2010-02-14 21:20:03,XanClic,Klar
+2010-02-14 21:20:04,SHyx0rmZ,http://pastebin.org/91702 <- Der schreibt den Wert einfach nicht in den Speicher
+2010-02-14 21:24:41,SHyx0rmZ,Ah
+2010-02-14 22:17:14,DesL,abend
+2010-02-14 22:17:22,XanClic,"moin, DesL"
+2010-02-14 22:22:13,SHyx0rmZ,Hrm
+2010-02-14 22:22:28,SHyx0rmZ,Gibt es bei INVLPG irgendwas besonderes zu beachten?
+2010-02-14 22:22:41,XanClic,"Man muss es manchmal nicht aufrufen, aber sonst nicht *g*"
+2010-02-14 22:22:54,XanClic,Und es invalidiert nur den TLB der aktuellen CPU
+2010-02-14 22:23:02,XanClic,Wobei dich das nicht interessieren dürfte ;-)
+2010-02-14 22:23:14,SHyx0rmZ,"Hm, doch D:"
+2010-02-14 22:23:31,XanClic,Hm?
+2010-02-14 22:23:33,XanClic,Schon SMP?
+2010-02-14 22:23:43,SHyx0rmZ,"Wenn ich bei bochs ""page x"" angebe, ist das dann gemappt, wenn CPU0 das gemappt hat?"
+2010-02-14 22:23:56,SHyx0rmZ,Mit zwei CPUs
+2010-02-14 22:24:35,SHyx0rmZ,"Also, mein Problem ist:"
+2010-02-14 22:24:56,SHyx0rmZ,Ich mach invlpg -0x30(%rbp)
+2010-02-14 22:25:06,XanClic,Bäh
+2010-02-14 22:25:08,XanClic,ESYNTAX
+2010-02-14 22:25:11,SHyx0rmZ,"Was dann invlpg 0xpage wäre, wenn ich mich nicht vertue"
+2010-02-14 22:25:22,SHyx0rmZ,"Das hat der GCC so gewählt, nicht ich, XanClic ^^"
+2010-02-14 22:25:31,XanClic,-masm=intel sagt was anderes :-P
+2010-02-14 22:25:34,SHyx0rmZ,Aber 0xpage ist danach immer noch nicht enthalten
+2010-02-14 22:25:37,SHyx0rmZ,"XanClic, -.-"
+2010-02-14 22:26:40,SHyx0rmZ,Ist das normal?
+2010-02-14 22:46:09,SHyx0rmZ,Warum wird INVLPG nicht sofort übernommen?
+2010-02-14 22:46:31,XanClic,Beendet ein exit() eigentlich nur den aktuellen Thread oder den ganzen Prozess?
+2010-02-14 22:49:56,taljeth,Prozess
+2010-02-14 22:50:16,XanClic,"Hm, dann in meiner libc für native paloxena3-Prozesse halt nicht *g*"
+2010-02-14 22:58:48,SHyx0rmZ,"Komisch, er scheint das invlpg erst ab dem nächsten leave zu übernehmen"
+2010-02-14 23:02:21,SHyx0rmZ,Kann sich das jemand erklären?
+2010-02-14 23:36:47,JanDing,vielleicht ist das invlpg komplett wirkungslos?
+2010-02-14 23:37:02,JanDing,und dass das nach dem leave auftritt ist zufall?
+2010-02-14 23:37:09,JanDing,oder eine verborgene cpu mechanik
+2010-02-14 23:49:56,SHyx0rmZ,"Yeah, ich hab jetzt auch PrimitiveMM und Paging \(^.^)/"
+2010-02-14 23:52:32,JanDing,PrimitivePaging?
+2010-02-14 23:53:17,SHyx0rmZ,Nein
+2010-02-14 23:53:26,SHyx0rmZ,Paging ist Evolution++ :D

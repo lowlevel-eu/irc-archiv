@@ -1,0 +1,407 @@
+date/time,nick,message
+2009-06-04 09:49:48,chris12,moin
+2009-06-04 10:06:12,ThePuppetMaster,moin
+2009-06-04 10:06:22,chris12,moin
+2009-06-04 10:06:40,ThePuppetMaster,"Homix hab gestern noch herausgefunden, das er in den mode kommt, aber irgend wie kracht er nach komischen asm add kommandos ab"
+2009-06-04 10:10:08,ThePuppetMaster,http://pastebin.com/m25d4f32d
+2009-06-04 10:12:36,Homix,"so ein add [eax],al ist der name für 0x00 ;) wenn der befehl öfters ausgeführt wird, dann weisst du, dass du wohl code dort ausführst wo nur 0en stehen, und er eigentlich dort nix ausführen sollte"
+2009-06-04 10:12:59,ThePuppetMaster,hmmm
+2009-06-04 10:13:02,ThePuppetMaster,also kein do loop
+2009-06-04 10:13:15,ThePuppetMaster,mist
+2009-06-04 10:14:33,Homix,mappst du auch die codestellen richtig bevor du paging einschaltest?
+2009-06-04 10:14:48,ThePuppetMaster,eigentlich schon .. hoffe ich mal ... http://pastebin.com/m5408043f
+2009-06-04 10:15:13,ThePuppetMaster,hab diesmal die variante aus der ausgabe 8 vom osdev mag durchgearbeitet
+2009-06-04 10:15:17,kwolf,"info tlb sagt dir, was qemu macht"
+2009-06-04 10:15:21,ThePuppetMaster,udn nur das nötigste in den source gestopft
+2009-06-04 10:15:31,kwolf,In Bezug auf Mappings
+2009-06-04 10:15:39,Homix,"das mit basic und so sagt mir nix, aber an welcher stelle steht denn der paging code? mappst du den dann auch identisch in den virtuellen adressraum?"
+2009-06-04 10:15:39,ThePuppetMaster,info tlb?
+2009-06-04 10:15:47,kwolf,"Jo, im Monitor"
+2009-06-04 10:15:51,kwolf,Das zeigt den TLB-Inhalt an
+2009-06-04 10:16:01,kwolf,"Wenn du erfolgreich gemappt hast, sollte da was drinstehen ;-)"
+2009-06-04 10:16:57,Homix,ja das beispiel in ausgabe 8 ist gut :)
+2009-06-04 10:19:28,kwolf,"ThePuppetMaster: Du machst aber kein 1:1-Mapping, wie das aussieht?"
+2009-06-04 10:19:55,kwolf,Wie sollte das jemals funktionieren?
+2009-06-04 10:20:34,ThePuppetMaster,nicht? .. laut ausgabe 8 sollte das funzen
+2009-06-04 10:20:42,ThePuppetMaster,ich schreib grad doku zum code
+2009-06-04 10:21:00,Homix,an welcher adresse liegt dein code denn?
+2009-06-04 10:21:19,kwolf,"Du mußt halt dafür sorgen, daß der nächste Befehl nach dem Einschalten von Paging auf der virtuellen Adresse liegt, auf die eip zeigt"
+2009-06-04 10:21:27,ThePuppetMaster,http://pastebin.com/m2aa6d31f
+2009-06-04 10:21:39,kwolf,"Am einfachsten ist das, wenn du das auf einer 1:1 gemappten Page hast, dann geht es nämlich einfach im Code weiter ;-)"
+2009-06-04 10:21:57,ThePuppetMaster,"hmm .. das is ne gute frage, wo der liegt"
+2009-06-04 10:22:21,Homix,"wäre schon wichtig wo du weisst, wo der liegt ..."
+2009-06-04 10:22:33,kwolf,"Dafür aber eigentlich nicht wirklich, solange er in den unteren 4 MB liegt"
+2009-06-04 10:23:15,Homix,ja
+2009-06-04 10:23:30,ThePuppetMaster,ok .. mit 0 als startadresse für das füllen scheints zu gehen
+2009-06-04 10:23:49,kwolf,"Nur das ganze um 36k versetzt zu mappen und zu erwarten, daß der Prozessor mit eip gleich mitspringt, geht halt nicht"
+2009-06-04 10:24:04,ThePuppetMaster,da is das letzte statement im qemu log : 0x001000a0:  jmp    0x1000a0
+2009-06-04 10:24:12,Homix,"*g*, also ist der code in ausgabe 8 doch nicht kaputt :)"
+2009-06-04 10:24:17,ThePuppetMaster,*lach*
+2009-06-04 10:24:28,ThePuppetMaster,naja.. er gebinnt jedoch mit 0x9000 oder so
+2009-06-04 10:24:39,ThePuppetMaster,ein wenig irrführend für nen basic-coder *g*
+2009-06-04 10:24:57,Homix,an 0x9000 liegt eine PageTable ;)
+2009-06-04 10:25:24,ThePuppetMaster,"richtig ... lol .. das erklärt die ausführung von einigem code, ohne das er kracht"
+2009-06-04 10:25:46,ThePuppetMaster,hab ich granicht gecheckt ... hast natürlich recht .. erklärt das phänomen
+2009-06-04 10:26:54,ThePuppetMaster,"da das directory 1024 einträge hat, müsste das ja bedeuten, das der rechner nur 1024 programme gleichzeitig ausführen kann .. oder irre ich mich da?"
+2009-06-04 10:27:21,Homix,"in der regel hat jedes Programm seine eigenen 4 GB, also auch sein eigenes PageDirectory?"
+2009-06-04 10:27:48,Homix,"das was du beschreibst, wäre ein OS, das jedem Programm nur 4 MB virtuellen speicher geben würde und das im selben adressraum"
+2009-06-04 10:28:00,ThePuppetMaster,"hmm ... und ich dachte, jetzt hab ich das kapiert ... dachte seit gestrn, das jedes prog nur seine eigene tabelle hat, welche in einem directory index liegt"
+2009-06-04 10:28:36,Homix,nee ;)
+2009-06-04 10:29:16,ThePuppetMaster,"dann muss ich also selbst dafür sorgen, das bei einem task-wechsel die komplette table udn directory durch eine neue ersetzt wird, die diesem neuem app zugeordnet ist ?!?"
+2009-06-04 10:29:34,kwolf,"Ja, das ist genau ein Assemblerbefehl"
+2009-06-04 10:29:37,kwolf,"mov cr3, ..."
+2009-06-04 10:29:57,Homix,"also sowas wie mov cr3,[PageDirVonProzessX] ; mov cr3,eax ;)"
+2009-06-04 10:29:59,Homix,eax*
+2009-06-04 10:30:01,Homix,das erste :D
+2009-06-04 10:30:10,ThePuppetMaster,"ok .. dann gibs also keine beschränkung der anzahl ""gleichzeitig"" abarbeitender progs "
+2009-06-04 10:30:20,Homix,genau
+2009-06-04 10:30:30,ThePuppetMaster,ok
+2009-06-04 10:30:55,kwolf,Ausgabe 8 ist wohl doch nicht so gut? ;-)
+2009-06-04 10:31:05,ThePuppetMaster,*lach*
+2009-06-04 10:31:15,Homix,in meinen tutorials werd ich das ausführlicher dann machen ...
+2009-06-04 10:31:34,ThePuppetMaster,"hattest du nicht mal eines, das aber nimmer existiert="
+2009-06-04 10:31:35,ThePuppetMaster,?
+2009-06-04 10:31:54,Homix,das findest du in ausgabe 8 ;)
+2009-06-04 10:32:11,kwolf,"Hm, gleich der erste Abschnitt in Ausgabe 8 ist ja total falsch. Natürlich hatten 386er Paging..."
+2009-06-04 10:32:27,ThePuppetMaster,jo
+2009-06-04 10:32:29,kwolf,Nur kein invlpg ;-)
+2009-06-04 10:32:30,ThePuppetMaster,erster link
+2009-06-04 10:32:32,ThePuppetMaster,aber der is down
+2009-06-04 10:32:51,Homix,"aber das ist jetzt auch schon einige jahre alt und ich war da auch eher anfänger, ich wurde nur von dem damailigen chefredakteur überredet, sowas zu schreiben :D"
+2009-06-04 10:33:07,ThePuppetMaster,hehe
+2009-06-04 10:37:17,ThePuppetMaster,"dann werde ich wohl erstmal dafür sorgen müssen, das der kernel einen bereich gemapt bekommt, der immer für ihn reserviert is, und dann den ganzen anderen ""kramp"""
+2009-06-04 10:37:21,ThePuppetMaster,f
+2009-06-04 10:49:42,ThePuppetMaster,moin bluecode 
+2009-06-04 10:49:47,bluecode,moin
+2009-06-04 10:53:15,Homix,hi
+2009-06-04 10:54:12,Homix,"ich hab grad die kompilierten grub dateien (stage1,stage2,verschiedene stage1_5) runtergeladen, weiss jemand wie ich die genau auf Diskette oder HDD kopieren muss? und gibt es für hdd und diskette verschiedene stage1 bootsektoren?"
+2009-06-04 10:54:20,kwolf,Moin bluecode
+2009-06-04 10:54:48,Homix,"steht zwar überall was von grub-install, aber ich mag mir deswegen kein extra linux anschaffen ;)"
+2009-06-04 10:54:48,bluecode,stage1 ist immer gleich
+2009-06-04 10:54:55,bluecode,"und ja, grub-install"
+2009-06-04 10:55:15,Homix,"stage2 anscheinend auch, bloß die 1_5er nicht ;) aber ich würds gern ohne grub-install hinkriegen :D"
+2009-06-04 10:55:41,bluecode,dann schau dir an was grub-install macht
+2009-06-04 10:55:51,bluecode,"aber ich bin ziemlich sicher, dass irgendwo hinkopieren nicht ausreicht"
+2009-06-04 10:56:23,Homix,"hm ja, ich schätz mal, dass die sektoren von stage2 und so man irgendwo sicher hinschreiben muss und so"
+2009-06-04 10:58:40,ThePuppetMaster,Homix wie find ich eigentlich heraus wo mein kernel liegt? ... beim kompilieren wird das ja kaum festgelegt .. oder?
+2009-06-04 10:59:04,bluecode,beim linken
+2009-06-04 10:59:10,bluecode,oder vom Bootloader
+2009-06-04 10:59:14,bluecode,bzw. und
+2009-06-04 10:59:42,Homix,"meist an 0x100000, kommt aber drauf an, wie du linkst ;)"
+2009-06-04 11:00:26,ThePuppetMaster,"hmm .. also .. angeben tu ich da nix, mit position"
+2009-06-04 11:00:27,ThePuppetMaster,ld -Tasix_core.ld asix_core.o -melf_i386 -o asix_core
+2009-06-04 11:00:39,bluecode,im Linkerskript
+2009-06-04 11:00:55,ThePuppetMaster,stimmt
+2009-06-04 11:01:20,ThePuppetMaster,gefunden .. thx
+2009-06-04 11:16:25,kwolf,Homix: Du kannst stage1 und stage2 einfach zusammenkopieren und an den Anfang schreiben
+2009-06-04 11:16:33,kwolf,Das geht dann halt leider nicht mit einem FS zusammen
+2009-06-04 12:25:03,Powerloader,mahlzeit ...
+2009-06-04 13:10:06,JSheridan,hi^^
+2009-06-04 13:10:13,bluecode,hi JSheridan
+2009-06-04 13:24:19,kwolf,Moin JSheridan
+2009-06-04 13:24:44,JSheridan,na soweit alles klar bei euch?
+2009-06-04 13:38:26,bluecode,denk scho
+2009-06-04 13:52:27,JSheridan,so ich muss erstmal in ein meeting
+2009-06-04 13:52:27,JSheridan,bis später
+2009-06-04 13:54:56,kwolf,"Als ob das ein Grund wäre, den Channel zu verlassen"
+2009-06-04 13:59:11,ThePuppetMaster,lol
+2009-06-04 14:45:28,user94,hi
+2009-06-04 14:45:32,user94,"typedef s8int (*lessthan_predicate_t)(type_t,type_t);"
+2009-06-04 14:45:41,user94,kann mir jemand das erklären
+2009-06-04 14:45:51,user94,ich find in keinem c tutorial was dazu
+2009-06-04 14:46:53,bluecode,user94: Definiert einen Typ namens lessthan_predicate_t als Funktionszeiger mit 2 Argumenten vom Typ type_t und Rückgabewert vom Typ s8int
+2009-06-04 14:47:20,user94,achso als funktionszeiger
+2009-06-04 14:47:25,user94,danke
+2009-06-04 15:06:08,FreakyPenguin,Moin
+2009-06-04 15:06:14,bluecode,hai FreakyPenguin
+2009-06-04 15:06:34,kwolf,Moin FreakyPenguin
+2009-06-04 15:06:48,kwolf,Hast du's überlebt? ;-)
+2009-06-04 15:07:05,FreakyPenguin,Sieht fast so aus. ;-)
+2009-06-04 15:08:40,FreakyPenguin,"Eigentlich hätte ich das Notebook mitnehmen sollen, das war ja langweilig zwischen den Prüfungen, dann wäre ich wenigstens dann produktiv gewesen. ;-)"
+2009-06-04 15:09:37,Homix,geht bei euch die lowlevel seite auch (mal wieder) nicht?
+2009-06-04 15:09:59,FreakyPenguin,Jo
+2009-06-04 15:10:08,bluecode,jo
+2009-06-04 15:11:31,Homix,so jetzt stell ich mal ein neues konzept der benutzerverwaltung auf ;) die alte nervt mich auch schon wieder
+2009-06-04 15:11:53,FreakyPenguin,*g*
+2009-06-04 15:12:12,FreakyPenguin,Ach Homix... ;-)
+2009-06-04 15:14:31,kwolf,Homix: Falsche Reihenfolge. Die Roadmap dafür fehlt noch.
+2009-06-04 15:15:22,Homix,hm .. die website müsst ich aber echt mal wieder aktualisieren
+2009-06-04 15:17:30,kwolf,Du könntest ja eine tyndur-Seite bauen. Dann hättest du wenigstens auch mal die passende Software dazu
+2009-06-04 15:24:49,Homix,dann schau ich jetzt lieber doch tennis an
+2009-06-04 15:25:01,bluecode,eh...
+2009-06-04 15:31:09,bluecode0,ih windows
+2009-06-04 15:35:13,kwolf,Hm?
+2009-06-04 15:35:49,bluecode0,bin halt grad unter windows...
+2009-06-04 15:36:28,bluecode0,aber ich glaub ich spiel lieber als irgendwas produktives zu tun
+2009-06-04 15:38:23,kwolf,Das hast du schon in der Zeile davor gesagt
+2009-06-04 15:39:22,bluecode0,nicht wirklich ;-)
+2009-06-04 15:39:43,bluecode0,ich müsste ja eventuell mich mal wieder mit msvc++ auseinandersetzen
+2009-06-04 15:39:59,kwolf,Wieso denn das?
+2009-06-04 15:40:01,kwolf,Studium?
+2009-06-04 15:41:19,bluecode0,jo
+2009-06-04 15:41:46,kwolf,Das ist natürlich hart
+2009-06-04 15:55:34,Homix,msv++ ist nicht schlecht^^
+2009-06-04 15:55:49,Homix,wobei die Delphi IDE natürlich besser ist ;)
+2009-06-04 19:35:18,taljeth,Dobrý večer
+2009-06-04 19:35:54,FreakyPenguin,"Hm, war das auch isländisch? *g*"
+2009-06-04 19:36:06,FreakyPenguin,Oder ist das Tschechisch? ;-)
+2009-06-04 19:36:09,taljeth,Fast ;-)
+2009-06-04 19:36:13,taljeth,Ja
+2009-06-04 19:36:28,FreakyPenguin,Das hat aber soviele Vokale? ;-)
+2009-06-04 19:36:45,taljeth,"Die Ausnahme, die die Regel bestätigt ;-)"
+2009-06-04 19:37:16,taljeth,"Hm, ich muß langsam aber zusehen, daß mir die Sprachen nicht ausgehen"
+2009-06-04 19:37:38,taljeth,"Oder hoffen, daß ihr mir Aftonbladet als guten Abend durchgehen laßt *g*"
+2009-06-04 19:37:39,FreakyPenguin,Also doch Forth lernen ;-)
+2009-06-04 19:38:43,ch100,hi
+2009-06-04 19:39:00,FreakyPenguin,Wtf? ;-)
+2009-06-04 19:39:08,ch100,"ich wusste, es ist was aus osteuropa ^^"
+2009-06-04 19:39:24,taljeth,"Ne, Forth muß wirklich nicht sein"
+2009-06-04 19:39:30,ch100,irgendwas slawisches
+2009-06-04 19:39:53,FreakyPenguin,Mal was eigenes wäre doch auch was ;-)
+2009-06-04 19:40:10,taljeth,Bei was eigenem fehlen aber ständig Wörter
+2009-06-04 19:40:27,ch100,rofl
+2009-06-04 19:41:24,FreakyPenguin,"Keywords, oder was? ;-)"
+2009-06-04 19:41:26,ch100,"ich überwache euch! (geht aber nur, wenn in diesem channel und tyndur an ist xD)"
+2009-06-04 19:41:30,ThePuppetMaster,"Kann ich eigentlich änderungen in der pagetable/directory  vornehmen, wärend sie im cr register ""gelinkt"" is?"
+2009-06-04 19:41:34,ThePuppetMaster,oder wäre da snicht zu empfehlen?
+2009-06-04 19:41:42,taljeth,"Hm, hatte ich in diesem Forum doch auch mal eine Suchfunktion eingebaut...? :-/"
+2009-06-04 19:42:35,ch100,"ne taljeth, das waren die SMF entwickler xD"
+2009-06-04 19:47:03,taljeth,"Nein, nicht jenes Forum, dieses. ;-)"
+2009-06-04 19:51:35,ch100,"ach ja, die habens nicht direkt in die website eingebaut sondern nur in'n code ^^"
+2009-06-04 19:58:37,taljeth,"Hm, nachdem ich jetzt eine alte Kopie angeschaut habe..."
+2009-06-04 19:58:55,taljeth,"Ich sollte das Forum mal wieder weiterbasteln. Ich mag das irgendwie, auch wenn es eigentlich völlig kaputt ist. *g*"
+2009-06-04 19:59:08,ch100,*g*
+2009-06-04 19:59:42,FreakyPenguin,Was für ein Forum denn? ;-)
+2009-06-04 20:02:02,taljeth,"Naja, _das_ Forum halt. Das kwf. ;-)"
+2009-06-04 20:02:26,FreakyPenguin,Gibts das irgendwo zu sehen? ;-)
+2009-06-04 20:03:08,taljeth,"Ich glaube, mittlerweile nicht mehr"
+2009-06-04 20:03:14,taljeth,Das hat auch bald zehn Jahre auf dem Buckel ;-)
+2009-06-04 20:03:26,FreakyPenguin,Nicht schlecht *g*
+2009-06-04 20:03:29,ch100,gibt auch schon mehrere kwf ^^
+2009-06-04 20:03:52,ch100,mach einfach kwfs draus ^^
+2009-06-04 20:04:50,taljeth,"Hm, eins ist tatsächlich noch online. Aber komplett nicht-öffentlich."
+2009-06-04 20:05:22,ch100,"na gut, es gibt ein paar kwfs aber laut 1. beiden seiten von google ist keins ein forum ^^"
+2009-06-04 20:06:59,taljeth,"Ah, und das Gästebuch der JU Esslingen scheint immer noch drauf zu basieren *g*"
+2009-06-04 20:07:21,ch100,auf kwf oder auf kwfs?
+2009-06-04 20:08:10,ch100,wieviele s' am ende sollen es noch werden? xD
+2009-06-04 20:08:21,taljeth,?
+2009-06-04 20:08:50,ch100,"ich meine wenn es kwfs schon gibt, dann nochn s am ende, wenn das auch nochn s..."
+2009-06-04 20:10:29,ch100,"hoffentlich nimmst du kein z, sonst macht der user dasselbe, und zwar zZz ^^"
+2009-06-04 20:12:48,taljeth,"Hm, die Idee für die Versionen bis zur vollständigen Implementierung der 2.4-Ziele 2.3.x zu nennen war wohl auch nicht so toll. So heißen sie nämlich seit 2002 und heute immer noch. *g*"
+2009-06-04 20:14:27,ch100,"apropro fast 10 jahre, ich dachte mir schon fast, welche privatperson programmiert 1999 ein forum xD"
+2009-06-04 20:14:42,taljeth,"Äh, wieso nicht?"
+2009-06-04 20:14:54,taljeth,"Aber es war 2000, glaube ich"
+2009-06-04 20:15:16,ch100,"kA, und auch kA wie schlecht die tools dafür waren ^^"
+2009-06-04 20:15:23,taljeth,PHP3 halt...
+2009-06-04 20:15:29,ch100,mom php z.B. iss noch immer schlecht
+2009-06-04 20:15:31,taljeth,Und Datenbank hatte ich keine zur Verfügung
+2009-06-04 20:15:43,ch100,...
+2009-06-04 20:15:45,taljeth,Blödsinn. Du kannst vielleicht nicht damit umgehen.
+2009-06-04 20:16:05,FreakyPenguin,Hm so alte nicht schon lange tote Projekte finden sich bei mir nicht. Das älteste ist wohl Tydur bei mir ;-)
+2009-06-04 20:16:09,ch100,lauter sicherheitslücken in php ^^
+2009-06-04 20:16:28,taljeth,"Jo mei, das Forum hat da schon seine eigenen, ganz ohne PHPs Hilfe *g*"
+2009-06-04 20:16:38,ch100,^^
+2009-06-04 20:16:59,FreakyPenguin,*g*
+2009-06-04 20:17:06,taljeth,"FreakyPenguin: Naja, schon lang tot ist das eigentlich auch"
+2009-06-04 20:17:17,FreakyPenguin,Ah ;-)
+2009-06-04 20:17:31,ch100,FreakyPenguin: hä? ist das der urgroßvater von týndur?
+2009-06-04 20:17:45,ch100,xD
+2009-06-04 20:17:53,taljeth,"FreakyPenguin: Ich komm halt nicht mehr dazu, daran weiterzumachen. Eigentlich habe ich ganz tolle Pläne für die 2.6. Mit LostIOv2 und so. ;-)"
+2009-06-04 20:18:08,FreakyPenguin,*g*
+2009-06-04 20:18:15,FreakyPenguin,Klingt gut ;-)
+2009-06-04 20:18:22,taljeth,Oder zumindest ähnlich utopisch
+2009-06-04 20:18:25,ch100,dann mach pläne für nen anderes 2.6 und zwar linux ^^
+2009-06-04 20:18:53,ch100,wirst aber nichtmehr viel finden können ^^
+2009-06-04 20:19:10,taljeth,"Och, ich glaube, da kann man noch genug finden"
+2009-06-04 20:19:18,ch100,*g*
+2009-06-04 20:20:00,taljeth,"Meine aktuelle Idee dafür ist zum Beispiel, daß es clever wäre, wenn virtio auch mal Blöcke größer als 4k benutzen würde. Dann könnte das vielleicht sogar schnell werden."
+2009-06-04 20:35:48,ThePuppetMaster,hi Homix 
+2009-06-04 20:35:52,ch100,hi
+2009-06-04 20:36:09,ThePuppetMaster,"@ Homix Kann ich eigentlich änderungen in der pagetable/directory  vornehmen, wärend sie im cr register ""gelinkt"" is? oder is das nicht zu empfehlen?"
+2009-06-04 20:42:04,taljeth,Von uns normalsterblichen willst du keine Antwort?
+2009-06-04 20:42:26,ch100,er hat dochmal gefragt ^^
+2009-06-04 20:43:17,ch100,"19:41:30 bei mir angekommen, jaja ich weiß inet vom nachbarn xD"
+2009-06-04 20:43:37,taljeth,"Oh, da war wohl zu viel Traffic drumrum ;-)"
+2009-06-04 20:43:42,ch100,ne ^^
+2009-06-04 20:43:50,ch100,xD
+2009-06-04 20:43:53,taljeth,"ThePuppetMaster: Kannst du machen, hat dann aber keine direkte Auswirkung, weil das alte Mapping noch im TLB ist"
+2009-06-04 20:44:18,taljeth,Du solltest also den TLB-Eintrag flushen (invlpg)
+2009-06-04 20:44:43,ch100,"nur leider ist ping scheisse, kann bei WoW, Warrock, oder Source schonmal in 10sek gehen ^^"
+2009-06-04 20:45:03,taljeth,"Oder Holzhammermethode cr3 neu laden, da geht der ganze TLB drauf. Kostet halt Performance, den TLB gibt es schließlich nicht umsonst."
+2009-06-04 20:47:23,ThePuppetMaster,taljeth ok .. thx
+2009-06-04 20:54:50,FreakyPenguin,"taljeth: Hm, du hast nicht zufällig das Reissen, Pipes für Pfade in lio2 reinzubasteln? ;-)"
+2009-06-04 20:59:07,taljeth,Zufällig nicht ;-)
+2009-06-04 20:59:22,taljeth,"Aber ich glaube, es gäbe auch erstmal wichtigeres"
+2009-06-04 20:59:28,taljeth,Zum Beispiel schreiben
+2009-06-04 20:59:34,ch100,Reissen?
+2009-06-04 20:59:53,FreakyPenguin,Ah geht das Momentan nur bis in den Cache?
+2009-06-04 21:00:40,taljeth,Jo
+2009-06-04 21:00:52,taljeth,Geht mit den vorhandenen Callbacks schlecht anders ;-)
+2009-06-04 21:01:11,taljeth,"Theoretisch müßte der Cache irgendwann mal alles zurückschreiben, was dirty ist"
+2009-06-04 21:01:15,ch100,nicht reisenfs?
+2009-06-04 21:01:17,FreakyPenguin,Das hat natürlich was ;-)
+2009-06-04 21:01:22,ch100,*reiserfs
+2009-06-04 21:01:24,taljeth,Bzw. bei gesetzten Writethrough-Flag direkt
+2009-06-04 21:01:56,FreakyPenguin,Aber ich finde Pipes trotzdem ähnlich wichtig für uns ;-)
+2009-06-04 21:02:20,taljeth,Was fehlt denn dazu überhaupt?
+2009-06-04 21:02:30,taljeth,Müßte das nicht größtenteils im Server implementiert werden?
+2009-06-04 21:02:59,taljeth,"Es fehlen halt noch irgendwie die Möglichkeiten, Bäume automagisch zu erstellen/freizugeben"
+2009-06-04 21:03:09,taljeth,Aber sonst?
+2009-06-04 21:03:53,FreakyPenguin,lio_get_resource müsste man wohl erweitern
+2009-06-04 21:04:24,taljeth,lio_ops.load_root kriegt jedenfalls schon eine Source
+2009-06-04 21:04:26,ThePuppetMaster,"""automagisch"" .. yeah .. das wärs"
+2009-06-04 21:05:02,FreakyPenguin,"taljeth: Und ich finde den Pfad als Erkennungszeihcn für die Bäume iregndwie ungünstig. Das müsste imho eine Ressource sein, sonst wird das mit Symlinks und so lustig ;-)"
+2009-06-04 21:05:23,taljeth,"Meh, bau's halt um ;-)"
+2009-06-04 21:06:42,taljeth,"FreakyPenguin: Was müßte man denn an der lio_get_resource erweitern, wenn man nicht Bäume anders identifizieren will?"
+2009-06-04 21:07:35,FreakyPenguin,Es müsste den Baum doch zumindest erstellen? ;-)
+2009-06-04 21:07:49,taljeth,Tut es das nicht?
+2009-06-04 21:08:01,taljeth,Es macht ein lio_get_tree()
+2009-06-04 21:08:15,taljeth,"Und das wiederum macht ein mount(), wenn es nichts findet"
+2009-06-04 21:08:48,FreakyPenguin,"Aber die pipes werden noch nirgends geparst, oder?"
+2009-06-04 21:09:25,taljeth,Doch?
+2009-06-04 21:09:33,taljeth,tree.c:split_path
+2009-06-04 21:10:19,FreakyPenguin,"Hm, dann war ich wohl vom Geiste nicht recht erleuchtet, als ich mir das angesehen habe. ;-)"
+2009-06-04 21:10:56,taljeth,"Es fehlt eigentlich nur das automagische unmount, wenn der imaginäre Refcount auf Null geht ;-)"
+2009-06-04 21:11:18,FreakyPenguin,Sowas haben wir ja jetzt auch nicht. ;-)
+2009-06-04 21:11:28,taljeth,"Jo, wäre aber ganz nett"
+2009-06-04 21:11:42,FreakyPenguin,"Jo, könnte man so sagen ;-)"
+2009-06-04 21:12:45,taljeth,"Wobei ich das mit den Pipes auch noch nicht getestet habe. Könnte also gut kaputt sein, auch wenn es vorhanden ist"
+2009-06-04 21:12:55,ch100,reh
+2009-06-04 21:13:03,ch100,scheiß wlan ^^
+2009-06-04 21:13:46,ch100,"nur wegen firefox bemerkte ich, dass ich n ping timeout haben könnte, was mir die fehlenden antworten von /ping bestätigten ^^"
+2009-06-04 21:27:45,ch100,"wisst ihr was, vorn paar tagen, war ich grad bei den serial ports, ich geb was bei qemu ein, kommt bei terminal raus, denk ich mir sofort ach du heilige scheisse, wie hab ich denn das angestellt. ratet mal wieso"
+2009-06-04 21:29:38,ch100,"hmmm, will niemand raten, na gut, ich hab nichtmal nen keyboard treiber"
+2009-06-04 21:30:37,taljeth,"FreakyPenguin: Wie sieht es eigentlich mit 0.2.1-rc1 aus, bevor wir uns auf kernel2 stürzen? Die Fixes müßten ja mittlerweile komplett sein"
+2009-06-04 21:32:47,FreakyPenguin,"Hm, war in help noch was?"
+2009-06-04 21:36:34,taljeth,"Segfaults, die ich mit meinem eigenen Build nicht reproduzieren konnte"
+2009-06-04 21:36:40,taljeth,Und von deinem habe ich keine Debuginfos
+2009-06-04 21:37:13,taljeth,"Auch ein guter Todo-Punkt: lbuild sollte nicht nur bin-, sondern auch debug-Pakete bauen"
+2009-06-04 21:39:18,taljeth,"Hm, auf real sollte ich vor dem endgültigen Release auch noch testen..."
+2009-06-04 21:39:21,ThePuppetMaster,ch100 aktivier doch pingcheck im client
+2009-06-04 21:41:51,ch100,leider imo unmöglich iss nämlich xchat ^^
+2009-06-04 21:42:00,ThePuppetMaster,komisch .. mein xchat kann das
+2009-06-04 21:42:02,ThePuppetMaster,:P
+2009-06-04 21:42:18,ThePuppetMaster,vieleicht nutzt du ja YChat
+2009-06-04 21:44:35,ch100,welche ver?
+2009-06-04 21:44:47,ThePuppetMaster,2.6.8
+2009-06-04 21:45:00,ch100,"hmmm..., hab 2.8.6"
+2009-06-04 21:45:13,ThePuppetMaster,dann is deiner vieleicht zu neu
+2009-06-04 21:45:26,taljeth,Bug! ch100 benutzt fälschlicherweise Middle Endian!
+2009-06-04 21:45:36,ThePuppetMaster,:P
+2009-06-04 21:46:17,ch100,hast du irgendein plugin für?
+2009-06-04 21:46:35,ThePuppetMaster,nö .. hab noch nie welche dafür geschrieben
+2009-06-04 21:46:46,ch100,meine runtergeladen ^^
+2009-06-04 21:47:00,ThePuppetMaster,"jo .. runtergeladenhabich welche .. aber keinen, der ping's macht"
+2009-06-04 21:47:00,ch100,doppeldeutigkeit
+2009-06-04 21:47:38,ch100,wo findest die einstellung?
+2009-06-04 21:47:59,ThePuppetMaster,ka .. hab ich nie einstellen müssen
+2009-06-04 21:48:10,ThePuppetMaster,irc-server zeigt aber die pings vom client an
+2009-06-04 21:48:37,ch100,"hmmm..., dann war ich halt schneller als der client :P"
+2009-06-04 21:55:14,chris12,moin
+2009-06-04 21:55:20,ch100,hi
+2009-06-04 21:55:53,chris12,kennt ihr den robotron a5105?
+2009-06-04 21:55:55,ch100,"hi ich, nur mit anderem nachnamen(hoffentlich) xDDDDDDDDD"
+2009-06-04 21:56:02,bluecode0,wtf? taljeth war ein webdever? Oo
+2009-06-04 21:56:15,Homix,?
+2009-06-04 21:56:23,FreakyPenguin,bluecode0: Machen wir nicht alle zwischendurch sowas? ;-)
+2009-06-04 21:56:26,ch100,ich meine den chris12
+2009-06-04 21:56:32,chris12,welchen denn?
+2009-06-04 21:56:39,ch100,deinen
+2009-06-04 21:56:46,ch100,steht in deinem usernamen ^^
+2009-06-04 21:57:24,chris12,????
+2009-06-04 21:57:56,ch100,"ich nenn dich mal absofort nixchecker..., ich heiße christian du auch, kapiert? xD"
+2009-06-04 21:58:29,chris12,was hat das eine mit dem anderen zu tun?
+2009-06-04 21:59:25,taljeth,bluecode0: Du etwa nicht?
+2009-06-04 21:59:30,ch100,"ich hab zwar nix mit dir zutun, aber wir müssen und halt leider den selben vornamen teilen ^^"
+2009-06-04 21:59:35,bluecode0,nein?
+2009-06-04 21:59:43,taljeth,Da fehlt dir doch richtig was
+2009-06-04 21:59:48,ch100,*(ausser dass wir beide im selben irc channel sind)
+2009-06-04 22:00:02,FreakyPenguin,"Wenn man schon keine störrische Hatrwahre Kriegt, dann braucht man doch weinigstens störrische Browser ;-)"
+2009-06-04 22:00:03,ch100,*uns
+2009-06-04 22:00:19,ch100,xD
+2009-06-04 22:00:27,taljeth,"Hatrwahre? Viel kaputter ging es nicht mehr, oder? ;-)"
+2009-06-04 22:00:29,bluecode0,mir reichen eigentlich die Kaputtheit von C++
+2009-06-04 22:00:35,bluecode0,*g*
+2009-06-04 22:00:38,FreakyPenguin,Hm -h *g*
+2009-06-04 22:00:44,chris12,"ich fragte wer den robotron a5105 kennt, nicht wer hier christian heißt o.o"
+2009-06-04 22:00:53,taljeth,Und s/tr/rt/ ;-)
+2009-06-04 22:01:08,FreakyPenguin,Autsch *g*
+2009-06-04 22:01:09,ch100,und ich sagte nur hi
+2009-06-04 22:01:20,chris12,aso
+2009-06-04 22:01:50,chris12,jetzt ergiebt deine aussage auch einen sinn
+2009-06-04 22:02:03,FreakyPenguin,-e ;-)
+2009-06-04 22:02:08,chris12,ich dachte das wäre eine antwort auf meine frage
+2009-06-04 22:02:11,ch100,"ich schrieb doch: hi ich, nur mit anderem nachnamen(hoffentlich) xDDDDDDDDD"
+2009-06-04 22:02:16,bluecode0,FreakyPenguin +h ;-)
+2009-06-04 22:02:26,FreakyPenguin,*lol*
+2009-06-04 22:02:27,taljeth,*lol*
+2009-06-04 22:02:35,chris12,jetzt is klar
+2009-06-04 22:02:48,FreakyPenguin,Ich glaube ich lasse es für heute bliben mit der Rechtschreibung ;-)
+2009-06-04 22:02:54,taljeth,+e ;-)
+2009-06-04 22:02:54,bluecode0,genau xD
+2009-06-04 22:03:15,taljeth,"Obwohl, das könnte man auch als Dialekt auslegen"
+2009-06-04 22:03:27,FreakyPenguin,Dann aber ohne n bei uns ;-)
+2009-06-04 22:03:40,taljeth,Irgendwas ist ja immer
+2009-06-04 22:04:10,taljeth,Wie sieht es jetzt eigentlich mit Sprachkurs und Hackathon aus? ;-)
+2009-06-04 22:04:11,FreakyPenguin,"Wobei ich da manchmal schon aufpassen muss, wenn ich so zwischen den Chatfenstern wechsle, dass hier nicht plötzlich Schweizerdeutsch landet. ;-)"
+2009-06-04 22:04:27,ch100,"*sarcasm* nennen wir es doch einfach den legastheniker dialekt, obwohl den gibts ja schon, den dazu passenden akzent auch ^^"
+2009-06-04 22:04:32,bluecode0,"wär doch perfekt, dann würden wir was lernen"
+2009-06-04 22:04:36,taljeth,FreakyPenguin: Du _schreibst_ Schweizerdeutsch?
+2009-06-04 22:04:41,taljeth,+e ;-)
+2009-06-04 22:04:53,ch100,hi Jidder
+2009-06-04 22:04:54,FreakyPenguin,"taljeth: Jo, natürlich?"
+2009-06-04 22:04:56,bluecode0,"yea, Jidder"
+2009-06-04 22:04:56,Jidder,moinsen
+2009-06-04 22:05:06,Jidder,endlich wochenende
+2009-06-04 22:05:08,Jidder,war das eine woche
+2009-06-04 22:05:09,Jidder,puh
+2009-06-04 22:05:11,taljeth,FreakyPenguin: So natürlich find ich das nicht. ;-)
+2009-06-04 22:05:21,taljeth,Aber vermutlich ist das eine andere Kultur
+2009-06-04 22:05:29,ch100,morgen ist freitag und ich hab da nicht frei ^^
+2009-06-04 22:05:35,FreakyPenguin,taljeth: Also beim Chat ist das bei uns eigentlich normal
+2009-06-04 22:06:28,FreakyPenguin,Wann wollt ihr denn einen Hackathon? ;-)
+2009-06-04 22:06:37,taljeth,"Ich hätte ja Probleme, den Dialekt irgendwie ins lateinische Alphabet zu quetschen..."
+2009-06-04 22:06:38,ch100,FreakyPenguin: viel spaß beim verrenken während du die akzenttasten suchst ^^
+2009-06-04 22:07:00,ch100,xD
+2009-06-04 22:07:10,FreakyPenguin,Umluute müesse da scho si. ;-)
+2009-06-04 22:07:15,taljeth,Ich glaube auf ô und ë als zusätzliche Buchstaben hatten wir uns mal vor langer Zeit geeinigt...
+2009-06-04 22:07:49,taljeth,Und bei den Leerzeichen haben wir nie zu einer richtigen Regelung gefunden
+2009-06-04 22:08:13,ch100,"verwendet doch einfach 8 zeichen tab, das passt immer xD"
+2009-06-04 22:08:36,taljeth,Und an welcher Stelle? ;-)
+2009-06-04 22:09:04,ch100,"statt leerzeichen, die stellen dafür sind gottseidank volatile xD"
+2009-06-04 22:09:13,ThePuppetMaster,"wenn das P bit im directory nicht gesetzt is, dann ignoriert doch die CPU die dort gehaltene tabelle .. oder?"
+2009-06-04 22:09:38,Jidder,aye
+2009-06-04 22:09:43,ThePuppetMaster,wat?
+2009-06-04 22:09:53,Jidder,ahoi ihr landraddn
+2009-06-04 22:09:55,ch100,er sagt: aye (ja)
+2009-06-04 22:09:59,FreakyPenguin,"taljeth: Hm, da habe ich weniger Probleme mit bei uns. Aber was mich stört ist, dass die Gross-/Kleinschreibung von den meisten nicht benutzt wird, und mehr Satzzeichen als ein Punkt findet man selten. Das macht das ganze etwas mühsamer zu lesen. ;-)"
+2009-06-04 22:10:00,ThePuppetMaster,aso
+2009-06-04 22:10:11,Jidder,deck schrubben
+2009-06-04 22:10:15,ThePuppetMaster,domo
+2009-06-04 22:10:31,Jidder,kann kein italienisch
+2009-06-04 22:10:37,ThePuppetMaster,japanisch
+2009-06-04 22:10:38,ch100,ich verwende zuwenig punkte aber zuviele kommas xD
+2009-06-04 22:11:32,taljeth,"FreakyPenguin: Schreibt ihr dann nicht so wie ihr redet, oder wird da einfach nichts zusammengezogen?"
+2009-06-04 22:12:38,ch100,"FreakyPenguin: egal welches, viel spaß beim twitter benutzen xD"
+2009-06-04 22:12:49,FreakyPenguin,"Doch, einfach wies gesprochen wird, aber beispielsweise Relativsätze ohne Kommata sind relativ mühsam zu entziffern *g*"
+2009-06-04 22:12:52,ch100,wegen max. 140 zeichen ^^
+2009-06-04 22:14:55,taljeth,"FreakyPenguin: Jo, schon klar. Ich meinte jetzt mehr wegen den Leerzeichen. Dann habt ihr wohl auch keine großartig zusammengezogenen Wörter in der gesprochene Sprache."
+2009-06-04 22:15:13,FreakyPenguin,"Aber jo beim Zusammensetzen von Wörtern ist das nicht so klar geregelt mit den Leerzeichen, das sitmmt eigentlich. "
+2009-06-04 22:15:38,ch100,"die rechtschreibung aber nicht, oder? xD"
+2009-06-04 22:16:23,FreakyPenguin,"Wobei es zumindest für Berndeutsch sogar niedergeschriebene Reglen zur Rechtschreibung gibt. Die kenne ich aber nicht, und ich weiss auch nicht, wie veraltet sie sind. ;-)"
+2009-06-04 22:16:49,taljeth,"Naja, das gibt es wohl für alles mögliche, aber durchgesetzt hat es sich kaum wo ;-)"
+2009-06-04 22:17:36,ch100,"naja, die schweizer uhren sind halt klasse (hatte selber leider noch nie eine), aber die rechtschreibung ist scheisse ^^"
+2009-06-04 22:17:48,FreakyPenguin,"Naja bei der Mundartliteratur könnte ich mir das schon vorstellen, wobei da vermutlich der grösste Teil eh alt bis sehr alt ist. ;-)"
+2009-06-04 22:18:47,ch100,+schweizer
+2009-06-04 22:18:58,ch100,*schweizer rechtschreibung
+2009-06-04 22:19:19,ch100,(nur damit ich mich klar ausdrücke... xD)
+2009-06-04 22:20:04,ch100,"diese doppeldeutigkeiten sind ja klasse, schwarzer humor aber auch xD"
+2009-06-04 22:20:47,ch100,"hab letztens einen schwarzen gefragt, ob er schwarzen humor mag. hat gesagt er kennt keinen..."
+2009-06-04 22:21:47,taljeth,*g*
+2009-06-04 22:37:52,chris12,n8
+2009-06-04 22:47:55,FreakyPenguin,gn8
+2009-06-04 22:48:03,ch100,gn8
+2009-06-04 22:55:44,taljeth,gn64
+2009-06-04 22:55:53,ch100,gn8 xD
+2009-06-04 22:56:15,ch100,oder gn(wurzel(64))
+2009-06-04 23:20:26,Jidder,gn8

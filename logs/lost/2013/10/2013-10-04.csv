@@ -1,0 +1,1140 @@
+date/time,nick,message
+2013-10-04 00:12:23,Darkchaos,0xFFBFFFFF ist die richtige Adresse fürs selfmapping und nicht 0xFFFFF000
+2013-10-04 01:08:24,Darkchaos_2,Ist noch jemand im Channel?
+2013-10-04 01:16:32,Darkchaos_2,Ich hab jetzt ein Image welches Qemu aufhängt :P
+2013-10-04 01:17:37,Darkchaos_2,Und in farbwechsel irgendwelche pixel anzeigt :D
+2013-10-04 01:17:49,Darkchaos_2,memset im nirgendwo ftw :D
+2013-10-04 12:09:00,Darkchaos,"mgottschlag: Die PageTables liegen doch an den letzten 4MB, 4k jede."
+2013-10-04 12:09:07,mgottschlag,joa
+2013-10-04 12:10:14,Darkchaos,demnach wäre aber die richtige Adresse der ersten PT 0xFFBFFFFF statt 0xFFFFF000
+2013-10-04 12:10:27,Darkchaos,"letztere ist die Adresse der letzten PT, damit also des PDs das selbst gemappt wurde"
+2013-10-04 12:10:28,mgottschlag,durchaus
+2013-10-04 12:11:41,Darkchaos,"Was mir nun passiert, ist dass ich bei 0xFFBFFFFF einen PF bekomme, nicht aber bei 0xFFCFFFFF. info tlb sagt auch dass letztere als erste PT gemappt sei. Wenn ich aber da dann 1023 * 4096 dazuaddiere lande ich außerhalb des Adressraums"
+2013-10-04 12:11:49,Darkchaos,"warum also, liegt die erste TLB an +4096?"
+2013-10-04 12:11:57,Darkchaos,also [1] statt [0]?
+2013-10-04 12:11:58,mgottschlag,ähm moment
+2013-10-04 12:12:08,mgottschlag,"0xFFBFFFFF ist auch falsch, 0xffc00000 ist die erste Adresse"
+2013-10-04 12:12:49,mgottschlag,"und TLB ist glaub ich nicht das Wort, das du wolltest"
+2013-10-04 12:12:58,Darkchaos,"naja, der zeigt mir die Mappings an"
+2013-10-04 12:13:10,Darkchaos,der sagt dass 0xFFFFF000 nach 0x1000 gemappt ist (PD)
+2013-10-04 12:13:21,mgottschlag,"da, das passt ja auch"
+2013-10-04 12:13:21,Darkchaos,und 0xFFCFFFFF nach 0x2000 (erste PT)
+2013-10-04 12:13:26,mgottschlag,das ist quatsch :)
+2013-10-04 12:13:31,mgottschlag,dann hast du was falsch gemacht
+2013-10-04 12:13:36,Darkchaos,warum das?
+2013-10-04 12:13:48,mgottschlag,"irgendwas, was auf 0xfff endet, kann btw garnicht irgendwohin gemappt werden"
+2013-10-04 12:13:56,mgottschlag,schließlich rundest du immer auf 4k
+2013-10-04 12:14:02,mgottschlag,also interpretierst du die Anzeige falsch
+2013-10-04 12:14:16,Darkchaos,Ahh
+2013-10-04 12:14:28,Darkchaos,das mit FFbFFFFFF ist um 1's falsch berechnet mit den 4MB
+2013-10-04 12:14:46,tufel,huhu
+2013-10-04 12:14:49,mgottschlag,moin
+2013-10-04 12:15:07,Darkchaos,hi
+2013-10-04 12:15:11,Darkchaos,jeeetzt klappt es halbwegs :)
+2013-10-04 12:15:24,Darkchaos,jetzt kommt 2023 (Present & Writable)
+2013-10-04 12:15:45,Darkchaos,bei mir kam vorher 20000 oder so raus :D
+2013-10-04 12:15:54,Darkchaos,"ok gut,ich glaube jetzt pack ich es"
+2013-10-04 12:16:12,Darkchaos,"nur noch eine Frage. wenn C keine Ahnung hat wie groß der typ ist, geht er dann automatisch von 4Byte aus"
+2013-10-04 12:16:31,Darkchaos,also zb void* a; a[4] == *(a + 4 * 4);
+2013-10-04 12:16:35,mgottschlag,"nein, er geht garnicht aus"
+2013-10-04 12:16:48,mgottschlag,er wird dir einen Fehler an den Kopf werfen
+2013-10-04 12:16:50,Darkchaos,weil momentan muss ich die * 4096 selbst dereferenzieren
+2013-10-04 12:17:01,Darkchaos,und bei einem Multilevel-Pointer?
+2013-10-04 12:17:06,mgottschlag,"es sei denn, es gibt für void noch andere obskure Regeln, auf die man lieber nicht bauen sollte"
+2013-10-04 12:17:15,mgottschlag,wtf ist ein multilevel-pointer? int**?
+2013-10-04 12:18:01,mgottschlag,"int** x ist klar definiert, der typ von *x ist int*, und von **x int, d.h. die Größen sind eindeutig bekannt"
+2013-10-04 12:18:45,Darkchaos,und sizeof(int*) == 4 bzw 8 Byte
+2013-10-04 12:20:21,Darkchaos,irgendwas mache ich falsch :D
+2013-10-04 12:20:39,Darkchaos,ich habe wilde mappings nach 0x0 und verrückte Flags. Kann man die irgendwo erfahren?
+2013-10-04 12:21:22,Darkchaos,"und gibt's was, dass die Konsole eine höhere auflösung hat (alt+2)? Also mehr scrollen kann?"
+2013-10-04 12:22:17,Jidder,strg+bild auf/ab zum scrollen glaub ich
+2013-10-04 12:22:37,Darkchaos,"ja, aber das scrollt nur die letzten ~100 Zeilen"
+2013-10-04 12:22:58,Darkchaos,"und wenn ich dannach google, das die D, A, U und W flags sind"
+2013-10-04 12:23:05,Darkchaos,"W = Writable, A = Active, U= Usermode?"
+2013-10-04 12:23:07,Darkchaos,aber D?
+2013-10-04 12:23:14,Jidder,in den intel manuals steht das
+2013-10-04 12:23:45,Darkchaos,Du missverstehst mich. Qemu zeigt mir die Flags der Pages an. Mit Buchstaben
+2013-10-04 12:48:03,Jidder,D=Dirty
+2013-10-04 12:48:09,Jidder,und A=Accessed
+2013-10-04 12:48:34,Jidder,und qemu nutzt die offiziellen flags
+2013-10-04 12:50:32,Darkchaos,A bedeutet darauf wurde schon zugegriffen?
+2013-10-04 12:50:51,Jidder,"jup, lesend"
+2013-10-04 12:50:58,Jidder,und D heißt es wurde schreibend zugegriffen
+2013-10-04 12:51:21,Darkchaos,in dem moment oder ne weile her
+2013-10-04 12:51:21,Jidder,oder aber in der page stehen schmutzige dinge
+2013-10-04 12:51:31,Darkchaos,:D
+2013-10-04 12:51:36,Darkchaos,Jetzt habe ich nur noch ein rätsel
+2013-10-04 12:51:37,Jidder,seit dem das letzte mal das bit gelöscht wurde
+2013-10-04 12:52:09,Jidder,"wenn du das bit nicht bewusst löschst, dann wurde da seit dem die page gemappt wurde, drauf zugegriffen"
+2013-10-04 12:52:25,Jidder,*irgendwann
+2013-10-04 12:52:43,Darkchaos,"Qemu sagt, ich habe die erste Page nach 0x3000 gemappt, (0xFFC00000) -> (0x3000)"
+2013-10-04 12:52:57,Darkchaos,"wenn ich aber nun page_table[0] lese, kommt 0x3 dabei raus"
+2013-10-04 12:53:34,mgottschlag,und page_table ist was?
+2013-10-04 12:53:36,Jidder,die page table in dem letzten page directory eintrag?
+2013-10-04 12:53:38,mgottschlag,und wie liest du aus?
+2013-10-04 12:53:45,mgottschlag,und hast du das TLB geflusht?
+2013-10-04 12:53:55,mgottschlag,den TLB? die TLB? ^^
+2013-10-04 12:54:04,Jidder,ich kenn nur TLC
+2013-10-04 12:55:52,Darkchaos,mooment
+2013-10-04 12:55:58,Jidder,http://www.dailymotion.com/video/xt8nd_tlc-waterfalls_music
+2013-10-04 12:56:01,Darkchaos,page_table = 0xFFC00000
+2013-10-04 12:56:12,Darkchaos,also die erste page_table prinzipiell
+2013-10-04 12:56:28,Jidder,aaaah
+2013-10-04 12:56:29,Darkchaos,und an der Adresse steht die erste Page
+2013-10-04 12:56:54,mgottschlag,Darkchaos: kopier mal die genaue Ausgabe von Qemu in nen pastebin oder so
+2013-10-04 12:56:57,Darkchaos,(uint32_t)page_table[0];
+2013-10-04 12:57:02,Darkchaos,wie kann ich da kopieren?
+2013-10-04 12:57:07,Jidder,"wenn du den wert 0x3000 lesen willst, musst du page_table[0xFFC00000 >> 12] lesen"
+2013-10-04 12:57:20,Jidder,da steht nämlich das mapping für 0xffc0000
+2013-10-04 12:57:31,Darkchaos,eigentlich will ich die erste page der ersten page_table lesen
+2013-10-04 12:57:50,Darkchaos,"und da page_directory = 0xFFC00000, ist pd[0] = 0xFFC00000 -> pt"
+2013-10-04 12:57:58,Darkchaos,pt[0] = 0xFFC00000
+2013-10-04 12:58:22,Darkchaos,und von dieser addresse gelesen müsste die erste Addresse stehen. Da steht aber nur PAGE_PRESENT & PAGE_WRITABLE
+2013-10-04 12:58:40,Darkchaos,Qemu sagt dazu ffc00000 . 3000 ----A---W
+2013-10-04 12:58:56,Darkchaos,das ist ein doppelpunkt
+2013-10-04 12:59:08,mgottschlag,"ja, dann willst du aber wirklich nicht den ersten Eintrag der ersten PT lesen"
+2013-10-04 12:59:13,mgottschlag,dann hat Jidder recht
+2013-10-04 12:59:18,Jidder,"wenn du an adresse X liest, bekommst du nicht an das mapping für adresse X. wenn qemu dir gesagt hätte, dass 0x1234 nach 0x432 gemappt ist, würdest nicht 0x1234 lesen"
+2013-10-04 12:59:22,mgottschlag,dann willst du tatsächlich den ersten Eintrag der letzten PT lesen
+2013-10-04 12:59:26,mgottschlag,also den ersten Eintrag des PDs
+2013-10-04 13:00:51,Darkchaos,Also schaue ich eher was an virtuell 0x0 steht
+2013-10-04 13:01:21,Jidder,"ja, wenn du page_table[0] liest"
+2013-10-04 13:01:21,Darkchaos,"das möchte ich auch eigentlich, da ich nach freien pages suche, dann macht"
+2013-10-04 13:01:27,Darkchaos,ach bin ich dumm
+2013-10-04 13:01:34,Darkchaos,ich dachte bei 0x3 fehlt die Addresse
+2013-10-04 13:01:47,Darkchaos,"aber was ist, wenn ich das mapping von 0x0 suche. 0x0 | 3 :("
+2013-10-04 13:01:49,Darkchaos,ok
+2013-10-04 13:08:34,Darkchaos,"Was passiert, wenn ich Pages mappen möchte, die ""Vater"" PT aber nicht Page_USERMODE_ACCESS hat?"
+2013-10-04 13:09:00,Darkchaos,"oder heißt das nur, dass man nur als ""root"" auf die PT zugreifen kann"
+2013-10-04 13:13:30,Jidder,"wenn du im kernel mode meinst, dann ja"
+2013-10-04 13:13:39,Jidder,es wird immer die strengere regel angewandt
+2013-10-04 13:14:25,Darkchaos,"d.h. wenn ich eine PT als Kernel mappe, kann keine der Pages von einem Usermode benutzt werden?"
+2013-10-04 13:14:36,Jidder,"ja, glaube ich"
+2013-10-04 13:14:38,Jidder,ich schau mal eben nach
+2013-10-04 13:15:26,Jidder,jep
+2013-10-04 13:15:31,Jidder,manual bestätigt das
+2013-10-04 13:21:49,Darkchaos,"mal was ganz anderes. VM86 kann ich momentan nicht benutzen, da ja der kernel an virtuell 0..4MiB liegt"
+2013-10-04 13:25:12,Jidder,deine kernelbinary liegt ja (vermutlich) bei 0x100000
+2013-10-04 13:25:29,Jidder,"das heißt den bereich von 0 bis 1 MB nutzt du nur, weil dein pmm_alloc das tut"
+2013-10-04 13:25:36,Jidder,du kannst dem ja abgewöhnen den bereich zu nutzen
+2013-10-04 13:26:58,Jidder,"oder es würde sogar reichen, wenn du dem abgewöhnst die erste page (wegen der IVT und der BDA), und die letzten paar pages vor 640 kb (0x9c000-0x9ffff oder so) zu nutzen"
+2013-10-04 13:27:08,Jidder,und ein paar pages auf dem du dann den code hast
+2013-10-04 13:27:31,Jidder,dem=denen
+2013-10-04 13:28:40,Darkchaos,"Strenggenommen muss ja nur 0x0 bis 0xFFFF frei sein, oder?"
+2013-10-04 13:29:39,Jidder,ne streng genommen 0-0x4ff (IVT und BDA) und 0x9c000-0x9ffff (EBDA) wobei ich nicht genau weiß wie groß die EBDA werden kann
+2013-10-04 13:31:07,Jidder,"bzw. nicht ""frei"" sondern die bereich dürfen nicht überschrieben werden"
+2013-10-04 13:31:57,Darkchaos,puh
+2013-10-04 13:32:43,Darkchaos,und dazwischen? Ich meine ich kann doch von 0x0 bis 0xFFFF addressieren
+2013-10-04 13:33:21,Jidder,meinst du 0xfffff?
+2013-10-04 13:33:43,Jidder,im real mode hast du ja insgesamt 1 MB speicher
+2013-10-04 13:33:48,Jidder,0xffff wären nur 64 KB
+2013-10-04 13:34:35,Darkchaos,"naja aber 16bit können doch maximal 64kB addressieren, oder?"
+2013-10-04 13:34:45,Jidder,aber es gibt ja segmente im real mode
+2013-10-04 13:34:56,Jidder,die adressierung funktioniert ja segment * 16 + offset
+2013-10-04 13:35:03,Jidder,und beides sind jeweils 16 bit groß
+2013-10-04 13:35:08,Darkchaos,"achso ok, jetzt verstehe ich"
+2013-10-04 13:35:38,Darkchaos,Aber ich brauche keinen VM86 für VGA treiber oder? Ich kann sie auch so schreiben
+2013-10-04 13:35:57,Jidder,"ja, für VGA brauchst du kein VM86. aber willst du VGA?"
+2013-10-04 13:36:05,Jidder,320x200 mit 256 farben?
+2013-10-04 13:36:22,Darkchaos,VESA ist besser?
+2013-10-04 13:36:24,Jidder,ja
+2013-10-04 13:36:45,Darkchaos,bzw was ist 1920x1080 @ 16 Mio Farben
+2013-10-04 13:36:51,Jidder,VESA
+2013-10-04 13:37:12,Jidder,sofern das BIOS der grafikkarte das unterstüzt
+2013-10-04 13:37:20,Jidder,"soll wohl grafikkarten geben, wo das nicht geht"
+2013-10-04 13:37:39,Jidder,aber alles 640x480 mit 16/32 bit und aufwärts ist VESA
+2013-10-04 13:38:01,Jidder,und 24 bit und 8 bit natürlich ^^
+2013-10-04 13:42:50,Darkchaos,und dazu brauche ich VMT?
+2013-10-04 13:43:02,Jidder,ne
+2013-10-04 13:43:16,Jidder,(eben mal googeln was das ist)
+2013-10-04 13:43:45,Jidder,tjo was ist das?
+2013-10-04 13:45:10,Darkchaos,ähm VM86^^
+2013-10-04 13:45:19,Darkchaos,VMT müsstest du aber auch kennen :D
+2013-10-04 13:45:33,Jidder,machen die elektro/house?
+2013-10-04 13:45:33,Darkchaos,Virtual Method Table. Bei Klassenfunktionen sind da die Addressen zu den Methoden drin
+2013-10-04 13:45:58,Jidder,das hätt hier aber keinen sinn gemacht ^^
+2013-10-04 13:46:02,Darkchaos,:D
+2013-10-04 13:46:18,Darkchaos,aber VESA kann ich auch so ansteuern?
+2013-10-04 13:46:52,Jidder,ne brauchst VM86
+2013-10-04 13:47:08,Jidder,ist ja eigentlich VBE (VESA BIOS Extensions)
+2013-10-04 13:47:16,Jidder,das heißt BIOS interrupt also VM86
+2013-10-04 13:47:55,Darkchaos,Und das macht bis heute jedes OS so?
+2013-10-04 13:48:16,Darkchaos,und für floppy brauche ich ja auch int 13h
+2013-10-04 13:48:42,Jidder,ne
+2013-10-04 13:48:46,Jidder,also äh
+2013-10-04 13:49:11,Jidder,"die großen betriebssysteme (windows, linux, *bsd, macos, etc...) haben grafiktreiber"
+2013-10-04 13:49:22,Jidder,die brauchen dann die biosfunktionen nicht
+2013-10-04 13:49:41,Jidder,genauso haben die betriebssysteme diskettentreiber und brauchen das bios nicht
+2013-10-04 13:49:51,max,X hat trotzdem einen VESA-Fallback
+2013-10-04 13:49:59,Darkchaos,und das ist dann arsch schwer?
+2013-10-04 13:50:02,max,"Also, wenn kein Grafiktreiber ist, dann macht es das auch so"
+2013-10-04 13:50:18,max,Blocktreiber über vm86 würde ich aber definitiv lassen
+2013-10-04 13:50:32,Jidder,"Darkchaos: nicht nur arsch schwer, sondern praktisch unmöglich"
+2013-10-04 13:55:41,Darkchaos,"hm jetzt klappt es fast, nur dass ich angeblich doppelt alloziere. d.h.PAGE_PRESENT == 0, dann returne ich und mappe, dann sei es angeblich gemappt :O"
+2013-10-04 13:57:00,Darkchaos,er nimmt die falsche PageTable?
+2013-10-04 13:57:07,Darkchaos,0x400000 muss doch die zweite PT sein
+2013-10-04 13:57:22,Jidder,wer weiß
+2013-10-04 13:57:31,Jidder,"ja, 0x400000 ist die zweite page table"
+2013-10-04 13:57:38,Jidder,ansonsten ist wohl ein bug in deinem code
+2013-10-04 13:58:03,Darkchaos,muss wohl
+2013-10-04 14:07:16,Darkchaos,hmm was mach ich nur falsch. table_entry = 0
+2013-10-04 14:08:08,Darkchaos,aber was anderes 0xFFC00000 + 1023 * 4096 == BFC000?
+2013-10-04 14:08:55,Darkchaos,das ist ja eher verkehrtherum? also - 4MB statt + 4MB
+2013-10-04 14:11:45,Darkchaos,Ich muss mir den Kaffekonsum angewöhnen. directory_entry -> table
+2013-10-04 14:17:21,Jonathan,morgähn
+2013-10-04 14:18:19,Darkchaos_2,high
+2013-10-04 14:18:30,mgottschlag,moin
+2013-10-04 14:20:40,max,Moin
+2013-10-04 14:28:34,Morten,Hallo
+2013-10-04 14:28:59,mgottschlag,moin
+2013-10-04 14:29:19,mgottschlag,"kann es sein, dass grad allgemein die Schule zuende ist? *g*"
+2013-10-04 14:29:24,Morten,ja
+2013-10-04 14:29:44,Morten,und mir ist gerade ebend KDE abgeschmiert -.-
+2013-10-04 14:31:15,Morten,ich brauch dringend einen Größeren/zweiten Bildschirm.
+2013-10-04 14:32:38,max,KDE schmiert bei mir inzwischen täglich ab
+2013-10-04 14:32:40,max,Zumindest hier auf Fedora
+2013-10-04 14:32:43,mgottschlag,hm
+2013-10-04 14:32:44,max,Auf Arch seltener
+2013-10-04 14:32:54,mgottschlag,"dann war es wohl doch nicht so schlimm, dass ich KDE den Rücken gekehrt hab"
+2013-10-04 14:33:02,max,"Also, ist ja nicht so schlimm, es schmiert ja nur der plasma-desktop ab und der braucht halt fünf Sekunden, um neuzustarten :-P"
+2013-10-04 14:33:06,mgottschlag,"als ich das benutzt hab, war es noch (bzw wieder) sehr stabil :)"
+2013-10-04 14:33:09,max,Die Programme bleiben ja alle offen
+2013-10-04 14:33:30,max,"Aber ich bin immer noch der Meinung, dass das einfach nur eine Vorbereitung der Benutzer auf KDE 5 ist"
+2013-10-04 14:33:32,Morten,joa blieben sie
+2013-10-04 14:33:44,max,"Damit man sich schonmal dran gewöhnt, wenn wieder alles total kaputt ist"
+2013-10-04 14:36:45,Morten,"muss man beim KBC eigentlich zuerst den IRQ-Handler setzen, oder ist das einfach nurn notify?"
+2013-10-04 14:37:27,mgottschlag,"du kannst den KBC sicher auch pollen, ohne Interrupt Handler zu haben"
+2013-10-04 14:37:35,Morten,ok
+2013-10-04 14:38:04,mgottschlag,"aber das Pollen macht nen recht großen Aufwand, weil du dauernd beschäftigt bist, obwohl doch nur selten wirklich Daten kommen"
+2013-10-04 14:40:46,Morten,"Derzeitig soll das nur ein KBC-Test sein: Warten bis nächster Buchstabe. Das mach ich in ne Schleife um ein ""Textverarbeitungsprogramm ohne Speicherfunktion"" zu schreiben :D"
+2013-10-04 14:44:14,Morten,hmm ist das nicht einfacher das in Assembler zu schreiben?
+2013-10-04 14:44:35,mgottschlag,nein.
+2013-10-04 14:45:12,mgottschlag,"und es ist eigentlich auch ganz egal, was in dem Satz ""das"" ist :D"
+2013-10-04 14:45:52,Morten,bootloader?
+2013-10-04 14:45:54,max,Dawwwwwwww
+2013-10-04 14:45:59,max,Assembler ♥ D:
+2013-10-04 14:46:38,Morten,hcf und sdi sind die besten befehle :D
+2013-10-04 14:46:51,max,"Es ist in Assembler einfacher, einen Segfault auszulösen als in C"
+2013-10-04 14:47:44,Morten,und in c ist es einfacher eine Festplatte zu zerlegen :D
+2013-10-04 14:48:13,Jidder,braucht man da nicht spezielle schraubenzieher für?
+2013-10-04 14:49:00,max,"Wenn man stark genug ist, nicht"
+2013-10-04 14:49:05,max,Oder passende Fingernägel hat
+2013-10-04 14:51:28,Morten,ne man lässt windows 95 dran.
+2013-10-04 14:51:41,Morten,Dann hat man eine leere festplatte :D
+2013-10-04 14:51:52,max,Ist die dann leichter als eine volle?
+2013-10-04 14:52:02,Morten,(Und mit einer wahrscheinlichkeit von 95 % ist sie Kaputt)
+2013-10-04 14:52:22,Morten,1µg maximal
+2013-10-04 14:52:29,max,Das ist doch schonmal was
+2013-10-04 14:53:10,max,"Wenn man jetzt eine Million Festplatten hat, dann ist das schon ein ganzes Kilo"
+2013-10-04 14:53:29,Morten,Ich glaube mein Pullover ist links 1µg schwerer als rechts D:
+2013-10-04 14:53:30,max,"Äh, ein Gramm"
+2013-10-04 14:53:31,max,Hmmmm
+2013-10-04 14:53:35,max,Dann halt eine Milliarde Festplatten
+2013-10-04 14:53:39,max,Ist ja dann auch kein Unterschied mehr
+2013-10-04 14:53:56,max,Was man auf einer Milliarde Festplatten alles speichern könnte
+2013-10-04 14:53:58,Morten,eben D:
+2013-10-04 14:54:25,Morten,1 Billionen Hobby OS
+2013-10-04 14:54:30,max,"Gut, in dem Fall halt nur ein ZB an Nullen"
+2013-10-04 14:54:38,max,Sonst hätten wir das Kilo ja nicht mehr gewonnen
+2013-10-04 14:57:26,Morten,Kann an der magnetisierung liegen.
+2013-10-04 14:58:10,max,Hm
+2013-10-04 14:58:17,max,Könnte man aus magnetisierten Festplatten Energie gewinnen?
+2013-10-04 14:58:29,max,Und erzeugen besonders sentimentale Filme dann besonders viel Energie?
+2013-10-04 14:58:37,max,Kann man so wirklich aus Emotionen Energie machen?
+2013-10-04 15:06:21,Morten,Was ist die Bedeutung des Confirming/Direction-Bits bei der GDT?
+2013-10-04 15:06:58,mgottschlag,ja. hm. das wusste ich mal.
+2013-10-04 15:07:20,mgottschlag,"confirming hat irgendwas mit Zugriffsrechten des enthaltenen Codes zu tun, benutzt man nicht"
+2013-10-04 15:07:21,Morten,"ist das iwie ""wichtig""?"
+2013-10-04 15:07:32,mgottschlag,"direction lässt das Segment nach unten wachsen, benutzt man auch nicht"
+2013-10-04 15:07:41,Morten,aha
+2013-10-04 15:07:42,mgottschlag,glaub ich zumindest
+2013-10-04 15:07:51,Morten,ich kann also diese Zwei Zeilen löschen :D
+2013-10-04 15:07:55,mgottschlag,nach unten wachsen ist halt evtl für Stacks ganz nett
+2013-10-04 15:08:05,mgottschlag,aber das macht man heutzutage eher mit Paging
+2013-10-04 15:10:48,Morten,Bis gleich ich habe gerade einen ungebetenen Gast (Meinen Bruder)
+2013-10-04 15:17:28,Darkchaos,Alsoo bin wieder da
+2013-10-04 15:17:32,Darkchaos,und auf kubuntu ist kde stable
+2013-10-04 15:17:49,Darkchaos,"und das sogar, obwohl alle paar minuten das ganze in den energiesparmodus geht"
+2013-10-04 15:18:02,Darkchaos,und ich dachte die Schulen brücken den Tag heute? Ist glaube ich bei uns so
+2013-10-04 15:18:28,Darkchaos,"und natürlich kannst du mit ner FP Energie erzeugen, du musst sie nur als Stator benutzen"
+2013-10-04 15:18:50,max,so ist das doch nicht gemeint
+2013-10-04 15:18:52,Darkchaos,"aber btt, mein vmm_alloc() scheint jetzt zu funktionieren :)"
+2013-10-04 15:19:04,max,"Es geht darum, ohne weitere Energiezufuhr welche zu erzeugen"
+2013-10-04 15:19:26,max,Einfach aus der Energie des Magnetfelds der Festplatte heraus
+2013-10-04 15:19:33,Darkchaos,achso ein perpetuum mobilee?
+2013-10-04 15:19:44,max,…
+2013-10-04 15:19:45,max,nein
+2013-10-04 15:20:18,max,"Eine Festplatte hat viele kleine Magnetfelder mit jeweils entsprechender Energie, nehme ich an"
+2013-10-04 15:20:35,max,"Und die muss man, unter „Verbrauch“ der Magnetfelder, doch umsetzen können"
+2013-10-04 15:33:56,Morten,So ungebetener gast aus dem zimmer abgewimmelt
+2013-10-04 15:36:17,mgottschlag,"max: ja, eigentlich sollte, wenn man die Platte erwärmt, zusätzliche Hitze erzeugt werden :)"
+2013-10-04 15:36:40,mgottschlag,blöderweise schmelzen vorher die Plastikkomponenten
+2013-10-04 15:36:43,max,Dawwwwwwwwww
+2013-10-04 15:36:49,max,Das ist ja noch viel romantischer ♥
+2013-10-04 15:47:31,Morten,ok GDT ohne TSS done
+2013-10-04 15:47:51,Morten,Test für 0.0.2a1
+2013-10-04 15:48:42,Jidder,jede version sollte einen codenamen bekommen
+2013-10-04 15:48:49,Jidder,für einfachere unterscheidung
+2013-10-04 15:49:29,Morten,"0.0.0: ""Textausgabemaschine"" 0.0.1: ""KBC"" 0.0.2: Treiber"
+2013-10-04 15:51:28,Jidder,klingen zu langweilig
+2013-10-04 15:51:33,Jidder,die presse wird darauf nicht anspringen
+2013-10-04 15:52:16,mgottschlag,"0.0.0: ""Weltherrschaft"", 0.0.1: ""Weltherrschafft, zweiter Versuch"", 0.0.2: ""warumfunktioniertdasnicht"""
+2013-10-04 15:52:18,Morten,"0.0.0: ""Zeitmaschine"" 0.0.1: ""Antimaterie"""
+2013-10-04 15:52:40,Morten,"0.0.2 ""MTGisbetter"
+2013-10-04 15:52:55,Morten,(an AMDisbetter angelehnt :D)
+2013-10-04 15:56:09,Morten,hmm.... kann man mit cp IMMER überschreiben?
+2013-10-04 15:56:15,Morten,(Ohne nachfrage?)
+2013-10-04 15:56:43,mgottschlag,bestimmt
+2013-10-04 15:57:18,Jidder,"wenn man die berechtigungen nicht hat, vermutlich nicht"
+2013-10-04 15:57:28,Morten,Derzeitig nehme ich -u
+2013-10-04 15:57:51,Morten,überschreibt nur wenn das ziel älter ist als die Quelle
+2013-10-04 16:06:47,Morten,ok version 0.0.1a1 Funtzt :D
+2013-10-04 16:06:47,Morten,"(Nur die GDT ist hinzugekommen; jetzt kommen Interrupts, um das ""Shell"" vom ""kernel"" zu Trennen :D)"
+2013-10-04 16:07:37,Jidder,gw
+2013-10-04 16:14:00,Morten,habt ihr schon von dem Linux-Banking Virus gehört? ich wette der ich schon gefixt worden
+2013-10-04 16:20:29,Morten,"""an 8086/8088 will generate this interrupt if the result of a division  is 80h (byte) or 8000h (word)"" Warum?"
+2013-10-04 16:21:50,Morten,achja zu Interupt 0 (Division durch null)
+2013-10-04 16:25:45,mgottschlag,"morten: naja, eine division kann halt diese Werte erzeugen (z.B. -0x80 / -1), die dann aber nicht mehr in das Ergebnisregister passen, weil -0x80 zwar in 8 bit darstellbar ist, 0x80 aber nicht"
+2013-10-04 16:33:38,Morten,achso :D
+2013-10-04 16:33:52,Morten,deswegen gibts dafür auch einen FATAL UNSOLVEABLE FAIL
+2013-10-04 16:52:09,Morten,"naja, was bring denn überhaupt ""INTO""?"
+2013-10-04 16:54:43,Jidder,"löst interrupt 4 aus, wenn das overflow flag gesetzt ist"
+2013-10-04 17:14:03,Morten,also quasi not
+2013-10-04 17:14:07,Morten,nop*
+2013-10-04 17:17:17,Kontrollgruppe,"wenn das flag gesetzt ist, ist es kein nop"
+2013-10-04 17:30:37,Darkchaos,doch
+2013-10-04 17:30:44,Darkchaos,ups falsch :P
+2013-10-04 17:31:42,Darkchaos,"mein OS heißt ""arctic_revenge"""
+2013-10-04 17:31:50,Darkchaos,bzw die Version 0.1
+2013-10-04 17:32:33,Manuel,tag
+2013-10-04 17:46:32,mroman_,oh
+2013-10-04 17:46:43,mroman_,was passiert bei -0x80 / -1?
+2013-10-04 17:47:30,Jidder,division error exception
+2013-10-04 17:48:01,mroman_,nope
+2013-10-04 17:48:04,mroman_,-128 gibt das
+2013-10-04 17:48:51,mroman_,sagt C zumindest
+2013-10-04 17:49:35,mroman_,also unter Linux zumindest gibt das anscheinenden keinen Programmunterbruch
+2013-10-04 17:49:38,XanClic,Das klingt ja reichlich undefiniert
+2013-10-04 17:49:44,mroman_,im Gegensatz zu -0x80 / -0
+2013-10-04 17:49:48,XanClic,„unterbruch“? *g*
+2013-10-04 17:49:52,mroman_,ja
+2013-10-04 17:50:00,mroman_,foo / 0 killt dein Program
+2013-10-04 17:50:06,Darkchaos,"""-0""? :O"
+2013-10-04 17:50:07,XanClic,"Ich nenne das ja „unterbrechung“, daher :-P"
+2013-10-04 17:50:08,mroman_,-0x80 / -1 killt dein Programm nicht
+2013-10-04 17:50:13,Jidder,ich schätze c erweitert das auf int
+2013-10-04 17:50:39,mroman_, char c = (char)-0x80 / (char)-1;
+2013-10-04 17:50:39,XanClic,"Soweit ich weiß, werden Rechnungen bei C immer auf int erweitert ausgeführt"
+2013-10-04 17:50:43,XanClic,"Es sei denn, es passt nicht nach int"
+2013-10-04 17:50:43,Jidder,das äquivalent für 32-bit signed int wäre -0x80000000 / -1
+2013-10-04 17:50:45,mroman_,gibt keinen Programmabsturz.
+2013-10-04 17:51:05,XanClic,Irgendwie standard integer promotions oder sowas
+2013-10-04 17:52:04,mroman_,ah ja
+2013-10-04 17:52:09,mroman_,arithmetic ist immer mit int
+2013-10-04 17:52:34,mroman_,das gibt dann 0 mit ints
+2013-10-04 17:52:37,mroman_,also ja
+2013-10-04 17:52:41,mroman_,seehr undefiniert.
+2013-10-04 17:52:46,Jidder,http://codepad.org/0FV9JqnZ
+2013-10-04 17:52:53,Jidder,gibt wieder -0x80000000
+2013-10-04 17:53:03,Jidder,ja also undefined ^^
+2013-10-04 17:53:07,mroman_,hm
+2013-10-04 17:53:10,XanClic,ist ja sowieso undefiniert
+2013-10-04 17:53:11,mroman_,wie faengt man sowas ab?
+2013-10-04 17:53:25,XanClic,also 0x80 nach char packen oder 0x80000000 nach int32_t
+2013-10-04 17:53:58,mroman_,mit groesserem Typ rechnen und error falls > MAX < MIN
+2013-10-04 17:54:13,XanClic,Man dividiert einfach nicht *duck*
+2013-10-04 17:55:02,mgottschlag,"ja überhaupt, Division ist total langsam, das macht man nicht!"
+2013-10-04 17:56:58,mroman_,a
+2013-10-04 17:57:01,mroman_,fuck division
+2013-10-04 17:57:22,mroman_,http://codepad.org/HjWzZibS
+2013-10-04 17:57:23,mroman_,what
+2013-10-04 17:57:47,Jidder,return 0;
+2013-10-04 17:57:47,mroman_,das geht so wohl nicht
+2013-10-04 17:57:59,mroman_,weil a / b so undefiniert ist
+2013-10-04 17:58:14,mgottschlag,"ja, du müsstest vorher casten"
+2013-10-04 17:58:51,mgottschlag,"-0x80000000 bleibt, wenn es gecastet wird, logischerweise was es ist"
+2013-10-04 18:11:57,mroman_,uint13_t als two's complement zu interpretieren sollte safe sein
+2013-10-04 18:12:08,mroman_,egal ob die CPU darunter one's complement ist oder big/little endian
+2013-10-04 18:12:24,mroman_,oder?
+2013-10-04 18:13:22,Jidder,wie meinst du das? bei unsigned ints kann man mit dem zweierkomplement doch gar nichts anfangen
+2013-10-04 18:13:45,mroman_,nun
+2013-10-04 18:14:07,mroman_,"ich gehe davon aus, dass in einem uint32_t einfach 32bits drin stecken"
+2013-10-04 18:14:29,mroman_,und will es ja nach Kontext als Vorzeichenbehaftet (two's complement) oder Vorzeichenlos interpretieren
+2013-10-04 18:15:53,mroman_,oder
+2013-10-04 18:16:04,mroman_,mein Emulator benutzt uint32_t* regs[]
+2013-10-04 18:16:21,mroman_,und emuliert ein two's complement system
+2013-10-04 18:16:47,mroman_,und idiv auf diesem
+2013-10-04 18:16:58,mroman_,muesste die Register als Vorzeichenbehaftet interpretieren
+2013-10-04 18:16:59,mroman_,aber eben
+2013-10-04 18:17:17,mroman_,int32_t reg = (int32_t)regs[is->operand]; ist ja undefined
+2013-10-04 18:17:57,Jidder,würde ich nicht sagen
+2013-10-04 18:19:00,mroman_,oder zumindest implementation defined
+2013-10-04 18:19:06,mroman_,also nicht portabel
+2013-10-04 18:19:26,Jidder,ja
+2013-10-04 18:26:09,mroman_,dann halt ifdef gcc
+2013-10-04 18:28:34,Jidder,und welches system kennst du mit einerkomplement?
+2013-10-04 18:29:11,Jidder,oder anderen darstellungen?
+2013-10-04 18:38:15,Darkchaos,Hey Leute: Ich mappe eine neue PT aber sie ist nicht gemapped laut qemu
+2013-10-04 18:38:41,Jidder,:(
+2013-10-04 18:38:51,Darkchaos,also ich füge sie zu pd[1023][1023] + 4 * table_entry hinzu
+2013-10-04 18:39:02,Darkchaos,muss ich dann noch invlpg daraufhin ausführen?
+2013-10-04 18:39:16,Jidder,deine notation ...
+2013-10-04 18:40:59,Jidder,"ich interpretiere das so: du schaust in den letzten eintrag des pds, nimmst die page table, die da eintragen ist, schaust dort in den letzten eintrag. dann hast du eine physische adresse. dann addierst du da irgendwas zu der physischen adresse dazu. und dann fügst du da eine page table hinzu???"
+2013-10-04 18:43:51,Darkchaos,also. eigentlich ist ja pd[1023] == pt-speicher
+2013-10-04 18:44:01,Darkchaos,daher ist pd[1023][1023] die 1023. PT
+2013-10-04 18:44:14,Darkchaos,"Diese wiederum beinhaltet das komplette PD, da sizeof(pt) = 4kB"
+2013-10-04 18:44:33,Darkchaos,und da muss ich wiederum nun 4Byte weiße bis zum richtigen Eintrag springen und dort reinschreiben
+2013-10-04 18:45:19,Jidder,du wirfst hier virtuelle und physische adressen durcheinander
+2013-10-04 18:45:47,Jidder,"willst du mit pd[1023] == pt-speicher sagen, dass die page tables an 0xffc00000 gemappt sind?"
+2013-10-04 18:46:03,Darkchaos,"ja, wobei das natürlich nur pseudocode in dem falle war"
+2013-10-04 18:46:14,Jidder,"will ich auch hoffen, dass das nur pseudocode war"
+2013-10-04 18:46:14,Darkchaos,ich habe dafür ein #define auf 0xffc00000
+2013-10-04 18:46:37,Darkchaos,+ 1023 * 4096 -> eigentliches pd
+2013-10-04 18:49:53,Darkchaos,"naja ich muss mal weg, aber es ist mir immernoch ein rätsel warum die PT nicht auftaucht, sie muss ja schließlich wie eine Page gemappt werden"
+2013-10-04 18:50:37,Darkchaos,"achso. Ich muss ja dann das invlpg auf ""0xFFC00000 + pt_entry * 4096"" ausführen, oder?"
+2013-10-04 18:50:53,Jidder,ja
+2013-10-04 18:51:06,Darkchaos,fixx ich wenn ich heimkomme..
+2013-10-04 18:51:14,Jidder,wenn du da gerade was hingemappt hast zumindest
+2013-10-04 18:51:22,Darkchaos,ich habe ausversehen die adresse angegeben an der sie im pd steht
+2013-10-04 18:51:33,Darkchaos,"also da wo ich sie direkt reinschreibe, lol ist ja nichtmal 4k aligned"
+2013-10-04 18:51:44,Darkchaos,ich bin so unaufmerksam die letzten Tage
+2013-10-04 18:54:17,Morten,Jidder: Wie findest du den Codenamen Abandoned Dreadful Plutonium?
+2013-10-04 18:56:33,LinuxHacker,Hi Leute! Welche Programme/Treiber muss ich alle schon fertig haben um Bash vernünftig laufen zu lassen? 
+2013-10-04 18:57:42,Jidder,Morten: spitze
+2013-10-04 18:58:18,Jidder,"LinuxHacker: moin. ich schätze mal tastaturtreiber und bildschirmausgabe. programme weiß ich nicht, aber ich würde sagen eine POSIX API brauchst du"
+2013-10-04 18:58:32,Morten,und eine C-Lib
+2013-10-04 18:58:38,Morten,C-STD-Lib
+2013-10-04 18:58:55,tufel,huuh
+2013-10-04 18:58:57,tufel,*huhu
+2013-10-04 18:59:22,LinuxHacker,Kann ich nicht eventuell GNU Packete in meinen Kernel integrieren (so wie es linux macht) ?
+2013-10-04 19:00:11,Jidder,linux integriert die aber nicht in den kernel
+2013-10-04 19:00:20,Morten,Das braucht aber eine weile :D
+2013-10-04 19:00:24,Jidder,aber natürlich kannst du gnu programme und bibliotheken portieren
+2013-10-04 19:00:29,LinuxHacker,cool
+2013-10-04 19:00:32,Jidder,außer glibc
+2013-10-04 19:00:58,Jidder,"die soll wohl nur schwer portierbar sein, hab ich gehört. aber newlib ist einfach portierbar"
+2013-10-04 19:01:05,tufel,wie wichtig sind eigentlich push und pop in einem Befehlssatzt? und wie viel CPU-Leistung verliert man wenn man nur ein Load und ein strore einbaut?
+2013-10-04 19:01:50,LinuxHacker,push und pop ist schon sehr wichtig! :D
+2013-10-04 19:02:44,Jidder,"oh ich hab natürlich eine sache vergessen: oder treiber für dateisystem und irgendein laufwerk wird nichts mit programme starten, falls die shell das können soll ;)"
+2013-10-04 19:02:53,Jidder,-oder
+2013-10-04 19:03:10,LinuxHacker,stimmt hast recht...
+2013-10-04 19:03:25,Jidder,aber bash funktioniert auch ohne
+2013-10-04 19:04:10,LinuxHacker,stimmt schon aber wenn man ls haben möchte braucht man ein dateisystem schon
+2013-10-04 19:06:01,Jidder,"aber man spart sich arbeit, wenn man kein dateisystem hat. dann muss man ls gar nicht erst portieren"
+2013-10-04 19:06:12,Jidder,"denk auch an die zeit die man spart, wenn man das nicht kompilieren muss"
+2013-10-04 19:06:15,Jidder,und den strom
+2013-10-04 19:06:19,Jidder,das ist bares geld
+2013-10-04 19:06:43,LinuxHacker,ähh ja und wie willst du dann irgendwas speichern? Im ram? xD Beim Neustart ist dann alles weg :P
+2013-10-04 19:07:43,Jidder,neue innovation: aufgrund des erfolgs des papierlosen büros gibt es jetzt das dokumentlose büro
+2013-10-04 19:07:47,Jidder,noch weniger datenmüll
+2013-10-04 19:07:49,Jidder,für die umwelt
+2013-10-04 19:08:47,LinuxHacker,In wie fern hängt das zusammen? Wenn du eine Datei anlegen möchtest und die beim neustart noch da sein soll braucht du ein dateisystem
+2013-10-04 19:09:12,LinuxHacker,Mit der Logik hast du es auch nicht so oder?
+2013-10-04 19:09:16,tufel,mmh muss off bb
+2013-10-04 19:09:44,LinuxHacker,ich muss mal kurz afk weil ich mit meinen eltern essen muss bye bye
+2013-10-04 19:09:51,Jidder,muss wohl mehr smileys benutzen wenn ich witze mache
+2013-10-04 19:09:58,LinuxHacker,:D
+2013-10-04 19:09:59,LinuxHacker,jop
+2013-10-04 19:10:00,LinuxHacker,:D
+2013-10-04 19:10:06,Jidder,xD
+2013-10-04 19:10:07,LinuxHacker,oke ich komm in ca 30m wieder
+2013-10-04 19:10:17,LinuxHacker,[AFK_MODE on]
+2013-10-04 19:15:28,Jidder,30 m geteilt durch die lichtgeschwindigkeit sind ca. 100 ns
+2013-10-04 19:15:33,Jidder,die sind jetzt um
+2013-10-04 19:16:33,Jidder,das erklärts
+2013-10-04 19:19:43,LinuxHacker,hi
+2013-10-04 19:19:44,LinuxHacker,wd
+2013-10-04 19:28:02,LinuxHacker,Kann ich irgendwie in C ohne die cstdlib abfragen ob eine Taste gedrückt wurden ist ?
+2013-10-04 19:28:15,Morten,fail
+2013-10-04 19:28:54,XanClic,Klar
+2013-10-04 19:28:56,XanClic,Mit SDL
+2013-10-04 19:29:16,LinuxHacker,SDL hängt von der cstdlib ab!
+2013-10-04 19:29:43,XanClic,Das ist aber nicht Problem des Anwenders!
+2013-10-04 19:30:03,LinuxHacker,Gehts noch ? :D Ich bin halt ein Developer! Ich kann halt! xD
+2013-10-04 19:30:12,XanClic,Oder den Kernelspeicher über /dev/mem auslesen
+2013-10-04 19:30:18,XanClic,Irgendwo wird das da schon drinstehen
+2013-10-04 19:30:29,LinuxHacker,xDD ich programmier mein eigenes BS :D
+2013-10-04 19:30:58,Morten,geht eigentlich VGA textmode?
+2013-10-04 19:31:14,LinuxHacker,Wie meinst du das?
+2013-10-04 19:31:50,Morten,naja Texmodus in vga auflösung (Also mehr als 80x25) :D
+2013-10-04 19:32:09,LinuxHacker,Ahh das müsste machbar sein....
+2013-10-04 19:32:13,XanClic,"LinuxHacker, na, dann hat das sehr wenig mit der Sprache zu tun"
+2013-10-04 19:32:24,LinuxHacker,?
+2013-10-04 19:32:30,XanClic,Außerdem war das bei deinem Namen nicht ersichtlich
+2013-10-04 19:32:34,XanClic,"Also, sagen wir mal so"
+2013-10-04 19:32:47,XanClic,Wenn C eine Funktion hätte „give_me_scancode_without_os_support_plox“
+2013-10-04 19:32:52,XanClic,"Dann wäre C keine Sprache, sondern ein Betriebssystem"
+2013-10-04 19:33:03,LinuxHacker,Was willst du damit aussagen?
+2013-10-04 19:33:15,XanClic,C ohne Betriebssystem dahinter kann gar nichts
+2013-10-04 19:33:19,XanClic,Außer die CPU bedienen
+2013-10-04 19:33:42,LinuxHacker,Doch kann es ich kann z.b auf den Video MEM zugreifen!
+2013-10-04 19:33:56,LinuxHacker,Und UniCode gibt es auch schon!
+2013-10-04 19:33:56,XanClic,"Eigentlich ist das undefiniert, aber lassen wir das"
+2013-10-04 19:34:07,XanClic,"Unicode ist ein Problem, das nichts mit Hardware zu tun hat"
+2013-10-04 19:34:14,XanClic,Sondern nur mit Codierungen
+2013-10-04 19:34:23,XanClic,Und dementsprechend ist das was für die CPU
+2013-10-04 19:34:50,LinuxHacker,Bei dem Video MEM greift man aber auf die Grakka zu!
+2013-10-04 19:35:06,XanClic,Wie gesagt
+2013-10-04 19:35:13,XanClic,"Entweder, du hast dafür eine Funktion, die das abstrahiert"
+2013-10-04 19:35:23,XanClic,Dann ist das halt eine Funktion des Betriebssystems und das Problem ist erledigt
+2013-10-04 19:35:38,LinuxHacker,Ja und wie implementier ich das ?
+2013-10-04 19:35:39,XanClic,Oder du machst das quick'n'dirty über *(short *)0xb8000 = 'X' | 0x0700
+2013-10-04 19:35:44,XanClic,"Aber das ist dann undefiniert, wie gesagt"
+2013-10-04 19:35:47,mgottschlag,LinuxHacker: du schreibst dir einen Tastaturtreiber
+2013-10-04 19:35:58,LinuxHacker,Ja wie gesagt wie implementier ich das?
+2013-10-04 19:36:12,mgottschlag,"das steht z.B. in der lowlevel-Wiki, das kann man in nem Chat nicht erklären"
+2013-10-04 19:36:26,LinuxHacker,Echt? Wie heißt denn der Artikel?
+2013-10-04 19:36:39,mgottschlag,iirc Keyboard Controller (da war ich heute irgendwann schonmal)
+2013-10-04 19:37:18,LinuxHacker,ahh cool danke
+2013-10-04 19:37:20,mgottschlag,du brauchst zu dem Zeitpunkt allerdings auch schon Support für Interrupts in deinem OS
+2013-10-04 19:37:52,mgottschlag,"außerdem stimme ich XanClic zu, dass du an deiner Fragenformulierung arbeiten solltest :)"
+2013-10-04 19:38:00,LinuxHacker,Ja schon ....
+2013-10-04 19:40:48,LinuxHacker,Ach ja und mgottschlag wie findet du die NSA? xD
+2013-10-04 19:40:54,LinuxHacker,*findest
+2013-10-04 19:40:59,LinuxHacker,also ich sch****
+2013-10-04 19:41:00,LinuxHacker,:D
+2013-10-04 19:42:05,Jidder,na dann
+2013-10-04 19:43:51,LinuxHacker,ich bin grade in meinem bett mit dem laptop und ess dabei käsechips :D
+2013-10-04 19:44:22,XanClic,und ich sitz am schreibtisch mit zwei laptops drauf und esse spekulatius
+2013-10-04 19:44:42,LinuxHacker,wow genau das gegenteil :D
+2013-10-04 19:44:44,XanClic,"ich benutze ja ssl, damit die nsa das nicht abfangen kann"
+2013-10-04 19:44:54,XanClic,und ihr?
+2013-10-04 19:45:11,LinuxHacker,ich auch ist bei mir standard drauf bei debian
+2013-10-04 19:45:20,Jidder,ich benutzte sssl
+2013-10-04 19:45:27,Jidder,das ist super-ssl
+2013-10-04 19:45:27,LinuxHacker,gibt es nicht :D
+2013-10-04 19:45:29,LinuxHacker,xD
+2013-10-04 19:45:42,XanClic,streaming ssl
+2013-10-04 19:45:49,XanClic,streaming simd sextension layer
+2013-10-04 19:46:15,LinuxHacker,? find ich bei wikip nicht :D
+2013-10-04 19:46:28,Jidder,du bist doch ein hacker
+2013-10-04 19:46:32,Jidder,du kriegst das schon hin
+2013-10-04 19:46:47,LinuxHacker,ich hack gleich dein face xD
+2013-10-04 19:46:56,XanClic,das will ich sehen
+2013-10-04 19:47:30,LinuxHacker,"Noob jidder = Jidder.getControlPanel(); Jidder.Face.Speak(""FUCKUP!""); xDD"
+2013-10-04 19:47:46,XanClic,CamelCase gilt hier als Beleidigung
+2013-10-04 19:47:49,XanClic,Das ist dir hoffentlich klar
+2013-10-04 19:48:06,LinuxHacker,Was ist camelCase?
+2013-10-04 19:48:14,Jidder,zweite verwarnung
+2013-10-04 19:48:23,LinuxHacker,Hä
+2013-10-04 19:48:31,LinuxHacker,Was zur hölle ist camelcase?
+2013-10-04 19:48:43,Jidder,dazu sollte es sogar einen wikipediaartikel geben
+2013-10-04 19:48:50,XanClic,hm
+2013-10-04 19:49:09,XanClic,"Ich glaube, „camelcase“ fällt immer noch darunter"
+2013-10-04 19:49:14,XanClic,Im IRC zählt shift ja nix
+2013-10-04 19:49:59,LinuxHacker,Aber der Code ist doch schon geil oder ? ;D
+2013-10-04 19:51:01,mgottschlag,Die Menge ist am Toben!
+2013-10-04 19:52:09,LinuxHacker,achja weiss jemand wie ich die seabios meldungen bei qemu deaktivieren kann?
+2013-10-04 19:52:30,mgottschlag,"vermutlich garnicht, aber warum solltest du das wollen?"
+2013-10-04 19:52:51,LinuxHacker,weil die extrem nervig sind :$
+2013-10-04 19:53:12,mgottschlag,"die sind dann nervig, wenns dir um die Optik geht - und wenn es dir um die Optik geht, ist osdev nichts für dich :p"
+2013-10-04 19:53:37,LinuxHacker,mir geht es um die optik
+2013-10-04 19:58:55,LinuxHacker,ach du ..... ich habe gerade bei mir eine funktion eingebaut um den bildschirm zu leeren beim booten und jetzt ist plötzlich alles grün.....
+2013-10-04 19:59:53,mgottschlag,"na, dann ist die Hintergrundfarbe von deinem Monitor halt grün"
+2013-10-04 20:00:01,mgottschlag,da musst du mit schwarzen Leerzeichen übermalen
+2013-10-04 20:00:51,LinuxHacker,oh mir fällt gerade auf das ich beim setzen der zeichen vergessen habe ein 0x07 dranzuhängen xD
+2013-10-04 20:03:07,LinuxHacker,ach ja und wie kann ich eigentlich die cursor position ändern....
+2013-10-04 20:03:24,LinuxHacker,also den zeichen cursor
+2013-10-04 20:04:14,mgottschlag,da musst du dir vermutlich die VGA-Register mal anschauen
+2013-10-04 20:04:23,Jidder,http://www.lowlevel.eu/wiki/Textausgabe#Cursor
+2013-10-04 20:04:40,LinuxHacker,ahh danke
+2013-10-04 20:04:48,stultus,Oder benutz int 0x10
+2013-10-04 20:04:58,stultus,wenn man an grafik denkt wär das eh ne lohnende erweiterung ;)
+2013-10-04 20:04:59,LinuxHacker,ich programmier in c
+2013-10-04 20:05:03,stultus,ja und?
+2013-10-04 20:05:07,stultus,ohne inline-asm gehts eh nicht
+2013-10-04 20:05:19,LinuxHacker,wie soll int 0x10 in meinem c code benutzen?!?
+2013-10-04 20:05:30,mroman_,"asm ""int 0x10"""
+2013-10-04 20:05:36,LinuxHacker,oh.... xDD
+2013-10-04 20:05:38,mroman_,und ja
+2013-10-04 20:05:43,mroman_,OsDev == inline assembly
+2013-10-04 20:05:49,Jidder,nein
+2013-10-04 20:05:54,LinuxHacker,ich benutz GNU Assembler
+2013-10-04 20:05:55,Jidder,inline assembly == osdev
+2013-10-04 20:06:03,mroman_,also
+2013-10-04 20:06:08,LinuxHacker,GNU Assembler != inline assembly 
+2013-10-04 20:06:23,mroman_,ich bevorzuge Gleichheitsoperatoren die den Kommutativgesetzen folgen .
+2013-10-04 20:06:26,stultus,das scheitert ja schon am typ der vergleich ^^
+2013-10-04 20:06:28,XanClic,"strcmp(""GNU Assembler"", ""inline assembly"");"
+2013-10-04 20:06:29,XanClic,0
+2013-10-04 20:06:39,LinuxHacker,:D
+2013-10-04 20:06:45,LinuxHacker,so gehts auch
+2013-10-04 20:06:58,Jidder,osdev != OsDev
+2013-10-04 20:07:06,LinuxHacker,Case Sensitive :D
+2013-10-04 20:07:10,XanClic,[19:49:14] <XanClic> Im IRC zählt shift ja nix
+2013-10-04 20:07:18,Jidder,welches kamel?
+2013-10-04 20:07:30,stultus,das käsige
+2013-10-04 20:07:41,Jidder,da mach ich erstmal tor 3 auf
+2013-10-04 20:07:49,XanClic,http://dl.dropboxusercontent.com/u/48755239/camel.png
+2013-10-04 20:08:15,LinuxHacker,:D
+2013-10-04 20:08:21,mroman_,ich mag es nicht wenn an kollaborativen Projekten jemand C Code mit CamelCase committed
+2013-10-04 20:08:44,mroman_,dasSiehtSeltsamAus
+2013-10-04 20:08:54,Jidder,"ja man sieht an deinem namen, dass du ein underscore fan bist"
+2013-10-04 20:09:00,mroman_,genau
+2013-10-04 20:09:02,stultus,aberbesseralssoimho
+2013-10-04 20:09:11,Jidder,dkmdaa
+2013-10-04 20:09:19,mroman_,gtkButtonNewWithLabel
+2013-10-04 20:09:19,Jidder,das kann man doch alles abkürzen
+2013-10-04 20:09:23,XanClic,"Am besten sind doch eh Projekte, die beides benutzen"
+2013-10-04 20:09:34,LinuxHacker,diesertextisttotallangundunverstehbarmitsehrwenigleerzeichenundblablabla
+2013-10-04 20:09:38,stultus,und dann auch Intel und AT&T gemischt ^^
+2013-10-04 20:09:41,XanClic,Für gute alte C-Interfaces under_score und für JSON-generierte Typen CamelCase
+2013-10-04 20:09:47,mroman_,gtk_tree_view_new_with_label_and_model
+2013-10-04 20:10:03,stultus,ist gtk ernsthaft so krausam?
+2013-10-04 20:10:09,mroman_,ein wenig
+2013-10-04 20:10:10,XanClic,ich mag gtk D:
+2013-10-04 20:10:18,LinuxHacker,ich auch :$
+2013-10-04 20:10:38,Jidder,und trotzdem programmierst du ein textbasiertes os
+2013-10-04 20:10:41,mroman_,gtk_tree_view_insert_column_with_attributes
+2013-10-04 20:10:45,mroman_,^- das z.b gibt's wirklich.
+2013-10-04 20:10:46,mgottschlag,"ich mag gtk am besten, nachdem es durch Qt ersetzt wurde"
+2013-10-04 20:10:52,XanClic,toll
+2013-10-04 20:10:53,mgottschlag,*ich find
+2013-10-04 20:10:54,mgottschlag,oder so
+2013-10-04 20:10:57,XanClic,du benutzt gnome und magst qt
+2013-10-04 20:11:00,XanClic,ich benutze kde und mag gtk
+2013-10-04 20:11:03,XanClic,wat do
+2013-10-04 20:11:07,stultus,FUSION
+2013-10-04 20:11:10,LinuxHacker,:D
+2013-10-04 20:11:16,mroman_,und dann brauchst du natuerlich noch casts
+2013-10-04 20:11:24,mgottschlag,"ich hab noch nie Gnome benutzt, ich benutz nur schon seit ewigkeiten kein kde mehr ^^"
+2013-10-04 20:11:31,mgottschlag,*noch nie besonders lange
+2013-10-04 20:11:32,mroman_,"gtk_box_pack_start(GTK_BOX(...), GTK_WIDGET(...), , , ,"
+2013-10-04 20:11:32,XanClic,"Ach, aber Gnome empfehlen? *g*"
+2013-10-04 20:11:33,mroman_,etc.
+2013-10-04 20:11:44,LinuxHacker,CAMEL_CASE_KOTZE
+2013-10-04 20:11:48,mgottschlag,"ja, meine letzte Begegnung mit KDE war nich mehr so besonders"
+2013-10-04 20:11:56,LinuxHacker,I hate KDE :D
+2013-10-04 20:11:58,mroman_,Qt
+2013-10-04 20:12:01,mroman_,ich hasse Qt
+2013-10-04 20:12:06,mgottschlag,"da hat KDE alleine gereicht, um die 4GB Arbeitsspeicher zu befüllen, nur weil mein E-Mail-Postfach etwas voller war :D"
+2013-10-04 20:12:09,LinuxHacker,Ich liebe GTK
+2013-10-04 20:12:16,mroman_,hat das ueberhaupt C bindings @Qt?
+2013-10-04 20:12:16,Jidder,ich hasse GTA
+2013-10-04 20:12:17,XanClic,"Ach ja, die Maileinbindung unter KDE…"
+2013-10-04 20:12:22,XanClic,"Das lässt man lieber, glaub ich auch, ja"
+2013-10-04 20:12:24,mgottschlag,"mroman_: nö, braucht man nicht :)"
+2013-10-04 20:12:30,stultus,"Jidder: wie, Konsole kaputt? ;)"
+2013-10-04 20:12:40,LinuxHacker,:D
+2013-10-04 20:12:40,Jidder,spielen wir hier ich packe meinen koffer?
+2013-10-04 20:12:45,mroman_,Ich hasse C++
+2013-10-04 20:12:45,mgottschlag,"ich fand die an sich gut, aber der Speicherverbrauch war schrecklich"
+2013-10-04 20:13:02,LinuxHacker,I love GNOME Classic! :D
+2013-10-04 20:13:08,mroman_,C++ ist quasi ein Kamel am Nordpol.
+2013-10-04 20:14:13,mroman_,Java ist dafuer ein Penguin am Nordpol.
+2013-10-04 20:14:18,mroman_,Nicht so daneben wie ein Kamel am Nordpol
+2013-10-04 20:14:24,mroman_,aber trotzdem auf dem Kopf.
+2013-10-04 20:14:30,LinuxHacker,Thema wechsel?
+2013-10-04 20:14:33,mroman_,ok
+2013-10-04 20:14:34,Jidder,nein
+2013-10-04 20:14:37,LinuxHacker,:D
+2013-10-04 20:14:38,Jidder,wir hacken gerade auf linux rum
+2013-10-04 20:14:40,mroman_,ja
+2013-10-04 20:14:41,stultus,Abstimmung!
+2013-10-04 20:14:43,mroman_,linux suckt
+2013-10-04 20:14:44,Jidder,wir sind linux hacker
+2013-10-04 20:14:50,XanClic,nein
+2013-10-04 20:14:57,stultus,+1
+2013-10-04 20:15:01,XanClic,"okay, dann machen wir weiter"
+2013-10-04 20:15:05,LinuxHacker,:D
+2013-10-04 20:15:08,mgottschlag,"aber es ist mit abstand das, was am wenigsten suckt :)"
+2013-10-04 20:15:23,mroman_,Es hat kein Modul fuer die Lueftersteuerung meines Thinkpads
+2013-10-04 20:15:23,Jidder,das heißt für staubsauger ist es nicht als OS geeignet
+2013-10-04 20:15:27,mroman_,es ueberhitzt dauernd.
+2013-10-04 20:15:30,stultus,aber für toaster
+2013-10-04 20:15:40,XanClic,"mroman_, da taktet man halt runter"
+2013-10-04 20:15:41,stultus,"moment, das war BSD..."
+2013-10-04 20:15:42,mroman_,und im Vergleich zu Windows ME stuerzt mein Debian viel ofters ab.
+2013-10-04 20:15:44,Morten,"irgendwie krieg ich lvm nicht konfiguriert, eine Zweite 10GB Partition zu erstellen :( Könnte wer mir da helfen?"
+2013-10-04 20:15:44,Jidder,ein lüfter pustet ja eigentlich. da sollte linux dann doch gehen
+2013-10-04 20:15:46,XanClic,Mach ich bei meinem alten Laptop auch immer
+2013-10-04 20:16:00,mroman_,von daher muss ich sagen
+2013-10-04 20:16:08,mroman_,es ist toll zum entwickeln
+2013-10-04 20:16:24,mroman_,(was unter Windows extrem muehsam ist bis man alles richtig konfiguriert hat mit Libraries etc)
+2013-10-04 20:16:35,mroman_,aber es ueberhitzt gerne wenn man grosse Dinge kompilieren will :(
+2013-10-04 20:16:38,Jidder,ja visual studio installieren ist ja so schwer :/
+2013-10-04 20:16:44,mroman_,ja
+2013-10-04 20:16:46,mroman_,"und dann SDL, GTK"
+2013-10-04 20:16:47,stultus,wenns überhitzt ist aber nicht das os schuld
+2013-10-04 20:16:49,LinuxHacker,Visual Studio ist einfach shit
+2013-10-04 20:16:49,mroman_,OpenGL 
+2013-10-04 20:16:50,mroman_,etc etc
+2013-10-04 20:16:52,LinuxHacker,GCC 4 EVER!
+2013-10-04 20:16:53,stultus,sondern der aldirechner ohne ausreichende kühlung ;)
+2013-10-04 20:16:54,Jidder,"winapi, directx"
+2013-10-04 20:17:05,mroman_,Sicher ist das OS Schuld
+2013-10-04 20:17:10,mroman_,der Luefter wird nicht richtig gesteuert
+2013-10-04 20:17:13,mroman_,was Windows kann
+2013-10-04 20:17:14,Jidder,sicher ist die tastatur schuld
+2013-10-04 20:17:17,LinuxHacker,:D
+2013-10-04 20:17:20,Jidder,die steht immer zwischen nutzer und pc
+2013-10-04 20:17:30,stultus,Dein PC hat eine Lüftersteuerung... Die SOFTWARE benötigt?
+2013-10-04 20:17:30,XanClic,"Es sei denn, man dreht den Computer um"
+2013-10-04 20:17:35,stultus,*lol*
+2013-10-04 20:17:37,LinuxHacker,:D
+2013-10-04 20:17:38,XanClic,Aber dann überhitzt er auch selten
+2013-10-04 20:17:44,mroman_,stultus: anscheinend
+2013-10-04 20:18:09,LinuxHacker,Welcher Port hat der server hier eigentlich?
+2013-10-04 20:18:19,mroman_,6667?
+2013-10-04 20:18:20,XanClic,6697
+2013-10-04 20:18:22,Jidder,666
+2013-10-04 20:18:32,stultus,666[6-9]
+2013-10-04 20:18:37,Jidder,?
+2013-10-04 20:18:40,XanClic,oder 6999
+2013-10-04 20:19:00,XanClic,"Ich hoffe doch, dass keiner hier ohne SSL im IRC ist"
+2013-10-04 20:19:06,XanClic,Sonst kommen hier Viren rein
+2013-10-04 20:19:10,Jidder,jetzt kommt die nummer wieder
+2013-10-04 20:19:23,LinuxHacker,6667 oder 6697?
+2013-10-04 20:19:29,Jidder,hehe 69
+2013-10-04 20:19:32,XanClic,6697 für die coolen Leute
+2013-10-04 20:19:32,stultus,6667 geht aufjedenfall
+2013-10-04 20:20:30,LinuxHacker,komisch slowloris gibt keinen callback von sich xDD
+2013-10-04 20:20:39,LinuxHacker,ne scherz
+2013-10-04 20:26:34,XanClic,yay a chiken
+2013-10-04 20:27:11,LinuxHacker,Hm 19 Benutzer sind online... 19 + 5 = 23; 5 = 2 + 3 xD da stecken bestimmt die illuminaten hinter xD
+2013-10-04 20:27:25,LinuxHacker,oops falsche rechnung xD
+2013-10-04 20:28:03,LinuxHacker,19 + 4 = 23; 4 + 1 = 5; 5 = 2 + 3 so ist die rechnung richtig :D
+2013-10-04 20:28:04,XanClic,In Base 11 I'm Fine
+2013-10-04 20:28:16,XanClic,s/11/Eleven/
+2013-10-04 20:28:24,XanClic,Base 11 kanns ja gar nicht geben
+2013-10-04 20:29:02,Morten,Ich hätte nicht LVM nehmen sollen D: aber ich hoffe das 10-GB Drive funtzt!
+2013-10-04 20:29:09,LinuxHacker, 19 Benutzer + 4 = 23; 4 + 1 = 5; 5 = 2 + 3; Findet ihr das nicht auch mergwürdich? 23 ist ja wie bekanntlich die zahl der illuminaten :D
+2013-10-04 20:30:22,Morten,"nicht 19+4, 17+2!"
+2013-10-04 20:30:38,LinuxHacker, ist ja das gleiche xD
+2013-10-04 20:30:45,XanClic,17+4
+2013-10-04 20:30:45,LinuxHacker,19 ja insgesamt
+2013-10-04 20:31:28,LinuxHacker,aber guck dir nochmal meine rechnung da an.... 23 ist die zahl der illuminaten und 5 ist die quersumme der 23 xD
+2013-10-04 20:32:06,JanDing,die quersumme meines alters ist 3
+2013-10-04 20:32:22,LinuxHacker,und das heisst du bist wieviel jahre alt?
+2013-10-04 20:32:30,JanDing,102
+2013-10-04 20:32:34,LinuxHacker,xD
+2013-10-04 20:32:39,LinuxHacker,jaja
+2013-10-04 20:33:46,LinuxHacker,Will wer einen Witz hören ? :D
+2013-10-04 20:33:58,JanDing,"wieso kennst du jemanden, der gute witze erzählen kann?"
+2013-10-04 20:34:04,LinuxHacker,ne ich selber
+2013-10-04 20:34:07,yayachiken,(10*10*10*)|(10*20*)|(20*10*)|(30*) Jahre vermutlich
+2013-10-04 20:35:54,Morten,Boah hab ich mal wieder lahmes internet. Windows ist ungewohnt nach 3 Stunden Linux
+2013-10-04 20:36:12,LinuxHacker,:D
+2013-10-04 20:36:26,LinuxHacker,Windoofs
+2013-10-04 20:36:27,LinuxHacker,xD
+2013-10-04 20:36:57,Morten,"Windows: 403 KB/s Linux: 1,3 MB/s"
+2013-10-04 20:37:13,LinuxHacker,Windows beschränkt das alles mit absicht xDDD
+2013-10-04 20:37:14,Morten,achja und mein Computer ist allgemein schneller unter linux:
+2013-10-04 20:37:49,Morten,"Windows: 6,3 GOps Linux 6,9 GOps"
+2013-10-04 20:37:53,LinuxHacker,Hey morten willst du einen witz hören?
+2013-10-04 20:38:02,Morten,schieß los
+2013-10-04 20:38:11,LinuxHacker,Hi ........ Definition xD
+2013-10-04 20:38:12,XanClic,"wenn er schlecht ist, gibts +m"
+2013-10-04 20:38:21,JanDing,gib mir op
+2013-10-04 20:38:22,JanDing,und tus
+2013-10-04 20:38:23,Morten,mute?
+2013-10-04 20:38:29,JanDing,äh +v
+2013-10-04 20:38:39,Morten,+o o.o
+2013-10-04 20:38:44,XanClic,treffen wir uns in der mitte
+2013-10-04 20:38:49,JanDing,passt ^^
+2013-10-04 20:38:55,Morten,hoppen :D
+2013-10-04 20:40:30,LinuxHacker,"Wer würde sich noch alles auf den dritten Weltkrieg freuen? Der Sagt ""Ja"" xDDDDDDDDDDDDDDDDDDDd"
+2013-10-04 20:40:33,Morten,Was ist der Unterschied zwischen Windows und einem Irrenhaus?
+2013-10-04 20:40:54,Jonathan,Windows braucht länger zum Starten?
+2013-10-04 20:41:03,Morten,Windows wird auf Kleine runde Scheiben Gepresst :D
+2013-10-04 20:41:03,XanClic,heyheyhey
+2013-10-04 20:41:11,XanClic,"ich kenn da jemanden im irc, der irrenhaus heißt"
+2013-10-04 20:41:13,XanClic,zumindest fast
+2013-10-04 20:41:20,XanClic,bloß nicht beleidigend werden
+2013-10-04 20:41:32,LinuxHacker,HeyHeyHey was geht ab leute?
+2013-10-04 20:41:54,Morten,"nicht viel, außer das der download immernoch lädt..."
+2013-10-04 20:42:44,LinuxHacker,Für Leute mit gutem Humor: http://www.youtube.com/watch?v=sTgU1LQAQJQ xD
+2013-10-04 20:43:58,JanDing,oh genau richtige zielgruppe hier
+2013-10-04 20:44:48,LinuxHacker,wie findet ihr das video ? :D
+2013-10-04 20:45:10,Morten,"ich kann es nicht darstellen, hab aus sicherheitsgründen java nicht flash :D"
+2013-10-04 20:45:30,LinuxHacker,xD
+2013-10-04 20:45:35,JanDing,ich finde der user hat viele tutorials von activevb.net gut umgesetzt
+2013-10-04 20:46:02,JanDing,das mit den ja-nein-buttons die den platz tauschen finde ich ganz witzig
+2013-10-04 20:46:08,LinuxHacker,:D
+2013-10-04 20:46:16,LinuxHacker,das video ist von mir ^^
+2013-10-04 20:46:38,JanDing,cool 150000 view
+2013-10-04 20:46:46,JanDing,da musst du ja schon einges an kohle von youtube bekommen haben
+2013-10-04 20:47:15,LinuxHacker,ich bin kein youtube partner
+2013-10-04 20:47:26,JanDing,kaum vorstellbar bei dem geilen content
+2013-10-04 20:47:43,DerHartmut,Guten Abend zusammen
+2013-10-04 20:47:54,JanDing,guten abend DerHartmut
+2013-10-04 20:48:05,LinuxHacker,Guck dir doch bitte auch mal meine anderen Videos an :)
+2013-10-04 20:48:27,LinuxHacker,naja sind nur zwei xD
+2013-10-04 20:48:41,LinuxHacker,hier das andere: http://www.youtube.com/watch?v=h2PN6qar_ZM ;)
+2013-10-04 20:49:01,DerHartmut,"Ui, Videos"
+2013-10-04 20:49:07,DerHartmut,Um was geht's da? Hab gerade keine so starke Leitung
+2013-10-04 20:49:17,LinuxHacker,um linux vs windoofs ;)
+2013-10-04 20:49:48,LinuxHacker,die vids sind von mir ;)
+2013-10-04 20:49:51,DerHartmut,"Oh, nett. Welcher Linux denn?"
+2013-10-04 20:50:02,Morten,"LinuxHacker Alt, hab ich schon gesehen :D"
+2013-10-04 20:50:23,yayachiken,"LinuxHacker, wusste gar nicht dass du ubuntu nutzt"
+2013-10-04 20:50:47,LinuxHacker,doch mach ich ich habe dual boot mit debian und ubuntu ;)
+2013-10-04 20:50:56,yayachiken,und dann schon seit 2007 :p
+2013-10-04 20:51:02,LinuxHacker,yop
+2013-10-04 20:51:27,yayachiken,korrektur 2006
+2013-10-04 20:51:38,LinuxHacker,wie ist eigentlich die syntax für den register befehl ? 
+2013-10-04 20:51:40,yayachiken,äh ne korrektur 19. März 2007
+2013-10-04 20:52:05,XanClic,/msg naziserver help register
+2013-10-04 20:52:13,LinuxHacker,xD
+2013-10-04 20:52:16,XanClic,kurz /ns help register
+2013-10-04 20:52:18,LinuxHacker,ne netserv oder? :D
+2013-10-04 20:52:43,DerHartmut,Der netSERV ist gerade off
+2013-10-04 20:52:52,LinuxHacker,ahh...
+2013-10-04 20:57:27,Papierkorb,"Jo, ich höre hier ist mal wieder der alltägliche wahnsinn am start?"
+2013-10-04 20:57:35,LinuxHacker,Jop
+2013-10-04 20:57:51,DerHartmut,Hallo Papierkorb 
+2013-10-04 20:57:57,DerHartmut,Programmierst du gerade auch an einem Betriebssystem?
+2013-10-04 20:58:24,Papierkorb,"Ich überlege es, habe mich auch schon in das Wiki eingelesen, nur sind mein C kentnisse sehr schlecht."
+2013-10-04 20:58:37,Papierkorb,kann ich einen kernel auch in Ruby schreiben?
+2013-10-04 20:58:41,DerHartmut,"Papierkorb: Naja, ich würde ein neues OS eh in Assembler schreiben"
+2013-10-04 20:58:41,Papierkorb,Ich find C so doof
+2013-10-04 20:58:51,DerHartmut,Papierkorb: github.com/xanclic/emerald
+2013-10-04 20:59:08,LinuxHacker,Papierkorb: Wenn du einen Compiler findest der Ruby in MaschinenCode umsetzen kann dann ja ;)
+2013-10-04 20:59:10,DerHartmut,"Ein OS in Assembler ist weitaus performanter, man kann superoptimierten Code schreiben, den der Compiler so gar nicht hinbekommt"
+2013-10-04 21:00:16,DerHartmut,LinuxHacker: gibt's sowas?
+2013-10-04 21:00:28,Papierkorb,"DerHartmut: Ich nutze MASM hier, geht das?"
+2013-10-04 21:00:32,LinuxHacker,DerHartmut: Keine Ahnung
+2013-10-04 21:00:39,Papierkorb,"Und, wie kann ich eigtl ein Fenster zeichnen?"
+2013-10-04 21:00:43,LinuxHacker,xD
+2013-10-04 21:00:47,LinuxHacker,lol
+2013-10-04 21:00:58,LinuxHacker,Das ist sehr übertrieben
+2013-10-04 21:01:18,LinuxHacker,Erstmal musst du überhaupt Treiber programmieren und eine vernünftige shell mit der man arbeiten kann :D
+2013-10-04 21:01:45,JanDing,man braucht doch keine shell für eine grafische oberfläche
+2013-10-04 21:01:57,XanClic,richtig
+2013-10-04 21:01:57,Papierkorb,Windows kommt ohne auch gut aus
+2013-10-04 21:02:05,DerHartmut,"Papierkorb: Ich hab gehört MASM ist in Windows integriert, darum geht das nicht"
+2013-10-04 21:02:19,XanClic,"Na, wer schafft die beste GUI in 512 Bytes?"
+2013-10-04 21:02:19,DerHartmut,LinuxHacker: Ich brauch doch keine Shell für eine GOF`
+2013-10-04 21:02:21,DerHartmut,?
+2013-10-04 21:02:29,JanDing,challenge accepted
+2013-10-04 21:02:37,JanDing,not
+2013-10-04 21:02:49,LinuxHacker,Ja Schon aber ich würde erstmal eine gute text basierte eingabemethode bieten...
+2013-10-04 21:03:04,JanDing,davon kann man in der gui aber nichts wiederverwenden
+2013-10-04 21:03:21,DerHartmut,"Aber wenn ich doch von vornerein eine gute GOF anbiete, dann ist die BE doch schon perfekt und ich brauche keine kryptischen TEM mehr? LinuxHacker ??"
+2013-10-04 21:03:53,LinuxHacker,Jop schon aber für die verückten hacker wie mich ist ein terminal halt überlebens wichtig xD
+2013-10-04 21:04:22,XanClic,womit wir wieder beim irrenhaus wären
+2013-10-04 21:04:32,LinuxHacker,xD
+2013-10-04 21:04:47,DerHartmut,Aber wenn du ALLE Möglichkeiten der Shell als Konfigurationsmöglichkleiten und grafische Programme hast in der GOF LinuxHacker ??? da braucht man ja keine shell und das ist einfacher zu bedienen auch für Anfänger
+2013-10-04 21:05:24,Papierkorb,"Ich finde, man sollte ein GUI tool haben, womit man eine datei über HTTP runterladen kann, diese direkt entpackt und dann die daten in eine windows netzwerkfreigabe laden kann."
+2013-10-04 21:06:05,LinuxHacker,ja für anfänger.... aber für profis sollte man es nach dem UNIX konzept machen: alles ist eine datei. Also man sollte quasi alle einstellungsmöglichkeiten in konsolenprogrammen auslagern und die dann übers gui aufrufen ;)
+2013-10-04 21:06:22,Papierkorb,"Nein, das ist eklig. Bringt gar keinen spaß."
+2013-10-04 21:06:32,DerHartmut,Aber wenn ich ein Programm habe das ich über die GUI aufrufe dann brauche ich ja keine Konsole LinuxHacker 
+2013-10-04 21:06:44,LinuxHacker,Ja aber wenn jemand eine Konsole haben will? :D
+2013-10-04 21:06:58,Papierkorb,Was ich nicht sehe existiert nicht LinuxHacker. Gleiches gilt für Gottheiten. Denk mal drüber nach!1
+2013-10-04 21:07:07,DerHartmut,Wofür denn wenn du alles mit der GOF machen kannst LinuxHacker?
+2013-10-04 21:07:07,Papierkorb,Dann soll er sich verpissen?
+2013-10-04 21:07:38,LinuxHacker,Du verstehst es immernoch nicht..... Guck dir mal das UNIX prinzip an
+2013-10-04 21:07:57,LinuxHacker,Du hast echt zu lange windows benutzt
+2013-10-04 21:08:04,Papierkorb,"Ja das ist scheiße, da laufen keine Zocks drauf"
+2013-10-04 21:08:16,LinuxHacker,Dir geht es also nur ums zocken??
+2013-10-04 21:08:26,LinuxHacker,Dann kannst du ein BS gleich vergessen!
+2013-10-04 21:08:47,DerHartmut,LinuxHacker: Wie meinst du das wie ist das UNIX prinzip?
+2013-10-04 21:09:31,LinuxHacker,DerHartmut: Das UNIX Prinzip ist das alles eine Datei ist; Also man hat alle Konfigurationsmöglichkeiten als konsolenprogramm und man ruft dieses über die gui auf
+2013-10-04 21:09:50,LinuxHacker,*konfigurationsprogramme
+2013-10-04 21:10:28,Papierkorb,"Ich nutze kein Linux mehr, seitdem jemand meinte, ich solle /proc/mem oder /dev/mem oder wie der kack heißt mit so nem random teil zuschreiben."
+2013-10-04 21:10:34,Papierkorb,Performancesteigerung für den arsch.
+2013-10-04 21:10:49,LinuxHacker,xD
+2013-10-04 21:10:51,DerHartmut,"LinuxHacker: Was hat es denn damit zu tun, dass alles eine Datei ist und dieses ein Konsolenprogramm sein muss?"
+2013-10-04 21:11:09,DerHartmut,Es klönnen doch auch alle Konfigurationsmöglichkeiten in einem GOF-Programm sein??
+2013-10-04 21:11:09,Papierkorb,Ich kann ne Datei auch im notepad anschauen und speichern.
+2013-10-04 21:11:13,DerHartmut,Dann habe ich ja auch eine Datei!
+2013-10-04 21:11:16,LinuxHacker,Guck dir doch einfach mal den UNIX Artikel auf Wikipedia an derhartmut ;)
+2013-10-04 21:11:16,Papierkorb,Wo man da die Konsole braucht sehe ich nicht
+2013-10-04 21:11:27,DerHartmut,"LinuxHacker: Ja, den habe ich gerade durchgelesen"
+2013-10-04 21:11:29,DerHartmut,Ich verstehe den auch
+2013-10-04 21:11:38,DerHartmut,"Aber ich verstehe nicht, warum ein Konsolenprogramm eine Datei ist und ein GOF-Programm nicht"
+2013-10-04 21:11:43,LinuxHacker,Papierkorb: Die Profis bevorzugen die Konsole
+2013-10-04 21:12:03,LinuxHacker,ach ... am besten guckt ihr euch mal die linux doku von ard an
+2013-10-04 21:12:16,LinuxHacker,http://www.youtube.com/watch?v=YqqkdgE8RpM
+2013-10-04 21:12:24,DerHartmut,"LinuxHacker: Ja aber ich verstgehe ja nicht, ich schreibe ja kein Linux Betriebssystem neu"
+2013-10-04 21:12:31,DerHartmut,"ich schreibe ja ein eigenes Betriebssystem, muss da alles eine Datei sein?"
+2013-10-04 21:12:35,Papierkorb,"Ne, ARD und ZDF und Co. KG glaube ich nicht"
+2013-10-04 21:12:35,LinuxHacker,Ja ich meine das Prinzip!
+2013-10-04 21:12:45,DerHartmut,Ja aber ich will das Prinzip nicht!
+2013-10-04 21:12:46,Papierkorb,"Die wollen doch auch nur, dass man ihnen glaubt und dieses scheiß system toll findet"
+2013-10-04 21:13:06,LinuxHacker,denn sinn von open source verstehst du wahrscheinlich auch nicht oder??
+2013-10-04 21:13:19,DerHartmut,LinuxHacker: Hä ja doch aber was hat das damit zu tun? Mein OS ist OpenSource!
+2013-10-04 21:13:26,yayachiken,...
+2013-10-04 21:13:31,Papierkorb,Open soße?
+2013-10-04 21:13:38,yayachiken,Leute die Arte mit der ARD verwechseln
+2013-10-04 21:13:54,Papierkorb,"Ja, da hast du sogar franzen scheiße mit bei!"
+2013-10-04 21:13:58,DerHartmut,yayachiken: Ist doch beides von der GEMA?
+2013-10-04 21:14:17,LinuxHacker,Open Source!! Oh man Papierkorb du bist echt zum wegschmeissen! Lass das lieber mit dem BS dafür bist du zu unerfahren!
+2013-10-04 21:14:50,yayachiken,das heißt freie software
+2013-10-04 21:14:57,LinuxHacker,Jaja in deutsch
+2013-10-04 21:14:58,yayachiken,wenn das der richard hört
+2013-10-04 21:15:10,LinuxHacker,opensource = freie software
+2013-10-04 21:15:13,Papierkorb,yayachiken: STALLMANN DIE ALTE KLAPPSTULLE!
+2013-10-04 21:15:17,Papierkorb,Wie gehts dem eigtl?
+2013-10-04 21:15:30,yayachiken,kp er mag käse
+2013-10-04 21:15:36,LinuxHacker,Kann man jemand Papierkorb kicken? Ich glaub der braucht seine Pillen
+2013-10-04 21:15:37,Papierkorb,"Mh, ich eher so schinken"
+2013-10-04 21:15:41,LinuxHacker,*mal
+2013-10-04 21:16:44,LinuxHacker,stultus oder janding könnte bitte einer von euch Papierkorb kicken der rastet voll aus
+2013-10-04 21:16:58,SHyx0rmZ,"Hallo, ich habe euer Tutorial gefunden und jetzt habe ich eine Frage dazu?"
+2013-10-04 21:16:59,JanDing,Papierkorb: erste verwarnung
+2013-10-04 21:17:02,JanDing,wieder einrasten!
+2013-10-04 21:17:20,XanClic,boah ich mach gleich mit hier
+2013-10-04 21:17:34,LinuxHacker,SHyx0rmZ: ja was für eine frage?
+2013-10-04 21:17:41,DerHartmut,Hm also LinuxHacker hast du ein BS?
+2013-10-04 21:17:52,LinuxHacker,jop 
+2013-10-04 21:18:04,DerHartmut,Ist das freie Open Source Software?
+2013-10-04 21:18:21,LinuxHacker,jop Ubuntu und Debian mit dualboot (grub)
+2013-10-04 21:18:21,Papierkorb,Den Full teil davor find ich wichtig DerHartmut
+2013-10-04 21:18:23,SHyx0rmZ,LinuxHacker: Der Link zum Teil mit der Grafik tut nicht mehr? Kannst du das vielleicht bitte reperieren?
+2013-10-04 21:18:41,LinuxHacker,moment..
+2013-10-04 21:19:13,DerHartmut,LinuxHacker: Hä nein ich meine ob du eines geschrieben hast
+2013-10-04 21:19:24,XanClic,"SHyx0rmZ, http://www.x.org/docs/AMD/SI_3D_registers.pdf damit geht das"
+2013-10-04 21:19:30,LinuxHacker,Jop ich arbeite grade an den header files
+2013-10-04 21:19:54,DerHartmut,LinuxHacker: Ist das freie Open Source Software?
+2013-10-04 21:20:08,DerHartmut,<LinuxHacker> jop Ubuntu und Debian mit dualboot (grub) ist ubuntu und debian nicht das gleiche nur mit anderer GOF?
+2013-10-04 21:20:08,LinuxHacker,jop werde ich unter der gplv3 setzen wenns fertig ist
+2013-10-04 21:20:25,LinuxHacker,nein derhartmut ist nicht das gleiche
+2013-10-04 21:20:33,SHyx0rmZ,"XanClic: Ah supi, danke! Aber gibts das auch auf Deutch? Weil mein Englich ist nicht so gut?"
+2013-10-04 21:20:34,Papierkorb,Dann können ja gar keine patenttrolle deine software nutzen :(
+2013-10-04 21:20:44,yayachiken,"DerHartmut, du meinst wohl Free/Libre Open Source Software (FLOSS)"
+2013-10-04 21:20:48,XanClic,"SHyx0rmZ, moment, ich übersetz das"
+2013-10-04 21:20:49,Papierkorb,Mit GPLv2 können sies :)
+2013-10-04 21:20:53,XanClic,Am Montag bin ich etwa fertig
+2013-10-04 21:21:03,yayachiken,"Papierkorb, NIÄRC, nachsitzen"
+2013-10-04 21:21:16,yayachiken,"GPLv3 hat doch keinen Patentschutz, dafür braucht man doch APL oder EPL"
+2013-10-04 21:21:23,LinuxHacker,Papierkorb: Dir hat Bill Gates echt das Gehirn gewaschen...
+2013-10-04 21:21:27,yayachiken,GPLv3 schützt doch nur gegen Tivoization denk ich
+2013-10-04 21:21:35,SHyx0rmZ,XanClic: Echt? Das währe total nett! Danke!
+2013-10-04 21:21:49,Papierkorb,"LinuxHacker: hey man, der typ baut hygenische toiletten für die 3te welt - und du?"
+2013-10-04 21:21:53,SHyx0rmZ,XanClic: Ich habe am Wochenende eh nicht soviel Zeit.
+2013-10-04 21:22:06,JanDing,LinuxHacker: bist du eigentlich auch beruflich in der softwareindustrie tätig?
+2013-10-04 21:22:15,LinuxHacker,jop
+2013-10-04 21:22:23,JanDing,lass mich raten. linux hacken?
+2013-10-04 21:22:33,Papierkorb,Hacken ist gut
+2013-10-04 21:22:40,LinuxHacker,Naja ich bin speziallist für sicherheitslücken
+2013-10-04 21:22:44,DerHartmut,LinuxHacker: wo ist denn der unterschied!?
+2013-10-04 21:23:03,LinuxHacker,"Hacken = Black Hat, Spezialist für Sicherheitslücken = White hat"
+2013-10-04 21:23:24,Papierkorb,Ähhhhh
+2013-10-04 21:23:25,DerHartmut,LinuxHacker: nein ich meine zwischen ubuntu nud debuian
+2013-10-04 21:23:30,yayachiken,Sonnenbrand = Red Hat
+2013-10-04 21:23:30,Papierkorb,Mh. Nomenklatur für anfänger.
+2013-10-04 21:23:33,Papierkorb,Cracker = Black Hat
+2013-10-04 21:23:36,Papierkorb,hacker = White Hat
+2013-10-04 21:23:37,SHyx0rmZ,LinuxHacker: Warum trägt man denn dabei Hüte?
+2013-10-04 21:23:40,Papierkorb,"Danke, schönen Tag noch."
+2013-10-04 21:23:41,DerHartmut,"LinuxHacker: Hä ich dachte Hacker = White Hat/Grayhat, Cracker = Black Hat???"
+2013-10-04 21:23:42,XanClic,weil Hüte geil sind?
+2013-10-04 21:23:45,yayachiken,Cracker = Tuc
+2013-10-04 21:23:46,LinuxHacker,xD
+2013-10-04 21:24:09,LinuxHacker,lass mich bitte einmal in ruhe derhartmut du überforderst meine schaltkreise ich muss mal runterfahren xD
+2013-10-04 21:24:15,Papierkorb,"XanClic: Dein Hut der hat dreiundzwanzigtausend ecken, dreiundzwanzigtausend ecken hat dein hut, und hätt er nicht dreiundzwanzigtausend ecken, so wärs halt DerHartmuts Hut!"
+2013-10-04 21:24:18,DerHartmut,LinuxHacker: ja aber ich hab doch ffragen!
+2013-10-04 21:24:28,LinuxHacker,Frag google! xD
+2013-10-04 21:24:28,JanDing,LinuxHacker: was studiert man dafür?
+2013-10-04 21:24:39,JanDing,oder ich denke mal eine ausbildung gibts dafür nicht
+2013-10-04 21:24:45,XanClic,"JanDing, du darfst doch noch gar nicht studieren"
+2013-10-04 21:24:54,Jonathan,"Hm... Wenn man das so sieht, dann hat mein Hut neuerdings die Farbe gewechselt xd"
+2013-10-04 21:24:54,DerHartmut,JanDing: ich glaube man macht eine ausbildung zum it informatikkaufmann vorher
+2013-10-04 21:24:58,JanDing,mama sagt ich bin hochbegabt
+2013-10-04 21:25:06,JanDing,mama sagt ich bin was besonderes
+2013-10-04 21:25:18,Papierkorb,"Jonathan: geil, tapenwechsel sind auch mal gut!"
+2013-10-04 21:25:29,Papierkorb,Jonathan: welche farbe denn nun? blau grün gestreift?
+2013-10-04 21:25:37,Papierkorb,Ich find gelb besser. aber ist ja ansichtssache
+2013-10-04 21:25:59,Jonathan,*g*
+2013-10-04 21:26:11,Jonathan,"Nee, Black Hat ---> White Hat :P"
+2013-10-04 21:26:27,Papierkorb,"mh. na, wär mir ja zu farblos"
+2013-10-04 21:26:36,Jonathan,Geschmackssache
+2013-10-04 21:26:41,JanDing,wäscht man den jetzt mit den schwarzen oder den weißen klamotten?
+2013-10-04 21:26:59,Papierkorb,also mit schwarzen wird der so grau
+2013-10-04 21:27:01,Papierkorb,ist ja auch kacke
+2013-10-04 21:27:16,JanDing,stimmt
+2013-10-04 21:29:59,DerHartmut,LinuxHacker: Ist das deine Website http://www.linux-hacker.net ?
+2013-10-04 21:30:18,LinuxHacker,nein :D
+2013-10-04 21:30:35,DerHartmut,http://linuxhacker.ru ?
+2013-10-04 21:30:43,LinuxHacker,nein xD
+2013-10-04 21:30:44,LinuxHacker,ich kann webseiten viel besser gestalten :D
+2013-10-04 21:30:54,DerHartmut,cool mit js?
+2013-10-04 21:31:00,LinuxHacker,ne css xD
+2013-10-04 21:31:13,DerHartmut,CSS 3 oder schon 4?
+2013-10-04 21:31:20,LinuxHacker,4 gibt es noch garnicht!!
+2013-10-04 21:31:30,yayachiken,CSS ist doch alt
+2013-10-04 21:31:34,yayachiken,Heutzutage spielt man CS:GO
+2013-10-04 21:31:46,LinuxHacker,wir sprechen ob cascading stylesheets!
+2013-10-04 21:31:51,DerHartmut,LinuxHacker: die beat version ist aber schon draußen
+2013-10-04 21:31:53,XanClic,"yayachiken, nein tf2 mit hüten"
+2013-10-04 21:31:55,DerHartmut,beta mein ich
+2013-10-04 21:31:59,XanClic,wo bleiben sonst die hüte
+2013-10-04 21:32:02,yayachiken,"XanClic, kann man damit auch webseiten bauen"
+2013-10-04 21:32:06,XanClic,aber hüte
+2013-10-04 21:32:11,LinuxHacker,ja 
+2013-10-04 21:33:22,Papierkorb,"So, genug leute verarscht, man richt sich später"
+2013-10-04 21:33:37,XanClic,gary was here
+2013-10-04 21:34:25,JanDing,wegen der 512 byte gui ...
+2013-10-04 21:34:32,JanDing,ich krieg qemu nicht mal in den grafikmodus -.-
+2013-10-04 21:34:38,LinuxHacker,http://www.youtube.com/watch?v=GOspowBpdls ist auch von mir ;) habe mehrere channel
+2013-10-04 21:34:43,JanDing,versucht eine datei namens C: zu öffnen
+2013-10-04 21:34:49,XanClic,https://gitorious.org/512/3d/source/87e5017c9fe1234b7a580821c6d8741a0361bbc3:3d.asm
+2013-10-04 21:34:54,XanClic,So als Framework
+2013-10-04 21:35:55,JanDing,ich hab ja gleich 640x480 versucht
+2013-10-04 21:36:37,XanClic,pföh
+2013-10-04 21:36:41,XanClic,immer gleich mit ansprüchen
+2013-10-04 21:36:56,LinuxHacker,guckt euch mal mein video hier an http://www.youtube.com/watch?v=GOspowBpdls :D
+2013-10-04 21:37:50,yayachiken,du hast mehrere youtube accounts
+2013-10-04 21:37:52,yayachiken,ich geh dich melden
+2013-10-04 21:37:58,LinuxHacker,what? wieso?
+2013-10-04 21:38:27,DerHartmut,LinuxHacker: es ist erboten so viele zu haben laut den youtube regeln
+2013-10-04 21:38:35,LinuxHacker,und? :D
+2013-10-04 21:38:38,Manuel,Man darf maximal 2
+2013-10-04 21:38:43,LinuxHacker,Ist mir egal :D
+2013-10-04 21:38:55,LinuxHacker,Aber wie findet ihr mein video?
+2013-10-04 21:38:57,LinuxHacker,;)
+2013-10-04 21:40:27,yayachiken,doof
+2013-10-04 21:40:43,DerHartmut,LinuxHacker: Umw as geht es da ich habe nur eine schwache leitung
+2013-10-04 21:41:01,LinuxHacker,Um Marcell Davis xD
+2013-10-04 21:42:13,JanDing,das hab ich doch schon mal auf einem anderen channel gesehen
+2013-10-04 21:42:28,LinuxHacker,What? Hat jemand mein Vid geklaut???
+2013-10-04 21:42:37,DerHartmut,kennst du Marcel davis LinuxHacker ?
+2013-10-04 21:42:41,LinuxHacker,ne
+2013-10-04 21:42:49,JanDing,"ich weiß ja nicht, wer der originalautor ist"
+2013-10-04 21:43:05,LinuxHacker,DerHartmut: nicht persöhnlich zumindest
+2013-10-04 21:44:44,DerHartmut,ah cool kennst du ihn denn persönlich?
+2013-10-04 21:44:47,DerHartmut,achso ne sorry nicht gelesen
+2013-10-04 21:46:30,LinuxHacker,Und wie findest du mein Video? :D
+2013-10-04 21:46:47,DerHartmut,Komisch
+2013-10-04 21:46:49,DerHartmut,Ich sehe da nichts
+2013-10-04 21:46:52,LinuxHacker,What?
+2013-10-04 21:46:56,DerHartmut,Ja ich sehe da nichts
+2013-10-04 21:46:59,DerHartmut,"Kein Ton, nichts"
+2013-10-04 21:47:04,LinuxHacker,Schonmal I-NET verbindung geprüft?
+2013-10-04 21:47:13,DerHartmut,Ja ich hab DSL 600
+2013-10-04 21:47:15,JanDing,ja guck mal ob du noch im internet bist DerHartmut
+2013-10-04 21:47:24,yayachiken,wie im internet
+2013-10-04 21:47:25,yayachiken,so wie tron?
+2013-10-04 21:47:30,yayachiken,das geht?
+2013-10-04 21:47:43,LinuxHacker,xD
+2013-10-04 21:48:07,JanDing,LinuxHacker: ist ja schon ziemlich random
+2013-10-04 21:48:12,JanDing,mit windows movie maker gemacht?
+2013-10-04 21:48:16,LinuxHacker,Ne ;)
+2013-10-04 21:48:23,LinuxHacker,mit OpenShot
+2013-10-04 21:48:28,JanDing,ist das also kein trollvideo?
+2013-10-04 21:48:38,LinuxHacker,Doch schon ... xD
+2013-10-04 21:48:42,DerHartmut,LinuxHacker: wie kann ich mir jetz das cvideo anschauen??????????
+2013-10-04 21:48:43,JanDing,ich versteh das nich
+2013-10-04 21:48:52,LinuxHacker,Humor los?
+2013-10-04 21:48:55,LinuxHacker,xD
+2013-10-04 21:49:05,LinuxHacker,1&1 ist ja bekanntlich schlecht :D
+2013-10-04 21:49:39,JanDing,hm
+2013-10-04 21:49:43,yayachiken,da gibts aber günstig telenet und interfon
+2013-10-04 21:49:50,yayachiken,"für nur 100,99€ im Monat"
+2013-10-04 21:49:53,LinuxHacker,xD
+2013-10-04 21:49:54,LinuxHacker,:D
+2013-10-04 21:50:07,LinuxHacker,yeah so gehört das xD
+2013-10-04 21:53:37,LinuxHacker,ich geh dann mal bis morgen bye ;)
+2013-10-04 21:54:54,yayachiken,na endlich
+2013-10-04 21:58:31,DerHartmut,War jetzt aber gegen Ende recht langweilig...
+2013-10-04 22:00:58,JanDing,jo
+2013-10-04 22:06:37,Darkchaos,I am back :D
+2013-10-04 22:06:57,JanDing,back in black
+2013-10-04 22:07:12,JanDing,und ein bisschen durcheinander
+2013-10-04 22:07:14,JanDing,also Darkchaos
+2013-10-04 22:07:50,Darkchaos,aber invlpg 0xFFC00000 + (4096 * pagedir_eintrag) klappt iwie nicht
+2013-10-04 22:07:59,Darkchaos,da liegt die virtuelle addresse der page_table
+2013-10-04 22:08:30,Darkchaos,"wobei ich möchte ja, dass nicht die page_table sondern das page_dir gemappt wird"
+2013-10-04 22:08:51,Darkchaos,brauche ich dann invlpg 0xFFC00000 + (1023 * 4096)?
+2013-10-04 22:09:00,Darkchaos,und das obere falls ich etwas in die table mappe?
+2013-10-04 22:09:49,JanDing,keine ahnung
+2013-10-04 22:09:54,JanDing,ich hab auch schon feierabend
+2013-10-04 22:10:47,Darkchaos,:P
+2013-10-04 22:10:53,Darkchaos,Ich habe seit 20.6 Feierabend
+2013-10-04 22:11:17,JanDing,computerlog sternzeit 20.6
+2013-10-04 22:16:20,Darkchaos,mgottschlag?
+2013-10-04 22:19:50,Darkchaos,"auch wenn ich das versuche klappt es irgendwie nicht. Die PT taucht weder als 0xFFC1000 auf (Die Page die ich vor Paging eingefügt habe, ist an 0xFFC0000 da?)"
+2013-10-04 22:20:06,Darkchaos,noch taucht das Mapping in ihr (0x40000 nach xyzu) auf
+2013-10-04 22:21:35,Darkchaos,leute ich verzweifle
+2013-10-04 22:24:27,Darkchaos,"invlpg bezieht sich doch auf die virtuelle adresse einer page, oder?"
+2013-10-04 22:25:18,JanDing,ja
+2013-10-04 22:28:34,Darkchaos,"Aber wenn ich eine Adresse reinballer, die vorher noch nie belegt war, ist die ja nicht im tlb"
+2013-10-04 22:28:44,JanDing,jo
+2013-10-04 22:29:59,XanClic,"Wenn eine Adresse vorher nie belegt war, musst du nicht mal invplg ausführen"
+2013-10-04 22:30:06,XanClic,*invlpg
+2013-10-04 22:31:06,Darkchaos_2,"hmm, also cr3 neuladen helft mir auch nicht"
+2013-10-04 22:31:27,JanDing,dann ist das problem wohl nicht der tlb
+2013-10-04 22:31:59,Darkchaos_2,"obwohl, ich glaube ich habe es nicht neugeladen. Was tut der prozessor wenn ich einen wert in cr3 schreibe, der aber identisch ist, mit dem vorherigen?"
+2013-10-04 22:32:09,JanDing,lädt neu
+2013-10-04 22:33:27,Darkchaos_2,info tlb -- show virtual to physical memory mappings
+2013-10-04 22:33:40,Darkchaos_2,ist dass der tlb oder zeigt er schon die mappings
+2013-10-04 22:34:02,Darkchaos_2,wobei es in info mem auch nicht gemappt ist
+2013-10-04 22:34:13,JanDing,weiß nicht. ich würde der beschreibung glauben
+2013-10-04 22:34:39,Darkchaos_2,"also ""ffc00000 - ffc01000"" size 0x1000"
+2013-10-04 22:34:45,Darkchaos_2,das ist die erste pt
+2013-10-04 22:34:50,Darkchaos_2,ich möchte aber noch die zweite pt
+2013-10-04 22:35:38,JanDing,wenn sie nicht drin steht ist sie nicht gemappt
+2013-10-04 22:36:56,tufel,huhu
+2013-10-04 22:37:05,JanDing,heyho
+2013-10-04 22:38:18,Darkchaos,https://gitorious.org/tuxmaniac/arctic_revenge/source/450f72ea7116643df47824fea354017059b2204c:kernel/memorymanager/paging.cpp#L577 Sieht jemand von euch da ein Problem und könnte mir helfen?
+2013-10-04 22:38:48,Darkchaos,uPDE ist der Index der Momentanen Pagetable (in dem falle 1)
+2013-10-04 22:39:09,Darkchaos,virtual_pagedir = 0xFFC00000
+2013-10-04 22:40:06,Darkchaos,hauptsächlich Zeile 581
+2013-10-04 22:40:14,JanDing,da muss ja auf jeden fall ein flush in zeile 582
+2013-10-04 22:40:17,tufel,"nun hab in meinem Befehlssatzt ein doppeltbefehl eingebaut -im usermode ist er ein Software-interrupt, und im Kernelmode ein Interrupt-return-  ist das eine gute idee? :D"
+2013-10-04 22:40:37,Darkchaos,JanDing: Was für ein flush? ein tlb flush?
+2013-10-04 22:40:49,JanDing,ja
+2013-10-04 22:41:10,JanDing,wobei
+2013-10-04 22:41:11,JanDing,nein
+2013-10-04 22:41:16,JanDing,ich sag ja ich hab schon feierabend
+2013-10-04 22:41:25,Darkchaos,keinDing :D
+2013-10-04 22:42:01,JanDing,"tufel: wirst du sehen, wenn die ersten beschwerden von den kunde nreinkommen"
+2013-10-04 22:42:19,tufel,"naja, ich hab keine kunden XD"
+2013-10-04 22:42:39,JanDing,^^
+2013-10-04 22:43:48,JanDing,ist das vmm_unmap_page in zeile 620 evtl das problem?
+2013-10-04 22:46:10,Darkchaos,"kann nicht, da is_current_context == true"
+2013-10-04 22:46:37,JanDing,hast du hoffentlich experimentell verifiziert
+2013-10-04 22:46:42,Darkchaos,also es wird aufjedenfall nach pd[uPdE] geschrieben ohne Problem
+2013-10-04 22:47:10,JanDing,du kannst ja mal vmm_unmap_page zu einem no-op machen
+2013-10-04 22:47:14,mgottschlag,tufel: ich halte das für keine schlechte idee
+2013-10-04 22:47:26,JanDing,"wenn dann das mapping klappt, ist irgendein vmm_unmap_page aufruf falsch"
+2013-10-04 22:47:28,mgottschlag,"das sind ja befehle, die die compilerbauer nicht interessieren"
+2013-10-04 22:47:31,JanDing,(vielleicht)
+2013-10-04 22:47:43,Darkchaos,ich habs verifiziert
+2013-10-04 22:48:23,tufel,"gut ok, dann ist mein befehlssatzt fertig :)"
+2013-10-04 22:50:12,Darkchaos,teilerfolg
+2013-10-04 22:50:32,Darkchaos,"es wird in einer anderen Methode mal aufgerufen, nämlich die, die 400.000 mappen sollte"
+2013-10-04 22:50:43,Darkchaos,aber die PT sollte trotzdem rekursiv gemappt werden
+2013-10-04 22:51:11,JanDing,400.000 wie in vierhundertausend?
+2013-10-04 22:51:24,Darkchaos,naja
+2013-10-04 22:51:28,Darkchaos,0x4MiB
+2013-10-04 22:51:55,JanDing,hm
+2013-10-04 22:57:11,Darkchaos,es klappt :)
+2013-10-04 22:57:40,Darkchaos,"Das Problem war eigentlich ganz einfach, und ich huldige dich JanDing für den Rest meines Lebens!"
+2013-10-04 22:57:54,Darkchaos,Es _war_ unmap das Problem
+2013-10-04 22:58:22,Darkchaos,eine negierung war falsch und hat die Funktion aufgerufen und zwar direkt nach dem mappen
+2013-10-04 22:58:50,JanDing,tjo manchmal übersieht man solche sachen
+2013-10-04 23:08:26,Darkchaos,"ich hoffe nur, dass der foreign mapping code halbwegs läuft"
+2013-10-04 23:15:55,Darkchaos_2,also git ignoriert meine .gitignore :O
+2013-10-04 23:23:23,Darkchaos_2,"juhu, der interupthandler funktioniert bisher auch schonmal"
+2013-10-04 23:23:28,Darkchaos_2,nur CreateTask killt alles
+2013-10-04 23:24:42,Manuel,Abend
+2013-10-04 23:25:19,JanDing,nabend
+2013-10-04 23:31:56,ehenkes,welche emulatoren verfügen über korrekte APIC timer?
+2013-10-04 23:32:26,JanDing,"ich kenne keinen, der über nicht korrekte APIC timer verfügt"
+2013-10-04 23:34:09,ehenkes,vmware klappt
+2013-10-04 23:34:25,ehenkes,"bochs, VBox und qemu machen probleme"
+2013-10-04 23:34:32,ehenkes,hardware klappt auch
+2013-10-04 23:34:38,JanDing,"kann ja sein, dass eure implementierung nicht korrekt ist"
+2013-10-04 23:35:21,XanClic,"Ich weiß nur, dass der qemu-HPET mit Windows 7 Probleme machen soll"
+2013-10-04 23:36:05,ehenkes,wir kalibrieren den APIC mit dem PIT
+2013-10-04 23:36:17,ehenkes,50 ms PIT
+2013-10-04 23:36:31,ehenkes,bei meinem test-PC ist alles bestens
+2013-10-04 23:36:51,ehenkes,bei vmware auch
+2013-10-04 23:39:19,JanDing,"was heißt, dass sie probleme machen?"
+2013-10-04 23:39:26,JanDing,"also bochs, vbox und qemu?"
+2013-10-04 23:39:39,ehenkes,bei qemu läuft die zeit zu schnell
+2013-10-04 23:40:43,ehenkes,http://sourceforge.net/p/prettyos/code/HEAD/tree/trunk/Source/kernel/apic.c
+2013-10-04 23:40:59,ehenkes,bool apic_install(void) <==
+2013-10-04 23:41:19,JanDing,"kann es sein, dass in zeile 117 ein overflow auftritt?"
+2013-10-04 23:42:24,ehenkes, uint32_t cpubusfreq = ((0xFFFFFFFF - apic_base[APIC_TIMER_CURRENTCOUNT]) +1 ) * divisor * partOfSecond;
+2013-10-04 23:42:37,JanDing,ja die
+2013-10-04 23:43:26,ehenkes, uint32_t cpubusfreq = ((0xFFFFFFFF - apic_base[APIC_TIMER_CURRENTCOUNT]) +1 ) * 16 * 20;
+2013-10-04 23:43:45,ehenkes,der timer läuft 50 ms
+2013-10-04 23:44:01,ehenkes,guter hinweis
+2013-10-04 23:44:10,ehenkes,aber wie gesagt: auf hardware läufts
+2013-10-04 23:44:23,ehenkes,vlt. ist da bei den emus was anders
+2013-10-04 23:45:20,ehenkes,ich werde das mal vereinfaCHEN
+2013-10-04 23:53:51,ehenkes,hilft leider auch nicht
+2013-10-04 23:56:53,JanDing,"wenn apic_base[APIC_TIMER_CURRENTCOUNT] kleiner als 0xff333334 ist, gibt es einen overflow"

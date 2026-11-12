@@ -1,0 +1,545 @@
+date/time,nick,message
+2014-01-01 01:36:43,iksnagrebMobil,Frohs Neues!
+2014-01-01 02:48:12,DerHartmut,Frohes neues!
+2014-01-01 12:39:56,Paddy,"Hm, wie kriminell wäre ein Syscall, der nur aus dem Kernel funktioniert?"
+2014-01-01 14:31:34,Jonathan,Moin
+2014-01-01 15:01:51,Paddy,Moin Jonathan
+2014-01-01 15:17:47,DerHartmut,Einen wunderschönen guten Morgen und ein frohes neues Jahr zusammen!
+2014-01-01 15:18:32,Paddy,"Ein gutes Neues, DerHartmut"
+2014-01-01 16:07:14,Paddy,DerHartmut: Wie weit sind denn deine Vorbereitungen in Sachen vHakkatönen? ;-)
+2014-01-01 16:07:37,DerHartmut,In absolutester absolut Vorbereitung
+2014-01-01 16:07:43,DerHartmut,Also von mir aus können wir heute Abend starten :-)
+2014-01-01 16:08:11,Paddy,"Jo, klingt gut"
+2014-01-01 16:08:20,Paddy,Also ich bin ja eh schon am LIO-Hacken
+2014-01-01 17:03:10,ISOrunner2,Das nächste Problem: Interrupt Server Routine funktioniert nicht
+2014-01-01 17:03:18,Paddy,Dann fix sie
+2014-01-01 17:03:29,ISOrunner2,Ich kann ja mal wieder den source code posten
+2014-01-01 17:03:35,Paddy,s/Server/Service/ meinst du vermutlich
+2014-01-01 17:03:47,Paddy,Im Idealfall würdest du das Problem einfach selber suchen
+2014-01-01 17:04:11,ISOrunner2,oops Interrupt Service Routine falsch geschrieben
+2014-01-01 17:07:15,ISOrunner2,isr.h: http://pastebin.com/aQHTaeLM isr.c: http://pastebin.com/t7faGmAa isrs.S: http://pastebin.com/TtUG1GXY
+2014-01-01 17:10:49,ISOrunner2,"In meiner Init Funktion löse ich einen Divide By Zero Exception aus, eigentlich sollte ich dann die Meldung: ""Divide By Zero Exception. Program Halted!"" erhalten."
+2014-01-01 17:11:32,Paddy,"Ok, und was passiert tatsächlich?"
+2014-01-01 17:11:38,ISOrunner2,Nichts :/
+2014-01-01 17:11:59,ISOrunner2,Ich kann ja auch nochmal die init.c posten
+2014-01-01 17:12:23,Paddy,"Sagt qemu -d int denn, dass es überhaupt einen Interrupt gibt?"
+2014-01-01 17:12:37,ISOrunner2,Ich guckmal 
+2014-01-01 17:12:44,ISOrunner2,hier ist init.c: http://pastebin.com/cXkwrecB
+2014-01-01 17:13:40,ISOrunner2,Also qemu.log ist wie gestern leer
+2014-01-01 17:14:14,Paddy,Was für ein qemu hast du denn?
+2014-01-01 17:14:28,ISOrunner2,QEMU 1.0
+2014-01-01 17:14:38,ISOrunner2,"QEMU emulator version 1.0 (qemu-kvm-1.0), Copyright (c) 2003-2008 Fabrice Bellard"
+2014-01-01 17:14:40,Paddy,Ist das ein richtiges qemu oder ein qemu-kvm?
+2014-01-01 17:14:42,Paddy,Aha
+2014-01-01 17:14:48,Paddy,Dann benutz mal -no-kvm
+2014-01-01 17:14:51,ISOrunner2,oke
+2014-01-01 17:15:05,Paddy,Das ganze Debugging-Zeug tut nur ohne KVM gut
+2014-01-01 17:15:23,ISOrunner2,Jetzt erhalte ich Meldungen in qemu.log :D
+2014-01-01 17:15:29,ISOrunner2,Poste ich mal in Pastebin
+2014-01-01 17:15:33,Paddy,Gut :-)
+2014-01-01 17:16:03,ISOrunner2,http://pastebin.com/MXMSPzxB
+2014-01-01 17:16:10,Paddy,Irgendwas mit v=00 (also Exception 0) müsste für eine Division durch 0 kommen
+2014-01-01 17:16:24,Paddy,Tut es aber offensichtlich nicht
+2014-01-01 17:16:33,Paddy,"Ich wage mal zu behaupten, dass du keine Exception auslöst"
+2014-01-01 17:16:59,ISOrunner2,Aber ich mach doch in main.c: test = test / 0 ?
+2014-01-01 17:17:08,ISOrunner2,äh ich mein init.c
+2014-01-01 17:17:27,Paddy,"Entweder gcc macht das einfach nicht (ich kenn den entsprechenden Teil der C-Spec nicht auswendig, ob er das darf)"
+2014-01-01 17:17:36,Paddy,Oder er bleibt vorher schon irgendwo hängen
+2014-01-01 17:17:47,Paddy,"Kannst du mal schauen, an welcher Stelle er hängt?"
+2014-01-01 17:17:50,ISOrunner2,Oke
+2014-01-01 17:18:15,Paddy,Also am einfachsten eip anschauen und mit dem disassemblierten Kernel vergleichen
+2014-01-01 17:19:03,ISOrunner2,Wie geht das?
+2014-01-01 17:19:20,Paddy,Kennst du den qemu-Monitor?
+2014-01-01 17:19:32,ISOrunner2,Schonmal von gehört.
+2014-01-01 17:19:38,Paddy,Drück mal Strg-Alt-2
+2014-01-01 17:19:48,Paddy,Dort kannst du dann Sachen wie 'info registers' eingeben
+2014-01-01 17:20:00,Paddy,Wo unter anderem der aktuelle eip dabeisteht
+2014-01-01 17:20:10,Paddy,Strg-Alt-1 wechselt wieder zurück
+2014-01-01 17:21:36,ISOrunner2,Das läuft aber soweit durch das ich eip nichtmehr sehen kann
+2014-01-01 17:22:04,Paddy,Strg-Bild Auf/Ab zum scrollen
+2014-01-01 17:22:32,ISOrunner2,EIP=001000af
+2014-01-01 17:23:03,Paddy,"Dann disassemblierst du deinen Kernel und schaust, was an 0x1000af liegt"
+2014-01-01 17:23:14,Paddy,Also objdump -S kernel.elf | less oder sowas
+2014-01-01 17:23:17,ISOrunner2,oke
+2014-01-01 17:23:25,Paddy,"Hoffentlich hast du den Kernel mit -g kompiliert, dann ist es sogar einigermaßen lesbar ;-)"
+2014-01-01 17:23:34,ISOrunner2,ja hab ich
+2014-01-01 17:23:46,Paddy,Gut
+2014-01-01 17:24:11,ISOrunner2,Ähm
+2014-01-01 17:24:20,ISOrunner2,Mein Kernel fängt aber erst ab 1MB an
+2014-01-01 17:24:37,Paddy,"Jo, 0x1000af ist knapp über 1 MB"
+2014-01-01 17:24:48,Paddy,Das sollte passen
+2014-01-01 17:24:56,ISOrunner2,achso
+2014-01-01 17:25:17,ISOrunner2,  1000af:       eb fe                   jmp    0x1000af
+2014-01-01 17:25:51,Paddy,Und was steht außenrum so?
+2014-01-01 17:25:56,Paddy,Ist das das while(1) aus init.c?
+2014-01-01 17:26:05,ISOrunner2,"Glaub schon, sollte passen."
+2014-01-01 17:26:27,Paddy,Kannst du den disassemblierten Code grad mal pasten?
+2014-01-01 17:26:38,ISOrunner2,Oke ich poste den mal bei PasteBIn
+2014-01-01 17:26:38,Paddy,"Da müsste dann ja knapp drüber auch das div sein, das nicht faulten will"
+2014-01-01 17:28:07,ISOrunner2,http://pastebin.com/aL6vcDhz
+2014-01-01 17:28:37,Paddy,War die Binary gestrippt oder so? :-/
+2014-01-01 17:28:42,ISOrunner2,ja :D
+2014-01-01 17:28:52,ISOrunner2,Mach ich immer um Debugging Symbole zu löschen xD
+2014-01-01 17:28:56,Paddy,Kein Wunder ist das kaum lesbar ;-)
+2014-01-01 17:29:00,ISOrunner2,Moment
+2014-01-01 17:29:55,Paddy,Auf jeden Fall seh ich da schonmal weit und breit kein div
+2014-01-01 17:31:24,ISOrunner2,http://pastebin.com/n3HVJDH6
+2014-01-01 17:31:29,ISOrunner2,So und strip
+2014-01-01 17:31:36,ISOrunner2,*ohne strip
+2014-01-01 17:32:18,Paddy,"Ja, jetzt siehst du auch, welcher Code aus deinem ""test = test / 0; // Divide By Zero Exception"" generiert wird"
+2014-01-01 17:32:21,Paddy,Nämlich gar keiner
+2014-01-01 17:32:33,Paddy,"gcc optimiert das weg, vermutlich, weil test nirgends gelesen wird"
+2014-01-01 17:32:59,ISOrunner2,dann mach ich mal 02 weg
+2014-01-01 17:33:10,DerHartmut,o2 hat eh ein schlechtes Netz
+2014-01-01 17:33:14,DerHartmut,</schenkelklopfer>
+2014-01-01 17:33:26,ISOrunner2,:D
+2014-01-01 17:36:00,ISOrunner2,http://pastebin.com/ReJEb8Vz so ganz ohne Compiler-Optimierung
+2014-01-01 17:36:56,Paddy,Das sollte jetzt wirklich faulten
+2014-01-01 17:37:49,ISOrunner2,Und was passiert? Qemu startet die ganze Zeit neu :/
+2014-01-01 17:38:47,ISOrunner2,Eigentlich sollte mein handle_fault ausgeführt werden
+2014-01-01 17:38:56,Paddy,Triple Fault
+2014-01-01 17:39:01,ISOrunner2,?
+2014-01-01 17:39:06,Paddy,Vermutlich kaputte IDT
+2014-01-01 17:39:11,ISOrunner2,Och nö
+2014-01-01 17:39:19,ISOrunner2,Das hat mir gerade noch gefehlt
+2014-01-01 17:39:33,ISOrunner2,Dann poste ich mal den Source Code der IDT ....
+2014-01-01 17:41:17,ISOrunner2,idt.h: http://pastebin.com/B1Gh6XUM idt.c: http://pastebin.com/9yCewtHP
+2014-01-01 17:51:08,Paddy,ISOrunner2|AFK: Deine struct idt_entry ist falsch
+2014-01-01 17:51:41,Paddy,Du kannst dir die Reihenfolge der Felder nicht frei raussuchen...
+2014-01-01 17:52:27,ISOrunner2,Was meinst du damit?
+2014-01-01 17:53:48,Paddy,"Dass base_hi, base_lo, sel, always0 und flags auf keinen Fall die richtige Reihenfolge ist"
+2014-01-01 17:53:57,ISOrunner2,Oh
+2014-01-01 17:54:31,ISOrunner2,We can fix that!
+2014-01-01 17:55:18,Paddy,"Yes, we can!"
+2014-01-01 17:55:23,ISOrunner2,"Yes, we scan!"
+2014-01-01 17:56:10,ISOrunner2,"base_lo, sel, always0, flags, base_hi ist die richtige Reihenfolge oder?"
+2014-01-01 17:56:50,Paddy,"Ja, das sieht besser aus"
+2014-01-01 17:56:59,ISOrunner2,Passiert aber immernoch nichts
+2014-01-01 17:57:35,ISOrunner2,Aber erbleibt schonmal nach dem Exception stehen ;)
+2014-01-01 17:59:21,ISOrunner2,Offensichtlich wird while (1); ausgeführt aber meine Meldungen sehe ich immernoch nicht :/
+2014-01-01 18:01:05,ISOrunner2,Irgendwas hier ist faul....
+2014-01-01 18:01:33,ISOrunner2,Nach dem Exception bleibt er eine Sekunde stehen und startet sich dann neu 
+2014-01-01 18:02:41,ISOrunner2,Er führt mein handle_fault erst garnicht aus...
+2014-01-01 18:09:43,ISOrunner2,Paddy: Ich würde dir tausendmal dankbar sein wenn du mir helfen könntest :'(
+2014-01-01 18:34:54,Paddy,ISOrunner2: Was hast du schon untersucht?
+2014-01-01 18:35:04,Paddy,Passiert die Exception jetzt?
+2014-01-01 18:38:24,ISOrunner2,Keine Ahnung Qemu bleibt kurz stehen und startet dann neu
+2014-01-01 18:39:48,Paddy,Was sagt qemu -d int?
+2014-01-01 18:40:15,Paddy,"Ich werde dich jetzt einfach solange das gleiche fragen, bis du gelernt hast, zu debuggen ;-)"
+2014-01-01 18:40:21,ISOrunner2,ähm
+2014-01-01 18:40:48,ISOrunner2,Ich habe ein paar 100 Zeilen in der log datei
+2014-01-01 18:41:09,Paddy,"Dann fang oben an, sie anzuschauen"
+2014-01-01 18:41:30,Paddy,Und such den ersten unerwarteten Eintrag
+2014-01-01 18:42:48,ISOrunner2_,Mir ist beim versuch die qemu.log Datei hochzuladen mein Browser abgeschmiert.
+2014-01-01 18:43:01,Paddy,Schade
+2014-01-01 18:43:17,ISOrunner2_,Das laggt schon wenn ich das in die Zwischenablage kopier
+2014-01-01 18:44:08,DerHartmut,Evt. zu groß
+2014-01-01 18:44:22,ISOrunner2_,11184847 Bytes ....
+2014-01-01 18:44:42,ISOrunner2_,also schon 11.2MB
+2014-01-01 18:44:56,Paddy,"Vielleicht wäre das der richtige Zeitpunkt, um deine Strategie zu ändern und die Logdatei selber zu verstehen"
+2014-01-01 18:45:22,ISOrunner2_,Das einzige was ich weiß ist das da der Inhalt von registern und so steht.
+2014-01-01 18:45:42,Paddy,Das Interessante sind die Interrupts
+2014-01-01 18:46:10,ISOrunner2_,Wo stehen die?
+2014-01-01 18:46:19,Paddy,"Diese fangen mit einer Zeile an, die mit v=xx beginnt (wobei xx eine Hexzahl ist und für die Interruptnummer steht)"
+2014-01-01 18:46:37,Paddy,Direkt darunter ist dann der Registerdump zum Zeitpunkt als der Interrupt ausgelöst wurde
+2014-01-01 18:46:50,Paddy,"Aber im Moment willst du erstmal wissen, was für Interrupts es überhaupt gibt"
+2014-01-01 18:47:20,ISOrunner2,Was ist denn jetzt passiert :/
+2014-01-01 18:48:07,ISOrunner2,Naja aufjedenfall habe ich schon die Stelle gefunden wo das interrupt ist.
+2014-01-01 18:48:20,ISOrunner2,check_exception old: 0xffffffff new 0x0      0: v=00 e=0000 i=0 cpl=0 IP=0008:00100074 pc=00100074 SP=0010:001fffc8 EAX=00000003
+2014-01-01 18:48:45,Paddy,Das ist die Divison durch 0
+2014-01-01 18:48:50,ISOrunner2,Jop
+2014-01-01 18:48:55,Paddy,Und als nächstes?
+2014-01-01 18:49:17,ISOrunner2,Debug Exception
+2014-01-01 18:49:50,Paddy,Wie sieht die Zeile genau aus?
+2014-01-01 18:50:00,ISOrunner2,Welche Zeile?
+2014-01-01 18:50:12,Paddy,Wo die nächste Exception geloggt ist
+2014-01-01 18:50:46,ISOrunner2,Jetzt schmiert mir gleich auch noch mein Editor ab
+2014-01-01 18:51:06,Paddy,"Wird Zeit, dass dein eigenes OS fertig wird *g*"
+2014-01-01 18:51:33,ISOrunner2,Also das Divide By Zero ist das einzige Exception in der qemu.log
+2014-01-01 18:51:47,Paddy,Was steht dann in den ganzen 11 MB?
+2014-01-01 18:52:04,ISOrunner2,moment
+2014-01-01 18:52:19,ISOrunner2,Ich glaube ich habe hier doch mehrere Exceptions ..
+2014-01-01 18:52:27,ISOrunner2,check_exception old: 0xffffffff new 0xd      3: v=0d e=0008 i=0 cpl=0 IP=0008:001002e6 pc=001002e6
+2014-01-01 18:52:53,Paddy,Das ist die vierte
+2014-01-01 18:53:16,ISOrunner2,Das vierte Exception oder wie?
+2014-01-01 18:53:20,Paddy,Ja. Die sind nämlich vor dem v=xx durchnummeriert ;-)
+2014-01-01 18:53:28,ISOrunner2,ah
+2014-01-01 18:53:45,ISOrunner2,Also Breakpoint Exception
+2014-01-01 18:53:55,Paddy,"Ich tippe darauf, dass die zweite auch schon 0d ist, aber mal sehen"
+2014-01-01 18:54:10,Paddy,"0d ist GPF, nicht Breakpoint"
+2014-01-01 18:54:17,ISOrunner2,oh
+2014-01-01 18:54:33,ISOrunner2,das nächste ist check_exception old: 0xffffffff new 0xd      4: v=0d e=0008 i=0 cpl=0 IP=0008:001002e6 pc=001002e6
+2014-01-01 18:54:50,Paddy,Wiederholt sich offenbar immer
+2014-01-01 18:55:16,Paddy,"Error Code 08 ist beim GPF ein Selektor, d.h. irgendwas mit deinem Codesegment ist wohl falsch"
+2014-01-01 18:55:43,Paddy,Lädst du cs schonmal irgendwo neu oder ist das das erste Mal?
+2014-01-01 18:56:13,ISOrunner2,Ich glaube schon
+2014-01-01 18:56:22,ISOrunner2,oder
+2014-01-01 18:56:46,Paddy,"Also die einfache Erklärung wäre, dass der GDT-Eintrag falsch ist, aber dann würde es gleich beim ersten Mal schiefgehen"
+2014-01-01 18:57:15,ISOrunner2,Aber die GDT an sich ist richtig?
+2014-01-01 18:57:58,Paddy,Was ist die GDT an sich?
+2014-01-01 18:58:11,Paddy,"Grundsätzlich würde ich sagen, wenn ein Eintrag in einer Tabelle falsch ist, ist die Tabelle dadurch falsch"
+2014-01-01 18:58:16,ISOrunner2,Oh
+2014-01-01 18:59:18,ISOrunner2,Das hier ist meine gdt.c: http://pastebin.com/XTBuKPb8 ist daran irgendwas falsch?
+2014-01-01 19:00:41,ISOrunner2,momentmal
+2014-01-01 19:00:46,ISOrunner2,ich habe beim letzten ein f zuviel
+2014-01-01 19:00:49,Paddy,"Ohne es im Detail zu prüfen, wenn er den asm()-Block überlebt, dann ist es richtig"
+2014-01-01 19:01:04,Paddy,Oder richtig genug jedenfalls
+2014-01-01 19:01:11,ISOrunner2,Und ich habe beim letzten set_entry ein f zuviel gemacht
+2014-01-01 19:02:12,ISOrunner2,Den asm Block überlebt er
+2014-01-01 19:02:17,Paddy,Kannst du noch die wirklich zweite Exceptionlog raussuchen? Also die mit 1: vorne?
+2014-01-01 19:02:42,Paddy,"Ansonsten, wenn wir mal davon ausgehen, dass es dieselbe ist wie die folgenden, schau dir an, was an 1002e6 für Code steht"
+2014-01-01 19:02:57,ISOrunner2,Welche zweite Exceptionlog?
+2014-01-01 19:03:09,Paddy,Die zweite Exceptionzeile in der qemu-Log
+2014-01-01 19:03:18,Paddy,"Du hast die erste, die vierte und die fünfte gepostet"
+2014-01-01 19:03:33,ISOrunner2,check_exception old: 0xffffffff new 0xd      1: v=0d e=0008 i=0 cpl=0 IP=0008:001002e6 pc=001002e6 SP=0010:001fff84 EAX=0000000a
+2014-01-01 19:03:42,Paddy,"Ok, ist dasselbe"
+2014-01-01 19:03:57,Paddy,Dann schau dir den Code an diesem eip an
+2014-01-01 19:04:18,ISOrunner2,Oke
+2014-01-01 19:04:42,ISOrunner2," 1002e6:	8e d8                	mov    %eax,%ds"
+2014-01-01 19:05:11,Paddy,In deinem Interruptstub vermutlich?
+2014-01-01 19:05:24,ISOrunner2,Hm
+2014-01-01 19:05:29,Paddy,Wir haben eax = 0x0a
+2014-01-01 19:05:47,Paddy,Das sieht falsch aus. Das wäre dein Codesegment in Ring 2.
+2014-01-01 19:05:52,ISOrunner2,mit Interruptstub meinst du isr_common_stub richtig?
+2014-01-01 19:05:59,Paddy,Vermutlich ;-)
+2014-01-01 19:06:05,ISOrunner2,Oke
+2014-01-01 19:06:35,Paddy,*lol* Ich seh den Fehler und du gehörst dafür geschlagen
+2014-01-01 19:06:40,ISOrunner2,?was
+2014-01-01 19:06:46,Paddy,"mov $10, %ax"
+2014-01-01 19:06:53,ISOrunner2,eax :D
+2014-01-01 19:06:56,Paddy,ein
+2014-01-01 19:06:58,Paddy,*Nein
+2014-01-01 19:07:05,ISOrunner2,Was denn?
+2014-01-01 19:07:09,Paddy,$0x10
+2014-01-01 19:07:19,ISOrunner2,ist das 0x so wichtig?
+2014-01-01 19:07:28,Paddy,0x10 == 16
+2014-01-01 19:07:32,Paddy,10 == 0xa
+2014-01-01 19:07:36,ISOrunner2,oho
+2014-01-01 19:08:10,Paddy,Hexadezimal ist nicht dasselbe wie dezimal
+2014-01-01 19:08:11,ISOrunner2,Yeah jetzt funktioniert es! Danke! Danke! Danke!
+2014-01-01 19:09:03,ISOrunner2,"Jetzt bekomme ich ein fröhliches ""Divide By Zero Exception. Program Halted!"" Danke!"
+2014-01-01 19:09:32,Paddy,"Bitteschön. Und schau dir mal an wie Hex funktioniert, bevor du ein OS schreibst ;-)"
+2014-01-01 19:09:57,ISOrunner2,Also mit Hex habe ich schonmal rumgespielt nur ich wusste nicht das 0x10 und 10 so ein drama macht.
+2014-01-01 19:10:58,ISOrunner2,"Oh und weißt du wieso ich für jeden Eintrag in meiner isr ein ""components/driver/isr.c:39:45: Warnung: ISO-C verbietet Konvertierung von Funktionszeigern in Objektzeigertyp [-pedantic]"" bekomme?"
+2014-01-01 19:11:27,Paddy,Weil du den Typ falsch deklariert hast
+2014-01-01 19:11:35,ISOrunner2,Wie ist es den richtig?
+2014-01-01 19:12:39,Paddy,void (*handler)();
+2014-01-01 19:12:47,ISOrunner2,oh danke
+2014-01-01 19:12:48,ISOrunner2,!
+2014-01-01 19:12:57,Paddy,"Oder am besten die Parameter noch angeben, wenn du sie weißt"
+2014-01-01 19:13:24,ISOrunner2,die handler brauchen eigentlich bei mir keine parameter
+2014-01-01 19:13:39,Paddy,Dann void (*handler)(void);
+2014-01-01 19:13:44,ISOrunner2,oke danke!
+2014-01-01 19:15:23,ISOrunner2,gehört das zu jeder einzelnen deklaration oder in den struct?
+2014-01-01 19:15:49,Paddy,In den struct
+2014-01-01 19:15:55,ISOrunner2,oke danke!
+2014-01-01 19:15:56,Paddy,Und casten musst du dann gar nicht mehr
+2014-01-01 19:16:03,ISOrunner2,vielen dank paddy!
+2014-01-01 19:17:40,ISOrunner2,muss das (void *) jetzt überall weg oder ist das optional?
+2014-01-01 19:19:35,Paddy,Mach's weg
+2014-01-01 19:20:05,Paddy,Sonst bleibt die Warnung
+2014-01-01 19:20:29,ISOrunner2,Fehler: unverträgliche Typen bei Zuweisung an Typ »struct registers« von Typ »struct exception« was ist das denn jetzt?
+2014-01-01 19:21:31,ISOrunner2,Oke hab den Fehler gelöst
+2014-01-01 19:23:08,ISOrunner2,"Was mich gerade interessiert wäre auch noch was ""components/driver/isrs.S:243: Warning: indirect call without `*'"" zu bedeuten hat."
+2014-01-01 19:25:46,Paddy,"Ich hab nie genau kapiert warum, aber schreib call *%eax"
+2014-01-01 19:25:57,ISOrunner2,oke danke
+2014-01-01 19:26:37,ISOrunner2,"Ich bin gerade dabei jede einzelne Warnung zu entfernen und bin gerade darauf gestoßen: ""components/driver/idt.h:2:34: Warnung: ISO-C99 erfordert Whitespace hinter Makroname [standardmäßig aktiviert]"""
+2014-01-01 19:27:31,ISOrunner2,Ich benutze nichtmal ISO-C99 ich verwende gnu99
+2014-01-01 19:27:32,Paddy,Dann fix es
+2014-01-01 19:27:50,Paddy,Oder lass -pedantic weg
+2014-01-01 19:28:07,ISOrunner2,Ich hätte aber lieber einen konformen Kernel ohne Warnungen usw.
+2014-01-01 19:28:13,Paddy,"Dann fix es, wie gesagt"
+2014-01-01 19:28:26,ISOrunner2,Aber was ist mit Makroname gemeint?
+2014-01-01 19:28:32,Paddy,Der Name eines Makros
+2014-01-01 19:28:52,ISOrunner2,Aber an der Stelle des Codes ist eine #define direktive kein Makro
+2014-01-01 19:29:01,Paddy,#define definiert was?
+2014-01-01 19:29:09,ISOrunner2,components__driver__idt_h‎
+2014-01-01 19:29:22,Paddy,Ich meine allgemein gesprochen
+2014-01-01 19:29:26,Paddy,Es definiert ein Makro
+2014-01-01 19:29:39,ISOrunner2,Aber ich habe die Warnung nirgendwo anders
+2014-01-01 19:29:46,ISOrunner2,Nur in idt.h
+2014-01-01 19:30:02,ISOrunner2,Ist das nicht seltsam?
+2014-01-01 19:31:16,Paddy,Ist der Makroname vielleicht zu lang oder so?
+2014-01-01 19:31:25,Paddy,Kann aber eigentlich kaum sein
+2014-01-01 19:31:37,ISOrunner2,ich habe genauso lange makronamen in anderen dateien z.b components__driver__isr_h
+2014-01-01 19:31:56,ISOrunner2,und da kommt wie erwähnt keine warnung
+2014-01-01 19:32:01,XanClic,"Vielleicht heißt du da einfach mal Whitespace am Ende der Zeile?"""
+2014-01-01 19:32:03,XanClic,"-"""
+2014-01-01 19:32:09,XanClic,und *hast
+2014-01-01 19:32:32,ISOrunner2,nichts was ich sehen könnte
+2014-01-01 19:32:53,XanClic,"Ich verkneife mir mal Kommentare zum Thema, ob man Whitespace sehen kann"
+2014-01-01 19:33:05,Paddy,"XanClic: Das kann irgendwie nicht sein, dass dahinter noch Whitespace kommen muss"
+2014-01-01 19:33:23,XanClic,"ach, stimmt, ich dachte jetzt umgekehrt m("
+2014-01-01 19:33:58,ISOrunner2,Aber woran liegt das jetzt? *grübel*
+2014-01-01 19:45:54,ISOrunner2,wd
+2014-01-01 19:46:19,Paddy,"Huch, alexander, was stellst denn du an?"
+2014-01-01 19:57:25,ISOrunner2,"Ich habe jetzt herausgefunden wieso diese Warnung kommt, ich hatte irgendwie ein unsichtbares zeichen nach dem #define"
+2014-01-01 20:07:58,alexander,"Paddy: Hm, wieso?"
+2014-01-01 20:08:39,Paddy,alexander: Wegen unterschiedlichen Nicks und so. Anderer Rechner jetzt?
+2014-01-01 20:09:31,alexander,"Achso, ne, kurzzeitig anderes Betriebssystem *g*"
+2014-01-01 20:09:51,ISOrunner2,"""Initialisierung erzeugt Ganzzahl von Zeiger ohne Typkonvertierung"" und was ist das jetzt für ein Sch***?"
+2014-01-01 20:09:52,Paddy,"Aha, du hast Nusskuchen gebootet? *g*"
+2014-01-01 20:10:04,Paddy,ISOrunner2: Code von dir
+2014-01-01 20:10:12,ISOrunner2,Ich hab dich auch lieb.
+2014-01-01 20:10:27,alexander,Paddy: Exakt *g*
+2014-01-01 20:12:37,ISOrunner2,http://tny.cz/cc21699a
+2014-01-01 20:13:34,Paddy,"Hm, die Prozessverwaltung von tyndur ist komisch"
+2014-01-01 20:13:39,ISOrunner2,wieso?
+2014-01-01 20:14:18,Paddy,"Weil sie irgendwelche Magie mit ""blockierten"" Threads macht, die ich nicht kapiere (weil sie vermutlich einfach kaputt ist)"
+2014-01-01 20:14:42,ISOrunner2,was sind denn blockierte threads?
+2014-01-01 20:14:44,Paddy,"Ich bin mir nichtmal sicher, ob es eine genaue Definition davon gibt, was ein blockierter Thread sein soll"
+2014-01-01 20:15:48,Paddy,"In erster Linie wird das wohl gemacht, bevor der Thread gelöscht wird"
+2014-01-01 20:16:04,ISOrunner2,Das ist doch unpraktisch.
+2014-01-01 20:16:08,ISOrunner2,Vielleicht hat der Programmierer der Prozessverwaltung von Tyndur auch einfach davor zuviel geraucht.
+2014-01-01 20:16:23,Paddy,Das müssten wir Antoine einfach fragen
+2014-01-01 20:17:05,ISOrunner2,Wenn ein Thread gelöscht wird setzt man ihn einfach mit memset auf 0 und macht weiter.
+2014-01-01 20:17:15,Paddy,"Öhm, nein"
+2014-01-01 20:17:24,ISOrunner2,Was denn noch?
+2014-01-01 20:17:25,Paddy,Dann trägt man ihn aus allen Listen aus und gibt den Speicher frei
+2014-01-01 20:17:39,ISOrunner2,den speicher freigeben macht man doch mit memset?
+2014-01-01 20:18:11,Paddy,"Nein, memset überschreibt den Speicher"
+2014-01-01 20:18:21,ISOrunner2,Naja egal
+2014-01-01 20:18:53,ISOrunner2,Aber das man denn Thread davor blockiert finde ich unnötig das verbraucht doch nur unnötig wertvolle Resourcen die man auch besser nutzen könnte.
+2014-01-01 20:18:53,Paddy,"Ich ahne es irgendwie, dass der Zeitpunkt nicht mehr fern ist, an dem ich dir einfach nur noch entnervt ""Lern C"" antworten werde ;-)"
+2014-01-01 20:19:21,Paddy,"Das Problem ist, dass das Blockieren nicht wirklich irgendwas blockiert, soweit ich das sehe"
+2014-01-01 20:19:36,ISOrunner2,Dann kann man das doch komplett entfernen wenn es nicht genutzt wird.
+2014-01-01 20:19:50,Paddy,Das ist alles irgendwie sehr zweifelhaft
+2014-01-01 20:19:58,Paddy,"Ja, erstmal verstehen, was es genau tut, und dann rauswerfen"
+2014-01-01 20:20:12,ISOrunner2,Hab doch gesagt das der Programmierer wohl vor dem Programmieren zuviel geraucht hat
+2014-01-01 20:21:07,Paddy,"Wie gesagt, dazu hätte ich gern ein Statement von Antoine. *g*"
+2014-01-01 20:22:02,ISOrunner2,"Weißt du was mich schon bei jedem OS-Projekt genervt hat? Das der Code total unübersichtlich ist. Ich teile mein OS zum Beispiel in mehrere Komponenten auf, dadurch wird der Quellcode übersichtlicher und ist besser zu pflegen."
+2014-01-01 20:22:27,Paddy,Du hast doch bis jetzt nur ein besseres Hello World?
+2014-01-01 20:22:42,ISOrunner2,Jetzt kommt aber langsam Multitasking ins Spiel
+2014-01-01 20:23:02,ISOrunner2,Es ist zwar noch nicht viel zu sehen aber es steckt viel dahinter.
+2014-01-01 20:23:33,Paddy,"Naja, dann wart mal ab, bis du Paging siehst"
+2014-01-01 20:23:47,ISOrunner2,^^
+2014-01-01 20:24:12,ISOrunner2,Solange man den Quellcode gut struktiert ist (finde ich) alles im grünen Bereich.
+2014-01-01 20:24:52,Paddy,"tyndur hat über 100k Codezeilen, da überblickt man selbst bei gut strukturiertem Code nicht mehr alles auf Anhieb"
+2014-01-01 20:25:12,ISOrunner2,Naja ich werde dann mal Multitasking implementieren bis bald
+2014-01-01 20:29:12,ISOrunner2|AFK,Hat Týndur eigentlich eine Doku?
+2014-01-01 20:32:47,ISOrunner2|AFK,Das nenne ich gut strukturierten Code: http://tny.cz/a9307bb6
+2014-01-01 20:37:01,alexander,ISOrunner2|AFK
+2014-01-01 20:37:09,alexander,WelchForm von Doku möchtest du haben?
+2014-01-01 20:37:22,alexander,"Es gibt das Wiki, du kannst die doctrine doku erstellen und den Code selber natürlich"
+2014-01-01 20:37:27,alexander,"Äh doxygen, nicht doctrine"
+2014-01-01 20:47:31,Paddy,ISOrunner2|AFK: Was ist daran strukturiert?
+2014-01-01 20:51:09,Paddy,"Hm, das Blockieren könnte was mit SMP zu tun haben"
+2014-01-01 20:55:30,Jidder,da steht doch struct
+2014-01-01 20:55:47,Paddy,"Oh, wie konnte ich das übersehen!"
+2014-01-01 20:57:25,Paddy,"Oooh, da werden Erinnerungen wach! :-) CR2=0x00000000c0ded00f"
+2014-01-01 21:32:15,Darkchaos,Hey Leute :)
+2014-01-01 21:33:40,Darkchaos,"Kann ich mir als Faustformel für Injektivität immer zu Recht legen, dass Funktionen ohne gerade Potenzen immer injektiv sind und umgekehrt eine gerade Potenz Injektivität vernichtet?"
+2014-01-01 21:33:43,mroman_,0xba1dd00f
+2014-01-01 21:34:39,mroman_,??
+2014-01-01 21:35:54,mroman_,"Du musst halt beweisen, dass kein Element doppelt getroffen wird"
+2014-01-01 21:36:11,Jidder,es gibt auch funktionen die nicht als polynom darstellbar sind
+2014-01-01 21:36:34,Darkchaos,"Ja aber ich möchte mir das gerne ersparen, und da ja gerade Potenzen -+ zulassen,"
+2014-01-01 21:36:34,Jidder,"und funktionen, die nicht R -> R abbilden"
+2014-01-01 21:36:48,Darkchaos,"Oder ist es eine gute Idee, mir dasevtl. zu zeichnen und dann urteilen?"
+2014-01-01 21:37:09,Darkchaos,Wobei das wohl zeitaufwändig ist
+2014-01-01 21:37:14,Jidder,"nein. du hast hoffentlich eine methode gelernt, injektivität zu beweisen bzw. zu widerlegen"
+2014-01-01 21:37:37,Darkchaos,Gleichsetzen und dann wildes Umformen bis er schließt x0 == x
+2014-01-01 21:40:54,mroman_,Jidder: Das ist doch relativ schwierig?
+2014-01-01 21:41:19,Jidder,widerlegen ist relativ einfach mit einem gegenbeispiel
+2014-01-01 21:41:23,mroman_,"\exists a,b: f(a) == f(b)"
+2014-01-01 21:41:30,mroman_,"Gegenbeispiel, ja"
+2014-01-01 21:41:56,mroman_,ich meine
+2014-01-01 21:42:01,mroman_,du koenntest beweisen
+2014-01-01 21:42:05,mroman_,dass x^2 nicht injektiv ist
+2014-01-01 21:42:06,Jidder,"und zeigen dass es injektiv ist: angenommen es gibt a != b sodass f(a) == f(b), dann einsetzen und ebenfalls zum widerspruch führen"
+2014-01-01 21:42:16,mroman_,und damit x^(2*n) nicht injektiv
+2014-01-01 21:42:35,mroman_,"und dann kannst du zeigen, dass aufgrund der Multiplikation mit einem weiteren x"
+2014-01-01 21:42:43,mroman_,x^(2*n+1) injektiv ist
+2014-01-01 21:43:07,Darkchaos,"Also wie gesagt, wir haben einfach dann zB 2x + 12 = 2y + 12; -> x == y und bei 2x² + 12 = 2y² + 12; -> x muss nicht y sein"
+2014-01-01 21:44:38,Jidder,"also zu zeigen, dass x^(2*n+1) injektiv ist, geht auch indem man zeigt, dass die funktion streng monoton steigend ist"
+2014-01-01 21:45:18,mroman_,evtl koennte man auch maxima und minima suchen
+2014-01-01 21:45:38,Paddy,alexander: Läuft das inzwischen eigentlich unter Abend? ;-)
+2014-01-01 21:46:01,Darkchaos,hmm und wie zeige ich dann surjektivität (rechnerisch natürlich)
+2014-01-01 21:46:25,mroman_,dass jedes Element getroffen wird?
+2014-01-01 21:46:49,Jidder,das ist die definition von surjektivität ^^
+2014-01-01 21:46:59,mroman_,ja
+2014-01-01 21:47:50,mroman_,theoretisch muesste dann das minima bei -unendlich und das maxima bei +unendlich liegen?
+2014-01-01 21:47:59,mroman_,aber das ist nur hinreichend
+2014-01-01 21:48:12,Jidder,nein. nicht alle funktionen sind funktionen über den reellen zahlen
+2014-01-01 21:48:14,mroman_,du koenntest immer noch Sprungstellen haben
+2014-01-01 21:48:27,mroman_,*hinweisend
+2014-01-01 21:50:22,mroman_,wie war das noch
+2014-01-01 21:50:35,mroman_,"wenn sie an jeder Stelle differenzierbar ist, gibt's keine Sprungstellen"
+2014-01-01 21:50:55,mroman_,was aber auch nur hinreichend ist
+2014-01-01 21:51:22,Jidder,und nicht für alle mengen anwendbar
+2014-01-01 21:53:37,Dimension,hier einer der c# fragen beantworten kann/will?
+2014-01-01 21:53:52,Darkchaos,"kommt drauf an, don't ask to ask^^"
+2014-01-01 21:55:38,Dimension,"ich will grosse objektstrukturen persistent speichern. damit das nicht jedesmal die ganze datei serialisiert, will ich nur die differenz speichern. geht das?"
+2014-01-01 21:56:09,Darkchaos,serialisiere doch zu einem byte[] und nutze dann gänige diff's
+2014-01-01 21:56:11,Darkchaos,bsdiff zB
+2014-01-01 21:56:12,Jidder,kommt auf die datenstruktur an. aber sicherlich geht das
+2014-01-01 21:56:16,Darkchaos,patching
+2014-01-01 21:56:53,Jidder,geht es dir darum platz zu sparen?
+2014-01-01 21:57:00,Jidder,"wenn ja, dann ist ein diff relativ unzuverlässig"
+2014-01-01 21:57:35,Darkchaos,weil uU keine/kaum einsparung ist?
+2014-01-01 21:57:42,Darkchaos,"zB bei einer neuen Datei, die dann komplett gespeichert ist?"
+2014-01-01 21:57:47,Jidder,"eine variante wäre zum beispiel anstatt die datenstruktur selbst zu speichern, die operationen auf dieser datenstruktur zu speichern. und beim laden das original laden und die operationen wieder darauf anwendungen"
+2014-01-01 21:58:02,Jidder,zum beispiel
+2014-01-01 21:58:13,Jidder,aber das kannst du vermutlich nie vermeiden
+2014-01-01 21:58:20,Darkchaos,"Aber Jidder, das ist doch genau ein diff, die veränderungen zu speichern"
+2014-01-01 21:58:41,Dimension,c# macht default xml draus. ist zwar nicht mein fall aber gut. wenn nun der gesamte zustand einer app in ner struktur gespeichert ist dauert das zu lange um regelmäßig zu speichern
+2014-01-01 21:59:04,Darkchaos,xml? Dann kannst du ja vielleicht noch was zippen
+2014-01-01 21:59:16,Jidder,"naja wenn deine ""datenstruktur"" zum beispiel ein array in integern ist, das du mit 2 multipliziert hast, dann ist es kompakter zu speichern ""lade die letzte version und multipliziere die mit 2"" "
+2014-01-01 21:59:20,Jidder,ein diff würde da nichts machen
+2014-01-01 21:59:26,Darkchaos,das stimmt
+2014-01-01 21:59:48,mroman_,oder du benutzt eine Datenbank
+2014-01-01 21:59:48,Dimension,"Jidder: das mit operationen ist ne gute idee, reicht aber alliene nicht aus"
+2014-01-01 22:00:01,mroman_,"was dann allerdings erfordert, dass du das selbst ""serialisieren"" musst"
+2014-01-01 22:00:08,Jidder,um welche datenstruktur geht es denn? im allgemeinen ist das vermutlich schwierig zu beantworten
+2014-01-01 22:00:12,mroman_,oder
+2014-01-01 22:00:15,mroman_,Option b:
+2014-01-01 22:00:20,mroman_,Du musst deine Datenstruktur aufteilen
+2014-01-01 22:00:37,mroman_,"in mehrere kleine, die du dann einzeln serialisieren kannst"
+2014-01-01 22:01:12,Dimension,es ist der gesamte zustand einer app in ner struktur gespeichert.
+2014-01-01 22:01:56,Jidder,was ist der zustand?
+2014-01-01 22:02:18,Dimension,"variablen, callstack"
+2014-01-01 22:02:32,Jidder,wie gesagt. zu abstrakt
+2014-01-01 22:02:54,Dimension,für jeden call ein xml serializer anzuwerfen ist halt quatsch
+2014-01-01 22:03:07,Jidder,"sind es objekte, die referenzen aufeinander haben?"
+2014-01-01 22:03:11,Jidder,also instanzen von klassen?
+2014-01-01 22:03:33,Dimension,ginge evtl eine graph db?
+2014-01-01 22:03:54,Jidder,das problem gemeinsame teilgraphen in zwei graphen zu finden ist sicherlich nicht einfach
+2014-01-01 22:03:56,Dimension,"nee, lles nicht-rekursiv"
+2014-01-01 22:04:17,Dimension,alle zugriffe vom root aus
+2014-01-01 22:04:53,Jidder,"also ein root-objekt, das alle anderen objekte referenzenziert, aber diese referenzieren sich nicht untereinander?"
+2014-01-01 22:05:12,Dimension,referenz nur in eine richtung
+2014-01-01 22:05:37,Dimension,keine rekursion
+2014-01-01 22:05:52,Jidder,"dann würde ich überlegen, ob man objekte nicht einfach als modifiziert makiert und diese dann speichert, wenn es notwendig ist"
+2014-01-01 22:06:05,Dimension,normales baumdiagramm
+2014-01-01 22:06:07,Jidder,"aber mir ist von der abstrakten beschriebung immer noch nicht klar, ob das möglich ist"
+2014-01-01 22:07:22,Dimension,"will halt wenig selbst erfinden, am liebsten wär mir ne c# bibliothek"
+2014-01-01 22:07:42,Jidder,mit so einer allgemeinen beschreibung wirst du da nicht viel finden
+2014-01-01 22:08:03,Jidder,vermutlich nur allgemeine kompressionsalgorithmen
+2014-01-01 22:08:16,Dimension,"noch mehr lieb eine von ms eingebaute, aber bei xml ist wohl limit"
+2014-01-01 22:08:17,Jidder,"weil die eben im allgemeinen optimal sind, aber im speziellen nicht"
+2014-01-01 22:09:33,mroman_,hm
+2014-01-01 22:09:46,mroman_,Option C waere vlt das Speichern/Serialisieren in einem Hintergrund-Thread zu taetigen
+2014-01-01 22:10:26,Dimension,"angenommen ich habe 200 mb daten und ändere 2 kb, dann sollen auchnur 2 kb auf die platte geschrieben werden."
+2014-01-01 22:10:45,Jidder,"wenn du feststellen kannst, welche 2 kb das sind, dann ist das ja trivial"
+2014-01-01 22:10:54,mroman_,siehe jidder
+2014-01-01 22:11:05,mroman_,aber du hast halt keine Kontrolle was der Serialisierer macht
+2014-01-01 22:11:11,mroman_,"ausser, du implementierst selber einen ;)"
+2014-01-01 22:11:26,Dimension,"ich dachte gleich an ne art datenbank, mit graphdbs kenne ich mich halt nicht aus"
+2014-01-01 22:12:56,Jidder,zu welchem zweck willst du nur die differenz speichern?
+2014-01-01 22:14:15,Dimension,"angenommen ich habe 200 mb daten und ändere 2 kb, dann sollen auchnur 2 kb auf die platte geschrieben werden.grund: performance"
+2014-01-01 22:14:49,Jidder,"aber es sollen dann die alten 2 kb durch die neuen 2 kb ersetzt werden, oder in eine neue datei geschrieben werden (analog zu inkrementellen backups)?"
+2014-01-01 22:15:43,Dimension,dateisystem/ordnerstruktur: nein
+2014-01-01 22:16:17,Jidder,"ich interpretiere das mal so, dass die alten 2 kb überschrieben werden sollen"
+2014-01-01 22:16:20,Dimension,"evtl aber memorymapped file, wenn das geht"
+2014-01-01 22:16:50,Jidder,das hat damit nichts zu tun
+2014-01-01 22:17:07,Jidder,es sei denn deine datenstruktur ist doch ein array von bytes
+2014-01-01 22:17:21,Jidder,aber objekte kannst du nicht aus einer datei mappen
+2014-01-01 22:17:37,Dimension,"ja, repräsentation der daten im ram, können vollständig wiederhergestellt werden"
+2014-01-01 22:18:11,Dimension,"naja, ausser halt serialisiert"
+2014-01-01 22:19:15,Jidder,ob es da wohl was mit java gibt?
+2014-01-01 22:19:22,Jidder,aber das ist ein anderes thema ^^
+2014-01-01 22:20:16,Dimension,welche graph-dbs sind gut/leicht/flink?
+2014-01-01 22:20:37,Dimension,und gut getestet?
+2014-01-01 22:20:37,alexander,brb
+2014-01-01 22:20:37,alexander,Dimension
+2014-01-01 22:20:47,alexander,"Gib mir eine Minute, dann bantworte ich dir die frage"
+2014-01-01 22:22:30,Dimension,"stichwort ist wohl dynamic persistence, grad auf google gefunden"
+2014-01-01 22:41:25,Dimension,embedded dbs: sqlite oder velocitydb
+2014-01-01 22:42:39,DerHartmut,sqlite
+2014-01-01 22:43:55,DerHartmut,Dimension: Zu deiner Frage eben: Neo4J
+2014-01-01 22:44:26,Dimension,ok
+2014-01-01 22:44:53,Dimension,object database interessanter oberbegriff
+2014-01-01 22:50:57,Paddy,"Hups, tyndur rechnet wohl nicht damit, dass einem Prozess der Elternprozess wegsterben könnte"
+2014-01-01 22:51:19,Paddy,-1059139569 als PPID in der ps-Ausgabe macht sich gut
+2014-01-01 22:52:54,Dimension,oder ich bastel was mit sqlite
+2014-01-01 22:56:18,Dimension,"genau ich bastel mir eine graphdb mit sqlite und json, hauptsache konstante perf. mit primary key"
+2014-01-01 22:59:35,Dimension,"was passiert mit dem primary key über 2^32, das wird dann nicht mehr konstant werden..."
+2014-01-01 23:01:36,Paddy,Antoine: mutt beschwert sich über ein abgelaufenes Zertifikat
+2014-01-01 23:01:45,Antoine,Bäh
+2014-01-01 23:01:55,Paddy,"Oh, du bist ja sogar hier"
+2014-01-01 23:02:07,Antoine,Wenn man mich hochlichtet schon ;-)
+2014-01-01 23:02:16,Paddy,Vorhin hat's nicht funktioniert ;-)
+2014-01-01 23:02:37,Antoine,Schaue mir das mit dem Zertifikat morgen an. Dauert ev. ein paar Tage bis da das neue kommt
+2014-01-01 23:02:58,Paddy,"Jo, ist kein Problem, ich wollte nur drauf hinweisen"
+2014-01-01 23:06:57,Antoine,"Jo, danke."
+2014-01-01 23:07:22,tyndur,Repo: libext2.git:
+2014-01-01 23:07:22,tyndur,Autor: Kevin Wolf 
+2014-01-01 23:07:22,tyndur,    .gitignore hinzugefügt
+2014-01-01 23:07:22,tyndur,    
+2014-01-01 23:07:22,tyndur,    Signed-off-by: Kevin Wolf <kevin@tyndur.org>
+2014-01-01 23:07:56,Paddy,"Huch, libext2.git wird von tyndur getrackt? Spannend."
+2014-01-01 23:09:19,Dimension,64 bit primary key
+2014-01-01 23:10:17,Antoine,Frohes Neues übrigens noch ;-)
+2014-01-01 23:10:30,Paddy,"Ach richtig, da war ja was. ;-)"
+2014-01-01 23:10:37,Paddy,Dir auch ein gutes Neues
+2014-01-01 23:15:22,tyndur,>> Commit in tyndur.git:refs/heads/master
+2014-01-01 23:15:22,tyndur,Autor: Kevin Wolf
+2014-01-01 23:15:22,tyndur,shell: . und .. als Vervollständigungsoptionen ausschließen
+2014-01-01 23:15:22,tyndur,* shell: Die Tabvervollständigung hat bisher in jedem Verzeichnis auch .
+2014-01-01 23:15:22,tyndur,"  als Option angeboten, so dass man immer mindestens den ersten"
+2014-01-01 23:15:22,tyndur,"  Buchstaben tippen muss, auch wenn es nur eine Datei gibt. Es gibt"
+2014-01-01 23:15:22,tyndur,"  keinen Grund dafür, . zu vervollständigen, also lässt die Shell das"
+2014-01-01 23:15:22,tyndur,  jetzt bleiben.
+2014-01-01 23:15:22,tyndur,>> Commit in tyndur.git:refs/heads/master
+2014-01-01 23:15:22,tyndur,Autor: Kevin Wolf
+2014-01-01 23:15:22,tyndur,libc: io_split_filename() mit nicht-kanonischen Pfaden
+2014-01-01 23:15:22,tyndur,"! libc: io_split_filename() kommt jetzt auch mit Pfaden zurecht, die"
+2014-01-01 23:15:22,tyndur,"  mehrfache Schrägstriche, überflüssige Schrägstriche am Ende, ./ und"
+2014-01-01 23:15:22,tyndur,  ../ enthalten.
+2014-01-01 23:15:22,tyndur,"  Das bedeutet unter anderem, dass 'cp -r apps/ tmp/' jetzt korrekt ein"
+2014-01-01 23:15:22,tyndur,  neues Verzeichnis tmp/apps/ anlegt und rekursiv dorthin kopiert
+2014-01-01 23:15:22,tyndur,"  (vorher wurde ein leerer Dateiname als Quelle erkannt, und deswegen"
+2014-01-01 23:15:22,tyndur,  alles direkt nach tmp/ kopiert)
+2014-01-01 23:15:22,tyndur,>> Commit in tyndur.git:refs/heads/master
+2014-01-01 23:15:22,tyndur,Autor: Kevin Wolf
+2014-01-01 23:15:22,tyndur,shell: cp -r überspringt . und ..
+2014-01-01 23:15:22,tyndur,"! shell: Wenn cp -r versucht, . rekursiv zu kopieren, dann geht das"
+2014-01-01 23:15:22,tyndur,  in der Regel in die Hose. Besser nicht machen.
+2014-01-01 23:15:22,tyndur,>> Commit in tyndur.git:refs/heads/master
+2014-01-01 23:15:22,tyndur,Autor: Kevin Wolf
+2014-01-01 23:15:22,tyndur,libext2: Bootloader nicht zerstören
+2014-01-01 23:15:22,tyndur,Die ersten 1024 Bytes auf dem Gerät müssen in Ruhe gelassen werden. Wenn
+2014-01-01 23:15:22,tyndur,"sie Teil des ersten Blocks sind, müssen sie bei jedem Superblock-Update"
+2014-01-01 23:15:22,tyndur,"rausgeschrieben werden, weil der Cache nur auf Blockgranularität"
+2014-01-01 23:15:22,tyndur,arbeitet.
+2014-01-01 23:15:24,Antoine,Besten Dank
+2014-01-01 23:15:42,Antoine,Hm seit wann macht denn tyndur da Leerzeilen rein?
+2014-01-01 23:15:59,Paddy,"Antoine: Das war libext2.git, das muss eine uralte Version sein"
+2014-01-01 23:16:23,Antoine,Ah
+2014-01-01 23:16:23,Paddy,Antoine: Normal fliegt ja auch die SoB-Zeile raus
+2014-01-01 23:16:35,Antoine,Hm jo
+2014-01-01 23:17:20,Paddy,Vielleicht sollte man in der Commitmessage auch mal Zeilenumbrüche komplett wegwerfen
+2014-01-01 23:17:31,Paddy,Wird doch arg spammig. Das waren grad nur vier Commits.
+2014-01-01 23:17:45,Paddy,"Andererseits - so selten wie es Commits gibt, vielleicht die Mühe nicht wert *g*"
+2014-01-01 23:18:21,Antoine,*g*
+2014-01-01 23:18:31,Paddy,"Es sei denn, es packt dich mal wieder ;-)"
+2014-01-01 23:18:47,Darkchaos,a
+2014-01-01 23:19:15,Antoine,Ist wohl in der nächsten Zeit eher unwarscheinlich. ;-)
+2014-01-01 23:20:17,Paddy,Woran sitzt du denn im Moment?
+2014-01-01 23:21:51,Guest29163,uh da passiert ja was an tyndur :D
+2014-01-01 23:22:34,Paddy,"Jetzt müsst ihr alle angesteckt werden und anfangen, wie verrückt Patches zu schicken ;-)"
+2014-01-01 23:22:35,Antoine,"Bis Mitte Februar wohl noch 2 Barrelfish-Projekte (bulk transfer, und unser Modell-basierter Netzwerkstack), und danach gehts dann noch mit der Masterarbeit weiter."
+2014-01-01 23:23:04,Paddy,Hast du das Thema für die MA schon?
+2014-01-01 23:24:14,Antoine,Nicht wirklich. Wird aber warscheinlich auch wieder was mit Netzwerkstack werden
+2014-01-01 23:24:34,Paddy,"Das Bulk-Transfer-Zeug ist auch auf Netzwerk bezogen, oder?"
+2014-01-01 23:24:54,Antoine,Jop
+2014-01-01 23:25:15,Paddy,Du gräbst dich ja schon während dem Studium richtig in ein Spezialgebiet ein. Ich hab dazu noch ein Jahr hinterher gebraucht *g*
+2014-01-01 23:25:24,bluecode,frohes Neues
+2014-01-01 23:25:31,livinskull,ich müsste irgendwo noch so ne halbe tyndur icmp implementierung rumliegen haben für ping-receive-only.. aber weiss selber nich ob mir das gefällt :P
+2014-01-01 23:25:32,Antoine,"Also eigentlich geht es um beides, lokal sowie über Netzwerk, und das nach möglichkeit mehr oder weniger transparent."
+2014-01-01 23:25:42,Antoine,"bluecode: Danke, gleichfalls."
+2014-01-01 23:25:47,Paddy,"Gutes Neues, bluecode."
+2014-01-01 23:25:54,Paddy,Heute kommen sie alle aus ihren Löchern *g*
+2014-01-01 23:26:03,Darkchaos,Frohes neues euch auch
+2014-01-01 23:26:13,bluecode,*g*
+2014-01-01 23:26:19,bluecode,was macht der denn?
+2014-01-01 23:26:19,Antoine,Hehe
+2014-01-01 23:26:28,Paddy,"Keine Ahnung, ewig nichts von ihm gehört"
+2014-01-01 23:27:16,Paddy,livinskull: Diese Art vom Problem kommt mir bekannt vor ;-)
+2014-01-01 23:32:38,Jidder,oh das jahr noch so jung und ich hab bereits ein wunder erlebt. g++ segfaulted wenn man iostream inkludiert und ein update von gcc hat das problem gelöst
+2014-01-01 23:32:45,Jidder,update von g++ natürlich
+2014-01-01 23:34:11,Jidder,"vermutlich wird das problem was anderes gewesen sein, aber ich ignoriere das einfach mal"
+2014-01-01 23:38:27,tyndur,>> Commit in tyndur.git:refs/heads/master
+2014-01-01 23:38:27,tyndur,Autor: Alexander Kluth
+2014-01-01 23:38:27,tyndur,vim Swap-Files zur gitignore hinzugefügt
+2014-01-01 23:38:27,tyndur,+ .gitignore: *.swp und *.swo hinzugefügt

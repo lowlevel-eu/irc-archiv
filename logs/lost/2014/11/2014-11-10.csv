@@ -1,0 +1,617 @@
+date/time,nick,message
+2014-11-10 16:40:38,Jonathan,"Svenska? Du hast doch sicherlich mal Lust, diesen Code auf grobe Schnitzer bei der Typ-Umwandlung zu prüfen, oder? *g*"
+2014-11-10 16:40:39,Jonathan,http://pastebin.com/REzh2Ztm
+2014-11-10 16:42:16,Jonathan,Insbesondere diese Zeile macht mir Sorgen: ptr1 = (void*)(((unsigned int)ptr1 & ~(0xC000)) | 0x8000);
+2014-11-10 16:45:20,kevin,Hast du keine vernünftigen Integertypen?
+2014-11-10 16:46:21,kevin,"Und wozu maskierst du 0x8000 raus, um es gleich wieder reinzunehmen?"
+2014-11-10 16:46:36,Jonathan,"Äh, ja, vernünftige Typen könnte ich noch einbauen :D"
+2014-11-10 16:46:39,max,"vermutlich, weil es sauberer aussieht"
+2014-11-10 16:46:46,max,erstmal die beiden oberen Bits rausnehmen
+2014-11-10 16:46:49,Jonathan,Int ist in meinem Fall 16 Bit breit.
+2014-11-10 16:46:51,max,Und dann die Bank auswählen
+2014-11-10 16:47:13,Jonathan,"Und der Pointer zeigt auf einen Bereich zwischen 0x4000 und 0x7FFF, soll aber umgemappt werden."
+2014-11-10 16:47:14,kevin,"Ach, das sind gar keine Flags"
+2014-11-10 16:48:17,Svenska,du stellst fragen :-)
+2014-11-10 16:48:55,Svenska,"statt ""& 0xC000"" wuerde ich ""& ~0x4000"" nehmen"
+2014-11-10 16:49:02,Svenska,dann ergibt der vergleich mehr sinn :)
+2014-11-10 16:49:14,Svenska,und so
+2014-11-10 16:49:14,Jonathan,"Ohje, ich glaub mein Code ist grauenvoll :D"
+2014-11-10 16:49:23,Jonathan,& ~0xC000
+2014-11-10 16:49:32,Jonathan,Ich will die oberen beiden Bits ausmaskieren
+2014-11-10 16:49:37,Jonathan,Und dann auf 10 setzen
+2014-11-10 16:49:44,Svenska,da steht: if (((unsigned int)ptr1 & 0xC000) == (0x4000)) {
+2014-11-10 16:49:48,Jonathan,Achso das
+2014-11-10 16:49:49,Svenska,also das ist natuerlich auch falsch :D
+2014-11-10 16:49:53,kevin,Ich glaube Svenska ist bei if und hat trotzdem nicht recht
+2014-11-10 16:49:59,Jonathan,Hmmm *g*
+2014-11-10 16:50:26,Svenska,ne quatsch ist es nicht
+2014-11-10 16:50:45,Jonathan,"In dem if will ich einfach prüfen, ob die oberen beiden Bits 01 sind"
+2014-11-10 16:50:46,Svenska,"aber ""& 0x4000) == 0x4000"" liest sich halt schöner"
+2014-11-10 16:50:55,Jonathan,^da fehlt dann aber das oberste Bit
+2014-11-10 16:51:04,Svenska,achs o
+2014-11-10 16:51:06,kevin,Jonathan: Kannst du nicht einfach einen Kernel nach dem x86-Tut bauen? Da fällt mir das Antworten viel leichter. *g*
+2014-11-10 16:51:10,Svenska,*g*
+2014-11-10 16:51:11,Jonathan,lol *g*
+2014-11-10 16:51:39,Svenska,aber die stdint.h typen wuerde ich dir trotzdem empfehlen
+2014-11-10 16:51:46,Svenska,"""unsigned char"" ist mehr als uint8_t"
+2014-11-10 16:51:53,Jonathan,Okay
+2014-11-10 16:52:44,Svenska,"grobe schnitzer seh ich aber nicht, wenn ich den code mal bewusst lese ^^"
+2014-11-10 16:52:50,Jonathan,"Okay, danke ^^"
+2014-11-10 16:53:29,Jonathan,"Ich bring den Krempel jetzt erstmal irgendwie zum Laufen, und dann lass ich Suchen&Ersetzen drüberlaufen für die Typen :P"
+2014-11-10 16:53:54,Svenska,"du könntest dir aber ein paar casts sparen, wenn du die variablen einmalig umspeicherst in variablen vom richtigen typ"
+2014-11-10 16:54:16,Jonathan,Inwiefern? Ich will ja bitweise Pointer-Arithmetik tun
+2014-11-10 16:54:39,Svenska,uint16_t ptr1addr = (uint16_t)ptr1;
+2014-11-10 16:54:45,Svenska,und dann mit ptr1addr rechnen :D
+2014-11-10 16:54:52,Jonathan,Ja okay :D
+2014-11-10 16:55:11,Jonathan,Wobei mir SDCC dann unter Umständen noch ne lokale Variable auf meinen Stack wirft
+2014-11-10 16:55:17,Svenska,und? :D
+2014-11-10 16:55:29,Jonathan,Ich hab nicht allzu viel Kernel-Stack :D
+2014-11-10 16:55:43,Svenska,"hm, ja muesste man austesten"
+2014-11-10 16:55:54,Svenska,"apropros, hast du den uc.net-retro-thread verfolgt?"
+2014-11-10 16:56:07,Jonathan,Ein bisschen überflogen
+2014-11-10 16:56:13,Svenska,der hat sich da lange und gruendlich mit sdcc gepruegelt und sich auch sonst relativ dämlich angestellt
+2014-11-10 16:56:24,Jonathan,"Oh, ersteres hab ich auch *g*"
+2014-11-10 16:56:26,Svenska,aber er hat mit dem sdcc-maintainer kontakt aufgenommen und ein paar bugs fixen lassen
+2014-11-10 16:56:37,Jonathan,"Hm gut, das hab ich nicht"
+2014-11-10 16:56:49,Svenska,weil er auch eine non-standard-memory-map hatte
+2014-11-10 16:57:04,Svenska,"evtl guckst du mal, ob ein ganz aktueller sdcc fuer dich besser tut"
+2014-11-10 16:57:12,Jonathan,Hab das heute morgen in der ToDo-Liste für den nächsten Release gesehen ^^
+2014-11-10 16:57:19,Svenska,*g
+2014-11-10 16:57:22,Jonathan,Insofern werd ich da wohl noch ein bisschen warten müssen
+2014-11-10 16:57:34,Jonathan,Aber es ist *genau* mein Problem mit _INITIALIZER und _INITIALIZED drin :P
+2014-11-10 16:57:56,Svenska,"(das mit dem ""dämlich anstellen"" bezog sich darauf, dass er eigentlich so ziemlich alle hinweise ignoriert hat und dann natuerlich mit anlauf in die probleme reingelaufen ist, die ihm alle vorher schon prophezeit haben)"
+2014-11-10 16:58:08,Jonathan,Hmmm *g*
+2014-11-10 16:58:27,Svenska,"typ ""ich will fädelkämme"" - ""ja gut, reduzierte taktrate, beschissenes debugging und reparaturen fast unmöglich"" - ""ich will trotzdem!"""
+2014-11-10 16:58:45,Svenska,"zwei wochen später ""das läuft nur mit wenig takt, man kann es nicht debuggen und reparieren ist schwierig... bääh"""
+2014-11-10 16:58:56,Jonathan,"Du meinst sowas wie ""Nein, nein, ich schreib mein OS jetzt für einen selbstgebastelten Drahthaufen! Egal, wenn das total kompliziert will, ich will das jetzt machen!"""
+2014-11-10 16:59:12,Svenska,"nein, das kann man begruenden"
+2014-11-10 16:59:25,Jonathan,Moment mal
+2014-11-10 16:59:30,Jonathan,Hattest du nicht auch Fädelkämme?
+2014-11-10 16:59:32,Svenska,nein
+2014-11-10 16:59:35,Jonathan,Okay *g*
+2014-11-10 16:59:38,Svenska,fädelkämme sind scheiße :)
+2014-11-10 16:59:51,Svenska,sieht zwar total gut aus
+2014-11-10 17:00:05,Jonathan,Aber du hast die Drähte auf deiner Platine durch eine kleine Drahtschlaufe geführt!
+2014-11-10 17:00:08,Jonathan,Ich hab's genau gesehen!
+2014-11-10 17:00:08,Svenska,aber wenn du alle leitungen wunderbar parallel und miteinander verdrillt legst...?
+2014-11-10 17:00:18,Svenska,"rate mal, was da passiert. :)"
+2014-11-10 17:00:20,Jonathan,xD
+2014-11-10 17:00:34,Svenska,"ich hab die drähte einmal um den pin gewickelt und dann festgelötet, ja"
+2014-11-10 17:01:02,Jonathan,Nee
+2014-11-10 17:01:09,Svenska,achso ja
+2014-11-10 17:01:13,Jonathan,"Wenn man von der Unterseite auf dein Board schaut, rechts mittig"
+2014-11-10 17:01:14,Svenska,ich hab zwei drahtschlaufen ;)
+2014-11-10 17:01:21,Jonathan,Hehe ;)
+2014-11-10 17:01:27,Svenska,aber das ist ja kein fädelkamm :)
+2014-11-10 17:01:40,Svenska,eine davon könnte mich später mal beißen
+2014-11-10 17:01:42,Jonathan,Kommt dem aber schon etwas näher ;)
+2014-11-10 17:01:44,Svenska,die andere ist sauber getaktet
+2014-11-10 17:02:04,Svenska,mom
+2014-11-10 17:05:26,Svenska,http://www.mikrocontroller.net/attachment/230047/DSC08137__1600_x_1200_.jpg
+2014-11-10 17:05:47,Svenska,oder http://www.mikrocontroller.net/attachment/93660/z180_3.JPG
+2014-11-10 17:05:53,Jonathan,Oh Gott
+2014-11-10 17:05:55,Svenska,sieht wirklich ordentlich und aufgeräumt aus
+2014-11-10 17:06:18,Jonathan,"Wenn man nen Draht ändern will, schneidet man ihn ab, lässt die Reste drin und legt nen neuen? :D"
+2014-11-10 17:06:23,Svenska,ja.
+2014-11-10 17:06:30,Jonathan,Geil *g*
+2014-11-10 17:06:37,Svenska,einen draht kriegst du da nie wieder rausgezogen.
+2014-11-10 17:06:48,Jonathan,Naja
+2014-11-10 17:06:51,Jonathan,"Lupe, Pinzette"
+2014-11-10 17:06:57,Jonathan,Und $viel Sekunden
+2014-11-10 17:07:01,Svenska,damit machst du aber alle anderen drähte lose :)
+2014-11-10 17:07:06,Jonathan,Mist xD
+2014-11-10 17:07:17,Jonathan,Apropos
+2014-11-10 17:07:35,Jonathan,"Bedingtes Laden/Wiederherstellen von SP ist ""würgs"": http://pastebin.com/zas9jSvn"
+2014-11-10 17:08:32,Svenska,hihi
+2014-11-10 17:08:37,Svenska,was machst du auch so komische dinge? :-)
+2014-11-10 17:09:12,Jonathan,"Geht halt nicht ohne... Wenn man vom Kernelspace wieder in einen anderen Treiber callen will, muss man wegen dem Mapping über's kernelGate, das darf dann aber den Stack nicht nochmal umschalten, wenn man sowieso schon im Kernelspace ist"
+2014-11-10 17:10:05,Jonathan,Vermutlich baue ich gerade x86's CallGates in Software auf einem Z80 nach *g*
+2014-11-10 17:10:23,Svenska,ja
+2014-11-10 17:10:27,Svenska,ich finde das... komisch.
+2014-11-10 17:10:32,Svenska,"apropros, fuzix sagt dir was?"
+2014-11-10 17:10:40,Jonathan,Hast du mir schonmal gezeigt
+2014-11-10 17:10:43,Svenska,ok
+2014-11-10 17:10:55,Jonathan,Werd ich aber nicht auf mein System portieren :P
+2014-11-10 17:11:10,Jonathan,"1. Ist die Hardware dafür vermutlich viel zu seltsam (fixe Kernelpage, Interruptsystem)"
+2014-11-10 17:11:16,Jonathan,2. Muss ich sowieso ein eigenes OS schreiben ^^
+2014-11-10 17:11:23,Svenska,"hm ich glaube, das wäre nichtmal das problem"
+2014-11-10 17:11:28,Svenska,du hast banked speicher
+2014-11-10 17:11:48,Svenska,"naja, ich habs mir im detail nicht angeguckt"
+2014-11-10 17:12:06,Svenska,war nur vor ewigen zeiten von UZI erstaunt (das läuft auf z80 in 64k non-banked)
+2014-11-10 17:13:06,Jonathan,Hmmm :)
+2014-11-10 17:13:25,Svenska,"aber uzi ist ungefähr ein unix v7, schon arg staubig..."
+2014-11-10 17:13:51,Jonathan,Kann man von unseren Z80 auch sagen ;)
+2014-11-10 17:14:01,Svenska,naja
+2014-11-10 17:14:15,Svenska,ich hatte doch mal von ibm's unix fuer 8086 berichtet
+2014-11-10 17:14:32,Svenska,pc/ix. das ist ungefähr ein system iii
+2014-11-10 17:14:45,Svenska,"und schon das ... stinkt, gelinde gesagt. :-D"
+2014-11-10 17:15:16,Svenska,(SysIII ist neuer als V7)
+2014-11-10 17:15:26,Jonathan,Hmmm :P
+2014-11-10 17:15:44,Svenska,sowas wie <string.h> ist neuer *g*
+2014-11-10 17:15:49,Jonathan,lol *g*
+2014-11-10 17:16:05,Jonathan,Deshalb hab ich die vermutlich auch nicht in meinem Kernel includet ;)
+2014-11-10 17:17:41,Svenska,ich wollte mal klassischen vi auf pc/ix bauen lassen
+2014-11-10 17:19:05,Svenska,"aber hab ich nicht hingekriegt, zumindest nicht mit dem geringfuegig modernisierten sourcecode, den man im netz so findet (weil der string.h benutzen möchte, und weil das configure-script ein zu großen environment baut -> out-of-memory in der shell)"
+2014-11-10 17:19:36,Svenska,"achso, und weil er erkennt, dass der compiler ansi-c kann (was er nicht kann)."
+2014-11-10 17:20:34,Jonathan,Schade
+2014-11-10 17:20:48,Svenska,das irritierende: er stolpert nicht ueber ansi-c funktionsprototypen
+2014-11-10 17:21:11,Svenska,"""int func(int a, int b)"" ist fuer ihn total okay. nur kennt er dann weder a noch b innerhalb der funktion :D"
+2014-11-10 17:21:16,Jonathan,xD
+2014-11-10 17:29:48,Jonathan,lol
+2014-11-10 17:29:51,Jonathan,"Svenska: int __at(0x0010) kernelGate(unsigned char, unsigned char, int, void*);"
+2014-11-10 17:30:03,Jonathan,"Der hat sich nicht darüber aufgeregt, lol"
+2014-11-10 17:30:16,Svenska,funktioniert es wenigstens?
+2014-11-10 17:30:21,Jonathan,Das ist jetzt die Frage *g*
+2014-11-10 17:30:27,Svenska,guck ins linkerscript?
+2014-11-10 17:30:31,Jonathan,Äh ja
+2014-11-10 17:30:36,Jonathan,Moment :P
+2014-11-10 17:32:15,Jonathan,Er zeigt's dort nicht an
+2014-11-10 17:33:12,Jonathan,"Okay, hab jetzt mal versucht, das zu callen"
+2014-11-10 17:33:13,Jonathan,?ASlink-Warning-Undefined Global '_kernelGate' referenced by module 'kernel'
+2014-11-10 17:33:15,Jonathan,:(
+2014-11-10 17:35:07,Jonathan,Hätte der Compiler da nicht eigentlich ne Fehlermeldung ausgeben müssen?
+2014-11-10 17:40:56,Jonathan,LOL
+2014-11-10 17:41:16,Jonathan,"Svenska: Internal error: validateOpType failed in OP_SYMBOL(IC_LEFT (ic)) @ /home/sdcc-builder/build/sdcc-build/orig/sdcc/src/z80/gen.c:4152: expected symbol, got value"
+2014-11-10 17:41:28,Jonathan,Jetzt hab ich den SDCC mit meinem Code zum Crashen bewegen können... xD
+2014-11-10 17:41:31,Svenska,*schulterzuck*
+2014-11-10 17:41:43,Jonathan,"Ohje, dieser Compiler ist so buggy... :D"
+2014-11-10 17:41:45,Svenska,kipp nen bugreport auf die mailingliste
+2014-11-10 17:42:01,Jonathan,"Hm, joa"
+2014-11-10 18:19:33,Jonathan,Nochmal ne Frage an euch C-Experten... ;)
+2014-11-10 18:19:59,Jonathan,"Sagen wir mal, mir ist ein Pointer zu einer Struct als void* gegeben. Jetzt will ich aus dieser Struct ein Feld auslesen."
+2014-11-10 18:20:13,Jonathan,(*(kmodule_t*)ptr1).entry <--- Geht das so?
+2014-11-10 18:20:19,Svenska,dann hast du schonmal was falsch gemacht ;)
+2014-11-10 18:21:15,Jonathan,"Naja, ich muss das durch's kernelGate schicken, und da kommt nunmal ein void* durch ;)"
+2014-11-10 18:21:15,Naoe-Kanno,ich als Noob wuerde ja ((kmodule_t*)ptr1)->entry nehmen
+2014-11-10 18:21:23,Naoe-Kanno,wobei ich mir mit den Klammern nicht mehr sicher bijn
+2014-11-10 18:21:28,Svenska,ich wuerde da wieder eine lokale variable zwischenschalten ;)
+2014-11-10 18:21:31,Naoe-Kanno,zulang nicht mehr gemacht >_<
+2014-11-10 18:21:58,Jonathan,"Ich würde da keine lokale Variable zwischen schalten, weil ich dann 20 lokale Variablen für irgendwelches Zeug in dieser Funktion hätte *g*"
+2014-11-10 18:22:21,Svenska,dann solltest du vllt ueber 2 kernelgates nachdenken
+2014-11-10 18:22:22,Svenska,:-D
+2014-11-10 18:22:26,Naoe-Kanno,dann nimm halt defines *duck*
+2014-11-10 18:22:34,Jonathan,Wieso 2 Gates? :D
+2014-11-10 18:22:46,Svenska,an deiner stelle wäre vermutlich ein komplizierterer datentyp sinnvoll
+2014-11-10 18:22:47,Svenska,also
+2014-11-10 18:22:49,Naoe-Kanno,"und bei 20 Variablen klingt das eher so, als waere deine Funktion zu gross"
+2014-11-10 18:22:59,Svenska,struct kernelgate_t
+2014-11-10 18:23:06,Svenska,oben die gemeinsamen einträge
+2014-11-10 18:23:12,Svenska,unten ein union aller nicht-gemeinsamen einträge
+2014-11-10 18:23:16,Jonathan,"Ist nur ein Switch-Käse, um in einem Treiber die richtige Funktion aufzurufen"
+2014-11-10 18:23:20,Jonathan,Naja
+2014-11-10 18:23:30,Svenska,"dann kannst du das wesentlich einfacher ausklamuesern, bzw das macht dann der compiler fuer dich"
+2014-11-10 18:23:49,Svenska,ptr1->kmodule.blubber
+2014-11-10 18:23:52,Jonathan,"Die Treiber haben später auch noch vor, Pointer zu eigenen Datentypen da durchzuwurschteln"
+2014-11-10 18:24:02,Jonathan,Und von deren Datentypen hat der Kernel keine Ahnung :D
+2014-11-10 18:24:07,Svenska,"ja, und?"
+2014-11-10 18:24:12,Naoe-Kanno,"solang es nur Pointer sind, ist das egal"
+2014-11-10 18:24:13,Svenska,ptr1->kmodule.cookie
+2014-11-10 18:24:30,Svenska,"wenn der kernel davon keine ahnung hat, muss er es auch nicht zerpfluecken können"
+2014-11-10 18:24:33,Jonathan,Ja schon
+2014-11-10 18:24:37,Svenska,aber du hast gemeinsame felder
+2014-11-10 18:24:41,Svenska,und du hast nicht gemeinsame felder
+2014-11-10 18:24:55,Jonathan,Ach ja
+2014-11-10 18:25:08,Svenska,"und wenn du das als stinknormale ""pointer-umänder-funktion"" haben willst, dann solltest du da nicht rumpfuschen"
+2014-11-10 18:25:15,Svenska,deswegen der ansatz mit evtl zwei gates
+2014-11-10 18:25:25,Jonathan,Wie bekomme ich dann eine kernelgate_t über Register übergeben? :D
+2014-11-10 18:25:48,Svenska,"du schreibst in den header statt ""void*"" einfach ""struct kernelgate_t*"" ?"
+2014-11-10 18:25:57,Jonathan,Ach so meinst du das
+2014-11-10 18:25:57,Svenska,pointer auf struct reicht doch
+2014-11-10 18:26:27,Jonathan,"Und was genau spricht jetzt gegen ein void*, wenn jeder Treiber da sowieso seinen eigenen Käse macht?"
+2014-11-10 18:26:34,Svenska,"weil was du vorhast, klingt mir arg nach ""objekte transformieren"""
+2014-11-10 18:26:46,Svenska,und dann kannst du auch gleich nen objektdatentyp dafuer bauen.
+2014-11-10 18:26:54,Jonathan,Will ich doch garnicht
+2014-11-10 18:27:02,Svenska,"gegen void* spricht generell, dass du typsicherheit wegschmeißt"
+2014-11-10 18:27:21,Svenska,"es gibt stellen, wo man es benutzen muss - und darum hat C das - aber wenn man das vermeiden kann, sollte man es vermeiden."
+2014-11-10 18:27:26,Naoe-Kanno,und Lesbarkeit schmeisst du auch weg
+2014-11-10 18:27:33,Naoe-Kanno,das macht mir fast noch mehr Sorgen
+2014-11-10 18:28:00,Svenska,"wenn dein kernelgate das, was du ihm uebergibst, dereferenzieren muss, dann sollte das definitiv KEIN void* sein"
+2014-11-10 18:28:14,Jonathan,"Nein, der muss das nicht dereferenzieren"
+2014-11-10 18:28:18,Svenska,"wenn du da einfach was durchschleusen willst, was den kernel nix angeht und was er nicht kennt, dann kann es ein void* sein"
+2014-11-10 18:28:26,Jonathan,Genau das will ich tun
+2014-11-10 18:28:26,Svenska,du willst ptr1->entry haben
+2014-11-10 18:28:31,Svenska,also willst du ptr1 dereferenzieren...
+2014-11-10 18:28:40,Jonathan,"Ja, ich will ptr1->entry *im Treiber* dereferenzieren"
+2014-11-10 18:28:45,Svenska,und damit sollte ptr1 nach möglichkeit kein void* sein
+2014-11-10 18:28:51,Jonathan,ptr1 ist da längst schon durch's kernelGate durch
+2014-11-10 18:29:08,Svenska,und warum ist es dann *im Treiber* ein void* ?
+2014-11-10 18:29:23,Svenska,"der sinn von void* ist, dass du ""jeden pointer"" auf void* casten kannst"
+2014-11-10 18:29:37,Jonathan,Weil ich es ja genau *im Treiber* wieder vor der Verwendung zurückcasten will :D
+2014-11-10 18:29:46,Svenska,falscher ansatz :D
+2014-11-10 18:29:55,Svenska,dann lass es im kernelgate ein void*
+2014-11-10 18:30:04,Svenska,und mach es im treiber ein struct kmodule_t*
+2014-11-10 18:30:28,Jonathan,"Ja gut, das könnte ich machen"
+2014-11-10 18:30:34,Svenska,problem gelöst. :p
+2014-11-10 18:30:40,Jonathan,Aber dennoch fällt aus dem kernelGate hinten ein void* raus :D
+2014-11-10 18:30:45,Svenska,?
+2014-11-10 18:30:50,Jonathan,Und den muss ich dann halt auf kmodule_t* casten
+2014-11-10 18:30:50,Svenska,wie rufst du das denn aus?
+2014-11-10 18:31:03,Svenska,"kernelGate(meine_struct, x) ?"
+2014-11-10 18:31:04,Jonathan,Das kernelGate callt den Treiber
+2014-11-10 18:31:09,Jonathan,Aaaaalso:
+2014-11-10 18:31:21,Jonathan,"int kernelGate(unsigned char moduleID, unsigned char functionID, int par1, void* ptr1)"
+2014-11-10 18:31:40,Jonathan,"Das ist die zentrale Schnittstelle, um mit (weggemappten) Treibern zu reden."
+2014-11-10 18:32:20,Jonathan,Darüber wählt man mit Modul-ID und Funktions-ID eine Treiberfunktion aus.
+2014-11-10 18:32:36,Jonathan,Das kernelGate mappt dann den angesprochenen Treiber in den Adressraum und callt ihn.
+2014-11-10 18:32:47,Jonathan,Als Parameter übergibt es par1 und ptr1.
+2014-11-10 18:32:56,Svenska,warum? eins von beiden wuerde reichen.
+2014-11-10 18:33:12,Jonathan,"Naja, ptr1 brauche ich sowieso."
+2014-11-10 18:33:27,Svenska,"die syscall-interfaces, die ich mir angeschaut hatte, haben nur einen parameter"
+2014-11-10 18:33:30,Jonathan,"(Den Pointer muss das kernelGate ja noch abändern, damit durch das Mapping nix durcheinander kommt.)"
+2014-11-10 18:33:43,Svenska,"und wenn die funktion mehrere braucht, dann ist das immer ein pointer auf ne struct"
+2014-11-10 18:33:49,Jonathan,"Ja, schon."
+2014-11-10 18:33:53,Jonathan,Aber par1 kostet mich nichts. ^^
+2014-11-10 18:33:53,Svenska,egal
+2014-11-10 18:34:17,Jonathan,"Und wenn eine Funktion eben nur einen einzigen Int braucht, muss man so nicht extra noch Speicher für ne Struct reservieren."
+2014-11-10 18:34:31,Svenska,dann kann man den auch auf nen void* casten :p
+2014-11-10 18:34:42,Jonathan,Hmmm=
+2014-11-10 18:34:49,Jonathan,"Du meinst, den Int anstatt des Pointers verwenden?"
+2014-11-10 18:34:54,Svenska,nein
+2014-11-10 18:35:06,Svenska,"wenn du nen ptr hast und nur einen int brauchst, kannst du den int da auch einfach reinschreiben"
+2014-11-10 18:35:12,Jonathan,Kann ich nicht :D
+2014-11-10 18:35:13,Svenska,macht dann aber im zweifelsfall dein mapping kaputt
+2014-11-10 18:35:18,Jonathan,Immerhin macht das kernelGate darauf Arithmetik
+2014-11-10 18:35:24,Jonathan,Und hinterher fällt dann nur Müll raus
+2014-11-10 18:35:26,Svenska,das ist so schon kaputt *g*
+2014-11-10 18:35:29,Jonathan,*g*
+2014-11-10 18:35:37,Svenska,aber ptr-auf-int wäre drin
+2014-11-10 18:35:44,Svenska,und nicht kaputt.
+2014-11-10 18:35:52,Jonathan,Inwiefern ptr-auf-int?
+2014-11-10 18:36:08,Svenska,int* und kmodule_t* sind beides void*
+2014-11-10 18:36:10,Svenska,:)
+2014-11-10 18:36:15,Jonathan,Ja gut ^^
+2014-11-10 18:36:19,Svenska,egal
+2014-11-10 18:36:34,Jonathan,"Aber bevor ich noch Speicher für den Int reserviere, kann ich ihn auch direkt übergeben, weil es mich nichts kostet. :P"
+2014-11-10 18:36:47,Svenska,?
+2014-11-10 18:36:54,Svenska,nur stack in der funktion
+2014-11-10 18:37:00,Svenska,und ein paar taktzyklen. :p
+2014-11-10 18:37:16,Svenska,oder uebergibst du hauptsächlich konstanten an dein kernelGate? :D
+2014-11-10 18:37:21,Jonathan,*g*
+2014-11-10 18:37:31,Jonathan,Jetzt lass mich doch halt meinen Int behalten! :D
+2014-11-10 18:37:38,Svenska,ja
+2014-11-10 18:37:46,Jonathan,Ich will den jetzt nicht nochmal aus den ganzen Assemblerfunktionen rauspopeln müssen
+2014-11-10 18:40:05,Svenska,"lol ""Kühe streiken: Japan muss 10'000 Tonnen Butter importieren"""
+2014-11-10 18:41:13,Jonathan,Ach ja:
+2014-11-10 18:41:32,Jonathan,"Wenn ich will, dass ein Pointer *nicht* durch die Pointer-Arithmetik vom kernelGate geht, übergebe ich ihn in dem Int... *g*"
+2014-11-10 18:41:47,Svenska,also
+2014-11-10 18:41:51,Svenska,was tut kernelGate?
+2014-11-10 18:41:53,Jonathan,"Ich glaube, jetzt sollte ich langsam wegrennen, sonst werd ich geschlagen"
+2014-11-10 18:41:56,Jonathan,Ähm
+2014-11-10 18:42:03,Jonathan,"""Dinge mit Pages und einem zweiten Stack"""
+2014-11-10 18:42:10,Svenska,"""wenn obere bits von ptr1 != 00, dann"
+2014-11-10 18:42:10,Jonathan,Also:
+2014-11-10 18:42:16,Svenska,"bits = 01 und ummappen"" ?"
+2014-11-10 18:42:26,Jonathan,"""Wenn obere Bits = 01, dann ummappen und Bits auf 10 ändern"""
+2014-11-10 18:42:33,Svenska,ok
+2014-11-10 18:42:39,Jonathan,Auf Page 1 wird ja der Treiber gemappt
+2014-11-10 18:42:42,Svenska,stimmt
+2014-11-10 18:42:54,Jonathan,"Und wenn der dort hin gemappt wird, wo seine Daten eigentlich liegen, wäre das ziemlich blöd"
+2014-11-10 18:43:12,Svenska,und sonst fasst das kernelgate ptr1 nicht an?
+2014-11-10 18:43:14,Jonathan,Ja
+2014-11-10 18:43:22,Svenska,anschließend ruft das kernelgate dann die funktion auf
+2014-11-10 18:43:25,Jonathan,Genau
+2014-11-10 18:43:33,Svenska,oh das wird noch schmerzhaft
+2014-11-10 18:43:34,Jonathan,"Die Funktion des Moduls, das nach 0x4000 gemappt wurde"
+2014-11-10 18:43:37,Svenska,weil
+2014-11-10 18:43:52,Svenska,normalerweise willst du ja einem treiber eine struct uebergeben
+2014-11-10 18:44:04,Svenska,"und zwar eine, die viele pointer enthält, um den speicher nicht mehrfach haben zu muessen ;)"
+2014-11-10 18:44:12,Jonathan,Hmmmm... *g*
+2014-11-10 18:44:17,Svenska,die muss der treiber dann selbst adaptieren
+2014-11-10 18:44:40,Svenska,"da wäre es vermutlich sogar sinnvoller, wenn das kernelGate dem treiber mitteilt, ob er gerade umhergemappt wurde oder nicht"
+2014-11-10 18:44:54,Svenska,"und eventuell eine kleine inline-funktion, die einfach die oberen bits zwangsweise auf 10 setzt"
+2014-11-10 18:45:51,Jonathan,Naja. äh
+2014-11-10 18:45:55,Jonathan,Hm.
+2014-11-10 18:46:00,Jonathan,Irgendwie muss das halt gehen *g*
+2014-11-10 18:46:24,Jonathan,"Wenn ein Treiber einen anderen callen will, kann ich nichts anderes machen, als ummappen."
+2014-11-10 18:46:48,Svenska,doch: kopieren.
+2014-11-10 18:46:57,Jonathan,Ja.
+2014-11-10 18:47:24,Jonathan,"Das ändert nichts an den Problem, dass Pointer in einer Struct durch Kopieren an eine andere Adresse auch nicht gültiger werden."
+2014-11-10 18:47:40,Svenska,doch: du kannst die adressen gleich halten
+2014-11-10 18:47:54,Svenska,bzw
+2014-11-10 18:47:59,Jonathan,"Dann muss jeder Treiber eine ""Landing Platform"" für die Daten haben."
+2014-11-10 18:48:00,Svenska,"wenn du kopierst, gibt es keine pointer auf daten mehr"
+2014-11-10 18:48:10,Svenska,"solange du keine schleifen hast, reicht ein element"
+2014-11-10 18:48:23,Svenska,quasi
+2014-11-10 18:48:42,Jonathan,"Stell dir vor, du hast eine Linked List."
+2014-11-10 18:48:43,Svenska,"jeder treiber hat einen buffer, der genau ein element hält, dessen größe dem kernel bekannt ist"
+2014-11-10 18:48:56,Jonathan,Ohje. :P
+2014-11-10 18:49:06,Svenska,call_treiber(meine_daten_fuer_den_treiber)
+2014-11-10 18:49:09,Jonathan,Und das bringt mir gegenüber ptr1 dann was?
+2014-11-10 18:49:13,Svenska,call_treiber(&meine_daten_fuer_den_treiber)
+2014-11-10 18:49:26,Jonathan,"Ich kann damit immernoch keine Structs übergeben, die Pointer enthalten."
+2014-11-10 18:49:29,Svenska,nö
+2014-11-10 18:49:37,Svenska,"aber wenn du das garantierst, ersparst du dir ne menge ärger"
+2014-11-10 18:49:47,Svenska,"und nein, du uebergibst treibern am besten keine linked list ;)"
+2014-11-10 18:49:53,Jonathan,Naja
+2014-11-10 18:50:03,Jonathan,"Das einzige Problem von ptr1 ist, dass er keine Pointer in Structs erlaubt. ;)"
+2014-11-10 18:50:08,Jonathan,Alles andere geht mit ptr1 wunderbar.
+2014-11-10 18:50:09,Jonathan,Auch outargs.
+2014-11-10 18:50:20,Svenska,hm
+2014-11-10 18:50:23,Svenska,mach mal ;)
+2014-11-10 18:50:31,Svenska,"du kriegst das definitiv so hin, dass es tut"
+2014-11-10 18:50:37,Jonathan,*g*
+2014-11-10 18:50:41,Svenska,und alle anderen kriegen wuergereize ^^
+2014-11-10 18:50:44,Jonathan,xD
+2014-11-10 18:50:59,Jonathan,Aber mal im Ernst
+2014-11-10 18:51:09,Jonathan,Wenn ich Treibern ein Objekt fester Größe per Kopieren übergebe
+2014-11-10 18:51:18,Jonathan,Was für Vorteile hätte das ggü ptr1?
+2014-11-10 18:51:25,Svenska,es wäre sauberer ^^
+2014-11-10 18:51:29,Jonathan,Ja super :P
+2014-11-10 18:51:31,Svenska,oder zumindest einfacher
+2014-11-10 18:51:41,Svenska,erklär mal deine struktur dem lehrer
+2014-11-10 18:51:42,Jonathan,Aber es könnte weniger und wäre langsamer
+2014-11-10 18:51:50,Jonathan,:P
+2014-11-10 18:51:54,Svenska,wobei ich da nen speziellen lehrertypus im kopf hab
+2014-11-10 18:52:10,Jonathan,"Ich halte das für die optimale Implementierung (wenn auch nicht die einfachste), also mach ich das so ;)"
+2014-11-10 18:52:14,Svenska,"einen, der info ""mal nachstudiert hat"", selbst kaum ahnung und vor allem eine unglaubliche arroganz"
+2014-11-10 18:52:18,Jonathan,xD
+2014-11-10 18:52:21,Jonathan,Nee
+2014-11-10 18:52:27,Svenska,(so war meiner)
+2014-11-10 18:52:35,Jonathan,Das ist doof ^^
+2014-11-10 18:52:44,Jonathan,"Nee, mein Lehrer hat schon Ahnung"
+2014-11-10 18:52:51,Jonathan,Auch von Mikroprozessorsystemen
+2014-11-10 18:52:58,Svenska,sonst hätte er dir das thema nicht erlaubt :)
+2014-11-10 18:53:02,Jonathan,Vermutlich ;)
+2014-11-10 18:53:05,Svenska,unser hat ja nichtmal ne klausur ordentlich hingekriegt
+2014-11-10 19:00:52,Svenska,du hast mit deiner fixen kernel-page schlicht ne sehr schlechte entscheidung getroffen ;)
+2014-11-10 19:01:12,Svenska,achso
+2014-11-10 19:01:18,Svenska,noch ein ansatz
+2014-11-10 19:01:32,Svenska,wenn du deinen kernel mit allen treibern in 64 kb ram steckst
+2014-11-10 19:01:43,Svenska,dann könntest du in der fixen page zwei funktionen haben:
+2014-11-10 19:01:57,Svenska,einen callstub und einen copy_between_overlays
+2014-11-10 19:02:22,Svenska,in dem moment legst du die last des daten-bekommens in den treiber
+2014-11-10 19:03:06,Svenska,"d.h. der call-stub mappt einfach alle pages, ruft die treiberfunktion auf"
+2014-11-10 19:03:30,Jonathan,"Ja, gut"
+2014-11-10 19:03:40,Svenska,"und die kriegt ihren pointer, weiß, was das ist, und kuemmert sich darum, die daten zu kriegen"
+2014-11-10 19:03:41,Jonathan,Aber dann müssen sich die Treiber mit Rummappen beschäftigen
+2014-11-10 19:03:44,Svenska,nein
+2014-11-10 19:03:51,Jonathan,Ja okay
+2014-11-10 19:03:51,Svenska,dafuer gibt es die copy_between_overlays
+2014-11-10 19:04:05,Jonathan,Dann muss man aber wieder kopieren :P
+2014-11-10 19:04:07,Svenska,"das ist ungefähr die technik, die man mit overlays macht"
+2014-11-10 19:04:13,Jonathan,Ja gut
+2014-11-10 19:04:21,Jonathan,Aber ich mag meinen ptr1 ganz gern :P
+2014-11-10 19:04:27,Svenska,ja.
+2014-11-10 19:04:37,Jonathan,Würgreiz ist doch auch was Feines. *g*
+2014-11-10 19:04:40,Svenska,weil du schon viel arbeit investiert hast.
+2014-11-10 19:04:44,Svenska,nicht wirklich ^^
+2014-11-10 19:04:55,Jonathan,Ich will aber nicht kopieren!!1!!eins!!elf! D:
+2014-11-10 19:05:11,Jonathan,"Nicht auf einem System, bei dem mir jede Kopie von irgendwas weh tut"
+2014-11-10 19:05:16,Svenska,hättest du mal 4k-pages gehabt...
+2014-11-10 19:05:22,Jonathan,"Sowohl speichermäßig, als auch mit der Geschwindigkeit"
+2014-11-10 19:05:25,tufel,huhu
+2014-11-10 19:05:28,Jonathan,Huhu tufel
+2014-11-10 19:05:39,tufel,Huhu Jonathan
+2014-11-10 19:05:40,Svenska,"hättest du kleinere pages, dann hättest du all diese probleme nicht..."
+2014-11-10 19:05:45,Svenska,Huhu tufel
+2014-11-10 19:05:58,tufel,Huhu svenska
+2014-11-10 19:06:15,Jonathan,Svenska: Ich bleib jetzt bei ptr1! Fädelkämme sind super! *g*
+2014-11-10 19:06:26,Svenska,kopf->tisch
+2014-11-10 19:06:32,Jonathan,"Und wenn ich mir hinterher total in den Arsch beiße, dann hab ich wenigstens was gelernt :P"
+2014-11-10 19:06:56,Svenska,wenigstens ist das das ziel deiner bastelei
+2014-11-10 19:07:01,Svenska,und sogar das offizielle dazu ;)
+2014-11-10 19:07:05,Jonathan,Genau ;)
+2014-11-10 19:07:47,Jonathan,Köpfe dereferenzieren gehört sich übrigens nicht
+2014-11-10 19:08:00,Svenska,wieso?
+2014-11-10 19:08:06,Svenska,mein kopf ist bloß ne datenstruktur
+2014-11-10 19:08:14,Jonathan,Erst recht nicht das Feld tisch ;)
+2014-11-10 19:08:17,Svenska,"kopf->tisch ist der tisch, in den ich gerade beiße"
+2014-11-10 19:08:20,Jonathan,*g*
+2014-11-10 19:08:23,Svenska,normalerweise NULL
+2014-11-10 19:08:33,Svenska,also !kopf->tisch
+2014-11-10 19:08:46,Svenska,"(weiß grad nicht, ob ich da klammern bräuchte oder nicht. :D)"
+2014-11-10 19:08:48,Jonathan,kopf-zaehne.beisse(tisch->platte)
+2014-11-10 19:09:01,Jonathan,> vergessen: kopf->zaehne.beisse(tisch->platte)
+2014-11-10 19:09:07,Svenska,ja
+2014-11-10 19:09:10,Svenska,das ist aber zuviel tipparbeit
+2014-11-10 19:09:14,Jonathan,Vermutlich
+2014-11-10 19:09:20,Svenska,"ich hab kopf einfach tied und blessed, dann geht das schon ;)"
+2014-11-10 19:10:03,Svenska,wobei es dann glaube $kopf->{tisch} heissen muesste
+2014-11-10 19:10:09,Svenska,aber auch das ist mir zuviel tipperei :D
+2014-11-10 19:10:32,Jonathan,"Na gut, dass kevin nicht da ist... Was hätte der nur gesagt, wenn er ptr1 gesehen hätte"
+2014-11-10 19:10:41,Svenska,vermutlich nix
+2014-11-10 19:11:02,Svenska,"er hat etwas gelernt, was ich nicht gelernt hab:"
+2014-11-10 19:11:06,Svenska,"""I learned long ago, never to wrestle with a pig. You get dirty, and besides, the pig likes it."""
+2014-11-10 19:11:20,Jonathan,Ey!
+2014-11-10 19:11:33,Jonathan,Gemein
+2014-11-10 19:11:35,Svenska,"ich hab nicht gesagt, wer das pig ist ;)"
+2014-11-10 19:12:03,Jonathan,Aber du hast es dir gedacht ;)
+2014-11-10 19:12:14,Svenska,"ja, aber vermutlich meinen wir verschiedene personen"
+2014-11-10 19:12:28,Jonathan,Hmm ^^
+2014-11-10 19:12:51,Jonathan,"So, bin jetzt mal essen, bis später :P"
+2014-11-10 19:13:01,Svenska,bin grad gesättigt ^^
+2014-11-10 19:13:13,Jonathan,"Ich nicht, und das will ich jetzt mal ändern ^^"
+2014-11-10 19:25:37,tufel,"Nun hab da mal ne frage zu C++, Ich habe zum einen eine struct foo { }; und zum anderem ne Class in der es nen Zeiger mit dieser struct gibt: class tBeispiel { ... foo *zeiger; }; . Im Konstruktor dieser class habe ich jetzt dem Zeiger eine Array mit Daten zugewiesen: tBeispiel::beispiel( ) { zeiger = new foo[] { ""daten""}; } . Jetzt sagt mir der kompilerer das am Ende des Konstruktors ein Compilerfehler gibt. Was hab ich also falsch gemac"
+2014-11-10 19:26:44,Svenska,"zeiger = new foo[] { ""daten"" };"
+2014-11-10 19:26:47,Svenska,was soll das bedeuten?
+2014-11-10 19:27:10,Svenska,"achso moment, vergiss das."
+2014-11-10 19:28:34,Svenska,was willst du da eigentlich erzeugen?
+2014-11-10 19:28:49,Svenska,du willst einen zeiger auf ein array aus elementen vom typ foo?
+2014-11-10 19:29:05,tufel,joar
+2014-11-10 19:29:16,Svenska,und wie groß soll das array sein und was soll da drin stehen?
+2014-11-10 19:30:39,Svenska,"...ich bin jetzt nicht gerade der c++ spezialist, aber wenn ich mich recht entsinne, dann kennt c++ zusätzlich zu zeigern auch referenzen (die man mit & bezeichnet)"
+2014-11-10 19:30:54,Svenska,"die solltest du bevorzugt nehmen, weil du dann nicht mehr per hand referenzieren/dereferenzieren musst"
+2014-11-10 19:31:44,Jidder,"Svenska: frag doch bitte erstmal, was die fehlermeldung ist"
+2014-11-10 19:32:00,tufel,C1001 interner Compilerfehler
+2014-11-10 19:32:16,Jidder,also ist es ein microsoft compiler?
+2014-11-10 19:32:27,Svenska,"und wenn du ein dynamisches array haben willst, dessen größe du also nicht beim erzeugen schon weißt, dann musst du den passenden datentypen aus der STL nehmen (std::vector)"
+2014-11-10 19:33:06,Jonathan,"Ich vermute, für besonders großen Spaß brauchen wir einen sd++? ;)"
+2014-11-10 19:33:11,Jonathan,"(Wieder da, übrigens)"
+2014-11-10 19:33:16,Svenska,sdc++ ?
+2014-11-10 19:33:21,Svenska,"bloß nicht, danke."
+2014-11-10 19:33:25,Jonathan,:P
+2014-11-10 19:33:30,Svenska,eher ein z80-backend fuer llvm
+2014-11-10 19:33:36,Jonathan,Das wäre auch super
+2014-11-10 19:33:42,tufel,"Naja, die array soll nicht dynamisch sein, sie soll nur einmal mit daten befüllt werden."
+2014-11-10 19:33:46,Jidder,"und du hast da wörtlich new foo[] { ""daten"" } stehen?"
+2014-11-10 19:34:42,tufel,"Naja, die struct heißt bei mir nicht foo"
+2014-11-10 19:34:54,tufel,und die Daten sind etwas länger
+2014-11-10 19:34:56,Svenska,da fehlt mir ne zahl
+2014-11-10 19:34:58,Jidder,übergibst du da einen string? das sieht nämlich nicht richtig aus
+2014-11-10 19:36:14,Jidder,"achja und die syntax geht auch erst mit c++11. falls dein compiler das nicht mitmacht, wäre das schon mal eine erklärung, warum er da aussteigt"
+2014-11-10 19:36:50,Svenska,ich fuehl mich grad wie die bundeswehr
+2014-11-10 19:37:02,Svenska,"ich halte den feind so lange bei laune, bis richtiges militär (aka jidder) kommt :D"
+2014-11-10 19:37:13,Jidder,lol
+2014-11-10 19:38:01,Svenska,"alternativ medizinmann: so lange mit halbwissen dran rumpfuschen, bis es wenigstens nicht mehr ganz im eimer ist"
+2014-11-10 19:38:33,Jidder,in wirklichkeit hab ich nur google nebenbei offen und werf da stichworte rein
+2014-11-10 19:38:39,Jidder,wie in einen eintopf
+2014-11-10 19:39:02,Svenska,"das funktioniert aber auch nur, wenn man genug hintergrundwissen hat :-)"
+2014-11-10 19:39:16,Svenska,"ich hab das zwar auch gemacht, aber konnte nicht so richtig das ergebnis deuten"
+2014-11-10 19:40:44,tufel,Nun ich glaub mein Compiler müsste das eigentlich unterstützen.
+2014-11-10 19:40:54,Svenska,"was ist denn ""dein compiler""?"
+2014-11-10 19:41:20,tufel,Visual Studio 2013
+2014-11-10 19:42:54,Jidder,trotzdem musst du da wohl drumherum arbeiten
+2014-11-10 19:43:01,Svenska,"probier mal foo[2] { ""daten"" }"
+2014-11-10 19:43:03,Jidder,also array auf gute alte art und weise erstellen
+2014-11-10 19:43:06,Jidder,und dann von hand befüllen
+2014-11-10 19:44:05,tufel,"Mhh ok, dann versuch ich das mal."
+2014-11-10 19:52:09,Svenska,"kann man ""mildly promising"" als synonym zu ""nicht komplett beschissen"" nutzen?"
+2014-11-10 19:55:07,tufel,Year es Tut :)
+2014-11-10 20:06:42,Jonathan,lol
+2014-11-10 20:06:44,Jonathan,Warning: z80instructionSize() failed to parse line node HALT
+2014-11-10 20:07:03,Svenska,hmm
+2014-11-10 20:07:05,Jonathan,"Heißt das jetzt, dass SDCC HALT nicht kennt? Wtf?"
+2014-11-10 20:07:18,Svenska,"__asm__ volatile(""HALT"") ?"
+2014-11-10 20:07:41,Svenska,"also, der assembler kennt es eigentlich"
+2014-11-10 20:07:45,Jonathan,Das volatile mag er nicht
+2014-11-10 20:07:57,Jonathan,"Aber __asm__(""HALT"") resultiert in diesem Fehler"
+2014-11-10 20:08:02,Svenska,"ja gut, dann eben ""asm\nHALT\nendasm"" ;)"
+2014-11-10 20:08:11,Jonathan,"Hab ich gemacht, selbe Meldung"
+2014-11-10 20:08:19,Svenska,das ist seltsam.
+2014-11-10 20:08:21,Jonathan,Ja.
+2014-11-10 20:08:33,Jonathan,"Ich mach jetzt __asm__("".db 0x76"");"
+2014-11-10 20:08:34,Jonathan,*Seufz*
+2014-11-10 20:08:39,Svenska,lol
+2014-11-10 20:08:53,Svenska,"mach nen kommentar dahinter, dass das HALT bedeutet :D"
+2014-11-10 20:08:58,Jonathan,Ja ^^
+2014-11-10 20:09:04,Svenska,und file nen bugreport fuer sdcc *g*
+2014-11-10 20:09:25,Jonathan,*g*
+2014-11-10 20:09:42,Jonathan,"Oh mann, dieser Compiler..."
+2014-11-10 20:09:55,Svenska,it's the best you have...
+2014-11-10 20:10:01,Jonathan,"Tja, leider"
+2014-11-10 20:10:15,Svenska,also es gibt noch einen besseren
+2014-11-10 20:10:22,Jonathan,Mit dem 0x76-Würgaround geht's jetzt übrigens komplett ohne Warnmeldungen.
+2014-11-10 20:10:27,Jonathan,"Ja, IAR"
+2014-11-10 20:10:30,Jonathan,Aber der kostet doch
+2014-11-10 20:10:32,Jonathan,Oder=
+2014-11-10 20:10:37,Svenska,ja und nein :)
+2014-11-10 20:10:47,Jonathan,Aha?
+2014-11-10 20:10:50,Svenska,zumindest fuer arm sind die bis 32 KB kostenlos
+2014-11-10 20:11:01,Svenska,"ob das fuer Z80 auch stimmt, weiß ich nicht"
+2014-11-10 20:11:17,Svenska,"aber ich weiß nichtmal, seit wann der Z80-compiler deprecated ist"
+2014-11-10 20:11:35,Svenska,"ich hab nur referenzen zu irgendeiner DOS-Version 3.x gefunden, aber weder doku noch binaries"
+2014-11-10 20:12:28,Jonathan,"Ich finde nur komische ""Anders-Zeichensätzige"" Download-Seiten und FTP-Server"
+2014-11-10 20:12:41,Svenska,immerhin was ;)
+2014-11-10 20:12:45,Jonathan,Hmmm ;)
+2014-11-10 20:12:46,Jonathan,Aber hey
+2014-11-10 20:12:54,Jonathan,Inzwischen kenn ich SDCC ja mit seinen lustigen Macken
+2014-11-10 20:13:01,Jonathan,Also kann ich ihn wohl auch verwenden :P
+2014-11-10 20:14:28,Jonathan,http://pastebin.com/UXPuAhsa
+2014-11-10 20:14:35,Svenska,"hm, hab grad ne werbebroschuere gefunden, die eine IDE fuer win95 bis 2000 beschreibt"
+2014-11-10 20:14:44,Svenska,"und den hinweis hat ""fuer ne demo geh zu iar.com"""
+2014-11-10 20:14:57,Svenska,"dort kennt man den z80 aber nicht, und die suche liefert sagenhafte null ergebnisse..."
+2014-11-10 20:15:04,Jonathan,"Ja, leider"
+2014-11-10 20:15:36,Svenska,"also ""(void*)0"" könntest du mal wenigstens mit NULL definieren und verwenden"
+2014-11-10 20:15:46,Jonathan,Ja ja
+2014-11-10 20:15:48,Jonathan,:P
+2014-11-10 20:15:54,Svenska,"zumindest dann, wenn du ""undefinierter pointer"" meinst ;)"
+2014-11-10 20:16:04,Jonathan,Dazu muss ich dann aber auch erstmal NULL definieren
+2014-11-10 20:16:09,Svenska,stddef.h
+2014-11-10 20:16:11,Svenska,...
+2014-11-10 20:16:12,Jonathan,:P
+2014-11-10 20:16:14,Jonathan,Ja ja
+2014-11-10 20:16:21,Svenska,wenigstens ein paar header-dateien sind schon sinnvoll
+2014-11-10 20:16:32,Jonathan,Ich sollte mal meine SDCC-Standard-Libs fixen
+2014-11-10 20:16:40,Jonathan,Aber eigentlich hab ich keine Lust :D
+2014-11-10 20:16:44,Svenska,"stddef.h gibt dir NULL, offsetof und size_t"
+2014-11-10 20:16:59,Jonathan,stdint.h gibt mir auch tolle Sachen
+2014-11-10 20:17:00,Jonathan,Ich weiß
+2014-11-10 20:17:08,Jonathan,Nur kann ich die atm nicht gescheit einbinden
+2014-11-10 20:17:09,Svenska,stdint.h gibt dir integer typen
+2014-11-10 20:17:12,Svenska,warum nicht?
+2014-11-10 20:17:22,Jonathan,Weil ich das dann erstmal meinem Skript beibringen muss
+2014-11-10 20:17:34,Svenska,welches deinen code per regex bearbeitet?
+2014-11-10 20:18:07,Jonathan,Ja... Und welches die ganzen Compiler-/Assembler-/Linker-Aufrufe tätigt - und dabei auch die Include-Pfade übergibt
+2014-11-10 20:18:36,Jonathan,"Ich musste doch den kompletten Build-Prozess vom SDCC nachbilden (in dem Skript), damit ich halbwegs um die Bugs und Seltsamkeiten herum komme."
+2014-11-10 20:18:44,Svenska,:D
+2014-11-10 20:19:01,Jonathan,"Und jetzt lass mich bitte wegen unsigned int und (void*)0 in Ruhe, ich hab größere Probleme. *g*"
+2014-11-10 20:19:33,Jonathan,"Naja, erstmal: IHX ins System laden und Angst haben."
+2014-11-10 20:19:52,Jonathan,Ich will nicht. D:
+2014-11-10 20:21:35,tufel,lol Visual Studio kann auf die Mips-Architektur compilen.
+2014-11-10 20:21:55,Svenska,logisch: es gibt windows ce fuer mips
+2014-11-10 20:22:17,Jonathan,xD
+2014-11-10 20:22:43,tufel,"Naja, das ist ja schon etwas länger her."
+2014-11-10 20:22:44,Svenska,"ich hab absichtlich nicht von nt/mips geredet, weil das wird vom visual studio nicht mehr unterstuetzt ;)"
+2014-11-10 20:22:56,Jonathan,Ach du Scheiße! Das Ding funktioniert!
+2014-11-10 20:23:09,Jonathan,Das komplette kernelGate! Auf Anhieb! :D
+2014-11-10 20:23:11,Jonathan,GEIL! :D
+2014-11-10 20:27:01,Jonathan,Hmmm
+2014-11-10 20:27:05,Jonathan,"Okay, doch nicht ganz *g*"
+2014-11-10 20:27:20,Jonathan,Hab an einer Stelle wohl ein POP vergessen.
+2014-11-10 20:27:33,Jonathan,Deshalb crashte es gerade (nachdem die GPU-Funktion ausgeführt wurde)
+2014-11-10 20:28:25,Jonathan,"Aber der Bildschirm wurde komplett schwarz, also müssen alle Calls und alle Parameter irgendwie durch diesen Wust von Assembler und C gekommen sein :D"
+2014-11-10 20:29:51,Svenska,"hmm, ACK (Amsterdam Compiler Kit, das ist der compiler von minix) kennt wohl den z80"
+2014-11-10 20:30:26,Svenska,"der kann C, ANSI-C, Fortran, Pascal(!), Basic(!) und angeblich auch Modula-2 und Occam, die ich nicht wirklich kenne"
+2014-11-10 20:37:57,Jonathan,Hmmm... Irgendwo scheint noch ein Fehler zu sein. Im Assembler-Code. :(
+2014-11-10 20:38:21,Jonathan,Hab den Code eben testweise mit ner Endlosschleife an einer Stelle angehalten. Dann crashte der Code nicht mehr.
+2014-11-10 20:48:30,Jonathan,"Ohje, bin ich blöd :D"
+2014-11-10 20:49:42,Jonathan,"Merke: Der gewonnene Wert für SP wird immer um 2 Bytes zu klein sein, weshalb das Return aus dem kernelGate gewaltig schief gehen wird: http://pastebin.com/umt0nQtG"
+2014-11-10 20:52:07,Jonathan,"Na geht doch, jetzt stürzt die Kiste auch nicht mehr ab ^^"
+2014-11-10 21:09:19,Jonathan,Svenska: Hab's jetzt komplett testen können. Funktioniert wunderbar. :D
+2014-11-10 21:09:36,Svenska,wundert mich nicht :-)
+2014-11-10 21:09:41,Jonathan,:D
+2014-11-10 21:10:12,Jonathan,"""It's ugly as hell, but it works"""
+2014-11-10 21:10:19,Svenska,jap. :-)
+2014-11-10 21:52:48,tufel,"Nun ich seh ab und zumal in C-codes, Variablen hinter dem Parameterblock und vor dem anfang des Anweisungsblock einer Funktion. Also z.b int foo( i ) int *i; { } . Was sind das für Variablen und wie funktionieren sie? "
+2014-11-10 21:53:05,Svenska,gib mal bitte ein beispiel
+2014-11-10 21:53:12,XanClic,das ist doch das beispiel
+2014-11-10 21:53:15,XanClic,das ist uralter k&r-code
+2014-11-10 21:53:18,XanClic,der langsam verschimmelt
+2014-11-10 21:53:23,Svenska,achso
+2014-11-10 21:53:27,XanClic,"und bei dem sich jeder verstrahlt, der sich nur auf drei meter nähert"
+2014-11-10 21:53:34,Svenska,naja
+2014-11-10 21:53:37,XanClic,und es ist äquivalent zu foo(int *i)
+2014-11-10 21:53:44,Svenska,exakt. :-)
+2014-11-10 21:54:21,Svenska,"ich bin mit dem wort ""Parameterblock"" nicht klargekommen"
+2014-11-10 21:54:39,Svenska,"bzw ""Parameterblock"" und ""Anweisungsblock"" :D"
+2014-11-10 21:55:28,tufel,"Oh ich dachte das hier heist immer Parameterblock: ""( )"" und das hier Anweisungblock: ""{ ... }"" :D"
+2014-11-10 21:55:50,Svenska,"vielleicht heisst das auch so, aber ich benutze diese begriffe nicht"
+2014-11-10 21:56:20,XanClic,Du sagst Blub und Blob? :-P
+2014-11-10 21:56:31,Svenska,"bei funktionen nehme ich lieber ""funktionskopf"" und ""funktionskörper"", sowie deklaration"
+2014-11-10 21:56:35,XanClic,Fair genug
+2014-11-10 21:56:56,Svenska,und teilweise auch definition
+2014-11-10 21:57:11,Svenska,"da waren meine lehrer bisher alle inkonsistent zueinander (aber jeweils konsistent zu sich selbst, immerhin)"
+2014-11-10 21:57:56,tufel,"Naja, ist auch egal wie die heißen, solange jeder weiß was gemeint ist :D"
+2014-11-10 21:58:06,Svenska,also ich wusst's grad nicht :D
+2014-11-10 21:58:54,Jidder,was ist euch bei einer funktion wichtiger? funktionskopf oder funktionskörper?
+2014-11-10 21:59:02,Svenska,körper ;)
+2014-11-10 21:59:11,Svenska,ohne bringt der kopf nix
+2014-11-10 21:59:17,Svenska,und ohne kopf ist es keine funktion.
+2014-11-10 21:59:23,XanClic,ja was nu
+2014-11-10 21:59:26,tufel,Naja der kopf kann ja leer sein.
+2014-11-10 22:00:01,Svenska,ist meiner gerade
+2014-11-10 22:16:59,Jidder,mmmh Testfahrer (m/w) Infotainment Software
+2014-11-10 22:17:04,Jidder,das wäre was für mich
+2014-11-10 22:17:23,Jidder,ganzen tag abgelenkt autofahren
+2014-11-10 22:17:33,Jidder,und dafür bezahlt werden
+2014-11-10 22:18:12,Jidder,da darf man bestimmt navi testen und muss von hamburg nach madrid fahren oder so und die strecke messen
+2014-11-10 22:18:44,Svenska,das ist ja fast so spannend wie ...
+2014-11-10 22:19:01,Svenska,... von shanghai nach new york im flug-simulator in echtzeit
+2014-11-10 22:23:43,iksnagreb,nabend
+2014-11-10 22:38:34,tufel,"Naja, so ein Flug kann schon ziemlich spannend sein, wenn z.b das Triebwerk explodiert oder alle WC auser betrieb sind."
+2014-11-10 22:42:07,tufel,"Nun ich geh mal schlafen, n8."
+2014-11-10 22:44:23,Svenska,"ich kann mir irgendwie nicht vorstellen, dass in einem normalen simulator die wc's außer betrieb sind..."
+2014-11-10 22:44:41,Svenska,"triebwerksausfälle ja, aber explosionen auch eher nicht :-)"
+2014-11-10 22:46:18,Jidder,ich glaube in kerbal space program gibts keine wcs
+2014-11-10 22:46:30,Svenska,in flight simulator 2004 auch nicht
+2014-11-10 22:46:32,Jidder,"naja es gibt mods, die ""waste"" als resource hinzufügen"
+2014-11-10 22:46:40,Jidder,halt das gegenstück zu nahrung und sauerstoff etc
+2014-11-10 22:48:10,Svenska,"egal, ich mach feierabend. gn8 :-)"
+2014-11-10 22:48:14,Jidder,gn8
+2014-11-10 23:48:23,yayachiken,Und wenn Waste voll ist sterben alle? Oder ist das mit dem anderen life support abgestimmt dass der dann auch alle ist? :D
+2014-11-10 23:48:39,Jidder,keine ahnung
+2014-11-10 23:48:48,Jidder,spiel eher wenig mit den mods
+2014-11-10 23:48:56,Jidder,seh das nur beim manley öfter mal
+2014-11-10 23:49:58,yayachiken,HELLO IT'S SCOTT MANLEY
+2014-11-10 23:50:07,yayachiken,with a new episode of KSP INTERSTELLAR
+2014-11-10 23:50:08,yayachiken,quest

@@ -1,0 +1,140 @@
+date/time,nick,message
+2016-08-04 00:00:09,Svenska,"ich find das relativ praktisch, zumindest im embedded-bereich"
+2016-08-04 00:00:38,Svenska,"ROM von hier bis da, RAM von hier bis da, und .data geht bitte "">RAM AT >ROM"""
+2016-08-04 00:00:45,Svenska,und der startup-code muss dann nur entsprechend kopieren
+2016-08-04 00:02:40,Paddy,Also tyndur benutzt Sachen wie .data ALIGN(4096) : AT(ADDR(.data) - VIRT_TO_PHYS)
+2016-08-04 00:02:51,Paddy,"Da würde ich einfach mal das ALIGN klauen und schauen, was passiert"
+2016-08-04 00:03:53,Svenska,"wenn man das mit einem loader macht, dann liegt der loader z.B. virt/phy 0x100000 und der higher-half-teil bei virt 0xC0001000 und phy 0x101000"
+2016-08-04 00:04:15,Svenska,"in meinem fall fängt der higher-half-teil bei virt 0xC0000000 an, also direkt am anfang des krams"
+2016-08-04 00:04:55,Paddy,Macht das die Sache nicht eher einfacher?
+2016-08-04 00:05:20,Svenska,vermutlich
+2016-08-04 00:06:30,Svenska,"Jonathan: ui, der linker kann sogar overlays / bänke! ;-)"
+2016-08-04 00:07:29,Svenska,"die ALIGNs gelten jedenfalls fuer die virtuelle adresse, nicht fuer die ladeadresse"
+2016-08-04 00:08:22,Paddy,Wieso kriegt man da unterschiedliches Alignment?
+2016-08-04 00:08:50,Svenska,"wenn man sich ein ROM-Image vorstellt, brauchts kein gemeinsames alignment"
+2016-08-04 00:09:08,Svenska,"ich klatsche alles hintereinander und der startup-code kopiert die daten dann so rum, wie die hardware das braucht"
+2016-08-04 00:09:15,Svenska,...nur will ich ja nicht kopieren *g*
+2016-08-04 00:10:08,Svenska,  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+2016-08-04 00:10:08,Svenska,  LOAD           0x001000 0x00100000 0x00100000 0x000af 0x000af R E 0x1000
+2016-08-04 00:10:08,Svenska,  LOAD           0x002000 0xc0000000 0x001000af 0x01000 0x01000 R E 0x1000
+2016-08-04 00:11:35,Paddy,"Warum machst du nicht den ersten größer, so dass er auch 4k verbraucht?"
+2016-08-04 00:12:07,Svenska,weil das n uebler hack ist (und garbage ins ELF tut)
+2016-08-04 00:12:35,Paddy,Wie willst du denn auf Pagesize alignen ohne Padding einzufügen?
+2016-08-04 00:13:03,Svenska,muss ich das padding denn in die ELF tun?
+2016-08-04 00:13:35,Paddy,"Hm, ich hatte das mit dem nicht rumkopieren wollen so verstanden, dass du direkt die Datei benutzen willst"
+2016-08-04 00:13:53,Paddy,"Was eh kaputt wäre, aber hier weiß man ja nie"
+2016-08-04 00:14:00,Svenska,"nein, in einem rom-image ist das rom durchgängig byteadressierbar, aber .data/.bss muessen im ram liegen"
+2016-08-04 00:14:10,Svenska,also muss der startup-code sowieso .data kopieren und .bss nullen
+2016-08-04 00:14:42,Svenska,deswegen will man dort alles im rom zusammenklatschen (ist sowieso nicht schreibbar)
+2016-08-04 00:18:03,Svenska,"hmm, scheint als muesste ich entweder alle sections per hand berechnen"
+2016-08-04 00:20:32,Paddy,"Hm, und warum kannst du es nicht machen wie in der tyndur-Zeile, die ich oben gepastet habe?"
+2016-08-04 00:20:43,Svenska,"kann ich, wollte ich aber nicht *g*"
+2016-08-04 00:20:51,Paddy,Weil?
+2016-08-04 00:20:53,Svenska,"so kann ich den loader ueberschreiben, wenn er geladen ist"
+2016-08-04 00:20:54,Paddy,Wär zu einfach?
+2016-08-04 00:21:18,Svenska,"der loader ist ja nur ein ""pd + pt + pt + enable PG bit + jump"""
+2016-08-04 00:21:32,Paddy,Wieso ginge das dann nicht mehr?
+2016-08-04 00:21:49,Svenska,"weil ich dann nicht weiß, wieviel ich freigeben muss ^^"
+2016-08-04 00:22:11,Paddy,Versteh ich nicht
+2016-08-04 00:22:13,Svenska,"der kernel fängt dann nicht bei 0xC0000000 an, sondern bei 0xC0004000 (je nachdem, wie groß der loader ist)"
+2016-08-04 00:22:41,Paddy,Die virtuelle Adresse änderst du doch nicht gegenüber der aktuellen Version?
+2016-08-04 00:22:50,Paddy,Sondern nur das AT()
+2016-08-04 00:22:54,Svenska,richtig
+2016-08-04 00:23:22,Paddy,Wieso solltest du dann bei 0xC0004000 rauskommen?
+2016-08-04 00:23:25,Svenska,aber tyndur (und auch osdev's tutorial) haben eine konstante differenz zwischen ladeadresse und laufzeitadresse
+2016-08-04 00:24:07,Svenska,"wenn der kernel also an 0x100000 geladen wird, der loader 0x4000 groß ist, dann wird .text bei 0x104000 geladen"
+2016-08-04 00:24:09,Paddy,"Naja, da müssen zwei Zahlen im Header stehen, und die Differenz davon ist ziemlich konstant ;-)"
+2016-08-04 00:24:23,Quantenmagier,yay mein midiplayer funktioniert irgendwie :D er spielt zwar grad nicht die datei die er spielen soll sondern irgendwelche bereiche des arbeitsspeichers aber es klingt geil :D
+2016-08-04 00:24:36,Svenska,"und das heißt, dass bei VIRT_ADDR 0xC0000000 dann .text bei 0xC0004000 landet"
+2016-08-04 00:25:24,Svenska,"aber scheint so, als könnte ich das nicht umgehen"
+2016-08-04 00:25:27,Svenska,schade eigentlich
+2016-08-04 00:25:45,Paddy,"Kapier ich nicht. Die aktuelle virtuelle Adresse ist doch immer dort, wo du sie grad hinsetzt?"
+2016-08-04 00:25:55,Paddy,Willst du wirklich nicht mal dein Skript pasten?
+2016-08-04 00:27:24,Svenska,https://nopaste.me/view/4904af95
+2016-08-04 00:34:45,Paddy,"Und was geht jetzt schief, wenn du dann sowas hier benutzt: .text : AT(ADDR(.text) - (0xC0000000 - 0x00100000) + ALIGN(SIZEOF(.loader.text), 4096)) { ... }"
+2016-08-04 00:34:54,Paddy,Wobei der lange Ausdruck halt dein VIRT_TO_PHYS ist
+2016-08-04 00:35:15,Svenska,"nix, aber das ist wieder manuelles ausrechnen, das wollte ich eigentlich dem linker ueberlassen"
+2016-08-04 00:35:18,Svenska,ist ja sein job ;)
+2016-08-04 00:35:41,Svenska,"naja, lassen wir das"
+2016-08-04 00:35:56,Svenska,ich fahr morgen nach deutschland und tingle dann in gut ner woche knapp 1600 km durch die lande
+2016-08-04 00:36:02,Paddy,"Na gut, wenn du den Anspruch hast, mit einem Linkerskript einen Schönheitswettbewerb zu gewinnen..."
+2016-08-04 00:36:38,Svenska,"natuerlich, sonst bringts ja nix *g*"
+2016-08-04 00:36:52,Paddy,Funktionierende Kaputtheit
+2016-08-04 00:52:58,Svenska,logisch *g*
+2016-08-04 00:58:56,Quantenmagier,ok der midiplayer spielt endlich die datei ab und nicht mehr den rest des arbeitsspeichers :D
+2016-08-04 00:59:15,Quantenmagier,dan test ich mal nen komplexeres midi file
+2016-08-04 01:16:23,Svenska,"also dann, bis in 2 wochen"
+2016-08-04 01:21:19,Quantenmagier,denne ^^
+2016-08-04 10:55:06,Quantenmagier,So ich hab mal nen Hörbeispiel für meinen Midiplayer ergänzt: http://www.lowlevel.eu/wiki/SurO#Ladbare_Programme_.5BProgrammiersprache_-_Interface.5D
+2016-08-04 10:55:15,Quantenmagier,oder der direkte link: http://homepages.uni-paderborn.de/neuron/sound/mond_mid.ogg
+2016-08-04 10:55:38,Quantenmagier,find klingt ganz annehmbar für den schnellen Hack ^^
+2016-08-04 10:55:46,MasterQ32,definitiv
+2016-08-04 10:56:14,MasterQ32,ich muss auch mal an meinem OS weiter basteln
+2016-08-04 10:56:21,MasterQ32,aber diese Woche ist Game Jam und ich hab viel Arbeit :/
+2016-08-04 10:56:38,Quantenmagier,"jep, warst du das mit dem Floyd-Steinberg Dithering?"
+2016-08-04 10:57:09,MasterQ32,hatte ich auf jeden Fall mal vor
+2016-08-04 10:57:14,MasterQ32,aber nutze mittlerweile VBE
+2016-08-04 10:57:21,Quantenmagier,aso ^^
+2016-08-04 10:57:33,Quantenmagier,wie heißt dein OS is das im wiki?
+2016-08-04 10:57:55,MasterQ32,hab keinen Wiki-Eintrag bisher
+2016-08-04 10:58:00,Quantenmagier,aso
+2016-08-04 10:58:02,MasterQ32,https://github.com/MasterQ32/DasOS/blob/master/README.md
+2016-08-04 10:58:05,MasterQ32,ich bin das hier :D
+2016-08-04 10:59:22,Quantenmagier,"ah aber immerhin im vergleich zu mir ne vernünftige roadmap, ich hab nur ne riesige todo liste ohne feste reihenfolge, programmier immer das worauf ich grad lust hab, deswegen hab ich gestern den midiplayer geschrieben obwohl ich eigentlich ehermal meine speicherverwaltung neu schreiben sollte xD"
+2016-08-04 11:00:03,MasterQ32,:D
+2016-08-04 11:00:24,MasterQ32,"ich bin grade am überlegen, ich glaube, dass ich tatsächlich die Idee umsetze, den File System Driver in den User Space zu packen :D"
+2016-08-04 11:00:32,MasterQ32,dann spar ich mir jegliche dynamische speicherverwaltung im kernel
+2016-08-04 11:02:17,Quantenmagier,ah ok also ne art mikrokernel
+2016-08-04 11:02:35,kevin,Du meinst das komplette VFS?
+2016-08-04 11:02:50,MasterQ32,"naja, ich würde zum einen kein VFS machen "
+2016-08-04 11:03:13,Quantenmagier,also unterstützt du nur ein dateisystem?
+2016-08-04 11:03:23,MasterQ32,ich würde erst mal nur FAT supporten
+2016-08-04 11:03:41,MasterQ32,"wüsste nicht, wofür ich mehr brauche"
+2016-08-04 11:04:05,Quantenmagier,naja ext ist schon nice um mit linux zu kommunizieren
+2016-08-04 11:04:48,MasterQ32,ich hab halt quasi keine kompatibilität zu irgendwas
+2016-08-04 11:04:53,MasterQ32,von daher ist mir das auch relativ wurst :D
+2016-08-04 11:05:31,Quantenmagier,ok
+2016-08-04 11:05:46,MasterQ32,"linux kann FAT, windows kann FAT, ich kann FAT"
+2016-08-04 11:05:47,MasterQ32,passt :P
+2016-08-04 11:06:14,kevin,Letzteres wäre noch zu beweisen ;-)
+2016-08-04 11:06:24,MasterQ32,*ich werde FAT können
+2016-08-04 11:06:51,kevin,"Dass ich kein FAT kann, ist hier bewiesen: http://git.tyndur.org/?p=libfat.git"
+2016-08-04 11:07:31,kevin,Sollte ich auch endlich mal zu einem mergebaren Punkt bringen...
+2016-08-04 11:07:53,Quantenmagier,"mein fat treiber is in flat assembler geschrieben und ich hab extra noch nen partitionstreiber drum gepackt der die fat partition von den anderen partitionen abschirmt falls ich nen fehler im schreibsupport hab, daß dann nicht auf ne andere partition geschrieben wird und wirklich nur die fat partition schrott geht :D"
+2016-08-04 11:08:09,MasterQ32,das ist sinnvoll :D
+2016-08-04 11:10:34,Quantenmagier,vor fat hab ich nen ganz simples lineares dateisystem benutzt das alle dateien aneinander gehangen hat mit entsprechendne pointern ^^
+2016-08-04 11:12:57,MasterQ32,du meinst quasi einen intelligenten TAR? :D
+2016-08-04 11:13:17,Quantenmagier,jop so in der art ^^
+2016-08-04 11:14:06,Quantenmagier,"irgendwann wollte ich mal nen tag-basiertes dateisystem schreiben, aber das hat noch zeit. ^^"
+2016-08-04 11:14:53,MasterQ32,hm?
+2016-08-04 11:15:50,kevin,"Aber schon noch vor der Speicherverwaltung, oder?"
+2016-08-04 11:16:08,Quantenmagier,jop ziemlich sicher shcon :D
+2016-08-04 11:18:26,Quantenmagier,ls +#/format/bild+#/person/anna+#/datum/jahr/2015+#/beschreibung/nackt
+2016-08-04 11:18:44,Quantenmagier,sowas zum beispiel und er kombiniert dann datenbank mäßig die tags und gibt die ergebnisse zurück
+2016-08-04 11:18:57,Quantenmagier,ich überleg bloß noch ne bessere kurzschreibweise
+2016-08-04 11:19:24,Quantenmagier,vllt daß man den typ /format/ /person/ und so weglassen kann wenn es eindeutig ist
+2016-08-04 11:19:56,Quantenmagier,ls +#bild+#anna-#jackeline+#2015
+2016-08-04 11:20:31,Quantenmagier,gibt dann alle dateien zurück die als typ bild getagged sind mit tag anna aber ohne tag jackeline und mit tag 2015
+2016-08-04 11:21:18,Quantenmagier,hm ich glaub das + kann man auch weg lassen
+2016-08-04 11:21:33,Quantenmagier,wenn man nur nen tag angibt is ja automatisch plus gemeint
+2016-08-04 11:22:23,Quantenmagier,"oder noch besser ich mach boolsche algebra, da heißt dann + oder und * und und * darf man in formeln ja auch weglassen und dann nehm ich megenoperator für ohne \"
+2016-08-04 11:23:55,MasterQ32,soso
+2016-08-04 11:24:09,MasterQ32,"wenn ich also meine pornos suchen wollte, müsste ich ´ls #porn` machen?"
+2016-08-04 11:24:17,Quantenmagier,genau :D
+2016-08-04 11:24:21,MasterQ32,praktisch
+2016-08-04 11:26:10,Quantenmagier,joa auf die idee war ich gekommen weil man oft links setzt ode rmein vater hat zum beispiel bilder noch nach personen sortiert und für jedes familienmitglied nen eigenen ordner gemacht dnan existierten die bilder einmal nach urlaub sortiert und zusätzlich nach personen sortiert und ich find das irgendwie umständlich und dachte dann so ein tag-basiertes dateisystem wäre da besser
+2016-08-04 11:27:21,MasterQ32,stimmt
+2016-08-04 11:30:42,Quantenmagier,"mein plan is dann parallel nen treiber für SurO und für Linux zu schreiben, dann kann ich damit auch daten tauschen, das problem ist bloß linux unterstützt nativ keine tags, dh ich muß die tags dann über virtuelle symlinks auf ordner mappen"
+2016-08-04 11:32:34,Quantenmagier,also /bild/anna/2015/-jackeline oder /anna/2015/-jackeline/bild/ würde dann zum beispiel das selbe sein
+2016-08-04 11:33:17,MasterQ32,ohje :D
+2016-08-04 11:35:18,Quantenmagier,die ordner werden quasi on-the-fly aus den tags generiert
+2016-08-04 11:52:20,Quantenmagier,hm mein laptop hat ne intel hd3000 theoretisch müßte man damit ja sogar grafikbeschleunigung machen können weil die spezifikation offen ist?
+2016-08-04 12:08:11,kevin,"Ich glaube, die Betonung liegt auf theoretisch ;-)"
+2016-08-04 12:43:39,Quantenmagier,"is das so kompliziert? zumindest einfaches blitting sollte man doch beschleunigen können, also dachte jetzt nicht an 3d"
+2016-08-04 12:47:40,kevin,"Naja, fang erstmal damit an, den Modus zu wechseln, dann kannst du weiter sehen"
+2016-08-04 13:41:29,Quantenmagier,hmok
+2016-08-04 14:22:02,kevin,*argh* Falschen Branch gerebast...
+2016-08-04 19:00:08,darklink,deswegen rebast man nicht
+2016-08-04 19:00:23,darklink,was wolltest du machen?
+2016-08-04 19:01:01,darklink,so. x86_64 funktioniert.
+2016-08-04 19:12:13,darklink,"Next: Einen wesentlich komplizierteren FIRMloader, mit FAT treiber und so zeugs. Wobei ich eher glaube ich lass die vierte partition der SD-karte ein tar-archiv sein oder so"

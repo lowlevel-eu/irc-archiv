@@ -1,0 +1,822 @@
+date/time,nick,message
+2015-10-21 00:00:23,darklink,"es ist aber ein armv3, der als dsp eingesetzt wird"
+2015-10-21 00:00:48,Svenska,QED.
+2015-10-21 00:00:49,Sur3,nen dsp ist für mich nen gerät mit vielen kleinen processing units die für sich schwach sind aber durch die menge große daten verarbeiten können
+2015-10-21 00:01:01,Svenska,sowas nenne ich eher FPGA :-D
+2015-10-21 00:01:28,Sur3,hm fpga hat aber keine prozessing units sondern nur gates das ist dann noch abstrakter
+2015-10-21 00:01:46,Svenska,"fpga hat keine gates, sondern LUTs"
+2015-10-21 00:01:56,Sur3,oder so ^^
+2015-10-21 00:02:14,Sur3,aber di LUT simmulieren ja gates
+2015-10-21 00:05:57,Sur3,"so bring ich jetzt ring3 zum laufen, schrieb ich nen neuen loader der kompatibel zu der standardlibc ist oder reparier ich den bug im tastertur- und maustreiber damit smp fehlerfrei geht.. *grübel*"
+2015-10-21 00:06:41,Svenska,"entscheidungen, entscheidungen..."
+2015-10-21 00:06:41,Paddy,s/oder/und/
+2015-10-21 00:07:10,Paddy,Wobei ich selber eigentlich auch weitercoden wollte und dann den ganzen Abend doch wieder vertrödelt habe..
+2015-10-21 00:07:18,Svenska,dito
+2015-10-21 00:07:19,Sur3,joa kenn ich leider zu gut xD
+2015-10-21 00:08:25,Svenska,ist qcow2 eigentlich ein komprimierendes format?
+2015-10-21 00:09:11,Paddy,Man kann komprimierte Images erstellen
+2015-10-21 00:09:38,Sur3,joa ist komprimiert
+2015-10-21 00:09:39,Paddy,"Aber bei normalen Schreibvorgängen ist nicht komprimiert, das heißt was überschrieben wird, ist hinterher nicht mehr komprimiert"
+2015-10-21 00:09:53,Svenska,"weil das image ist 33 GB groß, laut Windows sind 24/40 GB belegt"
+2015-10-21 00:10:06,Svenska,"durch gzip geschaufelt sinds 7,3 GB oder so"
+2015-10-21 00:10:10,Sur3,ok dann ist es wohl nur teilweise komprimiert
+2015-10-21 00:11:28,Paddy,33 GB Dateigröße oder virtuelle Plattengröße?
+2015-10-21 00:11:56,Svenska,"dateigröße, virtuelle platte sind 40 GB"
+2015-10-21 00:11:58,Paddy,"Ach, das Windows ist der Gast?"
+2015-10-21 00:12:00,Svenska,ja
+2015-10-21 00:12:17,Paddy,"Dann würde ich einfach sagen, dass es halt noch nicht voll alloziert ist"
+2015-10-21 00:12:30,Svenska,"ach, ich hätte es nur gerne kleiner gehabt, darum die frage :)"
+2015-10-21 00:12:51,Svenska,"20% performance-einbuße sind mir in der VM egal, aber der host hat nur 128 GB SSD"
+2015-10-21 00:12:53,Paddy,"Und 9 GB unbenutzt sind, da müsstest du Windows irgendwie dazu bringen, die wegzuwerfen (also TRIM-mäßig)"
+2015-10-21 00:13:13,Svenska,das verkleinert ein qcow2 dann?
+2015-10-21 00:13:28,Sur3,qemu-img convert -O qcow2 original_image.qcow2_backup original_image.qcow2
+2015-10-21 00:13:30,Paddy,Wenn du discard=unmap benutzt
+2015-10-21 00:13:41,Paddy,"Wobei die Dateigröße nicht kleiner wird, aber es wird halt sparse"
+2015-10-21 00:13:55,Svenska,Sur3: witzkeks. ich hab den platz auf dem host nicht fuer ne kopie ;)
+2015-10-21 00:14:26,Sur3,aso du mußt vorher im guest den unbenutzen space mit nullen füllen
+2015-10-21 00:14:52,Sur3,http://www.jamescoyle.net/how-to/323-reclaim-disk-space-from-a-sparse-image-file-qcow2-vmdk
+2015-10-21 00:17:49,Paddy,XanClic: Falls du mal wieder ein Feature für Svenska implementieren willst... *g*
+2015-10-21 00:17:55,Svenska,*g*
+2015-10-21 00:18:16,XanClic,"Klingt für mich nach Defragmentierung, was jetzt keine neue Idee ist"
+2015-10-21 00:18:33,XanClic,"Also, Defragmentierung könnte das halt auch leisten"
+2015-10-21 00:18:41,Paddy,Irgendwas in qemu-img um unnötige Cluster (weil sie eh Null sind bzw. gleicher Inhalt wie die Backing File) wegzuwerfen wäre schon nett
+2015-10-21 00:18:52,Paddy,Und klingt einfacher als Defragmentierung
+2015-10-21 00:19:00,Sur3,nee man müßte das image irgendwie durch ne bidirektionale lzo-pipe leiten können das wär praktisch
+2015-10-21 00:19:11,Paddy,Passt sicher noch mit irgendeinem Flag in qemu-img rebase rein
+2015-10-21 00:19:12,XanClic,"Neinneinneinnein, einfache Implementierungen mach ich nicht mehr"
+2015-10-21 00:19:18,Paddy,*g*
+2015-10-21 00:19:19,XanClic,Dann kommt wieder jemand und will das ordentlich
+2015-10-21 00:19:21,Svenska,"windows scheint trim aktiviert zu haben, und so"
+2015-10-21 00:19:45,Sur3,bzw lz4
+2015-10-21 00:20:00,Svenska,"allerdings wäre es irgendwie toll, wenn qemu das ding als SSD weiterleiten wuerde"
+2015-10-21 00:20:15,Svenska,"das windows scheint die platte ""nur"" als HDD zu erkennen"
+2015-10-21 00:20:36,Paddy,Und dann will es kein TRIM machen oder wie?
+2015-10-21 00:20:52,Svenska,"google sagt: wenn das laufwerk in defrag auftaucht, dann nicht"
+2015-10-21 00:21:24,Paddy,"Das ist der direkteste Weg, das rauszubekommen?"
+2015-10-21 00:21:32,Sur3,joa trimm macht ja bei hdd auch keinen sinn
+2015-10-21 00:21:43,Svenska,"""Media type: Hard disk drive"""
+2015-10-21 00:22:13,Paddy,Wodurch wird denn das überhaupt festgelegt? Gibt es da ein paar IDENTIFY-Bits dafür?
+2015-10-21 00:22:37,Svenska,"keine ahnung, allerdings hängt die platte bei mir intern an ide0"
+2015-10-21 00:23:07,Paddy,"Halt, verklickt, ich will die ACS-Spec, nicht das int-13-Interface *g*"
+2015-10-21 00:24:34,Sur3,ich glaub ich schreib mal nen elf loader dann macht meine stdlibc vllt nciht mehr so viel probleme
+2015-10-21 00:25:24,Svenska,LOL
+2015-10-21 00:25:38,Svenska,okay...
+2015-10-21 00:25:58,Svenska,"""winsat diskformal"" testet kurz die geschwindigkeit der festplatte"
+2015-10-21 00:26:04,Svenska,und _dann_ wird sie auch als SSD erkannt
+2015-10-21 00:26:15,Paddy,wtf?
+2015-10-21 00:26:30,Sur3,lol krasse erkennungsmethode
+2015-10-21 00:26:37,Svenska,"und dann macht ""optimize"" auch nicht mehr ein defrag, sondern ein trim"
+2015-10-21 00:27:03,Paddy,Ah
+2015-10-21 00:27:11,Svenska,so. jetzt hat das image 41 GB ;)
+2015-10-21 00:27:26,Paddy,"Hm, ich glaube, das war nicht Zweck der Übung *g*"
+2015-10-21 00:27:43,Paddy,Hast du discard=unmap angegeben für das Image?
+2015-10-21 00:27:52,Svenska,"öh, wie macht man das? :-D"
+2015-10-21 00:28:00,Paddy,Was ist deine Kommandozeile?
+2015-10-21 00:28:08,XanClic,"Aber schon 41 GB in qemu-img info und nicht in ls -lh, oder?"
+2015-10-21 00:28:19,Svenska,in ls -lh (auch in ls -lsh)
+2015-10-21 00:28:29,XanClic,Dann probier mal qemu-img info
+2015-10-21 00:28:39,Paddy,"Selbst in ls -lh wäre das unerwartet, wenn man seit 33 GB nur discardet hat"
+2015-10-21 00:28:55,Svenska,aah
+2015-10-21 00:28:56,XanClic,Vielleicht trimmt Windows ja erstmal die ganze Disk
+2015-10-21 00:29:10,Svenska,"qemu-img sagt was von ""disk size: 22G"" und ""virutal size 40G"""
+2015-10-21 00:29:11,Paddy,"Wenn natürlich das Discard in Nullen schreiben endet, dann..."
+2015-10-21 00:29:13,Svenska,das klingt gut
+2015-10-21 00:29:13,Sur3,"""Virtuelle Adresse, an die das Segment kopiert werden soll"" wtf geht elf standardmäßig davon aus daß man virtuelle adressen hat? o.O"
+2015-10-21 00:29:18,XanClic,"Svenska, du -h ginge übrigens auch"
+2015-10-21 00:29:31,Svenska,das zeigt auch 22G an
+2015-10-21 00:29:40,XanClic,"ls ist halt Dateilänge, qemu-img und du geben an, wie viel tatsächlich belegt ist"
+2015-10-21 00:29:44,Paddy,"Sur3: Alles, was auf x86 läuft, hat virtuelle Adressen"
+2015-10-21 00:29:59,Svenska,"gut, dann belegt das image jetzt also brav 22G"
+2015-10-21 00:30:08,Paddy,"Aber ich vermute fast, ELF geht dazu auch noch von Flat Memory aus"
+2015-10-21 00:31:11,Svenska,das spielt ja keine rolle
+2015-10-21 00:31:34,Svenska,"(oder ist es verboten, ueberlappende adressen zu haben?)"
+2015-10-21 00:31:39,Paddy,"XanClic: Aber wieso tut das, wenn Svenska nicht mal weiß, wo man discard=unmap angibt? Ist das mittlerweile Default?"
+2015-10-21 00:32:02,Sur3,"nee flat memory ist egal, aber wenn in der elf ne bestimmte virtuelle adresse steht muß man den code dann dahin laden, wie oft kommt sowas vor, oder kann man die irgendwie mit linkerflag auf 0 setzen?"
+2015-10-21 00:32:05,Svenska," -drive file=win8/win8.qcow2,cache=none \"
+2015-10-21 00:32:08,Paddy,"Svenska: Nö, aber das Segment musst du dir selber ausdenken, wenn da nur Offsets stehen, oder?"
+2015-10-21 00:32:17,XanClic,"Paddy, vielleicht enthält Windows ja einen qemu-Exploit und macht das einfach selber auf dem Hos"
+2015-10-21 00:32:18,XanClic,t
+2015-10-21 00:32:38,Svenska,"ja, aber das segment ist doch relativ klar: cs fuer .text, ds fuer .data, ds fuer .bss"
+2015-10-21 00:32:41,Paddy,"Dann so: -drive file=win8/win8.qcow2,cache=none,discard=unmap \"
+2015-10-21 00:33:09,Svenska,"aso, in der qemu-cmdline angeben. naja, tut ja jetzt :-D"
+2015-10-21 00:33:10,Paddy,"Wenn sich Segmentierung lohnen soll, hat man aber mehr als ein Datensegment"
+2015-10-21 00:33:36,Svenska,"naja, ELF-dateien haben segmente"
+2015-10-21 00:33:51,Svenska,also verschiedene sections liegen dann in verschiedenen segmenten
+2015-10-21 00:34:08,Paddy,"Damit habe ich mich nie richtig beschäftigt, sondern war zufrieden als es irgendwie funktioniert hat"
+2015-10-21 00:34:10,Svenska,"wenn man die ELF-dateien also passend bearbeitet, kann man das darueber schön steuern (die sind in der ELF zwar nur durchnummeriert, aber das reicht ja)"
+2015-10-21 00:34:19,Paddy,"Vielleicht hätte ich besser aufpassen müssen, was Erik so erzählt hat"
+2015-10-21 00:34:27,Svenska,"wobei ich das mit dem ""mehrere datensegmente"" nicht so ganz verstehe"
+2015-10-21 00:34:41,Svenska,normalerweise hat man doch nur cs/ds/ss
+2015-10-21 00:34:49,Sur3,hm also kann ich die elf segmente mit passenden linker einstellungen einfach von adresse ß0 beginnend hintereinander reihen?
+2015-10-21 00:35:06,Sur3,*adresse 0
+2015-10-21 00:35:10,Paddy,Zumindest es noch
+2015-10-21 00:35:10,Svenska,"und es/fs/gs stehen dann zur freien verfuegung, um sowas wie mmap() zu implementieren?"
+2015-10-21 00:35:27,Svenska,also wäre das dann unter der kontrolle des programms
+2015-10-21 00:35:34,Svenska,also dem loader egal?
+2015-10-21 00:35:38,Paddy,"ds kann das Programm auch ändern, wenn es will"
+2015-10-21 00:35:49,Svenska,"ja, aber ich ueberlege nur, wann das sinnvoll wäre"
+2015-10-21 00:35:51,Paddy,"Oder sogar cs, aber frag mich nicht, wozu man das wollte"
+2015-10-21 00:35:58,Sur3,"nein, das programm kann nciht auf andere datensegmente zugreifen es sei denn sei stehen in der ldt"
+2015-10-21 00:36:12,Paddy,Oder in der GDT
+2015-10-21 00:36:12,Svenska,"auf nem 286er war das alles sinnvoll, weil die segmente da nur 64k haben konnten"
+2015-10-21 00:36:30,Sur3,gdt geht nur wenn das programm ncith in ring 3 läuft
+2015-10-21 00:36:32,Svenska,und dadurch musste man sowieso alle naselang umschaufeln und so
+2015-10-21 00:36:42,Svenska,Sur3: du kannst auch einträge in der gdt als ring3 markieren
+2015-10-21 00:36:59,Paddy,Sur3: Bring erstmal deinen Ring 3 zum Laufen bevor du uns falsche Sachen darüber erzählst ;-)
+2015-10-21 00:37:18,Svenska,"aber wenn die segmente alle hinreichend groß sein können, wäre höchstens noch segmenttrennung fuer code/daten/bss/stack sinnvoll, also cs/ds/es/ss"
+2015-10-21 00:37:28,Svenska,"mehr ist irgendwie ... nicht sinnvoll, aus meiner sicht."
+2015-10-21 00:37:53,Paddy,ds/es müssen eigentlich für praktische Zwecke gleich sein
+2015-10-21 00:38:06,Paddy,es ist ja Defaultsegment fürs Ziel bei manchen Instruktionen
+2015-10-21 00:38:10,Svenska,zumindest nicht aus sicht von einer einfachen anwendung; fuer mmap() oder so zeugs könnte man die anderen deskriptoren noch benutzen
+2015-10-21 00:38:33,Sur3,"aber wenn ring3 programme auf andere ring3 daten zugreifen können dann wär das ja ne sicherheitsschwachstelle, ich hab es so verstanden daß die programme nur auf die segmente die vorgeladen wurden und auf die in der ldt zugreifen können, und alle anderen segmente ne höhere ringnummer haben müssen um drauf zuzugreifen udn nciht die selbe nummer?"
+2015-10-21 00:39:19,Paddy,Dann musst du eben die LDT benutzen
+2015-10-21 00:39:26,Paddy,GDT heißt GDT weil sie global ist
+2015-10-21 00:39:37,Svenska,"""nicht unbedingt sicher"" heißt nicht ""verboten""..."
+2015-10-21 00:40:15,Sur3,hm ok also sollte ich die segmente in die LDT packen damit andere programme niht drauf  zugreifen könen und die programme voneinander abgeschottet sind
+2015-10-21 00:40:45,Paddy,"Wenn du Speicherschutz wirklich mit Segmentierung implementieren willst, dann wohl ja"
+2015-10-21 00:41:45,Sur3,joa will ich sonst wär die segmentierung ja unnütz ^^
+2015-10-21 00:42:23,Svenska,die segmentierung IST (nahezu) unnuetz
+2015-10-21 00:43:25,Paddy,Also ein eigenes Stacksegment wäre eigentlich echt schick
+2015-10-21 00:44:10,Svenska,und ein heap-segment auch
+2015-10-21 00:49:02,Sur3,jop dann könnte man einen stacküberlauf durch excerption entdecken und den stack vergrößern
+2015-10-21 00:50:06,Sur3,"ich denke wenn ich die segmentierung beibehalte mach ich irgendwann nen eigenes executable-format dafür, elf scheint dafür schelcht geeignet"
+2015-10-21 00:50:38,Svenska,stackoverflow durch exception kriegt man auch so hin
+2015-10-21 00:51:12,Svenska,"ist dann zwar ein #PF statt #GPF, aber das macht ja nix"
+2015-10-21 00:51:32,Paddy,Aber nur bei ein bisschen Overflow
+2015-10-21 00:51:43,Paddy,Bei richtig Overflow hat man halt ein Problem
+2015-10-21 00:51:51,Svenska,"hängt davon ab, wieviel platz da ist..."
+2015-10-21 00:51:55,Paddy,Ok
+2015-10-21 00:52:02,Svenska,"...und stimmt schon, es hilft nicht gegen absichtlichen overflow"
+2015-10-21 00:52:18,Svenska,"ist ja auch immer wieder so ein klassiker, z.B. bei debian"
+2015-10-21 00:52:31,Svenska,"als alle anfingen zu schreien ""die haben die checksumme im dateinamen - das ist nicht sicher"""
+2015-10-21 00:52:45,Svenska,"...soll ja auch nur gucken, ob der download geklappt hat -.-"
+2015-10-21 00:53:16,Sur3,naja es gibt ja extra die stack-segment exception die mit segmentierung auch ordentlich funktioniert
+2015-10-21 00:53:51,Paddy,Ja aber Segmentierung funktioniert halt mit allem anderen nicht ordentlich
+2015-10-21 00:54:05,Sur3,joa leider
+2015-10-21 01:56:38,Sur3,ahh ich muß scheinbar mit -fPIE -pie compilieren damit ich elf ohne paging benutzen kann
+2015-10-21 01:56:57,Svenska,?
+2015-10-21 01:57:26,Svenska,"also ich kann dir bestätigen, dass ELF auch ohne -fPIE ohne Paging funktioniert"
+2015-10-21 01:57:36,Sur3,dann setzt er die virtuelle adresse wohl auf 0 und der code ist relocalisierbar
+2015-10-21 01:57:39,Svenska,"gibt genug architekturen, die kein paging beherrschen und trotzdem ELF nutzen..."
+2015-10-21 01:57:49,Svenska,hast du sowas wie ein linkerscript?
+2015-10-21 01:57:56,Sur3,nope
+2015-10-21 01:58:03,Svenska,"merkste selbst, wa?"
+2015-10-21 01:58:28,Sur3,joa linkerscript war mir zu kompliziert bisher ging es immer über die linker commandline
+2015-10-21 01:58:45,Svenska,m(
+2015-10-21 01:59:07,Svenska,"*macht alles falsch und wundert sich, warum es nicht ordentlich funktioniert. seufz*"
+2015-10-21 02:01:52,Sur3,"ahh ok du hast recht ich brauch kein pie ein -Wl,-Ttext=0 reicht"
+2015-10-21 02:02:28,Svenska,...und ein weiterer hack in die sammlung
+2015-10-21 02:02:51,Sur3,ist die topantwort auf stackoverflow
+2015-10-21 02:02:52,Sur3,http://stackoverflow.com/questions/19440733/is-changing-default-virtual-address-in-elf-header-to-0-possible#
+2015-10-21 02:08:43,Sur3,hm ne elf datei braucht 2kb mehr als ne binärdatei ganz schöner overhead
+2015-10-21 02:09:05,XanClic,kommt drauf an
+2015-10-21 02:09:18,Svenska,ne elf schenkt dir auch deutlich mehr möglichkeiten
+2015-10-21 02:09:40,Svenska,"und ich bezweifle, dass PE nennenswert besser ist"
+2015-10-21 02:10:17,Sur3,ok wenn ich mein eigenes linker script schreibe kann ich damit mein eigenes format entwickeln?
+2015-10-21 02:10:53,XanClic,Hier hat einer eine Hello-World-ELF für Linux in 61 Bytes
+2015-10-21 02:10:59,Sur3,also ist das linkerscript das einzige was für ld den unterschied zwischen einer pe und einer elf macht?
+2015-10-21 02:11:07,XanClic,"Aber die ist nicht ganz standardkonform, standardkonform gäbs dann noch was in 98"
+2015-10-21 02:11:23,Svenska,nein
+2015-10-21 02:11:36,Svenska,"das linkerscript sagt dem linker, wie dein programm bitte zusammengebaut werden soll"
+2015-10-21 02:11:45,Svenska,das dateiformat steht da nicht drin
+2015-10-21 02:11:47,Sur3,echt ne hello world elf in 61 bytes? krass
+2015-10-21 02:12:09,Sur3,ok aber die art wie man die datei zusammenbaurt macht doch das dateiformat aus?
+2015-10-21 02:14:03,Svenska,nein
+2015-10-21 02:14:22,Svenska,"ich habe nicht gesagt ""wie man die datei zusammenbaut"""
+2015-10-21 02:14:34,Svenska,"ich habe gesagt, ""wie dein programm bitte zusammengebaut werden soll"""
+2015-10-21 02:14:40,Sur3,ahh ich seh grad die elf datei hat nen unnötiges alignment gemacht was ich ja ohne paging nicht brauche wenn ich die option fidne das abzuschalten müßte es mehr an die binary rankommen
+2015-10-21 02:14:47,Svenska,"wie er das ergebnis auf die platte speichert, ist ne andere baustelle."
+2015-10-21 02:16:49,Sur3,joa schient so
+2015-10-21 02:16:54,Svenska,und das alignment ist optional
+2015-10-21 02:17:01,Sur3,das alignment ist weg und die datei ist noch genauso groß wie vorher
+2015-10-21 02:17:15,Svenska,"und - vollkommen ueberraschend - es ist sogar dann sinnvoll, wenn du kein paging hast..."
+2015-10-21 02:17:56,Svenska,"allein schon, weil festplatten ueblicherweise kein bs=1 haben, sondern ein bs=512 oder bs=4096 ;)"
+2015-10-21 02:17:57,Sur3,"huch ich seh grad nicht nur das alignment ist weg er hat jetzt data und text zusammengefasst in einem einzigen load, dann war das wohl doch die falsche option"
+2015-10-21 02:19:21,Sur3,"joa meine festplatte hat 512 bytes, aber die kein ein entsprechendes dateisystem ja auch für mehrere kleine dateien benutzen, weiß grad nciht mehr wie das verfahren heißt"
+2015-10-21 02:20:12,Svenska,anders ausgedrueckt... swapping funktioniert auch ohne paging (wenn auch nicht so ganz gut)
+2015-10-21 02:20:41,Svenska,und dann ist ein alignment zwischen dateiinhalt und festplattenblock trotzdem sinnvoll
+2015-10-21 02:20:45,Svenska,*schulterzuck*
+2015-10-21 02:22:07,Sur3,swaping funktioniert ohne paging? hast du dazu ne anleitung?
+2015-10-21 02:22:30,Svenska,"du weißt, was swapping ist?"
+2015-10-21 02:22:34,Sur3,jop
+2015-10-21 02:22:42,Svenska,"du weißt, wie es funktioniert?"
+2015-10-21 02:22:52,Sur3,nicht gebrauchte speicherbereiche auslagern bis sie wieder gebraucht werden
+2015-10-21 02:23:18,Svenska,"wenn ein programm gerade nicht aktiv ist, braucht es die eigenen speicherbereiche dann?"
+2015-10-21 02:23:20,Sur3,und das ob sie gebraucht werden stellt man normalerweise durch einen page fault fest deswegen frage ich mich wie es ohne paging geht?
+2015-10-21 02:23:57,Sur3,hm ok du meinst also die speicherseiten beim taskwechsel auszulagern?
+2015-10-21 02:24:06,Svenska,"wenn der ram knapp ist, ist das ne option..."
+2015-10-21 02:24:14,Svenska,"ich hab nicht gesagt, dass das ""gut"" funktioniert"
+2015-10-21 02:24:23,Sur3,ok aber vermutlich langsamer als mit aktiviertem paging?
+2015-10-21 02:24:32,Svenska,?
+2015-10-21 02:24:39,Svenska,warum sollte das langsamer sein?
+2015-10-21 02:25:08,Svenska,was ist die große gemeinsamkeit von segmentierung und paging?
+2015-10-21 02:25:20,Sur3,"weil man unnötig ein und auslagert weil man nciht weiß ob sie gebraucht werden, beim paging hingegen werden nur seiten eingelagert die gebraucht werden"
+2015-10-21 02:25:51,Sur3,hm obwohl
+2015-10-21 02:26:10,Sur3,man könnte gp! auf ldts legen das wäre so ne art page fault exception dann
+2015-10-21 02:26:19,Svenska,"segmentierung und paging sind zwei ansätze, um ein einziges problem zu lösen..."
+2015-10-21 02:26:19,Sur3,keine schlechte idee
+2015-10-21 02:26:33,Svenska,*schulterzuck*
+2015-10-21 02:26:40,Svenska,segmentierung ist technisch billiger.
+2015-10-21 02:26:46,Svenska,paging ist wesentlich mächtiger.
+2015-10-21 02:27:01,Sur3,joa nur auf neuen cpus ist segmentierung vermutlich nicht mehr optimeirt
+2015-10-21 02:27:09,Svenska,s/optimeirt/vorhanden/
+2015-10-21 02:27:11,Sur3,müßte man mal geschwindigkeitsmäßig vergleichen
+2015-10-21 02:27:42,Svenska,"paging und segmentierung fallen beide unter eine kategorie, die man normalerweise MMU nennt"
+2015-10-21 02:27:44,Sur3,aso stimmt 64bit unterstützt ja keine segmentierung mehr doer wie war das?
+2015-10-21 02:28:20,Svenska,und damit kannst du durchaus swappen
+2015-10-21 02:29:12,Sur3,"joa man muß dann bei nem gp einlagern, das markeiren der unaktiven gp seiten funktioneirt dann zwar nur manuell aber was solls, ist ne gute möglichkeit"
+2015-10-21 02:29:50,Svenska,"der punkt ist, dass du segmente nur als ganzes aus- und einlagern kannst..."
+2015-10-21 02:29:57,Svenska,und deswegen wird es nicht gut funktionieren.
+2015-10-21 02:30:18,Svenska,"wenn du das codesegment eines programms auslagerst, kannst du es nicht mehr besonders gut ausfuehren..."
+2015-10-21 02:31:28,Sur3,"ahh mit -N macht der linker die datei kleiner jetzt sinds nurnoch 2464 Bytes statt 6412 Bytes, aber leider legt er damit auch die sections zussamen und nciht bloß hintereinander"
+2015-10-21 02:32:07,Svenska,mal ne blöde frage... wieso fokussierst du so gnadenlos auf die dateigröße der elf-datei?
+2015-10-21 02:32:50,Sur3,"ja stimmt in sofern ist paging besser weil es die daten stärker zerstückelt, wenn man nen 4MB file hat und das im speicher dann hat segmentierungd das als komplettes segment und paging als 4kb blöcke"
+2015-10-21 02:34:18,Sur3,"@Svenska die dateigröße ist eigentlich eher nebensächlich, ich will vor allem das alignment in der virtuellen adresse loswerden, das klappt zwar mit -n oder -N, aber leider merged er damit auch .text und .data ich such ne option das virtuelle alignment loszuwerden ohne die sectionen zu mergen"
+2015-10-21 02:34:26,Svenska,warum?
+2015-10-21 02:34:48,Svenska,"darf ich dich nochmals auf eine tolle erfindung namens ""linkerscript"" hinweisen? ;-)"
+2015-10-21 02:34:51,Sur3,weil virtuelles alignment ohne paging arbeitsspeicher unnötig kostet
+2015-10-21 02:35:13,Svenska,was wird denn da ueberhaupt ausgerichtet?
+2015-10-21 02:35:28,Svenska,.text @ 0; .data @ 0 << da ist kein alignment
+2015-10-21 02:35:33,Sur3,naja standardmäßig:
+2015-10-21 02:35:34,Sur3,LOAD           0x001000 0x00000000 0x00000000 0x0029c 0x0029c R E 0x1000
+2015-10-21 02:35:35,Sur3,  LOAD           0x00129c 0x0000129c 0x0000129c 0x0000c 0x00018 RW  0x1000
+2015-10-21 02:35:58,Svenska,"ach, du willst deine programme in EIN segment tun?"
+2015-10-21 02:36:36,Sur3,"nein das geht mit -n oder -N, aber ich will die beiden segmente behalten und direkt hintereinander haben, weil da ist so viel platz dazwischen"
+2015-10-21 02:36:58,Svenska,?
+2015-10-21 02:37:07,Svenska,warum sollte das dann arbeitsspeicher kosten?
+2015-10-21 02:37:20,Sur3,das eine endes bei 0x29c und das nächste beginnt erst bei 0x129c der platz dazwischen ist verschenkt
+2015-10-21 02:37:22,Svenska,dein elf-loader muss doch die elf-datei nichtmal in den ram kopieren
+2015-10-21 02:39:08,Sur3,"nein aber die load sections die ich gerade zitiert habe, mit der standardoption verschenkt das 0x129c-0x29x=4kB und mit -n braucht das ganze programm nur 0x2b4 arbeitsspeicher"
+2015-10-21 02:39:51,Svenska,wieviel speicher hat dein zielsystem?
+2015-10-21 02:40:00,Sur3,"aber -n fasst leider auch die sections zusammen, ich will daß er er die sections einfach nur nicht aligned aber trotzdem getrennt hält"
+2015-10-21 02:40:52,Sur3,mein momentanes zielsytem hat 4GB aber das ist ja kein grund 4kB unnötig zu verschenken
+2015-10-21 02:41:02,Svenska,*seufz*
+2015-10-21 02:41:17,Svenska,du verschenkst unnötigerweise 512 MB
+2015-10-21 02:41:23,Svenska,und regst dich ueber 4 KB auf
+2015-10-21 02:41:34,Svenska,besorg dir mal irgendwo vernuenftige prioritäten ^^
+2015-10-21 02:41:36,Sur3,wie verschenk ich denn 512MB?
+2015-10-21 02:41:43,Sur3,aso
+2015-10-21 02:41:47,Sur3,wegen den geräten
+2015-10-21 02:59:54,Svenska,gut nacht
+2015-10-21 06:20:14,Sur3,"ok hab die helloworld.elf jetzt mit -N und -s von 6412 Bytes auf 1196 Bytes runter bekommen, ganz schöner unterschied ^^"
+2015-10-21 09:55:34,kevin,Moin
+2015-10-21 09:57:26,masterq32,heyhey
+2015-10-21 09:59:40,kevin,"Hm, die Logs von heute nacht fordern mich ja fast heraus, was zu Swapping ohne Paging zu sagen"
+2015-10-21 09:59:48,kevin,"Aber vielleicht lieber nicht, sonst macht er das noch *g*"
+2015-10-21 10:00:39,masterq32,hm?
+2015-10-21 10:00:43,masterq32,erzähl :D
+2015-10-21 10:01:33,kevin,"Ich nehme an, dass Svenska auch absichtlich nicht zu sehr ins Detail gegangen ist, aber Segmentierung war natürlich ursprünglich auch mal dafür gedacht"
+2015-10-21 10:01:52,kevin,Und das Present-Bit gibt es auch einem Grund
+2015-10-21 10:01:56,masterq32,aaah! :D
+2015-10-21 10:02:00,kevin,*aus
+2015-10-21 10:02:41,kevin,"Wobei das alles natürlich nur dann Sinn macht, wenn man nicht ein einziges großes Datensegment hat"
+2015-10-21 10:02:52,kevin,Dann muss man richtig Segmentierung machen
+2015-10-21 10:03:10,kevin,Also kurz gesagt: Vielleicht lieber bleiben lassen ;-)
+2015-10-21 10:03:14,masterq32,haha :D
+2015-10-21 10:12:47,Guest229,auto Socket::operator<<<Socket &(*)(Socket &)>(Socket &(*func)(Socket &)) -> Socket &
+2015-10-21 10:13:35,Guest229,getemplatete funktionen mit funktionszeigern als argument sind schon was schoenes
+2015-10-21 10:16:03,masterq32,what the heck? :D
+2015-10-21 10:16:06,masterq32,:D
+2015-10-21 10:16:26,kevin,Diese Sprache gehört verboten
+2015-10-21 10:16:36,masterq32,nein
+2015-10-21 10:16:43,kevin,Ungefähr genauso verständlich wie Japanisch hier im Channel
+2015-10-21 10:17:20,masterq32,using SocketOp = Socket &(*)(Socket &);
+2015-10-21 10:17:20,masterq32,auto Socket::operator<< <SocketOp>(SocketOp &func) -> Socket &
+2015-10-21 10:17:25,masterq32,und schon lässt sich das lesen
+2015-10-21 10:18:44,darklink,oh
+2015-10-21 10:19:00,kevin,"Ja, lesbarer ist es"
+2015-10-21 10:19:07,darklink,warum socketOp &
+2015-10-21 10:19:34,kevin,"Ich finde derartigen Operatorenmissbrauch trotzdem nicht schön, auch wenn es in dieser Sprache üblich sein mag"
+2015-10-21 10:20:24,masterq32,ähm stimmt.
+2015-10-21 10:20:25,darklink,warum socketOp &
+2015-10-21 10:20:37,masterq32,"gewohnheit, operatoren ne const ref zu übergeben"
+2015-10-21 10:20:40,Guest230,das hast du noch gekriegt
+2015-10-21 10:21:04,Guest230,aber doch keine zeiger
+2015-10-21 10:21:25,masterq32,hm? wie meinst?
+2015-10-21 10:21:58,darklink2, uebergibst du auch zeiger als const ref?
+2015-10-21 10:22:32,masterq32,ja :D
+2015-10-21 10:22:41,masterq32,bei operatoren mit template ja
+2015-10-21 10:22:48,masterq32,oder ich mach ne überladung dafür
+2015-10-21 10:22:53,masterq32,und dann brauch ich kein templateparameter ;)
+2015-10-21 10:30:07,Sur3,@kevin joa klar das present bit kenn ich ^^
+2015-10-21 10:31:10,Sur3,"mal was anderes, ich schreib grad nen elf loader und frag mich jetzt wo ich dei adresse des esp hinsetzen soll daß geht irgendwie nicht aus dem tutorial hervor?"
+2015-10-21 10:34:33,darklink2,sur es ist egal solange esp gemappt ist
+2015-10-21 10:35:51,Sur3,"nee die frage ist ob die elf da etwas definiert, also packe ich das ans ende der .data section oder wo soll mein stack pointer hinzeigen?"
+2015-10-21 10:37:11,Sur3,der program header kennt ja p_memsz ist das vllt bewußt größer als p_filesz weil der stackpointer 
+2015-10-21 10:37:13,darklink2,der stackpointer muss zu einem von dir selbt allokierten bereich zeigen 
+2015-10-21 10:37:21,darklink2,der elf ist es egal
+2015-10-21 10:37:33,Sur3,da hinzeigen soll
+2015-10-21 10:38:24,Sur3,"aber wieviel stack braucht ein elf programm, wenn memsz nicht dafür gedacht ist steht das nirgendwo?"
+2015-10-21 10:38:40,darklink2,4 KB muesste ausreichen
+2015-10-21 10:39:11,darklink2,afaik ist das auch die standard stackgroesse unter linux
+2015-10-21 10:39:32,darklink2,memsz ist afaik fuer den .bss da
+2015-10-21 10:39:33,kevin,"Linux vergrößert den Stack des Hauptthreads automatisch, oder?"
+2015-10-21 10:39:43,kevin,Der Stack steht nicht in der ELF jedenfalls
+2015-10-21 10:39:46,darklink2,keine ahnung
+2015-10-21 10:39:50,kevin,Weil der nicht aus der Datei kommt
+2015-10-21 10:40:11,kevin,"Das ist eine reine Laufzeitangelegenheit und kann gemacht werden, wie man das will"
+2015-10-21 10:40:56,Sur3,naja wär ja schön wenn in der elf stünde wieviel stack das program braucht
+2015-10-21 10:42:13,kevin,Woher soll die ELF denn das wissen?
+2015-10-21 10:42:43,kevin,"Bzw. woher soll es der Compiler wissen, um es in die ELF schreiben zu können?"
+2015-10-21 10:42:46,darklink2,4KB reicht meist schon
+2015-10-21 10:42:55,kevin,"Nein, 4k reicht meistens nicht"
+2015-10-21 10:43:05,kevin,"Im Kernel kommt man damit hin, wenn man aufpasst, aber im Userspace eher nicht"
+2015-10-21 10:43:15,darklink2,im vergleich: der linux kernel hat nur einen 64 KB stack
+2015-10-21 10:43:28,kevin,"Der Linuxkernel hat 4k oder 8k, je nach Konfiguration"
+2015-10-21 10:43:53,kevin,"Aber im Kernel muss man halt auch aufpassen, z.B. mit Rekursion und nie Strings auf den Stack legen und so"
+2015-10-21 10:43:55,Sur3,joa mein kernel hat 4kB für den AP udn 256Bytes für jeden weiteren Kern
+2015-10-21 10:44:10,Sur3,aber mir gehts halt grad um das laden von elf dateien
+2015-10-21 10:44:28,kevin,"Soweit es um ELF geht, gibt es keinen Stack. Fertig."
+2015-10-21 10:44:37,darklink2,pi@raspberrypi ~ $ ulimit -s
+2015-10-21 10:44:37,darklink2,8192
+2015-10-21 10:45:56,darklink2,auf meinem pc sagt er glaube ich unlimited
+2015-10-21 10:46:18,kevin,8192 sind 8 MB
+2015-10-21 10:46:19,Sur3,wie verhindert man denn einen stacküberlauf wenn man den stack nicht in ein eigenes segment packen soll und nichtmal weiß wie groß er sein muß?
+2015-10-21 10:46:41,kevin,Guard Page drunterpacken. *hust*
+2015-10-21 10:46:45,darklink2,ooh
+2015-10-21 10:47:00,darklink2,ja
+2015-10-21 10:47:25,darklink2,oder kernelstack als ring 0 mappen
+2015-10-21 10:47:37,kevin,"Mit Segmentierung einen wachsenden Stack hinzubekommen und Overflows abzufangen, wobei ds und ss gleich sein müssen, klingt schwer"
+2015-10-21 10:47:56,Sur3,"na toll, ich glaub ich muß echt mal nen eigenes executableformat für segmentierung entwickeln -.-"
+2015-10-21 10:48:05,kevin,Das hilft dir auch nichts
+2015-10-21 10:48:12,kevin,Weil das Problem dann immer noch das gleiche ist
+2015-10-21 10:48:36,Sur3,nö im eigenen format kann ich sagen daß stack udn datenbereich getrennte segmente bekommen
+2015-10-21 10:48:46,kevin,Dafür brauchst du kein eigenes Binärformat
+2015-10-21 10:48:52,kevin,"Dafür brauchst du ""nur"" einen eigenen Compiler"
+2015-10-21 10:48:58,Sur3,joa dafür brauch ich eher nen eigenen compiler :-/
+2015-10-21 10:49:06,Sur3,jo -.-
+2015-10-21 10:49:16,masterq32,ich hab hier nen compiler für Copper mit Front/Backend-Trennung rumliegen
+2015-10-21 10:49:21,kevin,"masterq32 kann dir sagen, wie man sowas macht"
+2015-10-21 10:49:23,masterq32,interesse an nem Fork für X86? :D
+2015-10-21 10:49:27,kevin,"Ah, da ist er schon *g*"
+2015-10-21 10:50:02,kevin,Unterstützt Copper Segmentierung? ;-)
+2015-10-21 10:50:11,masterq32,copper compiliert grade auf ne stackmachine
+2015-10-21 10:50:14,masterq32,und nicht nach x86
+2015-10-21 10:50:19,masterq32,bräuchte also nen anderes backend
+2015-10-21 10:50:43,Sur3,"aso, is das deine eigene entwicklung oder wie?"
+2015-10-21 10:50:49,masterq32,yep
+2015-10-21 10:51:07,masterq32,bau grade support für memory modifier an den variablen
+2015-10-21 10:51:17,masterq32,danach kann man pro modul/objekt/prozess variablen haben :D
+2015-10-21 10:51:23,masterq32,und damit hab ich IPC gelöst :P
+2015-10-21 10:51:32,kevin,"Ja, klar eine anderes Backend. Aber um vernünftig mit Segmentierung arbeiten zu können, wäre es schön, sowohl Near- als auch Far-Pointer zu unterstützen"
+2015-10-21 10:51:37,Sur3,wie ist die schnittstelle zwischen frontend und backend?
+2015-10-21 10:51:43,kevin,Und das betrifft die Sprache
+2015-10-21 10:51:44,masterq32,im moment ist das nen syntaxbaum :D
+2015-10-21 10:52:59,Sur3,"ok die spezifikation für den syntaxbaum kannst du mir ja mal geben, aber ich denke ich werd dann eher komplett selbst nen compiler schreiben, das backend ist ja shcon ein großteil davon XD"
+2015-10-21 10:53:10,masterq32,:D
+2015-10-21 10:54:35,kevin,Wenn das mal gutgeht ;-)
+2015-10-21 10:54:40,masterq32,:D
+2015-10-21 10:55:40,Sur3,.bss war der heap oder?
+2015-10-21 10:55:48,kevin,Nein
+2015-10-21 10:56:05,kevin,.bss sind globale Daten
+2015-10-21 10:56:25,Sur3,aso sehe grade statisch ok
+2015-10-21 10:56:26,kevin,"Also genullte Daten, die mit anderer Belegung sind in .data"
+2015-10-21 10:57:23,Sur3,ok also muß ich den bereihc beim laden einer elf mit nullen füllen?
+2015-10-21 11:14:26,kevin,"Sur3: Ja, du musst den Bereich zwischen filesz und memsz mit Nullen auffüllen"
+2015-10-21 11:14:44,Sur3,ok thx
+2015-10-21 11:15:21,darklink2,SED fail
+2015-10-21 11:15:27,darklink2,?#include {arpa\inet.h}
+2015-10-21 11:18:35,kevin,"Ob man ihm sagen sollte, dass die SED heute nicht mehr so heißt?"
+2015-10-21 11:24:00,masterq32,:D
+2015-10-21 11:25:46,Sur3,wat wie kommt ihr auf sed? o.O
+2015-10-21 11:27:00,masterq32,gestern abend hatten wir es von trigraphen
+2015-10-21 11:27:13,masterq32,und darklink hat mit sed ein file komplett auf trigraphen umgestellt
+2015-10-21 11:27:25,Sur3,ahh ok
+2015-10-21 11:28:50,Sur3,"ok mein elf loader ist eigentlich so weit fertig, er jetzt muß ich den fehelr suchen warum er abschmiert.. ^^"
+2015-10-21 11:29:18,darklink2,heute wollte ich es zurueckmachen
+2015-10-21 11:29:37,darklink2,habe aber falsch escaped
+2015-10-21 11:29:54,kevin,Die gerechte Strafe
+2015-10-21 11:30:32,Sur3,sed ist fast so schlimm wie awk xD
+2015-10-21 11:30:35,darklink2,wie gingen denn nochmal negative lookbehinds?
+2015-10-21 11:30:50,masterq32,`awk`ward? :D
+2015-10-21 11:31:05,darklink2,awk geht noch
+2015-10-21 11:31:16,darklink2,wenn man es nicht kann 
+2015-10-21 11:31:26,masterq32,haha :D
+2015-10-21 11:31:31,masterq32,"ja, dann verwendet man es nicht"
+2015-10-21 11:31:36,Sur3,xD
+2015-10-21 11:31:45,masterq32,ich bin fän von sed
+2015-10-21 11:32:16,darklink2,ich verwende es um nur bestimmte reihen von tabellen zu filtern
+2015-10-21 11:33:25,darklink2,sowas wie: ps ax | grep 'programmname' | grep -v 'grep' | awk '{print $1}' | xargs sudo kill
+2015-10-21 11:33:36,masterq32,:D
+2015-10-21 11:33:55,Sur3,:D
+2015-10-21 11:35:49,Sur3,xargs: sudo: Datei oder Verzeichnis nicht gefunden
+2015-10-21 11:35:51,Sur3,^^
+2015-10-21 11:35:59,darklink2, ⅔ vulgar fraction two thirds
+2015-10-21 11:36:10,darklink2,aeaeh lol?
+2015-10-21 11:36:21,darklink2,was ist daran vulgaer?
+2015-10-21 11:37:02,Sur3,ich find den bruch seeehr provokativ muß ich jetzt sagen das ist nciht in ordnung von dir ab auf dein zimmer!
+2015-10-21 11:37:42,darklink2,lol
+2015-10-21 11:37:47,Sur3,^^
+2015-10-21 11:38:25,kevin,https://en.wiktionary.org/wiki/vulgar#Adjective
+2015-10-21 11:38:35,kevin,"Synonyms: (ordinary): common, ordinary, popular"
+2015-10-21 11:38:44,kevin,"Und nein, ist es damit auch kein ordinärer Bruch ;-)"
+2015-10-21 11:39:18,Sur3,xD
+2015-10-21 11:40:00,Sur3,doch eigentlich schon ordinär hat ja nicht nur die negative bedeutung auch wenn man es oft mit negativer konotation versteht ^^
+2015-10-21 11:40:12,kevin,"Naja, vulgär auch nicht"
+2015-10-21 11:40:29,Sur3,https://de.wiktionary.org/wiki/ordin%C3%A4r
+2015-10-21 11:40:48,darklink2,s/(?<!\?){/</g
+2015-10-21 11:40:48,Sur3,"""[1] gehoben, veraltend: nicht ungewöhnlich oder gar außergewöhnlich, sondern ganz normal"""
+2015-10-21 11:40:58,kevin,"Ja, findest du so ähnlich aber auch unter ""vulgär"""
+2015-10-21 11:41:06,Sur3,jo ^^
+2015-10-21 11:41:19,Sur3,"das ist es was ""synonym"" bedeutet :D"
+2015-10-21 11:42:11,kevin,"Naja, ein Wort muss ja nicht in allen seinen Bedeutungen synonym mit einem anderen sein"
+2015-10-21 11:42:50,Sur3,Ich benutz lieber die gehobenen höfischen Brüche statt die ördinären Brüche des Pöbels :D
+2015-10-21 11:48:20,Sur3,"muß es nicht, sollte es aber, die sprache sollte besser genormt werden ^^"
+2015-10-21 11:49:30,Sur3,ich hab mir überlegt man müßte eigentlich eine wissenschaftssprache entwickeln in der man nur in logischen ausdrücken und chemischen formeln etc redet. ^^
+2015-10-21 11:52:14,masterq32,∀ idee ∊ Sur3: fragwürdig(idee) = wahr.
+2015-10-21 11:52:16,masterq32,:P
+2015-10-21 11:57:33,darklink2,(1) 0.1x + 0.2y - 3.2z = 2.1 (2) 0.3x + 0.7y + 6.8z = 8.1 (3) 0.4x + 0.9y - 19.6 z = 7
+2015-10-21 11:58:00,darklink2,und das ist eine anweisung
+2015-10-21 11:58:03,Sur3,"Idee(Sur3,t)->Entropie(t+1)>=Entropie(t)"
+2015-10-21 11:58:19,max,$qb
+2015-10-21 11:58:25,masterq32,:D
+2015-10-21 11:58:32,max,"Hm, ich hätte wissen sollen, dass ich hier keine Ersetzungen hab"
+2015-10-21 11:58:35,max,"Na, beim nächsten Mal"
+2015-10-21 11:59:27,Sur3,darklink ist das ne funktionale programmiersprache?
+2015-10-21 11:59:55,Sur3,$qb = QBasic? oder wofür steht $qb?
+2015-10-21 12:00:12,darklink2,bloedes internet
+2015-10-21 12:00:15,Sur3,darklink ist das ne funktionale programmiersprache?
+2015-10-21 12:00:38,max,"Na, dann muss ichs jetzt wohl doch raussuchen"
+2015-10-21 12:01:18,max,／人◕ ‿‿ ◕人＼ hätte das werden sollen
+2015-10-21 12:01:34,darklink2,ne ist ist deine 
+2015-10-21 12:01:37,masterq32,ui :)
+2015-10-21 12:02:38,Sur3,aso ich hatte schon befürchtet es sollte https://www.youtube.com/watch?v=DLzxrzFCyOs werden.. :D
+2015-10-21 12:02:40,darklink2, / mensch kugel bogen bogen kugel mensch \
+2015-10-21 12:03:01,max,ich hätte auch noch https://dl.dropboxusercontent.com/u/48755239/savable/reactions/misc/entropy.jpg
+2015-10-21 12:03:27,Sur3,waas entropie ist doch gut
+2015-10-21 12:03:28,masterq32,never gonna give you up
+2015-10-21 12:04:34,masterq32,mal so nen anderes thema
+2015-10-21 12:04:40,masterq32,wie nutze ich exceptions in c++ im kernel?
+2015-10-21 12:04:46,masterq32,muss ich dafür kram implementieren oder geht das einfach? :D
+2015-10-21 12:06:20,Sur3,du mußt ne idt anlegen und die auf die entsprechenden fehlerbehandlungsroutinen zeigen lassen?!?
+2015-10-21 12:06:43,masterq32,ich meinte c++ exceptions mit throw :D
+2015-10-21 12:06:49,Sur3,ach das zeug
+2015-10-21 12:06:53,masterq32,genau :D
+2015-10-21 12:07:00,masterq32,"""normale"" interrupt exceptions sind klar"
+2015-10-21 12:09:25,masterq32,muss mir das wohl mal im disassembler angucken was da raus kommt
+2015-10-21 12:09:35,Sur3,"ich würd vermuten das ist nen sprachinternes konstrukt, probier doch mal ob die nicht einfach so laufen indem du eine catched die erfüllt ist und eine nicht catched die nicht erfüllt ist, das sollte es verifizieren"
+2015-10-21 12:10:02,masterq32,joar
+2015-10-21 12:10:03,darklink2,du brauchst dafuer einen cross compiler
+2015-10-21 12:10:22,darklink2,da throw code fuers unwinding brauch
+2015-10-21 12:10:23,darklink2,t
+2015-10-21 12:11:26,darklink2,"ausserdem, wenn du eine exception nicht auffaengst crasht der pc!"
+2015-10-21 12:11:52,masterq32,yep ist mir klar
+2015-10-21 12:13:40,kevin,"Ich glaube, die allgemeine Empfehlung war: C++ mit Exceptions im Kernel macht man nicht."
+2015-10-21 12:13:51,kevin,Persönlich verallgemeinere ich das ja zu: C++ macht man nicht.
+2015-10-21 12:14:06,masterq32,:D
+2015-10-21 12:14:13,masterq32,joar ich hab halt grade nur RAII probleme
+2015-10-21 12:14:50,kevin,"Sur3: Wegen der Sprache mit logischen Ausdrücken und so... Sagt man nicht, dass Lojban irgendwie sowas ist?"
+2015-10-21 12:21:12,Sur3,"jein Lojban definiert eine Grammatik basierend auf einer Prädikatenlogik aber die wörter sind immer noch von standardsprachen entlehnt, ich hab grad mal nachgesehn wasser heißt zum beispiel djacu aber ich will halt etwas was dann bei so einfachen stoffen gleich die chemische verbindung ausdrückt, Dihyox oder Hyoxhy oder Di-hydrogenium-monoxid oder eben einfach H2O"
+2015-10-21 12:22:17,max,Und Lebewesen werden dann immer mit der vollständigen Klassifizierung genannt?
+2015-10-21 12:22:24,Sur3,XD
+2015-10-21 12:22:35,kevin,"Findest du das nicht eine unzulässige Vereinfachung, auf Atomebene aufzuhören?"
+2015-10-21 12:22:59,Sur3,"nee ich hab doch gesagt bei einfachen stoffen, bei komplexeren gebilden muß man eben andere charakteristika finden die sich leicht zusammen fassen lassen"
+2015-10-21 12:23:09,kevin,"Wenn du schon ein Alias ""Wasser"" für H2O ablehnst, warum akzeptierst du ""Wasserstoff""?"
+2015-10-21 12:23:42,Sur3,nein man hört eben immer auf der ebene auf wie genau man es gerade braucht und für wasser wird man selten auf quark-ebene oder stringebene gehen müssen xD
+2015-10-21 12:24:05,max,Ich brauch ja selten die Atomstruktur von Wasser
+2015-10-21 12:24:07,kevin,"Stimmt, Wasserebene reicht mir meistens völlig aus. Moleküle brauche ich da selten."
+2015-10-21 12:24:56,Sur3,hmm joa klar besodners wenn man keine destilliertes wasser sondern trinkwasser meint
+2015-10-21 12:25:24,max,"Au ja, Stoffgemische müssen immer nach allen Inhaltsstoffen aufgeschlüsselt werden"
+2015-10-21 12:25:29,kevin,Das kommt noch dazu
+2015-10-21 12:25:43,max,"So kann ich meinen Colakonsum effektiv einschränken, wenn ich jedes Mal eine halbe Stunde brauche, um den Namen zu nennen, wenn ich eine haben will"
+2015-10-21 12:25:59,Sur3,hahaha :D
+2015-10-21 12:26:20,kevin,Darf man für die Menge der Inhaltsstoffe wenigstens eine Fehlertoleranz angeben?
+2015-10-21 12:27:00,Sur3,"nein deswegen will ich die atome und moleküle ja abkürzen mit einer entropiekodierung, also was man häufig braucht wie wasserstoff bekommt ne eigene silbe Hy oder so"
+2015-10-21 12:27:39,Sur3,"@kevin das mit der fehlertolleranz ist ne gute idee, nen konfidenzintervall"
+2015-10-21 12:27:42,max,Das ist aber ineffizient
+2015-10-21 12:28:04,kevin,Ich brauche Wasser viel öfter als Wasserstoff
+2015-10-21 12:28:12,max,"Wenn man Wasser häufig braucht, dann braucht man also kurze Namen für Wasserstoff und Sauerstoff (und alles, was man neben deren Namen braucht)"
+2015-10-21 12:28:23,max,Und verschwendet somit (mindestens) zwei kurze Namen
+2015-10-21 12:28:35,max,"Wenn man das zu Wasser zusammenfasst, braucht man nur einen"
+2015-10-21 12:28:49,max,"Der noch dazu kürzer sein wird, als Wasserstoff und Sauerstoff kombiniert"
+2015-10-21 12:28:55,max,"-,"
+2015-10-21 12:28:55,kevin,"Also wie gesagt, destilliertes Wasser will ich trotzdem nicht trinken"
+2015-10-21 12:28:56,Sur3,hmm
+2015-10-21 12:29:29,Sur3,soll leute geben die das trinken
+2015-10-21 12:29:52,max,"Soll auch Leute geben, die Zyankali essen"
+2015-10-21 12:30:28,Sur3,du meinst KCN ^^
+2015-10-21 12:30:54,max,"Ja, länger Kaliumzyanid, kürzer Zyankali"
+2015-10-21 12:31:22,Sur3,"Joa Kaliumcyanid ist auch nicht so schwer herzustellen, schon erstaunlich daß es so giftig ist ^^"
+2015-10-21 12:31:22,max,Wie hieße denn Zyanid in lang? Carbonnitrid?
+2015-10-21 12:34:18,Sur3,"ich glaub Carbonitrid aber sagt irgendwie niemand, würd man auch zu leicht mit Carbonitrit verwechseln ^^"
+2015-10-21 12:36:17,Sur3,ich hab grad was in dem zusammenhang gefudnen abr da geht es um die beiden stoffe einzeln und nciht als verbindung https://de.wikipedia.org/wiki/Nitrocarburieren
+2015-10-21 12:36:40,max,"Ich hab in Chemie übrigens konsequent versucht, Trivial- oder einfach ältere Namen zu benutzen, auch wenn sie länger waren"
+2015-10-21 12:36:46,max,Zum Beispiel Formaldehyd statt Methanal
+2015-10-21 12:37:48,Sur3,"joa ich sag auch Formaldehyd, sagt überhaupt jemand Methanal?"
+2015-10-21 12:38:03,max,"Ja, jeder, der der IUPAC-Namenskonvention folgt"
+2015-10-21 12:38:11,Sur3,ok
+2015-10-21 12:38:41,max,Oder auch Ameisensäure statt Methansäure und Essigsäure statt Ethansäure
+2015-10-21 12:38:50,Sur3,aus dem namen Methanal geht natürlich leicht hervor daß man es durch oxidation von Methanol gewinnen kann
+2015-10-21 12:39:18,max,"Es geht einfach mal hervor, dass es das Aldehyd mit einem Kohlenstoffatom ist"
+2015-10-21 12:39:34,max,(ein Kohlenstoffatom: Methan-; Aldehyd: -al)
+2015-10-21 12:40:29,Sur3,"eigentlich dumm Methandehyd wäre schlüssiger, so hat man Metahan und noch das Al von Alkan drangehaben xD"
+2015-10-21 12:40:47,max,Alkane sind ja nur -an
+2015-10-21 12:41:12,max,"Also, ja, eigentlich ist es Meth- + -anal, aber das hier ist ja ein sfw-Channel, da darf man sowas eigentlich nicht sagen"
+2015-10-21 12:41:21,max,(Also beides)
+2015-10-21 12:41:37,Sur3,"joa aber das Al- von Aldehyd kommt ja von Alkan, deswegen ist das mit Methanal irgendwie doppelt gemoppelt, das dehydrierte im namen ist verloren gegangen"
+2015-10-21 12:41:58,max,Und das Hydro- in Hydrogenium kommt von Wasser
+2015-10-21 12:42:04,max,Und trotzdem willst du ungern Wasser sagen
+2015-10-21 12:42:07,max,Dein Punkt war? D:
+2015-10-21 12:42:58,Sur3,joa auch wahr.. Hydrogenium das Wasser-gebärende
+2015-10-21 12:44:10,Sur3,"okok ihr habt mich überzeugt, nehmen wir Hyd für wasser und Hyge für hydrogenium ^^"
+2015-10-21 12:44:44,kevin,Eine eindeutige Antwort
+2015-10-21 12:46:02,Sur3,und Dragyn für Hydragyrum ^^
+2015-10-21 12:46:49,Sur3,das kann ruhig länger sein weil man es selten braucht ^^
+2015-10-21 12:50:15,Sur3,ich hab übrigens mal echt eien kleine sprache angefangen zu entwickeln die auf emelenten beruht aber die beruhte auf der europäischen und chinesischen 5 elemente-lehre weil man daraus schneller begriffe bauen kann als aus den chemischen elementen ^^
+2015-10-21 12:52:56,kevin,Kann man machen
+2015-10-21 12:52:59,kevin,Muss man aber nicht
+2015-10-21 12:53:31,kevin,"Ich finde an Sprachen andere Dinge interessanter als ""logisch"" hergeleitete Wörter"
+2015-10-21 12:53:35,Sur3,"die war so aufgebaut, daß zB ʃ (lautschrift sch) für Wasser steht, das symbolisiert das rauschen des wassers und dann konnte man das mit ь stimmhaft machen um zu sagen daß man den aggregatzustand meint, also ьʃ heißt dann Wasseraggregat oder gutdeutsch flüssig und so"
+2015-10-21 12:54:50,Sur3,da gab es ganz schöne wortkonstruktionen wie ьʃchrk = flüssige feuererde = magma/lava
+2015-10-21 12:54:56,kevin,"Zwei komplette Laute verbraucht für ""Wasser"" und ""flüssig"". Beeindruckend."
+2015-10-21 12:55:19,kevin,Wie groß war das Vokabular am Ende?
+2015-10-21 12:55:29,Sur3,mom..
+2015-10-21 12:55:46,kevin,"Wenn du so weitermachst, bleibt es wohl bei einer knapp zweistelligen Zahl von Grundwörtern."
+2015-10-21 12:56:06,Sur3,hat einer nen nopaste?
+2015-10-21 12:56:30,Sur3,ahh hab schon
+2015-10-21 12:57:18,Sur3,http://pastebin.com/raw.php?i=aHX3h5Df
+2015-10-21 12:58:05,Sur3,also das oben sind die grundlaute und unten stehen die kompositionen
+2015-10-21 12:58:40,kevin,Was ist denn [ñ]? Ein nasalierter Nasal?
+2015-10-21 12:59:02,Sur3,jo
+2015-10-21 12:59:08,kevin,Wie geht das?
+2015-10-21 12:59:16,kevin,Also wo ist der Unterschied zu [n]?
+2015-10-21 12:59:55,kevin,"Ach so, das ist gar keine Lautschrift, obwohl's in eckigen Klammern steht"
+2015-10-21 13:00:05,Sur3,der unterschied ist man gibt mehr luft durch die nase
+2015-10-21 13:00:32,Sur3,jein es sind teilweise lautschrift teilweise nciht ich muß das mal vereinheitlichen
+2015-10-21 13:01:20,Sur3,"    ñ ist ein ruckartiges Ausatmen durch die Nase, bei dem man einen sehr schwachen n-Laut in dem Atemgeräusch vernimmt."
+2015-10-21 13:01:20,Sur3,"    ь macht Konsonaten im Endeffekt stimmhaft, sprich ьf wird beispielsweise quasi wie ein w gesprochen."
+2015-10-21 13:01:20,Sur3,    ɦ ist ein Röchellaut.
+2015-10-21 13:01:51,Sur3,ich bin mal essen bis gleich
+2015-10-21 13:04:24,kevin,Also Aussprechbar sind die meisten Komposita ja nicht unbedingt... ;-)
+2015-10-21 13:18:49,Sur3,ʃo ɦ wmьpʃьklmo
+2015-10-21 13:18:57,masterq32,wat?
+2015-10-21 13:19:01,Sur3,ich komme von der nahrungsaufnahme
+2015-10-21 13:19:23,masterq32,aha
+2015-10-21 13:19:23,masterq32, :D
+2015-10-21 13:19:26,Sur3,oder gutdeutsch ich bin vom essen zurück
+2015-10-21 13:19:29,kevin,"Bitte einmal eine Audiodatei von ""wmьpʃьklmo"", das stelle ich mir sehr gewagt vor"
+2015-10-21 13:19:53,Sur3,joa die aussprache ist zugegeben gewöhnungsbedürftig aber geht
+2015-10-21 13:20:17,kevin,"[vmbʃglmo] müsste das in IPA sein, oder?"
+2015-10-21 13:21:05,kevin,"Mit silbischem m und l, oder so"
+2015-10-21 13:21:06,Sur3,sicher daß die in lautschschrift bʃ für diese art von j schreiben?
+2015-10-21 13:21:25,kevin,"""Diese Art von j""?"
+2015-10-21 13:21:35,kevin,Vermutlich interpretiere ich deine Schreibweise einfach falsch
+2015-10-21 13:22:14,Sur3,naja bʃ ist ein stimmhaftes sch das wird dadurch daß es stimmhaft ist zu einem J wie in englisch Jesus
+2015-10-21 13:22:33,kevin,ьpʃ macht nicht nur das p stimmhaft?
+2015-10-21 13:23:19,kevin,"Würde die Aussprache erleichtern, wenn da nicht was einzelnes stimmloses in der Mitte wäre ;-)"
+2015-10-21 13:23:49,Sur3,ahh ich sehe gerade das korrekte IPA zeichen dafür wäre wohl ◌̬ʃ
+2015-10-21 13:24:12,Sur3,hm komisch dieses unicodezeichen
+2015-10-21 13:24:43,Sur3,ahh nee jetzt hab ichs
+2015-10-21 13:24:52,Sur3,ʃ stimmlos	ʒ stimmhaft
+2015-10-21 13:24:58,kevin,Ein stimmhaftes ʃ ist ein ʒ
+2015-10-21 13:25:06,Sur3,jop ^^
+2015-10-21 13:25:27,kevin,"Aber ich verstehe nicht, warum da ein ʒ rauskommen sollte. Vermutlich verstehe ich noch nicht, was <ь> bedeutet"
+2015-10-21 13:25:43,Sur3,und ich schreib für stimmhaft eben dieses russische b davor dann erkennt man einfacher daß es ne stimmhafte ableitungsforum von wasser ist ^^
+2015-10-21 13:25:52,kevin,Und wie weit wirkt das?
+2015-10-21 13:26:02,Sur3,nur auf den nächsten laut
+2015-10-21 13:26:27,Sur3,man macht damit aus dem element einen aggregatzustand
+2015-10-21 13:26:30,kevin,Dann wird aber nur das <ьp> zu /b/ und <ʃ> bleibt /ʃ/
+2015-10-21 13:26:52,Sur3,"also aus wasser flüssig, aus erde/gestein wird fest aus luft wird gasförmig usw.."
+2015-10-21 13:27:40,Sur3,nee p ist das klammer auf zeichen
+2015-10-21 13:27:52,Sur3,dann gult es bis zum schliessenden l
+2015-10-21 13:27:56,Sur3,*gilt es
+2015-10-21 13:28:03,kevin,Oh
+2015-10-21 13:28:17,kevin,"""Things a real language would never do"" ;-)"
+2015-10-21 13:29:11,kevin,Warum hast du dann in der Klammer nochmal ьk? In der Aussprache macht das dann keinen Unterschied mehr zu k?
+2015-10-21 13:29:56,Sur3,"joa ich könnte natürlich auch ь(ʃk) schreiben aber mit den klammern wüßte man nicht mehr wie man es ausspricht, aber ich seh grad ich hab eh nen zweites stimmhaftzeichen das kann eigentlich weg xD"
+2015-10-21 13:30:14,kevin,"Aber das würde die Bedeutung ändern, oder?"
+2015-10-21 13:31:26,kevin,"Also ich hab ja mal einen ähnlichen Ansatz probiert bei einer Sprache, die mit 20 Morphemen auskommen sollte, aber irgendwie ist das nicht praktikabel"
+2015-10-21 13:31:30,Sur3,nein nicht wirklich eigentlich müßte das b mit in die klammer dann ist es aussprachemäßig eindeutig oder das zweite b kann wegfallen aber das ist dann irgendwie seltsam
+2015-10-21 13:31:32,kevin,Nach 10 hatte ich keine Lust mehr
+2015-10-21 13:32:04,kevin,Ich würde halt die Aussprache auch bei der Klammer nur das p beeinflussen lassen
+2015-10-21 13:32:13,kevin,"Aber ich fürchte, die Aussprache ist so oder so nicht zu retten ;-)"
+2015-10-21 13:32:21,Sur3,ich hab mich da damals verschireben als ich es aus wmьʃmo und wmьkmo zusammengesetzt habe
+2015-10-21 13:32:33,Sur3,also essen und trinken zusammengefasst zu nahrung
+2015-10-21 13:33:26,Sur3,wmpьʃьklmo so wäre die aussprache zumindest eindeutig ja ^^
+2015-10-21 13:37:18,Sur3,was ich bei meinem ansatz interessant fand war vor allem daß ich manche absurden wörter leicht ausdrücken kann und bei manchen leicht erscheinenden wörtern muß ich noch nachdenken wie man die ausdrücken kann also ŋwm für Roboter oder ʃäwmf für Telepathie ist relativ kurz und sachen wie Raum und Zait weiß ich ncoh nicht wie ich sie ausdrücken soll :D
+2015-10-21 13:37:43,Sur3,*Zeit
+2015-10-21 13:38:43,Sur3,aber hey hauptsache die sprache hat 5 verschiedene wörter für Schmerzen und genauso viele für Liebe :D
+2015-10-21 13:43:39,Sur3,@kevin was hattest du denn für ein system bei deinen 10 morphemen?
+2015-10-21 13:46:56,Sur3,vllt kann ich da ja was für mein Dunkelalbisch (so hab ich diese elemente-sprache genannt) von verarbeiten.. ^^
+2015-10-21 13:53:55,kevin,"Hm, ich weiß nicht, ob ich den Entwurf noch dahabe"
+2015-10-21 13:56:58,Sur3,"ich hab für dieses stimmhaft und stimmlos übrigens auch ne eigene schrift entwickelt die ist eigentlich recht cool, die hab ich schon in der schule vor 10 jahren für manche sachen benutzt, dafür wollt ich auch mal ne zeichentabelle für mein os machen"
+2015-10-21 13:57:57,kevin,http://pastebin.com/1YJX2EdQ
+2015-10-21 13:59:04,kevin,"Ich hab mehr Strukturwörter, während du mehr Begriffe hast"
+2015-10-21 13:59:23,kevin,Könnte sich ergänzen und was ganz kaputtes dabei rauskommen ;-)
+2015-10-21 13:59:43,darklink_,Test?
+2015-10-21 13:59:48,Sur3,"joa interessant, deine sprache stellt prädikate und zeit in den vordergrund und meine bassiert eigentlich nur auf nomen und hat noch porblmene zeit auszudrücken :D"
+2015-10-21 14:00:11,Sur3,@darklink: Test bestanden!
+2015-10-21 14:00:24,Sur3,* darklink_
+2015-10-21 14:00:39,darklink,Mist
+2015-10-21 14:00:48,darklink,hat nicht geklappt
+2015-10-21 14:01:39,darklink,Was macht ihr gerade?
+2015-10-21 14:01:47,darklink,sprachen erfindenß
+2015-10-21 14:01:51,Sur3,joa
+2015-10-21 14:02:07,Sur3,der gemeinsame nenner unserer beiden sprachen ist daß wir beide ein morphem für negation haben :D
+2015-10-21 14:02:26,Sur3,ich als laut kevin als silbe ^^
+2015-10-21 14:03:18,kevin,"Und dass ich die auf Sachen wie den ""definitiness marker"" anwende, um Unbestimmtheit anzuzueigen und ähnliches"
+2015-10-21 14:03:28,kevin,"Wobei, das würde auch bei dir passen"
+2015-10-21 14:04:44,Sur3,erinnert mich von der schriebung ein wenig an irisch gälisch deine sprache ^^
+2015-10-21 14:05:35,kevin,"Hm, inwiefern?"
+2015-10-21 14:05:51,kevin,"Also ich mag Irisch, aber in diese Sprache ist es jetzt nicht bewusst eingeflossen"
+2015-10-21 14:07:15,kevin,"Wenn ich eine vernünftige Sprache basteln würde, würde das vor allem grammatikalisch viel irischer ausgehen ;-)"
+2015-10-21 14:08:47,Sur3,^^
+2015-10-21 14:09:48,kevin,"Nein, aber sag mal wieso das für dich Irisch aussieht?"
+2015-10-21 14:10:02,kevin,"Das einzige, was mir ähnlich aussieht ist der Akzent für lange Vokale, aber das gibt's ja öfter"
+2015-10-21 14:10:05,Sur3,duine ist zb irisch für mensch und im irischen gibt es auch viel ´ und so du hast auch sehr viele accente guile
+2015-10-21 14:12:07,kevin,"Hm, ja, aber dúin heißt ja nun nicht gerade Mensch bei mir"
+2015-10-21 14:12:10,Sur3,"hm meine sprache ist extrem wortbasiert und hat kaum grammatik und deine sprache ist eher auf ganze sätze orientiert, eigetnlcih könnte man die konzepte wirklich miteinander verbinden, aber das wird dann sehr komplex"
+2015-10-21 14:12:14,kevin,Wäre außerdem im Irischesn eher der Genitiv von dún
+2015-10-21 14:12:45,kevin,Aber Festung und Tag ist auch noch ein Unterschied ;-)
+2015-10-21 14:13:09,Sur3,joa ein wenig :D
+2015-10-21 14:13:54,Sur3,auf den zweiten blick erinenrt es mich auch eher an itallienisch
+2015-10-21 14:14:16,Sur3,anit = past = ante
+2015-10-21 14:14:18,kevin,"Aber du bist gemein, jetzt lese ich vís die ganze Zeit als /vi:ʃ/, weil das die irische Aussprache wäre (wenn es da ein v gäbe...) *g*"
+2015-10-21 14:14:35,Sur3,hehe :D
+2015-10-21 14:15:46,kevin,"Du kannst ja mal versuchen, die beiden Sachen zusammenzubringen"
+2015-10-21 14:16:15,kevin,Die eine Hälfte der Sätze besteht dann aus intintin und die andere aus unausprechbaren Konsonantenreihen ;-)
+2015-10-21 14:16:33,Sur3,"joa mir ist grad enoch eine gemeinsamkeit aufgefallen, deine verben sind mit den nomen über bedeutung verpflochten also tag und leuchten, bei mir wäre es tag und sonne"
+2015-10-21 14:17:09,kevin,Sonne würde ich vermulich als Tagleuchter konstruieren
+2015-10-21 14:17:25,kevin,Mond entsprechend als Nichttagleuchter
+2015-10-21 14:17:45,kevin,Oder eher Stern? Hm.
+2015-10-21 14:17:47,masterq32,"kevin, die infoterminals werden bald deprecated sein, es wird ne app geben :D"
+2015-10-21 14:17:52,kevin,Oh :-(
+2015-10-21 14:17:55,Sur3,mond hab ich über die gezeiten definiert
+2015-10-21 14:18:03,Sur3,[adoʃ]		Mond <- GroßesRundZumWasser
+2015-10-21 14:18:12,Sur3,weil der mond ja für ebbe und flut sorgt
+2015-10-21 14:18:33,kevin,Wasser-nicht-hin-Leuchter? Klingt brauchbar.
+2015-10-21 14:18:57,kevin,"Äh, ohne nicht"
+2015-10-21 14:18:57,Sur3,hehe :D
+2015-10-21 14:19:24,kevin,"Naja, wie gesagt, ich bevorzuge Sprachen mit anständigem Vokabular, die dafür in der Grammatik interessant sind"
+2015-10-21 14:20:04,Sur3,die alchemisten haben dann noch aus mond silber und aus sonne gold gemacht ^^
+2015-10-21 14:21:41,Sur3,ich find es seltsam daß werfen und vergangenheit bei dir verknüft sind üder das selbe wort anit
+2015-10-21 14:22:52,Sur3,aso mom jetzt verstehe ich warum
+2015-10-21 14:23:30,kevin,anit ist halt Richtung weg
+2015-10-21 14:24:07,kevin,Dass die Zukunft hin zum Sprecher ist und Vergangenheit weg ist natürlich Ansichtssache
+2015-10-21 14:24:26,kevin,Spricht für eine zukunftsgerichtete Kultur ;-)
+2015-10-21 14:24:45,Sur3,"joa weg vom subjekt das war mir nciht so klar, weil ich dachte wenn man wirft geht es eher darum etwas zu treffen, also das würde in meiner sprache unterschieden werden ob man wirft um etwas loszuwerden oder wirft um etwas zu treffen"
+2015-10-21 14:25:23,Sur3,das eine ist von einem weg und das ander eist zu etwas hin
+2015-10-21 14:25:57,kevin,Mit 10 Morphemen kann man halt nur so viel ausdrücken ;-)
+2015-10-21 14:26:23,Sur3,joa stimmt shcon dafür ist es schon nciht schlecht
+2015-10-21 14:27:01,kevin,"Mit Relativ- und Fragesätzen, wohlgemerkt ;-)"
+2015-10-21 14:27:35,Sur3,hat die sprache auch nen namen?
+2015-10-21 14:27:53,kevin,Nö
+2015-10-21 14:27:59,kevin,Wozu auch? War ja nur ein Experiment.
+2015-10-21 14:29:37,Sur3,joa stimmt fragesätze fehlen im dunkelalbischen noch ich hab ne andere sprache die ich surlonisch genannt habe da gibt es auch fragesätze die ist auch eher satzbasiert und hat ein bischen was von lateinisch
+2015-10-21 14:31:43,Sur3,(Flamachf-E-Jave-Gah-!) => möge ich haben trinken (Jave-E-Gro) Bin ich grausam?
+2015-10-21 14:33:25,Sur3,(At-Jupit-Flamachf-Manaij-Tron~em) => Ein Ring möge beherrshen Sie alle
+2015-10-21 14:34:07,Sur3,ich hab mal den anfang von herr der ringe in der sprache übersetzt XD
+2015-10-21 14:44:52,kevin,Nett
+2015-10-21 14:51:16,Sur3,"danke, ja ich hoffe ich fidne mal meine übersetzungen für herr der ringe wieder und die worms armageddon sounddateien hatte ich auch übersetzt.. (E-nin-jave-E-Trah~em) => i vernichte mich und euch bzw. Kamikaze!"
+2015-10-21 15:35:41,Jonathan,Moin
+2015-10-21 15:39:47,masterq32,heyhey
+2015-10-21 15:40:43,kevin,Moin
+2015-10-21 15:42:18,Svenska,"https://www.youtube.com/watch?v=fCn8zs912OE << fuer 20 minuten zum thema ""zipfsches gesetz"", und pareto-prinzip"
+2015-10-21 16:31:35,iksnagreb,moin
+2015-10-21 17:39:09,darklink2,ich programmiere jetzt wieder
+2015-10-21 17:43:50,masterq32,yay
+2015-10-21 17:43:59,masterq32,ich hab jetzt endlich shared variables und global variables
+2015-10-21 17:44:06,masterq32,"das heißt, IPC ist ab jetzt theoretisch möglich"
+2015-10-21 17:44:09,masterq32,praktisch noch nicht .D
+2015-10-21 17:48:43,darklink2,ich finds interressant
+2015-10-21 17:48:57,masterq32,was genau?
+2015-10-21 17:49:12,darklink2,"ich kann mir einen livestream ohne lags angucken, aber keine 5 minuten mit dem irc verbunden sein"
+2015-10-21 17:49:22,masterq32,oh man
+2015-10-21 17:50:40,darklink2,und der fernseher macht beides: laggt und muss sich staendig neu mit dem internet  verbinden
+2015-10-21 17:50:45,masterq32,:D
+2015-10-21 18:25:25,Jonathan,Svenska: Kennst du Racket? :D
+2015-10-21 19:08:32,Sur3,lol meine Elf hat meinen Hex-Editor gecrashed XD
+2015-10-21 19:09:00,Sur3,s/meinen/den/
+2015-10-21 19:10:05,darklink,hab jetzt hoffentlich besseres internt=
+2015-10-21 19:10:13,Sur3,nice
+2015-10-21 19:10:31,Sur3,mal auf die neuste version updaten hoffentlich crashed der dann nicht mehr
+2015-10-21 19:10:55,darklink,ich bin jetzt uebers handyinternet online
+2015-10-21 19:17:55,kevin,"Wenn Handyinternet was besseres ist, dann sagt das viel..."
+2015-10-21 19:19:48,darklink,telekom hat hier probleme
+2015-10-21 19:19:56,darklink,reconnecte da dauernd
+2015-10-21 20:40:52,masterq32,hoho
+2015-10-21 21:27:30,Paddy,"Manchmal wär's echt praktisch, wenn man früher mal was dokumentiert hätte"
+2015-10-21 21:27:54,Jonathan,"Au ja, das denk ich mir auch ständig"
+2015-10-21 21:28:02,Jonathan,"Bin aber zu faul, es besser zu machen"
+2015-10-21 21:28:02,Jonathan,:D
+2015-10-21 21:28:37,Paddy,"Ich dachte, das sei selbstverständlich genug, dass ich es nicht erwähnen brauche ;-)"
+2015-10-21 21:28:43,Paddy,+uz
+2015-10-21 21:28:58,Paddy,"Pah, falsche Endianness auch noch"
+2015-10-21 21:29:12,Jonathan,*g*
+2015-10-21 21:29:44,Jonathan,"Wenigstens kein, äh, ""Middle Endian"" oder wie sich das nennt :D"
+2015-10-21 21:29:51,Paddy,hehe
+2015-10-21 21:29:58,Paddy,Geht bei zwei Buchstaben auch schwer ;-)
+2015-10-21 21:30:12,Jonathan,Das + zählt doch mit? ;)
+2015-10-21 21:30:26,Jonathan,"Wäre dann ""u+z"" oder so :D"
+2015-10-21 21:30:27,masterq32,"yay, habe jetzt bei mir meine shared/static/global variables implementiert"
+2015-10-21 21:30:29,Paddy,"Hm, gut. create_thread() ist nicht nur undokumentiert, sondern liefert bei Fehlern -1 zurück und das als unsigned."
+2015-10-21 21:30:41,Jonathan,"Paddy, autsch *g*"
+2015-10-21 21:30:44,Paddy,"Vielleicht würde es das anders machen, wenn es dokumentiert wäre"
+2015-10-21 21:32:21,Jonathan,"Ich will in Java endlich ""x instanceof GenericType"" machen können, grml"
+2015-10-21 21:32:36,masterq32,wird nie gehen
+2015-10-21 21:32:38,masterq32,:D
+2015-10-21 21:32:38,Paddy,"Das Interface ist doch total kaputt. Als Entrypoint will es keinen Funktionspointer, sondern ein uint32_t."
+2015-10-21 21:32:47,Jonathan,Nice :D
+2015-10-21 21:32:55,masterq32,"ja, java nutzt type erasure"
+2015-10-21 21:33:03,Paddy,Ob ich wohl ein FIXME hinschreiben sollte? 
+2015-10-21 21:33:04,masterq32,List<Integer> = List<Object>
+2015-10-21 21:33:34,Jonathan,masterq32: Ich meine folgenden Fall:
+2015-10-21 21:33:47,Jonathan,public class derp<T> { ... x instanceof T ... }
+2015-10-21 21:34:58,Jonathan,"Man kann ja schließlich auch Attribute vom Typ T machen, ohne Probleme"
+2015-10-21 21:35:11,Jonathan,Also sollte man doch auch irgendwie instanceof T machen können :D
+2015-10-21 21:37:14,Paddy,"Wenn du deine eigene Sprache willst, musst du den Compiler selber schreiben ;-)"
+2015-10-21 21:37:51,Jonathan,Bin dran ;)
+2015-10-21 21:37:53,Jonathan,...in Java *g*
+2015-10-21 21:38:11,Jonathan,"Naja gut, kein Compiler, sondern ein Interpreter"
+2015-10-21 21:38:15,Jonathan,Aber das zählt auch!! :D
+2015-10-21 21:38:27,Paddy,Ein Javainterpreter in Java?
+2015-10-21 21:38:28,Jonathan,(Vielleicht kann ich ja irgendwann Bytecode dumpen...)
+2015-10-21 21:38:32,Jonathan,"Äh, nein ;)"
+2015-10-21 21:38:39,Jonathan,Ein Racket-Dialekt-Interpreter in Java
+2015-10-21 21:38:41,masterq32,jonathan
+2015-10-21 21:38:46,masterq32,zur laufzeit hast du nur eine klasse
+2015-10-21 21:38:49,masterq32,und T ist dann Object
+2015-10-21 21:39:02,Jonathan,"masterq32: Hmmm, ok :P"
+2015-10-21 21:39:06,Jonathan,Mogelei ;)
+2015-10-21 21:39:10,masterq32,absolut
+2015-10-21 21:39:57,Jonathan,"Wenigstens hat mein Racket-Dialekt dann nur einen Zahlentyp, der automatisch zwischen Ganz- und Fließkommazahlen entscheiden kann"
+2015-10-21 21:40:02,Paddy,"Jonathan: Hm, sieht nach einer Irrgarten-aus-Klammern-bauen-Sprache aus?"
+2015-10-21 21:40:09,Jonathan,Paddy: Exakt ;)
+2015-10-21 21:40:22,Jonathan,Ist dafür sooooooo schön einfach zu parsen... :D
+2015-10-21 21:40:33,Paddy,"Ja, zu parsen ist sowas toll"
+2015-10-21 21:40:41,Jonathan,Tokenizer mit gaaaanz wenigen Regeln... Füttert gaaaanz einfachen Parser...
+2015-10-21 21:40:52,Jonathan,Und dann bau ich nen Sourcetree und kann Dinge ausführen
+2015-10-21 21:40:58,Jonathan,Läuft auch schon
+2015-10-21 21:41:09,Paddy,"Naja. Write-only-Sprachen gibt es ja schon genug, von daher ist Parse-only auch mal legitim."
+2015-10-21 21:41:18,Jonathan,Muss nur noch ein paar mehr Implementationen für das Operator-Interface schreiben
+2015-10-21 21:41:21,Jonathan,Paddy: lol *g*
+2015-10-21 21:53:13,Jonathan,"Paddy: Hast du nach meinem ""lol"" noch was gesagt? :P"
+2015-10-21 21:53:51,masterq32,nein
+2015-10-21 21:54:17,Jonathan,"racket.interpreter.RacketException: Reached end of file while parsing <--- Und btw, immerhin kann meine Sprache schon mal nichtssagende Fehlermeldungen werfen, damit ist es fast schon eine *richtige* Sprache :D"
+2015-10-21 21:54:27,Paddy,Nicht zu deinem Thema ;-)
+2015-10-21 21:54:31,Jonathan,Gut ;)
+2015-10-21 21:54:40,Paddy,"Nur das hier: [21:49] <Paddy> Ui, es kompiliert. Schnell ein Release machen."
+2015-10-21 21:54:46,masterq32,"mein compiler sollte endlich mal erkennen, wenn er den rest nicht compilieren kann ;D"
+2015-10-21 21:55:00,XanClic,"Wenn ich nichtssagende Fehlermeldungen will, starte ich ed"
+2015-10-21 21:55:05,Jonathan,Hmm *g*
+2015-10-21 21:55:06,Paddy,?
+2015-10-21 21:55:10,XanClic,q
+2015-10-21 21:56:00,XanClic,"Wobei, eigentlich sind es ja nicht mal nichtssagende Fehlermeldungen"
+2015-10-21 21:56:04,Paddy,"Hmpf, hab kein Op, um das umzusetzen ;-)"
+2015-10-21 21:56:05,XanClic,Es ist einfach nur Ausdruch vom Unverständnis
+2015-10-21 21:56:20,XanClic,Das ist eigentlich sehr schön an ed
+2015-10-21 21:56:29,XanClic,"Andere Software ist immer so vorwurfsvoll, wenn man was falsch macht"
+2015-10-21 21:56:36,Paddy,"Jo, bei ed beruht das auf Gegenseitigkeit"
+2015-10-21 21:56:56,XanClic,eds Meldungen implizieren immer auch die eigene Unzulänglichkeit (also die von ed)
+2015-10-21 21:57:08,XanClic,"„Ich würde ja gern, aber ich weiß nicht, wie oder was“"
+2015-10-21 21:57:40,XanClic,"Aber ob man daraus schlussfolgern sollte, dass wir alle mit ed als Editor deutlich ausgeglichener wären"
+2015-10-21 21:57:42,XanClic,Das weiß ich nicht
+2015-10-21 22:02:06,Paddy,Also Mailinglisten würden sicher wesentlich friedlicher werden
+2015-10-21 22:02:20,Svenska,:-)
+2015-10-21 22:02:24,Svenska,re btw
+2015-10-21 22:04:21,XanClic,"Paddy, du meinst, sich stundenlang mit dem Editor herumzuärgern relativiert alle anderen Probleme? ;-)"
+2015-10-21 22:04:54,Svenska,"nein, aber es sorgt dafuer, dass der streit nicht bis auf die MLs eskaliert ;)"
+2015-10-21 22:11:12,Paddy,"Richtig, es schafft ja keiner, seine Mails fertigzuschreiben"
+2015-10-21 22:11:57,Paddy,Oder zumindest braucht man so lange bis der Ärger verraucht ist
+2015-10-21 22:12:13,XanClic,Das meinte ich
+2015-10-21 22:12:38,Paddy,Dann sind wir uns ja einig
+2015-10-21 22:12:54,XanClic,"Du meinst, wir sollten Linus ed unterschieben?"
+2015-10-21 22:13:20,Svenska,"nur, wenn wir feministinnen unterstuetzen wollen"
+2015-10-21 22:13:50,XanClic,"Ich persönlich könnte noch den Grund in mir finden, dass ich Linux 4 noch nicht haben wollte"
+2015-10-21 22:14:05,XanClic,"Wenn wir Linus ed unterschieben, könnte das die Entwicklung ausreichend verzögern, dass Linux 5 noch eine Weile dauert"
+2015-10-21 22:14:36,Svenska,das spielt doch keine rolle mehr...
+2015-10-21 22:14:41,XanClic,RACHE!!!
+2015-10-21 22:14:51,Svenska,äh?
+2015-10-21 22:15:07,Svenska,"ich fuerchte, ich bin #lost"
+2015-10-21 22:15:14,XanClic,"Rache dafür, dass mir Linux 4 aufgezwungen wurde"
+2015-10-21 22:15:31,Svenska,ich hab 3.18.4 hier...
+2015-10-21 22:15:38,XanClic,Du glücklicher!
+2015-10-21 22:15:45,XanClic,4.2.3 hier
+2015-10-21 22:15:46,Svenska,was ist denn das problem?
+2015-10-21 22:15:58,XanClic,Dass mir das alles viel zu schnell geht!!!
+2015-10-21 22:16:01,XanClic,Diese Jugend von heute
+2015-10-21 22:16:08,Svenska,"(ich glaube, debian sitzt auf 3.16, aber ich musste selbst bauen wegen grafiktreiber.)"
+2015-10-21 22:16:12,Paddy,*argh*
+2015-10-21 22:16:22,Paddy,"Immer wieder beliebt: memcpy(dst, src, sizeof(dst))"
+2015-10-21 22:16:41,XanClic,"Hm, das ist mir glaub ich noch nicht passiert…"
+2015-10-21 22:16:43,Svenska,öh... hat mich nen halben tag arbeit gekostet
+2015-10-21 22:16:45,XanClic,Ich freue mich schon drauf
+2015-10-21 22:17:29,Jonathan,Paddy: Höhö *g*
+2015-10-21 22:17:44,Svenska,oh Jonathan du bist ja noch da :-)
+2015-10-21 22:17:54,Svenska,"zu deiner frage: nein, kenne ich nicht :-þ"
+2015-10-21 22:18:02,Jonathan,"Stimmt, ich lebe noch :P"
+2015-10-21 22:18:04,Jonathan,Und schade ;)
+2015-10-21 22:18:16,Svenska,"naja du hast kein +v, also stehst du nicht oben in der liste ;-)"
+2015-10-21 22:18:36,Jonathan,"LISP-Dialekt, sagt vermutlich alles, ist meines Wissens nach (so gut wie) Scheme"
+2015-10-21 22:19:22,Svenska,"hm. wir haben hier unseren neuen sprachenguru gefragt, ob er demnächst(TM) mal einen doktorandenkurs zu funktionalen sprachen machen wollen wuerde"
+2015-10-21 22:19:32,Svenska,"vermutlich lern ich nächstes jahr, wie sowas funktioniert."
+2015-10-21 22:19:38,Svenska,neben python. :-)
+2015-10-21 22:19:43,Jonathan,:D
+2015-10-21 22:19:56,Jonathan,Wir fangen damit gerade in der Uni an
+2015-10-21 22:20:13,Jonathan,"Natürlich hab ich dann nichts besseres zu tun, als meinen eigenen Interpreter dafür zu schreiben *g*"
+2015-10-21 22:20:35,XanClic,Ich hab hier noch meinen Interpreter für das Lambdakalkül irgendwo rumfliegen…
+2015-10-21 22:36:28,Paddy,"XanClic: Hm, gab es damals im Frühjahr eigentlich irgendeinen Grund, den rtl8168b nicht zu committen oder ist der einfach nur hinten runtergefallen?"
+2015-10-21 22:36:40,XanClic,Vermutlich letzteres
+2015-10-21 22:38:34,Paddy,"Dann mal besser nicht näher anschauen, sondern einfach pushen ;-)"
+2015-10-21 22:51:33,Jonathan,Gute Nacht ;)
+2015-10-21 23:37:22,Paddy,"Hm, wir haben kein strndup"

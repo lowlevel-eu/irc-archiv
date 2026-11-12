@@ -1,0 +1,150 @@
+date/time,nick,message
+2013-03-02 10:49:07,Splitty,LOL
+2013-03-02 10:49:07,Splitty,http://www.youtube.com/watch?v=bDyMjMf8IJs
+2013-03-02 10:51:49,Splitty,got to go
+2013-03-02 11:28:03,iksnagreb,moin
+2013-03-02 11:29:57,iksnagreb,"wie kann ich mein Programm mit einer lib linken? ich hab eine libc erstellt, aber wenn ich jetzt versuche mein Programm damit zu linken kommt immer das: undefined reference to `printf'  mit allen funktionen in der lib, auch die, die ich im programm nicht verwende"
+2013-03-02 12:16:28,Paddy,iksnagreb: Wie versuchst du es denn?
+2013-03-02 12:32:16,iksnagreb,"es hat sich erst mal erledigt, ich hatte im linker script was an der falschen stelle stahen"
+2013-03-02 12:32:33,iksnagreb,"ach ne, ich meite makefile"
+2013-03-02 14:07:02,iksnagreb,"hallo, die funktion exit sollte ja noreturn sein, der typ ist void, wenn ich jetzt kompiliere meckert der compiler: stdlib.c:129:1: Warnung: »noreturn«-Funktion kehrt zurück [standardmäßig aktiviert]   wie bekomme ich das weg?"
+2013-03-02 14:23:14,mgottschlag,wie sieht die funktion aus?
+2013-03-02 14:33:09,iksnagreb,so sieht die funktion bisher aus: http://pastebin.com/feq0VgkT  später kommt noch mehr dazu
+2013-03-02 18:19:37,Darkchaos,"Ich habe ein kleines Problem. Ich habe einen Pointer auf ein bytearray, also byte**, nun versuche ich von dem bytearray einen uint32_t zu lesen. Das ist ja alles kein problem eigentlich: uint32_t flags = ((uint32_t*)*pData)[n];"
+2013-03-02 18:20:13,Jidder,ein pointer auf ein byte-array ist byte*
+2013-03-02 18:20:46,Jidder,bzw. natürlich auf das erste byte im array
+2013-03-02 18:21:13,Darkchaos,"Nur ist n dann 4byte aligned. ich möchte aber ggf. bei byte 3 starten, und demnach 3, 4, 5 und 6. byte als teilbytes haben. Muss ich es dann manuell machen, d.h. uint32_t flags = *pData[3] & (*pData[4] << 8) & (*pData[5] << 16)..."
+2013-03-02 18:21:43,Darkchaos,"ja, ich habe mein bytearray als byte* definiert, da ich keine fixe länge hatte und man mir von [] abgeraten hat"
+2013-03-02 18:22:43,Jidder,"also zeiger als byte* foo; deklarieren, aber arrays als byte foo[];"
+2013-03-02 18:23:10,Jidder,was ist pData?
+2013-03-02 18:24:55,Darkchaos,Also ich habe byte* Data; // Quasi byte Data[]; und dann byte** pData = &Data;
+2013-03-02 18:25:52,Darkchaos,"und ich muss da mit einem Pointer arbeiten. Hat was damit zu tun, dass ""Data"" von einer Methode gefüllt wird. Also habe ich quasi byte** pData; MeineMethode(pData); und diese dereferenziert und schreibt"
+2013-03-02 18:26:01,Jidder,okay
+2013-03-02 18:26:04,Darkchaos,damit ist meine obige definition von pData eigentlich quatsch
+2013-03-02 18:28:33,Jidder,hm ich weiß nicht. könnte dann schon in ordnung sein
+2013-03-02 18:29:12,Jidder,"also wenn du auf das 3-te byte zugreifen willst, kannst du *(uint32_t*)(&(*pData)[3]) nehmen"
+2013-03-02 18:29:26,Jidder,bzw 3-6te byte
+2013-03-02 18:29:34,Darkchaos,"ok, genau das wollte ich"
+2013-03-02 18:29:40,Jidder,oder etwas kürzer *(uint32_t*)(*pData + 3)
+2013-03-02 18:30:13,Darkchaos,jetzt sehe ich auch meinen Denkfehler
+2013-03-02 18:30:22,Darkchaos,hm
+2013-03-02 18:30:32,Darkchaos,sizeof(*pData) ist doch aber uint32_t oder?
+2013-03-02 18:30:43,Jidder,meinst du 4?
+2013-03-02 18:30:49,Splitty,"Müsste das nicht *(uint32_t*)(&(*pData)[2]) heißen, wenn er das dritte byte will? Der index startet doch bei null."
+2013-03-02 18:31:00,Jidder,ja weil *pData ein zeiger ist und zeiger auf 32-bit 4 bytes groß sind
+2013-03-02 18:31:06,Jidder,Splitty spaltet haare ^^
+2013-03-02 18:31:16,Splitty,^^
+2013-03-02 18:31:31,Splitty,"Ich kenn mich mit C nicht aus, wollte nur mal fragen =P"
+2013-03-02 18:31:32,Jidder,ich zähle ordinalzahlen auch von 0.tens an
+2013-03-02 18:31:49,Jidder,aber hast recht
+2013-03-02 18:31:55,Jidder,es kommt drauf an wie man zählt
+2013-03-02 18:31:58,Darkchaos,"genau. Ich habe aber gehört, dass zB uint32_t* pSomewhat = 1; pSomewhat = pSomewhat + 2; -> pSomewhat = pSomewhat + (2 * sizeof(uint32_t));"
+2013-03-02 18:32:22,Darkchaos,"bzw, das ist so, habe ich festgestellt. Weil er automatisch immer die einheit des Pointers nimmt"
+2013-03-02 18:32:26,Jidder,ja
+2013-03-02 18:32:44,Darkchaos,demnach komme ich aber bei *(uint32_t*)(*pData + 3) auf den 3. Integer
+2013-03-02 18:32:48,Jidder,ne
+2013-03-02 18:32:59,Jidder,er nimmt sizeof(**pData)
+2013-03-02 18:33:10,Jidder,das ist ja nur 1 byte
+2013-03-02 18:33:11,Darkchaos,Den Grundtyp dann immer?
+2013-03-02 18:34:00,Jidder,"wenn du X + 1 schreibst, dann nimmt er immer den typ *X"
+2013-03-02 18:34:04,Jidder,den typ von *X
+2013-03-02 18:34:31,Jidder,"also pData + 1 würde 4 drauf addieren (bei 32-bit), weil *pData ein zeiger ist, und zeiger 4 bytes groß sind"
+2013-03-02 18:34:43,Splitty,Ich hätte mal noch eine Frage wegen des PITs.
+2013-03-02 18:34:44,Jidder,"und *pData + 1 würde 1 drauf addieren, weil **pData ein byte ist"
+2013-03-02 18:34:46,Darkchaos,achso stimmt. Wir machen ja *pData + 1
+2013-03-02 18:35:34,Splitty,"Ich habe eine Methode, um den Kernel für eine bestimmte Zeit (millisekunden) ""schlafen"" zu lassen."
+2013-03-02 18:35:43,Splitty,Der Kernel soll also in dieser Zeit nichts tun.
+2013-03-02 18:36:17,Splitty,"Das funktioniert prima, wenn die hertz-anzahl, die ich übergebe größer als 50 ist."
+2013-03-02 18:36:23,Splitty,Ist ja auch logisch.
+2013-03-02 18:38:16,Splitty,"Jetzt weiß ich nur leider nicht genau, wie ich es hinbekomme, dass man weniger als 50hz übergeben kann."
+2013-03-02 18:38:38,mgottschlag,"windows macht es so, dass es trotzdem für 20ms wartet"
+2013-03-02 18:38:40,Jidder,wo übergibst du eine hertz-zahl?
+2013-03-02 18:39:04,Splitty,Ich rechne die millisekunden in hertz um und übergebe dem PIT die hertz-zahl.
+2013-03-02 18:39:54,mgottschlag,"moment, übergibst du das dem PIT, oder deinem Timercode, der den PIT eh bereits konstant auf 50HZ programmiert hat?"
+2013-03-02 18:40:01,Splitty,"Im prinzip müsste ich für größere Millisekunden-Werte einfach den PIT so oft mit einer frequenz von 50hz aufrufen und die Millisekunden entsprechend herunterrechnen, bis die Millisekunden 0 sind."
+2013-03-02 18:41:34,Splitty,Der PIT arbeitet in Mode0.
+2013-03-02 18:42:22,Splitty,"Ich kann euch den Code geben, weiß aber nicht, ob ihr mit C# was anfangen könnt ^^"
+2013-03-02 18:43:10,Darkchaos,"*ptrData = *ptrData + (2 + (numFiles)); Wenn ptrData byte*** ist. Es soll also den pointer auf das byte* um ein paar erhöhen, sodass es auf das xte byte zeigt. Ich glaub, ich muss dann aber nicht den Pointer auf das byte* verändern, sondern byte*[0] oder?"
+2013-03-02 18:43:25,Darkchaos,"also nicht [o] sondern, byte* baa = baa + 3;"
+2013-03-02 18:44:22,Darkchaos,"obwohl, das kann ich wohl so nicht machen oder, da ja auch [1] dann geändert werden müsste?"
+2013-03-02 18:47:01,Jidder,"Splitty also ich hab Mode 0 nie verwendet, aber im prinzip hast du recht, dass du dann mehrmals in kleinen schritten warten musst"
+2013-03-02 18:47:37,Splitty,"Ok. Ich schick auch mal kurz den Code rüber, damit ihr sehen könnt, was ich da eigentlich mache."
+2013-03-02 18:47:49,Splitty,Muss ihn nurnoch schnell mit Kommentaren versehen ^^
+2013-03-02 18:48:58,Jidder,Darkchaos: jetzt schon ***? ist das nicht ein bisschen viel? vielleicht solltest du den code nochmal überdenken
+2013-03-02 18:49:19,Darkchaos,"ja, eigentlich **, das dritte war ein denkfehler"
+2013-03-02 18:54:07,Splitty,http://pastebin.com/ud6xXHZK
+2013-03-02 18:54:34,Splitty,"Hier ist der Code, ich hoffe er ist ausreichend Kommentiert."
+2013-03-02 18:56:14,SHyx0rmZ,"der Tag, an dem Leute endlich lernen, _gescheit_ zu kommentieren..."
+2013-03-02 18:56:37,Splitty,Ist er nicht gut kommentiert? ^^
+2013-03-02 18:56:58,SHyx0rmZ,genau
+2013-03-02 18:57:10,Splitty,Ich hab mir mühe gegeben ;)
+2013-03-02 18:57:29,SHyx0rmZ,bis auf zwei Kommentare sind die unnötig ;-)
+2013-03-02 19:01:19,Splitty,"Wie gesagt, ich habe noch nie mit C gearbeitet und weiß demnach nicht, wie dort namespaces und using-direktiven angegeben werden ^^"
+2013-03-02 19:01:40,Splitty,"Das mit der Klasse sollte klar sein, aber ich habe halt echt keine Ahnung von C"
+2013-03-02 19:01:42,SHyx0rmZ,gibt es beides nicht
+2013-03-02 19:01:43,Jidder,"Splitty: wenn du zum beispiel 432 millisekunden warten willst, dann kannst du z.b. 8x 50 ms warten, und dann 1x 32 ms"
+2013-03-02 19:02:07,Splitty,"Ja. Aber ich bräuchte einen Algorithmus, um das automatisch zu erledigen."
+2013-03-02 19:03:16,Splitty,In meinem verwirrten Geist nimmt gerade eine Idee gestalt an =P
+2013-03-02 19:07:04,Splitty,"Sagen wir mal, ich übergebe der Methode 225 Millisekunden."
+2013-03-02 19:07:04,Splitty,Ich könnte eine Module-Division durch 100 durchführen und das ergebnis in einer variable speichern.
+2013-03-02 19:07:04,Splitty,"Dann müsste ich den wert der variable von dem originalen input subtrahieren und hätte einen restlos durch 100 teilbaren wert, den ich in 20ms-Päckchen aufteilen könnte."
+2013-03-02 19:07:06,Splitty,"Dann würde ich den PIT mit 50hz so oft aufrufen und die millisekunden um 20 dekrementieren, bis die Millisekunden = 0 sind."
+2013-03-02 19:07:06,Splitty,Danach müsste ich also nurnoch den wert der modulo-division in hertz konvertieren und diesen Wert übergeben.
+2013-03-02 19:09:46,Splitty,"@Jidder, SHyx0rmZ Denkt ihr, das funktioniert?"
+2013-03-02 19:10:01,Jidder,ein bisschen kompliziert
+2013-03-02 19:10:13,Jidder,einfach 225 / 20 rechnen
+2013-03-02 19:10:13,Jidder,da kommt 11 raus
+2013-03-02 19:10:22,Jidder,so oft muss du 20 ms warten
+2013-03-02 19:10:42,Jidder,dann kannst du noch 225 % 20 rechnen
+2013-03-02 19:10:47,Jidder,und bekommt die restlichen 5 raus
+2013-03-02 19:10:55,Splitty,stimmt
+2013-03-02 19:11:22,Splitty,"Aber sagen wir mal, ich habe einen anderen Wert als 225. Dann müsste ich das ja wieder anders angehen. Die methode mit der Modulo-Division durch 100 sollte universal funktionieren."
+2013-03-02 19:12:53,SHyx0rmZ,wieso musst du das dann anders angehen? oO
+2013-03-02 19:13:25,Splitty,moment. Ich muss meinen satz nochmal überdenken
+2013-03-02 19:14:40,Splitty,"Sagen wir mal, ich übergebe 512ms."
+2013-03-02 19:14:40,Splitty,"Das durch 20 ist = 25,6"
+2013-03-02 19:14:40,Splitty,"Ich müsste also 25,6 mal 20ms warten."
+2013-03-02 19:15:28,Splitty,"Wenn ich das auf- oder abrunde, kommt ein leicht verfälschter wert raus. Wenn ich aber 128574ms warte, ist diese leichte verfälschung des wertes am ende sehr sehr groß und sehr ungenau."
+2013-03-02 19:16:08,Jidder,ganzzahldivision rundet immer ab
+2013-03-02 19:16:46,Splitty,Trotzdem ist der Wert dann leicht falsch.
+2013-03-02 19:17:10,Jidder,deswegen rechnest du ja noch 512 % 20
+2013-03-02 19:17:12,Jidder,da kommt 12 raus
+2013-03-02 19:17:24,Jidder,und damit kennst du den fehler
+2013-03-02 19:17:27,Jidder,und kannst 12 ms warten
+2013-03-02 19:18:19,Splitty,stimmt
+2013-03-02 19:18:28,Splitty,Ich habs nicht so mit mathematik xD
+2013-03-02 19:18:46,Splitty,"Ich bin gut in Deutsch und englisch, das bringt ich nur leider beim programmieren nicht viel weiter ;)"
+2013-03-02 19:18:59,SHyx0rmZ,Englisch schon
+2013-03-02 19:19:03,Splitty,Stimmt.
+2013-03-02 19:19:25,Splitty,"Aber Deutsch in den meisten fällen nicht, da ich meine variablen immer englisch benenne und auch die Kommentare auf englisch schreibe"
+2013-03-02 19:19:45,Splitty,"Ich kann es einfach nicht sehen, wenn jemand deutsche variablen verwendet. Sieht so unnormal aus ^^"
+2013-03-02 19:19:53,SHyx0rmZ,pastebin.com/ud6xXHZK
+2013-03-02 19:19:56,SHyx0rmZ,*ahem*
+2013-03-02 19:21:16,Splitty,"Diese Kommentare stehen nicht im Quellcode. Die habe ich direkt auf pastebin hinzugefügt, um euch einen besseren überblick zu geben. Und da wäre es ja auch echt unnötig, die auf englisch zu schreiben, oder? ;)"
+2013-03-02 19:22:40,Splitty,Überzeugt euch selbst: Ihr werdet keine deutsche variable und kein deutsches kommentar finden. Und das in sehr sehr vielen Zeilen Quellcode.
+2013-03-02 19:22:40,Splitty,http://dewitcher.codeplex.com/SourceControl/changeset/view/b9acfd9859db#Core/PIT.cs
+2013-03-02 19:31:44,iksnagreb,guten abend
+2013-03-02 19:32:01,Jidder,nabend
+2013-03-02 19:32:07,Splitty,Abend =)
+2013-03-02 19:38:51,Paddy,"Splitty: Wenn du uns zeigen wolltest, wie nerdig du bist, dann könntest du die Kommentare auch in irgendeiner coolen Sprache schreiben, die sonst keiner kann"
+2013-03-02 19:39:16,Splitty,"Ja, das würde total was bringen ^^"
+2013-03-02 19:39:35,Paddy,Klar ;-)
+2013-03-02 19:41:29,PatrickBic,klingonisch
+2013-03-02 19:44:13,Splitty,"Ich schreibe die Kommentare in englisch, weil ich mit vielen Australiern, Engländern und Amerikanern zusammenarbeite, die mir bei diesem Projekt helfen, nicht weil ich damit prahlen will, einigermaßen passables englisch zu können, falls ihr das falsch verstanden habt =)"
+2013-03-02 19:44:34,Splitty,Klang für mich nämlich sehr ironisch ^^
+2013-03-02 19:53:41,SHyx0rmZ,別にいいでしょう＾＾
+2013-03-02 20:02:56,Paddy,-ELANG
+2013-03-02 20:35:54,iksnagreb,"weiß jemand, wie ich das lösen kann: stdlib.c:129:1: Warnung: »noreturn«-Funktion kehrt zurück [standardmäßig aktiviert] ?"
+2013-03-02 20:36:15,XanClic,"for (;;); ans Ende packen, bspw."
+2013-03-02 20:37:19,iksnagreb,"ah, danke"
+2013-03-02 20:39:28,livinskull,lol
+2013-03-02 20:48:48,mgottschlag,"iksnagreb: oder die andere Funktion, die da aufgerufen wird, auch so markieren"
+2013-03-02 20:49:26,mgottschlag,"und wenn das Problem dann nicht verschwindet, dann hat dein Code einen Bug (so Warnungen haben üblicherweise ihre Daseinsberechtigung ^^)"
+2013-03-02 21:47:30,iksnagreb,was muss ein kernel für stdio alles können/bereitstellen?
+2013-03-02 21:47:46,XanClic,"Ja, pfff, kommt auf den Kernel an?"
+2013-03-02 21:47:58,XanClic,Im Exokernelfall nichts außer Prozesse laden
+2013-03-02 21:48:43,SHyx0rmZ,\o/
+2013-03-02 21:49:33,iksnagreb,"wie sieht das beim monolith aus? braucht man paging, ein filesystem oder so?"
+2013-03-02 21:49:44,XanClic,Man braucht Paging nicht…
+2013-03-02 21:49:56,XanClic,"Und ein Filesystem wäre schön, aber eigentlich braucht man das auch nicht"
+2013-03-02 21:50:05,XanClic,"Man kann alles stubben, wenn man will"

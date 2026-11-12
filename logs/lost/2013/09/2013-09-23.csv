@@ -1,0 +1,345 @@
+date/time,nick,message
+2013-09-23 15:32:03,Jonathan,moin
+2013-09-23 15:33:34,kevin,Moin
+2013-09-23 15:35:31,max,Moin
+2013-09-23 19:22:29,Manuel,Jemand da?
+2013-09-23 19:23:48,mgottschlag,nein
+2013-09-23 19:23:58,mgottschlag,niemals.
+2013-09-23 20:03:17,Svenska^,hi
+2013-09-23 20:03:34,Svenska^,kennt sich jemand mit makefiles aus?
+2013-09-23 20:05:10,Svenska^,"die reihenfolge ist ""%.c"" => $CC => ""%.o"" => $LD => ""%.elf"" => $OBJCOPY = ""%.srec"""
+2013-09-23 20:06:01,Svenska^,"jetzt möchte ich, dass verschiedene programme auf verschiedenen obj-dateien basieren"
+2013-09-23 20:06:27,Svenska^,aber nicht fuer jedes programm den %.elf => %.srec pfad neu spezifizieren muessen
+2013-09-23 20:06:43,Svenska^,hat da jemand ne idee?
+2013-09-23 20:07:16,Jidder,hast du zur zeit eine regel wie %.srec: %.elf?
+2013-09-23 20:07:18,Svenska^,ja
+2013-09-23 20:07:39,Svenska^,%.srec: %.elf
+2013-09-23 20:07:46,Svenska^,%.elf: $(OBJS)
+2013-09-23 20:08:25,Svenska^,"und ich habe keine ahnung, von was ich %.elf abhängen lassen kann"
+2013-09-23 20:08:26,Jidder,für jede .elf musst du die objektdateien einzeln angeben und das %.elf-target ohne dependencies machen
+2013-09-23 20:08:35,Svenska^,hmm
+2013-09-23 20:08:35,Jidder,also prog1.elf: foo.o bar.o
+2013-09-23 20:08:45,Svenska^,klingt gut
+2013-09-23 20:08:46,Jidder,kannst natürlich variablen nutzen
+2013-09-23 20:09:11,Jidder,ich würde auch eine variable ALLPROGS = prog1.elf prog2.elf machen
+2013-09-23 20:09:21,Jidder,dann kannst du eine regel erstellen wie make_all_progs: $(ALLPROGS)
+2013-09-23 20:09:35,Jidder,und make_all_srec: $(ALLPROCS:.elf=.srec)
+2013-09-23 20:09:50,Svenska^,klingt sehr gut :-)
+2013-09-23 20:09:58,tufel,huhu
+2013-09-23 20:10:07,Jidder,heyho
+2013-09-23 20:10:57,Svenska^,"naja, eher ein ""PROGS = core0.srec core1.srec core2.srec"", und ""all: $(PROGS)"""
+2013-09-23 20:11:10,Jidder,jo oder das
+2013-09-23 20:11:38,Svenska^,so richtig gefällt mir das alles nicht
+2013-09-23 20:11:44,Svenska^,...
+2013-09-23 20:12:02,Svenska^,"weisst du, wie man mehrere verschiedene compiler auf verschiedene subsets in einer makefile anwenden kann? ^^"
+2013-09-23 20:12:19,Jidder,also für core0 einen anderen compiler als für core1?
+2013-09-23 20:12:38,Svenska^,fuer das host-programm einen anderen compiler als fuer die cores
+2013-09-23 20:12:55,Jidder,du kannst für ein target die variablen überschreiben
+2013-09-23 20:13:04,Jidder,%.srec: CC=core-gcc
+2013-09-23 20:13:17,Jidder,oder host.exe: CC=anderer-gcc
+2013-09-23 20:13:19,Svenska^,hmm
+2013-09-23 20:13:36,Svenska^,geht bestimmt auch mit mehreren variablen
+2013-09-23 20:13:41,Jidder,"pro variable die du so änderst, musst du wieder das target angeben"
+2013-09-23 20:13:50,Jidder,also %.srec: LD=... auf eine neue zeile
+2013-09-23 20:13:53,Svenska^,"oh, also nur mit je einer"
+2013-09-23 20:13:57,Jidder,glaube ich
+2013-09-23 20:13:58,Jidder,ja
+2013-09-23 20:14:06,Svenska^,hmm
+2013-09-23 20:15:30,Svenska^,danke
+2013-09-23 20:18:32,Svenska^,"und jetzt die preisfrage: wie kann ich die generierten dateien in einem anderen ordner ablegen, als die quelldateien? :-)"
+2013-09-23 20:18:51,Svenska^,dst/%.o: %.c ?
+2013-09-23 20:19:06,Jidder,im prinzip ja
+2013-09-23 20:19:19,Jidder,wenn deine OBJS-variable auch OBJS=dst/foo.o dst/bar.o lautet
+2013-09-23 20:19:34,Svenska^,lässt sich einrichten
+2013-09-23 20:19:50,Manuel,"Hi ich bins, Manello"
+2013-09-23 20:20:02,Jidder,moin
+2013-09-23 20:20:05,Svenska^,ergäbe dann host/bla.o und core/bla.o
+2013-09-23 20:20:33,Svenska^,"mit verschiedenen compilern und verschiedenen architekturen, aus dem gleichen source... (puh, wird das eklig)"
+2013-09-23 20:20:33,Svenska^,hi
+2013-09-23 20:20:53,Lowl3v3l,klingt nach nem makefile-problem?
+2013-09-23 20:21:04,Svenska^,eher nach knoten im kopf ^^
+2013-09-23 20:21:21,Lowl3v3l,"prinzipiell sollte es doch kein problem sein die object-dateien mit pfad zu erzeugen, oder?"
+2013-09-23 20:22:01,Manuel,"Ich wollte noch wegen meiner Entwicklung paar sachen fragen, also Jidder, so wie du es gesagt hast gibt es jetzt zwar alle zeilen aus, aber immer nur die erste Spalte davon, das heist ich habe am linken bildschirmrand einfach einen grauen streifen. Und wie ich schon gepostet habe, ist jetzt glaube ich meine GUI angabe auch ungültig?"
+2013-09-23 20:22:06,Svenska^,"nö, im prinzip nicht. nur mein bisheriges system aus core0/Makefile, core1/Makefile, host/Makefile bricht langsam zusammen"
+2013-09-23 20:22:27,Svenska^,Manuel: du solltest vermutlich den int 10h ignorieren und direkt auf den vga-grafikspeicher schreiben
+2013-09-23 20:22:40,Jidder,Manuel: vermutlich ist irgendwas beim einpflegen meiner änderungen schiefgegangen
+2013-09-23 20:22:49,Jidder,und hör auf Svenska^
+2013-09-23 20:23:24,Svenska^,"es wird vermutlich nie wieder eine (neue) grafikkarte fuer PCs geben, die vom int10h unterstuetzt, aber nicht VGA-kompatibel ist"
+2013-09-23 20:23:34,Manuel,Svenska: Muss ich nicht dann auf den Grafikmodus für GUI zugreifen? Das wäre dann doch noch komplizierter oder nicht?
+2013-09-23 20:23:49,Svenska^,"insofern darfst du dich darauf verlassen, dass out-befehle fuer den cursor gehen"
+2013-09-23 20:23:59,Svenska^,und der grafikspeicher (im textmodus!) immer gleich aussieht
+2013-09-23 20:24:21,Svenska^,"wenn du erstmal im grafikmodus bist, willst/musst du sowieso direkt auf den grafikspeicher zugreifen"
+2013-09-23 20:24:43,Manuel,Grafikspeicher im textmodus? Hört sich interressant an. Wie mache ich sowas/wenn es geht einen link dazu pls
+2013-09-23 20:24:48,Svenska^,ääh
+2013-09-23 20:25:06,Svenska^,"deine grafikkarte hat speicher, und speichert in dem genau ein bild ab (können auch mehrere sein, je nach grösse)"
+2013-09-23 20:25:20,Svenska^,"wenn die grafikkarte im grafikmodus ist, sind das irgendwie aufgebaute pixelwerte"
+2013-09-23 20:25:28,Svenska^,"ist sie im textmodus, sind das irgendwelche zeichenwerte"
+2013-09-23 20:25:29,Manuel,"Ok, meinst du sowas hier? http://de.wikipedia.org/wiki/Grafikspeicher"
+2013-09-23 20:25:34,Lowl3v3l,"Svenska^, hmmmm was hast du vor? Nur noch ein makefile verwenden?"
+2013-09-23 20:25:40,Jidder,Manuel: http://www.lowlevel.eu/wiki/Textausgabe http://www.lowlevel.eu/wiki/CGA
+2013-09-23 20:25:43,Svenska^,Lowl3v3l: ja
+2013-09-23 20:25:49,Svenska^,"oder zumindest ""weniger makefiles"" :)"
+2013-09-23 20:25:57,Svenska^,weil ich die später dynamisch erzeugen muss aus XML-daten
+2013-09-23 20:26:28,Lowl3v3l,"Svenska^, also ziel ist erstmal nur eines^^ darf man nach der ordnerstruktur fragen? dann kann ich vllt was hacken :D"
+2013-09-23 20:26:55,Svenska^,Manuel: kurz: im textmodus besteht ein zeichen aus 16 bit. 8 bit attribut und 8 bit zeichen-code (ascii)
+2013-09-23 20:27:16,Svenska^,"im grafikmodus hängt es vom grafikmodus ab, wie da ein pixel aussieht und welche randbedingungen gelten."
+2013-09-23 20:27:28,Svenska^,in jedem fall stinkt der int10h schon ziemlich alt und kaputt
+2013-09-23 20:27:34,Manuel,Wenn ich den grafikspeicher im textmodus benutze funktioniert es also ähnlich?
+2013-09-23 20:27:42,Svenska^,"Lowl3v3l: muss nicht sein, danke :-)"
+2013-09-23 20:27:50,Svenska^,ja
+2013-09-23 20:30:14,Manuel,"Auf der Seite steht was von Register 1-10,  wie steuere ich diese in ASM an? Evt. mit einem JMP befehl?"
+2013-09-23 20:30:29,Jidder,äh die register musst du nicht ansteuern
+2013-09-23 20:30:34,Svenska^,garantiert nicht
+2013-09-23 20:30:41,Lowl3v3l,"Manuel, bitte mal den genauen link und dann die frage neu stellen wär nett"
+2013-09-23 20:30:55,Svenska^,"jmp springt. in i/o-bereiche springen geht nicht. in mmio-bereiche springen ist meist sehr, sehr dumm."
+2013-09-23 20:30:57,Jidder,vergiss mal den CGA artikel
+2013-09-23 20:31:05,Jidder,der artikel textausgabe reicht vermutlich
+2013-09-23 20:31:33,Manuel,Artiekl Texausgabe?
+2013-09-23 20:31:38,Jidder, http://www.lowlevel.eu/wiki/Textausgabe
+2013-09-23 20:31:47,Svenska^,das lokale wiki ist echt gut :-)
+2013-09-23 20:32:41,Svenska^,"und: orientiere dich am unterpunkt ""Protected Mode"""
+2013-09-23 20:33:03,Manuel,"Sehe schon, werde mich morgen damit mal beschäftigen."
+2013-09-23 20:34:25,Manuel,"Protected mode, ist aber nicht in asm :S"
+2013-09-23 20:34:43,Svenska^,"noch ein tipp: nimm nicht asm, sondern was anderes"
+2013-09-23 20:34:57,Svenska^,"es sei denn, du hast einen _wirklich_wichtigen_grund_ fuer asm :-)"
+2013-09-23 20:35:26,Paddy,Moin
+2013-09-23 20:36:06,Manuel,Ich habe meine Gründe für asm und bleibe dabei.  Was wäre wenn ich denn Realmode nehme?
+2013-09-23 20:36:25,Svenska^,:-)
+2013-09-23 20:36:35,Svenska^,"kannst du die gruende erklären oder ist das nur ein ""ich will nicht C"" ?"
+2013-09-23 20:37:23,Svenska^,"mein hinweis bezog sich darauf, dass du die erklärung aus dem punkt protected mode nehmen sollst (d.h. direktzugriff auf den grafikspeicher). das funktioniert genau so auch im real mode"
+2013-09-23 20:37:36,Svenska^,die erklärung aus dem real mode nutzt den int 10h.
+2013-09-23 20:37:45,Manuel,Es ist ein: Das OS hat später sonderfunktionen für die CPU und man soll sie auch direkt ansteuern können
+2013-09-23 20:38:05,Paddy,Das ist kein echtes Argument
+2013-09-23 20:38:12,Svenska^,...
+2013-09-23 20:38:16,Svenska^,und du nutzt den real mode.
+2013-09-23 20:38:21,Paddy,Ein paar Zeilen Assembler hast du so oder so immer dabei
+2013-09-23 20:38:25,Svenska^,"soviel zu ""sonderfunktionen"" ^^"
+2013-09-23 20:38:39,Paddy,Deaktivierte Sonderfunktionen halt ;-)
+2013-09-23 20:38:44,Manuel,:D
+2013-09-23 20:38:50,DerHartmut,Oder so krasse OS-Features wie IDT und GDT
+2013-09-23 20:38:52,Svenska^,"du kannst auch in C sowas wie __asm__(""hier asm code einfuegen"") machen"
+2013-09-23 20:39:28,Svenska^,ausserdem verwechselst du gerade OS mit Anwendung
+2013-09-23 20:39:40,Svenska^,"eine anwendung kann die cpu ansteuern, wie sie gern möchte (solange sie das OS nicht zerstört)"
+2013-09-23 20:40:04,Svenska^,das OS sollte von den meisten CPU-spezifischen features eher die finger lassen.
+2013-09-23 20:40:08,Manuel,"Klar, aber zurrück zum int 10h, was macht denn der C Code denn eigentlich genau? Dann könnte man das doch in assembler umsetzen."
+2013-09-23 20:40:16,Svenska^,klar kann man das
+2013-09-23 20:40:22,Svenska^,was anderes macht ein compiler ja auch nicht ^^
+2013-09-23 20:40:27,Jidder,er schreibt in den videospeicher
+2013-09-23 20:40:30,Jidder,segment 0xb800
+2013-09-23 20:40:39,Jidder,und das offset ist im prinzip die cursor position
+2013-09-23 20:41:43,Jidder,"wenn du in zeile x und spalte y ein zeichen mit einer bestimmten farbe ausgeben willst, schreibst du an offset (x * 80 + y) * 2 das zeichen und in das folgende byte das attributbyte"
+2013-09-23 20:41:48,Svenska^,"er schreibt zwei bytes. eins (attribut) an die adresse 0xB8000+y*80+x, eins (zeichen) an die adresse 0xB8000+y*80+x+1"
+2013-09-23 20:42:14,Svenska^,"ach stimmt, andersrum war das ^^"
+2013-09-23 20:42:29,mroman_,uhm
+2013-09-23 20:42:48,mroman_,du meinst 0xB8000+y*80+2*x?
+2013-09-23 20:42:52,Manuel,"Kann man den Chat hier eigentlich nicht kopieren? Ich müsste das, sonst kann ich es mir bis morgen nicht merken :S"
+2013-09-23 20:43:09,Svenska^,PrtScreen und in Paint einfuegen ^^
+2013-09-23 20:43:15,Jidder,du kannst das auf irc.tyndur.org nachlesen
+2013-09-23 20:43:17,mroman_,bzw
+2013-09-23 20:43:19,Jidder,oder von da kopieren
+2013-09-23 20:43:24,mroman_,siehe jidder
+2013-09-23 20:43:28,Svenska^,mroman_: stimmt
+2013-09-23 20:43:44,mroman_,jedes Zeichen belegt 2 Bytes.
+2013-09-23 20:44:10,mroman_,also ist eine Line 160 Byte
+2013-09-23 20:44:13,mroman_,und davon gibt es 25
+2013-09-23 20:44:32,Svenska^,bzw. 0xB8000 + 2*(y*80+x) und 0xB8000 + 2*(y*80+x) +1
+2013-09-23 20:44:36,Manuel,Mist! Hab ne falsche kombination gedrückt -.-
+2013-09-23 20:44:44,Manuel,war gerade raus...
+2013-09-23 20:45:00,Svenska^,habsch g'sehn ¨¨
+2013-09-23 20:45:40,Manuel,Also Das erste 0xB8000 da schreibt er den hintergrund und in dem zweiten den fordergrund?
+2013-09-23 20:45:43,Svenska^,"Manuel: der vorteil von C ist es, dass der compiler dir solche terme ausrechnen kann. in assembler musst du das selbst machen"
+2013-09-23 20:45:54,Svenska^,ich glaub andersrum
+2013-09-23 20:46:02,Manuel,Jidder weis es bestimmt :D
+2013-09-23 20:46:24,Jidder,"erste byte ist das zeichen, das zweite ist das attribut, das sowohl vorder- als auch hintergrundfarbe angibt"
+2013-09-23 20:46:37,Lowl3v3l,"Svenska^, naja viele moderne assemvler können das auch.... also fasm und nasm zumindest^^"
+2013-09-23 20:46:41,Svenska^,"""Achtung: Das Attributebyte kommt zwar immer nach dem Zeichenbyte, aber x86 ist ein Little-Endian-System."" - also wirds einmal vertauscht ^^"
+2013-09-23 20:46:53,Svenska^,Lowl3v3l: nicht fuer dynamisches X und Y
+2013-09-23 20:47:01,Svenska^,"fuer statisch ja, also zur assemblierzeit ausrechnen"
+2013-09-23 20:47:27,Lowl3v3l,jop stimmt
+2013-09-23 20:48:22,Jidder,"Svenska^: wenn man wortweise schreibt ja, aber explizit das wort angeben würde ich eigentlich nur in einer clear-funktion oder so machen"
+2013-09-23 20:48:58,Svenska^,"ja, aber darum hab ich das halt falschrum im kopf :-)"
+2013-09-23 20:49:17,Svenska^,"erst zeichen, dann attribut. und alle funktionen machen (attribut << 8)|zeichen :D"
+2013-09-23 20:49:19,mroman_,wenn du uint16_t* nimmst kannst du dir das *2 sparen
+2013-09-23 20:49:45,Svenska^,kA wie ich das damals(TM) gemacht habe. glaube auch mit uint16_t.
+2013-09-23 20:49:53,Jidder,und bei uint32_t muss man durch 2 dividieren
+2013-09-23 20:49:57,mroman_,dann ist es bequem 0xB8000 + y*80 + x
+2013-09-23 20:50:11,Svenska^,"und ich muss mal ein bugfreies printf() basteln, mein bisheriges tut auf nem ARM7 komische dinge :-D"
+2013-09-23 20:50:47,Manuel,"Also wenn ich es verstehe 2*(Zeile*80*Spalte) Ist  das Zeichen und das andere die Farben, jedoch wenn ich nur die Spale/Zeile angebe, wie gebe ich ihm die Attribute mit? z.B. mov 0xB8000,0x3 ?"
+2013-09-23 20:51:02,mroman_,Assembler?
+2013-09-23 20:51:29,Manuel,Ja
+2013-09-23 20:52:00,Svenska^,Manuel: 0xB8000 + 2*(Zeile*80+Spalte) ist das Zeichen. allerdings kannst du im 16-bit-modus nicht direkt auf die adresse zugreifen
+2013-09-23 20:52:16,mroman_,ja
+2013-09-23 20:52:22,mroman_,musst du wohl ueber Segmente gehen
+2013-09-23 20:52:41,Svenska^,"da du im real-mode mit asm spielen möchtest (wovon hier alle abraten), kannst du nicht ohne aufwand auf speicherblöcke grösser 64K zugreifen"
+2013-09-23 20:53:05,mroman_,b0000:0000 ist dann Video
+2013-09-23 20:53:09,mroman_,eh
+2013-09-23 20:53:10,mroman_,b000
+2013-09-23 20:53:17,Svenska^,?
+2013-09-23 20:53:23,Svenska^,B800h:0000
+2013-09-23 20:53:34,mroman_,oh
+2013-09-23 20:53:35,mroman_,moment
+2013-09-23 20:53:38,mroman_,das ist monochrome
+2013-09-23 20:53:44,mroman_,ja
+2013-09-23 20:53:49,mroman_,80x25 ist wohl b800
+2013-09-23 20:53:50,Svenska^,B000h:0 - MDA/HGC
+2013-09-23 20:53:57,Svenska^,B800h:0 - CGA/EGA/VGA
+2013-09-23 20:54:10,Manuel,"Und wenn ich nicht direkt darauf zugreifen kann, wie geht es dann?"
+2013-09-23 20:54:14,Svenska^,"A000h:0 - EGA/VGA Grafikmodus, wenn ich mich recht entsinne"
+2013-09-23 20:54:14,mroman_,Manuel: Du laedst b800 in ein Segmentregister
+2013-09-23 20:54:26,Svenska^,Manuel: beschäftige dich mit der speicheradressierung auf einem 8086 :-)
+2013-09-23 20:54:52,Svenska^,die ist ein bisschen anders als die aller nachfolger. (im real mode verhält sich jeder x86-prozessor wie ein 8086)
+2013-09-23 20:55:14,Manuel,ok
+2013-09-23 20:55:18,Lowl3v3l,"Manuel, http://www.i8086.de/adressen/adressen.html lesen und genießen^^"
+2013-09-23 20:55:25,Svenska^,muesste in deinem assembler-buch drinstehen
+2013-09-23 20:55:59,Manuel,"Ah, kommt mir bekannt vor, da ich es sonst aber nicht gebraucht habe, habe ich es nicht wirklich beachtet^^"
+2013-09-23 20:56:34,mroman_,"mov ax, 0xb800; mov gs, ax; mov byte[gs:offset], 'H'; mov byte[gs:offset + 1], attrib"
+2013-09-23 20:56:37,mroman_,etwa so
+2013-09-23 20:56:59,Lowl3v3l,oder man macht es sich einfach und nimmt die stringbefehle^^
+2013-09-23 20:57:04,Svenska^,"und du bist dir immernoch sicher, dass du technik benutzen möchtest, die 1982 schon ueberholt war? ;)"
+2013-09-23 20:57:19,Lowl3v3l,also lods und stos^^
+2013-09-23 20:57:30,mroman_,pah
+2013-09-23 20:57:32,Jidder,die machen die sache nicht unbedingt einfacher
+2013-09-23 20:57:44,mroman_,richtig coole leute zapfen den Systembus an
+2013-09-23 20:58:03,mroman_,und schreiben mit dem Funktionsgenerator + Oszilloskop nach Video.
+2013-09-23 20:58:31,Manuel,Ich bin mir noch sicher dass ich sie verwenden möchte :D
+2013-09-23 20:58:49,Manuel,"Also dann, ich bin dann mal weg, vllt. bis morgen!"
+2013-09-23 20:58:55,Svenska^,"mroman_: lol, andere lassen den systembus weg und schliessen den funktionsgenerator an den monitor an"
+2013-09-23 20:59:00,Jidder,tschüssi
+2013-09-23 21:00:02,tufel,nun wie beschreibt man in vhdl am einfachsten ein registerset ?
+2013-09-23 21:00:36,Jidder,keine ahnung
+2013-09-23 21:00:36,Svenska^,"lol, ""MME U80601""..."
+2013-09-23 21:00:56,Svenska^,von dem hab ich ja noch nie gehört
+2013-09-23 21:01:02,Jidder,cool
+2013-09-23 21:02:54,Svenska^,vom K1810BM86 gibt es nette fotos
+2013-09-23 21:04:15,Svenska^,"mit KWS drauf (Karl-Marx-Städter Window-System, auch bekannt als Microsoft Windows 3.0 :-D)"
+2013-09-23 21:05:56,Jidder,lol
+2013-09-23 21:13:39,tufel,mmh was kann die funktion: natural range <> in vhdl ? 
+2013-09-23 21:36:17,Svenska^,"hmm, noch ne andere frage zu makefiles"
+2013-09-23 21:36:37,Svenska^,"wenn ich ne liste von targets habe, also:"
+2013-09-23 21:36:42,Svenska^,dst/a.o: src/a.c
+2013-09-23 21:36:46,Svenska^,dst/b.o: src/b.c
+2013-09-23 21:37:01,Svenska^,"kann ich daraus automatisch eine variable machen, wo die targets aufgefuehrt sind?"
+2013-09-23 21:37:09,Svenska^,oder kann ich die target-liste aus einer variablen erzeugen?
+2013-09-23 21:37:58,tufel,geh mal was essen bb
+2013-09-23 21:42:28,Lowl3v3l,"Svenska^, woher möchtest du die sourcen nehmen? i.A. kann ""find"" dir da helfen"
+2013-09-23 21:42:36,Svenska^,die sourcen sind fix :)
+2013-09-23 21:43:44,Lowl3v3l,ich hole mir die target-variable per patsubst
+2013-09-23 21:43:55,Svenska^,"entweder, ich habe eine variable ""OBJS=dst/blub.o dst/bla.o"" und möchte daraus ganz viele targets ""dst/blub.elf: dst/blub.o ; dst/bla.elf: dst/bla.o"" machen oder halt umgekehrt :-)"
+2013-09-23 21:44:30,Svenska^,bze
+2013-09-23 21:44:32,Svenska^,bzw
+2013-09-23 21:45:01,Svenska^,"am liebsten wäre mir ""PROGS = dst/a.elf dst/b.elf dst/c.elf"", woraus dann die targets erzeugt werden. keine ahnung, ob das geht."
+2013-09-23 21:45:50,Lowl3v3l,ich glaub ich weiß was du meinst^^ kennst du patsubst?
+2013-09-23 21:45:57,Svenska^,pattern substitution
+2013-09-23 21:46:10,Svenska^,ja ^^
+2013-09-23 21:46:17,Lowl3v3l,"KERNEL_OBJ=$(patsubst %.asm,%.o,$(KERNEL_ASM_FILES)) $(patsubst %.c,%.o,$(KERNEL_C_FILES))"
+2013-09-23 21:46:28,Lowl3v3l,das steht beispielsweise für sowas in meinem makefile
+2013-09-23 21:46:53,Lowl3v3l,kannst du damit was anfangen? oder willst du das noch direkt als target-namen?
+2013-09-23 21:47:00,Svenska^,ich brauch das als target-namen
+2013-09-23 21:47:05,Lowl3v3l,"das geht auch, du kannst beliebige variablen als target-namen nehmen"
+2013-09-23 21:47:05,Svenska^,und zwar ein target pro datei... :-)
+2013-09-23 21:47:09,mroman_,"Svenska^: Lol. Andere benutzen Rauschgenerator mit Tiefpass und Hochpassfilter, Schmitt-Triggern und tonnen OpAnds ."
+2013-09-23 21:47:55,Svenska^,Lowl3v3l: jedes target hängt von einer anderen datei ab
+2013-09-23 21:48:31,Svenska^,"darum bringt mir das wenig, wenn ich ""target-liste: object-liste"" habe :-D"
+2013-09-23 21:48:55,Jidder,also von dst/blub.elf nach dst/blub.o fällt einfach unter %.elf: %.o
+2013-09-23 21:49:14,Jidder,von dst/blub.o nach src/blub.c musst du mit stringfunktionen arbeiten
+2013-09-23 21:49:47,stultus,spricht irgendwas gegen %.o: %.c ?
+2013-09-23 21:50:09,Jidder,hm wobei ... das geht auch mit einer regel: dst/%.o: src/%.c
+2013-09-23 21:50:26,Svenska^,stultus: wenn dann %.elf: %.o
+2013-09-23 21:50:50,Svenska^,hmm
+2013-09-23 21:50:58,Svenska^,*bastelt weiter*
+2013-09-23 21:52:01,Svenska^,$(EFOLDER)/%.elf: $(ECOMMON) $(EFOLDER)/%.o
+2013-09-23 21:52:52,Jidder,ja ich glaube das sollte gehen
+2013-09-23 21:53:36,Svenska^,macht ungefähr 14 variablen am anfang ^^
+2013-09-23 22:13:25,Svenska^,$(DEST)/app: $(HOSTOBJS) ; @echo...
+2013-09-23 22:13:45,Svenska^,$(DEST)/%.srec: dst/%.elf ; @echo...
+2013-09-23 22:13:57,Svenska^,warning: overriding commands for target $(DEST)
+2013-09-23 22:14:01,Svenska^,das ist seltsam.
+2013-09-23 22:14:43,Jidder,hast du das $(DEST) in der fehlermeldung selbst eingefügt?
+2013-09-23 22:14:47,Svenska^,ja
+2013-09-23 22:14:53,Jidder,sind leerzeichen in $(DEST)?
+2013-09-23 22:14:55,Svenska^,da steht der inhalt von $(DEST) drin
+2013-09-23 22:14:56,Svenska^,ne
+2013-09-23 22:15:17,Jidder,hm
+2013-09-23 22:16:39,Svenska^,"der meckert alle regeln an, die sich auf einen identischen pfad beziehen..."
+2013-09-23 22:19:50,Jidder,bezieht sich die fehlermeldung tatsächlich auf die beiden zeilen?
+2013-09-23 22:20:26,Svenska^,auf die echo-zeilen
+2013-09-23 22:20:33,Jidder,und du hast auch nirgendswo eine zweite zeile $(DEST)/%.srec: dst/%.elf ; ... mit regeln? (anstatt z.b. nur variablenzuweisenungen)
+2013-09-23 22:21:06,Svenska^,"""make -p"" sagt, dass $(DEST) leer ist und ich darum targets ""/%.o"" und so habe"
+2013-09-23 22:21:12,Jidder,ah hm
+2013-09-23 22:21:29,Svenska^,"dabei steht ganz oben ""DEST := bin"""
+2013-09-23 22:22:08,Svenska^,"ich glaub, der mag keine schrägstriche im target-namen -.-"
+2013-09-23 22:22:22,Jidder,eigentlich sollte das kein problem sein
+2013-09-23 22:23:04,Jidder,"das ist schon alles unter linux, oder?"
+2013-09-23 22:23:07,Svenska^,j
+2013-09-23 22:29:53,Svenska^,"make: *** No rule to make target `/%.c', needed by `edest'.  Stop."
+2013-09-23 22:33:28,Jidder,irgendwas grundlegendes muss da doch schief gehen
+2013-09-23 22:36:03,Svenska^,"ja: die regel ""$(DEST)/%.o: $(SRC)/%.c"" ist make zu komplex :-D"
+2013-09-23 22:37:10,Jidder,hm man könnte da mal versuchen mit VPATH ranzugehen
+2013-09-23 22:37:29,Jidder,aber da muss ich eben selbst mal nachgucken
+2013-09-23 22:37:30,Svenska^,ich tu grad was mit $(subst)
+2013-09-23 22:37:34,Svenska^,scheint zu klappen
+2013-09-23 22:38:11,Svenska^,"...zumindest findet er plötzlich was, wenn auch das falsche. *grummel*"
+2013-09-23 22:39:09,Jidder,wenn du eine regel wie folgt hast:
+2013-09-23 22:39:15,Jidder,$(DEST)/%.o: %.c
+2013-09-23 22:39:36,Jidder,dann sollte VPATH = $(SRC) funktioniereren
+2013-09-23 22:39:44,Jidder,wenn du das davor schreibst
+2013-09-23 22:39:58,Jidder,in der regel selbst solltest du dann $(SRC) nicht referenziern
+2013-09-23 22:40:39,Svenska^,"hmm. erschwerend kommt dann dazu, dass ich $ESRC und $HSRC habe, jeweils mit $EDEST und $HDEST (und verschiedenen befehlen), plus $DEST fuer die endergebnisse"
+2013-09-23 22:41:12,Jidder,hm
+2013-09-23 22:41:40,Jidder,"das würde dann auf jeden fall probleme geben, wenn in $(ESRC) und $(HSRC) gleichnamige dateien liegen"
+2013-09-23 22:41:57,Svenska^,warum?
+2013-09-23 22:42:06,Jidder,VPATH setzt einen suchpfad
+2013-09-23 22:42:10,Svenska^,achso
+2013-09-23 22:42:23,Jidder,achso ja hat sich noch auf die VPATH-geschichte bezogen
+2013-09-23 22:42:23,Svenska^,es wird auf jeden fall gleichnamige dateien geben...
+2013-09-23 22:42:34,Svenska^,(vermutlich sogar ein hardlink)
+2013-09-23 22:43:34,Svenska^,irgendwo ist hier der wurm drin
+2013-09-23 22:45:12,Jidder,"wie genau meinst du das, dass (DEST)/%.o: $(SRC)/%.c make zu komplex ist?"
+2013-09-23 22:46:06,Svenska^,er ersetzt das literal durch %.c
+2013-09-23 22:46:12,Svenska^,und findet die datei natuerlich nicht
+2013-09-23 22:46:52,Jidder,ist da schon irgendwas automatisch generiertes dabei?
+2013-09-23 22:46:56,Svenska^,nein
+2013-09-23 22:47:33,Svenska^,hmm
+2013-09-23 22:47:46,Svenska^,$(APP)=$(DEST)/application
+2013-09-23 22:47:51,Jidder,hast du SRC irgendwie über foo.srec: SRC = ... definiert?
+2013-09-23 22:47:52,Svenska^,$(DEST)=bin
+2013-09-23 22:48:06,Svenska^,"wenn ich jetzt $(APP) machen will, will er ""bin"" machen, danach ""/application"""
+2013-09-23 22:48:09,Svenska^,ergibt das sinn?
+2013-09-23 22:48:24,Svenska^,"(und fuer ""bin"" sucht er sich ein vollkommen anderes target raus)"
+2013-09-23 22:48:24,Jidder,ne. klingt nach einem whitespace problem
+2013-09-23 22:48:46,Jidder,oh und hoffentlisch schreibst du nicht wirklich $(DEST)=bin sondern DEST=bin
+2013-09-23 22:48:57,Svenska^,kopf->tisch
+2013-09-23 22:49:03,Svenska^,war tatsächlich ein whitespace problem
+2013-09-23 22:49:13,Svenska^,DEST := bin # destination directory
+2013-09-23 22:49:14,Svenska^,-.-
+2013-09-23 22:49:18,Jidder,autsch
+2013-09-23 23:19:03,Svenska^,kann man einen satz befehle fuer zwei targets nutzen?
+2013-09-23 23:21:26,Jidder,"du könntest eine regel machen, die beide targets matcht"
+2013-09-23 23:21:50,Svenska^,hm. stimmt. da fällt mir bestimmt kein sinnvoller name fuer ein :-)
+2013-09-23 23:22:57,Jidder,"da musst du keinen namen verwenden. ich mein dass wenn du z.b. x/foo1.o: y/foo1.c und x/foo2.o: y/foo2.c hast, dann könntest z.b. x/%.o: y/%.c machen und da die befehle reinschreiben"
+2013-09-23 23:23:01,Jidder,statt in die einzelnen regeln
+2013-09-23 23:23:20,Svenska^,ja
+2013-09-23 23:23:41,Svenska^,"ich ueberlege gerade, ob es sinnvoll ist, die bibliothek (das $(ECOMMON) von oben) in einen extra-ordner zu verlagern"
+2013-09-23 23:24:33,Svenska^,der code in $(ESRC) wird von anderen in einer versimpelten c-sprache geschrieben
+2013-09-23 23:26:32,Svenska^,"und da fallen dann die targets ""$(EDEST)/%.o: $(ESRC)/%.c"" und ""$(EDEST)/%.o: $(ELIB)/%.c"" raus, die den gleichen compiler aufrufen"
+2013-09-23 23:29:45,Jidder,"hm also es könnte gehen, wenn du die befehle einfach in eine regel $(EDEST)/%.o: schreibst"
+2013-09-23 23:29:50,Jidder,aber bin mir da nicht ganz sicher
+2013-09-23 23:30:28,Svenska^,"naja, die regel doppelt zu haben, bringt mich jetzt auch nicht mehr um"
+2013-09-23 23:30:39,Svenska^,bei nem 1.5K Makefile ist das eher nebensächlich ^^
+2013-09-23 23:30:44,Jidder,hehe
+2013-09-23 23:30:56,Jidder,ach 1.5KB ist ja noch lange nix ^^
+2013-09-23 23:31:39,Svenska^,fuer von hand geschrieben schon :)
+2013-09-23 23:32:10,Jidder,hm die neueste reinkarnation von JidderOS hat auch schon mehr 3KB auf eine hauptmakefile und ein paar includes verteilt ... und es funktioniert nicht mal ^^
+2013-09-23 23:32:18,Jidder,mehr als 3KB*
+2013-09-23 23:32:23,Svenska^,*g*
+2013-09-23 23:35:51,Svenska^,"wie funktioniert die ""Removing intermediate files""-Logik eigentlich?"
+2013-09-23 23:36:30,Svenska^,"""make all"" baut alles zusammen und löscht danach die *.{o,elf} in $(EDEST), aber nicht in $(HDEST)"
+2013-09-23 23:39:44,Jidder,hm hab ich nie benutzt. ich lass die dateien eigentlich gerne da
+2013-09-23 23:39:47,Jidder,dafür gibts ja make clean
+2013-09-23 23:39:51,Svenska^,ja ich auch ^^
+2013-09-23 23:40:07,Svenska^,make macht das von alleine
+2013-09-23 23:40:41,Jidder,komisch
+2013-09-23 23:41:10,Svenska^,"""chains of implicit rules""... hm, da ist noch was faul"
+2013-09-23 23:52:50,Svenska^,http://pastebin.com/QNTU7ARd
+2013-09-23 23:53:01,Svenska^,"Jidder: vielleicht siehst du ja, wo die impliziten regeln herkommen"
+2013-09-23 23:53:21,Jidder,mal gucken

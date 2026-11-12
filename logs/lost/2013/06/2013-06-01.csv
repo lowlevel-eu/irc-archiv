@@ -1,0 +1,241 @@
+date/time,nick,message
+2013-06-01 10:32:40,DerHartmut,Guten Morgen
+2013-06-01 15:14:58,mroman,hm.
+2013-06-01 15:15:03,mroman,"brauch ich addc, sbb"
+2013-06-01 15:23:29,mroman,"Es gefaellt mir irgendwie nicht, dass es JMP und CALL gibt"
+2013-06-01 15:23:36,mroman,wo doch beide eigentlich praktisch dasselbe machen.
+2013-06-01 15:23:47,mroman,mehr oder weniger
+2013-06-01 15:35:45,mroman,43 Instruktionen sind zu viel um sie auf 32 zu reduzieren
+2013-06-01 15:35:57,mroman,naja
+2013-06-01 15:36:17,mroman,bleibt noch genug Platz falls man wirklich noch floating point braucht
+2013-06-01 15:39:07,Jidder,"wenn du CALL rausnimmst und durch andere instruktionen eliminierst, wird das erste feature deines assembler sein, dafür wieder ein makro einzuführen"
+2013-06-01 15:40:46,Jidder,s/eliminierst/emulierst
+2013-06-01 15:44:18,mroman,ja
+2013-06-01 15:44:31,mroman,aber das st ja kein Problem.
+2013-06-01 15:44:47,mroman,"der hat eh schon pseudo Instruktionen wie push,pop,ret etc."
+2013-06-01 15:45:39,Jidder,"wenn dich nicht stört, dass deine callinstruktion dann 10 byte groß ist ^^"
+2013-06-01 15:46:03,mroman,ist sie nicht
+2013-06-01 15:46:06,Jidder,achne du machst call nur über register o_O
+2013-06-01 15:46:16,Jidder,bzw imm8
+2013-06-01 15:46:34,mroman,ich wuerde jmp r0 einfach
+2013-06-01 15:46:43,Jidder,dein instructionset ist wirklich verrückt
+2013-06-01 15:47:55,mroman,"Der einzige Unterschied zwischen CALL r0 und JMP r0 ist, dass CALL die Ruecksprungadresse noch kurz in rc schiebt."
+2013-06-01 15:48:59,mroman,"ich koennte also jmp reg32, reg32 machen"
+2013-06-01 15:49:12,mroman,"man gibt an, in welches Register jmp die Ruecksprungadresse schieben soll"
+2013-06-01 15:49:13,mroman,"das haette allerdings den Nachteil, dass imm8 dann nicht mehr geht"
+2013-06-01 15:49:27,mroman,"call r0 waere dann jmp rc, r0"
+2013-06-01 15:49:56,Jidder,"oh mann ich will sehen, wie du das dem kunden verkaufst ^^"
+2013-06-01 15:50:29,mroman,dann ginge nur noch imm4
+2013-06-01 15:50:29,mroman,was?
+2013-06-01 15:51:24,mroman,kein imm8 zu haben ist wirklich doof ja
+2013-06-01 15:51:32,mroman,weil dann conditional jumps auch nur ueber register gehen
+2013-06-01 15:51:40,mroman,und man erst die ganze Zeit adressen in Register lahen muss
+2013-06-01 15:52:21,Jidder,"hast du überhaupt eine instruktion, die von einem register in ein anderes kopiert?"
+2013-06-01 15:52:45,Jidder,"oder muss man das mit SUB r0, r0; ADD r0, r1 machen? ^^"
+2013-06-01 15:52:56,mroman,ja
+2013-06-01 15:53:05,mroman,mov
+2013-06-01 15:53:50,Jidder,okay ist hier noch nicht dabei http://mroman.ch/va/node20.html
+2013-06-01 15:53:56,mroman,"mov reg32, reg32 oder mov reg32 imm4"
+2013-06-01 15:53:57,Jidder,ansonsten kannst du nämlich OR und XOR auch rausnehmen
+2013-06-01 15:54:12,Jidder,die kannst du mit AND und NOT zusammen bauen
+2013-06-01 15:54:43,mroman,ja
+2013-06-01 15:54:47,mroman,oder du nimmst NOT raus
+2013-06-01 15:54:51,mroman,NOT geht auch mit XOR :)
+2013-06-01 15:54:58,mroman,solche Spiele kann min immer treiben
+2013-06-01 15:55:05,Jidder,das ist kein spiel
+2013-06-01 15:55:11,mroman,bis man beim OISC Computer mit subleq angekommen ist
+2013-06-01 15:56:21,mroman,http://codepad.org/M0aBlcxP <- das ist der Stand
+2013-06-01 15:57:04,mroman,SET habe ich rausgeschmissen
+2013-06-01 15:57:16,mroman,"SET macht ja eh nur mov reg32, 1"
+2013-06-01 15:57:31,mroman,"anstatt setiz r0 kann man also gleich moviz r0, 1 schreiben"
+2013-06-01 15:58:15,mroman,aber ich bringe es nicht auf 32 Instruktionen runter ohne zu viel komfort zu verlieren.
+2013-06-01 15:58:43,Jidder,was ist der unterschied zwischen SKIP und ADD?
+2013-06-01 15:59:20,mroman,"SKIP ist ein relativer vorwaerts Sprung  wobei man angeben kann, in welches Register die momentane Adresse gespeichert werden soll"
+2013-06-01 15:59:32,Jidder,aha ...
+2013-06-01 15:59:40,mroman,"SKIP r0, 12 springt 12 bytes nach vorne und speichert den instruction pointer in r0"
+2013-06-01 15:59:40,Jidder,und hast du bedingte sprünge?
+2013-06-01 15:59:43,mroman,Jidder: Ja
+2013-06-01 15:59:59,mroman,jede Instruktion kann bedingt ausgefuehrt werden
+2013-06-01 16:00:30,Jidder,jetzt ist klar warum dir die bits in den instruktionen ausgehen ^^
+2013-06-01 16:00:39,mroman,Jidder: Die gehen mir nicht aus.
+2013-06-01 16:00:47,mroman,Ich habe 6 bits fuer einen Opcode
+2013-06-01 16:00:56,mroman,das reicht locker
+2013-06-01 16:01:24,mroman,Plan B ist naemlich noch 17 FPU Instruktionen
+2013-06-01 16:01:26,Jidder,"eben war da doch was, dass du entweder jmp reg32, reg32 machen kannst oder jmp imm8"
+2013-06-01 16:01:39,mroman,"Jidder: Ja, wenn ich jmp aendere"
+2013-06-01 16:01:58,mroman,"jmp reg32, reg32 waere nicht mehr in der Gruppe der Instruktionen mit einem imm8 Operanden"
+2013-06-01 16:02:23,mroman,ich kann JMP2 als Opcode hinzufuegen.
+2013-06-01 16:02:28,mroman,ich hab noch Platz
+2013-06-01 16:02:51,mroman,aber das bringt ja nicht viel
+2013-06-01 16:03:44,mroman,"Es gibt nur drei Gruppen: kein Operand; reg, reg, reg; reg, imm8;"
+2013-06-01 16:04:26,mroman,"wenn jmp also zwei Operanden nehmen soll faellt sie in reg, reg, reg"
+2013-06-01 16:05:21,mroman,n.v.m
+2013-06-01 16:05:25,mroman,"call,jmp bleiben so wie sie sind."
+2013-06-01 16:06:20,mroman,bzw.
+2013-06-01 16:06:36,mroman,"technisch waere es moeglich, die letzten beiden regs der Gruee reg, reg, reg zu 8bit imm zusammen zu fassen"
+2013-06-01 16:06:40,mroman,"so wie reg, imm8"
+2013-06-01 16:06:56,mroman,hm.
+2013-06-01 16:07:11,mroman,die Gruppen sind eh nur philosophisch
+2013-06-01 16:07:24,mroman,die Instruktionen interessieren sich eigentlich einen Dreck dafuer in welcher Gruppe sie sind
+2013-06-01 16:07:31,mroman,"sie ignorieren einfach zeugs, was sie nichts angeht :D"
+2013-06-01 16:07:37,mroman,"die Frage ist halt, wenn es jmp reg, reg ist"
+2013-06-01 16:07:43,mroman,dann musst du fuer jeden Sprung ein Register opfern
+2013-06-01 16:07:46,mroman,will man das?
+2013-06-01 16:08:03,Jidder,kommt auf deine designphilosophie an
+2013-06-01 16:08:07,Jidder,sofern du eine hast ^^
+2013-06-01 16:08:48,mroman,Natuerlich habe ich eine 
+2013-06-01 16:09:51,mroman,"Kleiner Befehlssatz, keine Speicherzugriffe ausser durch Load/Store, 3 byte pro Instruktion, jede Instruktion muss bedingt ausfuehrbar sein, Operationen zerstoeren keine Register (wie z.b ADD auf x86)"
+2013-06-01 16:10:16,mroman,und moeglichst wenig Stack
+2013-06-01 16:10:50,mroman,nur die noetigsten Flags setzen.
+2013-06-01 16:11:19,mroman,"Instruktionen setzen nur die Flags, die man NACH der Instruktion nicht mehr rekonstruieren koennte."
+2013-06-01 16:11:24,mroman,SUB z.b setzt daher kein Zeroflag.
+2013-06-01 16:11:31,mroman,weil man auf 0 auch noch nach SUB testen kann.
+2013-06-01 16:12:12,mroman,aber abgesehen davon lasse ich meine Kreativitaet frei walten :D
+2013-06-01 16:13:28,mroman,und weil es in absehbarer Zeit keinen C Compiler dafuer geben wird
+2013-06-01 16:13:48,mroman,sollte man mit dem Assembler einigermassen zurecht kommen.
+2013-06-01 16:15:37,Flurinox,inwiefern zerstört ADD ein register? 
+2013-06-01 16:16:02,Flurinox,es addiert halt was hinzu
+2013-06-01 16:16:37,Flurinox,in den meisten fällen will man den alten register-wert nicht mehr
+2013-06-01 16:16:39,Jidder,"er hat ADD r0, r1, r2"
+2013-06-01 16:16:43,Jidder,also drei-address-code
+2013-06-01 16:17:12,Flurinox,"ok, wobei ich 2-address-code sinnvoller fände ;)"
+2013-06-01 16:17:22,Flurinox,zumindest wenn man es in hardware dann mal umsetzen will
+2013-06-01 16:17:32,Flurinox,;)
+2013-06-01 16:18:35,mroman,Flurinox: int c = a + b;
+2013-06-01 16:18:47,mroman,"bei x86 werden c, a und b wohl auf dem Stack liegen"
+2013-06-01 16:19:02,mroman,"d.h due laedst a in eax dann addierst du add eax, [bp + b]"
+2013-06-01 16:19:02,Flurinox,außer man verwendet -O3
+2013-06-01 16:19:06,mroman,und schreibst eax wieder zurueck
+2013-06-01 16:19:07,mroman,z.b
+2013-06-01 16:19:24,mroman,Flurinox: Was tut gcc dann?
+2013-06-01 16:19:30,mroman,"add m,m ist ja nicht erlaubt"
+2013-06-01 16:20:03,Flurinox,"bei -O3 liegt das meiste immer im register, wenn es nicht zu viel wird"
+2013-06-01 16:20:13,mroman,"bei 16 registern ist es interessant, lokale Variabeln immer in Registern zu halten"
+2013-06-01 16:20:31,mroman,dann macht 3-address-code schon mehr Sinn imo
+2013-06-01 16:20:37,Flurinox,"aber es gibt viele berechnungen, wie z.B. Formeln, wo das beibehalten des alten wertes keinen sinn machtr"
+2013-06-01 16:22:21,Flurinox,"bei deinem beispiel mit ""int c = a+b;"" braucht man laut dir ""mov eax,[a]"", ""add eax,[b]"" und ""mov [c],eax"""
+2013-06-01 16:22:42,Flurinox,in deiner sprache braucht man 4 asm befehle?
+2013-06-01 16:23:32,Flurinox,wenn das add nicht direkt auf den speicher zu greifen kann
+2013-06-01 16:24:19,mroman,kommt darauf an wo a und b sind
+2013-06-01 16:24:23,mroman,wenn es Funktionsargumente sind
+2013-06-01 16:24:33,mroman,dann braucht man nur add
+2013-06-01 16:25:12,mroman,"z.b int addem(int a, int b) { int c = a + b; }"
+2013-06-01 16:25:24,mroman,die werden in Registern uebergeben
+2013-06-01 16:25:44,mroman,wenn sie im Speicher sind dann brauchst du uhm
+2013-06-01 16:25:49,mroman,je nach dem wo sie sind
+2013-06-01 16:26:00,mroman,"angenommen a,b sind im Speicher, c auch"
+2013-06-01 16:26:05,Flurinox,"naja ist ja inzwischen standard, das mit dem in register übergeben?"
+2013-06-01 16:26:07,mroman,dann 13 Instruktionen.
+2013-06-01 16:26:12,Flurinox,13? ;)
+2013-06-01 16:26:21,mroman,ok
+2013-06-01 16:26:22,mroman,15
+2013-06-01 16:26:31,mroman,moment
+2013-06-01 16:28:14,mroman,"also,"
+2013-06-01 16:28:33,mroman,mem{c} = mem{a} + mem{b}
+2013-06-01 16:28:39,mroman,mindestens 16 Instruktionen
+2013-06-01 16:28:42,mroman,im generellen Fall.
+2013-06-01 16:29:01,mroman,"wenn a, b, c irgendwo voellig weit auseinander im Speicher stehen"
+2013-06-01 16:29:34,mroman,wenn sie nebeneinander liegen natuerlich weniger
+2013-06-01 16:29:39,Flurinox,sind 16 nicht ein wenig viel für sowas simples?
+2013-06-01 16:29:47,Jidder,ein
+2013-06-01 16:29:57,Jidder,24-bit instruktionen FTL
+2013-06-01 16:30:34,mroman,8 wenn sie nebeneinander liegen
+2013-06-01 16:30:53,mroman,Flurinox: Naja
+2013-06-01 16:31:01,mroman,Du kannst halt keine 32bit Adresse in einer Instruktion laden
+2013-06-01 16:31:10,mroman,nicht im generellen Fall
+2013-06-01 16:31:12,Jidder,"sobald du ein hinreichend komplexes c-programm hast, das nicht einfach nur globale variablen addierst und subtrahiert, muss der compiler vom allgemeinen falls ausgehen"
+2013-06-01 16:31:34,mroman,Geht bei ARM ja auch nicht
+2013-06-01 16:32:29,Flurinox,"wenn ich mir so meine komplexeren Programme wie irgendwelche Spiele miut Klassen/Structs/ect ansehe, liegen da sicher nicht viele Variablen die oft benutzt werden, hintereinander"
+2013-06-01 16:32:45,mroman,ARM benutzt dazu literal pools
+2013-06-01 16:32:50,mroman,zum laden von Konstanten
+2013-06-01 16:32:56,mroman,das muesstest du hier auch so tun
+2013-06-01 16:33:20,mroman,wenn die Konstanten in der naehe in einem literal pool liegen
+2013-06-01 16:33:24,mroman,dann brauchst du uhm *moment*
+2013-06-01 16:33:30,Jidder,ARM wird doch hauptsächlich verwendet um eine Java VM laufen zu lassen ^^
+2013-06-01 16:34:08,mroman,dann brauchst du nur 4 Instruktionen
+2013-06-01 16:37:15,mroman,Naemlich
+2013-06-01 16:37:26,mroman,"1.) a laden, 2.) b laden, 3.) addieren, 4.) c speichern"
+2013-06-01 16:38:38,mroman,Du kannst die Adressen z.b in einem pool vor einer Funktion speichern
+2013-06-01 16:39:12,mroman,"dann machst du in der Funktion loadri ra, -xxx; loadri rb, -xxx; add rc, ra, rb; storeri -xxx, rc"
+2013-06-01 16:39:20,mroman,(load relative immediate)
+2013-06-01 16:41:45,mroman,Es kommt wirklich enorm darauf an wo was ist ;)
+2013-06-01 16:42:20,Jidder,wie prüft man ob eine variable größer als 0 ist?
+2013-06-01 16:42:28,Jidder,register
+2013-06-01 16:42:46,Jidder,und springt dann irgendwo hin
+2013-06-01 16:45:36,Jidder,"also ich glaube, dass das relative viele instruktionen braucht"
+2013-06-01 16:45:55,mroman,Mit TEST und JMPNZ
+2013-06-01 16:45:56,Jidder,außer das condition-feld im opcode funktioniert anders als ic hdenke
+2013-06-01 16:46:14,mroman,"test r0, jmpnz -12"
+2013-06-01 16:46:27,mroman,z.b
+2013-06-01 16:46:41,Jidder,hm okay
+2013-06-01 16:49:11,Jidder,"ich nehme mal an wenn r0 signed sein soll, gibt es auch ein jmp-suffix, oder?"
+2013-06-01 16:52:10,mroman,Flurinox: http://codepad.org/HGgnVlxe
+2013-06-01 16:52:29,mroman,Jidder: Wie meinst du das?
+2013-06-01 16:52:43,Jidder,"jmpnz prüft doch nur, ob r0 != 0 ist, oder nicht?"
+2013-06-01 16:52:43,mroman,* test r0;
+2013-06-01 16:52:59,mroman,Jidder: Oh.
+2013-06-01 16:53:00,mroman,Ja
+2013-06-01 16:53:06,mroman,du meinst signed > 0?
+2013-06-01 16:53:08,Jidder,ja
+2013-06-01 16:55:28,mroman,Gute Frage.
+2013-06-01 16:55:37,mroman,Muss ich kurz nachgucken welche Flags da involviert sind.
+2013-06-01 17:00:27,mroman,ah
+2013-06-01 17:00:42,mroman,"cmp r0, -1; jmpns -12;"
+2013-06-01 17:01:16,mroman,"zugegeben, das ist noch etwas undurchdacht."
+2013-06-01 17:02:07,Jidder,hast ja noch ein paar wochen bis zur markteinführung ^^
+2013-06-01 17:02:45,mroman,Conditiocode sind 4 bit
+2013-06-01 17:02:50,mroman,*Condition code
+2013-06-01 17:03:15,mroman,oder moment
+2013-06-01 17:03:18,Jidder,welche conditions hst du denn alles?
+2013-06-01 17:03:23,Jidder,also x86 kommt mit weniger als 16 aus
+2013-06-01 17:03:29,mroman,>0 heisst
+2013-06-01 17:03:38,mroman,!(<=0)?
+2013-06-01 17:03:48,Jidder,ja
+2013-06-01 17:04:07,mroman,Ok. Conditions gibt es
+2013-06-01 17:04:20,Jidder,musste jetzt nich aufzählen ^^
+2013-06-01 17:04:24,Jidder,war ne rhetorische frage
+2013-06-01 17:04:41,mroman,kA
+2013-06-01 17:04:54,mroman,ich weiss nicht wie ich a > b realisieren soll mit CMP so aus dem Stehgreif
+2013-06-01 17:05:08,mroman,ich koennte das Overflow flag setzen wenn a > b ist
+2013-06-01 17:05:12,mroman,dann waere es jmpio
+2013-06-01 17:05:49,mroman,"=,<,>,<=,>= waeren ja eigentlich nur 5 Conditions"
+2013-06-01 17:05:57,mroman,aber halt noch mal 2
+2013-06-01 17:06:01,mroman,weil signed/unsigned
+2013-06-01 17:06:06,Jidder,und !=
+2013-06-01 17:07:43,mroman,stimmt
+2013-06-01 17:07:52,mroman,"momentan kannst du nur =,!=,<,>,>=,<="
+2013-06-01 17:08:05,mroman,eh
+2013-06-01 17:08:06,mroman,ohne >
+2013-06-01 17:08:09,mroman,> eben nicht :)
+2013-06-01 17:08:52,Jidder,"das ist jetzt vergleich mit 0, oder?"
+2013-06-01 17:09:21,mroman,"IZ ist a = b, NZ ist a != b, IC ist a < b (unsigned), NC ist a >= b (unsigned)"
+2013-06-01 17:09:31,mroman,"IS ist a < b (signed), NS ist a >= b (unsigned)"
+2013-06-01 17:09:43,mroman,egal was a oder b ist
+2013-06-01 17:10:00,mroman,"es fehlt also noch a > b (unsigned), a > b (signed)"
+2013-06-01 17:10:40,mroman,moment
+2013-06-01 17:10:42,mroman,ich Depp.
+2013-06-01 17:11:03,mroman,warum gibt es IZNS (If Zero & Not Signed)
+2013-06-01 17:11:37,mroman,If Zero & Not Signed hiesse (a = b) | !(a < b)
+2013-06-01 17:11:44,mroman,!(a < b) ist (a >= b)
+2013-06-01 17:12:35,mroman,Es braeuchte NZNS (Not Zero & Not Signed)
+2013-06-01 17:12:52,mroman,das hiesse (a != b) & (a >= b)
+2013-06-01 17:12:54,mroman,also a > b
+2013-06-01 17:20:15,Jidder,kommt drauf an. bei x86 ist es komplizierter
+2013-06-01 17:20:18,Jidder,aber ich weiß ja nicht was dein cmp macht
+2013-06-01 17:28:47,mroman,"Es setzt Zero Flag wenn a = b, Carry Flag  wenn a < b (unsigned) und Signed Flag wenn a < b (signed)"
+2013-06-01 17:29:26,mroman,a > b muesste also not zero und not signed sein.
+2013-06-01 17:29:38,mroman,"not signed alleine sagt ja nur aus, dass a nicht kleiner b ist"
+2013-06-01 17:29:55,mroman,jmpns ist also jmpgeq
+2013-06-01 17:30:37,mroman,"ich hab iznc, izns zu nznc und nzns gemacht"
+2013-06-01 17:31:15,mroman,(http://codepad.org/VMzd108P das waere der Testcase dazu)
+2013-06-01 17:32:10,mroman,(Mein Emulator/Prozessor bietet extra fuer Testcases eine FAIL Instruktion an :))
+2013-06-01 17:33:43,mroman,< 0 koennte man auch mit test r0; jmpis testen
+2013-06-01 17:34:27,mroman,"jmp habe ich hier durch skip r0, 3 ersetzt"
+2013-06-01 17:34:42,mroman,das ueberspringt einfach gewisse fails
+2013-06-01 21:50:12,mroman,He.
+2013-06-01 21:50:25,mroman,Mein Lispcompiler fuer meine Architektur wird zwar nicht der effizienteste
+2013-06-01 21:50:30,mroman,aber brauchbar :)
+2013-06-01 21:53:25,mroman,naja
+2013-06-01 21:53:36,mroman,Bei Gelegenheit mal noch simples register allocation einbauen
+2013-06-01 21:58:37,mroman,http://codepad.org/HaEV5tYI
+2013-06-01 21:58:58,mroman,Ein OS in Lisp zu schreiben ist mir lieber als es in Assembler zu schreiben *g*

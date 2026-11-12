@@ -1,0 +1,244 @@
+date/time,nick,message
+2008-06-13 00:54:05,bitmaster,wie geil ist das denn
+2008-06-13 00:56:46,kwolf,Hm?
+2008-06-13 00:57:01,bitmaster,hehe ^^
+2008-06-13 00:58:13,kwolf,"Es macht keinen Sinn, so eine Bemerkung abzugeben und nicht weiter zu kommentieren ;-)"
+2008-06-13 00:59:22,bitmaster,"na ja, mein Kernel ist um min. 200% schneller als vorher"
+2008-06-13 00:59:24,bitmaster,das ist doch was
+2008-06-13 00:59:55,kwolf,"Jo, das ist ein Stueckchen. Was hast du geaendert?"
+2008-06-13 01:00:29,bitmaster,mal eben schauen
+2008-06-13 01:00:35,bitmaster,ob es überall so schnell ist
+2008-06-13 01:01:34,kwolf,Wie viele Testsysteme hast du denn?
+2008-06-13 01:01:58,bitmaster,3 + 3 Emus
+2008-06-13 01:02:01,bitmaster,also 6
+2008-06-13 01:03:46,bitmaster,"ach shit, jetzt habe ich vergessen den atapi treiber auszukommentieren"
+2008-06-13 01:04:11,bitmaster,der läuft nämlich nicht auf allen drei rechnern
+2008-06-13 01:04:44,bitmaster,"zumal es nicht meine PCs sind, muss ich dazu sagen ^^"
+2008-06-13 01:04:52,bitmaster,nur einer davon
+2008-06-13 01:05:05,kwolf,Wie waer's mit einem Bootparameter statt reinkompilieren oder nicht?
+2008-06-13 01:05:40,bitmaster,"nee, in der OS-Loader.ldr muss ich den auskommentieren"
+2008-06-13 01:06:52,bitmaster,aber die ganzen Dateiendungen muss ich mal ändern
+2008-06-13 01:07:13,kwolf,"Oder so. Was ich meinte ist halt irgendwas, wo man beim Booten noch eingreifen kann, z.B. man kann einen Parameter eingeben, wenn man rechtzeitig Esc drueckt oder so"
+2008-06-13 01:07:43,bitmaster,"nee, so weit ist mein OS-64 OS-Loader noch nicht"
+2008-06-13 01:07:58,kwolf,"Naja, das ist halt das Problem, wenn man nicht GRUB nimmt ;-)"
+2008-06-13 01:08:16,bitmaster,"ich muss die OS-Loader.ldr bearbeiten, in der die Dateinamen stehen, sprich die Dateien die gebootet werden sollen"
+2008-06-13 01:09:05,kwolf,"Tja. Ist halt nicht immer so geschickt zu bearbeiten, wenn das Ding nicht erst bootet."
+2008-06-13 01:09:07,bitmaster,"ich bin stolz auf mein OS-Loader, ich brauche kein GRUB ;)"
+2008-06-13 01:11:07,bitmaster,"so, bis auf vmware ist der Kernel überall schneller"
+2008-06-13 01:11:37,bitmaster,"ist ja immer so, dass einer einem die Freude rauben will"
+2008-06-13 01:13:52,bitmaster,also verändert habe ich das IPC und den PIT
+2008-06-13 01:14:27,bitmaster,wobei ich nicht genau weiß welchen Wert ich für den PIT nehmen soll
+2008-06-13 01:15:31,bitmaster,"100 Hz ist ein bisschen langsam, wie ich finde"
+2008-06-13 01:15:45,bitmaster,hat aber eher nichts mit dem Kernel an sich zu tun
+2008-06-13 01:15:58,bitmaster,aber IPC ist jetzt schön schnell ^^
+2008-06-13 01:22:40,kwolf,Was fuer eine Art IPC machst du denn? Message Passing?
+2008-06-13 01:23:04,bitmaster,ja
+2008-06-13 01:23:17,kwolf,Vorher auch schon?
+2008-06-13 01:23:31,kwolf,Oder was machst du jetzt anders?
+2008-06-13 01:24:58,bitmaster,"na ja, ich habe die Funktionen einwenig umgeschrieben, weshalb mein Kernel in letzter Zeit auch so oft kaputt war, und der Speicher für die ""kleinen"" Message ist jetzt bereits reserviert"
+2008-06-13 01:25:19,bitmaster,sprich das reservieren wird beim erstellen des Prozesses erledigt
+2008-06-13 01:25:49,bitmaster,aber irgendwie passt mir das ganze immer noch nicht so
+2008-06-13 01:25:52,kwolf,Ringpuffer statt dynamisch reservieren oder wie?
+2008-06-13 01:26:04,bitmaster,jo
+2008-06-13 01:26:19,bitmaster,also nur der Speicher für die Messages
+2008-06-13 01:27:02,kwolf,"Ja, darum ging es ja"
+2008-06-13 01:27:16,bitmaster,"folgendes Problem habe ich: wenn ich z.B. etwas in der Shell eingebe, dann wird dieses Zeichen über eine Message an den Grafiktreiber gesendet"
+2008-06-13 01:27:55,kwolf,Jo
+2008-06-13 01:28:04,bitmaster,"aber die Message ist ja ganz klein, weshalb ich am überlegen bin ob es nicht sinnvoll wäre erst ab einer bestimmten Größe Messages zu verwenden"
+2008-06-13 01:28:37,kwolf,Und vorher?
+2008-06-13 01:29:27,kwolf,"Eine Alternative ist noch Shared Memory, aber das hat ja mit der Datengroesse nichts zu tun."
+2008-06-13 01:29:57,kwolf,"Hoechstens insofern, dass damit nichts kopiert werden muss, also eher fuer grosse Datenmenge"
+2008-06-13 01:31:16,bitmaster,"vorher habe ich für jedes Zeichen Speicher reserviert, sprich immer 4 KByte (ist ja das minimum) für eine 4 Byte große Message"
+2008-06-13 01:32:02,kwolf,"Wenn deine Nachrichten mindestens 4K gross sein muessen, machst du was falsch ;-)"
+2008-06-13 01:32:09,kwolf,Das kann kaum das optimale System sein
+2008-06-13 01:32:40,bitmaster,"nee ich meine für speicher reservieren, das geht doch nur in 4 KByte blöcken"
+2008-06-13 01:32:49,bitmaster,oder nicht?
+2008-06-13 01:33:26,kwolf,Wenn ich mir vom Kernel eine ganze Page hole schon. Aber wieso soll ich nicht einfach nur einen Teil davon verwenden koennen?
+2008-06-13 01:34:05,kwolf,"Ich mein, fuer irgendwas hat man ja ein malloc ;-)"
+2008-06-13 01:34:25,bitmaster,du meinst ihr teilt in eurer Speicherverwaltung die pages auch noch auf?
+2008-06-13 01:35:08,kwolf,Nicht kernelseitig. Aber die Standardbibliothek macht das natuerlich.
+2008-06-13 01:35:18,kwolf,Ich kann doch nicht fuer jeden popeligen int auf dem Heap 4K reservieren
+2008-06-13 01:36:28,bitmaster,aber es wird eine Page reserviert falls der Speicher an 4 KByte grenzt?
+2008-06-13 01:38:40,kwolf,"Wenn du eine Page willst, gehst du halt direkt zum Kernel und holst dir dort deine Page. Wenn du einfach nur x Bytes Speicher willst, gehst du zur libc (oder Pascal-RTL oder sonstigen Standardbibliothek) und laesst die das managen. Und die holt erst dann neuen Speicher vom Kernel, wenn der alte voll ist."
+2008-06-13 01:39:34,bitmaster,aso
+2008-06-13 01:40:16,bitmaster,die hat dann für jeden Prozess Informationen über den Speicher?
+2008-06-13 01:40:20,kwolf,Aber proffesionele Assembler brauchen sowas natuerlich nicht ;-)
+2008-06-13 01:40:56,kwolf,"bitmaster: Die Standardbibliothek ist - wie der Name sagt - eine Lib, ist also Teil dieses Prozesses"
+2008-06-13 01:41:49,bitmaster,hmm
+2008-06-13 01:42:04,bitmaster,na dann
+2008-06-13 01:42:35,kwolf,"Und das ist das Stueck Speicherverwaltung, das wirklich wehtut, wenn man es schreiben muss"
+2008-06-13 01:42:49,kwolf,"Kernelseitig ist einfach. Alles gleiche Groesse, kein Ding."
+2008-06-13 01:43:31,bitmaster,aber das ist dann ja nicht von euch geschrieben oder müsst ihr die LIB nachproggen?
+2008-06-13 01:44:39,kwolf,"Wir haben auch eine eigene Variante davon (leicht buggy, soweit ich weiss), aber was wir wirklich benutzen ist liballoc"
+2008-06-13 01:45:16,bitmaster,und diese liballoc habt ihr praktisch nachgeschrieben oder wie?
+2008-06-13 01:45:29,kwolf,"Aber den groessten Teil der libc haben wir selbst geschrieben/schreiben muessen. malloc/free und die Stringfunktionen sind das einzige, was wir uebernommen haben"
+2008-06-13 01:45:52,kwolf,"bitmaster: Noe, die ist mehr oder weniger reinkopiert. Oder geklaut, wie du sagen wuerdest. ;-)"
+2008-06-13 01:46:19,bitmaster,ja dann proggt ihr eurer OS ja gar nicht selber *duck* :-P ;-) *g* *extra viele Smilies mach*
+2008-06-13 01:46:28,kwolf,Genau ;-)
+2008-06-13 01:46:34,bitmaster,^^
+2008-06-13 01:46:43,kwolf,Dafuer kann man unseres im Gegensatz zu deinem benutzen ;-)
+2008-06-13 01:46:54,bitmaster,:-(
+2008-06-13 01:47:33,kwolf,"Ich glaube, es ist nicht uebertrieben, wenn ich sage, dass wir mindestens ein Jahr weiter sind"
+2008-06-13 01:48:28,bitmaster,"hmm.. wahrscheinlich, aber dafür habe ich ja auch mein OS-Loader und FS selbst geschrieben ;-)"
+2008-06-13 01:49:11,kwolf,Die Welt ist ungerecht: Beides wird dein OS nicht beliebter machen ;-)
+2008-06-13 01:49:25,bitmaster,"ich gebe zu, der Kernel ist nicht gerade vom feinsten, aber 0.0.4.0 ist halt 0.0.4.0 *g*"
+2008-06-13 01:49:37,bitmaster,es muss ja nicht beliebt sein
+2008-06-13 01:50:28,bitmaster,"na ja, in äh 2 + 6 Wochen dürfte die Build 0.0.4.0 fertig sein"
+2008-06-13 01:50:52,bitmaster,6 Wochen ununterbrochen Zeit zum proggen ^^
+2008-06-13 01:52:09,bitmaster,ich formuliere es mal so: 50% von OS-64 wird in der Build 0.0.4.0 recht gut sein und 50% ist Müll ^^
+2008-06-13 01:53:13,bitmaster,"das schöne ist ja, dass ich die APIs, LIBs, den Kernel, einfach so verändern kann"
+2008-06-13 01:53:18,bitmaster,im Gegensatz zu M$ ^^
+2008-06-13 01:54:16,bitmaster,"der Typ hat ja zugegeben dass der Kernel Müll sei, man diesen aber nicht groß ändern könne, weil die Kunden dann Probleme kriegen (meckern ja schon bei kleinen Ä"
+2008-06-13 01:54:21,bitmaster,nderungen)
+2008-06-13 01:54:51,bitmaster,"aber na ja, ich sage jetzt mal gute nacht"
+2008-06-13 01:55:13,bitmaster,"toll, schon wieder nur 4 Stunden schlaf :("
+2008-06-13 01:57:49,bitmaster,ich sag dann mal bis morgen
+2008-06-13 01:58:41,kwolf,gn8
+2008-06-13 03:58:08,schnippi,re
+2008-06-13 08:45:54,Noooooooooos,morgen 
+2008-06-13 08:46:13,schnippi,moin Noooooooooos
+2008-06-13 12:36:14,Homix,hi
+2008-06-13 15:10:27,schnippi,hiho
+2008-06-13 16:22:01,kwolf,Moin
+2008-06-13 16:37:13,schnippi,Moin kwolf
+2008-06-13 17:40:37,bluecode,moin
+2008-06-13 17:42:22,kwolf,Moin bluecode
+2008-06-13 17:42:32,Noooooooooos,moin bluecode
+2008-06-13 18:52:34,kwolf,"Hm, interessante Gedanken: http://cansecwest.com/core05/memory_vulns_delalleau.pdf"
+2008-06-13 18:53:04,kwolf,"Bin mir aber nicht sicher, ob ich den Link irgendwo zum MM ins Wiki reinpacken soll oder ob das eher out of scope ist"
+2008-06-13 19:16:55,kwolf,Moin nicolas
+2008-06-13 19:17:11,nicolas,moin kwolf
+2008-06-13 19:17:20,bluecode,moin nicolas
+2008-06-13 19:17:49,kwolf,Was treibt ihr grad so? Irgendwie wenig los hier heute
+2008-06-13 19:18:07,bluecode,ich les
+2008-06-13 19:19:13,kwolf,Lesen? So richtig mit Buch und so? Bist du RL-fixiert... ;-)
+2008-06-13 19:19:33,bluecode,"nein, momentan http://spectrum.ieee.org/jun08/6307 aber später evtl. in einem richtigen Buch"
+2008-06-13 19:20:18,nicolas,"pizza essen, meine freundin vergessen (die mich heute verlassen hat -.-), an KERNEL 1.0 weiterschreiben"
+2008-06-13 19:20:46,kwolf,"bluecode: Hm, die ersten paar Saetze klingen irgendwie nach Toaster ;-)"
+2008-06-13 19:21:11,kwolf,"nicolas: Sieh's positiv, jetzt hast du endlich mehr Zeit ;-)"
+2008-06-13 19:21:27,janosch,"genau, widme dich voll und ganz kernel 1.0 ;)"
+2008-06-13 19:21:33,nicolas,jo und kann _endlich_ wieder WoW spielen ;)
+2008-06-13 19:21:36,janosch,*hypnotisier*
+2008-06-13 19:21:51,kwolf,nicolas: Falscher Ansatz ;-)
+2008-06-13 19:22:07,janosch,WoW? wie kann man sowas nur spielen?
+2008-06-13 19:22:21,kwolf,-sowas ;-)
+2008-06-13 19:22:25,nicolas,jeder nerd hat seine schwächen :D
+2008-06-13 19:23:06,kwolf,Aber nicht alle kosten so viel Zeit ;-)
+2008-06-13 19:23:15,bluecode,ich glaub das desinteresse an Computerspielen kommt mit dem Alter
+2008-06-13 19:23:18,janosch,"die einzigen spiele die ich spiele sind: asteroids, tetris, pacman, space invaders, battle for wesnoth, tuxracers, supertux und spacewar"
+2008-06-13 19:23:30,janosch,und so weiter^^
+2008-06-13 19:23:49,nicolas,WoW ist das einzige was ich spiel..
+2008-06-13 19:24:09,nicolas,"obwohl, pac-man auf nem c64c hab ich vergessen"
+2008-06-13 19:24:11,janosch,"und ich spiele wenigstens nur in der schule, da verbraucht das keine wertvolle zeit *g*"
+2008-06-13 19:24:22,kwolf,"Hm, gelegentlich fuer ein paar Minuten, jo. torcs, xmoto oder hack bei mir meistens. ;-)"
+2008-06-13 19:24:49,kwolf,"Wesnoth ist auch nicht schlecht, braucht aber viel zu viel Zeit. Der Civ-Effekt... *g*"
+2008-06-13 19:26:26,kwolf,"Huch, Freaky hat einen geackt. Zwar etwas einsam aus der ganzen Serie, aber immerhin... ;-)"
+2008-06-13 19:26:31,kwolf,+Patch
+2008-06-13 19:51:07,bluecode,was machst du denn eigentlich kwolf?
+2008-06-13 19:56:58,kwolf,Mich ein bisschen ueber die Iren aergen. ;-)
+2008-06-13 19:57:38,bluecode,haben die nu mit nein gestimmt oder waren es zu wenig stimmen?
+2008-06-13 19:58:07,bluecode,welche newsseiten konsultierst du denn?
+2008-06-13 19:58:13,kwolf,"Hm, gab es da auch noch ein Quorum? Meine Information ist nur, dass es ein Nein war"
+2008-06-13 19:58:33,bluecode,"ich habs so verstanden, dass 45% beteiligung minimum ist"
+2008-06-13 19:58:38,kwolf,Bin nur beim Ausloggen aus dem GMX-Webmail-Account an der Ueberschrift haengengeblieben ;-)
+2008-06-13 19:58:39,bluecode,aber sicher bin ich mir nicht
+2008-06-13 19:59:44,kwolf,"Laut ARD waren die 45% die tatsaechliche Beteiligung, ueber ein Minimum steht da nix"
+2008-06-13 20:00:09,bluecode,"hm, mk"
+2008-06-13 20:00:26,bluecode,"ich meinte jetzt auch eher allgemein, welche newsseiten du so liest"
+2008-06-13 20:01:01,kwolf,"In Deutschland meistens ganz klassisch Zeitung, mit Papier und so ;-)"
+2008-06-13 20:01:15,bluecode,ui :-)
+2008-06-13 20:02:38,kwolf,So ungewoehnlich?
+2008-06-13 20:02:58,bluecode,"nö, nicht wirklich"
+2008-06-13 20:23:40,kwolf,Moin schnippi
+2008-06-13 20:23:43,kwolf,Oder so ;-)
+2008-06-13 22:08:29,bitmaster,moin
+2008-06-13 22:09:05,kwolf,Moin bitmaster
+2008-06-13 22:10:09,bitmaster,ich weiß jetzt warum mein ipc so langsam war
+2008-06-13 22:10:19,kwolf,Und zwar?
+2008-06-13 22:10:27,bitmaster,es lag gar nicht am ipc ^^
+2008-06-13 22:10:40,bitmaster,sondern am scheduler
+2008-06-13 22:11:58,kwolf,Was hat der falsch gemacht?
+2008-06-13 22:12:09,bitmaster,der wurde durch einen Fehler länger ausgeführt als die prozesse selber *g*
+2008-06-13 22:12:21,kwolf,Hae?
+2008-06-13 22:12:42,bitmaster,^^
+2008-06-13 22:12:53,bitmaster,oO muss ich mich jetzt schämen?
+2008-06-13 22:12:55,kwolf,"Du meinst, der Scheduler hat so lange ueberlegt, wer dran ist, dass derjenige kaum noch Zeit uebrig hatte, wirklich was zu machen?"
+2008-06-13 22:13:26,bitmaster,jo so kann man es sagen
+2008-06-13 22:13:46,kwolf,"Nun gut, kommt vor... *g*"
+2008-06-13 22:13:49,bitmaster,peinlich
+2008-06-13 22:14:13,kwolf,So ein aehnliches Problem scheint LOST auch auf VMware zu haben. Glaube ich.
+2008-06-13 22:14:21,kwolf,Lang nicht mehr getestet
+2008-06-13 22:14:35,kwolf,Oder war es bochs?
+2008-06-13 22:15:39,bitmaster,jetzt konnte ich den PIT auch wieder auf 100 Herz stellen
+2008-06-13 22:16:06,bitmaster,"kA, bei Bochs scheint der Timer sowieso nicht zu stimmen"
+2008-06-13 22:16:36,bitmaster,"auf VMware ist mein OS auch langsam, kA aber auf meinem Reals und Bochs, Qemu ist es jetzt schnell"
+2008-06-13 22:17:21,bitmaster,"obwol ich dabei sagen muss, dass meine OSe immer langsam unter VMware liefen"
+2008-06-13 22:17:48,bitmaster,"selbst mein OS/M, dass im RM lief und kein Multitasking beherschte"
+2008-06-13 22:17:52,kwolf,"Naja, solange es immerhin irgendwie laeuft..."
+2008-06-13 22:18:25,kwolf,"Keine Ahnung, was VMware anders macht. Aber da muss irgendwas sein"
+2008-06-13 22:18:33,bitmaster,"jo, keine Frage, laufen tut es auf allen 64 Bit Emulatoren die ich kenne, bzw. die 64 Bit unterstützen"
+2008-06-13 22:25:07,kwolf,Es macht ja auch bisher nicht viel ;-)
+2008-06-13 22:25:51,bitmaster,du musst es ja wissen *nach oben guck*
+2008-06-13 22:26:25,kwolf,"Ja, da musst du weit nach oben gucken. ;-)"
+2008-06-13 22:26:51,bitmaster,eben
+2008-06-13 22:34:10,schnippi,holland spielt so wunderbaren fußball
+2008-06-13 22:34:42,bitmaster,und mich interessiert es so wunderbar nicht
+2008-06-13 22:35:43,kwolf,"Und mich interessiert nicht, dass es dich nicht interessiert"
+2008-06-13 22:36:07,kwolf,"schnippi: Und ich kann es nicht sehen... Naja, vielleicht kommt es doch noch nachher in irgendeinem Sender"
+2008-06-13 22:36:14,schnippi,einfach wahnsinn
+2008-06-13 22:36:30,schnippi,"wenn die das beibehalten, steht der europameister fest für mich"
+2008-06-13 22:36:33,bitmaster,"kwolf: Und mich interessiert nicht, dass es dich nicht interessiert, dass es mich nicht interessiert. :-P"
+2008-06-13 22:36:49,kwolf,"Das heisst, sie sind wirklich gut und nicht nur der Gegner schlecht? ;-)"
+2008-06-13 22:37:02,schnippi,sie sind überragend
+2008-06-13 22:40:19,Jidder,moin moin
+2008-06-13 22:41:02,Jidder,mir ist vorhin ein tolles wortspiel eingefallen
+2008-06-13 22:41:11,Jidder,ein name für ein betriebssystem
+2008-06-13 22:41:21,Jidder,"""wirdnix"""
+2008-06-13 22:41:56,Jidder,bin ich der erste der witze mit nix am ende macht?
+2008-06-13 22:42:21,bitmaster,Jidder: hmm...
+2008-06-13 22:42:28,Jidder,"hm der spruch wär besser mit ""... witze mit nix dahinter"""
+2008-06-13 22:42:47,Jidder,aber das fällt mir erst jetzt ein ...
+2008-06-13 22:42:52,schnippi,lol
+2008-06-13 22:43:10,kwolf,"Tja, das war wohl nix ;-)"
+2008-06-13 22:44:04,kwolf,"Das Problem mit Namen fuer ein OS ist ja, dass man auch noch ein OS dazu braeuchte"
+2008-06-13 22:44:45,bitmaster,^^
+2008-06-13 22:45:15,bitmaster,wenn man damit nicht glänzen kann dann ist es schlecht ;-)
+2008-06-13 22:46:22,kwolf,Beim Nichtglaenzen mit einem OS kennst du dich ja aus ;-P
+2008-06-13 22:46:45,bitmaster,wie kommst du darauf?
+2008-06-13 22:46:58,schnippi,omg
+2008-06-13 22:47:07,kwolf,Ganz einfach: Ich habe dich noch nicht glaenzen sehen ;-)
+2008-06-13 22:47:35,kwolf,schnippi: Is was?
+2008-06-13 22:47:36,bitmaster,demnach hast du also auch kein OS
+2008-06-13 22:47:44,kwolf,Hae?
+2008-06-13 22:57:07,kwolf,"Du kannst es nicht erlaeuten, wie du auf die Folgerung ""bitmaster glaenzt nicht mit seinem OS => kwolf hat kein OS"" kommst? Dachte ich es mir doch."
+2008-06-13 22:58:54,bitmaster,"du sagtest man müsse glänzen um mit einem OS glänzen zu können und schlussfolgerst dann auch noch dass ich kein OS hätte, nur weil du mich nicht hast jemals glänzen sehen, aber da ich dich habe auch niemals glänzen sehen, dürftest du demnach auch kein OS haben *g*"
+2008-06-13 22:59:31,kwolf,Du phantasierst.
+2008-06-13 22:59:57,bitmaster,du nicht?
+2008-06-13 23:00:17,kwolf,"Zumindest erfinde ich nicht irgendwelche Aussagen, die ich dir in den Mund lege"
+2008-06-13 23:01:06,bitmaster,"<kwolf> Ganz einfach: Ich habe dich noch nicht glaenzen sehen ;-),          du scheinst vergesslich zu sein"
+2008-06-13 23:02:01,kwolf,"Und wo folgere ich daraus, dass du kein OS hast?"
+2008-06-13 23:02:27,bitmaster,<kwolf> Beim Nichtglaenzen mit einem OS kennst du dich ja aus ;-P
+2008-06-13 23:02:46,kwolf,"Da sage ich nur, dass du mit einem OS nicht glaenzt, nicht dass du keins hast"
+2008-06-13 23:03:03,kwolf,"Uebrigens ist Nichtglaenzen auch keine Kunst, wenn man es geheimhaelt ;-)"
+2008-06-13 23:03:06,bitmaster,"<kwolf> Das Problem mit Namen fuer ein OS ist ja, dass man auch noch ein OS dazu braeuchte"
+2008-06-13 23:03:12,bitmaster,<bitmaster> wenn man damit nicht glänzen kann dann ist es schlecht ;-)
+2008-06-13 23:03:30,schnippi,is gut jetzt mit zusammenhanglosem rumgepaste
+2008-06-13 23:03:51,kwolf,[14:44] <bitmaster> ^^
+2008-06-13 23:06:48,bitmaster,schnippi: nur weil du den Zusammenhang nicht verstehst ist es noch lange nicht zusammenhanglos
+2008-06-13 23:07:05,Jidder,"bitmaster, willst du streit?"
+2008-06-13 23:07:33,bitmaster,hae?
+2008-06-13 23:07:40,kwolf,Jidder: Haben wir das denn ueberhaupt noch auf Lager?
+2008-06-13 23:08:02,Jidder,bitmaster: ich gehe mal nicht davon aus. versuche doch bitte mal ihn zu vermeiden.
+2008-06-13 23:08:42,bitmaster,"ach kindas, ihr nehmt das alles viel zu ernst ^^"
+2008-06-13 23:17:06,bitmaster,was ist noch mal das Gegenteil von blockieren?
+2008-06-13 23:17:39,schnippi,antiblockieren! ;)
+2008-06-13 23:17:57,schnippi,"oder (blockieren)^(-1), für mathematiker"
+2008-06-13 23:18:16,kwolf,!blockieren
+2008-06-13 23:18:39,schnippi,da scheint der programmierer in dir durch ;-)
+2008-06-13 23:19:09,bitmaster,"entblocken, entsperren oder freigeben"
+2008-06-13 23:19:12,bitmaster,thx
+2008-06-13 23:19:18,schnippi,bitte
+2008-06-13 23:24:06,bitmaster,"och nö, jetzt ist der Kernel wieder kaputt *g*"
+2008-06-13 23:40:42,bitmaster,"so, und schon funktioniert der Kernel wieder, so muss das sein"
+2008-06-13 23:43:09,bitmaster,denn jetzt kann ich ihn gleich wieder kaputt machen :-P
+2008-06-13 23:43:42,bitmaster,"da fällt mir ein, morgen müsste eigentlich mein neues Netzteil ankommen, und wehe wenn nicht"

@@ -1,0 +1,336 @@
+date/time,nick,message
+2016-08-16 00:00:06,Svenska,"wenn der kram *nach unten* wächst, sollte die basis oberhalb des limits sein"
+2016-08-16 00:00:21,Svenska,"sonst kriegst du ein ""segment voll"" (also #GP) beim ersten zugriff"
+2016-08-16 00:00:23,Svenska,oder?
+2016-08-16 00:00:44,Quantenmagier,"das problem ist dann bloß daß 16bit expand down segmente maximal 64k haben, wenn das datensegment jetzt größer als 56k oder so is geht das mit 16bit segmenten nicht mehr"
+2016-08-16 00:13:29,Svenska,"ich glaube ja, dass du keine lust auf 16 bit hast"
+2016-08-16 00:13:41,Svenska,"entweder, da passt nix rein, oder du bist danach eine nummer zu betrunken"
+2016-08-16 00:22:14,Quantenmagier,joa stimmt shcon 16 bit is leider ein bischen wenig
+2016-08-16 00:23:54,Quantenmagier,"vllt nutz ich erstmal normale 32bit expand up segmente und lass das automatische vergrößern des stack weg, das kann ich dann ja sobald ich paging hab über guards hinzufügen"
+2016-08-16 00:24:55,Svenska,"ich frage mich, wie das ""richtige"" betriebssysteme machen"
+2016-08-16 00:24:55,Svenska,"ich glaube, da gibt's pro thread einen stack fester größe"
+2016-08-16 00:24:56,Svenska,"die man einstellen kann, solange es nur einen stack gibt oder so"
+2016-08-16 00:26:04,Quantenmagier,ich denke mal die mappen den stack möglichst weit nach hinten und lassen den bereich dazwischen ungemapped/geguarded
+2016-08-16 00:26:20,Svenska,fuer den ersten stack logisch
+2016-08-16 00:26:23,Quantenmagier,gibts eigentlich expand down bei 64bit?
+2016-08-16 00:26:28,Svenska,aber alle weiteren musst du irgendwo hinlegen
+2016-08-16 00:26:35,Svenska,...keine ahnung
+2016-08-16 00:26:56,Quantenmagier,den zweiten stack kann man dann einfach über den ersten mappen oder kostet das zu viel zeit das für jeden thread neu zu mappen?
+2016-08-16 00:27:13,Svenska,?
+2016-08-16 00:27:24,Svenska,alle threads eines prozesses leben im gleichen speicherkontext...
+2016-08-16 00:27:29,Svenska,...sonst wären es keine threads...
+2016-08-16 00:28:06,Quantenmagier,"naja für die anderen bereiche stimmt das shcon aber für den stack muß das ja nicht gelten, so lange alles andere gleich gemapped ist dürfte das dem thread ja egal sien"
+2016-08-16 00:28:54,Svenska,gute frage
+2016-08-16 00:29:08,Svenska,"aber den kontext wechseln ist teuer, deswegen will man das vermeiden"
+2016-08-16 00:29:15,Quantenmagier,aso ok
+2016-08-16 00:30:10,Quantenmagier,ahh ok naja dann muß man wohl genug platz zwischen den stacks lassen falls sie ein dahinter liegender stack vergrößert
+2016-08-16 00:30:27,Svenska,sag ich ja
+2016-08-16 00:30:57,Quantenmagier,"eine guard page reicht ja nicht, weil man sobald die angesprochen wird nicht die davorliegenden stacks verschieben kann"
+2016-08-16 00:30:59,Svenska,"du legst die stackgröße des prozesses fest, bevor du den zweiten thread angibst, und damit legst du die maximalgröße aller weiteren stack fest"
+2016-08-16 00:32:16,Quantenmagier,ich verwende momentan standardmäßig 8k stack und wenn nen programm mehr braucht hat es pech gehabt :D
+2016-08-16 00:32:59,Svenska,hm
+2016-08-16 00:34:22,Quantenmagier,"die frage ist auch wie groß kann ein stack wirklich werden, selbst bei rekursion hat man ja nicht endlos viele ebenen, ich denke nen stack größer als 1mb ist eher unwahrscheinlich? dh man kann wenn man von einem mb ausgeht 1000 stacks in ein gb legen und bei 64bit mapping hat man sogar wesentlich mehr virtuellen space als 4gb dh es is genug virtueller platz für stacks vorhanden"
+2016-08-16 00:34:56,Svenska,"es gibt ja auch keine algorithmen, die stacklastig sind"
+2016-08-16 00:35:00,Svenska,floodfill oder so
+2016-08-16 00:35:09,Quantenmagier,joa stimmt die gibt es nicht :D
+2016-08-16 00:35:32,Svenska,"ich glaube, standard unter linux sind 2 MB"
+2016-08-16 00:35:39,Svenska,aber ich musste das mal deutlich hochdrehen
+2016-08-16 00:36:00,Quantenmagier,"mein os kann nur ausgefüllte dreiecke zeichnen und braucht dafür nur festen stack, floodfill hab ich bisher nicht implementiert :D"
+2016-08-16 00:37:02,Quantenmagier,die dreiecke werden zeilenweise gezeichnet dadurch hab ich mir den stack gespart ^^
+2016-08-16 00:37:34,Svenska,"oh, linux hat 8 MB standard"
+2016-08-16 00:38:32,Svenska,"und das limit kann man bis maximal INF erhöhen, außer auf PA-RISC, da nur bis auf 80 MB"
+2016-08-16 00:39:44,Svenska,"egal, ich hau ab - gn8"
+2016-08-16 00:41:23,Quantenmagier,ok interessant
+2016-08-16 03:10:45,Quantenmagier,"hab mal versucht reactos 0.4.1 in qemu laufen zu lassen, das is ja immernoch total buggy, aber man merkt immerhin das es langsam stabiler wird im vergleich zu den 0.3.x versionen."
+2016-08-16 03:16:17,Quantenmagier,"und ich hab festgestellt reactos unterstützt 1280x768 unter 'qemu -std vga' mein OS kann ja nur 1024x768, vllt sollte ich 1280x768 auch mal implementieren, das kommt näher an die native auflösung meines laptops von 1366x768 ran.."
+2016-08-16 03:16:51,Quantenmagier,aber 1280x768 is ja kein standard vesa modus muß ich mal gucken ob man das über den vga bios überhaupt angeboten bekommt
+2016-08-16 03:19:05,Quantenmagier,"hm bzw bin mir garnicht mehr siche rob reactos die auflösung unter -vga std kann, hatte zuletzt -vga vmware aktiv sehe ich gerade"
+2016-08-16 03:32:46,Quantenmagier,ok scheint unter 'vga std' auch zu gehen
+2016-08-16 03:35:26,Quantenmagier,"dann werd ich demnächst man meinen vesa bios überarbeiten, daß er alle modes anzeigt und irgendwann auch daß mein os alle grafikmodes unterstützt"
+2016-08-16 03:38:23,Quantenmagier,"ah und die fehler in reactos 0.4.1 sind scheinbar irgendwelche race-conditions, ohne kvm tritt zumindest der gravierendste fehler grad nicht mehr auf"
+2016-08-16 09:33:17,kevin,Moin
+2016-08-16 09:34:45,MasterQ32,morgen
+2016-08-16 09:42:29,MasterQ32,bastel grade ne Windows-VM
+2016-08-16 09:59:44,kevin,"Solange du ""arbeiten"" und nicht ""spielen"" sagst, sollte das doch kein Problem sein? :-)"
+2016-08-16 10:01:19,MasterQ32,denk ich auch
+2016-08-16 10:01:28,MasterQ32,zocken tu ich auf meinem Gaming-PC
+2016-08-16 10:12:29,kevin,"<Quantenmagier> naja für die anderen bereiche stimmt das shcon aber für den stack muß das ja nicht gelten, so lange alles andere gleich gemapped ist dürfte das dem thread ja egal sien"
+2016-08-16 10:12:31,kevin,Das ist Quatsch
+2016-08-16 10:12:45,kevin,"Du kannst ohne weiteres einen Pointer auf ein Stackobjekt an einen anderen Thread weitergeben, wenn du Lust darauf hast"
+2016-08-16 10:13:00,kevin,"Musst halt aufpassen, dass es nicht vom Stack verschwindet, bis der andere Thread damit fertig ist"
+2016-08-16 10:26:30,Quantenmagier,"kevin, den Text hatte ich von osdev, daß die base gleich sein muß und als ich die base früher ungleich hatte liefen auch viele mit gcc compilierte programme nicht, warum auch immer"
+2016-08-16 10:27:14,kevin,"Mir ging es hier eigentlich nur um deine Aussage, dass man die Stacks von allen Threads an die gleiche Adresse mappen könnte. Kann man nicht."
+2016-08-16 10:27:30,Quantenmagier,aso
+2016-08-16 10:27:59,kevin,"Bei den Segmenten ging in der Diskussion auch einiges durcheinander, aber das schien mir nicht wesentlich genug, um es jetzt noch zu kommentieren ;-)"
+2016-08-16 10:28:05,Quantenmagier,wie der child thread kann nen pointer über den stack vom parent bekommen? o.O
+2016-08-16 10:28:25,kevin,Warum denn nicht?
+2016-08-16 10:29:01,Quantenmagier,"naja find ich nur ungewöhnlich, normalerweise hat man für kommunikation zwischen vater und kind ja variablen und nicht den stack"
+2016-08-16 10:30:00,kevin,"Hm, also nicht ""über"" den Stack (was auch immer das heißen sollte), sondern Pointer auf den Stack"
+2016-08-16 10:30:44,kevin,"Also z.B. der Hauptthread hat ein paar Objekte auf dem Stack, und übergibt an ein paar Threads einen Pointer darauf, damit die Threads diese Objekte ändern können"
+2016-08-16 10:30:47,kevin,Was spricht denn dagegen?
+2016-08-16 10:31:00,Quantenmagier,"hm ok find ich trotzdem nen merkwürdiges konstrukt, aber wenn du sagst daß das benutzt wird, dann muß man den stack wohl wo anders hin mappen"
+2016-08-16 10:32:45,kevin,"Der Hauptstack ist ja eh kein Problem, der kommt ans Ende und kann dann auch wunderbar mit deinem Expand-Down-Segment vor Overflows geschützt werden"
+2016-08-16 10:32:52,Quantenmagier,"dagegen spricht, daß das child ja nicht den esp des parent kennt"
+2016-08-16 10:33:15,kevin,"Parent kippt einen Pointer auf ein Stackobjekt in eine globale Variable, fertig"
+2016-08-16 10:33:39,kevin,Oder übergibt es halt gleich als Parameter an den Entrypoint des Threads
+2016-08-16 10:34:32,Quantenmagier,"ok dann könnte man den pointer auf dem stack aber auch gleich über die globale variable übergeben, klar wenn es mehrere objekte auf dem stack sind kann das schon wieder sinnvoll sein, aber ich find es trotzdem merkwürdig ^^"
+2016-08-16 10:35:37,Quantenmagier,aber sowas wird tatsächlich gemacht?
+2016-08-16 10:36:48,kevin,Ja
+2016-08-16 10:37:11,Quantenmagier,ok thx
+2016-08-16 10:37:23,kevin,Das gehört noch zu den eher normalen Sachen
+2016-08-16 10:37:35,kevin,"Ich könnte dir noch ganz andere Sachen erzählen, was wir in qemu so machen ;-)"
+2016-08-16 10:39:00,Quantenmagier,hehe joa qeme. :)
+2016-08-16 10:39:04,Quantenmagier,*qemu
+2016-08-16 10:39:58,Quantenmagier,"hm irgendwas hatte ich gestern wo ich dachte das könnte man besser machen in qemu, aber ich komm grad nicht mehr drauf.. *grübel*"
+2016-08-16 10:43:52,kevin,"Wie, du findest qemu noch nicht perfekt? ;-)"
+2016-08-16 10:44:57,Quantenmagier,"achja bei der gui, die bekommt manchmal die modus-wechsel noch nicht richtig mit und dann hat man nen schwarzen balken statt dem passenden resize und unter view->Zoom to Fit muß ich auch jedes mal manuell anklicken dasfür würd ich mir ne command line option wünschen oder gibts die schon?"
+2016-08-16 10:46:49,Quantenmagier,"doch eigentlich finde ich qemu schon recht perfekt, abgesehn davon, daß es im gegensatz zu bochs den beeper nicht richtig simuliert und die gui wie erwähnt noch nicht perfekt ist ;)"
+2016-08-16 10:51:48,kevin,"Oh, es gibt Leute, die Zoom to Fit benutzen?"
+2016-08-16 10:52:32,kevin,Ich hab meine VMs normal lieber in Originalgröße laufen
+2016-08-16 10:52:42,Quantenmagier,"jop, fast immer, weil qemu das sonst so seltsam skaliert daß der Rand abgeschnitten ist obwohl die höhe die passende pixelzahl hötte"
+2016-08-16 10:52:45,Quantenmagier,*hätte
+2016-08-16 10:54:06,kevin,Warum nicht Best Fit (also komplett unskaliert)?
+2016-08-16 10:54:36,kevin,"Und wieso ist mir noch nie aufgefallen, dass das GTK-Frontend Strg-Alt-U dafür nicht unterstützt?"
+2016-08-16 10:57:09,Quantenmagier,achso wäre Strg-Alt-U eigentlich dafür vorgesehn?
+2016-08-16 10:57:59,kevin,"Mit dem SDL-Frontend (das ja kein Menü hat), übernimmt Strg-Alt-u die Funktion"
+2016-08-16 10:58:07,Quantenmagier,aso
+2016-08-16 10:58:19,Quantenmagier,joa ne tastenkombination wäre praktisch
+2016-08-16 10:58:20,kevin,Und das SDL-Frontend war ja früher der Default
+2016-08-16 10:58:34,kevin,Bzw. das einzig vernünftig benutzbare
+2016-08-16 10:58:47,Quantenmagier,"habe auch versucht das kürzel wie sonst bei gtk apps über ""Menükürzel veränderbar machen"" zu ändern aber das geht irgendwie nicht"
+2016-08-16 11:00:15,Quantenmagier,gibts ne komandozeilenoption um das sdl frontend zu benutzen?
+2016-08-16 11:01:14,Quantenmagier,"achso zu deiner frae, also best fit verändert irgendwie nix"
+2016-08-16 11:02:09,Quantenmagier,also mit best fit is der rand unten immernoch angeschnitten bzw. es auf horizontal fit hochskaliert
+2016-08-16 11:03:20,Quantenmagier,zumindest im vollbildmodus
+2016-08-16 11:05:03,kevin,"Ja, gut, Vollbild verträgt sich damit natürlich nicht"
+2016-08-16 11:05:15,kevin,"Entweder Originalgröße oder Vollbild, beides gleichzeitig geht schlecht"
+2016-08-16 11:05:25,Quantenmagier,o.O
+2016-08-16 11:05:42,Quantenmagier,naja man könnte ja in vollbild auch schwarze balken rechts und links machen bei best fit
+2016-08-16 11:06:23,kevin,"Hm, also _das_ macht es bei mir"
+2016-08-16 11:07:35,kevin,"Zumindest im Textmodus, hab grad kein Image mit OS laufen"
+2016-08-16 11:07:35,Quantenmagier,"hm bei mir nicht, deswegen muß ich immer zoom to fit benutzen"
+2016-08-16 11:07:54,Quantenmagier,aso kp textmodus benutz ich nicht in meinem os
+2016-08-16 11:08:12,Quantenmagier,ich hab qemu version 2.5.1
+2016-08-16 11:08:20,kevin,"Jo, ich probier mal ein Linux"
+2016-08-16 11:08:43,Quantenmagier,"also bei reactos hatt eich auf jedenfall das selbe problem, aber das is ja auch kein textmodus"
+2016-08-16 11:08:44,kevin,Und mit -enable-kvm -m 1G tut es vielleicht auch besser ;-)
+2016-08-16 11:09:19,Quantenmagier,ich benutz immer -m 1000 :D wußte garnicht daß das auch SI-Präfixe kann :D
+2016-08-16 11:09:26,kevin,"Hm, tut auch mit Grafikmodus bei mir"
+2016-08-16 11:09:36,Quantenmagier,welche version hast du denn?
+2016-08-16 11:09:42,Quantenmagier,auch 2.5.1?
+2016-08-16 11:10:09,kevin,"Im Wesentlichen 2.7.0-rc2, plus ein paar Patches, die aber nichts an der GUI machen"
+2016-08-16 11:11:33,Quantenmagier,"ah ok, vllt sollte ich dann auch mal updaten irgendwann, sehen grad gentoo hat 2.6.0 im unstable"
+2016-08-16 11:16:55,Quantenmagier,"aso noch ne frage, qemu unterstützt seit irgendner version kein APM mehr ode?"
+2016-08-16 11:18:15,kevin,"Hm, APM ist eine BIOS-Funktionalität, oder?"
+2016-08-16 11:19:21,kevin,"Insofern wäre das dann nicht qemu selber, sondern SeaBIOS. Oder wenn es schon ganz lang her ist, dass es mal funktioniert hat, war das vielleicht beim Wechsel vom Bochs-BIOS auf SeaBIOS."
+2016-08-16 11:40:15,Quantenmagier,"ahh das kann natürlich sein, daß das der wechsle damals war"
+2016-08-16 11:41:12,Quantenmagier,ich hatte apm in meinem os nämlich benutzt um den rechner nach dem herunterfahren auszuschalten und das geht seitdem nicht mehr
+2016-08-16 11:41:31,Quantenmagier,glaub dafür brauch man jetzt acpi oder? Acpi is so kompliziert.. :-/
+2016-08-16 11:43:28,MasterQ32,kann ich qcow images vergrößern?
+2016-08-16 11:53:52,kevin,"Hm, na sowas"
+2016-08-16 11:53:57,kevin,"Kaum macht man es richtig, tut es auch schon"
+2016-08-16 11:54:01,MasterQ32,:)
+2016-08-16 11:54:24,kevin,MasterQ32: qcow oder qcow2?
+2016-08-16 11:54:32,MasterQ32,qcow
+2016-08-16 11:54:45,kevin,Dann nicht so direkt
+2016-08-16 11:54:54,kevin,Aber wer benutzt denn heute noch qcow1?
+2016-08-16 11:54:56,MasterQ32,konvertieren in qcow2 und dann resiz?
+2016-08-16 11:55:12,kevin,Klingt vernünftig
+2016-08-16 11:55:16,MasterQ32,"kp, ich hab bisher QEMU immer mit RAW verwendet :P"
+2016-08-16 11:56:01,Jonathan,Morgähn
+2016-08-16 11:56:01,kevin,Wo hast du das Image denn her?
+2016-08-16 11:56:03,kevin,Moin Jonathan
+2016-08-16 11:56:04,MasterQ32,moin
+2016-08-16 11:56:07,MasterQ32,selber gemacht
+2016-08-16 11:56:34,MasterQ32,emu-img create windows.qcow 20G
+2016-08-16 11:56:39,kevin,"Ach so, aber nicht gewusst, welches Format du willst?"
+2016-08-16 11:56:43,MasterQ32,genau
+2016-08-16 11:57:00,kevin,"Jo, mit qemu willst du qcow2 haben, wenn du mehr Features brauchst als raw"
+2016-08-16 11:57:26,kevin,"So, jetzt erstmal committen bevor ich das wieder kaputtmache. Und dann mein Chaos aufräumen."
+2016-08-16 11:57:35,MasterQ32,okay
+2016-08-16 11:57:40,MasterQ32,wie konvertiere ich das image? :D
+2016-08-16 11:57:52,MasterQ32,intuitiv würde ich sagen qemu-img convert windows.qcow windows.qcow2
+2016-08-16 11:57:59,kevin,qemu-img convert -O qcow2 old.qcow new.qcow2
+2016-08-16 11:58:04,MasterQ32,qwll :
+2016-08-16 11:58:09,MasterQ32,"well, knapp daneben"
+2016-08-16 11:58:12,kevin,Ohne das -O qcow2 kriegst du raw ;-)
+2016-08-16 11:58:44,MasterQ32,:P
+2016-08-16 11:58:59,MasterQ32,was hab ich dann grade für ein format? :D
+2016-08-16 11:59:01,MasterQ32,raw oder qcow?
+2016-08-16 11:59:34,kevin,qemu-img info $FILE sagt dir das
+2016-08-16 11:59:56,kevin,"Ah, ja, du hast oben kein -f qcow stehen, also wohl raw"
+2016-08-16 12:00:42,MasterQ32,:D
+2016-08-16 12:00:42,MasterQ32,ups
+2016-08-16 12:04:18,kevin,"Yay, die VM geht nicht mehr kaputt. Jetzt müsste ich ""nur"" noch benchmarken, ob das ganze überhaupt was gebracht hat."
+2016-08-16 13:08:19,MasterQ32,"okay, resize hat funktioniert"
+2016-08-16 13:13:29,kevin,Das hat aber lang gedauert
+2016-08-16 13:13:41,MasterQ32,"ja, hab erst noch das setup fertig laufen lassen ;)"
+2016-08-16 13:14:05,MasterQ32,"kann in QEMU irgendwie beibringen, dass er Win+[0-9] ignorieren soll? :D"
+2016-08-16 13:14:58,kevin,"Hm, wieso, was macht er damit?"
+2016-08-16 13:15:09,MasterQ32,"naja, er passt es an die VM :P"
+2016-08-16 13:15:21,MasterQ32,ich würde gerne smooth zwischen den workspaces wechseln können :D
+2016-08-16 13:15:37,kevin,Ach so
+2016-08-16 13:15:49,kevin,"Wenn du die VM die Tastatur nicht grabben lässt, tut das vermutlich, oder?"
+2016-08-16 13:16:02,kevin,"Aber dann gehen halt auch die ganzen Sachen, die man in der VM haben will, an den Host..."
+2016-08-16 13:16:34,MasterQ32,genau
+2016-08-16 13:16:57,kevin,Du willst also einfach das Strg-Alt-g vorher los haben?
+2016-08-16 13:17:08,MasterQ32,richtig
+2016-08-16 13:17:47,kevin,"Ich bin mir nicht sicher, ob sich das mit GTK überhaupt umsetzen lässt"
+2016-08-16 14:25:16,MasterQ32,"hm, okay"
+2016-08-16 14:39:05,MasterQ32,"kevin, weißt du, wie ich dem QEMU-VGA-Adapter auflösungen beibringen kann?"
+2016-08-16 14:39:42,kevin,Vermutlich das VGA-BIOS patchen?
+2016-08-16 14:41:14,MasterQ32,"hm, mist"
+2016-08-16 14:41:36,MasterQ32,"mein laptop hat 1600×900 auflösung, QEMU kann aber nix davon :P"
+2016-08-16 14:41:36,kevin,Was hast du denn konkret vor?
+2016-08-16 14:41:42,MasterQ32,QEMU im vollbild verwenden :D
+2016-08-16 14:42:01,kevin,Mit welchem Gast-OS?
+2016-08-16 14:42:17,MasterQ32,Archlinux 64 bit
+2016-08-16 14:42:25,kevin,QXL schon probiert?
+2016-08-16 14:42:39,kevin,Der sollte eigentlich jede beliebige Auflösung mitmachen
+2016-08-16 14:43:07,MasterQ32,qxl?
+2016-08-16 14:43:12,kevin,-vga qxl
+2016-08-16 14:43:33,MasterQ32,"okay, thx"
+2016-08-16 14:43:35,MasterQ32,bin mal afk
+2016-08-16 15:05:56,Quantenmagier,"joa stimmt 1366x768 bei -vga std wär nice, dann könnte ich mein os in nativer auflösung des laptops laufen lassen. ^^"
+2016-08-16 15:06:10,Quantenmagier,is qxl schwer zu implementieren?
+2016-08-16 15:07:16,Quantenmagier,"hmm ""qemu-system-x86_64: QXL VGA not available"""
+2016-08-16 15:07:43,Quantenmagier,ok andere frage is -vga vmware schwer zu implementieren?
+2016-08-16 15:09:50,Quantenmagier,"ah ok sehe grad SurO kann mit vmware laufen über die normale vesa schnittstelle, dh ich müßte dem jetzt nurnoch irgendwie die andere auflösung sagen. ^^"
+2016-08-16 15:10:53,Quantenmagier,"MasterQ32, zu deinem problem mit den tasten, also SurO kann das, aber qemu läuft leider noch nicht unter SurO ;)"
+2016-08-16 15:11:39,Svenska,moin
+2016-08-16 15:11:59,Quantenmagier,"ich hab extra so ne tastentranslationstabelle im tasterturtreiber, die sagt an welches programm welche taste gesendet werden soll und ob die taste umgewandelt werden soll, daß zB wasd als pfeiltasten zu dem programm gesendet werden ^^"
+2016-08-16 15:12:17,Quantenmagier,moin Svenny
+2016-08-16 15:12:28,Svenska,du hast eine scancodetabelle pro anwendung?
+2016-08-16 15:13:03,Svenska,d.h. dein tastaturtreiber enthält N arrays?
+2016-08-16 15:13:19,Quantenmagier,"momentan ist es eine globale, dh wenn ein neues programm gestartet wird überschreibt es die tatsen die es braucht und die anderen werden weiter an die alten programme gesendet, aber ja später bekommt jede anwendung ne eigene"
+2016-08-16 15:13:33,Svenska,warum machst du das im tastaturtreiber?
+2016-08-16 15:13:52,Quantenmagier,weil der entscheiden muß welches programm die taste bekommt
+2016-08-16 15:13:58,Quantenmagier,der fängt die taste ja uach ab
+2016-08-16 15:14:04,Svenska,...klingt kaputt.
+2016-08-16 15:14:43,Quantenmagier,"is aber praktisch, so kann ich zb meinen mandelbrotbroweser bedienen oder nen text schreiben und gleichzeitig tetris spielen xD"
+2016-08-16 15:15:12,Quantenmagier,*browser
+2016-08-16 15:16:48,Svenska,ein input-management wäre da als layer vermutlich praktisch
+2016-08-16 15:17:07,Quantenmagier,"wo sollte ich es denn sonst machen wenn nicht im tasterturtreiber, meinst du ich sollte noch ne userbibliothek dafür machen über die alle programm e auf die tastertur zugreifen müssen statt über den kerneltreiber?"
+2016-08-16 15:17:40,Svenska,"ein tastaturtreiber sollte sich um die tastatur kuemmern, nicht um die anwendung"
+2016-08-16 15:17:59,Svenska,"d.h. er sendet tastencodes ans input-system - und das kuemmert sich darum, die daten weiterzuleiten (und evtl zu verarbeiten)"
+2016-08-16 15:18:00,Quantenmagier,"er macht halt beides, so spar ich umwee"
+2016-08-16 15:18:06,Svenska,ok
+2016-08-16 15:18:12,Quantenmagier,*umwege
+2016-08-16 15:18:15,Svenska,all the world is a ps/2 keyboard
+2016-08-16 15:18:23,Svenska,on port 0x60/0x64
+2016-08-16 15:19:19,Quantenmagier,"hm joa stimmt schon ich hab auch schon überlegt was ich mache wenn ich noch nen weiteres keyboard anschließe das hat dann halt nen anderen interrupt aber nutzt den selben vermittlungscode, per call dachte ich"
+2016-08-16 15:19:32,Svenska,usb?
+2016-08-16 15:19:35,Svenska,maus? ;)
+2016-08-16 15:19:35,Quantenmagier,jop
+2016-08-16 15:19:51,Quantenmagier,"maus läuft über nen andern treiber, das is ne komplett andere schnittstelle ^^"
+2016-08-16 15:23:47,Quantenmagier,als nächstes sagst du mir noch ich soll den mauszeiger nicht direkt im mausirq verschieben was? xD
+2016-08-16 15:25:40,Svenska,dein system klingt mehr kaputt als heil xD
+2016-08-16 15:26:03,Quantenmagier,es funktioniert aber ^^
+2016-08-16 15:27:01,Quantenmagier,"ich hab halt nen modularen makrokernel, der kernel macht so gut wie alles :D"
+2016-08-16 15:27:17,Svenska,"""abstraktion? was ist das?"""
+2016-08-16 15:27:30,Quantenmagier,abstraktion ist ein umweg der rechenzeit kostet ^^
+2016-08-16 15:27:32,Svenska,warum hast du eigentlich userspace?
+2016-08-16 15:27:58,Quantenmagier,den userspace hab ich damit programme die fehlerhaft sind nicht den kernel zum absturz bringen ^^
+2016-08-16 15:28:45,Quantenmagier,"so gesehn hätt eich mein tetris eigentlich ium kernel lassen können, weil das is ja fehlerfrei :D"
+2016-08-16 15:29:15,Svenska,ich mag deine definition von fehlerfrei...
+2016-08-16 15:32:10,Quantenmagier,"naja isses wirklich, die steine können nicht mehr rausbrechen und die schrift ist auch nicht mehr kaputt, eigentlich kann da nix mehr passieren, weil der user kann ja nur rechts links oben unten und ende eingeben und das ist sicher."
+2016-08-16 15:32:18,kevin,"Fehlerfrei ist alles selbstgeschriebene, oder?"
+2016-08-16 15:32:54,Quantenmagier,"nee ich hab bestimmt noch den einen oder anderen fehler im kernel, hab zwei relativ gravierende fehler erst nach jahren entdeckt und behoben"
+2016-08-16 15:33:19,kevin,"Hm, und ist ""Svenny"" jetzt der offizielle Name? ;-)"
+2016-08-16 15:33:27,Svenska,bitte nicht
+2016-08-16 15:33:30,Svenska,ich heiß nicht sven.
+2016-08-16 15:33:38,kevin,Weiß ich doch
+2016-08-16 15:33:38,Quantenmagier,Skaface :D
+2016-08-16 15:33:58,Svenska,"ich weiß aber nicht, ob Quantenmagier das auch weiß"
+2016-08-16 15:34:01,Svenska,*g*
+2016-08-16 15:34:12,Quantenmagier,"hab ich schonmal gehört, aber hatte ich verdrängt ^^"
+2016-08-16 15:34:13,kevin,"Vermutlich schon, sonst würde er es ja nicht benutzen"
+2016-08-16 15:34:20,kevin,Gemäß seiner sonstigen Strategie ;-)
+2016-08-16 15:36:29,Quantenmagier,also ihr meint ich sollte nen zusätzlichen inputlayer machen? das kostet doch sprünge und sprünge sind teuer..?!?
+2016-08-16 15:37:04,Svenska,"ich bin der festen ueberzeugung, dass manche deiner designentscheidungen wesentlich teurer sind als der eine oder andere sprung"
+2016-08-16 15:37:42,Svenska,"beispiel: linux hat mal geschrieben, dass barriers (die in der akademia als echt teuer gelten) in der realität nicht teuer sind, weil da meist ein cache miss dabei ist"
+2016-08-16 15:37:45,Svenska,und der tut mehr weh.
+2016-08-16 15:38:20,Quantenmagier,"hm ok aber wenn ich nen inputlayer mache würde ich den im kernel ansiedeln, weil der ja auf grafiktreiber, maustreiber, kerneltreiber und eventuell dateisystem zugreifen muß und das is ja alles im kernel"
+2016-08-16 15:38:38,Svenska,seit wann ist deine grafikkarte ein eingabegerät?
+2016-08-16 15:38:55,Svenska,"maus musst du da nicht mit reinbauen, wenn du nicht willst *g*"
+2016-08-16 15:38:56,Quantenmagier,naja ich muß doch den mauszeiger bewegen es ist nen ausgabegerät
+2016-08-16 15:39:03,Svenska,m(
+2016-08-16 15:39:03,Quantenmagier,aso
+2016-08-16 15:39:33,kevin,Was ist denn ein Kerneltreiber? Spricht man damit den Kernel an?
+2016-08-16 15:39:43,Quantenmagier,aber wenn schon denn schon? und wenn ich die maus mit einbaue hätte das den charme daß man leichter ne tasterturmaus schrieben kann
+2016-08-16 15:40:00,Quantenmagier,nee nen kerneltreiber ist ein treiber der im kernel sitzt
+2016-08-16 15:40:10,kevin,Im Gegensatz zu Grafiktreiber und Maustreiber?
+2016-08-16 15:40:23,Quantenmagier,öhm grafiktreibr und maustreiber sitzen auch im kernel
+2016-08-16 15:40:27,Svenska,"du baust nur push-systeme, richtig? dein mausinterrupt pusht die mausbewegung in den grafiktreiber?"
+2016-08-16 15:40:40,Quantenmagier,jop so in der art
+2016-08-16 15:40:58,kevin,"Quantenmagier: Dann verstehe ich deine Aufzählung nicht (""grafiktreiber, maustreiber, kerneltreiber und eventuell dateisystem"""
+2016-08-16 15:41:08,Svenska,ich verstehe die auch nicht *g*
+2016-08-16 15:41:16,Quantenmagier,"also der maustreiber holt die neue koordinate und sagt dann zum grafiktreiber ""verschieb die mausebene nach dort"""
+2016-08-16 15:42:11,Quantenmagier,mit inputlyer würde der maustreiber deninputlayer anspringen und der sagt dann dem grafiktreiber daß er die ebene verschieben soll
+2016-08-16 15:42:26,Quantenmagier,is also nen komplexer sprung mehr
+2016-08-16 15:42:33,Svenska,dann lass es weg
+2016-08-16 15:42:41,Svenska,"dein system ist so kaputt, das kriegt man auch nicht mehr schöner ;)"
+2016-08-16 15:44:09,Quantenmagier,immerhin ist es schnell und fast stabil :D
+2016-08-16 15:44:31,kevin,*g*
+2016-08-16 15:44:36,kevin,"""fast stabil"" mag ich"
+2016-08-16 15:49:24,Quantenmagier,"joa hab noch zwei drei race conditions, die eine wenn ich smp an hab, eine im grafiktreiber und eine beim starten, manchmal reagiert es nicht beim start und ich muß neu starten, aber wenn es dann läuft ist es eigentlich stabil, falls smp aus ist ^^"
+2016-08-16 15:49:48,Svenska,"ich bin mir sicher, es läuft auch unglaublich stabil, wenn du es nicht anfasst ^^"
+2016-08-16 15:50:56,Quantenmagier,"öhm dann ist es einfach im wait modus, solange ich keine taste drücke oder die maus bewege, ja der wait modus dürfe stabil sein xD"
+2016-08-16 15:52:42,Quantenmagier,obwohl ich den auch nochmal überarbeiten will daß irq 0 abgeschaltet wird wenn kein task oder nur ein task aktiv ist
+2016-08-16 15:52:55,Quantenmagier,oder wars irq 1?
+2016-08-16 15:53:03,Quantenmagier,also nicht die tastertur sondern der timer
+2016-08-16 15:59:19,darklink,also mein x86 und x86_64 mtgos ist auch fast stabil
+2016-08-16 16:00:18,kevin,"Fast stabil ist sogar tyndur, für manche Werte von fast"
+2016-08-16 16:03:38,Quantenmagier,"so ok stack für den neuen thread ist erstellt, dann muß ich demnächst nurnoch das zugehörige TSS erstellen und den Task für den Thread starten. ^^"
+2016-08-16 16:05:45,Quantenmagier,"bin mal gespannt ob mein ""unready"" spiel läuft wenn ich pthread_create() fertig hab. ^^"
+2016-08-16 16:07:53,Quantenmagier,"die meisten programme die ich kompilier laufen ja, irgendwann muß ich dann mal schritt für schritt durchgehn warum die neue version meines Schachprogramms nicht läuft, sondern nur ne ältere ohne zobrist hashing oder iterative deepening."
+2016-08-16 16:09:03,Svenska,vielleicht ist ja dein stack zu klein
+2016-08-16 16:09:16,Svenska,"oder du solltest mal eine spec aufmachen und gucken, was dadrin so zu implementieren wäre ;)"
+2016-08-16 16:17:49,Quantenmagier,"nee stack hatte ich shconmal probeweise ganz groß gemackt, daran kanns eigentlich nicht liegen und die neue schachversion bracuht auch nicht wesentlich mehr stack als die alte"
+2016-08-16 16:17:55,Quantenmagier,was fürn spec?
+2016-08-16 16:18:17,Svenska,posix oder so'n quatsch ;)
+2016-08-16 16:19:41,Quantenmagier,"ok werd ich mir bei gelegenheit nochmal ansehn, mein os soll ja irgendwann poxis complient sein ^^"
+2016-08-16 16:20:19,Quantenmagier,"so muß jetzt los, cya"
+2016-08-16 16:38:22,kevin,"""poxis complient"", genau"
+2016-08-16 16:38:43,Svenska,*g*
+2016-08-16 16:39:08,kevin,Fast stabile Schreibweise. Oder so.
+2016-08-16 22:08:14,MasterQ32,"""Das Leitwerk besteht im Wesentlichen aus den 5 Flip-Flops R, A, B, C und E."" oookay :P"
+2016-08-16 22:13:03,Paddy,"Das läuft aber nicht unter OS-Dev, oder?"
+2016-08-16 22:13:24,Svenska,leitwerk klingt eher nach flugzeugen...
+2016-08-16 22:13:39,Paddy,Vielleicht baut er ja ein OS für Flugzeuge
+2016-08-16 22:13:43,Paddy,...lieber nicht *g*
+2016-08-16 22:13:58,Svenska,"naja, solange es nicht der quantenmagier baut..."
+2016-08-16 22:14:05,MasterQ32,"ne, das leitwerk wird auch häufig mit Rechen+Steuerwerk bezeichnet"
+2016-08-16 22:14:25,MasterQ32,"geht um diese exotische architektur, von der ich vor ein paar wochen schon mal erzählt habe"
+2016-08-16 22:14:34,Paddy,Die aus dem Museum?
+2016-08-16 22:14:38,MasterQ32,jau
+2016-08-16 22:14:53,MasterQ32,christian sitzt grade neben mir und lötet am Netzteil der Maschine run
+2016-08-16 22:14:55,MasterQ32,*rum
+2016-08-16 22:14:56,Svenska,der taschenrechner?
+2016-08-16 22:15:00,Svenska,wer ist christian? ;)
+2016-08-16 22:15:05,Paddy,"Ich glaube, ich muss doch mal vorbeischauen ;-)"
+2016-08-16 22:15:20,Svenska,...und wo ist neben dir? ;-)
+2016-08-16 22:15:57,MasterQ32,"computermuseum uni stuttgart, ca. 2 meter von der tür entfernt :D"
+2016-08-16 22:16:12,Svenska,"nä, das ist bissi weit"
+2016-08-16 22:16:27,Svenska,ich war freitag in duesseldorf und sonntag wieder zuhause
+2016-08-16 22:16:39,Svenska,der fahrriemen ist vorerst abgewetzt ^^
+2016-08-16 22:16:45,MasterQ32,:P
+2016-08-16 22:16:57,XanClic,"Svenska, ich hoffe, du hast Pokémon gefangen *duck*"
+2016-08-16 22:17:22,Svenska,nö
+2016-08-16 22:17:23,XanClic,http://www.rp-online.de/nrw/staedte/duesseldorf/pokemon-go-girardet-bruecke-an-der-koe-wird-nun-doch-gesperrt-aid-1.6145225 also da
+2016-08-16 22:17:31,XanClic,Dann hat sichs ja gar nicht gelohnt
+2016-08-16 22:17:33,mgottschlag,"MasterQ32: huh, was tut ihr da?"
+2016-08-16 22:17:34,Svenska,"davon hab ich gehört, ja :p"
+2016-08-16 22:17:50,Paddy,Ach du bist grad in Deutschland?
+2016-08-16 22:18:07,MasterQ32,http://computermuseum.informatik.uni-stuttgart.de/dev/decitrn/
+2016-08-16 22:18:20,MasterQ32,"ich versuche, für dieses Gerät eine Programmierhilfe zu programmieren"
+2016-08-16 22:21:48,MasterQ32,"mir schwirrt grade der kopf vor lauter I, /I, P und /P :D"
+2016-08-16 23:35:02,Quantenmagier,nabend
+2016-08-16 23:36:02,Quantenmagier,"*compliant, soo :P"
+2016-08-16 23:36:25,Svenska,und posix :P
+2016-08-16 23:36:37,Quantenmagier,posix hatte ich doch geschrieben
+2016-08-16 23:36:47,Svenska,"nee, du hattest poxis geschrieben :P"
+2016-08-16 23:36:56,Quantenmagier,ohh damn stimmt
+2016-08-16 23:37:05,Quantenmagier,joa war in zeitdruck xD
+2016-08-16 23:37:18,Svenska,stabile rechtschreibung xD
+2016-08-16 23:37:49,Quantenmagier,thc

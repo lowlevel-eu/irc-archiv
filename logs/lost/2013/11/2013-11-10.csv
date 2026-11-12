@@ -1,0 +1,1074 @@
+date/time,nick,message
+2013-11-10 01:12:08,Guest567,"noch jemand hier, oder nur Bouncer? :D"
+2013-11-10 01:44:53,Tectu,"Darkchaos, teils"
+2013-11-10 01:45:07,Tectu,"Darkchaos, physisch ja, psychisch nein"
+2013-11-10 11:40:24,Tectu,nabend
+2013-11-10 11:40:33,Tectu,wie debuggt man eigentlich einen #GP am besten?
+2013-11-10 11:40:40,Guest581,GPF?
+2013-11-10 11:41:01,Darkchaos,schwierig. Schau dir dein EIP an
+2013-11-10 11:41:06,Tectu,General protection fault. 0x0d
+2013-11-10 11:41:17,Darkchaos,Bei mir war der Total zerstört (also der Stack)
+2013-11-10 11:42:13,Darkchaos,"Wenn der OK ist, musst du dir überlegen, ob dein Code da überhaupt hindarf (GPF ist ja ein bisschen wie paging für physische Adressen)"
+2013-11-10 11:42:19,Tectu,sieht imo nicht so schlimm aus: http://pastebin.com/pXnQ3tKK
+2013-11-10 11:42:27,Darkchaos,"wenn du also zB wo völlig anderes hinschreibst, wo dus nicht darfst"
+2013-11-10 11:43:01,Tectu,hmm
+2013-11-10 11:43:05,Tectu,guter ansatz
+2013-11-10 11:43:11,Tectu,jedoch nicht einfach zu debuggen :)
+2013-11-10 11:43:18,Darkchaos,ja :D
+2013-11-10 11:43:43,Tectu,"naja, muss mal schnell was essen gehn - bis gleich."
+2013-11-10 11:43:52,Darkchaos,http://en.wikipedia.org/wiki/General_protection_fault
+2013-11-10 11:44:10,Darkchaos,viel glück dabei und guten Appettit
+2013-11-10 12:01:53,Tectu,re
+2013-11-10 12:03:58,Tectu,"Darkchaos, ich bin eben gerade an der ELF geschichte. Im beispielcode wird    asm volatile(""int $0x30"" : : ""a"" (0), ""b"" ('0' + i));    verwendet"
+2013-11-10 12:04:14,Tectu,"und dann krieg ich den #GP. Mit der ""direkt in den video buffer schreiben"" methode geht es"
+2013-11-10 12:04:23,Tectu,also irgend so geht was kaputt :P
+2013-11-10 12:04:28,Darkchaos,Direkt in den Videobuffer schreiben methode?
+2013-11-10 12:04:44,Darkchaos,und du bekommst einen GPF beim Syscall?
+2013-11-10 12:05:00,Darkchaos,Versuch mal aus dem Kernel raus die int $0x30
+2013-11-10 12:05:21,Tectu,gute idee
+2013-11-10 12:05:27,Darkchaos,Wenn ja liegt deine ELF vielleicht in einem anderen Segment oder der Interrupthandler ist kaputt?
+2013-11-10 12:06:24,Tectu,"mein interrupt handler kriegt aber ein 0x0d und kein 0x30, der kann da wohl schlecht was dafür"
+2013-11-10 12:06:28,Tectu,wird also wohl leider ersteres sein
+2013-11-10 12:06:51,Tectu,aus dem kernel heraus crasht das ding nicht
+2013-11-10 12:06:59,Darkchaos,wie gesagt teste es mal
+2013-11-10 12:07:07,Darkchaos,teste mal den elf task als ring0
+2013-11-10 12:07:24,Darkchaos,aber der Interrupthandler müsste erst einen 0x30 bekommen und in ihm dann 0xd :P
+2013-11-10 12:08:26,Tectu,"jap, wie gesagt. aus dem kernel heraus geht das 0x30 syscall ohne probleme"
+2013-11-10 12:08:33,Tectu,war nicht nur eine vermutung *gg
+2013-11-10 12:08:39,Tectu,"also, mit ring0 testen?"
+2013-11-10 12:10:50,Tectu,"Darkchaos, bei ring0 gehts :("
+2013-11-10 12:11:00,Darkchaos,nadann :P
+2013-11-10 12:11:12,Darkchaos,hat es was mit der GDT zu tun glaube ich ;)
+2013-11-10 12:11:19,Darkchaos,Ne
+2013-11-10 12:11:34,Darkchaos,"Moment, hast du bei der IDT das Flag Ring0 gesetzt?"
+2013-11-10 12:11:59,Tectu,"ja, IDT sind alle Ring0"
+2013-11-10 12:12:18,Tectu,"exceptions, IRQs und software interrupts"
+2013-11-10 12:12:50,Darkchaos,https://gitorious.org/tuxmaniac/arctic_revenge/source/78e96488427533c07e1c35a06f395429ba9e7cae:kernel/boot.cpp#L101 hmm ich auch
+2013-11-10 12:13:08,Darkchaos,Und die GDT
+2013-11-10 12:13:08,Darkchaos,https://gitorious.org/tuxmaniac/arctic_revenge/source/78e96488427533c07e1c35a06f395429ba9e7cae:kernel/boot.cpp#L156
+2013-11-10 12:13:23,Tectu,du hast aber den syscall auf ring3
+2013-11-10 12:13:32,Darkchaos,ach hab mich verguckt
+2013-11-10 12:13:38,Darkchaos,Mach das auch mal ;)
+2013-11-10 12:15:00,Tectu,so gehts :P
+2013-11-10 12:15:58,Tectu,"Darkchaos, du bist so ein ""alles in ein file - typ"", was? :P"
+2013-11-10 12:16:11,Tectu,so sieht das bei mir aus: http://pastebin.com/6nJGdMQ2
+2013-11-10 12:16:46,Darkchaos,naja geht :D
+2013-11-10 12:16:58,Darkchaos,bei der api hab ichs anders gemacht :D
+2013-11-10 12:17:40,tufel,huhu
+2013-11-10 12:17:46,Tectu,"danke für deine hilfe, Darkchaos !"
+2013-11-10 12:17:58,Darkchaos,kein Ding :) Wenn ich einmal helfen kann :P
+2013-11-10 12:18:24,Tectu,ich weiss nicht wie ich das übersehen konnte...
+2013-11-10 12:18:37,Darkchaos,ich habs ja auch gerade übersehen:P
+2013-11-10 12:19:56,Tectu,na dann sollten wir mal froh sein dass weder jidder noch kevin gerade answesend sind :P
+2013-11-10 12:20:25,Darkchaos,aber tyndur ist es
+2013-11-10 12:23:13,Tectu,"so, jetzt sollte mann mal paging zum laufen kriegen"
+2013-11-10 12:26:02,Darkchaos,Also ich habe ca nen Jahr gebraucht
+2013-11-10 12:26:08,Darkchaos,und die Nachwehen habe ichimmernoch :D
+2013-11-10 12:26:51,Darkchaos,"das heißt konkret, wenn ich mir meinen tlb anschaue, hab ich irgendwie den halben addressraum auf das kernel-directory gemappt, warum auch immer"
+2013-11-10 12:27:18,Tectu,tlb?
+2013-11-10 12:27:26,Darkchaos,translation lookaside buffer
+2013-11-10 12:27:29,Tectu,wieso hast du ein jahr dafür gebraucht? 
+2013-11-10 12:27:31,Darkchaos,ich schau mir einfach das mapping an :D
+2013-11-10 12:27:33,Tectu,ist das so schwer? o.O
+2013-11-10 12:27:37,Tectu,oder fehlende C kenntnise? ;-)
+2013-11-10 12:27:48,Darkchaos,"naja, 2 Tage programmiert und dann im Zorn 4 monate das os ins eck geworfen"
+2013-11-10 12:27:54,Tectu,haha
+2013-11-10 12:28:00,Tectu,das gibts beim herrn tectu nicht ;)
+2013-11-10 12:28:53,Darkchaos,xD
+2013-11-10 12:29:00,Darkchaos,es kann schon frustrierend werden
+2013-11-10 12:29:21,Darkchaos,"spannend ist, wenn du am ende feststellst, du musst es jetzt noch hinbekommen, dass du die pages im betrieb ändern kannst"
+2013-11-10 12:30:32,Tectu,naja
+2013-11-10 12:30:35,Tectu,wird schon irgend wie
+2013-11-10 12:30:45,Tectu,ich kann sehr hartnäckig sein ^^
+2013-11-10 12:31:48,Tectu,"Darkchaos, ich nehme an, ziel währe ein anschliessendes vmm_alloc() ?"
+2013-11-10 12:31:58,Darkchaos,ja
+2013-11-10 12:32:07,Darkchaos,und rekursives Mapping des PDs
+2013-11-10 12:32:13,Darkchaos,"wie gesagt, bei mir funktioniert es zur hälfe"
+2013-11-10 12:32:19,Darkchaos,"also es tut, aber irgendwie mappt es viel zu viel"
+2013-11-10 12:32:38,Tectu,"na dann, hol dir ein stück papier und nen bleistift und fix das :)"
+2013-11-10 12:34:32,Tectu,"hmm, aber das wiki hat ja sogar schöne grafiken dazu :)"
+2013-11-10 12:34:35,Tectu,http://www.lowlevel.eu/wiki/Paging
+2013-11-10 12:34:58,Darkchaos,Ich weiß doch :D Irgendwas läuft nur falsch sobald der 2. Task dazu kommt
+2013-11-10 12:35:20,Darkchaos,"ich habe auch so das Gefühl, es hängt nur mit dem Updaten des Kernel-PDs zusammen"
+2013-11-10 12:35:53,Tectu,"naja, ich muss mich erstmal einlesen"
+2013-11-10 12:35:58,Darkchaos,"aber zunächst wird die libapi auf malloc() umgebaut, d.h. projekt 1 = mfree"
+2013-11-10 12:38:25,Tectu,"Darkchaos, aber wenn ich das richtig verstehe übernimmt ja die CPU das berechnen der adressen"
+2013-11-10 12:38:32,Darkchaos,ja klae
+2013-11-10 12:38:46,Tectu,"Darkchaos, also wenn ich das richtig verstehe musst du nur eine valide tabelle übergeben?"
+2013-11-10 12:39:04,Darkchaos,"ja so mehr oder minder, verschaltete arrays halt"
+2013-11-10 12:39:18,Darkchaos,verschachtelt
+2013-11-10 12:39:21,Tectu,wo liegt das hauptproblem bei der tatsächlichen umsetzung?
+2013-11-10 12:39:33,Darkchaos,"Gute Frage. Das zu Abstrahieren, welche Ebene welche ist"
+2013-11-10 12:39:58,Darkchaos,https://gitorious.org/tuxmaniac/arctic_revenge/source/78e96488427533c07e1c35a06f395429ba9e7cae:kernel/memorymanager/paging.cpp#L60 das ist eigentlich schon das Geheimnis
+2013-11-10 12:40:27,Darkchaos,der Clou beginng aber in Zeile 74: Wie greife ich auf die Struktur im laufenden Betrieb zu. Da gibts vier fälle
+2013-11-10 12:40:48,Tectu,"""Daher ist zu beachten, dass bei einer Änderung des Page Directory oder einer Page Table der TLB invalidiert werden muss (d. h. der entsprechende Eintrag wird aus dem TLB gelöscht). Versäumt man diese Invalidierung, äußert sich das im Allgemeinen erst später durch völlig unerwartete Ereignisse. Diese Fehler sind extrem schwer zu debuggen, da scheinbar auf die richtige Speicheradresse zugegriffen wird, aber in Wirklichkeit mit fal"
+2013-11-10 12:40:48,Tectu,"schen Werten gearbeitet wird."""
+2013-11-10 12:40:57,Tectu,das hört sich nach einer menge spass an....
+2013-11-10 12:41:29,Darkchaos,"Das heißt eigentlich bloß, dass du nicht das invlpg vergessen darfst:P"
+2013-11-10 12:41:35,mgottschlag,"naja, das braucht man nur an 1-2 Stellen, insofern ist es nicht soo schwer, das richtig zu machen"
+2013-11-10 12:42:01,Tectu,okay
+2013-11-10 12:45:11,Darkchaos,"wenn du nicht mehr weiter weißt, kannst du gerne in meinem Source nachsehen, dann weißt du überhaupt nichts mehr :P"
+2013-11-10 12:49:40,Tectu,hrhr
+2013-11-10 12:49:43,Tectu,danke
+2013-11-10 12:49:52,Tectu,ich mag dein codingstyle nicht so sehr :P
+2013-11-10 12:49:59,Darkchaos,ich auch nicht
+2013-11-10 12:50:01,Darkchaos,aber es läuft
+2013-11-10 12:50:10,Darkchaos,lieber wenig ästhetik und dafür läufts
+2013-11-10 12:50:20,Tectu,meines läuft auch - soweit ;-)
+2013-11-10 12:53:26,Darkchaos,Coole Art fürs printf()
+2013-11-10 12:53:45,Darkchaos,"aber ich würde das evtl. in ein format() auslagern, man will ja ggf. mal einfach einen String so formatieren :)"
+2013-11-10 12:57:46,Tectu,du meinst sprintf()?
+2013-11-10 12:57:59,Tectu,das kommt dann später in meine string.[ch]
+2013-11-10 12:58:01,Darkchaos,"ja, so würde es wohl heißen :P"
+2013-11-10 12:58:18,Tectu,"und we heisst ""coole art"" ?"
+2013-11-10 12:58:29,Tectu,man kann das nicht wirklich anders machen - VA_ARGS halt
+2013-11-10 12:58:32,Darkchaos,"Ich weiß nicht, gut gelöst :P"
+2013-11-10 12:58:37,Tectu,danke dir :)
+2013-11-10 12:58:38,Darkchaos,egal :D
+2013-11-10 12:58:41,Tectu,ist nicht mein erstes printf ;)
+2013-11-10 12:58:48,Darkchaos,achso
+2013-11-10 12:58:59,Darkchaos,"ich habe bis heute keines, und auch kein strconcat"
+2013-11-10 12:59:08,Darkchaos,sondern print(); print(); print() :D
+2013-11-10 12:59:18,Tectu,hier ein kleineres printf für embedded systeme: https://bitbucket.org/Tectu/ugfx/src/6ca3537a696e7ace8098771a9a7105380604253d/src/gwin/console.c?at=master#cl-201
+2013-11-10 12:59:28,Tectu,oh man...
+2013-11-10 12:59:33,Tectu,so kann man doch nicht arbeiten
+2013-11-10 13:01:39,Tectu,aber wieso? es gibt doch 10000 legal-zu-kopierende printf() implementationen im netz
+2013-11-10 13:14:36,Tectu,eine frage:     asm volatile();    wozu wird das volatile an dieser stelle benötigt?
+2013-11-10 13:14:54,Tectu,ich kenne die funktion von volatile bezüglich variabeldefinitionen
+2013-11-10 13:15:26,mgottschlag,"das volatile sagt, dass der Assemblercode möglicherweise beliebige Variablen ändert"
+2013-11-10 13:15:37,mgottschlag,"das heißt, der Compiler muss sie danach neu aus dem Speicher lesen"
+2013-11-10 13:16:13,Tectu,"achso, also das selbe wie sonst auch ;)"
+2013-11-10 13:16:17,Tectu,danke dir
+2013-11-10 13:18:21,Tectu,"mgottschlag, dann verstehe ich aber beim besten willen nicht wieso das wiki hier auch volatile davor setzt: http://www.lowlevel.eu/wiki/Teil_5_-_Interrupts#Interrupt_Descriptor_Table"
+2013-11-10 13:18:33,Tectu,"asm volatile(""int $0x0"");"
+2013-11-10 13:19:01,mgottschlag,"naja, stell dir mal vor, dahinter steht ein OS-Syscall, der dir Variablen in deinem Programm ändert"
+2013-11-10 13:19:19,mgottschlag,s/Variablen/Speicher
+2013-11-10 13:21:36,Tectu,"ah, es geht also auch um dass, was der asm befehl auslöst"
+2013-11-10 13:21:40,Tectu,nicht nur den befehl selber
+2013-11-10 13:22:57,mgottschlag,"ja, und das sagt dem Compiler auch, dass der Befehl nicht herumgeschoben werden darf, sondern an genau dieser Stelle ausgeführt werden muss"
+2013-11-10 13:23:38,mgottschlag,"was bei System Calls ja auch sinnvoll ist, sonst crasht nachfolgender Code, weil z.B. Ressourcen noch fehlen, weil der Compiler den Syscall hinter den entsprechenden Code geschoben hat"
+2013-11-10 13:23:51,mgottschlag,der Compiler hat ja auch keine Information über Abhängigkeiten in deinem Programm
+2013-11-10 13:26:13,mroman,mgottschlag: dazu muss man memory in die clobber liste nehmen btw
+2013-11-10 13:26:32,mgottschlag,"nicht bei asm volatile, dachte ich? nur bei asm ohne volatile"
+2013-11-10 13:26:45,mroman,oh
+2013-11-10 13:26:48,mroman,"das koennte sein, ja"
+2013-11-10 13:28:03,mgottschlag,"okay, ne, volatile ist was ganz anderes: http://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html"
+2013-11-10 13:28:12,mroman,"If your assembler instructions access memory in an unpredictable fashion, add ‘memory’ to the list of clobbered registers. This causes GCC to not keep memory values cached in registers across the assembler instruction and not optimize stores or loads to that memory."
+2013-11-10 13:28:17,mroman,ja
+2013-11-10 13:28:25,mroman,da musst wohl tatsaechlich memory ins clobber nehmen wenn du willst
+2013-11-10 13:28:32,mroman,das gcc gecachtes Zeugs neu laedt
+2013-11-10 13:28:43,mgottschlag,""" You also should add the volatile keyword if the memory affected is not listed in the inputs or outputs of the asm"""
+2013-11-10 13:29:02,mroman,also volatile + clobber in memory wenn man ganz sicher gehen will.
+2013-11-10 13:29:17,mgottschlag,"also, letztenendes passt es schon, weil memory kein side effect spezifiziert"
+2013-11-10 13:29:24,mgottschlag,volatile dagegen schon
+2013-11-10 13:30:21,mroman,d.h man braucht volatile vlt gar nicht mal?
+2013-11-10 13:30:41,mroman,hm ne
+2013-11-10 13:31:05,mgottschlag,"ja, man braucht volatile, wenn die Abhängigkeiten nicht in der clobber list spezifiziert sind"
+2013-11-10 13:31:16,mgottschlag,"und ""memory"" alleine spezifiziert keine Abhängigkeit"
+2013-11-10 13:31:40,mroman,Neh.
+2013-11-10 13:31:50,mroman,aber wenn dein syscall speicher veraendert
+2013-11-10 13:33:47,mroman,den du nach dem syscall lesen willst
+2013-11-10 13:58:12,Tectu,"mag jemand über mein paging schauen? mein kernel rebootet (qemu mit -kernel) obwohl ich noch keine tasks ausführe (laut erstem teil des paging tutorials sollte der kernel ja laufen, solange kein RING3  angefasst wird)"
+2013-11-10 13:58:42,Tectu,vmm.c   http://pastebin.com/5GS95XMb
+2013-11-10 13:59:02,mgottschlag,"joa, aber vorher gib qemu mal ""-d int"" und paste das zusammen mit ein bisschen disassembly von der Stelle"
+2013-11-10 13:59:16,Tectu,vmm.h     http://pastebin.com/JuTkZAv1
+2013-11-10 13:59:26,Tectu,"okay, mom"
+2013-11-10 13:59:43,Tectu,"wie genau halte ich qemu davon ab, den kernel wieder neu zu laden? "
+2013-11-10 13:59:46,Tectu,nach einem crash.
+2013-11-10 14:00:00,mgottschlag,"gute Frage, das geht, aber kP, wie :)"
+2013-11-10 14:00:42,mroman,Tectu: sowas wie -no-reboot?
+2013-11-10 14:00:54,Tectu,also hier schonmal qemu:  http://pastebin.com/J5bDGfyP
+2013-11-10 14:00:56,Tectu,(tripple fault)
+2013-11-10 14:01:21,Tectu,"mroman, laut doc scheint -no-reboot richtig zu sein, ja."
+2013-11-10 14:01:54,Tectu,und funktioniert auch :)
+2013-11-10 14:02:25,Tectu,"mgottschlag, ich guck im disassembly nach der stelle in CR2, rightig?"
+2013-11-10 14:02:29,Tectu,richtig*
+2013-11-10 14:02:44,mgottschlag,"ne, EIP"
+2013-11-10 14:02:54,mgottschlag,"also, CR2 wäre vielleicht auch interessant"
+2013-11-10 14:03:01,mgottschlag,"aber das ist ja oft kein Befehl, sondern Daten"
+2013-11-10 14:03:14,mgottschlag,"da wär vielleicht die Ausgabe von readelf -a interessant, um zu sehen, wo das einzuordnen ist"
+2013-11-10 14:03:29,Tectu,"bei welchem ""dump"" von qemu guck ich da? beim ersten 0xe?"
+2013-11-10 14:03:43,Tectu,also bei  EIP=00101d05  ?
+2013-11-10 14:03:56,mgottschlag,"joa, halt bei der ersten exception"
+2013-11-10 14:04:14,mgottschlag,"das erkennt man v.a. am ""old=0xffffffff"" oder ""old=Müll"", kP, wie das genau war"
+2013-11-10 14:04:26,Tectu,das wär dann hier:  http://pastebin.com/KLduX76m
+2013-11-10 14:04:35,Tectu,"jap, bei mir steht das mit 0xfffff"
+2013-11-10 14:05:47,mgottschlag,"oaky, zeig mal die komplette Exception, inklusive Registern"
+2013-11-10 14:06:21,Tectu,also von QEMU?
+2013-11-10 14:06:26,mgottschlag,ja
+2013-11-10 14:06:31,Tectu,hab ich doch oben schon?  http://pastebin.com/J5bDGfyP
+2013-11-10 14:06:49,Tectu,oder meinst du etwas anderes?
+2013-11-10 14:06:51,mgottschlag,"hm, stimmt ^^"
+2013-11-10 14:07:31,mgottschlag,"""check_exception old: 0xffffffff new 0xd"" - hm, das ist ja ein 13er, also GPF"
+2013-11-10 14:07:48,Tectu,jup
+2013-11-10 14:07:52,mgottschlag,und ESP sieht kaputt aus
+2013-11-10 14:08:41,mgottschlag,"ah, ne, moment"
+2013-11-10 14:08:48,mgottschlag,"ich glaub, ich lese das wieder falsch"
+2013-11-10 14:09:27,iksnagreb,moin
+2013-11-10 14:09:34,mgottschlag,"argh, gehört die Zeile mit der Exception jetzt zu den Registern darüber, oder den darunter? -.-"
+2013-11-10 14:09:35,mgottschlag,moin
+2013-11-10 14:09:59,mgottschlag,"vermutlich den darüber, sonst würde das Log nicht mit einer solchen Zeile enden?"
+2013-11-10 14:10:39,Tectu,ich dachte immer darunter...
+2013-11-10 14:10:46,mgottschlag,ich auch
+2013-11-10 14:10:48,mgottschlag,hm
+2013-11-10 14:11:17,Tectu,"laut wiki auch darunter, zumindest meiner interpretation nach: http://www.lowlevel.eu/wiki/Teil_9_-_Paging#Paging_aktivieren"
+2013-11-10 14:11:26,mgottschlag,"ja, darunter"
+2013-11-10 14:11:41,mgottschlag,(sonst passt der PF nicht mit dem CR2-Wert zusammen)
+2013-11-10 14:11:42,mgottschlag,hm
+2013-11-10 14:12:02,mgottschlag,soll ESP dann so?
+2013-11-10 14:12:35,Tectu,ich hätte gehofft du könntest solche fragen beantworten :P
+2013-11-10 14:12:50,mgottschlag,"ah, das crasht ja im iret"
+2013-11-10 14:13:03,mgottschlag,"ja, dann ist evtl ESP kaputt, und der poppt Müll vom Stack"
+2013-11-10 14:14:02,Tectu,hier meine init.c  http://pastebin.com/bJ5sRvW4
+2013-11-10 14:14:25,Tectu,(falls die reihenfolge hier falsch sein sollte)
+2013-11-10 14:14:35,Tectu,"warte, das war die falsche datei."
+2013-11-10 14:14:41,mgottschlag,"bbl, was essen"
+2013-11-10 14:15:38,Tectu,"ja, bin auch mal weg"
+2013-11-10 14:15:42,Tectu,bis später und guten!
+2013-11-10 15:32:22,Paddy,"Ah, deswegen ist es ruhig hier heute"
+2013-11-10 15:32:25,Paddy,Man müsste auch joinen...
+2013-11-10 15:32:29,XanClic,*g*
+2013-11-10 15:32:48,XanClic,Ich hatte für heute definitiv genug Aufregung
+2013-11-10 15:33:03,Paddy,Wie kommt's?
+2013-11-10 15:33:03,Darkchaos,"Wieso, ich hab doch noch garnichts heute gefragt *g* :D"
+2013-11-10 15:33:20,XanClic,"ZIH (macht die ganze TU-IT-Infrastruktur) hat mir eine E-Mail geschrieben, dass mein Account gelöscht wird, weil ich exmatrikuliert bin"
+2013-11-10 15:33:30,XanClic,Und zwar in zwölf Tagen
+2013-11-10 15:33:35,Paddy,"Äh, huch?"
+2013-11-10 15:33:35,XanClic,"Ich schreib ans Immatrikulationsamt, was das soll"
+2013-11-10 15:33:46,XanClic,Dann kommt vor zehn Minuten eine zweite E-Mail vom ZIH
+2013-11-10 15:33:51,XanClic,Dass die sich vertan haben
+2013-11-10 15:34:03,Paddy,"Hups, kann ja mal passieren"
+2013-11-10 15:34:08,XanClic,Und das ist wohl bei so ziemlich allen Studenten passiert
+2013-11-10 15:34:12,Darkchaos,timestamp um ein paar Jahre vertan :D
+2013-11-10 15:34:16,XanClic,Zumindest der Informatik
+2013-11-10 15:35:06,Paddy,"Wenn alle betroffen sind, wird es wenigstens in der Regel schnell gefixt"
+2013-11-10 15:35:50,XanClic,Das ist wohl wahr
+2013-11-10 15:53:06,Tectu,"mgottschlag, wär wieder da ^^"
+2013-11-10 15:53:14,Tectu,hast du noch was rausbekommen?
+2013-11-10 16:00:59,Svenska,moin
+2013-11-10 16:01:16,Paddy,Moin
+2013-11-10 16:02:01,Paddy,"Hmpf. Jetzt wollte ich ein bisschen was weiterhacken, aber die aktuelle Arbeitskopie ist komplett kaputt weil ich versucht habe, den Idle-Thread zu reparieren *seufz*"
+2013-11-10 16:20:10,chris12,einen wunderschönen guten nachmittag
+2013-11-10 16:34:36,Svenska,ebenfalls
+2013-11-10 16:34:56,chris12,ah doch noch leben hier :D
+2013-11-10 16:35:11,Svenska,'türlich ^^
+2013-11-10 16:35:40,chris12,ich hatte mich schon gewundert
+2013-11-10 16:35:52,Svenska,"jeder, wie er kann und mag"
+2013-11-10 16:36:24,chris12,"das auf jedenfall, aber man sollte meinen, dass bei 24personen im raum etwas los sein sollte, oder nicht?"
+2013-11-10 16:37:20,Svenska,"laut log gibts tage, wo nix geschrieben wird"
+2013-11-10 16:37:42,chris12,"oha, das war vor ein paar jahren noch die seltenheit"
+2013-11-10 16:37:56,Svenska,"ist halt immer wer da, wenn was ist"
+2013-11-10 16:38:06,Svenska,ist doch idle :-)
+2013-11-10 16:40:18,Paddy,"So, nachdem der Idlethread gefixt ist, brauche ich nicht mehr idle zu sein"
+2013-11-10 16:40:25,Paddy,Falls jemand was mit mir anfangen kann ;-)
+2013-11-10 16:42:19,Paddy,"Gut, dachte ich mir schon"
+2013-11-10 16:42:44,Svenska,*grins*
+2013-11-10 16:42:45,chris12,guten morgen paddy
+2013-11-10 16:42:47,Svenska,hallo paddy ;)
+2013-11-10 16:43:18,Paddy,Moin chris12
+2013-11-10 16:45:32,Darkchaos,strenggenommen sind hier nur 22 Leute :)
+2013-11-10 16:45:44,Darkchaos,"Ich mit 2 Clients und tyndur als logbot, aber es sind trotzdem schon recht viele :)"
+2013-11-10 16:46:20,Paddy,"Und jetzt zähl mal, wie viele davon wirklich OS-Dev machen ;-)"
+2013-11-10 16:47:20,Svenska,und wieviele davon auch anwesend sind und nicht ihren bouncer haben
+2013-11-10 16:47:28,Darkchaos,< hat kein Geld für einen Bouncer
+2013-11-10 16:47:29,Darkchaos,obwohl
+2013-11-10 16:47:36,Darkchaos,"Was empfehlt ihr? psyBNC, sBNC"
+2013-11-10 16:47:47,Darkchaos,"mir fällt gerade ein, ich habe ja noch nen mini-vServer rumfahren"
+2013-11-10 16:49:16,Paddy,"Ui, ich hab aber noch ganz schön viele kmalloc-Aufrufer, die nicht auf NULL-Rückgabe prüfen :-/"
+2013-11-10 16:49:39,Svenska,"für mich war es irgendwie dumm, dass NULL==(void*)0 gilt"
+2013-11-10 16:49:55,Svenska,denn die erste freie adresse ist überraschenderweise 0x00000000 :)
+2013-11-10 16:50:02,Paddy,hehe
+2013-11-10 16:50:07,Svenska,bin mal essen
+2013-11-10 16:50:15,chris12,guten hunger
+2013-11-10 16:50:17,Paddy,Virtuell 0x0 lasse ich sowieso grundsätzlich frei
+2013-11-10 16:50:27,Svenska,physisch (im pmm)
+2013-11-10 16:50:43,Paddy,"Beim PMM weiß ich gar nicht, was ich mache"
+2013-11-10 16:50:51,Paddy,Aber da würde sich ja -errno anbieten
+2013-11-10 16:51:04,Paddy,Weil ein erfolgreichen Ergebnis immer pagealigned wäre
+2013-11-10 16:51:13,Svenska,is 0 auch
+2013-11-10 16:51:29,Paddy,"Ja eben, dann kann 0 eine erfolgreiche Allokation melden"
+2013-11-10 16:51:32,Paddy,Und Fehler sind halt -1 oder so
+2013-11-10 16:51:58,Paddy,Oder was auch immer -ENOMEM bei dir ist
+2013-11-10 16:52:18,Darkchaos,"also ich nutze 0xDEADBEEF momentan, das ist nämlich nicht 4k Aligned"
+2013-11-10 16:52:25,Darkchaos,nur bei malloc muss ich mir was einfallen lassen
+2013-11-10 16:53:02,Darkchaos,"wobei -1 ganz gut ist (0xFFFFFFFF), denn da hat nur size(0) platz"
+2013-11-10 16:53:09,Paddy,malloc() ist kaputt
+2013-11-10 16:53:16,Paddy,Also broken by design
+2013-11-10 16:54:06,Paddy,"Aber du solltest trotzdem die Standardfunktion implementieren, wenn du sie malloc() nennst"
+2013-11-10 16:54:13,Tectu,"Im tutorial teil 9 (paging) wird ja erstmal statisch die ersten 4MB so gemappt, das phy addr == virt addr, richtig? Dementsprechend würde mein interrupt handler auch gemappt sein. Ich kriege jedoch einen tripple fault sobald ein #GP ausgelöst wird (--> interrupt handler kann nicht gefunden werden)"
+2013-11-10 16:54:27,Tectu,wie kommts? der ist ja auch innerhalb der 4MB
+2013-11-10 16:54:50,Darkchaos,Tectu: Hau mal nach dem aktivieren des Pagings eine Endlosschleife rein
+2013-11-10 16:54:54,Darkchaos,"und schau, was info mem dir ausgibt"
+2013-11-10 16:55:00,Darkchaos,(CTRL+ALT+2)
+2013-11-10 16:55:02,Paddy,Schau dir die beteiligten Exceptions in der qemu-Log an
+2013-11-10 16:55:12,Darkchaos,"Dann siehst du, ob du überhaupt 1:1 für die ersten 4MB hast"
+2013-11-10 16:55:56,Darkchaos,"Aber die Argumentation, warum bekomme ich einen TF, wenn ein GP ausgelöst wird, ist an sich schon der falsche Ansatz :D Vermutlich ist sogar beides der selbe Fehler"
+2013-11-10 16:56:13,Tectu,"Paddy, 0x20 -> 0x0d -> 0x0e -> 0x0e -> 0x08"
+2013-11-10 16:56:37,Tectu,"Darkchaos, was soll denn ctrl+alt+2 bitteschön sein?"
+2013-11-10 16:56:46,Darkchaos,d.h. du hast einen GPF im Scheduler?
+2013-11-10 16:56:50,Darkchaos,Das ist die QEMU-Konsole
+2013-11-10 16:56:58,Darkchaos,und darin info mem eingegeben zeigt dir deine Mappings
+2013-11-10 16:57:03,Tectu,hmm
+2013-11-10 16:57:05,Darkchaos,"info tlb gibts auch noch, aber das ist viel Information"
+2013-11-10 16:57:12,Tectu,hab bisher qemu immer direkt mit den argumenten + kernel aufgerufen
+2013-11-10 16:57:22,Darkchaos,?
+2013-11-10 16:57:38,Tectu,"qemu-system-i386 -kernel kernel -no-reboot -usbdevice tablet -s -m 1G -d int,cpu_reset"
+2013-11-10 16:57:40,Darkchaos,"Während Qemu läuft, kannst du mit CTRL+ALT+1/2/3 die Screens wechseln"
+2013-11-10 16:57:41,Tectu,so mach ich das immer :)
+2013-11-10 16:57:57,Darkchaos,3 ist zB COM1
+2013-11-10 16:58:02,Darkchaos,1 ist der default Screen
+2013-11-10 16:58:05,Darkchaos,und 2 eben die Konsole ;)
+2013-11-10 16:58:08,Paddy,Tectu: cr2 vom ersten #PF?
+2013-11-10 16:58:35,Tectu,"Paddy,  00101d5d   da liegt wie gesagt mein interrupt handler"
+2013-11-10 16:59:24,Paddy,"Hm, warum gibt das denn einen TF? Naja, egal..."
+2013-11-10 16:59:56,Paddy,Dann mach mal mit Darkchaos' info memory oder info tlb weiter
+2013-11-10 17:00:02,Tectu,was ist denn ein #TF?
+2013-11-10 17:00:06,Tectu,meint ihr DF?
+2013-11-10 17:00:07,Darkchaos,TripleFault^^
+2013-11-10 17:00:09,Paddy,Triple Fault
+2013-11-10 17:00:15,Tectu,achso - sorry.
+2013-11-10 17:00:38,Tectu,"Paddy, naja, der findet den interrupt handler beim ersten 0x0e nicht, dann halt nochmal ein interrupt weil er ihn nicht finden konnte, dann halt TF"
+2013-11-10 17:00:52,Tectu,"Darkchaos, also du rufst immer qemu ohne parameter auf und kriegst dann eine konsole?"
+2013-11-10 17:01:23,Darkchaos,"Tectu, ruf deinen Qemu auf und drücke nach dem TF CTRL+ALT+2"
+2013-11-10 17:01:27,Paddy,"Tectu: Ich hätte erwartet, dass ihn das nicht interessiert, weil beim Ausführen der ersten Instruktion im Handler die eigentliche Interruptbehandlung fertig ist."
+2013-11-10 17:01:35,Tectu,"Darkchaos, mein QEMU schliesst sich nach dem TF"
+2013-11-10 17:01:40,Paddy,-no-shutdown
+2013-11-10 17:01:48,Tectu,danke
+2013-11-10 17:01:56,Paddy,Grad erst selber benutzt ;-)
+2013-11-10 17:02:03,Darkchaos,"Ja stimmt, ohne blockenden Interrupthandler ist das echt blöd"
+2013-11-10 17:02:26,Darkchaos,"alternativ kannst du auch ein while(true){asm volatile(""cli; hlt""); } direkt nach dem anschalten des pagings setzen"
+2013-11-10 17:02:45,Tectu,"okay, bin da, Darkchaos "
+2013-11-10 17:03:00,Tectu,(in der konosle... ;-) )
+2013-11-10 17:03:09,Darkchaos,info mem
+2013-11-10 17:03:18,Tectu,nach was suche ich?
+2013-11-10 17:03:22,Tectu,(kann ja nicht copy pasten...)
+2013-11-10 17:03:30,Darkchaos,ehm
+2013-11-10 17:03:36,Darkchaos,Du müsstest haben:
+2013-11-10 17:03:57,Darkchaos,00000000 - 00400000 - 00400000
+2013-11-10 17:03:59,Darkchaos,oder sowas
+2013-11-10 17:04:10,Darkchaos,"-> von - bis - (size oder physisch, weiß ich gerade nicht)"
+2013-11-10 17:04:19,Darkchaos,und dannach ein paar Flags
+2013-11-10 17:04:25,Tectu,"hmm, die addressen sind nicht 1:1"
+2013-11-10 17:04:35,Darkchaos,"manchmal bündelt qemu die ausgabe, manchmal listet er alles einzeln auf"
+2013-11-10 17:05:06,Tectu,"man, wieso kann man das nicht copy pasten"
+2013-11-10 17:05:08,Darkchaos,"Probier mal ""info tlb"", und dann mit ich glaube es war ctrl+Pfeil nach oben scrollen"
+2013-11-10 17:05:25,Darkchaos,"irgendwie kann man auch qemu nach stdout routen, aber du kannst auch gerne einen Screenshot machen"
+2013-11-10 17:06:10,Tectu,http://abload.de/img/2013-11-10-180549_840rnufg.png
+2013-11-10 17:06:54,Tectu,"Darkchaos, ^"
+2013-11-10 17:07:00,Tectu,hilft das? :P
+2013-11-10 17:08:23,Paddy,Darkchaos: -monitor stdio
+2013-11-10 17:09:01,Darkchaos,ok also irgendwie
+2013-11-10 17:09:13,Darkchaos,Ich glaube das dritte ist einfach sizeof()
+2013-11-10 17:09:22,Tectu,http://pdos.csail.mit.edu/6.828/2012/labguide.html#qemu-info-mem
+2013-11-10 17:09:29,Tectu,indeed
+2013-11-10 17:09:31,Darkchaos,von 1001000 - 1008000 sind ja 7000
+2013-11-10 17:09:35,Tectu,yep
+2013-11-10 17:09:48,Darkchaos,d.h. es fehlt schonmal 1000000
+2013-11-10 17:10:07,Darkchaos,4mb sinds auch nicht völlig
+2013-11-10 17:10:12,Darkchaos,glaube ich :)
+2013-11-10 17:10:14,Tectu,"mein kernel liegt laut linkerscript bei 0x10000000.... der sollte also da sein, nicht?"
+2013-11-10 17:10:24,Darkchaos,ja
+2013-11-10 17:10:29,Tectu,also ist mein mapping schrott?
+2013-11-10 17:10:33,Darkchaos,probier mal noch info tlb
+2013-11-10 17:10:33,mroman,XanClic: Du magst wohl Kommentare nicht?
+2013-11-10 17:11:32,Tectu,"Darkchaos, http://pastebin.com/sv0Jddih"
+2013-11-10 17:11:41,Darkchaos,"ich sehe auch es gibt info pg :D Aber ich würde noch tlb nutzen, um zu sehen, ob nicht nur nicht durchgängig sondern auch komplett falsch nach physisch gemappt wurde"
+2013-11-10 17:12:07,Darkchaos,"in der tat, du mappst fast alles nach f000f000"
+2013-11-10 17:12:23,Tectu,sollte ich mal meine vmm.c zeigen?
+2013-11-10 17:12:40,Darkchaos,keine Ahnung. Kannst ja mit meiner vergleichen :)
+2013-11-10 17:13:00,Tectu,http://pastebin.com/VHuMJyWU
+2013-11-10 17:13:08,Tectu,"grml, das ist doch doof :("
+2013-11-10 17:13:41,Darkchaos,sieht eigentlich vom prinzip her gut aus :D
+2013-11-10 17:14:52,Tectu,villeicht hat unser Paddy ja noch eine idee? ;)
+2013-11-10 17:15:08,mroman,Tectu: Warum setzt uGFX bestimmte Macros nicht automatisch je nach abhņgigkeit?
+2013-11-10 17:15:47,mroman,also z.b GDISP_NEED_TEXT <-> GFX_USE_GDISP?
+2013-11-10 17:15:57,mroman,oder tut es das?
+2013-11-10 17:16:03,Tectu,"mroman, weil nicht jeder der ein grafik display ansteuert gleich text rendern will"
+2013-11-10 17:16:18,Tectu,"mroman, und dann müsstest du einen font angeben, und das geht nacher alles in die code size"
+2013-11-10 17:16:42,Darkchaos,"mappe mal Page für page mit ner lock dahinter und schaue im qemu nach mit info tlb, vielleicht killst du dir erst am Ende alles oder so. Vielleicht hats auch was zu tun mit deiner Pointerarithmetik"
+2013-11-10 17:16:47,Tectu,"mroman, du kennst/nutzt µGFX? o.O"
+2013-11-10 17:16:54,Paddy,"Tectu: Schau dir an, ob cr3 den erwarteten Wert hat Danach, ob der wenigstens der PD-Eintrag richtig ist oder ob es an der PT liegt."
+2013-11-10 17:16:56,mroman,Tectu: Ich meinte in die andere Richtung
+2013-11-10 17:17:00,Darkchaos,"ich hab da extra Typen deklariert, machts zwar nicht besser, aber naja"
+2013-11-10 17:17:06,Paddy,"Und danach Debugcode einbauen, um rauszufinden, wo es kaputtgeht"
+2013-11-10 17:17:09,mroman,GDISP_NEED_TEXT benoetigt sicher gleich GFX_USE_GDISP?
+2013-11-10 17:17:14,Paddy,Oder ob von Anfang an die falschen Werte drinstehen
+2013-11-10 17:17:39,Tectu,"mroman, das ist korrekt. Das gibt aber eine ganze stange von #ifs zu tippen ;-)"
+2013-11-10 17:18:15,Tectu,"mroman, hauptgrund ist dass du deine settings behalten kannst, ohne das modul zu kompilieren"
+2013-11-10 17:18:31,Tectu,"mroman, war/erschien oft hilfreich"
+2013-11-10 17:19:08,mroman,Wie meinst du das mit beha/ten?
+2013-11-10 17:20:39,Tectu,"mroman, du kannst deine GDISP_NEED_XXX settings auf TRUE/FALSE gesetzt lassen wie du sie benutzt und oben nur GFX_USE_GDISP auf FALSE, somit kompiliert das ganze modul nicht mehr mit. Sobald du was auch immer fertig debuggt hast, kannst du wieder nur GFX_USE_GDISP auf TRUE setzten und musst nicht wieder jedes einzelne GDISP_NEED_XXX betätscheln"
+2013-11-10 17:21:16,mroman,Ah. Ok
+2013-11-10 17:21:46,Tectu,"<Tectu> mroman, du kennst/nutzt µGFX? o.O"
+2013-11-10 17:24:30,mroman,Darueber gestolpert
+2013-11-10 17:24:36,mroman,"nutzen, noch nicht."
+2013-11-10 17:24:45,Tectu,vor oder nach meinem erscheinen? :P
+2013-11-10 17:25:21,Tectu,"mroman, heute steht noch der v2.0 release auf dem plan. aber nicht sicher ob ich noch auf die reihe bekomme. Villeicht muss das um zwei tage verschoben werden."
+2013-11-10 17:25:51,mroman,Tectu: nach
+2013-11-10 17:30:00,Tectu,"mroman, bezüglich des ""noch nicht"" - mit was arbeitest du?"
+2013-11-10 17:32:04,mroman,Oh
+2013-11-10 17:32:06,mroman,Nichts
+2013-11-10 17:32:11,mroman,ich bin nur ein arbeitsloser Versager.
+2013-11-10 17:32:30,mroman,https://bitbucket.org/Tectu/ugfx/src/6ca3537a696e7ace8098771a9a7105380604253d/drivers/gdisp/HX8347D/gdisp_lld.c?at=master#cl-347
+2013-11-10 17:32:40,mroman,"^- sieht das nur so aus, oder gibt das tatsaechlich nie eine Farbe zurueck?"
+2013-11-10 17:34:00,Tectu,"mroman, der treiber gibt in der tat keine farbe zurück - dieses feature wurde bisher nicht schlicht nicht implementiert (einer der treiber für die ich selbst keine HW habe)"
+2013-11-10 17:34:15,Tectu,"mroman, naja, aber so hobbymässig und so hast du aber mit solchen systemen zu tun?"
+2013-11-10 17:34:30,Tectu,"mroman, ich mein du liest dir doch nicht nur aus langeweile den treiber code eines displaycontrollers durch?"
+2013-11-10 17:35:44,mroman,Doch @Langeweile
+2013-11-10 17:36:07,Tectu,o.O
+2013-11-10 17:36:30,Tectu,bist du 15 und hast zu viel ferien? :D    (Das mit dem alter soll jetzt nicht beleidigend sein!)
+2013-11-10 17:36:57,mroman,ich muesste eigentlich fuer Pruefungen lernen aber ich bin gerade nicht in der Verfassung dazu
+2013-11-10 17:37:11,Tectu,moralisch / geistig? unmotiviert?
+2013-11-10 17:37:36,mroman,geistig.
+2013-11-10 17:37:44,Paddy,Normalerweise fängt man dann an zu putzen
+2013-11-10 17:51:21,chris12,bb
+2013-11-10 17:55:14,XanClic,[17:10:41] <mroman> XanClic: Du magst wohl Kommentare nicht?
+2013-11-10 17:55:19,XanClic,Soll sich ja auch keiner meinen Code ansehen *g*
+2013-11-10 18:05:50,Tectu,"Darkchaos, ich glaub ich habs gefixt bekommen"
+2013-11-10 18:06:00,Paddy,"XanClic: Dann machst du was falsch, wenn er es trotzdem kann ;-)"
+2013-11-10 18:07:13,Paddy,"Hm, statt -ENOMEM beim dritten yasm-Aufruf hab ich jetzt einen PF beim vierten. Ist das ein guter Tausch?"
+2013-11-10 18:07:24,Tectu,"Darkchaos, Paddy http://pastebin.com/hQDHAiRK"
+2013-11-10 18:08:16,Paddy,"Tectu: Und immer noch gleiche Stelle, also cr2 = 00101d5d?"
+2013-11-10 18:08:51,Tectu,"Paddy, nein, jetzt funtzt alles wie es soll (er findet den handler)"
+2013-11-10 18:09:19,Paddy,Ah
+2013-11-10 18:09:26,Paddy,Wieso gibst du uns dann Debugausgaben?
+2013-11-10 18:09:46,Tectu,"Paddy, um zu zeigen das es wirklich geht und ich euch nicht nur veräpple ;)"
+2013-11-10 18:09:54,Paddy,"Öhm, autsch..."
+2013-11-10 18:10:03,Paddy,Ich hab grad zum Vergleich bei mir ein info tlb gemacht
+2013-11-10 18:10:13,Tectu,ich hab ja sonst auch noch nix gemappt
+2013-11-10 18:10:21,Paddy,"Und siehe da, die Pagetables selbst sind mit U-Flag gemappt..."
+2013-11-10 18:10:37,Paddy,Sollte ich vielleicht mal fixen :-)
+2013-11-10 18:17:06,mroman,Paddy: btw. dein 1 Register mehr Approach ist auch nicht so gut
+2013-11-10 18:17:18,mroman,nested interrupts
+2013-11-10 18:17:27,mroman,"du schiebst sp in das Register, laedst ssp nach sp"
+2013-11-10 18:17:37,mroman,dann modifizierst du sp
+2013-11-10 18:17:39,mroman,nochmal interrupt
+2013-11-10 18:17:46,mroman,"schiebst sp in das Register -> bumm, ueberschrieben"
+2013-11-10 18:17:49,mroman,zweites Problem
+2013-11-10 18:17:55,mroman,"du laedst ssp nach sp, pushts gewisse dinge"
+2013-11-10 18:18:08,mroman,ssp ist nicht mehr *aktuell*
+2013-11-10 18:18:19,mroman,nested interrupt -> bumm. Ruecksprungadresse ueberschreibt deinen Stack
+2013-11-10 18:18:41,mroman,ich musste jetzt effektiv push/pop Befehlere einfuehren die ssp benutzen koennen
+2013-11-10 18:19:06,Paddy,"mroman: pr1 soll ja auch nur benutzt werden, wenn man vom Userspace kommt"
+2013-11-10 18:19:16,Paddy,"Wenn man vom Kernel kommt, braucht man keinen Stackwechsel"
+2013-11-10 18:19:37,mroman,ja
+2013-11-10 18:19:44,mroman,Wie testet man das?
+2013-11-10 18:19:47,Paddy,"Hm, idealerweise würde die CPU dann auch nichts auf ssp, sondern auf sp pushen"
+2013-11-10 18:20:03,Paddy,Bei deiner CPU? Das solltest du wissen ;-)
+2013-11-10 18:20:07,mroman,:)
+2013-11-10 18:20:33,Paddy,Vielleicht ein Flag oder so
+2013-11-10 18:20:47,mroman,man kann CR1 auf dem Stack testen
+2013-11-10 18:20:55,mroman,wenn das CR1 auf dem Stack ein Privileged Flag hat
+2013-11-10 18:21:06,Paddy,"Ah, stimmt, das kommt ja auf den Stack"
+2013-11-10 18:21:10,mroman,"kommt man aus dem Privileged Mode, also sicher nicht aus dem Userspace"
+2013-11-10 18:21:29,mroman,"nur, um das zu testen muss man natuerlich erst mal gewisse Register sichern :)"
+2013-11-10 18:21:36,mroman,:D
+2013-11-10 18:21:45,mroman,also
+2013-11-10 18:21:46,Paddy,Du meinst wenigstens pr2 muss noch dazu? ;-)
+2013-11-10 18:22:08,mroman,hm
+2013-11-10 18:22:11,mroman,lass mich ueberlegen
+2013-11-10 18:22:16,Paddy,"Wobei das natürlich davon ausgeht, dass der Interruptstub selber nicht unterbrochen wird"
+2013-11-10 18:22:39,Paddy,Also Hardwareinterrupts müssten direkt nach einem Interrupt erstmal aus sein
+2013-11-10 18:22:45,mroman,Das sind sie
+2013-11-10 18:22:48,Paddy,Ok
+2013-11-10 18:27:45,mroman,http://codepad.org/vmqCPLZl
+2013-11-10 18:27:52,mroman,^- das muesste eigentlich gehen
+2013-11-10 18:28:15,mroman,oder auch nicht
+2013-11-10 18:28:25,mroman,ich bin mir nicht sicher zwischen storema and movtc
+2013-11-10 18:28:40,Paddy,Was macht storeas?
+2013-11-10 18:29:08,Paddy,Ist das ein push?
+2013-11-10 18:29:16,mroman,push mit ssp als stack pointer
+2013-11-10 18:29:49,mroman,aber ich glaube es ist nicht safe wenn zwischen storema und movtc ein interrupt ausgeloest wird
+2013-11-10 18:29:57,mroman,hm
+2013-11-10 18:30:00,Paddy,"Also vom Kernel aus funktioniert das nicht, weil ssp ja nicht aktuell ist"
+2013-11-10 18:30:04,mroman,ich sollte storeas auch Registerranges pushen lassen
+2013-11-10 18:30:57,mroman,Paddy: Wie meinst du?
+2013-11-10 18:31:17,Paddy,"Der Kernel selber arbeitet doch auch auf sp, oder?"
+2013-11-10 18:31:30,mroman,Ja
+2013-11-10 18:31:45,Paddy,"Das heißt, dort, wo die Exception passiert, ist ssp nicht mehr der aktuelle Stack"
+2013-11-10 18:31:46,mroman,SSP ist ein Control Register und daher nicht wirklich benutzbar mit normalen Istruktionen
+2013-11-10 18:31:55,Paddy,Sondern du würdest irgendwo in die Mitte des Stacks schreiben
+2013-11-10 18:32:02,mroman,Paddy: Ja
+2013-11-10 18:32:10,mroman,falls diese Exception im Interrupt auftritt
+2013-11-10 18:32:14,Paddy,Ist das nicht irgendwie doof?
+2013-11-10 18:32:22,mroman,also falls sie zwischen storema und movtc auftritt
+2013-11-10 18:32:35,mroman,oder zwischen loadma
+2013-11-10 18:32:36,mroman,ja
+2013-11-10 18:32:39,mroman,Mist :(
+2013-11-10 18:32:55,Paddy,Du musst wohl wirklich erstmal cr1 prüfen
+2013-11-10 18:32:59,mroman,ich sollte meine CPU einfach SP pushen lassen beim Interrupt
+2013-11-10 18:33:09,mroman,aber puh
+2013-11-10 18:33:10,mroman,hm
+2013-11-10 18:33:26,mroman,Paddy: Ja
+2013-11-10 18:33:42,mroman,"man muesste pruefen ""aus Userspace? Ja => sp mit ssp laden? Nein? -> nichts tun, sp stimmt schon"
+2013-11-10 18:33:50,Paddy,Genau
+2013-11-10 18:33:51,mroman,also 
+2013-11-10 18:34:15,mroman,"Aus Userspace? sp nach st1 schieben, sp mit ssp laden, *doing*"
+2013-11-10 18:34:21,mroman,sp wieder mit st1 laden
+2013-11-10 18:34:43,mroman,ok
+2013-11-10 18:35:16,mroman,auf dem Stack liegt cr1 und dann pc
+2013-11-10 18:35:18,mroman,oder ip
+2013-11-10 18:35:22,Paddy,Was ist denn st1? Ein anderer Name für pr1?
+2013-11-10 18:35:36,mroman,Paddy: Storage Register 1: To be freely used by an os to do stuff
+2013-11-10 18:35:52,mroman,also ein Control Register welches vom Betriebssystem frei benutzt werden darf
+2013-11-10 18:35:59,Paddy,"Okay, also durfte ich mir den Namen doch nicht aussuchen ;-)"
+2013-11-10 18:36:08,mroman,"d.h, sp + 4 zeigt auf position, sp + 8 auf cr1"
+2013-11-10 18:36:32,Paddy,"Die Prüfung ""aus Userspace?"" ist eventuell noch tricky ohne freie Register"
+2013-11-10 18:36:37,mroman,ja
+2013-11-10 18:36:43,mroman,zumal du flags veraenderen musst
+2013-11-10 18:36:52,mroman,"loadid r0, sp, 8 laedt cr1 nach r0"
+2013-11-10 18:36:57,mroman,also muss man sicher mal r0 sichern koennen
+2013-11-10 18:37:11,mroman,"dann musst du testen, ob bit 0 in cr1 gesetzt ist"
+2013-11-10 18:37:13,mroman,"and r0, r0, 1"
+2013-11-10 18:37:17,mroman,test r0
+2013-11-10 18:37:23,mroman,^- und das veraendert jetzt Flags
+2013-11-10 18:37:51,mroman,d.h man muss r0 sichern koennen und flags sichern koennen
+2013-11-10 18:38:23,mroman,und sp
+2013-11-10 18:38:33,mroman,"d.h st1, st2 und st3 brauchte man wohl fast."
+2013-11-10 18:41:24,mroman,aber
+2013-11-10 18:41:29,mroman,ist das sicher?
+2013-11-10 18:41:47,mroman,"was passiert, wenn eine Exception eintritt in diesem Check?"
+2013-11-10 18:42:01,Paddy,Was für eine denn?
+2013-11-10 18:42:33,mroman,nun
+2013-11-10 18:42:49,Paddy,"Ein PF könnte beim Zugriff auf den Stack passieren, aber dann hast du verloren"
+2013-11-10 18:43:18,mroman,ja
+2013-11-10 18:43:24,mroman,"ausserdem geht loadid r0, sp, 8 natuerlich nicht"
+2013-11-10 18:43:32,mroman,du muesstes ja von ssp laden :)
+2013-11-10 18:43:35,mroman,und das laedt von sp
+2013-11-10 18:44:23,mroman,"geht vlt mit xchgc sp, ssp"
+2013-11-10 18:46:22,mroman,oh moment
+2013-11-10 18:46:31,mroman,ich kann ja r0 flgs pushen auf den system stack mit storeas
+2013-11-10 18:46:58,Paddy,"Nur wenn du vom Userspace kommst, sonst ist ssp nicht gültig"
+2013-11-10 18:47:04,mroman,ok
+2013-11-10 18:47:05,mroman,ja
+2013-11-10 18:47:08,mroman,das geht einfach nicht :)
+2013-11-10 18:47:41,mroman,du kommst nicht an cr1 ran
+2013-11-10 18:47:54,mroman,ohne dass du sp temporaer sichern musst
+2013-11-10 18:48:39,mroman,ausserdem pusht die CPU immer auf ssp
+2013-11-10 18:48:45,mroman,d.h wenn du mit sp hantierst im Kernel
+2013-11-10 18:48:54,mroman,"musst du dafuer schauen, dass ssp aktuell ist"
+2013-11-10 18:49:33,mroman,ok
+2013-11-10 18:50:06,mroman,Paddy: Wie macht x86 das?
+2013-11-10 18:51:51,mroman,Ich koennte in CR1 ein Flag einbauen
+2013-11-10 18:52:00,mroman,"""OLD_PRIV_MODE"" z.b"
+2013-11-10 18:52:03,mroman,:)
+2013-11-10 18:52:19,mroman,"das ist gesetzt, wenn man vor dem Interrupt bereits das PRIV_MODE flag gesetzt hatte"
+2013-11-10 18:52:26,mroman,"und es ist nicht gesetzt, wenn man davor es nicht gesetzt hatte"
+2013-11-10 18:53:33,mroman,"dann koennte man storeas r0; storeas flags; movfc r0, cr1; and r0, r0, ...; test r0; detektieren, ob man vorher vom Kernel oder Userspace kommt"
+2013-11-10 18:54:30,mroman,oder
+2013-11-10 18:54:41,mroman,der Kernel kann ja das irgendwo sonst speichern?
+2013-11-10 18:54:49,mroman,sobald er zu einem Usertask switcht
+2013-11-10 18:54:52,mroman,merkt er sich das
+2013-11-10 18:55:08,mroman,z.b in st1
+2013-11-10 18:55:17,mroman,wenn er in einen interrupt kommt
+2013-11-10 18:55:19,Paddy,"mroman: Auf x86 gibt es einen Stackwechsel, wenn es einen Ringwechsel gibt"
+2013-11-10 18:55:23,mroman,setzt er dieses st1
+2013-11-10 18:55:37,mroman,"und wenn st1 nicht null ist, kommt man aus dem Kernelspace"
+2013-11-10 18:55:37,Paddy,mroman: Und zwar automagisch von der CPU durchgeführt
+2013-11-10 18:55:59,mroman,das problem ist natuerlich weiterhin
+2013-11-10 18:56:10,mroman,"Was ist, wenn beim pushen auf den kernelstack ein pagefault ausgeloest wird?"
+2013-11-10 18:56:14,mroman,also
+2013-11-10 18:56:28,mroman,"movfc sp, ssp; kommen aus dem userspace, sp laden"
+2013-11-10 18:56:37,mroman,"storema sp, r0:flgs ;alle Register sichern"
+2013-11-10 18:56:45,mroman,dieses storema kann von einer Exception betroffen sein
+2013-11-10 18:56:49,mroman,"alignment fault, page fault"
+2013-11-10 18:56:58,mroman,address overflow
+2013-11-10 18:57:00,mroman,oder so
+2013-11-10 18:57:02,Paddy,"Wenn du auf den Kernelstack nicht pushen kannst, hast du sowieso ein Problem"
+2013-11-10 18:57:13,Paddy,Vermutlich hast du dann schon einen Triple Fault bekommen
+2013-11-10 18:57:32,mroman,nun gut
+2013-11-10 18:57:38,mroman,"nach movfc sp, ssp ist ssp zumindest sicher aligned"
+2013-11-10 18:57:50,mroman,sonst gaebe das bereits einen alignment fault wenn die CPU versucht CR1 und PC zu pushen
+2013-11-10 18:58:03,Paddy,Genau
+2013-11-10 18:58:09,mroman,aber einen page fault koennte es trotzdem ausloesen
+2013-11-10 18:58:18,mroman,wenn er z.b ueberlauft
+2013-11-10 18:58:33,Paddy,Dann gäbe es in der Regel auch beim Pushen von cr1 und pc einen PF
+2013-11-10 18:58:37,mroman,was dann eh sofort triple faultet
+2013-11-10 18:58:40,mroman,wenn dein ssp ungueltig ist
+2013-11-10 18:58:41,Paddy,Außer du erwischst genau die Pagegrenze
+2013-11-10 18:58:58,mroman,dann kann die CPU ja nicht mehr CR1 und PC pushen fuer die Exception die storema verursachen wuerde
+2013-11-10 18:59:18,mroman,d.h wenn dein storema faultet weil ssp ungueltig
+2013-11-10 18:59:27,mroman,dann kann die CPU da auch nichts mehr pushen
+2013-11-10 18:59:52,mroman,"weil ein push zu ssp nicht geht, und die CPU fuer eine Exception genau eben das macht"
+2013-11-10 19:00:40,mroman,"Paddy: Ich meine. Dein Stack ist genau so, dass CR1 und IP noch gepusht werden koennen"
+2013-11-10 19:00:48,mroman,"nun laedst du in deinem Handler ssp nach sp, und pushst dann"
+2013-11-10 19:01:02,mroman,der SSP ist jedoch bereits ueber eine Pagegrenze hinaus
+2013-11-10 19:01:06,mroman,womit dieser push page faultet
+2013-11-10 19:01:16,mroman,d.h die CPU will einen page fault ausloesen
+2013-11-10 19:01:23,mroman,und dazu muss es eben wieder auf ssp pushen
+2013-11-10 19:01:28,mroman,was ja eben nicht geht
+2013-11-10 19:01:48,mroman,das duerfte in der Tat sofort triple faulten wenn dein system stack im Arsch ist
+2013-11-10 19:02:24,mroman,Paddy: Idealerweise koennte ein OS auch zwei Stacks benutzen
+2013-11-10 19:02:37,mroman,"einen ""Interrupt Stack"" nur fuer CR1 und PC"
+2013-11-10 19:02:40,mroman,(aka ssp)
+2013-11-10 19:02:51,Svenska,führ doch ein tss ein?
+2013-11-10 19:02:54,mroman,und fuer den effektiven Kernel Stack kann das OS ja einen komplett anderen Stackpointer benutzen
+2013-11-10 19:03:14,mroman,den das OS z.b immer in ST1 haelt
+2013-11-10 19:04:10,Svenska,ist deine mmu teil der cpu?
+2013-11-10 19:04:35,Svenska,"dann nimm doch einfach ein register, wo du die physische adresse vom systemstack hintust"
+2013-11-10 19:04:59,Svenska,"da ist garantiert immer was frei, du kennst immer die adresse und dabei kann nie ein #PF auftreten"
+2013-11-10 19:05:15,mroman,Svenska: Dieses Register gibt es
+2013-11-10 19:05:19,mroman,SSP 
+2013-11-10 19:05:29,Svenska,wo ist dann das problem?
+2013-11-10 19:05:38,mroman,"das Problem ist nur, dass SSP nur mittels mov gelesen werden kann"
+2013-11-10 19:05:51,Svenska,und?
+2013-11-10 19:05:59,mroman,Du kannst nicht nach SSP pushen z.b
+2013-11-10 19:06:11,Svenska,"solange das nur von kernelspace ausgeht, ist doch alles in ordnung?"
+2013-11-10 19:06:25,Svenska,hm
+2013-11-10 19:06:37,mroman,SSP ist ein Control Register
+2013-11-10 19:06:46,mroman,und es gibt eigentlich nur mov to control register (movtc)
+2013-11-10 19:06:51,mroman,und mov from contrtol register (movfc)
+2013-11-10 19:06:56,Svenska,"der interrupt-handler schreibt dann halt SP weg, und dann movtc ssp, sp"
+2013-11-10 19:07:01,Svenska,dann kann er davon pushen und popen
+2013-11-10 19:07:11,mroman,"Svenska: Ja, aber wohin soll er SP schreiben?"
+2013-11-10 19:07:22,Svenska,ist doch egal?
+2013-11-10 19:07:29,Svenska,ist software
+2013-11-10 19:07:30,mroman,Du musst SP ja wieder herstellen koennen
+2013-11-10 19:07:32,Svenska,ja
+2013-11-10 19:07:41,mroman,"ja eben, wie willst du das machen?"
+2013-11-10 19:07:42,Svenska,static uintptr_t oldssp
+2013-11-10 19:07:54,mroman,das funktioniert aber nicht nested
+2013-11-10 19:07:58,mroman,@oldssp
+2013-11-10 19:08:46,Svenska,software-stack?
+2013-11-10 19:08:57,Svenska,static uintptr_t oldssps[]?
+2013-11-10 19:09:16,Svenska,du musst es ja nicht in hardware lösen lassen
+2013-11-10 19:09:51,Svenska,"nested interrupts gibt es nur so tief, wie es interrupts gibt"
+2013-11-10 19:10:06,Svenska,"weil ""irq a unterbricht irq a"" ist gaaanz böse"
+2013-11-10 19:10:18,mroman,schon
+2013-11-10 19:10:27,mroman,aber du kannst nichts in den Speicher schreiben ohne dazu Register zu benutzen
+2013-11-10 19:10:30,Svenska,und housekeeping muss nicht nested sein
+2013-11-10 19:10:35,mroman,und du musst Register in einer INterrupt Routine erst sichern
+2013-11-10 19:10:41,mroman,bevor du sie ueberschreiben darfst
+2013-11-10 19:11:23,Svenska,ja
+2013-11-10 19:11:38,Svenska,frage: wieviel tut die hardware für dich?
+2013-11-10 19:12:07,mroman,http://codepad.org/ml7SaEB9
+2013-11-10 19:12:13,mroman,^- das koennte gehen
+2013-11-10 19:12:27,mroman,obwohl es natuerlich viel einfacher waere
+2013-11-10 19:12:31,Svenska,storeas?
+2013-11-10 19:12:36,mroman,wenn man direkt mehrere Register auf ssp pushen kann
+2013-11-10 19:12:39,mroman,Svenska: push to ssp
+2013-11-10 19:12:45,Svenska,ah
+2013-11-10 19:12:45,mroman,loadas ist pop from ssp
+2013-11-10 19:12:52,Svenska,und storema?
+2013-11-10 19:12:59,mroman,push 
+2013-11-10 19:13:02,mroman,und loadma ist pop
+2013-11-10 19:13:16,Svenska,<hauptsache anders>
+2013-11-10 19:13:20,mroman,genau
+2013-11-10 19:13:35,Svenska,"wehe, man bringt studenten was sinnvolles bei"
+2013-11-10 19:13:37,Svenska,naja egal
+2013-11-10 19:13:40,mroman,genau
+2013-11-10 19:14:14,Tectu,habt ihr euere %x printfs eigentlich lieber in upper oder lower case?
+2013-11-10 19:14:18,Svenska,"sp wegsichern, ssp nach sp kopieren, sp pushen, sp wieder nach ssp sichern"
+2013-11-10 19:14:19,Tectu,kann mich da so nie entscheiden
+2013-11-10 19:14:26,Svenska,"Tectu: %x ist lowercase, %X ist uppercase"
+2013-11-10 19:14:35,Paddy,"So, statt PF jetzt wieder -ENOMEM, aber erst nach 20 yasms. Ich glaube, das ist vorerst akzeptabel."
+2013-11-10 19:14:49,Svenska,"ich nutze immer upper case, weil ""x"" kleiner ist als alle hexziffern und man den anfang besser findet"
+2013-11-10 19:15:06,Jidder,%χ ist uppercase nach unten verschoben
+2013-11-10 19:15:24,Svenska,mroman: schaltet die hardware interrupts im interrupt aus?
+2013-11-10 19:15:28,Tectu,"tolles argument, Svenska !"
+2013-11-10 19:15:39,Svenska,?
+2013-11-10 19:15:55,Svenska,0xefc ist halt schwieriger zu lesen als 0xEFC
+2013-11-10 19:16:25,Svenska,einziger haken an der sache: mein printf kann nur lower case xD
+2013-11-10 19:16:42,Paddy,objdump spuckt Kleinbuchstaben in den Adressen aus
+2013-11-10 19:16:54,Svenska,und B88BB8 ist auch schwierig
+2013-11-10 19:17:02,Paddy,"Das ist ein ziemlich großer praktischer Nachteil bei den Großbuchstaben, die ich benutze"
+2013-11-10 19:17:34,Jidder,"wenn die ziffern als römische zahlen ausgegeben werden, können die auch lower case sein"
+2013-11-10 19:20:04,Tectu,ist jidder immer so oder nur heute? :)
+2013-11-10 19:20:37,Jidder,das ist mein geheimnis. ich bin immer lustig
+2013-11-10 19:20:43,Svenska,immer^^
+2013-11-10 19:37:01,mroman,Svenska: Ja
+2013-11-10 19:37:09,mroman,HW-Interrupts werden automatisch ausgeschaltet
+2013-11-10 19:37:17,mroman,"(koennen aber wieder eingeschaltet werden, falls man nesting will)"
+2013-11-10 19:37:25,mroman,Exceptions aber nicht
+2013-11-10 19:37:27,Svenska,"das heißt, dass interrupts nicht nested sind, solange man das nicht explizit vorsieht"
+2013-11-10 19:37:31,mroman,und Software Interrupts auch nicht.
+2013-11-10 19:37:49,Svenska,"damit ist es ein problem des betriebssystems, nicht der hardware :)"
+2013-11-10 19:38:01,Svenska,exceptions und software-interrupts sind egal
+2013-11-10 19:38:07,mroman,Svenska: Eine Interrupt Routine wird nie durch einen Hardware Interrupt unterbrochen ausser man will das explizit.
+2013-11-10 19:38:10,Svenska,exceptions dürfen im kernel sowieso nicht auftreten
+2013-11-10 19:38:23,Svenska,und software-interrupts wird der kernel auch nicht selbst benutzen
+2013-11-10 19:46:40,mroman,"Svenska: Ja, also grundsaetzlich geht's schon"
+2013-11-10 19:46:53,mroman,zur Not muss man halt 16 pushes benutzen :)
+2013-11-10 19:46:58,Svenska,richtig
+2013-11-10 19:47:06,mroman,was zwar etwas doof ist imho
+2013-11-10 19:47:11,Svenska,nested interrupts gibts halt nicht gratis
+2013-11-10 19:47:30,mroman,da man mit storema grundsaetzlich mehrere Register gleichzeitig pushen kann
+2013-11-10 19:47:35,mroman,aber halt nicht ohne Umwege nach ssp
+2013-11-10 19:48:02,mroman,"und es eigentlich keinen Grund gibt, warum die ssp Variante von store nicht auch gleich mehrere Register pushen kann"
+2013-11-10 19:48:45,mroman,idealerweise sollte man eh nicht alle Register pushen wenn das nicht unbedingt noetig ist
+2013-11-10 19:49:05,Svenska,hängt von der abi ab
+2013-11-10 19:49:21,Svenska,"die meisten ABIs spezifizieren einen teil der register als caller-saved, einen anderen teil als callee-saved"
+2013-11-10 19:49:35,mroman,fuer syscalls?
+2013-11-10 19:49:42,mroman,echt?
+2013-11-10 19:49:42,Svenska,für funktionsaufrufe
+2013-11-10 19:49:46,mroman,ja
+2013-11-10 19:49:53,mroman,Die sind kein Problem :)
+2013-11-10 19:49:59,mroman,aber hm
+2013-11-10 19:50:07,Svenska,für syscalls (interrupts) gibt es sowohl hardware-saved als auch software-saved
+2013-11-10 19:50:16,mroman,"syscalls koennten eigentlich auch verlagen, dass der Userspace Prozess ein paar Register speichert?"
+2013-11-10 19:50:20,Svenska,x86 hat hw-saved. z80 hat sw-saved.
+2013-11-10 19:50:21,mroman,*verlangen
+2013-11-10 19:50:40,Svenska,"syscalls zerstören üblicherweise alle register außer denen, die man will :D"
+2013-11-10 19:50:46,mroman,Ja
+2013-11-10 19:50:53,mroman,aber das OS koennte doch durchaus sagen uhm
+2013-11-10 19:50:55,Svenska,man kann aber auch scratch-register definieren
+2013-11-10 19:50:58,Svenska,...das ist ABI.
+2013-11-10 19:51:02,mroman,fuer syscalls musst du r0-r8 selbst sichern
+2013-11-10 19:51:33,mroman,oder fuer syscalls musst du alles sichern ausser SP z.b
+2013-11-10 19:51:51,Svenska,"naja, eher: R0..R7 sind die ergebnisse, R8..R15 gehen verloren, R16..R29 bleiben erhalten"
+2013-11-10 19:52:05,mroman,z.b fuer einen file_open syscall
+2013-11-10 19:52:17,Svenska,"du sagst ja nicht ""musst du sichern"", sondern ""gehen verloren"" :-)"
+2013-11-10 19:52:21,mroman,r0 gibt an welchen Syscall man will
+2013-11-10 19:52:32,mroman,und r0 enthaelt auch den Rueckgabewert
+2013-11-10 19:52:52,mroman,und alle Register ausser SP gehen verloren.
+2013-11-10 19:53:17,Svenska,"hm, joa, kann man machen"
+2013-11-10 19:53:29,Svenska,"wobei ich ein paar register als ""bleiben erhalten"" machen würde"
+2013-11-10 19:53:40,mroman,Ja
+2013-11-10 19:53:41,Svenska,erspart ne menge push/pop in funktionen
+2013-11-10 19:53:49,mroman,eine ISR muss ja nicht alle Register benutzen
+2013-11-10 19:54:02,Svenska,syscalls werden ja meist irgendwelche kurzen leaf-funktionen (wrappern) aufgerufen
+2013-11-10 19:54:09,mroman,problematisch sind halt hardware interrupts
+2013-11-10 19:54:17,mroman,die muesen halt alles sichern was sie benutzen
+2013-11-10 19:54:26,mroman,hm. eigentlich auch nicht so problematisch
+2013-11-10 19:54:27,Svenska,"der handler sieht doch, was er bekommt"
+2013-11-10 19:55:03,Svenska,"ein exception-/irq-handler sichert alles, ein int-handler sichert R8..R15 (so er sie nutzt)"
+2013-11-10 19:56:37,mroman,wieso sichert ein irq-handler alles?
+2013-11-10 19:56:58,Svenska,"(alles, was er benutzt)"
+2013-11-10 19:57:02,mroman,also
+2013-11-10 19:57:09,Svenska,irq=hardware-interrupt
+2013-11-10 19:57:23,mroman,wenn der viel OS Zeugs aufruft ja
+2013-11-10 19:57:27,mroman,dann sollte er wohl alles sichern.
+2013-11-10 19:58:05,mroman,ja
+2013-11-10 19:58:13,mroman,ich muss loadas/storeas umschreiben zu register ranges
+2013-11-10 19:59:18,mroman,"meine Festplatte ist so im Arsch, dass Firefox und andere Programme nicht mehr starten :)"
+2013-11-10 19:59:50,mroman,hm
+2013-11-10 19:59:55,mroman,Opera auch nicht mehr :(
+2013-11-10 20:00:11,mroman,ah. doch.
+2013-11-10 20:00:14,mroman,aber arg langam
+2013-11-10 20:00:57,mroman,Firefox ist aber kaputt.
+2013-11-10 20:01:11,Svenska,"lass dir das ne mahnung sein, bevor sie komplett stirbt"
+2013-11-10 20:02:02,mroman,Mahnung fuer was?
+2013-11-10 20:02:20,Svenska,"wenn sie stirbt, sind die daten futsch"
+2013-11-10 20:02:57,Jonathan,"Die stirbt doch schon, bzw ist mitten dabei"
+2013-11-10 20:03:13,Jonathan,Bei den Symptomen tippe ich auf 24 Stunden bis 1 Woche.
+2013-11-10 20:03:19,Jonathan,"Btw, moin Svenska :P"
+2013-11-10 20:03:23,Svenska,:)
+2013-11-10 20:03:47,mroman,ich habe keine Daten
+2013-11-10 20:04:39,Darkchaos_,"kann sowas eigentlich durch ein gescheites Filesystem abgefangen werden? In dem Falle sind ja die Bits nicht mehr magnetisiert, oder?"
+2013-11-10 20:05:00,Svenska,"Darkchaos_: wenn die magnetisierung kaputt geht, gibt es kein filesystem mehr"
+2013-11-10 20:05:17,mroman,Windows meckert dass gewisse Datein nicht mehr lesbar sind
+2013-11-10 20:05:18,Svenska,"und wenn der schreiblesekopf die platte zerkratzt, ebenfalls nicht."
+2013-11-10 20:05:28,mroman,also kann es wohl defekte Bloecke oder so erkennen
+2013-11-10 20:05:29,Svenska,"auch, wenn die elektronik verbrennt, ist das dateisystem egal :)"
+2013-11-10 20:05:35,Darkchaos_,"Und das was zB rfs+ macht und ich denke ext3 auch mit den 20% Secure Blocks (?) sind, falls durch einen abrupten Crash die Dateinodes nicht mehr gefunden werden?"
+2013-11-10 20:05:36,Svenska,mroman: festplatten nutzen crc
+2013-11-10 20:05:48,Svenska,*seufz*
+2013-11-10 20:06:00,Svenska,"Darkchaos_: du gehst davon aus, dass die datenstrukturen des dateisystems lesbar sind."
+2013-11-10 20:06:20,Darkchaos_,Ich hatte nämlich mal ausversehen meinen Laptop gekillt während er am schreiben war. Eine art checkfs konnte alles perfekt reparieren!
+2013-11-10 20:06:25,Darkchaos_,"Ja, ich frage nur aus Interesse"
+2013-11-10 20:06:35,mroman,Journal?
+2013-11-10 20:06:36,Svenska,HW-fehler sind keine SW-fehler.
+2013-11-10 20:07:02,Darkchaos_,"mroman, ja ein Journaling System"
+2013-11-10 20:07:06,Svenska,festplatten nutzen bis zu 10% der sektoren als reserver für defekte
+2013-11-10 20:07:22,Svenska,"wenn also ein sektor kaputt ist, sind also schon 10% der oberfläche hin"
+2013-11-10 20:07:56,Darkchaos_,für kaputte Daten oder kaputte Nodes?
+2013-11-10 20:08:07,Svenska,"sektoren, Darkchaos_, sektoren!"
+2013-11-10 20:08:27,Svenska,"das sind diese netten 512-byte-einheiten, mit denen die festplattenelektronik arbeitet"
+2013-11-10 20:08:37,Svenska,(bei festplatten >2 tb dürfen die auch 4k haben)
+2013-11-10 20:09:24,mroman,Ich hab mir einen neuen Laptop bestellt.
+2013-11-10 20:09:30,Svenska,gute lösung. :D
+2013-11-10 20:09:57,mroman,aber der kommt evtl nicht bevor meiner hier kaputt geht
+2013-11-10 20:10:06,Svenska,knoppix?
+2013-11-10 20:10:20,mroman,"also ich hoffe, dass mein jetztiger noch 3 Monate haelt."
+2013-11-10 20:10:33,Svenska,sportlich...
+2013-11-10 20:10:38,mroman,was ist mit knoppix?
+2013-11-10 20:10:47,Svenska,...das braucht keine festplatte.
+2013-11-10 20:10:54,mroman,ja
+2013-11-10 20:10:58,mroman,aber was will ich damit
+2013-11-10 20:11:10,Svenska,"bereitlegen, falls die festplatte stirbt? :-)"
+2013-11-10 20:11:11,mroman,dort habe ich keine Entwicklungsumgebung die ich brauche um meine Arbeit fertig zu schreiben fuer die SChule.
+2013-11-10 20:11:20,Svenska,"wenn du VS benutzt, stimmt"
+2013-11-10 20:11:34,Svenska,"hast du aber auch nicht, wenn dir dein laptop stirbt ^^"
+2013-11-10 20:12:04,mroman,ja
+2013-11-10 20:12:10,mroman,"darum hoffe ich ja, dass er noch haelt."
+2013-11-10 20:12:16,Svenska,ok.
+2013-11-10 20:12:33,Jonathan,"Darkchaos_: Eine Festplatte gilt normalerweise dann als endgültig kaputt, wenn die Laufwerkselektronik die Platte nicht mehr hochfahren kann und keinerlei Lesevorgänge mehr möglich sind."
+2013-11-10 20:12:53,mroman,Daten sind nicht so das Problem
+2013-11-10 20:12:56,mroman,ich besitze keine Daten
+2013-11-10 20:12:58,Svenska,"och, es reicht schon, wenn die festplatte viele lesevorgänge nicht mehr durchführen kann :)"
+2013-11-10 20:13:10,mroman,"aber keinen Laptop zu haben um zu arbeiten, dass ist mehr das Problem."
+2013-11-10 20:13:20,Svenska,knoppix? ^^
+2013-11-10 20:13:29,Svenska,vnc?
+2013-11-10 20:13:29,Jonathan,*g*
+2013-11-10 20:13:33,mroman,"hat das gcc, glib, sdl, gtk und so drauf?"
+2013-11-10 20:13:37,Jonathan,Linux-USB-Stick?
+2013-11-10 20:13:44,Svenska,"wenn nicht, gibt's apt-get..."
+2013-11-10 20:13:59,Svenska,gcc und libc-dev sollten drauf sein
+2013-11-10 20:14:04,Svenska,sdl-dev und gtk-dev weiß ich nicht
+2013-11-10 20:14:10,Jonathan,"So ein Linux-Stick hat ja sogar den Vorteil, dass er beschreibbar ist und man seine Sachen dauerhaft installieren kann"
+2013-11-10 20:14:16,mroman,und pdflatex brauche ich natuerlich auch
+2013-11-10 20:14:30,Svenska,"das ist definitiv nicht drauf, weil latex mal eben schnell >1G kostet"
+2013-11-10 20:14:52,Svenska,...ich muss mich mal in troff einarbeiten :-)
+2013-11-10 20:14:57,Jonathan,SSDs sollen ja angeblich auch ganz nett sein *g*
+2013-11-10 20:15:19,Jonathan,(Und vorallem verschleißen die net so schnell... Soll heißen: Vom Hersteller angegebene Lebensdauer = 80 Jahre)
+2013-11-10 20:15:20,Svenska,"hab vollkommen erstaunt festgestellt, dass ""eqn"" (älter als 1980) die gleiche formelsyntax benutzt wie openoffice :D"
+2013-11-10 20:15:21,Jidder,jop sind ganz sympathisch
+2013-11-10 20:15:58,Darkchaos,"Jonathan: Ist es nicht so, dass USB-Sticks dauerhafte atomic-writes garnicht mögen?"
+2013-11-10 20:16:09,Svenska,Darkchaos: dann machst du eben keine?
+2013-11-10 20:16:16,Svenska,"außerdem, was verstehst du unter atomic writes?"
+2013-11-10 20:16:16,Jonathan,"Och, Wear-Leveling funktioniert ja angeblich ganz gut"
+2013-11-10 20:16:19,Jidder,atome
+2013-11-10 20:16:38,Darkchaos,zB einen mysqld
+2013-11-10 20:16:49,Jonathan,Wird ja alles zu größeren Writes zusammengepuffert
+2013-11-10 20:16:56,Svenska,dann machst du da eben keinen mysqld drauf...
+2013-11-10 20:17:02,Jonathan,:D
+2013-11-10 20:17:21,Jonathan,"btw, wenn ich erstmal meine 16GiB RAM habe, renn ich auf RAM-Disk"
+2013-11-10 20:17:25,Svenska,mein z80 wird sicherlich auch keinen php-fähigen ajax-webserver benutzen
+2013-11-10 20:17:36,Svenska,(bereitstellen)
+2013-11-10 20:17:45,Jonathan,"Ach, möglich ist das schon"
+2013-11-10 20:18:01,Svenska,ist halt nicht die geeignete plattform dafür. und ein usb-stick ist kein gutes großdatenbankspeichermedium
+2013-11-10 20:18:02,Jonathan,"Gibt Webserver, die haben weniger RAM und ne langsamere CPU..."
+2013-11-10 20:18:16,Svenska,Jonathan: aber die machen damit trotzdem kein php
+2013-11-10 20:18:32,Jonathan,"Ich glaube, für AVR gab's tatsächlich mal was mit PHP"
+2013-11-10 20:18:36,Jonathan,Kann mich natürlich auch irren
+2013-11-10 20:18:42,Svenska,der AVR ist schneller xD
+2013-11-10 20:18:45,Jonathan,xD
+2013-11-10 20:18:46,Jidder,ich bin hingegen unfehlbar
+2013-11-10 20:18:55,Jonathan,"Hm, wenn ich mal so überlege:"
+2013-11-10 20:19:09,Jonathan,Mein PC hat bald nur noch 4x so viel Festspeicher (SSD) wie RAM.
+2013-11-10 20:19:11,Jonathan,Lol?
+2013-11-10 20:19:23,Jidder,League of legends
+2013-11-10 20:19:34,Jonathan,"Näääh, gefällt mir nicht :P"
+2013-11-10 20:19:37,Jonathan,Aber hmmmm
+2013-11-10 20:19:38,Svenska,meiner hat 2.34%
+2013-11-10 20:19:49,Jidder,heroes of might and magic
+2013-11-10 20:19:56,Jidder,aber das wird normalerweise anders abgekürzt
+2013-11-10 20:19:56,Svenska,HoMM macht spaß :D
+2013-11-10 20:20:11,Svenska,also 3 gb ram und 128 gb ssd ^^
+2013-11-10 20:20:36,Jonathan,"Mit den 16GiB RAM könnte ich dann ja sogar ein Spiel zunächst in die RAM-Disk laden, bevor ich es starte..."
+2013-11-10 20:20:36,Svenska,ne. die spiele brauchen die 16 gb selbst ^^
+2013-11-10 20:20:36,Darkchaos,"Also ich habe zwar nur 8GB, und die immer zu midnestens 75% belegt, aber"
+2013-11-10 20:20:36,Jonathan,Und dann könnte ich es auf die langsame HDD auslagern
+2013-11-10 20:20:36,XanClic,"Ich hab 0,4 %"
+2013-11-10 20:21:00,XanClic,Und zwar 4 TB vs. 16 GB
+2013-11-10 20:21:09,mroman,Spiele brauchen 16GB RAM?
+2013-11-10 20:21:10,Darkchaos,Ich hab nur 3.13 TB
+2013-11-10 20:21:20,XanClic,"Also, 4 TB™"
+2013-11-10 20:21:24,mroman,Zu meiner Kindheit brauchte man nur 512MB um der King zu sein
+2013-11-10 20:21:24,Jonathan,"Beste Idee ever: Spiel auf HDD (momentan auf SSD wegen Ladezeiten und Lags), von dort aus in die RAM-Disk laden und dann starten - keine Lags, schnelles Laden, und die SSD wird entlastet :D"
+2013-11-10 20:21:24,XanClic,TB™ sind ja was anderes als TB
+2013-11-10 20:21:28,Jidder,"das ist eine gute idee. vor dem starten des spiels das spiel in den ram laden, damit es nicht mehr in den ram geladen werden muss, sondern in den ram kopiert werden kann"
+2013-11-10 20:21:31,XanClic,"Manche Leute sagen, TB™ sind TB und TB sind TiB"
+2013-11-10 20:21:35,mroman,oder moment
+2013-11-10 20:21:36,XanClic,"Aber ich sage, TB™ und TB"
+2013-11-10 20:21:47,mroman,128MB reichten glaube ich aus
+2013-11-10 20:21:55,Darkchaos,TB™ ist aber plöd
+2013-11-10 20:22:05,XanClic,Klar ist es das
+2013-11-10 20:22:10,XanClic,"Ich wäre dafür, nur TB zu benutzen"
+2013-11-10 20:22:19,XanClic,Aber das wollen ja Festplattenhersteller unerklärlicherweise nicht
+2013-11-10 20:22:30,Jidder,früher waren 640 KB genug
+2013-11-10 20:22:33,mroman,jedenfalls
+2013-11-10 20:22:34,Jonathan,"Jidder: Naaaah, es geht ja um Sachen, die das Spiel während dem Spielen gaaanz schnell laden muss, und wo es sonst immer zu doofen Rucklern kommt"
+2013-11-10 20:22:41,mroman,alles was mehr als 256MB RAM benoetigt ist super bloatig
+2013-11-10 20:22:45,Svenska,"es gab mal ne anleitung, wie man win98 in eine ramdisk tut, um schnell zu sein :)"
+2013-11-10 20:23:09,XanClic,"mroman, das ist richtig"
+2013-11-10 20:23:14,Jidder,und gleichzeitig falsch
+2013-11-10 20:23:15,Darkchaos,"Jonathan: Bei einem gescheiten Spiel wird das Laden im Vorraus und parallel getätigt, da merkst du eigentlich nbichts mehr davon"
+2013-11-10 20:23:17,XanClic,"Ich habe auch nur 16 GB, weil es bezahlbar war"
+2013-11-10 20:23:31,Darkchaos,Und ich habe eines der letzten DDR2-only boards :(
+2013-11-10 20:23:33,Jonathan,Darkchaos: Vielleicht können die Entwickler dieses Spiels ja auch einfach absolut nicht programmieren
+2013-11-10 20:23:52,Darkchaos,Außerdem sollte es sowas wie einen Cache geben
+2013-11-10 20:23:55,mroman,"jedesmal wenn ich einen neuen PC kaufe denke ich, dass dann alles schneller laeuft"
+2013-11-10 20:23:58,Darkchaos,Der sich skaliert mit dem freien Ram
+2013-11-10 20:24:03,mroman,aber im Endeffekt laeuft es nicht schneller
+2013-11-10 20:24:10,XanClic,Bei mir ist es schneller gelaufen :3
+2013-11-10 20:24:13,Svenska,Darkchaos: benutze mal linux
+2013-11-10 20:24:19,XanClic,Und jetzt mit der neuen Festplatte ist es nochmal schneller
+2013-11-10 20:24:26,Jonathan,"Darkchaos: Ja den Cache gibt es vielleicht schon... Aber mein RAM ist zu klein, deshalb ist da nicht viel Cache :D ---> größerer RAM (16GB)"
+2013-11-10 20:24:27,Jidder,"es läuft nur schneller, wenn man auch beine ranschraubt"
+2013-11-10 20:24:29,mroman,Opera braucht bei mir viel zu lange zum starten
+2013-11-10 20:24:31,XanClic,Die alte war ja irgendwie… Irgendwas war mit der nicht ganz richtig
+2013-11-10 20:24:33,Darkchaos,Svenska:? Tue ich doch
+2013-11-10 20:24:37,mroman,und gott behuete man schaut ein Flashvideo
+2013-11-10 20:24:39,Svenska,"der linux-plattencache wächst, bis der ram voll ist"
+2013-11-10 20:24:47,Jidder,lass mich raten. internet explorer
+2013-11-10 20:24:54,mroman,Fireox
+2013-11-10 20:25:01,mroman,Firefox ist auch recht lahm was starten betrifft.
+2013-11-10 20:25:03,Darkchaos,"Achso, ist mir nicht aufgefallen^^"
+2013-11-10 20:25:11,Darkchaos,"doch, der ringbuffer des mythbackend"
+2013-11-10 20:25:14,mroman,aber ja
+2013-11-10 20:25:23,XanClic,"Svenska, na ja"
+2013-11-10 20:25:25,Jidder,oh ja
+2013-11-10 20:25:28,mroman,wenigstens freezt Firefox nicht wenn ein Tab noch am laden ist wie beim IE
+2013-11-10 20:25:32,XanClic,"Wenn man 16 GB hat, dann dauert das schon, bis der Cache so groß wird"
+2013-11-10 20:25:37,XanClic,Aktuell hab ich 10 % des Speichers für Cache
+2013-11-10 20:25:40,XanClic,Und 70 % wirklich frei
+2013-11-10 20:25:50,Svenska,einfach mal massiv zeug von platte lesen:)
+2013-11-10 20:25:54,XanClic,"Jo, dann passt das"
+2013-11-10 20:25:59,XanClic,Wenn ich von Platte zu Platte kopiere oder so
+2013-11-10 20:26:03,mroman,mein TWM Linux auf meinem super ultra alt laptop ist relativ schnell
+2013-11-10 20:26:07,Svenska,wenn du natürlich nur 2 GB von der paltte benutzt...
+2013-11-10 20:26:09,Darkchaos,"Wobei die Programme noch einen tick schneller sind, wenn sie garnicht erst über die Plattenfunktionen gehen^^"
+2013-11-10 20:26:13,mroman,das bei 800Mhz
+2013-11-10 20:26:23,Svenska,wow
+2013-11-10 20:26:27,XanClic,"mroman, KDE ist auf meinem Laptop auch noch akzeptabel"
+2013-11-10 20:26:30,Jidder,kommt es nicht darauf an wie schnell die programme sind und nicht wie schnell linux ist?
+2013-11-10 20:26:34,XanClic,"1 GB RAM, normalerweise auf 800 MHz getaktet"
+2013-11-10 20:26:36,Svenska,"800 mhz und twm als ""relativ schnell"" zu betiteln..."
+2013-11-10 20:26:43,XanClic,Also „normalerweise“ = „praktisch immer“
+2013-11-10 20:26:47,Svenska,aber ich bin mal weg
+2013-11-10 20:26:49,Svenska,ca & gn8
+2013-11-10 20:26:50,Svenska,cy
+2013-11-10 20:26:51,XanClic,n8i
+2013-11-10 20:26:52,Svenska,cya
+2013-11-10 20:26:52,mroman,Svenska: Ich meine booten und so
+2013-11-10 20:27:03,Svenska,das bios ist das langsamste
+2013-11-10 20:27:03,mroman,aber ja
+2013-11-10 20:27:08,mroman,vim in TWM ist relativ schnell
+2013-11-10 20:27:12,mroman,:)
+2013-11-10 20:27:31,XanClic,Mit SSD ist der Laptop auch noch ein ganzes Stück schneller geworden :-P
+2013-11-10 20:28:03,Jidder,"man müsste ja eigentlich denken, dass er mit zusätzlichem gewicht erstmal langsamer wird"
+2013-11-10 20:28:13,XanClic,Die alte Festplatte ist ja dafür raus
+2013-11-10 20:28:17,XanClic,Und die war schwerer
+2013-11-10 20:28:20,XanClic,Deshalb ist er schneller
+2013-11-10 20:28:34,Paddy,"mroman: 512 MB, um der King zu sein? Jungspund."
+2013-11-10 20:29:18,mroman,ALso GuildWars habe ich damals noch mit 128MB gezockt afaik
+2013-11-10 20:29:30,mroman,etwa 2 Mnuten warten pro Ladescreen :)
+2013-11-10 20:30:49,mroman,Windows 7 braucht schon uhm
+2013-11-10 20:30:55,mroman,256MB RAM anscheinend
+2013-11-10 20:31:01,Paddy,"Mein erster Rechner hatte 4 MB, an mehr als 16 war im Traum nicht zu denken, und ich vermute, ich werde hier noch locker von anderen unterboten"
+2013-11-10 20:31:15,XanClic,> ich werde hier noch locker von anderen unterboten
+2013-11-10 20:31:23,XanClic,"Das sagst du nur, damit du dich nicht so alt fühlst :-P"
+2013-11-10 20:31:56,Paddy,"Also bei Svenska bin ich mir fast sicher, dass er mich unterbieten kann"
+2013-11-10 20:32:01,mroman,windows 7 kann NUR 192 GB RAM ansteuern maximal
+2013-11-10 20:32:05,mroman,was gibt 2**64?
+2013-11-10 20:32:26,XanClic,x64-Prozessoren können 2^64 auch nicht ansteuern
+2013-11-10 20:32:41,Tectu,"ich hasse es, software releases zu machen"
+2013-11-10 20:33:11,mroman,17179869184 GB
+2013-11-10 20:33:16,Jidder,ruf mich an
+2013-11-10 20:33:27,mroman,XanClic: Was kann man denn ansteuern?
+2013-11-10 20:33:33,XanClic,2^48 oder sowas
+2013-11-10 20:33:34,Paddy,"GB ist nicht die geeignete Einheit, wenn's lesbar sein soll"
+2013-11-10 20:33:49,Paddy,Ich schwanke zwischen 2^48 und 2^52
+2013-11-10 20:34:11,XanClic,"WP meint, aktuell 2^48"
+2013-11-10 20:34:23,XanClic,"Aber man kann die Architektur auf 2^64 erweitern, wenn man mal will"
+2013-11-10 20:34:47,Paddy,"Na dann. Das sind also 256 PB, wenn ich mich nicht verrechnet habe."
+2013-11-10 20:34:48,XanClic,"Ach, das war virtuell"
+2013-11-10 20:34:56,XanClic,Physisch sinds aktuell auch 2^48 und später bis 2^52
+2013-11-10 20:35:04,Paddy,"Ah, das waren die 52"
+2013-11-10 20:35:22,XanClic,"256 TB aktuell, 4 PB später"
+2013-11-10 20:35:45,Paddy,"Ups, hab ich mich verrechnet?"
+2013-11-10 20:35:55,XanClic,"Vielleicht ja auch WP, denen darf man ja nicht trauen ;-)"
+2013-11-10 20:35:56,Paddy,Offensichtlich
+2013-11-10 20:36:04,Paddy,"Nein, 2^40 sind schon TB"
+2013-11-10 20:36:13,mroman,2**64 sind 16 was?
+2013-11-10 20:36:17,mroman,Etabyte?
+2013-11-10 20:36:20,Paddy,Exy
+2013-11-10 20:36:22,Paddy,*Exa
+2013-11-10 20:37:21,mroman,WP sagt dem 16 Exbibyte
+2013-11-10 20:37:40,mroman,ah
+2013-11-10 20:37:47,XanClic,"Das heißt nicht „Exbi“, das heißt „Exabyte Tee-Emm“"
+2013-11-10 20:37:48,Paddy,Ich sage EB und Exabyte und meine trotzdem das
+2013-11-10 20:37:49,mroman,2**32 sind 4 Gibibyte
+2013-11-10 20:37:57,XanClic,Gigabyte Tee-Emm
+2013-11-10 20:38:02,mroman,NOIN!
+2013-11-10 20:38:07,XanClic,"Ach ne, stimmt ja nicht"
+2013-11-10 20:38:09,mroman,Giga = 1000
+2013-11-10 20:38:11,XanClic,Ich verwirre mich schon selbst
+2013-11-10 20:38:12,mroman,Gibi = 1024
+2013-11-10 20:38:16,mroman,laut Wikipedia
+2013-11-10 20:38:18,XanClic,"Gigabyte sind das, Gigabyte™ waren das andere"
+2013-11-10 20:38:23,XanClic,WP hatte das eine lange Diskussion zu
+2013-11-10 20:38:27,XanClic,Von der ich Ausschnitte gelesen habe
+2013-11-10 20:38:32,XanClic,Und die waren sich bei weitem nicht einig
+2013-11-10 20:38:45,XanClic,Ich berufe mich immer auf den Professor der Rechnerarchitektur
+2013-11-10 20:39:06,XanClic,"„Wenn ich in dieser Vorlesung ‚Kilo‘ und so weiter sage, meine ich 1000 – wenn ich 1024 meine, sage ich ‚Kibi‘“"
+2013-11-10 20:39:12,XanClic,Und er hat immer „Kilo“ gesagt und 1024 gemeint
+2013-11-10 20:39:32,Jidder,relevant xkcd
+2013-11-10 20:39:53,XanClic,http://xkcd.com/1024/
+2013-11-10 20:40:08,Jidder,http://xkcd.com/394/
+2013-11-10 21:04:44,Darkchaos,Wie macht das GRUB eigentlich mit den Modulen
+2013-11-10 21:04:54,Darkchaos,werdend ie einfach an irgendwelche physischen Adressen geladen?
+2013-11-10 21:05:03,XanClic,jup
+2013-11-10 21:05:58,Darkchaos,Und was macht GDB wenn ich eine int 0x3 (BREAKPOINT) throwe
+2013-11-10 21:06:05,Darkchaos,"Darauf reagiert er nur, wenn es die IDT nicht tut"
+2013-11-10 21:06:07,Darkchaos,?
+2013-11-10 22:14:45,Darkchaos_,"Ist es einfach in meinem Task von Ring0 zu Ring3 zu springen? (Mein ELF-Loader würde gerne direkt vmm ohne syscalls nutzen, der Prozess an sich soll aber usermode sein?)"
+2013-11-10 22:18:09,mgottschlag,"nein, das geht ohne weiteres nicht"
+2013-11-10 22:18:17,mgottschlag,"da gibt es irgendwelche Segmentation-Magie, aber das will man auch nicht"
+2013-11-10 22:18:59,mgottschlag,(und einfacher als Interrupt-basierte System Calls wird es auf jeden Fall schonmal nicht :) )
+2013-11-10 22:46:50,Darkchaos,dann lieber eine eigene CreateTask mit fremdmapping etc
+2013-11-10 22:50:24,mgottschlag,"willst du denn, dass dir jeder Task deine virtuelle Speicherverwaltung zerschießen kann?"
+2013-11-10 22:51:35,mgottschlag,(oder was meinst du mit Fremdmapping? Mappen der Paging-Verwaltung in den Task?)
+2013-11-10 22:53:14,Tectu,"mroman, done: http://ugfx.org/news"
+2013-11-10 23:07:39,Darkchaos,back
+2013-11-10 23:07:51,Darkchaos,nein im Gegenteil. Der Kernel mappt in den Fremden Prozesskontext
+2013-11-10 23:08:05,Darkchaos,"Andersrum müsste ich einen syscall bereitstellen, womit der Prozess alles mappen kann"
+2013-11-10 23:12:35,Darkchaos,Tectu: Ist das dein Produkt?
+2013-11-10 23:14:27,Tectu,"Darkchaos, kann man so sagen, ja."
+2013-11-10 23:14:35,Tectu,"Darkchaos, nix kernel mässiges ;-)"
+2013-11-10 23:14:43,Tectu,musst also keine angst haben *gg
+2013-11-10 23:14:48,Darkchaos,"Dann wundert es mich, warum du dein OS noch nicht fertig hast :P"
+2013-11-10 23:15:03,Darkchaos,Das Oszilloskop beeindruckt mich nämlich^^
+2013-11-10 23:18:18,Tectu,"Darkchaos, tjo, mir fehlt es am x86 verständnis, nicht an den C skills, würd ich mal sagen (wurde von Svenska bestätigt)"
+2013-11-10 23:18:34,Tectu,"Darkchaos, das ozsilloskop läuft jetzt mit rund 25% mehr performance "
+2013-11-10 23:18:41,Tectu,v2.0 hat nen ziemlichen performance boost mitgebracht
+2013-11-10 23:18:45,Darkchaos,Wie teuer war die Hardware ca?:D
+2013-11-10 23:20:00,Tectu,"Darkchaos, mom"
+2013-11-10 23:21:05,Tectu,"Darkchaos, bei dem was im video benutzt wird   12.79€ + 30€ + versand"
+2013-11-10 23:21:38,Darkchaos,12.79€ + 30€? :D 30€ Touchscreen + Kleinzeugs? :D
+2013-11-10 23:22:29,Tectu,"30€ das touchscreen mit VGA auflösung, 12.79€ das board auf dem sich microcontroller mit ADC und programmer/debugger befindet"
+2013-11-10 23:23:32,Darkchaos,"Da hast du doch aber monatelang daran Optimiert, oder? :)"
+2013-11-10 23:23:41,Tectu,klar
+2013-11-10 23:23:52,Tectu,an der library arbeite ich seit 2 jahren und noch immer wird hier und dort ein byte gespart
+2013-11-10 23:24:03,Tectu,ich hab eben keine 4GHz CPU mit 16GB RAM *hust*
+2013-11-10 23:24:20,Darkchaos,"Aber es ist auch mehr ein Hobbyprojekt, oder? Oder gibt es doch Interesse von der Industrie?"
+2013-11-10 23:24:20,Tectu,"Darkchaos, die MCU aus dem video verwendet einen ARM Cortex-M4 mit FPU"
+2013-11-10 23:24:28,Darkchaos,Ich hab auch nur 2.83 GHZ und 8 GB
+2013-11-10 23:24:37,Tectu,"Darkchaos, grosses interesse. Die konkurrenz kostet aber 20'000€ aufwärts und ist closed source"
+2013-11-10 23:24:45,Tectu,"Darkchaos, also die library ist nicht speziell für oszilloskope gedacht *gg"
+2013-11-10 23:24:54,Darkchaos,ja das war mir klar :D
+2013-11-10 23:24:55,Tectu,"Darkchaos, sondern halt low-performance embedded systeme"
+2013-11-10 23:24:59,Darkchaos,Aber für Embedded Systems
+2013-11-10 23:25:14,Tectu,code hier: http://bitbucket.org/tectu/ugfx
+2013-11-10 23:30:39,Tectu,"Darkchaos, interesse? ;-)"
+2013-11-10 23:32:39,Darkchaos,An einer gewerblichen Lizenz? :)
+2013-11-10 23:33:24,Tectu,"Darkchaos, nein, es zu testen"
+2013-11-10 23:33:32,Tectu,"Darkchaos, ist free to use für hobby "
+2013-11-10 23:33:46,Tectu,"Darkchaos, kannst damit auch ein kommerzielles produkt entwickeln - kostet nur was sobald es auf den markt geht :)"
+2013-11-10 23:33:55,Tectu,"Darkchaos, hab ne eigene lizenz dafür - alle anderen waren doof :P"
+2013-11-10 23:34:01,Tectu,"Darkchaos, http://ugfx.org/license.html"
+2013-11-10 23:34:17,Tectu,"Darkchaos, zusammenfassung gibts hier: http://ugfx.org/licensing"
+2013-11-10 23:34:25,Tectu,"Darkchaos, achja, so oder so frei für alle open hardware projekte"
+2013-11-10 23:34:55,Darkchaos,"Ich habe momentan kein Embedded System da ehrlich gesagt, aber der Code ansich ist für mich interessant, wenn ich mal wieder an einer Zeichenengine für Android schreibe, wobei die ja an sich openGL gebnuden ist"
+2013-11-10 23:38:18,Darkchaos,"Aber wenn ich mal irgendwann in dieser Dekade dazu komme, meinen Car-PC zu verwirklichen, wäre es schon interessant, die Alternative (und damit state-of-art) ist ein µATX-Board mit Windows 7 und C#-Backend"
+2013-11-10 23:39:11,Darkchaos,Wobei wohl dann so sachen wie Sound-Processing etc den µC Überfordern bzw wenn ich die USB-Soundkarte nutzen möchte unmöglich machen
+2013-11-10 23:39:33,Tectu,"och, die M4 gibts mit DSP und allem :)"
+2013-11-10 23:39:38,Tectu,hab schon sehr guten sound von den dingern gehört
+2013-11-10 23:40:11,Tectu,"Darkchaos, das 12.79€ dev board von vorhin hat nen stereo class-D amplifier mit 3.5er klinke drauf: http://www.st.com/web/en/catalog/tools/FM116/SC959/SS1532/PF252419"
+2013-11-10 23:40:18,Tectu,(scroll)
+2013-11-10 23:41:00,Darkchaos,"Das Ding ist, ich bräuchte einen programmierbaren Audio-mixer, der am besten ich glaube es waren 4x3.5mm Eingänge hat, und optional auf 3x3.5mm (5.1) out geht"
+2013-11-10 23:41:47,Darkchaos,"Aber ich frage mich echt, warum ich noch einen ATMega 8 einsetze, wenn es ARM-Prozessoren gibt"
+2013-11-10 23:41:55,Darkchaos,So ein Cortex-A8
+2013-11-10 23:42:06,Tectu,A8 ist nicht das was du willst für einen audio mixer
+2013-11-10 23:42:16,Darkchaos,"nein, aber das hatte mein altes Handy^^"
+2013-11-10 23:42:20,Tectu,da brauchst du nen dicken DSP oder wenn du ganz helle bist ne FPGA mit dickem ADC/DAC
+2013-11-10 23:42:22,Darkchaos,Oder war es ein A6?
+2013-11-10 23:42:43,Tectu,nen N900? :D
+2013-11-10 23:43:10,Darkchaos,"naja es wird aber alles in allem dann komplizierter, wenngleich stromsparender. zB auch dann USB-Festplatten/2TB HDD"
+2013-11-10 23:43:11,Darkchaos,jap :D
+2013-11-10 23:43:28,Darkchaos,"Ist an kaputten Pads am USB gestorben. Habe es eingeschickt, haben es sofort vernichtet"
+2013-11-10 23:43:34,Darkchaos,hätte ichs lieber selbst gelötet
+2013-11-10 23:44:00,Darkchaos,dafür kann mein neues WhatsApp :)
+2013-11-10 23:44:13,Darkchaos,"Und macht irgendwie immer nur 0.3MP Fotos, obwohl ichs auf 8MP gestellt habe"
+2013-11-10 23:44:23,Tectu,wtf... kauf dir halt ein ITX gehäuse und fetzt nen ITX rein
+2013-11-10 23:44:46,Tectu,wer will freiwillig whatsapp benutzen?
+2013-11-10 23:45:00,Darkchaos,Leute die sich keine Sorgen um ihre Daten machen^^
+2013-11-10 23:45:12,Darkchaos,und für dies keine funktionierende Facebook-App gibt
+2013-11-10 23:45:25,Darkchaos,Ja ich hab nur wegen der Uni nie zeit :/
+2013-11-10 23:45:48,Tectu,hol dir ne freundin - dann hast du einen negativen zeitkontigenten
+2013-11-10 23:46:25,Darkchaos,gut möglich^^
+2013-11-10 23:51:17,Darkchaos,Oder zum Versagen an der Uni führen
+2013-11-10 23:52:39,Tectu,lol
+2013-11-10 23:52:42,Tectu,dann machst du was falsch
+2013-11-10 23:56:43,Tectu,"so, ich versuch noch schnell paging zu implementieren und dann geh ich pennen *gg"

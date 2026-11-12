@@ -1,0 +1,44 @@
+date/time,nick,message
+2017-06-02 00:48:54,condret,ohai
+2017-06-02 00:49:42,condret,"welchen Grund kann es geben, wenn mein Keyboard-interrupt-handler nicht gecallt wird, wenn ich eine Taste drücke"
+2017-06-02 09:44:09,condret,morn
+2017-06-02 10:17:29,feliwir,"hey, wie löte ich denn extrem kleine Bauteile? Vielleicht hat davon jemand Ahnung "
+2017-06-02 10:21:06,condret,feliwir: smd-bauteile?
+2017-06-02 10:23:26,feliwir,"ja, wie den Bosch BMM150"
+2017-06-02 10:25:07,feliwir,hab den jetzt geliefert bekommen und der ist halt schon seeehr klein
+2017-06-02 10:48:17,condret,"jemand hier, der viel ahnung von kbc hat?"
+2017-06-02 10:48:42,kevin,"Gibt es denn beim KBC viel, wovon man Ahnung haben könnte?"
+2017-06-02 10:49:27,condret,"naja, mein treiber wird einfach nicht getriggert"
+2017-06-02 10:51:33,condret,das ist halt ziemlich doof
+2017-06-02 10:52:08,condret,"würde jemand einen blick drauf werfen wollen? falls ja, push ich das gleich nach github"
+2017-06-02 11:19:19,darklink,condret: sind irqs an?
+2017-06-02 11:20:09,darklink,hast du den PIC initialisiert?
+2017-06-02 11:20:17,darklink,ist irq unmasked?
+2017-06-02 11:20:33,darklink,irq1*
+2017-06-02 11:35:10,condret,yep
+2017-06-02 11:35:35,condret,hab' aber nur pic1 initialisiert
+2017-06-02 11:35:50,condret,pic2 ist ja nicht für tastatur
+2017-06-02 13:21:42,condret,back
+2017-06-02 13:31:49,condret,"wenn ich pic1 mit 0x0d maskiere, dann ist doch nur die tastatur demaskiert?"
+2017-06-02 13:39:46,darklink,warum maskierst du master überhaupt?
+2017-06-02 13:41:55,darklink,"es ist einfacher die IRQs ""fallen zu lassen"" wenn du noch keinen treiber für den IRQ geschrieben hast"
+2017-06-02 13:59:27,condret,weil ich in meinem szenarion wirklich nur die tastatur brauche
+2017-06-02 14:08:36,condret,mein pic initialisierung sieht so aus
+2017-06-02 14:08:52,condret,    permalinkembedparent
+2017-06-02 14:08:57,condret,arg
+2017-06-02 14:09:38,condret,"outb (0x20, 0x13);"
+2017-06-02 14:09:49,condret,"outb (0x21, 0x20);"
+2017-06-02 14:10:02,condret,"outb (0x21, 0x01);"
+2017-06-02 14:10:20,condret,"outb (0x21, 0x0d);"
+2017-06-02 14:32:44,darklink,mein code ist: https://raw.githubusercontent.com/Mtgxyz2/mtgos/master/kernel/hw/pc/8259/pic.cpp
+2017-06-02 14:34:46,darklink,nur für den slave musst du nach jedem outb ein io_wait() einfügen
+2017-06-02 14:34:57,darklink,"io_wait ist ein outb(0x80, 0);"
+2017-06-02 14:35:22,darklink,"weil man muss einen IO zyklus warten, befor neue daten geschrieben werden können"
+2017-06-02 14:35:29,darklink,zumindest ist das beim PIC so
+2017-06-02 14:35:40,darklink,s/slave/master/
+2017-06-02 14:36:46,darklink,deswegen schreibe ich in dem code immer abwechselnd zum master/slave
+2017-06-02 15:30:40,kevin,"condret: Leerst du den Tastaturpuffer am Start? Die Tastatur sendet nur IRQs für neue Daten im Puffer, wenn der Puffer vorher leer war"
+2017-06-02 19:29:08,condret,@kevin: ja
+2017-06-02 19:31:37,condret,das mit dem io_wait wusste ich nicht
+2017-06-02 19:34:09,condret,ändert aber nichts
+2017-06-02 19:59:15,darklink,huch

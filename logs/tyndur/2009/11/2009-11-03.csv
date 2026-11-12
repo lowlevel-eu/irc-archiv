@@ -1,0 +1,66 @@
+date/time,nick,message
+2009-11-03 12:03:28,pcmattman,kwolf: ping
+2009-11-03 12:03:37,kwolf,pcmattman: pong
+2009-11-03 12:04:01,pcmattman,"I'm looking at the CDI e1000 driver at the moment, as it doesn't initialise properly on non-QEMU hosts"
+2009-11-03 12:04:42,pcmattman,Does the driver work on anything other than QEMU in tyndur? Should I look at Pedigree's code or the driver code to try and fix it?
+2009-11-03 12:05:08,kwolf,It's probably a driver issue
+2009-11-03 12:05:20,kwolf,"I think it was reported to work in some other emulator, but never on real hardware"
+2009-11-03 12:05:57,kwolf,"I don't even have one in hardware, unfortunately"
+2009-11-03 12:06:31,pcmattman,"Ok, I'll see what I can do in the driver then"
+2009-11-03 12:07:49,kwolf,Are you testing on real hardware?
+2009-11-03 12:09:10,pcmattman,Not quite. Trying it in VirtualBox
+2009-11-03 12:10:35,kwolf,Ok
+2009-11-03 12:10:41,kwolf,So I should be able to reproduce it
+2009-11-03 12:10:58,pcmattman,"Hopefully, yes"
+2009-11-03 12:11:07,kwolf,Maybe you can tell me your finding before you leave tonight so I can have a look later
+2009-11-03 12:11:19,pcmattman,It actually appears to be a simple fix
+2009-11-03 12:11:26,kwolf,"Oh, already found it?"
+2009-11-03 12:11:58,pcmattman,http://slexy.org/view/s214Dqk530
+2009-11-03 12:12:16,pcmattman,That's the modified e1000_eeprom_read that is quite successful
+2009-11-03 12:13:07,pcmattman,With that modification I now successfully browse to Google using the driver
+2009-11-03 12:14:25,kwolf,Hm... So you're actually failing the read or is it the sleep that makes it work?
+2009-11-03 12:14:46,pcmattman,The original code ran this in a tight loop
+2009-11-03 12:15:31,kwolf,"I saw that, yes"
+2009-11-03 12:15:34,pcmattman,To my understanding the 50 ms delay is enough for the card to complete the command
+2009-11-03 12:15:52,kwolf,Still don't understand why it wouldn't complete the command in a tight loop
+2009-11-03 12:16:31,pcmattman,It may well be that it's actually breaking out of the loop
+2009-11-03 12:16:50,pcmattman,"Which would make sense, if it's persistently failing, it'll break out"
+2009-11-03 12:17:00,kwolf,Which means that you would return 0 instead of the right value
+2009-11-03 12:17:01,pcmattman,Back to the drawing board :)
+2009-11-03 12:17:03,pcmattman,Yup
+2009-11-03 12:17:50,kwolf,There is even the right printf in your code to check what happens
+2009-11-03 12:18:01,pcmattman,It looks like it's returning 0
+2009-11-03 12:18:39,kwolf,"Hm, 00:00:00:00:00:00 isn't really a desirable MAC address..."
+2009-11-03 12:18:49,pcmattman,Yup
+2009-11-03 12:19:07,pcmattman,"It seems other drivers attempt the EERD read and then if that fails attempt what looks like a ""uwire"" read"
+2009-11-03 12:19:13,kwolf,Maybe the VBox e1000 doesn't even support this EEPROM interface? I think there is a second one
+2009-11-03 12:19:32,kwolf,A more complicated one which doesn't just involve reading out a register
+2009-11-03 12:19:35,pcmattman,Yup
+2009-11-03 12:19:51,pcmattman,I'm going to try and obtain the specification and try and make sense of some driver code and see if I can port it across
+2009-11-03 12:19:57,kwolf,Which is why I didn't bother to implement it ;-)
+2009-11-03 12:20:41,kwolf,"The e1000 sourceforge project has the spec, iirc"
+2009-11-03 12:21:31,pcmattman,"The question is though, which spec? :)"
+2009-11-03 12:21:42,kwolf,"If in doubt, take the right one :-)"
+2009-11-03 12:32:10,pcmattman,Complex protocol
+2009-11-03 12:32:29,kwolf,For EEPROM access?
+2009-11-03 12:32:43,pcmattman,EERD (which is what the current driver uses) is dead easy
+2009-11-03 12:32:52,pcmattman,The 4-wire interface is a whole new story
+2009-11-03 12:32:57,pcmattman,I'll be sure to submit a patch when I'm done :)
+2009-11-03 12:33:17,kwolf,Guess why I did it the EERD way...
+2009-11-03 12:33:58,pcmattman,"I do have e1000 driver code to refer to, thankfully"
+2009-11-03 12:34:25,kwolf,"Appropriately licensed code, I hope?"
+2009-11-03 12:34:43,pcmattman,"Yup, although the key word is ""refer"""
+2009-11-03 12:35:09,pcmattman,As far as I know the algorithm can't be protected by a license because it's a driver: the algorithm is defined by the specification
+2009-11-03 12:35:10,kwolf,I'm actually careful with even looking at Linux code
+2009-11-03 12:35:19,kwolf,Sure
+2009-11-03 12:35:27,kwolf,afk lunch
+2009-11-03 13:25:18,kwolf,back
+2009-11-03 13:26:22,pcmattman,Welcome back
+2009-11-03 13:27:58,kwolf,Thanks
+2009-11-03 13:28:13,kwolf,What's the EEPROM doing?
+2009-11-03 13:28:31,pcmattman,Still perusing code and the specification
+2009-11-03 13:30:09,kwolf,Still? This method sounds really tedious
+2009-11-03 13:30:49,pcmattman,I just want to make sure I understand what I'm doing
+2009-11-03 13:31:17,kwolf,"Right, it helps sometimes"
+2009-11-03 16:20:22,pcmattman,Night
+2009-11-03 16:20:37,kwolf,Night pc[away]

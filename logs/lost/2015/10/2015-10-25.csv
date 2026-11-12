@@ -1,0 +1,1745 @@
+date/time,nick,message
+2015-10-25 00:01:15,Svenska,Sur3: du hast antwort.
+2015-10-25 00:09:31,Paddy,Die Zusammenfassung von ein paar Tagen IRC?
+2015-10-25 00:09:48,Svenska,jo
+2015-10-25 00:09:54,Svenska,"eher weniger, ne antwort auf die frage"
+2015-10-25 00:13:10,Paddy,Ist das nicht gleichbedeutend?
+2015-10-25 00:13:27,Paddy,"Wir haben doch in den letzten Tagen hier ausführlich durchgekaut, wie das mit der Segmentierung ist"
+2015-10-25 00:13:38,Svenska,"ja, aber die ganzen details hab ich da nicht reingeworfen"
+2015-10-25 00:13:46,Svenska,soviel wollte ich dann doch nicht tippen :)
+2015-10-25 00:13:57,Paddy,Deswegen Zusammenfassung ;-)
+2015-10-25 00:59:15,Sur3,@Svenska thx
+2015-10-25 00:59:34,Svenska,"wie paddy aber schrieb, ist nix neues dabei (abgesehen vom memory pool)"
+2015-10-25 01:10:00,Sur3,"joa aber fasst die möglichkeiten nochmal schön übersichtlich zusammen, ich hab mich nebenbei nochmal in die LDT eingelesen, weil ich gehofft habe daß die eine lösung bietet, aber sie scheint nur dei anzahl der selektoren pro prozess zu liefern"
+2015-10-25 01:10:37,Svenska,"dich hindert auch niemand daran, alle segmente in der gdt zu definieren"
+2015-10-25 01:11:29,Sur3,joa die trennung ist dann nur nich ganz so stark
+2015-10-25 01:24:04,Sur3,"und mir ist gerade ien möglichkeit eingefallen wie ich bei elf dateien den stack absichern kann, ich könnte dem stack nen eigenes segment hinter dem datenbereich geben und insgeheim noch nen zweites segment nur mit dem datenbereich anlegen und ne kleine pufferzone dazwischen lassen, und wenn der stack jetzt versucht auf die daten/stackbereich zuzugreifen wird ein gp ausgelößt und der gp wechselt dann zwischen stack- "
+2015-10-25 01:24:04,Sur3,"und datenbereich, es sei denn es ist ein zugriff auf die pufferzone dann ist es ein stack overflow und wird gestoppt ^^"
+2015-10-25 01:26:29,Sur3,"je nachdem wie oft das programm über den stack-pointer auf den datenbereich zugreift, wird es dann natürlich durch die vielen #gpf langsamer, aber dafür verhindert man effektiv buffer overflows und kann den stack sogar im falle eines überlaufs vergrößern ^^"
+2015-10-25 01:26:58,Svenska,?
+2015-10-25 01:27:16,Svenska,"mir ist gerade unklar, wie sich das mit dem ""stack wächst nach unten"" ausgeht"
+2015-10-25 01:27:34,Svenska,"du definierst ein segment 0..8K, und setzt SP auf 8K"
+2015-10-25 01:27:43,Svenska,"wenn SP kleiner als null wird, hast du nen stack overflow"
+2015-10-25 01:27:50,Svenska,oder hab ich da grad was fehl im schädel?
+2015-10-25 01:28:22,Sur3,aso du hast recht das würde auch nur mit virtuellen adressen funktionieren
+2015-10-25 01:30:12,Svenska,"und darum ist mir gerade nicht klar, wie man (a) den stack nachträglich vergrößern können will, und (b) wie man mit ""überlappenden"" segmenten den speicherschutz so aufbauen kann"
+2015-10-25 01:30:28,Svenska,"also ds und ss sind getrennte segmente, aber ein ds:pointer _ist_ ein ss:pointer"
+2015-10-25 01:31:45,Sur3,"öhm ja das ist er abgesehn von der tatsache daß er auf andere speicherbereiche zugreift, also eigentlich hast du recht man kann das problem mit paging effizienter lösen indem man einfach eine seite zwischen daten und stack nciht mapped dadurch hat man alle buffer overflows abgefangen"
+2015-10-25 01:32:08,Svenska,nö
+2015-10-25 01:32:18,Sur3,nicht?
+2015-10-25 01:32:20,Svenska,das ist schlicht falsch
+2015-10-25 01:32:46,Sur3,du meinst die idee mit dem gp ist falsch oder das seite nicht mappen ist falsch?
+2015-10-25 01:33:01,Svenska,eine page nicht mappen schützt vor speicherzugriffen auf die nicht gemappte page
+2015-10-25 01:33:06,Svenska,und vor genau nix anderem...
+2015-10-25 01:33:56,Sur3,"joa aber wenn man die nicht gemappte seite zwischen daten und stack packt verhindert man stack overflows, weil stack overflows immer den kompletten bereich auf dem stack füllen bis sie in den datenbereich gelangen"
+2015-10-25 01:34:10,Svenska,ne
+2015-10-25 01:34:15,Svenska,push und pop ja
+2015-10-25 01:34:33,Svenska,aber der compiler adressiert ja relativ zum frame-pointer (oder sogar zum stack pointer)
+2015-10-25 01:34:53,Svenska,"und sowas kann natürlich sonstwo hingehen, auch über mehr als 4k"
+2015-10-25 01:37:12,Sur3,"aso, nen aufruf über 4kb ist aber ungewöhnlich? selsbt mit schadcode hab ich sowas ncoh ncith gesehn?#"
+2015-10-25 01:37:25,Svenska,schadcode kann alles tun
+2015-10-25 01:38:21,Sur3,wenn du es so definierst gibt es keinen effizienten schutz gegen overflows?
+2015-10-25 01:39:17,Svenska,die frage ist: wogegen willst du dich schützen
+2015-10-25 01:39:37,Svenska,"und (bösartiger) ""buffer overflow"" ist eben deutlich mehr als ""sp wächst beliebig und wird dereferenziert"""
+2015-10-25 01:41:17,Sur3,"hm ok, ich kannte nur die simple methode bei der nen langer nop-sled benutzt wir und so bis hin zu return to libc, aber daß schadcode auch den framepointer manipulieren kann hab ich nicht in betracth gezogen"
+2015-10-25 02:00:17,Sur3,^^
+2015-10-25 02:00:49,Svenska,"hm. müsste ich mal gucken, ob das netbook überhaupt pulseaudio benutzt"
+2015-10-25 02:00:58,Sur3,welches linux denn?
+2015-10-25 02:01:21,Svenska,"puh, älteres debian, ziemlich zerhackt, um damit auf der 2G SSD klarzukommen"
+2015-10-25 02:01:31,Svenska,also /usr ist ein squashfs...
+2015-10-25 02:01:52,Sur3,"ich meine es gibt auch nen hack für alsa um sound über netzwerk zu übertragen, abeer das ist halt nen seltsames gefrickel ala netcat"
+2015-10-25 02:02:13,Svenska,"ja, das ist jetzt nicht so schlimm"
+2015-10-25 02:02:31,Sur3,"wie funktioniert das eigentlich bei linux mit virtuellen adressen, also elf schient programme ja immer ungefähr an die selbe virtuelle adresse zu packen, dh für jeden taskwechsel muß die page directory gewechselt werden!? wäre es nicht effizienter mehrere task in die selbe page directory zu packen und beim task-wechsel nur die segmente zu wechseln?"
+2015-10-25 02:03:01,Svenska,"das ist ungefähr der sinn von paging, ja."
+2015-10-25 02:03:12,Svenska,jeder prozess hat sein eigenes page directory.
+2015-10-25 02:03:35,Svenska,"(page tables dürfen auch gerne gemeinsam genutzt werden -> kernel space, shared libraries und so)"
+2015-10-25 02:04:41,Sur3,"hm ok die hier benutzen noch oss und pipen das direkt, aber du willst vermutlich den sound direkt aus alsa abfangen? http://www.commandlinefu.com/commands/view/350/output-your-microphone-to-a-remote-computers-speaker"
+2015-10-25 02:04:58,Sur3,"joa aber wenn man die prozesse über segmente absichert braucht man ja ncith für jeden task ne eigene page directory, ich frag mich ob das nicht schneller wäre, weil nen wechsel der page directory stell ich mir zeitaufwändig vor?"
+2015-10-25 02:05:34,Svenska,*seufz*
+2015-10-25 02:05:47,Sur3,was du auch versuchen könntest wäre per sshfs /dev/snd auf den andern rechner zu linken kp ob das geht
+2015-10-25 02:05:55,Svenska,"natürlich ist es schneller, wenn du weder paging noch segmentierung benutzt"
+2015-10-25 02:05:56,Sur3,nicht?
+2015-10-25 02:06:01,Svenska,öh
+2015-10-25 02:06:02,Sur3,joa
+2015-10-25 02:06:06,Svenska,"natürlich ist es einfacher, wenn du speicherschutz ignorierst"
+2015-10-25 02:06:13,Svenska,"nee du, so sehr zerhackstückseln will ich das dann doch nicht"
+2015-10-25 02:06:21,Svenska,und natürlich ist ein kontextwechsel (genau das ist ja ein PD-wechsel) nicht kostenlos
+2015-10-25 02:06:37,Svenska,"aber ohne das zu machen gibt's halt die netten features nicht, deretwegen du überhaupt paging machst"
+2015-10-25 02:06:57,Svenska,"muss ich mal schauen, ob das klappt"
+2015-10-25 02:07:14,Sur3,das hier könnte auch interessant sein.. https://gist.github.com/justinatcamfil/b4f1a8c4eab249a91863
+2015-10-25 02:07:29,Svenska,"Xvnc aufmachen, dadrin ne zweite session starten (mit nem anderen wm, weil sonst geht die config kaputt), $PULSE setzen, dann dadrin wine starten und dadrin das programm"
+2015-10-25 02:07:36,Sur3,"doch klar man kann ja auch innerhalb einer page directory mappings machen, man muß bloß gucken daß jeder task seine eigenen virtuellen bereich bekommt"
+2015-10-25 02:07:45,Svenska,"und dann hoffen, dass das geht."
+2015-10-25 02:08:04,Svenska,"dir ist aber schon klar, dass du dann keinen speicherschutz zwischen den tasks mehr hast, oder?"
+2015-10-25 02:08:12,Svenska,"(note to self: brauche demnächst neues netbook, neues navi, neues nas und neues notebook)"
+2015-10-25 02:08:13,Sur3,doch durch segmnete
+2015-10-25 02:08:32,Svenska,(eventuell gleich noch neue fritzbox dazu)
+2015-10-25 02:08:39,Svenska,okay...
+2015-10-25 02:08:55,Sur3,"die idee ist pro task die segmente zu wechseln statt der page directory, weil ich glaube daß das schneller sein könnte?"
+2015-10-25 02:08:56,Svenska,"dir ist aber schon klar, dass du dann einen teuren ringwechsel hast? ;)"
+2015-10-25 02:09:06,Svenska,"nungut, ich probier's mal. gute nacht."
+2015-10-25 02:09:31,Svenska,"ja, kannst du machen, aber dann kannst du auf paging auch gleich verzichten"
+2015-10-25 02:10:05,Sur3,nee das paging deint dann dazu die segmente zu verwalten innerhalb der einen age directory
+2015-10-25 02:10:15,Sur3,*page
+2015-10-25 02:10:34,Svenska,"hm, könnte funktionieren"
+2015-10-25 02:10:53,Svenska,ich stell mal ne gegenfrage: warum ist ein kontextwechsel (pd-wechsel) teuer?
+2015-10-25 02:11:07,Sur3,ach damn verpasst xD
+2015-10-25 02:12:21,Sur3,"weil der komplette gemappte virtuelle speicherbereich geändert wird, aber bei der lösung nur die segmente zu wechseln wird nur der bereich gewechselt den der aktuelle task braucht und die anderen tasks bleiben gemappt sind nur wegen der segmnete für den aktuellen task unsichtbar"
+2015-10-25 02:12:39,Svenska,"nein, weil du den TLB wegwirfst"
+2015-10-25 02:12:50,Sur3,ahh ok
+2015-10-25 02:12:52,Svenska,das ist eine aktion
+2015-10-25 02:13:00,Svenska,(plus ganz viele TLB-misses)
+2015-10-25 02:13:26,Svenska,"wenn du aber ständig an deinem einen, systemweiten PD rumpfuschst, und an allen PTs dadrin, dann sind das ganz viele aktionen, und du schmeißt trotzdem teile des TLBs weg"
+2015-10-25 02:13:45,Svenska,"wobei ich weiß, dass paging mit nem TLB arbeitet"
+2015-10-25 02:13:57,Svenska,"ich weiß nicht, ob es eine ähnliche sache für segmentierung gibt."
+2015-10-25 02:14:14,Svenska,"also es kann gut sein, dass ein segmentwechsel wesentlich langsamer ist als ein pagedir-wechsel"
+2015-10-25 02:14:25,Sur3,aso
+2015-10-25 02:14:35,Svenska,"(weil: moderne betriebssysteme wechseln keine segmente zur laufzeit, zumindest nicht im normalbetrieb.)"
+2015-10-25 02:15:14,Sur3,joa aber der ehemalige intel chef hat immer moniert daß os die segmente nicht benutzen
+2015-10-25 02:15:32,Svenska,und?
+2015-10-25 02:15:40,Svenska,das hat 2 gründe:
+2015-10-25 02:15:49,Svenska,(a) segmentierung gibt es woanders nicht - auch nicht bei x86_64
+2015-10-25 02:16:02,Svenska,"(b) paging kann das meiste auch, und der rest ist eher nicht wichtig"
+2015-10-25 02:16:38,Sur3,"mit amd64 ist das konzept dann abgeschafft worden weil es von amd kam und die die techik nicht geschätzt haben, aber davor hat intel eigentlich immer gehofft daß die technik mal benutzt würde, deswegen könnte ich mir schon vorstellen daß sie zumindest auf den rienen 32 bittern schneller ist"
+2015-10-25 02:17:03,Svenska,das bezweifle ich mal
+2015-10-25 02:17:22,Svenska,"ich glaube mal gelesen zu haben, dass SYSENTER nicht vernünftig mit segmentierung benutzbar ist"
+2015-10-25 02:17:48,Sur3,hm ok
+2015-10-25 02:18:12,Sur3,aso deswegn meintest du daß ringwechsel teuer sein weil sysenter vllt nicht geht?
+2015-10-25 02:18:40,Svenska,ne
+2015-10-25 02:19:00,Svenska,"ich meinte, dass segmentierung vermutlich teurer sein könnte(!), weil keine sau das benutzt"
+2015-10-25 02:19:06,Svenska,und man das daher nicht optimieren muss.
+2015-10-25 02:19:39,Sur3,aso weil du das im zusammenhang mit pd meintest daß ringwechsel teuer sein wenn ich die pd nicht wechsel?
+2015-10-25 02:19:50,Svenska,m(
+2015-10-25 02:19:59,Svenska,"okay, du WILLST mich nicht verstehen. lassen wir das."
+2015-10-25 02:20:21,Sur3,"<Sur3> die idee ist pro task die segmente zu wechseln statt der page directory, weil ich glaube daß das schneller sein könnte?"
+2015-10-25 02:20:21,Sur3,"<Svenska> dir ist aber schon klar, dass du dann einen teuren ringwechsel hast? ;)"
+2015-10-25 02:20:40,Svenska,"<Svenska> also es kann gut sein, dass ein segmentwechsel wesentlich langsamer ist als ein pagedir-wechsel"
+2015-10-25 02:20:40,Sur3,das bezog sich also auf dei segmente? ok
+2015-10-25 02:20:55,Sur3,gut hatte ich falsch verstanden ok
+2015-10-25 02:21:00,Svenska,ein ringwechsel durch die segmentierung IST teuer
+2015-10-25 02:21:18,Sur3,ok und durch paging ist er günstiger?
+2015-10-25 02:21:39,Svenska,nö. aber wahrscheinlich wesentlich optimierter
+2015-10-25 02:21:50,Svenska,"weil, segmentierung nutzt keine sau, paging nutzt fast jeder"
+2015-10-25 02:22:02,Sur3,wer weiß auf älteren systemen sind interrupts auch schneller als sysenter
+2015-10-25 02:22:19,Svenska,sicher?
+2015-10-25 02:22:26,Svenska,weißt du oder schätzt du?
+2015-10-25 02:22:42,Sur3,joa hab ich in der linux mailinglist gelesen daß bei älteren systemen interrupts benutzt werden weil die schneller sind
+2015-10-25 02:23:06,Svenska,"(okay, ich hab ne kaputte vorstellung von ""älteren systemen"", d.h. die sind grundsätzlich älter als sysenter)"
+2015-10-25 02:24:35,Sur3,aso
+2015-10-25 02:25:10,Sur3,hab das irgendwie im zusammenhang mit vdso gelesen ich versuch das nochmal rauszusuchen
+2015-10-25 02:27:11,Sur3,https://lkml.org/lkml/2002/12/17/5
+2015-10-25 02:27:28,Sur3,"""As a comparison, an Athlon will do a full int/iret faster than a P4 does a"
+2015-10-25 02:27:29,Sur3,"sysenter/sysexit. Pathetic."""
+2015-10-25 02:28:08,Svenska,ja
+2015-10-25 02:28:15,Svenska,interessant wäre noch der vergleich mit SYSCALL
+2015-10-25 02:28:43,Svenska,"ich habe irgendwo im hinterkopf, dass sysenter ne intel-sache ist und syscall das amd-äquivalent, neuere cpus unterstützen aber - je nach modus - beides"
+2015-10-25 02:30:37,Sur3,also ich glaub in dem vorherigen post auf den er sich bezoeht wurde das verglichen..
+2015-10-25 02:32:57,Sur3,"der faden ist voll mit syscall test aber is auch nen recht langer faden, hier einer der ersten posts aus dem faden.. http://marc.info/?l=linux-kernel&m=103942289025149&w=4"
+2015-10-25 02:47:05,Svenska,"was für linux nützlich ist (zwischen int / sysenter / syscall zu unterscheiden), ist für dich vermutlich weniger wichtig"
+2015-10-25 02:49:47,Svenska,wtf... die fortschrittsanzeige des installers sind ... katzenbilder -.-
+2015-10-25 02:51:51,Sur3,"""For 32-bit kernels, we assume that whenever ""sysenter"" is available, it's"
+2015-10-25 02:51:51,Sur3,"at least preferable to ""int 0x80"".  I don't know the order of AMD's"
+2015-10-25 02:51:51,Sur3,"introduction of ""syscall"" on 32-bit CPUs and Intel's introduction of"
+2015-10-25 02:51:51,Sur3,"""sysenter"", but Linux only ever got a vsyscall using ""sysenter"".  """
+2015-10-25 02:53:42,Svenska,"kennt wer ne möglichkeit, ein programm _mit sound_ auf einen anderen rechner weiterzugeben?"
+2015-10-25 02:54:00,Svenska,"in meinem fall wäre das programm ""wine""..."
+2015-10-25 02:54:01,Sur3,gleiche architektur?
+2015-10-25 02:54:19,Svenska,"ne, ich hab großes laptop mit linux und wine, und kleines laptop mit linux"
+2015-10-25 02:54:29,Svenska,und würde programm X gerne auf kleines laptop benutzen... ;)
+2015-10-25 02:54:44,Sur3,"im zweifel auf qemu ausführen, und dann den qemu status speichern und auf ner qemu umgebung des andern rechners neu starten :D"
+2015-10-25 02:54:57,Svenska,"(kleines laptop ist zu klein für linux, zu klein für natives ausführen, zu klein für wine)"
+2015-10-25 02:55:05,Sur3,*bzw nicht neu starten sondern weiter ausführwen
+2015-10-25 02:55:20,Svenska,das geht nicht.
+2015-10-25 02:55:33,Sur3,weil du den task schon gestartet hast?
+2015-10-25 02:55:38,Svenska,"programm X soll auf rechner A laufen, aber auf rechner B angezeigt (mit sound) werden"
+2015-10-25 02:56:02,Svenska,"nein, weil das kleine laptop zu klein ist für solche spielchen... (und nein, auch nicht gleiche architektur -> kleines laptop ist 32-bit only)"
+2015-10-25 02:56:10,Sur3,aso nur angezeigt ich dachte du wolltest es auf nen anderen rechner weiterrechnen lassen ^^
+2015-10-25 02:56:18,Svenska,"nene, das soll da schon bleiben"
+2015-10-25 02:56:32,Svenska,"""nur bild"" könnte ich mir mit Xvnc basteln"
+2015-10-25 02:56:51,Svenska,"aber damit kriege ich keinen ton hin. und wie man sowas mit RDP macht, weiß ich nicht..."
+2015-10-25 02:57:38,Sur3,dann nen vnc?
+2015-10-25 02:57:44,Sur3,joa
+2015-10-25 02:57:48,Sur3,sry nicht gelesen
+2015-10-25 02:58:23,Sur3,ton kannst du mit pulseaudio über netzwerk übertragen soweit ich weiß
+2015-10-25 02:58:54,Svenska,wie? ;)
+2015-10-25 02:59:46,Sur3,http://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/User/Network/
+2015-10-25 02:59:58,Svenska,da bin ich auch.
+2015-10-25 07:34:35,Sur3,WTF? o.O
+2015-10-25 07:37:31,Sur3,ahh ok
+2015-10-25 09:57:09,Jonathan,Moin
+2015-10-25 09:59:01,Sur3,moin
+2015-10-25 10:00:28,masterq321,heyhey
+2015-10-25 10:04:13,Sur3,so paging läuft
+2015-10-25 10:04:45,Sur3,nach 8h programmierne und fehlersuche ^^
+2015-10-25 10:05:05,masterq321,gz
+2015-10-25 10:05:10,Sur3,thx ^^
+2015-10-25 10:06:24,Sur3,ich finds nur gemein daß die CPU aus meinen Herzchen lauter 'c' und '#' macht xD
+2015-10-25 10:07:08,masterq321,oooch :(
+2015-10-25 10:07:41,mgottschlag,VGA-Zeichensatz anpassen und Unicode-Support für Herzchen in dein printf hacken :p
+2015-10-25 10:07:52,masterq321,perfekt :)
+2015-10-25 10:07:58,Sur3,:D
+2015-10-25 10:08:58,Sur3,"joa oder ich ersetz das # und c einfach durch weitere herzchen im zeichensatz dann kann ich zwar ncihtmehr vernünftig schrieben, aber benutzte und geschriebne seiten sehen trotzdem noch süß aus xD"
+2015-10-25 10:10:21,Jonathan,Sur3: Ooooder du stellst deinen Editor auf CP437 um :D
+2015-10-25 10:10:47,Jonathan,(Oder was auch immer dein OS für ne Codepage benutzt)
+2015-10-25 10:10:50,Sur3,der is doch auf CP437 sonst würd ich bei unbenutzten seiten ja nciht die herzchen sehen ^^
+2015-10-25 10:11:20,Jonathan,Und dein OS benutzt was...?
+2015-10-25 10:12:15,Sur3,"es geht einfach darum daß present+schreibbar ne codierte 3 ist die vor jeder seite in der table steht und die ist in CP437 ein herzchen, aber wenn jetzt auf ne page zugegriffen wird macht die cpu aus dem herzchen ne raute oder nen kleines c"
+2015-10-25 10:12:58,Sur3,um eben anzuzeigen daß die page benutzt wurde
+2015-10-25 10:13:31,Jonathan,"Ach, du schreibst Binärdaten direkt auf den Bildschirm?"
+2015-10-25 10:13:37,masterq321,why not? :D
+2015-10-25 10:13:42,Jonathan,... *g*
+2015-10-25 10:13:48,masterq321,http://mq32.de/?x78c
+2015-10-25 10:13:52,masterq321,sieht leider nich immer so toll aus :D
+2015-10-25 10:15:14,Sur3,"ich finds cool, mach das schon recht lange ich kann mit meinem editor auch den arbeitsspeicher direkt bearbeiten das kann lustige nebeneffekte geben wenn man zum beispiel daten im grafiktreiber einfach mal wären der läufzeit ändert und aus ner 0 ne 1 macht oder so :D"
+2015-10-25 10:16:25,Jonathan,Sur3: Das ist irgendwie krank :D
+2015-10-25 10:16:32,Sur3,danke :D
+2015-10-25 10:17:58,Sur3,"hilft mir auf jedenfall beim debuggen, hab so vorhin nen fehler im ram manager gefunden indem ich im arbeitsspeicher zwei pointer der SLOB-Liste aufaddiert hab ^^"
+2015-10-25 10:18:44,Jonathan,"Sur3: Naja gut, ich denke mal, ich hatte sogar schon krankere Debugging-Erfahrungen in meinem OS *g*"
+2015-10-25 10:19:15,Sur3,joa man erlebt halt so einiges bei der os programmierung ^^
+2015-10-25 10:19:30,Jonathan,"Ist ein echter Mikrokernel... Wenn der nicht bootet, hab ich keinen Hardwarezugriff wegen fehlender Treiber"
+2015-10-25 10:19:31,Jonathan,:D
+2015-10-25 10:19:47,Jonathan,Lösung:
+2015-10-25 10:20:21,Jonathan,Vier 7-Segment-Displays ans BIOS häkeln (selbstgebaute Hardware) und an zwei I/O-Ports hängen
+2015-10-25 10:20:42,Jonathan,Zum Debugging konnte ich mir dann jederzeit 2 ganze Bytes Debug-Info anzeigen *g*
+2015-10-25 10:20:53,Sur3,"nice, ich muß mir auch mal wieder ein paar 7seg holen ^^"
+2015-10-25 10:20:56,Jonathan,:D
+2015-10-25 10:21:04,Jonathan,"Aber nicht für's OS, denke ich mal :P"
+2015-10-25 10:21:39,Sur3,"jein, ich hab mir mal mit avr nen themometer gebastelt"
+2015-10-25 10:22:01,Sur3,aber ich hab auch echt mal überlegt mir noch statusinfos an meinen pc dran zu löten
+2015-10-25 10:22:30,Jonathan,Hmmm ;)
+2015-10-25 10:22:36,Sur3,auf was für nem system war deine aktion eigentlich?
+2015-10-25 10:22:43,Jonathan,"Für sowas würde ich eher ein 44780-kompatibles LCD holen, geht besser"
+2015-10-25 10:22:55,Jonathan,Das war auf ner selbst entwickelten Z80-Kiste
+2015-10-25 10:22:59,Jonathan,Komplett eigene Hardware
+2015-10-25 10:23:52,masterq321,"du hast den schönen vorteil, du kennst deine HW :D"
+2015-10-25 10:24:00,Jonathan,masterq321: Tatsache *g*
+2015-10-25 10:24:13,Jonathan,Hatte sogar am Ende keine Hardwarebugs mehr :D
+2015-10-25 10:24:21,masterq32,nice
+2015-10-25 10:24:41,Jonathan,"Bestand insgesamt aus: CPU, MMU, 1MB RAM (max. 4MB), BIOS, Interrupt-Controller, RS232-Controller, 32kB ""Festplatte"", VGA-Karte, PS/2-Controller (i8042)"
+2015-10-25 10:24:55,masterq32,nice
+2015-10-25 10:24:59,masterq32,was war die festplatte?
+2015-10-25 10:25:06,Jonathan,Ein EEPROM ;)
+2015-10-25 10:25:10,masterq32,ah! :D
+2015-10-25 10:25:16,masterq32,sogar stoßgeschützt :D
+2015-10-25 10:25:19,Jonathan,*g*
+2015-10-25 10:25:22,Sur3,nice
+2015-10-25 10:25:22,masterq32,quasi eine SSD :D
+2015-10-25 10:25:28,Jonathan,Ist ein winziges Read-Only-Dateisystem drauf
+2015-10-25 10:25:34,Jonathan,Und ein paar Dateien halt
+2015-10-25 10:26:04,Jonathan,"Treiber, Executables (u.a. die shell), und die Präsentation über das System"
+2015-10-25 10:26:23,masterq32,:)
+2015-10-25 10:26:33,Sur3,"coole sache, ich persönlich will mir ja nochmal ne programmierbare uhr löten mit io ports für logicanalyzer und so"
+2015-10-25 10:26:41,Jonathan,Hehe ;)
+2015-10-25 10:26:57,Sur3,aber hab mich noch nciht für ne cpu entscheiden können
+2015-10-25 10:26:58,Jonathan,"Aber mach das besser mit nem FPGA, nicht mit nem Mikrocontroller :P"
+2015-10-25 10:27:19,Sur3,also wenn ich bei attiny bleibe müßte ich sowas wie ne vm darauf bauen damit ich den programmiern kann
+2015-10-25 10:27:30,Jonathan,Auweia *g*
+2015-10-25 10:27:43,Jonathan,"Nein, du willst den nicht im Betrieb umprogrammieren, glaub mir :P"
+2015-10-25 10:27:48,Sur3,fpga wäre etwas klobig oder?
+2015-10-25 10:27:53,Jonathan,Wieso denn?
+2015-10-25 10:27:57,Jonathan,Gibt auch echt winzige FPGAs. ^^
+2015-10-25 10:28:07,Sur3,echt? ach krass
+2015-10-25 10:28:15,Jonathan,Kleiner als 1cm^2
+2015-10-25 10:28:23,Sur3,und höhe?
+2015-10-25 10:28:35,Jonathan,Ein Millimeter vielleicht?
+2015-10-25 10:28:44,Jonathan,Typische TQFP/BGA-Chips eben
+2015-10-25 10:28:44,Sur3,ok das würde gehen
+2015-10-25 10:28:50,Sur3,autsch
+2015-10-25 10:28:53,Jonathan,:D
+2015-10-25 10:28:57,Sur3,bga is aber schwer zu löten
+2015-10-25 10:29:04,Sur3,ich dachte eher an smd
+2015-10-25 10:29:06,Jonathan,Kannst ja TQFP nehmen :P
+2015-10-25 10:29:10,Jonathan,BGA ist auch SMD *g*
+2015-10-25 10:29:30,Sur3,joa tqfp wär da wohl besser
+2015-10-25 10:29:45,Sur3,bga ist smd?
+2015-10-25 10:29:48,Jonathan,Ja
+2015-10-25 10:29:57,Sur3,öhm ok seltsame definition
+2015-10-25 10:30:00,Jonathan,Geht ja kein Draht durch die Platine :P
+2015-10-25 10:30:22,Jonathan,Vielleicht verwechselst du BGA mit PGA ;)
+2015-10-25 10:30:23,Sur3,lol
+2015-10-25 10:30:38,Jonathan,Glaub ich aber eher nicht :D
+2015-10-25 10:31:12,Sur3,"das ist doch gecheatet, es geht zwar kein draht durch aber die bällchen erfüllen ja im prinzip den selben zweck wie pins sind bloß noch schwerer zu montieren xD"
+2015-10-25 10:31:29,Jonathan,TQFP hat auch Pins :D
+2015-10-25 10:31:48,Jonathan,"Die lötet man halt auf die Platine drauf, nicht durch ;)"
+2015-10-25 10:31:51,Sur3,"ja schon, aber die sind schön seitlich wo man sie löten kann ^^"
+2015-10-25 10:31:57,Sur3,jo ^^
+2015-10-25 10:32:21,Jonathan,Naja... Ein kleiner FPGA (CoolRunner?) + etwas SRAM + ein LiPoly + Display + USB = Deine Uhr mit Logic-Analyzer :P
+2015-10-25 10:32:39,Jonathan,Input Protection nicht vergessen ;)
+2015-10-25 10:33:16,Sur3,is cool runner ne marke?
+2015-10-25 10:33:25,Jonathan,"Ja, von Xilinx afaik"
+2015-10-25 10:33:26,mgottschlag,"CoolRunner? Lattice ICE40, dafür gibt es jetzt eine OSS-Toolchain \o/"
+2015-10-25 10:33:35,Sur3,ahh cool
+2015-10-25 10:33:36,Jonathan,:D
+2015-10-25 10:33:37,mgottschlag,"CoolRunner kenn ich jetzt eher als CPLD, nicht als FPGA"
+2015-10-25 10:33:51,Jonathan,"Naja, wird für die Uhr wohl auch reichen :P"
+2015-10-25 10:33:55,mgottschlag,stimmt wohl :)
+2015-10-25 10:34:00,Jonathan,Muss ja nicht allzu viel tun ;)
+2015-10-25 10:34:41,mgottschlag,"ach mist, die ICE40 gibts nicht als QFP, maimal noch QFN"
+2015-10-25 10:34:54,mgottschlag,"... aaber, als 1.7mm/1.7mm 16-BGA :D"
+2015-10-25 10:35:26,mgottschlag,"ach, btw, ich hatte ja vor Jahren mal über eine selbstgebaute Stereoanlage geredet... jetzt hab ich sie dann wirklich mal gebaut, funktioniert \o/"
+2015-10-25 10:35:34,mgottschlag,http://i08fs1.atis-stud.uni-karlsruhe.de/~s_gottsc/IMG_20150930_112931666_HDR.jpg
+2015-10-25 10:35:50,Sur3,ach krass dei chips gibts ja schon ab 5 euro
+2015-10-25 10:36:03,mgottschlag,5 Euro für einen CPLD ist schon eine ganze Menge
+2015-10-25 10:36:19,Sur3,fpga
+2015-10-25 10:36:20,mgottschlag,"auf dem Bild rechts sieht man einen Xilinx XC9572XL, den gibts bei Reichelt füë weniger"
+2015-10-25 10:36:43,mgottschlag,"hm, sinnvolle FPGA fangen denk ich mal bei 10€ an (Spartan 3) oder 15 für einen QFP-Spartan-6"
+2015-10-25 10:37:11,Sur3,echt spartan 6 gibts schon ab 15 euro krass die preise sind echt gefallen
+2015-10-25 10:38:02,mgottschlag,http://www.digikey.de/product-detail/de/XC6SLX9-2TQG144C/122-1745-ND/2339919
+2015-10-25 10:38:53,Sur3,"hm mit fpga hab ich ja erfahrung, aber was macht man mit cpld, können die irgendwas berechnen oder können die nur eingänge auf ausgänge mappen?"
+2015-10-25 10:39:05,Jonathan,mgottschlag: XL6SLX25 ist cool :D
+2015-10-25 10:39:18,Jonathan,Hab auf so einem ein ganzes SoC implementiert *g*
+2015-10-25 10:39:31,mgottschlag,"Sur3: das selbe, nur viel weniger komplex"
+2015-10-25 10:39:40,mgottschlag,"und meistens intern auf was PAL-ähnlichem aufbauend, nicht auf LUTs"
+2015-10-25 10:40:54,Sur3,hat cpld auch flip flops?
+2015-10-25 10:42:08,mgottschlag,"ja, aber viel weniger, meistens nur ein paar wenige pro Pin"
+2015-10-25 10:43:08,Sur3,"hm dann bringts das für meine uhr ja nicht, ich will da nen kleinen asm dialekt draufpacken"
+2015-10-25 10:43:42,mgottschlag,"es gibt CPU-Designs, die auch auf CPLDs funktionieren :D"
+2015-10-25 10:43:58,mgottschlag,"ganz simples 4-Bit-RISC, verteilt auf 2 CPLDs, sowas hab ich mal gesehen"
+2015-10-25 10:44:40,Sur3,joa aber ich hätt schon gern ein paar kb speicher?
+2015-10-25 10:45:02,mgottschlag,"ach was, Speicher ist was für Anfänger. :p"
+2015-10-25 10:45:28,Jonathan,Sur3: Du musst wegen dem Logic Analyzer sowieso externen Speicher dran hängen :P
+2015-10-25 10:45:41,Jonathan,Aber ob CPLD oder FPGA ist sowieso dir überlassen
+2015-10-25 10:45:50,Jonathan,Der Unterschied ist höchstens ein paar Euro und ein externer Flash
+2015-10-25 10:45:55,Sur3,naja der attiny häte ja intern genug speicher für sowas
+2015-10-25 10:46:06,Jonathan,Für einen Logic Analyzer? Niemals ;)
+2015-10-25 10:47:04,Sur3,hm ok
+2015-10-25 10:51:07,Sur3,ich denke ich nehm dann eher nen fpga weil cpld ist ja nur einmal programmierbar?
+2015-10-25 10:51:30,Jonathan,"Nein, CPLDs sind mehrfach programmierbar :P"
+2015-10-25 10:52:03,Jonathan,"(Es gibt ein paar ganz billige Exoten mit Fuses, aber die kriegt man kaum noch)"
+2015-10-25 10:52:25,Sur3,"ok hatte ich so zum thema pal gelesen daß da fuses durchgebrannt werden, aber dann is die info vbermutlich veraltet ok ^^"
+2015-10-25 10:53:57,Jonathan,PALs sind generell veraltet *g*
+2015-10-25 10:54:05,Jonathan,Werden nicht mehr hergestellt
+2015-10-25 10:54:10,Sur3,aso
+2015-10-25 10:54:21,Jonathan,Sogar die Nachfolger von PALs (mehrfach programmierbare GALs) sind obsolet :P
+2015-10-25 10:54:57,mgottschlag,"naja, viele CPLDs benutzen intern noch PAL-artige Logik afaik"
+2015-10-25 10:55:06,mgottschlag,aber halt ansonsten mit mehr drum herum :)
+2015-10-25 10:55:07,Sur3,xD ich muß mich wohl mal in aktuelle cpld einlesen xD
+2015-10-25 10:55:19,Jonathan,"Ja, aber mit Flash/EEPROM-Zellen anstatt Fuses :P"
+2015-10-25 10:55:37,Jonathan,GALs find ich aber für Bastelzwecke immer noch super geeignet ;)
+2015-10-25 10:56:31,Sur3,wo lernt man sowas eigentlich?
+2015-10-25 10:56:36,Jonathan,Internet :D
+2015-10-25 10:56:36,Jonathan,xD
+2015-10-25 10:57:36,Sur3,xD
+2015-10-25 11:04:55,Sur3,"so grad mal paging als feature meines os im wiki ergänzt, jetzt werd ich mal etwas chillen und frühstücken ^^"
+2015-10-25 11:08:08,Jonathan,Hmmm... Wiki :P
+2015-10-25 11:08:18,Jonathan,Da wollte ich eigentlich noch einen Artikel zum Drahthaufen schreiben *g*
+2015-10-25 11:09:36,Sur3,cool les ich dann nacher ^
+2015-10-25 11:09:48,masterq32,:D
+2015-10-25 11:25:35,Jonathan,"Sur3: Das heißt nicht, dass ich heute was schreiben kann *g*"
+2015-10-25 11:38:13,mgottschlag,"Kannst du nicht, oder hast du keine Lust? :p"
+2015-10-25 11:39:11,darklink,tastatur gefixt
+2015-10-25 11:39:34,darklink,Hat jetzt die ^ und < tasten richtigrum
+2015-10-25 11:55:12,Jonathan,"mgottschlag: Keine Zeit, leider :P"
+2015-10-25 12:09:47,Sur3,"3 	Wenn dieses Bit gesetzt ist, wird Write-Through-Caching benutzt."
+2015-10-25 12:09:47,Sur3,"4 	Wenn dieses Bit gesetzt ist, wird für die Page kein Cache benutzt. "
+2015-10-25 12:09:53,Sur3,wofür ist das gut?
+2015-10-25 12:10:16,Sur3,gehts da nur darum daß man die seiten bei nem wechsel nicht invalidieren muß?
+2015-10-25 12:11:14,darklink,Sur3: beim ersten wird sofort geschrieben
+2015-10-25 12:11:24,darklink,was langsamer ist
+2015-10-25 12:11:38,Sur3,echt? warum ist es langsamer sofort zu schreiben?
+2015-10-25 12:11:56,darklink,weil der cache schneller
+2015-10-25 12:12:04,Sur3,ahh
+2015-10-25 12:12:08,Sur3,ok
+2015-10-25 12:12:18,Sur3,also am besten beide bits auf null lassen ok
+2015-10-25 12:13:00,darklink,Sur3: cache ist manchmal hilfreich
+2015-10-25 12:13:18,Sur3,"jo deswegen bits auf null lassen, dann ist der cache an"
+2015-10-25 12:13:29,darklink,hast du smp?
+2015-10-25 12:13:49,Sur3,"ja aber momentan deaktiviert, weil das paging noch nicht darauf ausgerichtet ist"
+2015-10-25 12:14:05,darklink,dann solltest du den cache für kernelpages deaktivieren
+2015-10-25 12:14:16,Sur3,ah ok
+2015-10-25 12:14:46,darklink,den cache solltest du für den linearen framebuffer aktivieren
+2015-10-25 12:14:57,darklink,ansonsten ist es zu langsam
+2015-10-25 12:15:47,Sur3,ah ok aber der cache ist wenn ich den für den framebuffer akttiviere ja ziemlich schnell voll? der frambuffer hat ja 4MB
+2015-10-25 12:15:54,darklink,Da sollte eh nur die CPU mit dem VESA-treiber (meistens die cpu0) zugreifen dürfen
+2015-10-25 12:16:14,darklink,Sur3: wenn der voll ist wird der geflusht
+2015-10-25 12:16:32,darklink,und das ist schneller als write-through
+2015-10-25 12:16:43,Sur3,ok
+2015-10-25 12:17:02,darklink,außerdem ist mein 1680x1050x16 framebuffer nur 2MB groß
+2015-10-25 12:17:12,Sur3,öhm
+2015-10-25 12:17:22,Sur3,nur 256 farben?
+2015-10-25 12:17:27,darklink,(Ja ich habe 16:10 VESA modi)
+2015-10-25 12:17:29,darklink,nein
+2015-10-25 12:17:32,darklink,65536
+2015-10-25 12:17:38,Sur3,ah ok
+2015-10-25 12:18:08,darklink,VESA mit 2^32 farben ist bei solchen bildschirmgrößen zu langsam
+2015-10-25 12:19:06,darklink,"Also write-through cache schreibt sofort, liest aber vom cache"
+2015-10-25 12:19:17,Sur3,aso
+2015-10-25 12:19:39,darklink,"write-burst cache schreibt in den cache, der erst beim flushen schreibt"
+2015-10-25 12:19:49,darklink,kein cache ist klar :P
+2015-10-25 12:20:12,Sur3,qrite burst kann man das auch aktivieren?
+2015-10-25 12:20:18,Sur3,*write
+2015-10-25 12:21:07,darklink,Das ist aktiv wenn write-through deaktiviert ist afaik
+2015-10-25 12:21:15,Sur3,aso
+2015-10-25 12:21:50,darklink,"write-through für programme, write-burst für VE"
+2015-10-25 12:21:58,darklink,den LFB
+2015-10-25 12:22:07,darklink,und kein cache für den kernel
+2015-10-25 12:22:40,darklink,oder write-through bei single-processor systemen
+2015-10-25 12:23:00,darklink,Ob NUMA oder nicht ist eigentlich egal
+2015-10-25 12:23:53,Sur3,warum write through für programme sollte man das nicht nur bei threaded programmen aktivieren?
+2015-10-25 12:24:12,darklink,"was man überprüfen müsste, ob die CPU beim ausführen aus dem cache liesz"
+2015-10-25 12:25:05,darklink,"Sur3: cache ist schneller, allerdings habe ich keine ahnung wie es da mit selbstmodifizierenden code steht"
+2015-10-25 12:25:47,darklink,"Vorallem häufig benutzte daten, wie z.b. ein zähler sind im cache"
+2015-10-25 12:29:40,Paddy,"Moin moin, meine Freunde der Segmentierung"
+2015-10-25 12:29:45,masterq32,heyhey
+2015-10-25 12:30:39,Paddy,"Oh, Svenska ist gar nicht da. Die Logs sagen, dass ich dem noch bei Gelegenheit widersprechen muss ;-)"
+2015-10-25 12:30:52,darklink,L1 cache64 KB pro KernL2 cache256 KB pro KernL3 cache2–8 MB (geteilt)
+2015-10-25 12:35:47,Sur3,ah ok bei welchem thema mußt du svenny denn wiedersprechen?
+2015-10-25 12:36:41,Paddy,Sur3: Deine Idee mit nur Segmentwechsel statt cr3-Wechsel bem Taskswitch sollte meiner Meinung nach im Prinzip funktionieren
+2015-10-25 12:36:53,Paddy,"Es ist zwar richtig, dass Segmentwechsel Zeit kosten"
+2015-10-25 12:37:09,Paddy,"Aber ich glaube, Svenska vergisst, dass man Segmentierung nicht abschalten kann und ein Ringwechsel immer mit Segmentwechsel verbunden ist"
+2015-10-25 12:37:18,Paddy,"Du bekommst also keinen Overhead, den du nicht sowieso schon hast"
+2015-10-25 12:37:51,Sur3,"aso ok cool, dann werd ich das vllt einfach mal implementieren ich hab ja momentan eh segmentierung und da nen provisorisches paging drunter gebaut :D"
+2015-10-25 12:38:01,Paddy,"Der Ansatz ist auch mehr oder weniger, wie ich mir mein Segmentierung + Paging vorgestellt habe"
+2015-10-25 12:38:27,mgottschlag,so wie L4 small tasks?
+2015-10-25 12:38:44,Paddy,"Jetzt müsste ich L4 genauer kennen, um da was dazu sagen zu können ;-)"
+2015-10-25 12:39:06,mgottschlag,"16MB-Segmente, und jedes Programm hat dann nur entsprechend wenig vom Adressraum, und der Kernel wechselt dazwischen, für IPC mit wahnsinniger Geschwindigkeit oder so"
+2015-10-25 12:39:18,Paddy,"Sur3: Wobei ich nicht alle Tasks in dasselbe PD packen wollte, weil ja einzelne Tasks durchaus auch mal viel Speicher brauchen können. Aber vor allem kleinere Tasks, die viel IPC miteinander machen, könnten eventuell davon profitieren."
+2015-10-25 12:39:30,Paddy,"mgottschlag: Jo, genau für den Fall wäre das gedacht"
+2015-10-25 12:39:32,mgottschlag,"(gibt es in L4 auch schon länger nicht mehr, aber.)"
+2015-10-25 12:40:05,mgottschlag,also address space IDs für arme Leute
+2015-10-25 12:40:10,mgottschlag,(vom Effekt her)
+2015-10-25 12:40:14,Sur3,joa wenn der speicher ausgeht werden dei tasks auf zwei seiten verteilt oder so
+2015-10-25 12:40:31,Sur3,*auf zwei directories
+2015-10-25 12:40:51,Paddy,"mgottschlag: Jo, aber einen Tagged TLB gibt es ja auf x86 immer noch nur für VMs"
+2015-10-25 12:41:28,mgottschlag,"huh, können das neuere Prozessoren nicht auch regulär? ich dachte, das wäre mit einer der letzten Prozessorgenerationen mal eingeführt worden"
+2015-10-25 12:41:36,Paddy,"Sur3: Und wenn du dann doch mal nachträglich umbauen musst, kannst du das mit Paging auch mit relativ wenig Aufwand tun"
+2015-10-25 12:41:49,mgottschlag,nicht dass ich in den letzten Jahren irgendwas mit x86 zu tun gehabt hätte :D
+2015-10-25 12:42:00,Paddy,"Hm, wenn, dann ist es an mir vorbeigegangen"
+2015-10-25 12:42:20,Paddy,"Ich dachte mal kurz, dass es endlich käme, aber das war dann nur Teil von SVM und nicht für normale Prozesse"
+2015-10-25 12:42:37,mgottschlag,kann auch sein
+2015-10-25 12:43:13,Sur3,"joa ich muß nur für das paging scheinbar meinen pmm umbauen, weil der hat ne lineare liste über den gesamten arbeitsspeiche rgespannt, und das geht schienbar nicht effizient mit paging, weil ich dann extra das pd wechseln müßte um den gesamten arbeitsspeicher zu mappen?"
+2015-10-25 12:43:22,Paddy,"Sur3: Und das andere war, dass du deinen Stack per Segmentierung schützen wolltest. Ich glaube, das müsste mit Expand-Down-Segmenten tun."
+2015-10-25 12:44:50,Sur3,unterstützt gcc denn expand down?
+2015-10-25 12:45:14,mgottschlag,Segmente musst du eh alle von Hand machen
+2015-10-25 12:45:21,Paddy,"Ach ne, das geht nur, wenn der Stack ganz oben ist"
+2015-10-25 12:45:32,Paddy,Passt also nicht mit dem Modell von mehrren Tasks in einem PD zusammen
+2015-10-25 12:45:55,Paddy,"Aber in dem Fall müsste gcc das nicht unterstützen, weil Basis weiterhin 0 wäre (bzw. die gleiche wie in ds)"
+2015-10-25 12:46:29,Sur3,aso
+2015-10-25 12:46:58,Paddy,"Oder ich les nochmal weiter, vielleicht verstehe ich das auch falsch"
+2015-10-25 12:47:02,Paddy,Klingt ein bisschen seltsam so
+2015-10-25 12:47:10,mgottschlag,"naja, man könnte zumindest für den Stack im GPF-Handler die Segmentgröße aktualisieren, wenn sie zum Stack gehört"
+2015-10-25 12:47:11,Paddy,Ich hab solche Segmente ja noch nie benutzt ;-)
+2015-10-25 12:47:16,mgottschlag,also mit regulären Segmenten
+2015-10-25 12:47:20,Sur3,und wenn ich einfach ne zugriffsgeschütze page dazwischen mache wie ich svenska empfohlen hatte müßte das nciht erstmal genug schutz vor den gängisten attacken bieten?
+2015-10-25 12:47:20,mgottschlag,bzw. Segmentbasisadresse
+2015-10-25 12:47:46,Paddy,"Ich glaube, eine wechselnde Segmentbasis macht selbst Code, der Segmentierung berücksichtigt, keinen Spaß"
+2015-10-25 12:48:11,mgottschlag,"ach, stimmt"
+2015-10-25 12:48:54,Paddy,"Ah, ich glaube, das Limit bei Expand-Down-Segmenten ist im Prinzip nur einfach negativ von der Basis aus gerechnet"
+2015-10-25 12:48:58,mgottschlag,ja
+2015-10-25 12:49:02,Paddy,Dann kriegt man das natürlich schlecht mit ds verheiratet
+2015-10-25 12:49:46,mgottschlag,wieso? müsste doch gehen
+2015-10-25 12:49:55,mgottschlag,für das Programm wächst der Stack dann halt ab 0 abwärts
+2015-10-25 12:50:09,Sur3,"ich hab ja nen eigenes binärformat für getrennten stack entwickelt, aber der gcc unterstütz mein format natürlich nicht :D aber immerhin mein tetris hab ich in dem format schon gebacken ^^"
+2015-10-25 12:50:11,mgottschlag,oder versteh ich das gerade total falsch?
+2015-10-25 12:50:18,Paddy,"Hm... Stimmt, die Pointer müssten am Ende gleich sein"
+2015-10-25 12:50:32,Paddy,Braucht dann aber Limit 4 GB für ds
+2015-10-25 12:51:02,Paddy,"Was den Speicherschutz kaputtmacht, wenn man mehrere Tasks im PD hat"
+2015-10-25 12:51:03,mgottschlag,"hm, ja, stimmt."
+2015-10-25 12:51:57,mgottschlag,dann doch lieber einzelne Guard Pages ohne Valid-Bit :)
+2015-10-25 12:52:23,Paddy,"Okay, dann ganz krank: Was wenn ds auch ein Expand-Down-Segment ist? *g*"
+2015-10-25 12:52:50,Paddy,Nur halt größeres Limit als ss
+2015-10-25 12:53:01,mgottschlag,*das* ist gut :D
+2015-10-25 12:53:18,mgottschlag,"führ dann halt zu higher-half-Executables, aber das lässt sich einrichten"
+2015-10-25 12:53:28,Paddy,Stört doch nicht
+2015-10-25 12:53:28,mgottschlag,aber auch nur mit einem Thread pro Programm.
+2015-10-25 12:53:54,Sur3,higher half executable?
+2015-10-25 12:54:12,Paddy,"Hm, Threads müssen wohl die gleichen Segmente haben, ja. Das ist blöd."
+2015-10-25 12:54:37,Paddy,Oder man nimmt Paging und mappt den Heap für jeden Thread in ein eigenes Segment.
+2015-10-25 12:54:48,Sur3,aso stimmt muß man für threads nciht eh immer pd wechseln?
+2015-10-25 12:55:06,Paddy,"Nein, Threads teilen sich normal den gleichen Adressraum"
+2015-10-25 12:55:19,Paddy,Arbeiten auf denselben globalen Varianten usw.
+2015-10-25 12:55:22,Paddy,*Variablen
+2015-10-25 12:55:27,Sur3,aso stimmt haben nur nen anderen stack?
+2015-10-25 12:55:30,Paddy,Jo
+2015-10-25 12:55:35,Paddy,Und TLS möglicherweise
+2015-10-25 12:56:23,Sur3,hm man könnte ja auch mehrere stacks hintereinander in dem selben segment haben hat halt jeder thread nen anderen esp und guard pages zwischen den verschiedenen stacks
+2015-10-25 12:56:52,Paddy,Aber genau die Unzuverlässigkeit von Guard Pages wollte man ja gerade loswerden durch die Segmentierung
+2015-10-25 12:57:51,darklink,Sur3: https://en.m.wikipedia.org/wiki/CPU_cache
+2015-10-25 12:57:57,Sur3,aso ich dachte es geht jetzt erstmal darum unnötige kontextwechsel zu verhindern
+2015-10-25 12:58:14,mgottschlag,"man könnte auch Zugriffe auf Stacks eines anderen Threads verbieten, und dann bekommt jeder Thread ein 16M (oder ähnliches) Datensegment, in dem aber bis auf den Bereich des Stacks die selben Seiten gemappt sind"
+2015-10-25 12:58:30,mgottschlag,dann ist Wechseln zwischen Threads genauso billig wie zwischen Prozessen
+2015-10-25 12:58:59,Paddy,"s/billig/teuer/, aber ja, das war das, was ich oben meinte"
+2015-10-25 12:59:00,darklink,modern CPUs can execute hundreds of instructions in the time taken to fetch a single cache line from main memory <- wir brauchen schnelleren RAM - DDR4 mit einer taktrate von 4GHz
+2015-10-25 12:59:16,darklink,oder eher 400?
+2015-10-25 12:59:32,mgottschlag,"darklink: bringt dir nix, die Latenz von DDR4 ist identisch mit DDR3"
+2015-10-25 12:59:47,Paddy,"Vielleicht wäre es wirklich am gescheitesten, Threads dann alle Prozesse mit einem Haufen Shared Memory anzusehen"
+2015-10-25 12:59:54,Paddy,s/alle/als/
+2015-10-25 12:59:54,mgottschlag,"die Taktrate ist höher, aber die Latenz steigt, d.h. bei gleicher Frequenz kann DDR4 sogar schlechter sein als DDR3"
+2015-10-25 13:00:22,darklink,Einen bus von 8 Mbit?
+2015-10-25 13:01:11,Jonathan,"mgottschlag: Stimmt nicht unbedingt, die CPU muss dann nur deutlich mehr Daten gleichzeitig laden, wenn möglich"
+2015-10-25 13:01:34,Sur3,man brauch einfach mehr parallel geschaltete ram riegel die rotierend wärend eines cpu takts gelsen werden xD
+2015-10-25 13:01:38,mgottschlag,"ja, also in latenzbegrenzten Situation bringtes nix, ansonsten schon"
+2015-10-25 13:01:43,Sur3,so wie ne gattling gun :D
+2015-10-25 13:01:59,Jonathan,"Sur3: Nennt sich dann ""Dual Channel"""
+2015-10-25 13:02:13,mgottschlag,"... und erhöht auch nur die Bandbreite, nicht aber die Latenz."
+2015-10-25 13:02:17,Jonathan,Jop
+2015-10-25 13:02:25,Sur3,"joa mehr als ddr, eher tdr oder mdr"
+2015-10-25 13:02:48,Jonathan,Dual-Channel DDR ist immer noch DDR ;)
+2015-10-25 13:03:05,Jonathan,Betriebsmodus != Übertragungsprotokoll
+2015-10-25 13:03:19,darklink,"Oder eine RAM Access unit die überprüft ob eine addresse im cache ist oder nicht und wenn nicht, dann wird schonmal ein fetch ausgeführt ~1000 takte vor der eigentlichen instruktion"
+2015-10-25 13:03:30,iksnagreb,moin
+2015-10-25 13:03:35,Jonathan,iksnagreb: Tut man schon ;)
+2015-10-25 13:03:39,darklink,moin
+2015-10-25 13:03:51,Jonathan,"Nicht iksnagreb, sondern darklink *g*"
+2015-10-25 13:03:56,darklink,Lol
+2015-10-25 13:03:57,Jonathan,Moin :D
+2015-10-25 13:04:05,Sur3,oder einen ram der aus chache besteht :D
+2015-10-25 13:04:13,Jonathan,Sur3: Bezahl's ;)
+2015-10-25 13:04:15,Sur3,xD
+2015-10-25 13:04:28,darklink,Wie lang ist denn mittlerweile die pipeline? 1000 stufen?
+2015-10-25 13:04:34,mgottschlag,SRAM-Arbeitsspeicher bringt aber bei der Latenz auch wieder nicht soo viel :D
+2015-10-25 13:04:44,Jonathan,mgottschlag: Wieso nicht? :D
+2015-10-25 13:04:50,Jonathan,Zugriffe gehen in 1 Cycle
+2015-10-25 13:04:55,mgottschlag,"hm, stimmt eigentlich"
+2015-10-25 13:05:07,mgottschlag,man muss ja nicht mehr erst Precharging durchführen
+2015-10-25 13:05:10,darklink,Oder größere caches (64 MB)
+2015-10-25 13:05:11,Jonathan,Jo
+2015-10-25 13:05:17,Jonathan,Und auch nicht erst RAS/CAS anlegen
+2015-10-25 13:05:31,Jonathan,Und dann auf den Ladungsverstärker und die Refresh-Logik warten
+2015-10-25 13:05:37,darklink,Mein PC könnte einen 256 MB L4-cache haben
+2015-10-25 13:05:47,Sur3,oder bessere cou die nicht tausend abwärtskompatibilitäten haben :D
+2015-10-25 13:05:52,Sur3,*CPU
+2015-10-25 13:05:58,Jonathan,"Sur3: Nennt sich Itanium, kann man kaufen"
+2015-10-25 13:06:07,Sur3,^^
+2015-10-25 13:06:12,Jonathan,:D
+2015-10-25 13:06:18,Sur3,hat sich nur leider ncith durchgesetzt
+2015-10-25 13:06:30,Jonathan,"darklink: 256MB wäre sogar noch realistisch, müsste man dann aber außerhalb der CPU anbringen"
+2015-10-25 13:06:32,mgottschlag,"hm, warum gibts dann eigentlich für HPC keinen entsprechenden SRAM? müsste doch eigentlich auch Anwendungsgebiete haben, wo es die Performance entsprechend erhöht"
+2015-10-25 13:06:37,Sur3,hat itanium eigentlich segmentierung?
+2015-10-25 13:06:43,mgottschlag,"und der Preis wird ja auch ""nur"" um einen Faktor 5-6 höher sein"
+2015-10-25 13:06:48,Jonathan,"Keine Ahnung, Sur3 :D"
+2015-10-25 13:06:54,Sur3,^^
+2015-10-25 13:06:56,darklink,Oder ne cpu raushauen die keine kompabilität zu 16 und 32 bit hat
+2015-10-25 13:07:04,darklink,Und uefi erzwingt
+2015-10-25 13:07:04,Jonathan,darklink: Itanium? :D
+2015-10-25 13:07:05,Jonathan,*g*
+2015-10-25 13:07:28,Sur3,*würg* uefi
+2015-10-25 13:07:46,darklink,Und dabei nicht windows erzwingt?
+2015-10-25 13:07:55,Sur3,^^
+2015-10-25 13:08:10,darklink,das gibt es
+2015-10-25 13:08:17,Sur3,joa mein selbstgeschriebener bootmanager kommt vor allem noch nciht mit uefi klar ^^
+2015-10-25 13:08:23,darklink,Uefis die windows erzwingen
+2015-10-25 13:08:36,darklink,Und die uefi-tabelle ignoren
+2015-10-25 13:09:03,darklink,Und welche die secure boot erzwingen
+2015-10-25 13:09:31,Sur3,ich will wieder den guten sun bios haben
+2015-10-25 13:09:57,darklink,"(die uefis die auf linux-leute zugehen und sagen, dass der pc ein virus hat)"
+2015-10-25 13:10:20,darklink,ich habe ein amibios dual uefi bios
+2015-10-25 13:11:08,darklink,Reichen 8MB rom überhaupt dafür aus?
+2015-10-25 13:11:18,Sur3,diese sun teile waren irgendwie magisch man kam jederzeit in den bios mit stop-a
+2015-10-25 13:11:41,darklink,:( bei mir nicht
+2015-10-25 13:11:54,darklink,Ich habe keinen stop-knopf
+2015-10-25 13:12:02,Sur3,xD
+2015-10-25 13:12:28,darklink,Aber einen unterbrechen
+2015-10-25 13:16:25,Jonathan,"darklink: Das Größte, was ich finden konnte, ist ein 8MB synchronous DDR2 SRAM von ISSI."
+2015-10-25 13:17:10,Jonathan,Läuft mit maximal 550MHz (also 1100 Übertragungen pro Sekunde)
+2015-10-25 13:17:17,Jonathan,"Latenz ist 2,5 Takte"
+2015-10-25 13:19:11,darklink,Jonathan: ok
+2015-10-25 13:19:58,Jonathan,"Wäre wohl deutlich schneller, als der übliche DDR3-DRAM, brauchst halt nur 1024 Chips davon für 8GB... :P"
+2015-10-25 13:19:59,darklink,"warum nimmst du sram, wenn du nicht einfach normalen RAM und ne batterie nehmen kannst"
+2015-10-25 13:20:09,Jonathan,???
+2015-10-25 13:20:17,Jonathan,Hä? :D
+2015-10-25 13:20:41,darklink,sram ist für mich ram+batterie
+2015-10-25 13:20:45,Jonathan,Nö ^^
+2015-10-25 13:21:04,Jonathan,"SRAM ist statischer RAM, hat ein Flipflop pro Bit"
+2015-10-25 13:21:08,darklink,sram vs. sram mal wieder...
+2015-10-25 13:21:12,Jonathan,"DRAM ist dynamischer RAM, jedes Bit ist ein Kondensator"
+2015-10-25 13:21:18,Jonathan,Du meinst NVRAM
+2015-10-25 13:21:24,Jonathan,NVRAM = SRAM + Batterie
+2015-10-25 13:21:28,darklink,oh
+2015-10-25 13:21:33,Jonathan,:P
+2015-10-25 13:21:42,darklink,non vanishing?
+2015-10-25 13:21:47,Jonathan,non volatile
+2015-10-25 13:21:50,darklink,oh
+2015-10-25 13:22:09,Jonathan,"Das Zeug, auf dem BIOS-Einstellungen gespeichert werden :P"
+2015-10-25 13:22:26,mgottschlag,"ich bin ja mal stark gespannt, wann wir die ersten nichtflüchtigen Hauptspeicherersatztechnologien in der Praxis sehen werden :)"
+2015-10-25 13:22:28,Jonathan,Das ist ein SRAM-Chip mit ner Lithium-Knopfzelle.
+2015-10-25 13:22:34,mgottschlag,also MRAM oder sowas
+2015-10-25 13:22:44,Jonathan,mgottschlag: FeRAM kann man schon auf eBay kaufen :D
+2015-10-25 13:22:58,mgottschlag,"ja, bis 1Mbit, oder was war das? :)"
+2015-10-25 13:23:12,Jonathan,"Ja, sowas in der Richtung ;)"
+2015-10-25 13:23:29,Sur3,"niemand will nicht flüchtigen hauptspeicher, nur die polizei"
+2015-10-25 13:23:41,Jonathan,*g*
+2015-10-25 13:23:54,darklink,Jonathan: kenn ich
+2015-10-25 13:24:06,mgottschlag,"Sur3: meine Laptopbatterie will nichtflüchtigen Hauptspeicher, und die Verschlüsselung muss man dann halt noch integrieren"
+2015-10-25 13:24:12,darklink,aber von größen bis ca. 32 KiB
+2015-10-25 13:24:15,Jonathan,"Naja, könnte man halt Standby ohne Stromversorgung machen ;)"
+2015-10-25 13:24:22,Jonathan,Und sowas
+2015-10-25 13:24:45,Sur3,ok verschlüsselung kostet aber auch wieder taktzyklen
+2015-10-25 13:24:53,Jonathan,mgottschlag: Die Verschlüsselung dann aber bitte... in einem flüchtigen Speicher *g*
+2015-10-25 13:25:03,Jonathan,Sur3: Kann man doch problemlos in Hardware machen
+2015-10-25 13:25:08,mgottschlag,"ja, zumindest solange der Rechner nicht im Standby ist :D"
+2015-10-25 13:25:14,Jonathan,:D
+2015-10-25 13:25:22,darklink,Größer kenn ich bloß in form von Flash
+2015-10-25 13:25:31,mgottschlag,aber zur Laufzeit Teile des Speichers ausschalten können wäre doch sicher auch interessant
+2015-10-25 13:25:33,Sur3,"hm hw da gabs doch so nen hardwarechip der in jeden rechner sollte, wie hieß das ncohmal"
+2015-10-25 13:25:38,darklink,oder EEPROM
+2015-10-25 13:25:47,darklink,cmos?;
+2015-10-25 13:25:50,mgottschlag,"ich meine, im normalen Betrieb ist doch sicher 50-80% des Page Caches unbenutzt"
+2015-10-25 13:26:28,Jonathan,"mgottschlag: Klar, aber gegen den Stromverbrauch hilft auch normaler SRAM, weil der kein Refresh braucht... Und FeRAM ist vermutlich noch teurer als SRAM"
+2015-10-25 13:26:48,mgottschlag,"FeRAM ist theoretisch 1T1R, oder? Sollte sich also irgendwann billiger bauen lassen"
+2015-10-25 13:27:01,Jonathan,"Ja, das stimmt auch wieder :P"
+2015-10-25 13:27:19,mgottschlag,"und wenns dann hingeht zu 1D1R, dann wirds richtig billig"
+2015-10-25 13:27:22,Jonathan,Wobei diese nichtflüchtigen RAMs bisher noch begrenzte Schreibzyklen haben
+2015-10-25 13:27:37,mgottschlag,"naja, nicht alle, MRAM hat afaik unbegrenzt viele"
+2015-10-25 13:27:51,Jonathan,Muss man noch genau rausfinden
+2015-10-25 13:27:55,Sur3,ich bin mal zocken bis später
+2015-10-25 13:28:17,mgottschlag,"und ansonsten geht die Forschung da ja hin zu irgendeiner Speicherhierarchie, die den Speicher entsprechend entlastet oder sowas in der Art"
+2015-10-25 13:28:21,Jonathan,"Wenn da eine CPU mit 10^9 Instruktionen pro Sekunde draufballert, sind auch 10^15 Schreibzyklen nicht mehr sooooo viel :D"
+2015-10-25 13:28:26,mgottschlag,also riesige Schreibpuffer
+2015-10-25 13:28:34,Jonathan,Hmm ;)
+2015-10-25 13:28:40,Jonathan,Dann bräuchtest du aber auch Wear Leveling
+2015-10-25 13:28:53,Jonathan,Und das tut bei Hauptspeicher in der Performance ziemlich weh
+2015-10-25 13:29:47,mgottschlag,"naja, das lässt sich schon in Hardware in begrenztem Ausmaß schnell implementieren"
+2015-10-25 13:30:04,mgottschlag,"aber ja, alles regelmäßig verwendete muss in irgendwas mit unbegrenzter Haltbarkeit liegen"
+2015-10-25 13:30:12,Jonathan,Jap ^^
+2015-10-25 13:30:32,Jonathan,"Was Sinn machen würde, wäre ein FeRAM-Swap"
+2015-10-25 13:30:53,mgottschlag,"hm, stimmt, MRAM kann auch nur bis 10^15 Zyklen atm"
+2015-10-25 13:31:17,Paddy,"Jonathan: Dann benutzt du es halt doch wieder nicht als RAM, sondern als bessere Platte"
+2015-10-25 13:31:31,mgottschlag,"naja, es ist byte-adressierbar"
+2015-10-25 13:31:43,Paddy,Du willst byteweise swappen? :-)
+2015-10-25 13:31:48,mgottschlag,"also alles, was nur gelesen wird, kann da direkt rein und in-place ausgeführt werden"
+2015-10-25 13:32:00,mgottschlag,"ne, eben nicht swappen, aber als Read-Only-Teil des Arbeitsspeichers"
+2015-10-25 13:32:27,Paddy,"Das ist ja aber nicht, was Jonathan meinte"
+2015-10-25 13:32:42,mgottschlag,"ja gut, das kann sein :)"
+2015-10-25 13:33:07,Jonathan,Joa ;)
+2015-10-25 13:33:27,Jonathan,"mgottschlag: Ich hab hier gerade einen FRAM-Chip gefunden, der ""unlimited read and write cycles"" behauptet"
+2015-10-25 13:33:37,Jonathan,http://www.alldatasheet.com/datasheet-pdf/pdf/92722/ETC/FM18L08.html
+2015-10-25 13:33:40,Paddy,"Du könntest Programme direkt von der ""Platte"" ausführen statt sie erst in den Speicher zu kopieren, ja"
+2015-10-25 13:33:45,mgottschlag,"aber dazu brauchts kein FeRAM, da tuts dann meistens auch schon PCRAM, und das ist billiger und vermutlich in naher Zukunft in größeren Mengen verfügbar"
+2015-10-25 13:33:47,Paddy,Solange sie nicht selbstmodifizierend sin
+2015-10-25 13:34:36,Paddy,"Aber ansonsten bin ich bisher bei solchen Diskussionen immer zum Schluss gekommen, dass in der Praxis eigentlich nichts weltbewegendes passieren wird, außer dass Blockgeräte richtig schnell werden"
+2015-10-25 13:35:57,Jonathan,"Tja, müssen wir wohl abwarten :P"
+2015-10-25 13:36:09,Jonathan,Von klassischem DRAM wird wohl so schnell aber keiner wegkommen
+2015-10-25 13:36:21,Jonathan,Ist eben einfach schnell und billig
+2015-10-25 13:36:27,darklink,Wie kann man die pipeline einer cpu leeren?
+2015-10-25 13:36:36,Jonathan,darklink: NOP NOP NOP NOP
+2015-10-25 13:36:37,Paddy,Manche Sachen willst du ja auch gar nicht nichtflüchtig haben
+2015-10-25 13:36:59,darklink,jmp [eax]
+2015-10-25 13:37:16,darklink,und davor ganz komisch eax berechnen?
+2015-10-25 13:37:20,Jonathan,Hmm *g*
+2015-10-25 13:37:33,Jonathan,Würde ich mich nicht drauf verlassen
+2015-10-25 13:37:34,mgottschlag,"darklink: das leert aber meistens die Pipeline nicht, wenn dein Prozessor out-of-order-execution unterstützt"
+2015-10-25 13:37:40,darklink,aua
+2015-10-25 13:37:42,Jonathan,Wozu willst du die Pipeline überhaupt leeren?
+2015-10-25 13:37:43,mgottschlag,"also, die Berechnung von eax muss schon sehr lang sein"
+2015-10-25 13:38:06,darklink,selbstmodifizierender code
+2015-10-25 13:38:19,Paddy,"Im Optimisation Guide von Intel oder AMD müsste doch was stehen, wie man das hinbekommt ;-)"
+2015-10-25 13:38:21,mgottschlag,"die meisten CPUs haben einen entsprechenden Befehl, um die Pipeline zu leeren"
+2015-10-25 13:38:35,mgottschlag,ich hab das gerade erst hier irgendwo im ARM-Manual gelesen
+2015-10-25 13:38:55,Jonathan,"Igitt, selbstmodifizierender Code ;)"
+2015-10-25 13:38:55,mgottschlag,"(oder Register, o.Ä.)"
+2015-10-25 13:39:08,Jonathan,"Wozu brauchst du den denn, darklink?"
+2015-10-25 13:39:23,darklink,Ka
+2015-10-25 13:39:37,darklink,ich bin eh gerade nur auf ARM
+2015-10-25 13:39:51,darklink,da ist ja die pipeline nur dreistufig
+2015-10-25 13:40:05,mgottschlag,"neee, schon lange nicht mehr"
+2015-10-25 13:40:11,darklink,????
+2015-10-25 13:40:18,mgottschlag,die ist heutzutage je nach Chip viel länger
+2015-10-25 13:40:35,darklink,der arm7 hatte doch noch 3 stufen
+2015-10-25 13:40:38,mgottschlag,"ich meine, ARMv6 hatte bereits eine 8-stufige Pipeline, bin mir aber nicht sicher"
+2015-10-25 13:40:43,darklink,:O
+2015-10-25 13:40:48,mgottschlag,(könnte auch ARMv7 sein)
+2015-10-25 13:40:53,darklink,und der cortex A7?
+2015-10-25 13:41:01,mgottschlag,"ja, also wenn du noch einen arm7 benutzt, dann vielleicht schon, aber der ist ja uralt"
+2015-10-25 13:41:06,darklink,(oder A8)
+2015-10-25 13:41:20,mgottschlag,"der A7 ist doch inzwischen superskalar, da ist das eh etwas komplexer?"
+2015-10-25 13:41:36,mgottschlag,https://images.duckduckgo.com/iu/?u=http%3A%2F%2Fimg.clubic.com%2F04672818-photo-figure-1-cortex-a7-pipeline.jpg&f=1
+2015-10-25 13:41:46,darklink,Ich lese jetzr mir das manual vom cortex a9 durch
+2015-10-25 13:42:41,mgottschlag,http://electronicdesign.com/site-files/electronicdesign.com/files/archive/electronicdesign.com/content/content/63922/63922_fig2.jpg <- die Pipelines unterscheiden sich gewaltig :D
+2015-10-25 13:44:25,darklink,http://i.cmpnet.com/eetimes/eedesign/2009/image1_101909.gif
+2015-10-25 13:47:57,darklink,ARM ist nichtmehr das was es einmal war
+2015-10-25 13:49:15,darklink,"früher hatte es ne 3 stufige pipeline, instruktionen im thumb modus waren alle 16-bit lang"
+2015-10-25 13:49:15,darklink,Und es gab kein 64-bit
+2015-10-25 13:49:37,mgottschlag,es ist zum Beispiel nicht mehr schnarchlangsam.
+2015-10-25 13:49:42,Paddy,Vergleichst du aktuelle x86 auch immer mit dem 8086?
+2015-10-25 13:49:47,mgottschlag,der Cortex M0 hat anscheinend noch eine einfache 3-stufige Pipeline
+2015-10-25 13:50:51,darklink,Ja. Man startet immernoch im 16-bit modus
+2015-10-25 13:51:34,darklink,Bei arm startet man im ARM-modus an addresse 0
+2015-10-25 13:51:57,mgottschlag,ISA != Mikroarchitektur
+2015-10-25 13:51:58,darklink,nicht an der willkürlich ausgewählten addresse 0x7C00
+2015-10-25 13:51:58,Paddy,"Wenn man keine Plattform hat, zu der man kompatibel bleiben muss, ist das einfach"
+2015-10-25 13:52:12,Paddy,x86 startet nicht an 0x7c00
+2015-10-25 13:52:13,mgottschlag,und z.B. der Pi startet an Adresse 0x8000 iirc
+2015-10-25 13:52:23,Paddy,"0x7c00 ist nur, wo das BIOS hinspringt"
+2015-10-25 13:52:26,darklink,Ja gut 0xFFF0
+2015-10-25 13:52:59,Paddy,"Und meine Vermutung ist, dass wenn das BIOS endgültig tot ist, dann auch der RM rausfliegt"
+2015-10-25 13:53:05,darklink,Es gibt auch geräte die an addresse [0xFFFC] starten
+2015-10-25 14:44:22,darklink,Gleitkomma-Ausnahme 
+2015-10-25 14:44:46,darklink,hm einen modulus von 1 nehmen ist zu schwierig?
+2015-10-25 14:48:06,Svenska,"so, ich erkläre das experiment openbsd/armish für gescheitert. schade. :-("
+2015-10-25 14:49:05,Svenska,also... debian oldstable mit linux 3.2.0 *seufz*
+2015-10-25 14:55:43,Jonathan,Hmm :(
+2015-10-25 14:55:47,Jonathan,"Moin Svenska, btw ;)"
+2015-10-25 14:56:09,Svenska,nach ca. 20 stunden compilieren brach er an python 2.7 mit dem bauen ab
+2015-10-25 14:56:20,Svenska,mit ner nixsagenden fehlermeldung.
+2015-10-25 14:57:23,Jonathan,Autsch
+2015-10-25 14:57:23,darklink,make[1150]: Error
+2015-10-25 14:57:43,Svenska,"ne... irgendwas vom format ""im python 2.7 binärpaket fehlt datei xy"""
+2015-10-25 14:57:49,Jonathan,Svenska: Auf was für nem System baust du?
+2015-10-25 14:57:52,Svenska,das binärpaket hatte er frisch erzeugt
+2015-10-25 14:57:57,Svenska,thecus n2100
+2015-10-25 14:58:12,Svenska,"(bzw reflashed allnet 6500, mit ram-erweiterung und wlan)"
+2015-10-25 14:59:20,Jonathan,"600MHz CPU... Okay, ja, das dauert wohl leider etwas"
+2015-10-25 14:59:31,Svenska,"das ist nicht das problem, glaube ich..."
+2015-10-25 14:59:47,Svenska,"...das wahre problem ist, dass die dma-engine nicht unterstützt wird"
+2015-10-25 14:59:59,Jonathan,Auweia
+2015-10-25 15:00:07,Jonathan,Das tut weh
+2015-10-25 15:00:11,Svenska,und damit z.B. ein dd von /dev/null nach /dev/zero mit wenigen MB/s läuft
+2015-10-25 15:00:24,darklink,mir ist das system unter freebsd nach 10 stunden abgeschmiert
+2015-10-25 15:00:41,darklink,Wegen mehreren zehntausend make instanzen
+2015-10-25 15:00:45,Jonathan,Bin mal essen ;)
+2015-10-25 15:01:03,Svenska,"hast du etwa in /usr/ports ein ""make install"" gemacht? ;-)"
+2015-10-25 15:01:03,darklink,Bis gleich
+2015-10-25 15:01:09,darklink,Nö
+2015-10-25 15:01:28,darklink,Ich habe unter sudo make install gemacht
+2015-10-25 15:01:31,Svenska,"du kannst make ""configure-recursive"" oder so machen, da kannst du dann auch einstellen, welche abhängigkeiten es geben soll"
+2015-10-25 15:01:39,darklink,Und ein packet hat sich selbst gebaut
+2015-10-25 15:01:51,darklink,Benötigt*
+2015-10-25 15:01:54,Svenska,"damit verhinderst du zB, dass du plötzlich ein kde machst ^^"
+2015-10-25 15:02:25,Svenska,"in der openbsd-doku stand irgendwo, dass für große pakete ein paar limits angepasst werden müssen"
+2015-10-25 15:07:15,darklink,for f in $(find -name Makefile); do; make -C $(echo $f | sed 's/\/Makefile$//'); done
+2015-10-25 15:07:46,Svenska,das hast du gemacht?
+2015-10-25 15:07:51,darklink,Ne
+2015-10-25 15:08:11,darklink,Sollte jemand mal in /usr/ports machen
+2015-10-25 15:08:15,darklink,Oder in /
+2015-10-25 15:08:17,Svenska,das ist irrsinn
+2015-10-25 15:08:31,Svenska,"wenn du in /usr/ports ein ""make all"" machst, dann ist das schon rekursiv"
+2015-10-25 15:08:37,darklink,Ja
+2015-10-25 15:08:37,Svenska,da brauchst du nicht nochmal rekursiv drüberlatschen
+2015-10-25 15:09:03,Svenska,"und wenn 20k pakete dein system schon umbringen, dann sind 20k² pakete eher nur noch tödlicher..."
+2015-10-25 15:10:11,darklink,400M pakete lol
+2015-10-25 15:10:47,darklink,"Ne mein system hat ein programm umgebracht, dass sich selbst zum bauen brauchte"
+2015-10-25 15:12:12,Sur3,tag svenska
+2015-10-25 15:12:22,Svenska,moin
+2015-10-25 15:12:27,darklink,Hallo sur^
+2015-10-25 15:12:57,Sur3,joa hi darkling wir haben uns doch vorhin schon gesehn ;)
+2015-10-25 15:14:05,Svenska,bin mal kurz auf wlan wechseln
+2015-10-25 15:21:05,Sur3,http://postimg.org/image/lxrcrtly7/
+2015-10-25 15:21:19,Svenska,hallo sur3
+2015-10-25 15:21:25,Sur3,und wer erkennt was das für ne struktur ist? :D
+2015-10-25 15:21:49,Svenska,soll das die matrix sein?
+2015-10-25 15:21:53,Sur3,so ähnlich
+2015-10-25 15:22:17,Svenska,"ich hab das mal versucht, auf nem kc85 nachzubasteln... der bildschirm (war ein amiga-schirm) konnte auf grün geschaltet werden, dann sah das sogar einigermaßen aus"
+2015-10-25 15:22:26,Svenska,nur unglaublich hässlich und unglaublich langsam ;)
+2015-10-25 15:22:29,Sur3,xD
+2015-10-25 15:22:49,Sur3,das da ist mein editor damit kann ich den arbeitsspeicher editieren..
+2015-10-25 15:23:33,darklink,dd if=/dev/sda of=/dev/mem
+2015-10-25 15:23:37,Sur3,das obere drittel des bildschirms ist die page directory und die unteren zwei drittel sind zwei page tables
+2015-10-25 15:23:56,Sur3,die herzchen stehen für gemappt+schreibbar
+2015-10-25 15:24:00,Sur3,wert 3
+2015-10-25 15:24:06,Svenska,ich dachte schon ;)
+2015-10-25 15:24:11,Sur3,xD
+2015-10-25 15:24:25,darklink,"dann moechte ich nicht auf die eintraege zugreifen, wo HALLO SVENSKA steht"
+2015-10-25 15:24:32,Sur3,haha :D
+2015-10-25 15:25:04,Sur3,"der ""(Herz) HA"" ist ja sogar gemappt :D"
+2015-10-25 15:25:05,darklink,macht naehmlich pagefaults
+2015-10-25 15:25:48,darklink,trotzdem sind 12 MB nicht gemappt
+2015-10-25 15:25:48,Sur3,joa ich weiß ich hab extra in directories weiter hinten im speicher gemalt die grad nicth benutzt sind ^^
+2015-10-25 15:25:49,Paddy,Und die Teile ganz unten sind sogar dirty?
+2015-10-25 15:26:11,Sur3,joa svenska macht pagefaults :D
+2015-10-25 15:26:44,Sur3,@Paddy jop das ist der videospeicher
+2015-10-25 15:26:56,Sur3,bzw das mapping dafon
+2015-10-25 15:26:59,Sur3,*davon
+2015-10-25 15:28:44,Sur3,und das invertiertfarbene rote herz ist der cursor über einem pageflag ^^
+2015-10-25 15:31:06,darklink,Download directory (%1) couldn't be cre
+2015-10-25 15:31:06,darklink,ated.^G
+2015-10-25 15:31:31,darklink,jetzt frag ich mich welches programm das ist
+2015-10-25 15:39:01,Svenska,"hmm, ""dd if=/dev/zero bs=1400 | nc localhost 12345"" und ""nc -lp12345 >/dev/null"" schafft etwa 330 MB/s auf meinem system"
+2015-10-25 15:39:20,Svenska,"ich wär ja überrascht, wenn das NAS auf >5 MB/s kommt ;)"
+2015-10-25 15:41:42,Svenska,"achso, Sur3: ich hab gestern noch ne weile rumprobiert"
+2015-10-25 15:42:08,Svenska,"auf beiden rechnern ist kein pulseaudio drauf (oder irgendwas anderes jenseits von ALSA), und groß rumpfuschen wollte ich dann auch nicht mehr"
+2015-10-25 15:43:01,Svenska,"aber einen Xvnc auf 800x600 laufen lassen und auf dem client mit ""ssvncviewer -scale 800x480"" anzeigen lassen klappte, nur die bandbreite war etwas dünn für die animationen"
+2015-10-25 15:45:47,Sur3,aso
+2015-10-25 15:46:11,Svenska,und wine auf dem netbook installieren ist etwas ... heavy
+2015-10-25 15:46:33,Svenska,"bin mir nicht sicher, wieso wine unbedingt mesa braucht, aber das knallt gleich 150 MB auf die platte"
+2015-10-25 15:50:43,Sur3,hast du mal windows installiert?
+2015-10-25 15:50:56,Svenska,auf dem system? ja.
+2015-10-25 15:51:06,Sur3,und dann regst du dich über 150MB auf :D
+2015-10-25 15:51:09,Svenska,"da hab ich gelernt, dass windows XP überhaupt nicht mit extrem langsamen festplatten klarkommt."
+2015-10-25 15:51:28,Svenska,"da ist ne 2 GB SSD verbaut, und bei random write bricht deren performance auf ~50 KB/s ein"
+2015-10-25 15:51:55,Svenska,"das ist so ungefähr der punkt, wo windows xp anfängt, seine eigenen prozesse wegen timeout zu killen......"
+2015-10-25 15:52:29,Sur3,ich wollt grad sagen versuch nen reactos image wenn dir wine zu groß ist aber reactos hat über 300MB passt also auch nciht ^^
+2015-10-25 15:52:30,Svenska,"und ja, man kriegt xp dadrauf installiert."
+2015-10-25 15:52:46,Svenska,"ich hab /usr auf einem squashfs (readonly), das ganze mit nem unionfs überlagert"
+2015-10-25 15:53:17,Svenska,"damit hab ich xfce + libreoffice + firefox + bisschen kleinkram installiert und etwa 500 MB frei. aber wenn ich irgendwas installiere oder update, ist das sofort weg"
+2015-10-25 15:54:42,Sur3,wenn du was platzschinendes willst gehst du definitif falsch an die sache ran
+2015-10-25 15:54:56,Svenska,gib mir ne bessere möglichkeit (jenseits von neukaufen)
+2015-10-25 15:54:56,Sur3,welche desktop-umgebung verwendest du überhaupt?
+2015-10-25 15:55:00,Svenska,xfce4
+2015-10-25 15:55:03,Sur3,aso
+2015-10-25 15:55:22,Sur3,der standardbrowser für xfce ist midori der ist wesentlich schlanker als firefox
+2015-10-25 15:55:42,Svenska,"hm, wenn der gut funktioniert, ist das ne überlegung wert"
+2015-10-25 15:55:55,Svenska,"wobei ich den firefox soweit eingerichtet hab, dass er möglichst wenig platz auf dem schirm wegnimmt"
+2015-10-25 15:56:06,Svenska,(800x480).
+2015-10-25 15:56:35,Sur3,wenn du möglichst wenig platz auf dem schirm versschwenden willst geb ich dir mein xfce theme und dazu wählst du daloa als fenster-sheme aus
+2015-10-25 15:56:37,Svenska,"weiß nicht, ob man das mit midori auch machen kann, hab mich damit nie näher befasst. achso, und adblock ist natürlich zwingend, weil sonst die kleine cpu stirbt"
+2015-10-25 15:57:18,Sur3,Ratte->Einstellungen->Fensterverwaltung->Daloa
+2015-10-25 15:57:19,Svenska,arbeit steck ich in das system nicht mehr rein... jetzt läufts
+2015-10-25 15:58:03,Svenska,"updates und änderungen sind extrem aufwändig -> wurst. damit arbeiten tue ich nicht nennenswert; dosbox läuft mit ein paar spielen, xterm und ssh sind drauf"
+2015-10-25 16:00:50,Sur3,statt libreoffice nimmt man übrigens vim oder abiword wenn man es schlank oder brauchst du tabellenkalkulation auf dem ding?
+2015-10-25 16:01:12,XanClic,sc gibts doch für Tabellenkalkulationen
+2015-10-25 16:01:21,Svenska,das ding benutze ich nicht für produktivität
+2015-10-25 16:01:28,Svenska,"aber es ist wichtig, dass ich damit in vorhandene dateien gucken kann"
+2015-10-25 16:01:52,Sur3,joa geht ja mit abiword
+2015-10-25 16:02:05,Svenska,*schulterzuck* geht auch mit libreoffice :D
+2015-10-25 16:02:25,Sur3,libreoffice braucht aber nicht ohne grund fast nen tag zum kompilieren
+2015-10-25 16:02:29,Svenska,http://postimg.org/image/7496uubqx/
+2015-10-25 16:02:40,Svenska,so sieht mein normaler rechner aus
+2015-10-25 16:03:00,Sur3,nice
+2015-10-25 16:03:08,Sur3,debian?
+2015-10-25 16:03:10,Svenska,ja
+2015-10-25 16:03:24,Sur3,erkennt man an dem eis-wiesel :D
+2015-10-25 16:03:39,Svenska,"und so ähnlich sieht's halt auch auf dem netbook aus, nur ist alles bissl kleiner, um platz zu schaffen"
+2015-10-25 16:03:51,Sur3,nette porno bookmarks ^^
+2015-10-25 16:03:57,Svenska,?
+2015-10-25 16:04:03,Sur3,:P
+2015-10-25 16:04:14,Sur3,war nen versuch wert ^^
+2015-10-25 16:04:44,Sur3,ach du benutzt noch xchat
+2015-10-25 16:04:49,Svenska,"ob man deviantart als ""porno"" bezeichnen möchte, weiß ich nicht"
+2015-10-25 16:05:07,Svenska,"den anderen hast du übersehen, und die wirklich interessanten sind sowieso in den ordnern :p"
+2015-10-25 16:05:49,Sur3,^^
+2015-10-25 16:06:00,Sur3,"deviantart ist cool, zeichnest du acuh selbst?"
+2015-10-25 16:06:07,Svenska,ne
+2015-10-25 16:06:12,Sur3,ok
+2015-10-25 16:06:20,Svenska,ich scheitere an strichmännchen
+2015-10-25 16:06:54,Sur3,"aber xchat ist veraltet, gentoo hat das schon ausm repository geschmissen die letzte version ist von 2010, der nachfolger ist hexchat"
+2015-10-25 16:07:09,Svenska,äääh
+2015-10-25 16:07:12,Svenska,ich hab debian :-D
+2015-10-25 16:07:23,Sur3,selber schuld :D
+2015-10-25 16:07:28,Svenska,Linux 3.16.0-4-amd64
+2015-10-25 16:07:36,Sur3,3.16 XD
+2015-10-25 16:07:38,Svenska,mich hat deviantart 2x rausgeschmissen
+2015-10-25 16:07:48,Svenska,weil der browser veraltet war (laut deren meinung)
+2015-10-25 16:08:05,Sur3,oh böser junge warum daß hast du irgendwelche models gestalkt? :D
+2015-10-25 16:08:10,Sur3,aso deswegen
+2015-10-25 16:08:14,Sur3,kalr ^^
+2015-10-25 16:08:26,Svenska,das war kurz nachdem firefox versionsnummerngeil geworden ist
+2015-10-25 16:08:30,XanClic,Und warum hast du nicht eigentlich einen ordentlichen LTS-Kernel?
+2015-10-25 16:08:39,Svenska,und in nem halben jahr von 3.3 auf 7 oder so gesprungen ist
+2015-10-25 16:08:49,Sur3,joa das war echt krank XD
+2015-10-25 16:08:56,Svenska,"und plötzlich alle webseiten angefangen haben mit ""hey, (current-2) ist veraltet!"""
+2015-10-25 16:09:03,Svenska,XanClic: das ist der debian-supported kernel
+2015-10-25 16:09:14,XanClic,Klingt aber nach nicht sehr vielen Revisionen
+2015-10-25 16:09:16,Sur3,ich überleg ja auch ob ich dei versionsnummer meines betriebssystem auf 2.7 zurücksetze :D
+2015-10-25 16:09:25,Svenska,"ich vermute ja, dass die damit nen besseren job machen als mit ihrem rng"
+2015-10-25 16:09:37,Svenska,aber mein NAS kriegt ja jetzt nen 3.2.0 verpasst. :-/
+2015-10-25 16:10:08,XanClic,"3.18 ist zum Beispiel schon bei 3.18.22, da erscheint mir -4 irgendwie ein bisschen suspekt"
+2015-10-25 16:10:50,Svenska,ist aber jessie-modern
+2015-10-25 16:11:10,Sur3,ups den kernel sollt ich auch mal neu backen hab noch nen 3.18 inzwischen ist ja 4.0.5 stable ^^
+2015-10-25 16:11:10,Svenska,"grad n update gefahren, pixbuf und miniupnp"
+2015-10-25 16:11:17,XanClic,"Und das heißt, dass sie keine Bugs fixen, oder was? D:"
+2015-10-25 16:11:34,Svenska,3.18 hab ich auf dem arbeitsrechner
+2015-10-25 16:12:08,Sur3,is der unterschied zwischen 3er und 4er kernel groß? ich hab das gefühl der unterschied zwsichen 2.4 und 2.6 war bisher der stärkste
+2015-10-25 16:12:12,Svenska,die volle version ist: 3.16.7-ckt11-1+deb8u5
+2015-10-25 16:12:26,Svenska,"nein, linus will nur schönere major-nummern haben"
+2015-10-25 16:13:02,Svenska,"linux ist inzwischen zu groß für irgendwas jenseits von rolling release (für die neuen versionen), und ehe wir bei 3.856 ankommen, dann lieber gleich 4.1"
+2015-10-25 16:13:15,XanClic,Ich hab für weiterhin 3 abgestimmt :<
+2015-10-25 16:13:15,Sur3,3.18.12-gentoo
+2015-10-25 16:13:19,Svenska,"der unterschied zwischen 2.0, 2.2 und 2.4 ist jeweils extrem"
+2015-10-25 16:13:45,Svenska,"2.4 zu (frühem) 2.6 war nach außen nicht so krass, und 2.6 zu 3.0 gabs keinen"
+2015-10-25 16:13:59,XanClic,Von 2.6.0 zu 3.0 hingegen…
+2015-10-25 16:14:02,Svenska,irgendwann wird linux dann aufs ubuntu-system umsteigen
+2015-10-25 16:14:26,Svenska,"2015.1, 2015.2 usw"
+2015-10-25 16:14:30,Sur3,urgs
+2015-10-25 16:14:42,Sur3,ich find sie hätten bei den alten nummern bleiben sollen
+2015-10-25 16:14:52,Svenska,die realität hat sie überholt
+2015-10-25 16:15:00,Sur3,oder sich nach 3.14 pi annähern
+2015-10-25 16:15:11,Sur3,:D
+2015-10-25 16:15:20,XanClic,"Ist ja nicht so, dass Linux keinen großen Fortschritt machen würde"
+2015-10-25 16:15:28,Svenska,ist halt ein rollender fortschritt
+2015-10-25 16:15:33,XanClic,"Es ist nur so, dass es keine Punkte mehr gibt, wo man sagen könnte „Jetzt ist der Fortschritt groß genug“"
+2015-10-25 16:15:40,Sur3,joa lauft ja sogar auf dem terminator als OS ^
+2015-10-25 16:15:42,XanClic,Und das war bei 3.0 dann halt irgendwie gegeben
+2015-10-25 16:16:18,Svenska,"einmal das, und zum anderen ist die hardwareentwicklung so schnell, dass es keinen nennenswerten support für altkram mehr gibt, weil sich niemand drum kümmert"
+2015-10-25 16:16:39,darklink,welches programm nähert sich pi mit den versionen an=
+2015-10-25 16:16:48,Svenska,"wenn alle 2 monate ne neue mikroarchitektur rauskommt und man die speziell supporten können muss, dann fällt halt alles >6 monate langsam aus dem raster"
+2015-10-25 16:16:54,Sur3,https://lh5.googleusercontent.com/-W_apgVmij20/VOAvvgpevvI/AAAAAAAAO3A/fPG5gFS2Rg8/w953-h536-no/mate_2015.02.15.051456.utc-smplayer-2009-terminator-salvation-mp4_16-9.jpg
+2015-10-25 16:16:59,Sur3,linux-4.1.15 :D
+2015-10-25 16:17:01,Svenska,darklink: tex
+2015-10-25 16:17:08,darklink,Ah
+2015-10-25 16:17:11,XanClic,> 4.1.11-1-lts
+2015-10-25 16:17:12,XanClic,Oooooh!
+2015-10-25 16:17:28,XanClic,"Das erklärt, warum sie 4.1 LTS gemacht haben"
+2015-10-25 16:17:31,Sur3,tja dauert nicht mehr lange ^^
+2015-10-25 16:17:36,Svenska,?
+2015-10-25 16:18:03,XanClic,Nicht-LTS hört doch inzwischen meistens so bei 8 auf
+2015-10-25 16:18:08,darklink,v0000r01 -> v0001 -> v002 -> ... -> v073r40 -> v74
+2015-10-25 16:18:30,Svenska,"meine commlib hat im c-file ein >> #define VERSION ""v3"" <<"
+2015-10-25 16:18:35,Svenska,genauer ist da nix ;)
+2015-10-25 16:18:48,Svenska,"und das ist die erste version, die das überhaupt hat :-D"
+2015-10-25 16:19:19,darklink,Ich nehme den commit hash
+2015-10-25 16:19:33,Svenska,den kann man im flur nicht zitieren.
+2015-10-25 16:19:47,XanClic,"Ich bin erstaunt, dass ihr überhaupt in der Lage seid, Releases zu haben"
+2015-10-25 16:19:49,Svenska,"aber ich kann den kollegen fragen, ob er v1, v2 oder v3 benutzt hat für sein projekt"
+2015-10-25 16:20:29,Svenska,"v1 hab ich per mail an ca. 5 leute geschickt, und jetzt steht das im zwischenbericht des forschungsprojekts ^^"
+2015-10-25 16:20:31,darklink,XanClic: mein os hat die version n/a-0.02
+2015-10-25 16:21:14,Svenska,"für v3 muss ich noch release notes schreiben, dann ist das quasi-fertig (wobei pthreads-support ungetestet ist)"
+2015-10-25 16:21:19,darklink,erste part kernelversion zweiter part hal-version
+2015-10-25 16:21:20,Sur3,"naja mein ziel ist es daß mein os irgendwann 3.5 hat wenn es fertig ist, meinetwegen auch 3.0b_qas3 so müßte man die aktuelle version wohl nennen xD"
+2015-10-25 16:22:10,darklink,Oder ne - n/a-0.01-0.02
+2015-10-25 16:22:14,Sur3,der zweite part steht bei mir für die vm
+2015-10-25 16:23:06,darklink,Der zweite steht für die API/Objektinterface und die dritte für die hal
+2015-10-25 16:23:18,Sur3,und version 35 läuft dan irgendwann automatisch per ki und ließt einem alle wünsche ab was man machen will :D
+2015-10-25 16:23:21,Svenska,wow
+2015-10-25 16:23:35,darklink,Sur3: hast du dwim?
+2015-10-25 16:23:37,Svenska,"hm, ist das schlimm, wenn der staubsauger einstaubt? :-)"
+2015-10-25 16:23:43,Svenska,bin mal ne weile afk
+2015-10-25 16:23:47,darklink,Nö
+2015-10-25 16:24:00,Sur3,@darklink nee momentan noch nicht
+2015-10-25 16:24:17,Sur3,momentan hab ich tu genau was ich sage und wenn ich mich verdrücke triple faulte XD
+2015-10-25 16:24:46,darklink,Ich habe keinen kernel
+2015-10-25 16:25:07,Sur3,kein kernel? was machst du dann hier? :D
+2015-10-25 16:25:46,darklink,Sur3:  ich habe eine HAL
+2015-10-25 16:25:53,Sur3,ahh ok
+2015-10-25 16:26:20,Sur3,"ich hab nen vfs und nen interrupt für syscalls, ne richtige hal eher noch nciht"
+2015-10-25 16:26:39,darklink,"der einzige teil des OS, wo kein '#define asm' gilt"
+2015-10-25 16:27:02,Sur3,was macht #define asm?
+2015-10-25 16:27:23,darklink,"(d.h. der einzige teil, wo asm nicht zu einem compilerfehler führt)"
+2015-10-25 16:27:31,XanClic,Zum Glück benutzt man ja auch __asm__
+2015-10-25 16:27:32,Sur3,aso :D
+2015-10-25 16:27:36,darklink,asm durch nichts ersetzen
+2015-10-25 16:28:22,darklink,Der kernel soll platformunabhängig sein
+2015-10-25 16:28:30,Sur3,"joa ich weiß noch nicht wie ich weitermache, ich hab ja heut nacht paging implementiert das könnte ich mal mit smp verträglich machen oder ich kümmer mich darum entlich nen netzwerktreiber zu haben, mal schaun"
+2015-10-25 16:28:43,darklink,Das plattformabhängige kommt gefälligst in die HAL
+2015-10-25 16:29:11,Sur3,wow das ist aber ne starkle abstraktionsschicht :D
+2015-10-25 16:29:16,Sur3,nennt man auch VM?
+2015-10-25 16:31:55,Sur3,"ich überleg noch wie ich die physische speicherverwaltung am besten mache, irgendwie macht das paging die ineffizient weil meine pmm die lineare liste über den gesammten ram verteilt hat und mit paging ist das ncith möglich, weil ich dann den ganzen speiche rmappen müßte was zeit kostet"
+2015-10-25 16:50:24,darklink,The first issue of this was in 
+2015-10-25 16:50:24,darklink,"February 1996, and the final issue, issue I, was in July 2005."
+2015-10-25 16:50:31,darklink,Lol
+2015-10-25 17:17:48,darklink,"mov r15, r15 : bx lr "
+2015-10-25 17:18:01,darklink,"mov r0, 1 : bx lr"
+2015-10-25 17:19:25,darklink,Oder ne
+2015-10-25 17:20:12,darklink,"add r15, pc, #4 : bx lr : mov r0, 1 : bx lr"
+2015-10-25 17:20:44,darklink,Welchen wert hat R0
+2015-10-25 17:20:53,darklink,"Ach ne, pipeline..."
+2015-10-25 17:26:07,Svenska,"Jonathan: das NAS schafft von localhost nach localhost 5,3 MB/s"
+2015-10-25 17:35:11,darklink,Lol
+2015-10-25 17:35:25,darklink,Wie kann man das messen?
+2015-10-25 17:35:41,Svenska,hatte ich vorher beschrieben:
+2015-10-25 17:35:49,Svenska,dd if=/dev/zero bs=1400 | nc localhost 12345
+2015-10-25 17:35:58,Svenska,nc -lp12345 >/dev/null
+2015-10-25 17:35:59,darklink,Gibt aber nichts aus
+2015-10-25 17:36:08,Svenska,"und dann regelmäßig ""killall -USR1 dd"" ;)"
+2015-10-25 17:36:19,darklink,Oh
+2015-10-25 17:38:06,darklink,Überträgt hier nur 35MB
+2015-10-25 17:39:03,Svenska,"hm, mein notebook macht 330 MB/s"
+2015-10-25 17:39:22,darklink,Ka
+2015-10-25 17:39:32,darklink,Funktioniert nicht
+2015-10-25 17:39:40,darklink,bleibt immer stehen
+2015-10-25 17:39:59,Svenska,?
+2015-10-25 17:40:07,Svenska,einfach dd nochmal killen
+2015-10-25 17:40:12,Svenska,dann kriegst ne neue ausgabe...
+2015-10-25 17:40:42,darklink,"94329200 Bytes (94 MB) kopiert, 36,6704 s, 2,6 MB/s"
+2015-10-25 17:40:42,darklink,"94329200 Bytes (94 MB) kopiert, 52,5945 s, 1,8 MB/s"
+2015-10-25 17:41:15,Svenska,"öh, ist dein netzwerk heil und dein /dev/zero unendlich groß? ;)"
+2015-10-25 17:41:34,darklink,ersteres ja
+2015-10-25 17:43:12,darklink,Wenn ich das > /dev/null wegmache klappts
+2015-10-25 17:43:33,Svenska,"öh, guck mal nach, ob /dev/null _wirklich_ dein device ist ;)"
+2015-10-25 17:44:13,darklink,dann läuft /dev/zero von localhost über localhost über ssh auf mein handy 2MB/s
+2015-10-25 17:44:26,Svenska,?
+2015-10-25 17:44:35,Svenska,das würde das aber erklären
+2015-10-25 17:44:57,Svenska,"das limit ist dann aber ssh, und je nach größe der buffer unterwegs bleibt das auch gerne mal stehen"
+2015-10-25 17:45:26,Svenska,"...wenn ich zeugs auf mein NAS kopiere, fängt der mit 100 MB/s an, und nach 2 sekunden steht der traffic"
+2015-10-25 17:46:29,Svenska,mein richtiges NAS schafft ~52 MB/s
+2015-10-25 17:46:37,darklink,"1514630600 Bytes (1,5 GB) kopiert, 15,9619 s, 94,9 MB/s "
+2015-10-25 17:47:14,darklink,Jetzt auf 100 MB/s
+2015-10-25 17:49:58,darklink,Also ich habe hier 100 MB/s
+2015-10-25 20:18:44,darklink,"Ich bin der meinung, dass pow(0,0) NaN zurückgeben sollte"
+2015-10-25 20:38:32,spacer,hä?
+2015-10-25 20:38:34,spacer,warum das?
+2015-10-25 20:38:49,Svenska,weil 0^0 nicht so ganz eindeutig ist
+2015-10-25 20:39:03,spacer,warum nicht?
+2015-10-25 20:39:08,Svenska,"naja, 0^x = 0"
+2015-10-25 20:39:12,Svenska,aber was ist x^0 ?
+2015-10-25 20:39:20,Svenska,1. ;)
+2015-10-25 20:39:42,Svenska,"ich bin ja für kompromisslösungen. 0^0 sollte 0,5 sein. ;)"
+2015-10-25 20:39:56,darklink,Nö
+2015-10-25 20:40:02,darklink,0^0 = 0/0
+2015-10-25 20:40:12,XanClic,Nö
+2015-10-25 20:40:13,darklink,Lässt sich einfach beweisen
+2015-10-25 20:40:16,Svenska,?
+2015-10-25 20:40:24,XanClic,"Ui, da bin ich jetzt gespannt"
+2015-10-25 20:40:38,Svenska,"wenn du bei 0/0 anfängst, kannst du _alles_ beweisen"
+2015-10-25 20:40:58,darklink,0^0 = 0^(2-2) = (0^2)/(0^2) = 0^0
+2015-10-25 20:41:04,XanClic,Es gibt aber auch unterschiedliche Arten von unbestimmten Ausdrücken
+2015-10-25 20:41:18,XanClic,Und jetzt bitte die Grenzwerte links und rechts
+2015-10-25 20:41:23,XanClic,"Mal sehen, ob die auch gleich konvergieren"
+2015-10-25 20:41:30,darklink,x=0
+2015-10-25 20:41:40,XanClic,x/x mit x → 0 konvergiert immer gegen 1
+2015-10-25 20:41:51,XanClic,2x/x konvergiert gegen 2
+2015-10-25 20:41:56,XanClic,"usw., da kann man also beliebige Grenzwerte finden"
+2015-10-25 20:42:05,XanClic,"Ich glaube, bei x^y kann man immer nur 0 und 1 als Grenzwerte finden, oder?"
+2015-10-25 20:42:25,darklink,x^0 ist generell x/x
+2015-10-25 20:42:31,spacer,0^x ist i.A. !=0
+2015-10-25 20:42:42,XanClic,"Öhm, ja, außer, dass es das nicht ist, weil das so nicht definiert ist"
+2015-10-25 20:42:56,Svenska,spacer: 0^4 = 0 * 0 * 0 * 0 = 0
+2015-10-25 20:43:04,darklink,x^0=x^(2-2)=(x^2)/(x^2)=x/x
+2015-10-25 20:43:13,spacer,das ist richtig
+2015-10-25 20:43:20,XanClic,"Das hast du schonmal gesagt, und das bezieht die Grenzwerte nicht ein"
+2015-10-25 20:43:30,spacer,0^x=0 für positive x
+2015-10-25 20:43:34,XanClic,"0/0 ist undefiniert, das ist also ein Ausdruck, der sich nicht selbst charakterisieren kann"
+2015-10-25 20:43:36,spacer,0 ist aber nunmal nicht positiv
+2015-10-25 20:43:46,XanClic,"Also sage ich, dass du mal die Grenzwerte betrachten sollst, wie das da aussieht"
+2015-10-25 20:44:29,XanClic,"Ich finde 0^0 = 1 übrigens deshalb sinnvoll, weil x^0 ja deshalb 1 ist, weil 1 das neutrale Element der Multiplikation ist"
+2015-10-25 20:44:34,darklink,lim(x^0) x->-0 = 1; lim(x^0) x->+0 = 1
+2015-10-25 20:44:46,XanClic,"Und deshalb finde ich die Konvention, 0^0 = 1 zu setzen, nicht so wirklich schlimm"
+2015-10-25 20:44:58,darklink,Dann ist aber 0/0 = 1
+2015-10-25 20:45:13,darklink,Und das macht keinen sinn
+2015-10-25 20:45:24,XanClic,x^0 geht immer gegen 1
+2015-10-25 20:45:34,XanClic,"Ähm, ja, vielleicht doch, wenn 0^0 eben nicht gleich 0/0 ist?"
+2015-10-25 20:45:51,darklink,und bei x=0 ist die funktion nicht definiert...
+2015-10-25 20:46:03,darklink,Es ist gleich
+2015-10-25 20:46:07,XanClic,"Kommt drauf an, ob man sie definiert oder nicht"
+2015-10-25 20:46:16,XanClic,"Ich bin frei zu sagen, dass 0^0 = 1 ist"
+2015-10-25 20:46:34,darklink,x^0 könnte man ebenfalls definieren als x/x
+2015-10-25 20:46:52,XanClic,"Dumm nur, dass 0/0 nicht definiert ist"
+2015-10-25 20:46:53,darklink,"Selbe funktion, selber definitionsbereich"
+2015-10-25 20:47:05,XanClic,"Nö, wenn ich 0^0 = 1 definiere, ist der Definitionsbereich ein anderer"
+2015-10-25 20:47:20,XanClic,"Du kannst natürlich gern 0/0 = 1 definieren, aber das ergibt deutlich weniger Sinn"
+2015-10-25 20:47:35,XanClic,"weil y/x gegen vollkommen verschiedene Werte konvergiert, je nachdem, in welchem Verhältnis x und y stehen"
+2015-10-25 20:47:41,darklink,...
+2015-10-25 20:47:48,XanClic,Wohingegen x^y für beide gegen 0 irgendwie immer gegen 0 oder 1 konvergiert
+2015-10-25 20:48:10,XanClic,Deshalb ergibt es da deutlich mehr Sinn zu sagen „Und für diese Gleichung hier definiere ich mir 0^0 = 1“
+2015-10-25 20:48:22,XanClic,"Wenn es für deine Gleichung Sinn ergibt, kannst du natürlich auch „Ich definiere 0/0 = 1“ sagen"
+2015-10-25 20:48:28,XanClic,"Aber da gibt es wenige Gleichungen, für die das gilt"
+2015-10-25 20:48:32,XanClic,Bei 0^0 schon deutlich mehr
+2015-10-25 20:48:36,darklink,dennoch gilt a^(x-y) = (a^x)/(a^y)
+2015-10-25 20:48:51,XanClic,"Ja, im Definitionsbereich natürlich"
+2015-10-25 20:48:57,darklink,Generell
+2015-10-25 20:48:59,XanClic,Nein
+2015-10-25 20:49:02,darklink,Doch
+2015-10-25 20:49:06,XanClic,Hä?
+2015-10-25 20:49:11,XanClic,0^0 = 0/0 gilt nicht
+2015-10-25 20:49:15,darklink,Doch
+2015-10-25 20:49:16,XanClic,Weil das keine Zahlen sind
+2015-10-25 20:49:33,XanClic,"Das sind keine Zahlen, also gilt das nicht"
+2015-10-25 20:49:35,darklink,Es sind beides keine zahlen
+2015-10-25 20:49:49,XanClic,"Ja, und die Eigenschaft, keine Zahl zu sein, macht etwas nicht gleich"
+2015-10-25 20:49:54,XanClic,"Frag mal deinen Compiler, ob NaN == NaN ist"
+2015-10-25 20:49:56,darklink,...
+2015-10-25 20:50:14,Svenska,zumal es ziemlich viele codierungen für NaN gibt
+2015-10-25 20:50:28,XanClic,"Was daran liegt, dass es eben verschiedene Arten von undefinierten Ausdrücken gibt"
+2015-10-25 20:50:40,XanClic,"Aber der Punkt ist, nicht mal 0/0 == 0/0"
+2015-10-25 20:50:47,spacer,"mein computer sagt mir aber auch, sqrt(2) wäre 1,414213562"
+2015-10-25 20:50:51,XanClic,Weil 2x/x anders konvergiert als x/x
+2015-10-25 20:51:17,XanClic,"spacer, NaN ist halt so definiert, dass alle NaN-Ausdrücke immer ungleich sind"
+2015-10-25 20:51:27,XanClic,"Also auch, wenn sie die gleiche Bitrepräsentation haben"
+2015-10-25 20:51:36,XanClic,Man kann also isnan(x) als x != x implementieren
+2015-10-25 20:51:42,spacer,was eben auch falsch sein kann...
+2015-10-25 20:51:48,XanClic,Es ist so definiert
+2015-10-25 20:52:05,XanClic,Weil undefinierte Ausdrücke keine Zahlen und damit nicht vergleichbar sind
+2015-10-25 20:52:19,spacer,bass auf
+2015-10-25 20:52:33,Svenska,bässe spielen wir nicht ;)
+2015-10-25 20:52:35,spacer,10/0 == (5+5)/0
+2015-10-25 20:52:44,spacer,beiden NaN
+2015-10-25 20:52:50,XanClic,In IEEE 754 oder in normaler mathematischer Schrift?
+2015-10-25 20:53:13,XanClic,In IEEE 754 ist es nämlich +inf
+2015-10-25 20:53:14,XanClic,Und damit gleich
+2015-10-25 20:53:27,darklink,Beides ist gleich
+2015-10-25 20:53:30,XanClic,In Mathe ist der Ausdruck einfach ungültig
+2015-10-25 20:53:43,darklink,0/0 müsste endweder +Inf oder -Inf sein
+2015-10-25 20:53:46,XanClic,Nein
+2015-10-25 20:53:53,XanClic,"Du hörst mir nicht richtig zu, kann das sein?"
+2015-10-25 20:53:57,XanClic,x/x konvergiert gegen 1
+2015-10-25 20:54:05,darklink,Je nachdem ob die nullen gleiche oder ungleiche vorzeichen haben
+2015-10-25 20:54:06,XanClic,Oder machen wir es anders
+2015-10-25 20:54:13,XanClic,Wie wir das in der Schule gelernt haben
+2015-10-25 20:54:28,XanClic,Wie die Division definiert ist
+2015-10-25 20:54:41,darklink,"in der schule haben wir gelernt, dass 0^0=0/0 ist"
+2015-10-25 20:54:50,Svenska,...ich nicht...
+2015-10-25 20:54:54,darklink,Und dass 0^0 nicht definiert ist
+2015-10-25 20:54:57,XanClic,x = y * z; z = x / y
+2015-10-25 20:55:06,XanClic,"Das heißt z ist der Wert, sodass x = y * z ist"
+2015-10-25 20:55:14,XanClic,"Wenn x und y 0 sind, dann gilt 0 = 0 * z"
+2015-10-25 20:55:31,XanClic,"Das heißt, die Lösungsmenge sind alle Zahlen im Körper, auf dem du gerade rechnest, zum Beispiel R"
+2015-10-25 20:55:47,XanClic,Und das ist halt nicht eine Zahl
+2015-10-25 20:56:17,XanClic,"Wenn x ungleich 0 ist, dann haben wir x = 0 * z, und dafür gibt es einfach gar keine Lösung"
+2015-10-25 20:56:34,darklink,Ja
+2015-10-25 20:56:41,XanClic,"IEEE 754 definiert +x / 0 einfach deshalb als +inf, weil es davon ausgeht, dass die 0 eigentlich nicht 0 ist"
+2015-10-25 20:56:51,XanClic,"Sondern nur eine sehr kleine von null verschiedene Zahl, die nicht mehr darstellbar war"
+2015-10-25 20:56:58,XanClic,Und -x / 0 = -inf dann analog
+2015-10-25 20:57:28,XanClic,Aber 0 / 0 konvergiert ist halt nicht „Entweder +inf oder -inf“
+2015-10-25 20:57:31,XanClic,-konvergiert
+2015-10-25 20:57:32,darklink,1/x nähert sich nach links ∞ an und nach rechts -∞
+2015-10-25 20:57:42,XanClic,Sondern die Lösungsmenge von 0 / 0 sind einfach alle Zahlen im Körper
+2015-10-25 20:58:08,XanClic,"Alle Zahlen sind gültige Lösungen für 0 / 0, deshalb hat es keine eindeutige Lösung"
+2015-10-25 20:58:17,Svenska,"eben, und in der mitte ist das +inf, -inf und alles dazwischen auch"
+2015-10-25 21:00:02,darklink,"die logischte erklärung wäre, dass x^0=x/x"
+2015-10-25 21:00:09,XanClic,Das sagst du
+2015-10-25 21:00:17,XanClic,"Ich sage, x^0 = 1, denn:"
+2015-10-25 21:00:29,XanClic,x^0 = 1; x^y = x^(y-1) * x
+2015-10-25 21:00:52,XanClic,Deshalb ist x^0 das neutrale Element der Multiplikation
+2015-10-25 21:01:12,darklink,Und was ist wenn y ist zwischen 0 und 1?
+2015-10-25 21:01:28,XanClic,"Tja, dann muss man halt interpolieren"
+2015-10-25 21:01:32,darklink,Aber bei 0^0 ist es sp
+2015-10-25 21:01:47,XanClic,Nehmen wir x^0.5
+2015-10-25 21:01:57,darklink,Bei 0^0 ist es immer null
+2015-10-25 21:02:07,XanClic,"Wir wissen dann also, dass x^1 = 1 * x^0.5 * x^0.5 sein sollte"
+2015-10-25 21:02:21,XanClic,"Und daraus leitet sich dann ab, dass x = x^0.5 * x^0.5"
+2015-10-25 21:02:29,XanClic,"Und das ist dann, wie x^0.5 halt definiert ist"
+2015-10-25 21:03:08,XanClic,"Ich persönlich finde, 0^x ist eigentlich nur für x != 0 0"
+2015-10-25 21:03:14,darklink,x^(1/y) = (y)√x
+2015-10-25 21:03:14,XanClic,Für 0^0 ergibt die gleiche Logik nämlich keinen Sinn
+2015-10-25 21:03:38,XanClic,"darklink, ja, richtig, und ich hab dir gezeigt, woher die Wurzel kommt"
+2015-10-25 21:03:39,darklink,0^0={1; 0}
+2015-10-25 21:03:45,darklink,Ja
+2015-10-25 21:03:52,XanClic,"Also, die Logik hinter 0^x = 0 ist ja"
+2015-10-25 21:04:03,XanClic,"„Egal, wie oft ich 0 mit sich selbst multipliziere, es kommt 0 raus“"
+2015-10-25 21:04:09,darklink,Ja
+2015-10-25 21:04:14,XanClic,Aber für keinmal mit sich selbst multiplizieren ergibt das keinen SInn
+2015-10-25 21:04:15,XanClic,*Sinn
+2015-10-25 21:04:30,darklink,Da kann 0^0 jeder wert sein
+2015-10-25 21:04:33,XanClic,Aha!
+2015-10-25 21:04:38,darklink,0^0=R
+2015-10-25 21:04:49,XanClic,Aber zum Glück haben wir eine andere Herangehensweise für diesen Fall!
+2015-10-25 21:04:54,XanClic,Nämlich mit x^0 = 1
+2015-10-25 21:05:05,XanClic,Weil das das neutrale Element der Multiplikation ist
+2015-10-25 21:05:21,XanClic,"Und selbst wenn du 0^0 = 1 setzt, ändert das überhaupt nichts an 0^x = 0 für x != 0"
+2015-10-25 21:05:36,XanClic,"Weil du dann nämlich sofort die 1 mit 0 multiplizierst, und damit 0 rauskommt"
+2015-10-25 21:05:38,darklink,x^0=x^(2-2)=(x^2)/(x^2)=x/x
+2015-10-25 21:05:49,XanClic,"Ja, ich hab dir schon gezeigt, dass das nicht stimmt, oder?"
+2015-10-25 21:05:56,Svenska,"der definitionsbereich von x^0=1 ist R\{0}, und da kannst du einfach logisch folgerichtig ein ""loch"" stopfen, nämlich mit x^0=1 für x=0"
+2015-10-25 21:05:59,XanClic,"Ne, ich nehm das „oder“ zurück"
+2015-10-25 21:06:03,XanClic,Ich hab es dir gezeigt
+2015-10-25 21:06:09,darklink,Nö
+2015-10-25 21:06:20,XanClic,"Wenn du widersprechen willst, dann zeig mir mal, wo das falsch war, was ich gesagt hab"
+2015-10-25 21:07:11,Svenska,"aber für x/0 kannst du eben das loch nicht folgerichtig stopfen, weil der ausdruck beliebig viele werte annehmen kann, abhängig davon, wie weit und in welche richtung du von der null weggehst, und von x selbst"
+2015-10-25 21:07:38,Svenska,"x/y=z für y ""um null herum"" ist abhängig von x und dy"
+2015-10-25 21:07:41,darklink,"Kurz afk, nicht wegen diesem thema"
+2015-10-25 21:07:51,Svenska,da geht so ein fix nicht.
+2015-10-25 21:15:38,darklink,Wieder da
+2015-10-25 21:15:59,darklink,"Wer würde sagen, dass 0=1 ist?"
+2015-10-25 21:16:14,XanClic,"Ja, niemand"
+2015-10-25 21:16:42,Svenska,für 0->1 wäre ich anderer meinung
+2015-10-25 21:16:55,darklink,^1
+2015-10-25 21:17:03,Svenska,"aber ich glaube, die mehrheit stimmt dafür, dass konstanten nicht variabel sein sollten."
+2015-10-25 21:17:35,darklink,0=0^x; 1=x^0
+2015-10-25 21:17:42,XanClic,Moment
+2015-10-25 21:17:43,Svenska,darklink: nimm mal die funktion f(x) = (4 * (x-1) / (x-1))
+2015-10-25 21:17:48,XanClic,0 = 0^x für x != 0
+2015-10-25 21:17:52,XanClic,1 = x^0 für x != 0
+2015-10-25 21:17:52,Svenska,"was ist ihr wert, was ist ihr definitionsbereich?"
+2015-10-25 21:17:55,XanClic,"So, jetzt bitte weiter"
+2015-10-25 21:18:07,darklink,wenn also 0^0 lösbar ist ist 0=1? Das macht keinen sinn!
+2015-10-25 21:18:19,XanClic,"Oh, du bist so lustig"
+2015-10-25 21:18:21,Svenska,tut es auch nicht. weiter im text.
+2015-10-25 21:18:27,XanClic,"OK, nehmen wir an, 0^0 ist lösbar"
+2015-10-25 21:18:34,XanClic,Dann ist 0^0 = c
+2015-10-25 21:18:43,XanClic,"Denn lösbar heißt ja, ich habe eine Lösung"
+2015-10-25 21:18:53,darklink,c*0=0
+2015-10-25 21:18:59,XanClic,dann ist also 0 = 0^x für x != 0 und c = 0^x für x = 0
+2015-10-25 21:19:02,darklink,Was ist c?
+2015-10-25 21:19:05,XanClic,Beliebig
+2015-10-25 21:19:11,XanClic,"Das ist halt, was 0^0 ist"
+2015-10-25 21:19:25,XanClic,Und 1 = x^0 für x != 0 und c = x^0 für x = 0
+2015-10-25 21:19:26,darklink,Sag ich die ganze zeit
+2015-10-25 21:19:35,XanClic,"So, wo war jetzt noch gleich 1 = 0? Seh ich gar nicht…"
+2015-10-25 21:19:40,XanClic,Ich seh nur c = c
+2015-10-25 21:19:44,XanClic,Ergibt Sinn
+2015-10-25 21:19:46,Svenska,darklink: magst meine frage beantworten? ;)
+2015-10-25 21:20:18,darklink,"Svenska: definitionsbereich R, wert 0"
+2015-10-25 21:20:18,XanClic,"Und du hast vollkommen recht, darklink"
+2015-10-25 21:20:21,XanClic,c*0 = 0
+2015-10-25 21:20:23,Svenska,falsch
+2015-10-25 21:20:25,XanClic,Das ist eine sehr wichtige Beobachtung
+2015-10-25 21:20:45,XanClic,"Denn damit ergibt sich, wenn 0^0 = c ist, dann ist 0^x = 0 mit x != 0"
+2015-10-25 21:20:50,Svenska,"der wert ist 4, und der definitionsbereich ist R\{1}"
+2015-10-25 21:21:05,Svenska,macht erstmal weiter
+2015-10-25 21:21:05,XanClic,"Also hat die Tatsache, dass 0^x = 0 ist, keinerlei Einfluss auf c"
+2015-10-25 21:21:30,darklink,Svenska: ich dachte es bezieht sich auf meins
+2015-10-25 21:21:49,Svenska,also
+2015-10-25 21:22:01,Svenska,f(x) = (4 * (x-1) / (x-1))
+2015-10-25 21:22:14,Svenska,"definitionsbereich R\{1}, wert 4"
+2015-10-25 21:22:36,Svenska,"grenzwert ist auch 4 für x->1, von beiden richtungen"
+2015-10-25 21:22:56,darklink,"Du hast gesagt, dass x^y=x^(y-1)*x ist"
+2015-10-25 21:22:59,Svenska,"damit gibt es genau einen funktionswert, der nicht definiert ist, aber alles deutet darauf hin, dass er bevorzugt auch 4 sein sollte"
+2015-10-25 21:23:12,XanClic,"darklink, jop"
+2015-10-25 21:23:23,Svenska,"d.h. du kannst das loch im definitionsbereich mit f(1)=4 ""stopfen"""
+2015-10-25 21:23:31,darklink,Nehmen wir 0^1=0^0*0
+2015-10-25 21:23:33,XanClic,"Ich möchte auch anmerken, dass die Potenz in vielen Bereichen so definiert ist, nicht nur für die Multiplikation"
+2015-10-25 21:23:40,Svenska,ignorier mich einfach weiter. viel spaß ^^
+2015-10-25 21:23:43,XanClic,Auch bei Konkatenation macht man das so
+2015-10-25 21:23:47,XanClic,"darklink, jop"
+2015-10-25 21:23:52,darklink,"0^0 kann also jeder wert sein, wo gilt x*0=0"
+2015-10-25 21:23:55,XanClic,Exakt
+2015-10-25 21:23:56,darklink,Also jeder
+2015-10-25 21:24:00,XanClic,Richtig
+2015-10-25 21:24:04,XanClic,"[21:20:45] <XanClic> Denn damit ergibt sich, wenn 0^0 = c ist, dann ist 0^x = 0 mit x != 0"
+2015-10-25 21:24:05,darklink,c=R
+2015-10-25 21:24:08,XanClic,"[21:21:05] <XanClic> Also hat die Tatsache, dass 0^x = 0 ist, keinerlei Einfluss auf c"
+2015-10-25 21:24:18,Svenska,"c ist ein wert, R ist ein körper"
+2015-10-25 21:24:23,XanClic,c \in R
+2015-10-25 21:24:25,XanClic,Aber ja
+2015-10-25 21:24:32,XanClic,"0^x = 0 hat keinen Einfluss darauf, was 0^0 sein sollte"
+2015-10-25 21:24:38,XanClic,"Schön, dass du es auch so siehst D:"
+2015-10-25 21:24:53,darklink,c(=R
+2015-10-25 21:24:56,XanClic,∈
+2015-10-25 21:24:58,XanClic,bitte
+2015-10-25 21:25:19,darklink,Ich hab das zeichen nicht auf meiner tastatur
+2015-10-25 21:25:24,XanClic,"Ja, du erinnerst dich noch an den relativen Anfang dieser Diskussion?"
+2015-10-25 21:25:38,XanClic,"Der Ausgangspunkt war, von 0^x = 0 könnte man ableiten, dass 0^0 = 0 sein sollte"
+2015-10-25 21:25:43,XanClic,"Und von x^0 = 1, dass 0^0 = 1 sein sollte"
+2015-10-25 21:25:57,XanClic,"Wie du mir gerade zugestimmt hast, ist 0^x = 0 kein Argument für den Fall 0^0 = 0"
+2015-10-25 21:26:05,XanClic,Bleibt nur noch eins übrig
+2015-10-25 21:26:21,Svenska,"es sei denn, wir machen mehrheitsentscheid, dann wäre 0^0=0,5"
+2015-10-25 21:26:34,Svenska,s/mehrheit/kompromiss/
+2015-10-25 21:26:54,XanClic,Pfff arithmetisches Mittel
+2015-10-25 21:26:57,XanClic,Warum denn nicht Median???
+2015-10-25 21:27:10,Svenska,ist der median bei 2 werten überhaupt sinnvoll definiert?
+2015-10-25 21:27:18,XanClic,"Ja, arithmetisches Mittel meistens"
+2015-10-25 21:27:20,XanClic,D:
+2015-10-25 21:27:23,darklink,Ja das arithmetische mittel
+2015-10-25 21:27:29,XanClic,"Na ja, kommt drauf an"
+2015-10-25 21:27:32,XanClic,Manche suchen sich dann auch einen aus
+2015-10-25 21:27:38,XanClic,"Je nachdem, wie man gerade lustig ist"
+2015-10-25 21:27:43,Svenska,eben
+2015-10-25 21:27:53,XanClic,Siehste
+2015-10-25 21:27:57,XanClic,Median passt viel besser zu 0^0
+2015-10-25 21:28:00,Svenska,m(
+2015-10-25 21:28:03,XanClic,:3
+2015-10-25 21:29:33,darklink,Warum nehmen wir nicht R_n/n
+2015-10-25 21:30:29,darklink,Wobei R eine zahlenreihe ist die alle reellen zahlen beinhalteg
+2015-10-25 21:30:53,darklink,Ach ne das ist ja 0
+2015-10-25 21:31:13,Svenska,R ist nicht abzählbar
+2015-10-25 21:34:41,darklink,Oder ℵ1/∞
+2015-10-25 21:35:07,darklink,Jenachdem wieviele reelle zahlen es gibt
+2015-10-25 21:35:17,XanClic,Es gibt überabzählbar unendlich viele
+2015-10-25 21:35:18,Svenska,...überabzählbar viele?
+2015-10-25 21:35:21,XanClic,Und unendlich ist keine Zahl
+2015-10-25 21:35:25,XanClic,Also kannst du unendlich auch nicht teilen
+2015-10-25 21:35:45,Svenska,"ich bin mir grad nicht klar, worauf du hinauswillst"
+2015-10-25 21:35:47,darklink,Wartet
+2015-10-25 21:35:59,XanClic,"Du kannst natürlich Definitionen festliegen, wie ∞/x = ∞ für 0 < x < ∞"
+2015-10-25 21:36:07,XanClic,Aber viel helfen die dir meistens auch nicht
+2015-10-25 21:36:09,darklink,R_(ℵ1)/ℵ1
+2015-10-25 21:36:24,spacer,kommt auf den staub an
+2015-10-25 21:36:34,XanClic,Aleph machts jetzt auch nicht besser
+2015-10-25 21:36:35,XanClic,eher schlechter
+2015-10-25 21:36:48,Svenska,äh...kontext? :D
+2015-10-25 21:36:58,darklink,Ich sage die menge aller reellen zahlen ist 0
+2015-10-25 21:37:11,Svenska,nee
+2015-10-25 21:37:14,spacer,das ist deine definition von 0?
+2015-10-25 21:37:20,Svenska,"ich kann dir schonmal 3 reelle zahlen geben: 1, 2, 3"
+2015-10-25 21:37:35,darklink,sind das alle?
+2015-10-25 21:37:39,mgottschlag,"inzwischen trollt darklink nurnoch, oder? :D"
+2015-10-25 21:37:40,Svenska,das sind schonmal 3 mehr als du genannt hast
+2015-10-25 21:37:48,XanClic,"mgottschlag, mach mit, it is fun"
+2015-10-25 21:37:50,Svenska,darklink: ich muss dir nicht alle aufzählen
+2015-10-25 21:37:52,spacer,"er hat nicht gesagt, dass die menge aller rellen 0 elemnete hat, sodnern das sie 0 ist"
+2015-10-25 21:37:54,XanClic,"Svenska, doch!"
+2015-10-25 21:37:57,XanClic,"Svenska, ich als Op sage, du musst"
+2015-10-25 21:37:58,darklink,"Was s'ist mit -1, -2, -3"
+2015-10-25 21:38:02,darklink,Ergibt 0
+2015-10-25 21:38:03,Svenska,sind auch welche
+2015-10-25 21:38:10,Svenska,-1 + -2 + -3 = -6
+2015-10-25 21:38:14,XanClic,"darklink, sag doch, dass du die Summe meinst"
+2015-10-25 21:38:42,darklink,Ich meine die summe aller reellen zahlen
+2015-10-25 21:38:45,darklink,Ist 0
+2015-10-25 21:39:00,Svenska,"ja, und?"
+2015-10-25 21:39:02,XanClic,"Aber wenn du 0/0 auf die Summe aller reellen Zahlen festlegen willst, weil das ja alle sind!!! dann bin ich für 42"
+2015-10-25 21:39:11,darklink,Da es zu jeder reellen zahl x eine entgegengesetzte zahl -x gibt
+2015-10-25 21:39:14,Svenska,nein
+2015-10-25 21:39:15,darklink,Außer für 0
+2015-10-25 21:39:17,XanClic,*Additiv inverse
+2015-10-25 21:39:18,Svenska,eben
+2015-10-25 21:39:19,XanClic,Heißt das
+2015-10-25 21:39:34,XanClic,"Es gibt nämlich noch eine andere inverse Zahl, 1/x, die multiplikativ Inverse"
+2015-10-25 21:39:36,Svenska,"aber wir haben doch oben definiert, dass 0/0 nicht 0 ist"
+2015-10-25 21:39:49,XanClic,"Nu joar, 0/0 ist im Grunde genommen *auch* 0"
+2015-10-25 21:39:56,Svenska,und damit ist die summe aller reellen zahlen der wert von 0/0
+2015-10-25 21:40:08,Svenska,und damit - je nach auswahl - irgendwas aus R
+2015-10-25 21:40:18,Svenska,"(einschließlich 0, war schlecht formuliert, zugegeben.)"
+2015-10-25 21:40:19,XanClic,höhö
+2015-10-25 21:40:29,darklink,Aua
+2015-10-25 21:40:44,Svenska,"es sei denn, du definierst, dass 0/0 nicht existiert :D"
+2015-10-25 21:40:58,XanClic,"Du meinst, jeder, der das erwähnt, ist ein Ketzer?"
+2015-10-25 21:41:01,darklink,warum erfinden wir nicht ne konstante und weisen sie 0/0 und 0^0 zu?
+2015-10-25 21:41:10,XanClic,Kann man doch
+2015-10-25 21:41:15,XanClic,Ist dann nur keine reelle Zahl
+2015-10-25 21:41:17,Svenska,weil du ganz viele mögliche konstanten nehmen müsstest ^^
+2015-10-25 21:41:26,darklink,sowas wie i halt
+2015-10-25 21:41:27,spacer,"""irgednwas"" aus R ist nichtd as geliche wie die summe von ""allem aus R""..."
+2015-10-25 21:41:34,XanClic,Du kannst gerne sagen 0/0 ist ab jetzt meine Konstante „Bretzel“
+2015-10-25 21:41:50,darklink,Und rechnen dann mit 3+5i+2n-5ni
+2015-10-25 21:41:56,XanClic,"Und du definierst vielleicht sogar, analog zu i, einen neuen Zahlenraum mit „Bretzel“ als Grundlage"
+2015-10-25 21:42:00,XanClic,Kannst du gerne machen
+2015-10-25 21:42:09,XanClic,Erschien den Leuten bisher offenbar nicht so wichtig
+2015-10-25 21:42:16,darklink,Hab ich grade gemacht
+2015-10-25 21:42:18,XanClic,Oder auch nur machbar
+2015-10-25 21:42:50,spacer,das wird schwierig
+2015-10-25 21:42:52,XanClic,"Ach was, Bretzel und Brezel ist beides in Ordnung"
+2015-10-25 21:42:54,XanClic,Sehr gut
+2015-10-25 21:42:57,XanClic,Dann schreib ich jetzt Brezel
+2015-10-25 21:42:58,XanClic,Also
+2015-10-25 21:42:59,darklink,oder wir machen 0/0 und 0^0 ∞i
+2015-10-25 21:43:07,XanClic,"Du musst dann aber auch definieren, was 5 * Brezel ist, beispielsweise"
+2015-10-25 21:43:15,Svenska,Bretsel?
+2015-10-25 21:43:34,XanClic,Oder wie man mit Brezeloperationen wieder aufs Originalergebnis kommt
+2015-10-25 21:43:43,darklink,oder wir machen 0/0 und 0^0 ∞i
+2015-10-25 21:43:57,XanClic,"Also, Bretzel wäre ja dann die Lösung für 0 = 0 * Bretzel"
+2015-10-25 21:44:09,XanClic,Und 5 * Bretzel ist aber genauso eine Lösung dafür
+2015-10-25 21:44:16,XanClic,Also wäre 5 * Bretzel = Bretzel
+2015-10-25 21:44:19,XanClic,Hätten wir das schonmal
+2015-10-25 21:44:21,XanClic,Sehr gut
+2015-10-25 21:44:31,XanClic,Oh jetzt hab ich wieder Bretzel geschrieben
+2015-10-25 21:44:32,XanClic,Wie das nur kam
+2015-10-25 21:44:45,Svenska,"damit musst du aber doch erstmal definieren, dass x \in R (.) y \in Brezel definiert ist, für (.) multiplikation, addition usw"
+2015-10-25 21:44:52,darklink,Nehmen wir ein b als konstante
+2015-10-25 21:45:30,darklink,Ich fange aus bestimmten gründen an zu lachen
+2015-10-25 21:46:16,darklink,Ich bin dafür Brezel mit ∞i gleichzusetzen
+2015-10-25 21:46:25,XanClic,Ne das geht nicht
+2015-10-25 21:46:34,darklink,Wieso nicht
+2015-10-25 21:46:41,XanClic,Weil 0 = 0Brezel
+2015-10-25 21:47:04,XanClic,∞ kann man ja beispielsweise definieren als ∞ = lim_{x → +0} x/0
+2015-10-25 21:47:04,Svenska,"XanClic, niemand hat eine widerspruchsfreie definition verlangt"
+2015-10-25 21:47:07,XanClic,"Doch, ich!"
+2015-10-25 21:47:07,darklink,0∞i=0
+2015-10-25 21:47:21,Svenska,∞ kann auch als 3 definiert werden
+2015-10-25 21:47:22,mgottschlag,"XanClic: daraus folgt lediglich, dass -1 = 0"
+2015-10-25 21:47:25,darklink,Stimmt doch :P
+2015-10-25 21:47:29,mgottschlag,und das ist doch nicht soo tragisch
+2015-10-25 21:47:33,XanClic,ICH ICH ICH
+2015-10-25 21:47:42,darklink,DU DU DU
+2015-10-25 21:47:46,XanClic,Es ist dann keine Erweiterung des Körpers der reellen Zahlen mehr
+2015-10-25 21:47:48,XanClic,Wer will denn sowas
+2015-10-25 21:47:50,mgottschlag,das muss doch noch nichtmal ein Widerspruch sein
+2015-10-25 21:47:59,darklink,DU DU DU
+2015-10-25 21:47:59,XanClic,Eigentlich ja schon
+2015-10-25 21:47:59,mgottschlag,Zahlen braucht nämlich eh keiner.
+2015-10-25 21:48:08,XanClic,0 ist doch keine Zahl
+2015-10-25 21:48:11,Svenska,"ich glaube, darklink wollte die reellen zahlen nicht erweitern"
+2015-10-25 21:48:15,XanClic,Bei mir ist 0 ein Symbol für Lebkuchen
+2015-10-25 21:48:25,XanClic,Und -1 ist ein auf links gedrehtes Glas Milch
+2015-10-25 21:48:31,Svenska,"sondern einen neuen körper erschaffen, in dem x^x = x/x gilt (oder so ähnlich)"
+2015-10-25 21:48:41,XanClic,Aber der ist halt kaputt!
+2015-10-25 21:48:45,XanClic,Und bestimmt nicht mal mehr ein Körper
+2015-10-25 21:48:53,Svenska,und?
+2015-10-25 21:48:55,mgottschlag,"nein, der ist nicht kaputt, der ist Kunst."
+2015-10-25 21:49:06,XanClic,"Ja, wenn er einen Körper erschaffen will, der kein Körper ist, dann ist das doch etwas doof"
+2015-10-25 21:49:08,spacer,es gibt da sone ausstellung
+2015-10-25 21:49:10,Svenska,den wird auch niemand sinnvoll für mathe benutzen wollen
+2015-10-25 21:49:14,XanClic,Und freie Körperkultur gibts hier nicht vor 22 Uhr
+2015-10-25 21:49:15,Svenska,aber brezel schmeckt halt...
+2015-10-25 21:49:41,darklink,Zahlen existieren nicht in diesem universum
+2015-10-25 21:49:52,spacer,andereseits machen mathematika ne menge unnützes zeug
+2015-10-25 21:50:02,spacer,dass sich dann im nachinein doch öfters als sinnvoll herausstelkt
+2015-10-25 21:50:57,Svenska,grammatika machen auch komisches zeugs
+2015-10-25 21:51:09,Svenska,"ich bin z.B. dafür, dass der plural immer auf ""se"" gebildet wird"
+2015-10-25 21:51:22,XanClic,boah nein nicht jarjar-binx-plural
+2015-10-25 21:51:24,XanClic,bitte
+2015-10-25 21:51:26,darklink,Mathematikerse
+2015-10-25 21:52:22,darklink,warum verändern wir hier nur die grundlagen der mathemathik?
+2015-10-25 21:52:46,darklink,Lets veränder unser deutsch sprach!
+2015-10-25 21:52:56,spacer,ne
+2015-10-25 21:53:04,Svenska,"dit ham and're schon jeschafft, ne lass ma"
+2015-10-25 21:53:17,darklink,Mathematik* 
+2015-10-25 21:53:32,spacer,mathemehtik?
+2015-10-25 21:53:42,spacer,*matheethik
+2015-10-25 21:53:45,darklink,lol
+2015-10-25 21:54:21,darklink,Späisah
+2015-10-25 21:54:30,spacer,kann sich jemand von euch die einheitskugel im R4 bildlich vorstellen?
+2015-10-25 21:54:36,Svenska,parse error
+2015-10-25 21:54:54,darklink,Nicht sein
+2015-10-25 21:55:00,XanClic,"Warum nicht, sieht doch genauso kugelig wie ein Kreis aus"
+2015-10-25 21:55:15,Svenska,bezog sich auf späisah
+2015-10-25 21:55:34,darklink,ok
+2015-10-25 21:58:48,spacer,wieso ist die SU(2) eine unterhruppe der S3?
+2015-10-25 22:00:28,darklink,Wie kann man sich überhaupt die 4
+2015-10-25 22:00:41,darklink,Wie kann man sich überhaupt die 4. Dimension vorstellen?
+2015-10-25 22:01:06,XanClic,"So wie man sich die 3. Dimension in 2D vorstellt, natürlich"
+2015-10-25 22:01:16,darklink,oh
+2015-10-25 22:01:32,Svenska,lol
+2015-10-25 22:01:37,spacer,"mein dozent meinte ""lassen Sie es lieber, ist nicht gut für die gesundheit"""
+2015-10-25 22:01:44,darklink,Kann eh nicht wirklich dreidimensional sehen @shrug
+2015-10-25 22:04:43,spacer,es hat jemand die information des universums augerechnet
+2015-10-25 22:05:08,XanClic,"Ich kenn jemanden, dessen Festplattensammlung fasst garantiert mehr"
+2015-10-25 22:05:35,spacer,ca. 10^121 byte
+2015-10-25 22:05:37,Svenska,"die entropie, ja"
+2015-10-25 22:06:01,XanClic,https://dl.dropboxusercontent.com/u/48755239/savable/reactions/misc/entropy.jpg ／人◕ ‿‿ ◕人＼
+2015-10-25 22:06:09,spacer,"nein, nicht entropie..."
+2015-10-25 22:06:14,Svenska,enthalpie? ^^
+2015-10-25 22:06:22,spacer,auch nicht
+2015-10-25 22:07:22,spacer,protyposis
+2015-10-25 22:09:23,spacer,https://de.wikipedia.org/wiki/Protyposis
+2015-10-25 22:12:44,Paddy,"Ui, da hab ich ja was verpasst :-)"
+2015-10-25 22:12:54,XanClic,Viel Spaß :-P
+2015-10-25 22:13:12,Paddy,Ich hab es soweit überflogen wie es mir wert war
+2015-10-25 22:13:12,Svenska,eigentlich auch nur ne verallgemeinerte entropie
+2015-10-25 22:13:43,Paddy,"Schade, dass ihr fertig seid, sonst hätte ich eingeworfen, dass Assembler viel besserer als Mathe ist"
+2015-10-25 22:13:57,XanClic,Die Diskussion hatte ich die Tage woanders mal wieder
+2015-10-25 22:14:05,darklink,Ich sollte mal die übertragung von /dev/zero nach /dev/null über localhost stoppen
+2015-10-25 22:14:24,Svenska,könnte bis zu 2 kerne freimachen
+2015-10-25 22:14:31,XanClic,"Es ist ganz schön schwer zu argumentieren, wie gut Compiler sind, wenn der andere tatsächlich Ahnung hat und einem vorhält, wie „gut“ gcc vektorisiert"
+2015-10-25 22:14:46,darklink,"1,4 TB übertragen"
+2015-10-25 22:14:55,Paddy,hehe
+2015-10-25 22:14:58,darklink,mit 100 MB/s
+2015-10-25 22:14:58,Paddy,Das ist natürlichblöd
+2015-10-25 22:15:07,spacer,"naja, protyposis steht zu entropie in etwa so wie energie zu arbeit"
+2015-10-25 22:15:19,spacer,oder eine temperatur zu einer temperaturdifferenz
+2015-10-25 22:15:35,Paddy,"Vielleicht wären das dann sogar Fälle, wo mein Assembler schneller wäre als der Compiler. Hatte ich bisher noch nie, glaube ich."
+2015-10-25 22:15:38,darklink,ich mach das jetzt mal über den router
+2015-10-25 22:16:33,darklink,90 MB/s
+2015-10-25 22:16:57,Svenska,"an der DTU haben sie ein tool entwickelt, wo sie einen referenzcode durch gcc, clang und icc jagen und das ergebnis vergleichen"
+2015-10-25 22:17:00,XanClic,"Paddy, na ja, man kann dann sagen, dass gcc nicht umsonst __attribute__((vector())) hat"
+2015-10-25 22:17:04,XanClic,Aber so ein richtiges Argument ist das nicht
+2015-10-25 22:17:10,Paddy,Tut das?
+2015-10-25 22:17:13,Svenska,"also, welcher compiler hat welche schleife automatisch wie vektorisiert und so"
+2015-10-25 22:17:14,Paddy,Ich mach sowas doch nie
+2015-10-25 22:17:14,XanClic,"Jop, ziemlich gut"
+2015-10-25 22:17:43,Svenska,"unter der annahme, dass der mensch sowieso keine ahnung hat, aber wenigstens _ein_ compilerbauer wissen sollte, was er tut"
+2015-10-25 22:18:07,Svenska,"der plan ist, dass das tool dann sowas rauswirft wie ""hier besteht optimierungspotential; formuliere die stelle mal um, eventuell tut's dann mit gcc besser"" und so"
+2015-10-25 22:18:10,XanClic,"Svenska, und, wusste das irgendeiner? *g*"
+2015-10-25 22:18:25,Svenska,"stellt sich raus, dass gcc an anderen stellen vektorisiert als icc"
+2015-10-25 22:18:45,Svenska,*schulterzuck*
+2015-10-25 22:18:55,Svenska,"war ne konferenz. du weißt sicher, was man da so präsentiert bekommt."
+2015-10-25 22:19:08,Svenska,(dtu = dänisch-technische universität)
+2015-10-25 22:19:32,Paddy,"Ich glaube ""was man da so präsentiert"" bringt den Punkt noch deutlicher rüber *g*"
+2015-10-25 22:19:35,XanClic,*hust*
+2015-10-25 22:19:52,Svenska,"och, ich hab bisher nur einmal präsentiert und damit waren alle mehr oder minder zufrieden"
+2015-10-25 22:19:55,XanClic,"Weiß nicht, vielleicht steckt bei Unikonferenzen ja ordentliche Forschung dahinter ;-)"
+2015-10-25 22:20:01,Paddy,Bestimmt ;-)
+2015-10-25 22:20:03,Svenska,"definiere ""ordentliche forschung"" ;-)"
+2015-10-25 22:20:11,XanClic,"Irgendwas, was Credit Points verdient hat"
+2015-10-25 22:20:36,Svenska,"hm. ich hab 15 dafür gekriegt, glaub ich"
+2015-10-25 22:21:23,Paddy,"XanClic: Willst du etwa sagen, du hast nicht ordentlich geforscht vor der Präsentation? ;-)"
+2015-10-25 22:21:32,XanClic,"Paddy, nicht genug für 15 CP, glaube ich ;-)"
+2015-10-25 22:21:57,Paddy,Wen interessieren schon CP ;-)
+2015-10-25 22:22:06,XanClic,"Ja, dann halt nicht genug für 20 SWS"
+2015-10-25 22:22:09,Svenska,ich bin da raus ;-)
+2015-10-25 22:22:17,XanClic,Oder wie auch immer die Umrechnung ist
+2015-10-25 22:22:36,XanClic,"Wenn ich auf die CP für meine Kurse schaue, werde ich immer nur traurig, weil wir (Diplom) bei gleichen Kursen weniger bekommen als Bachelor/Master"
+2015-10-25 22:22:40,XanClic,Deshalb lass ich das auch meistens
+2015-10-25 22:23:02,XanClic,"Außerdem hab ich noch nirgendwo gesehen „So viele CP müssen für dieses Modul gesammelt werden“, sondern es waren immer Angaben in SWS"
+2015-10-25 22:23:28,Svenska,"diplomstudiengänge tendieren dazu, alles in SWS zu messen und CP als umrechnung dazu zu haben"
+2015-10-25 22:23:43,Svenska,"bologna-studiengänge machen das eher umgekehrt, zumindest so meine erfahrung"
+2015-10-25 22:23:55,XanClic,"Ich hab einen Bologna-Diplom-Studiengang, was ist damit? *g*"
+2015-10-25 22:24:01,Paddy,"Ist ja auch konsequent, SWS sind schließlich die bewährte Einheit, so wie das Diplom der bewährte Abschluss ist"
+2015-10-25 22:24:02,Svenska,"gilt natürlich nicht für bologna-kurse, die aus diplom-studienzeiten stammen"
+2015-10-25 22:24:11,XanClic,"(OK, offiziell heißt es „modularisiertes Diplom“)"
+2015-10-25 22:24:14,Svenska,dresden ist speziell.
+2015-10-25 22:24:21,XanClic,In jeder Hinsicht? ;-)
+2015-10-25 22:24:39,Svenska,hm. das erinnert mich an ...
+2015-10-25 22:24:41,Svenska,egal.
+2015-10-25 22:24:46,Svenska,sonst werd ich noch sentimental. ;-)
+2015-10-25 22:25:42,Svenska,ich war jedenfalls ein paarmal da ;-)
+2015-10-25 22:26:24,Paddy,Das heißt Orte werden speziell nachdem du ein paarmal dort warst?
+2015-10-25 22:26:38,Svenska,"ne, ich hatte zu browsergame-zeiten mit einigen aus DD zu tun"
+2015-10-25 22:26:51,XanClic,"Und ich dachte, im Internet gibts nur Leute aus Nordrhein-Westfalen"
+2015-10-25 22:26:52,Svenska,"was auch der grund war, weswegen ich ein paarmal da war"
+2015-10-25 22:27:02,Svenska,*schulterzuck*
+2015-10-25 22:27:18,Svenska,IRC gab's vor 10 jahren auch schon in sachsen
+2015-10-25 22:27:29,XanClic,"Ja, ich weiß *g*"
+2015-10-25 22:28:18,Paddy,"Ah, huch, bin ich gar nicht im Internet?"
+2015-10-25 22:28:36,XanClic,"Nö, ich ja auch nicht"
+2015-10-25 22:28:37,Paddy,So kann man sich täuschen
+2015-10-25 22:28:40,XanClic,Deshalb reden ja auch nur wir drei
+2015-10-25 22:28:46,XanClic,Weil das hier nicht das Internet ist
+2015-10-25 22:28:56,Svenska,the internet is for 
+2015-10-25 22:29:13,Paddy,Das Cointernet
+2015-10-25 22:29:35,XanClic,Ist das sowas wie Coroutinen?
+2015-10-25 22:29:55,Paddy,Findest du den Channel grundsätzlich kooperativ?
+2015-10-25 22:29:57,Svenska,"oder was anderes, was mit coi... anfängt?"
+2015-10-25 22:30:18,XanClic,"Svenska, du meinst, es ist nach 22 Uhr, jetzt darfst du? :-P"
+2015-10-25 22:30:23,Paddy,"ECHAN, Svenska"
+2015-10-25 22:30:30,Svenska,gestern um die zeit war 23 uhr...
+2015-10-25 22:30:46,XanClic,Und in Brasilien ist es jetzt 19:30
+2015-10-25 22:30:49,Svenska,:-P
+2015-10-25 22:30:57,Paddy,Hat Brasilien nur eine Zeitzone?
+2015-10-25 22:31:02,Svenska,"echt, so wenig unterschied?"
+2015-10-25 22:31:04,XanClic,Bei Ademar ist es 19:30 :-P
+2015-10-25 22:31:11,XanClic,"Svenska, die haben jetzt Sommerzeit"
+2015-10-25 22:31:21,Svenska,"muss ich igor fragen, der ist von da :-D"
+2015-10-25 22:31:46,Paddy,Ist Ademar noch nicht in China? ;-)
+2015-10-25 22:31:46,Svenska,wir haben eigentlich jedes semester 1-2 brasilianer im chor... dieses weihnachten machen wir stille nacht auf englisch und (brasilianisch)portugiesisch
+2015-10-25 22:31:52,XanClic,"Ich glaube fast, die andere Zeitzone hat nur drei Stunden Unterschied, also 20:30"
+2015-10-25 22:32:09,XanClic,"Paddy, weiß nicht, ich hatte irgendwie seit sieben Wochen kein 1:1 mehr *g*"
+2015-10-25 22:32:14,Svenska,"letzte mal wars auf schwedisch, englisch und deutsch"
+2015-10-25 22:32:38,Svenska,"aber das erklärt, warum du immer zu so komischen zeiten hier auftauchst ;-)"
+2015-10-25 22:32:44,Svenska,dein hostname verrät ja nix.
+2015-10-25 22:32:50,Paddy,"Gleichzeitig Schwedisch, Englisch und Deutsch?"
+2015-10-25 22:32:54,XanClic,Hm? Ich?
+2015-10-25 22:32:55,Svenska,"ne, nacheinander"
+2015-10-25 22:32:57,XanClic,Ich bin in Deutschland
+2015-10-25 22:33:01,Svenska,oh.
+2015-10-25 22:33:11,Paddy,Aber trotzdem in Fernost
+2015-10-25 22:33:11,Svenska,was soll's.
+2015-10-25 22:33:12,XanClic,Ich hab nur einen kaputten Schlafrhythmus *g*
+2015-10-25 22:33:17,Svenska,meiner ist default kaputt
+2015-10-25 22:33:23,Svenska,aber mein chef toleriert das
+2015-10-25 22:33:31,Svenska,und meine kollegen haben keine andere wahl ^^
+2015-10-25 22:34:02,XanClic,Nach PST hab ich einen sehr ordentlichen Schlafrhythmus
+2015-10-25 22:34:31,Svenska,PST ist das dateiformat von outlook express ... *ääääh*
+2015-10-25 22:34:38,Svenska,oder so ähnlich ^^
+2015-10-25 22:34:52,XanClic,*Nach UTC-8
+2015-10-25 22:35:24,Paddy,"Hups, so heftig daneben?"
+2015-10-25 22:35:37,XanClic,Hat sich halt nicht wieder erholt *g*
+2015-10-25 22:35:43,XanClic,Wozu auch ;-)
+2015-10-25 22:35:58,Paddy,"Das heißt, du kommst mit heftigem Jetlag zur Weihnachtsfeier? ;-)"
+2015-10-25 22:36:13,XanClic,"Da wird der größere Einfluss sein, dass ich die Nacht durchgefahren bin"
+2015-10-25 22:36:40,Paddy,"Jo, Jetlag ohne Reise geht ja mal gar nicht"
+2015-10-25 22:37:17,Paddy,"Wann kommst du dann eigentlich? Erst Freitag oder bist du noch ein, zwei Tage vorher da?"
+2015-10-25 22:37:27,XanClic,"Erst Freitag, ja"
+2015-10-25 22:37:58,XanClic,"Du kannst natürlich gerne Ademar überreden, mir ein Hotelzimmer zu spendieren ;-)"
+2015-10-25 22:38:04,XanClic,"Oder ich komme zu dir, das ginge natürlich auch"
+2015-10-25 22:38:11,XanClic,Oder ich schlafe im Büro
+2015-10-25 22:38:14,XanClic,Wozu gibts da eine Couch
+2015-10-25 22:38:25,Paddy,Hast du ihn mal gefragt wegen Hotelzimmer?
+2015-10-25 22:38:39,Paddy,"Bzw. eine Nacht brauchst du eh, oder?"
+2015-10-25 22:38:41,XanClic,"Er meinte, es sei halt wenig Geld da, und ob ich eins bräuchte"
+2015-10-25 22:38:48,XanClic,"Und dann hab ich gesagt, ich käme auch ohne aus"
+2015-10-25 22:38:56,Paddy,Ach so
+2015-10-25 22:38:58,XanClic,"Nö, ich kann so um Mitternacht wieder zurückfahren"
+2015-10-25 22:39:15,Paddy,Du gibst es dir aber echt
+2015-10-25 22:39:16,XanClic,"Und morgens um acht oder so da sein, weiß ich nicht mehr"
+2015-10-25 22:39:40,XanClic,"Solang ich noch einigermaßen jung bin, muss das doch so ;-)"
+2015-10-25 22:40:20,Sur3,hat jede pgdir seine eigene physische speicherverwaltung?
+2015-10-25 22:40:21,Svenska,"die nacht durchfahren zu ner weihnachtsfeier, und dann gegen mitternacht wieder ne nacht durchfahren klingt eher ungesund."
+2015-10-25 22:40:28,XanClic,Ich fahr ja nicht
+2015-10-25 22:41:12,Svenska,du lässt fahren?
+2015-10-25 22:41:16,XanClic,Ja
+2015-10-25 22:41:37,Sur3,aso streicht die frage
+2015-10-25 22:42:38,Paddy,"Auf den ersten Blick sehe ich auch nichts, was dagegen spräche, dass du zu mir kommst. Müsste ich nochmal genauer schauen, falls das anzupeilen wäre. Ist aber halt auch ein gutes Stück außerhalb, wie du weißt."
+2015-10-25 22:43:00,Paddy,Und außerdem müsste ich dann aufräumen *g*
+2015-10-25 22:43:14,XanClic,Pah ;-)
+2015-10-25 22:44:16,Paddy,Dann wird aber am Samstag am tyndur-Weihnachtsrelease gehackt :-P
+2015-10-25 22:44:24,XanClic,Na gut :-P
+2015-10-25 22:44:35,Sur3,welches bundesland?
+2015-10-25 22:44:46,Paddy,Wer?
+2015-10-25 22:44:56,Sur3,die wiehnachtsfeier
+2015-10-25 22:45:17,Paddy,BW
+2015-10-25 22:45:28,Sur3,"ahh ok, ich bin in nrw ^^"
+2015-10-25 22:45:42,Svenska,...womit wir wieder beim thema wären ^^
+2015-10-25 22:45:42,Sur3,aber hab überlegt ob ich zum chaos congress in hamburg fahre
+2015-10-25 22:45:47,Paddy,"Sur3: Verschwinde, ab ins Internet mit dir!"
+2015-10-25 22:45:49,XanClic,"Das ist mir jetzt unerklärlich, wie man aus NRW ins Cointernet kommt"
+2015-10-25 22:46:02,Sur3,:P
+2015-10-25 22:46:04,XanClic,Spricht man das eigentlich Co-Internet oder Coin-Ternet aus?
+2015-10-25 22:46:13,XanClic,Und Ternet wäre Engrish für Telnet
+2015-10-25 22:46:18,Svenska,coi-nternet
+2015-10-25 22:46:19,XanClic,Also Münzen-Telnet
+2015-10-25 22:46:43,Sur3,was habt ihr gegen nrw? o.O
+2015-10-25 22:47:18,XanClic,"Dass Düsseldorf D für sich beansprucht, es aber alle eh DD nennen"
+2015-10-25 22:47:24,XanClic,Da hätte man das auch uns überlassen können!
+2015-10-25 22:47:33,Paddy,"Die klassische Antwort wäre ""Nichts wirksames?"""
+2015-10-25 22:47:35,Sur3,Dresden?
+2015-10-25 22:47:39,XanClic,Ja!
+2015-10-25 22:47:42,Sur3,ah ok
+2015-10-25 22:47:57,Sur3,"naja düsseldorf is eh voll weit weg, wohn an der grenze zu niedersachsen"
+2015-10-25 22:48:13,Paddy,Vorort von Köln halt
+2015-10-25 22:48:35,Sur3,joa köln bin ich ab und an aufm botanik stammtisch
+2015-10-25 22:49:46,XanClic,"Wie der Protagonist bei The Martian “I'm a botanist” gesagt hat, klang wie “I'm a buttanist”"
+2015-10-25 22:49:56,XanClic,Damit Svenska mal wieder ein bisschen Qualitätsunterhaltung bekommt
+2015-10-25 22:50:15,Svenska,...bin ich so schlimm?
+2015-10-25 22:50:24,Svenska,aber ich hab den marser nicht gesehen
+2015-10-25 22:50:31,Svenska,marsianer
+2015-10-25 22:50:32,Svenska,whatever
+2015-10-25 22:50:47,XanClic,Was ist denn ein Marser? Ein morsender Marder?
+2015-10-25 22:51:01,Svenska,"vielleicht mit mörser verwandt, was weiß ich"
+2015-10-25 22:51:14,Svenska,möser liegt dann aber wieder bei magdeburg...
+2015-10-25 22:51:34,XanClic,Ein Mörder wäre dann ein mordender Mörser
+2015-10-25 22:51:34,Sur3,und kakebölle leigt in dänemark
+2015-10-25 22:51:47,Svenska,hm lecker...
+2015-10-25 22:52:12,Paddy,Und irgendein Laden in Athen hieß sowas wie Kotzebollos
+2015-10-25 22:52:33,Svenska,ist übrigens so ein klassiker von deutsch-versuchenden schweden
+2015-10-25 22:52:49,Paddy,Hm?
+2015-10-25 22:52:49,Sur3,aso?
+2015-10-25 22:52:59,Svenska,kaka = kuchen
+2015-10-25 22:53:05,Sur3,asoo
+2015-10-25 22:53:09,Paddy,Ah :-)
+2015-10-25 22:53:10,Sur3,krass XD
+2015-10-25 22:53:19,Svenska,"fika = kaffeepause, da komm ich immernoch nicht mit klar"
+2015-10-25 22:53:20,Sur3,kuchenböller :D
+2015-10-25 22:53:30,XanClic,"Ich hab gehört, ficklampa heißt Taschenlampe"
+2015-10-25 22:53:32,Svenska,"ne, (se) bullar = bällchen"
+2015-10-25 22:53:34,Svenska,korrekt
+2015-10-25 22:53:35,XanClic,Irgendwie ist Schwedisch schon ein bisschen komisch
+2015-10-25 22:53:37,Svenska,ficka = tasche
+2015-10-25 22:54:12,Sur3,kuchentasche.. ^^
+2015-10-25 22:55:26,Svenska,*schulterzuck*
+2015-10-25 22:55:33,Paddy,"Und als Vergangenheit von irgendeinem recht üblichen Verb gab es fick auch noch, oder?"
+2015-10-25 22:55:45,Svenska,"ja, von få"
+2015-10-25 22:56:10,Svenska,"få ist bekommen, dürfen, müssen, sollen, kriegen, ..."
+2015-10-25 22:56:24,Svenska,"ist im präsens får, was gleichzeitig auch schaf bedeutet :-)"
+2015-10-25 22:56:35,Svenska,"frag mich nicht, wie das passieren konnte."
+2015-10-25 22:56:42,Sur3,:D
+2015-10-25 22:57:06,Sur3,du hast ein schaf bekommen.. ^^
+2015-10-25 22:57:06,Paddy,Schwedisch ist seltsam
+2015-10-25 22:57:16,XanClic,"Ich hab mich ja anfangs gefragt, wieso zwei meiner Kommilitonen jetzt Schwedisch an der Uni machen"
+2015-10-25 22:57:18,XanClic,"Jetzt weiß ich, wieso"
+2015-10-25 22:57:20,Paddy,Vielleicht muss ich's doch noch irgendwann angehen
+2015-10-25 22:57:20,Svenska,deutsch allerdings auch
+2015-10-25 22:57:32,Paddy,"Ja, aber das kann ich ja auch nicht"
+2015-10-25 22:57:57,Paddy,"Wart, die Logik ist irgendwie falsch"
+2015-10-25 22:58:37,XanClic,Schwäbisch ist auch seltsam :-P
+2015-10-25 22:58:53,Svenska,"hättest du ... 2012 in magdeburg an der vhs schwedisch belegt, hättest du mich da regelmäßig getroffen ^^"
+2015-10-25 22:59:20,Paddy,XanClic: Hast du deine 2. Sg. mittlerweile wieder verhochdeutscht? *g*
+2015-10-25 23:00:02,XanClic,"Schon, aber manchmal spreche ich manche S noch stimmlos aus"
+2015-10-25 23:00:09,XanClic,Die stimmhaft sein sollten
+2015-10-25 23:00:15,Svenska,2. Sg.?
+2015-10-25 23:01:11,Paddy,"XanClic: Sowas ['so:vas] gibt's doch gar nicht, kein S sollte stimmhaft sein"
+2015-10-25 23:02:35,Svenska,"""summ summ summ, bienchen summ herum"""
+2015-10-25 23:03:14,XanClic,"Svenska, kennscht du das nicht?"
+2015-10-25 23:04:01,Svenska,"was? ""bienchen ßummen"" oder ""bienchen schummen""? ;)"
+2015-10-25 23:04:10,XanClic,2. Sg.
+2015-10-25 23:04:29,Svenska,"vermutlich ja, aber nicht unter dem namen?"
+2015-10-25 23:04:35,XanClic,2. Person Singular
+2015-10-25 23:04:46,Svenska,"""du""?"
+2015-10-25 23:04:50,XanClic,ja
+2015-10-25 23:04:54,Paddy,"Svenska: Wo ""schummen"" denn Bienchen?"
+2015-10-25 23:04:55,XanClic,"du hascht, du weischt"
+2015-10-25 23:05:01,XanClic,also nicht du hascht
+2015-10-25 23:05:08,XanClic,das war ein schlechtes Beispiel
+2015-10-25 23:05:11,Svenska,:-)
+2015-10-25 23:05:11,XanClic,Das ist ja auch hochdeutsch
+2015-10-25 23:05:21,XanClic,"Wobei, das wäre ja „du haschst“"
+2015-10-25 23:05:30,XanClic,Wie ist das denn dann? „Du haschscht“?
+2015-10-25 23:05:32,Svenska,"ich kenn das als ""weeßte"""
+2015-10-25 23:05:35,Paddy,Was ja sowieso die verhochdeutschten Formen sind
+2015-10-25 23:05:42,XanClic,*du hasch
+2015-10-25 23:05:47,Svenska,aber da ist ein scharfes s drin
+2015-10-25 23:05:48,XanClic,"*du weisch, du kensch"
+2015-10-25 23:05:50,XanClic,*kennsch
+2015-10-25 23:05:57,Paddy,Ja
+2015-10-25 23:06:17,Svenska,also das t verschlucken
+2015-10-25 23:06:18,XanClic,"Nu, ich kenns ooch als weeßte :-P"
+2015-10-25 23:06:23,Svenska,;)
+2015-10-25 23:06:36,Paddy,"Das ist ineffizient, eine Silbe länger"
+2015-10-25 23:06:47,Svenska,"erspart aber das ""du"""
+2015-10-25 23:06:57,XanClic,Geht auch mit weisch
+2015-10-25 23:06:58,Paddy,"Das ist im ""weisch"" auch inbegriffen"
+2015-10-25 23:07:00,XanClic,„Weisch?“
+2015-10-25 23:07:08,Svenska,stimmt auch wieder.
+2015-10-25 23:07:16,Sur3,weiß
+2015-10-25 23:07:26,Svenska,"ich hab verwandtschaft nur in der lausitz, nicht in bawü"
+2015-10-25 23:10:48,Paddy,"XanClic: Meinst du (also... moinsch) damit, dass du inzwischen genug Wissen hast, dass du beim nächsten Mal das nächste Level angehen kannst? ;-)"
+2015-10-25 23:11:08,XanClic,Ich glaub net ;-)
+2015-10-25 23:11:09,Svenska,was ist denn das nächste level von schwäbisch? ;-)
+2015-10-25 23:11:26,Paddy,"Keine Ahnung, müsste man spontan entscheiden ;-)"
+2015-10-25 23:11:29,Sur3,bayrisch
+2015-10-25 23:11:50,Svenska,ich hab ne zeitlang mit nem franken das büro geteilt
+2015-10-25 23:11:59,Svenska,"aber der hat auch (alt)isländisch gelernt, insofern..."
+2015-10-25 23:12:15,Paddy,War das eine bessere Kommunikationsgrundlage als Frenggisch? *g*
+2015-10-25 23:12:30,Sur3,"ohh ich hab die tage ne isländerin in der disko kennengelernt, aber hab ihren fb namen vergessen weil ich zu besoffen war.. :'("
+2015-10-25 23:12:42,Svenska,"ne, aber ich habe festgestellt, dass ich altnordisch nicht vernünftig verstehe"
+2015-10-25 23:12:57,Sur3,irgendwas was so äähnlich klang wie jolisca
+2015-10-25 23:12:59,Paddy,"Du meinst, Schwedischkenntnisse reichen dafür nicht?"
+2015-10-25 23:13:01,Paddy,Komisch.
+2015-10-25 23:13:03,Svenska,nope
+2015-10-25 23:13:13,Svenska,"neuisländisch auch nicht, aber ich hab mir mit meinem chef den spaß gemacht und versucht, texte zu entziffern"
+2015-10-25 23:13:41,Svenska,"nach 20min busreise ist das schild ""füße nicht auf die sitze tun, wird dreckig"" mit an wahrscheinlichkeit grenzender sicherheit gemeint ^^"
+2015-10-25 23:14:04,Svenska,aber er hatte auch keinen plan
+2015-10-25 23:14:24,Paddy,Tja
+2015-10-25 23:14:45,Svenska,"...also mein schwedisch ist gut genug. wenn ich keine ahnung habe, was irgendwas heißen soll, haben die schweden meistens auch keine."
+2015-10-25 23:14:49,Svenska,:p
+2015-10-25 23:14:58,Paddy,*g*
+2015-10-25 23:15:40,Svenska,"ich kenn da n paar leute, die seltsam reden, und wenn ich #lost bin, dann gucken alle anderen auch verwirrt und fragen nach. fühlt sich gut an."
+2015-10-25 23:15:49,Paddy,"Schwedisch ist ja auch so eine komplett vereinfachte Sprache, wenn ich mich nicht täusche. Und Isländisch ziemlich genau das Gegenteil."
+2015-10-25 23:16:00,Svenska,ja.
+2015-10-25 23:16:27,Svenska,"wobei ich bei modernem isländisch meist noch genug grammatik rauspicken kann, um die worte in einen kontext zueinander zu setzen"
+2015-10-25 23:16:34,Svenska,"ich hab nur keine ahnung, was die worte bedeuten. :-)"
+2015-10-25 23:16:39,Paddy,"Von daher sollte XanClic einfach froh sein, dass er nur Schwäbisch und nicht Isländisch lernen muss *g*"
+2015-10-25 23:16:57,Svenska,"ob's nu på oder pá heißt, ist ja egal"
+2015-10-25 23:17:18,Paddy,Ausgeprochen wahrscheinlich schon nicht mehr so egal
+2015-10-25 23:17:26,Svenska,das versuche ich garnicht erst.
+2015-10-25 23:17:41,Svenska,"übrigens hab ich mir sagen lassen, dass altnordisch in skandinavien und deutschland unterschiedlich behandelt wird"
+2015-10-25 23:17:54,Paddy,Skandinavien allgemein?
+2015-10-25 23:18:06,Svenska,"in skandinavien nimmt man die isländische aussprache, und deutschland nimmt man die rekonstruierte altnordische aussprache :-p"
+2015-10-25 23:18:17,Svenska,s/und/in/
+2015-10-25 23:18:17,Paddy,Ah
+2015-10-25 23:18:25,Sur3,aso
+2015-10-25 23:18:30,Paddy,Die kenne ich noch weniger als die Isländische ;-)
+2015-10-25 23:18:31,Svenska,isländer können aber sowieso alle dänisch
+2015-10-25 23:18:37,Svenska,insofern -> wumpe.
+2015-10-25 23:18:46,Svenska,"müssen die halt aufschreiben, was sie wollen. oder englisch sprechen ^^"
+2015-10-25 23:18:53,Paddy,"War Dänisch nicht die andere Sprache, die kein Mensch versteht?"
+2015-10-25 23:18:57,Svenska,ack.
+2015-10-25 23:19:17,Sur3,nee das war finnisch
+2015-10-25 23:19:27,Paddy,+germanische
+2015-10-25 23:19:28,Svenska,"poul henning-kamp (freebsd-entwickler) hat ein paar talks gehalten, u.a. einen sehr guten auf englisch"
+2015-10-25 23:19:41,Svenska,aber die dänischen talks... ich find nichtmal die wörter ^^
+2015-10-25 23:20:04,Paddy,Kamelåså!
+2015-10-25 23:20:27,Svenska,klingt ... seltsig.
+2015-10-25 23:20:41,Paddy,"Oh, kennst du nicht?"
+2015-10-25 23:20:46,Sur3,dänisch is aber einfach
+2015-10-25 23:20:47,Svenska,ne
+2015-10-25 23:20:57,Svenska,Sur3: gesprochen oder geschrieben?
+2015-10-25 23:20:58,Sur3,nach nen paar wochen da versteht man das meiste
+2015-10-25 23:21:03,Svenska,lol
+2015-10-25 23:21:08,Sur3,gesprochen
+2015-10-25 23:21:20,Svenska,"also die statistik sagt, dass dänische babys die ältesten sind, wenn sie anfangen, ihre eltern zu verstehen"
+2015-10-25 23:21:31,Paddy,Sur3: Du bist ja eh schon ein Nordlicht
+2015-10-25 23:21:35,Svenska,alle anderen sprachen sind einfacher auseinanderzupicken :)
+2015-10-25 23:21:47,Sur3,"ok krass, ich fand das nicht so schwer ich war mit ner eestländerin da verglichen damit ist schwedisch einfach xD"
+2015-10-25 23:21:49,Svenska,"naja, platt ist jetzt nicht soo schwer. aber echtes dänisch? keine chance."
+2015-10-25 23:22:23,Sur3,joa vllt liegts auch daran daß ich noch nen bischen plattdeutsch mitbekommen hab mag sein
+2015-10-25 23:22:24,Svenska,"übrigens scheitern schweden an dänisch, und dänen an schwedisch (außer ostdänemark/südwestschweden)"
+2015-10-25 23:22:56,Svenska,"achso, und dann gibt's noch so ein paar komische dialekte um flensburg rum, teilweise deutsch mit dänischer aussprache, teilweise dänisch mit deutscher aussprache; da geht's dann noch"
+2015-10-25 23:23:01,Paddy,Wegen Kamelåså noch: https://www.youtube.com/watch?v=s-mOy8VUEBk
+2015-10-25 23:23:14,Svenska,"finnisch und estnisch sind einander einigermaßen verständlich, wurde mir von ner finnin mal berichtet"
+2015-10-25 23:23:38,Sur3,joa ich bin mit dem fahrrad von flensburg aus rüber zu so nem dänischen sportinternat
+2015-10-25 23:25:19,Svenska,"Paddy: oh, das video hat sogar ton ;)"
+2015-10-25 23:25:23,Sur3,ollerup hieß dat ^^
+2015-10-25 23:25:52,Sur3,http://www.ollerup.dk/?id=57
+2015-10-25 23:27:12,Sur3,"ich glaub da schick ich meine kinder auch mal hin wenn ich welche habe das war cool, mit survivaltraining, kletterwand, riesiegen trampolins und schwimmbecken nach olympischer norm ^^"
+2015-10-25 23:28:14,Paddy,Svenska: Finnisch und Estnisch geht meines Wissens aber auch nicht wesentlich besser als Deutsch und Holländisch
+2015-10-25 23:29:30,Svenska,"Paddy: aber ich finds lustig, dass ich mit den untertiteln besser klarkomme als mit dem englisch ;)"
+2015-10-25 23:29:48,Paddy,Könnte am Akzent liegen ;-)
+2015-10-25 23:29:54,Svenska,dänisch eben ;)
+2015-10-25 23:31:11,Sur3,holländisch ist nicht so schwer ist nur ne mischung aus english und deutsch ähnlich wie dänisch xD
+2015-10-25 23:32:04,Sur3,also dänisch ist zumindest schwerer als holländisch das stimmt
+2015-10-25 23:32:07,Paddy,Kan je dus enkele correcte Nederlandse zinnen hier schrijven? ;-)
+2015-10-25 23:32:24,Sur3,nej kan i net
+2015-10-25 23:33:52,Sur3,aber ne freundin von mir
+2015-10-25 23:34:06,Sur3,die hat niederländisch studiert mit der war ich öfter drüben im urlaub
+2015-10-25 23:34:13,Svenska,https://www.youtube.com/watch?v=s79_V4NXiUg
+2015-10-25 23:34:31,Paddy,"Mein Punkt ist halt, dass man selbst eine so nah verwandte Sprache erstmal lernen muss"
+2015-10-25 23:34:51,Paddy,"Klar hilft es, dass man passiv einen Haufen erraten kann, aber zum kommunizieren reicht das eher nicht"
+2015-10-25 23:34:54,Svenska,"ja klar, produktion von sprache dazu muss man die können"
+2015-10-25 23:34:58,Sur3,ich hab in holland kinderfernsehn geguckt das war witzig ^^
+2015-10-25 23:35:07,Sur3,"""drück op det knöpje!"""
+2015-10-25 23:35:14,Svenska,"aber wenn der parser heuristisch gut genug ist, dann reicht das für eine halbe konversation"
+2015-10-25 23:35:20,Svenska,wenn die andere seite das auch kann...
+2015-10-25 23:35:28,Paddy,"Wenn das Gegenüber in der Lage ist, deutsch zu parsen, ja"
+2015-10-25 23:35:37,Paddy,Wobei das Problem üblicherweise eher andersrum ist
+2015-10-25 23:35:49,Paddy,"Insofern, wenn man das Holländische erraten kann, sind die Chancen gar nicht so schelcht"
+2015-10-25 23:36:03,Svenska,"""langsam und deutlich"" ;)"
+2015-10-25 23:39:35,Sur3,da mit paging meine bisherige pmm nicht mehr geht hab ich mir überlegt ich nehm nen erweitertes stack modell..
+2015-10-25 23:41:14,Paddy,"Ich finde Schweizerdeutsch ist das, was ohne Vorbereitung heuristisch grad noch so geht ;-)"
+2015-10-25 23:41:27,Svenska,da scheiter ich ja jämmerlich.
+2015-10-25 23:41:37,Paddy,Du findest Holländisch einfacher?
+2015-10-25 23:41:46,Svenska,"ne, kann ich auch nicht"
+2015-10-25 23:42:03,Sur3,"im wiki steht der einzige nachteil von stack als pmm ist daß keien kontinuierlichen speicherseiten möglich sind, aber wenn ich auf dem stack jeweils adresse und größe platziere müßte das ja gehen, das einzige problem ist dann daß es fragmentiert"
+2015-10-25 23:42:13,Svenska,"ich hab genug schwierigkeiten, geschriebenes schweizerdeutsch zu parsen..."
+2015-10-25 23:42:18,Paddy,wtf?
+2015-10-25 23:42:42,Svenska,"wir haben da so nen haufen schweizer in der mailbox, und da sind ein paar dabei, denen ich geschriebenes hochdeutsch zu schwer"
+2015-10-25 23:42:46,XanClic,Kommt auf das Schwyzerdeutsch an
+2015-10-25 23:42:52,Svenska,berndeutsch
+2015-10-25 23:43:09,Paddy,Also das von Antoine
+2015-10-25 23:43:12,Svenska,"aber die freundin vom chef ist schweizerin, er streut mir dann immer n paar übersetzungen in den text"
+2015-10-25 23:43:22,Svenska,bin ich sehr dankbar für ^^
+2015-10-25 23:43:37,XanClic,"Na ja, ich glaube nicht, dass Antoine vor uns sein härtestes Schwyzerdeutsch losgelassen hat ;-)"
+2015-10-25 23:43:50,Svenska,geschrieben hat er bisher nur hochdeutsch in meiner anwesenheit
+2015-10-25 23:43:58,Svenska,"ist ja nicht so, dass er oft geschrieben hätte in letzter zeit :)"
+2015-10-25 23:44:50,Paddy,"XanClic: Nein, das war Hochdeutsch, so wie das von mir auch ;-)"
+2015-10-25 23:45:11,XanClic,"Tja, dann kann ich das wohl nicht beurteilen"
+2015-10-25 23:52:22,Antoine,*g*
+2015-10-25 23:53:29,Paddy,"Antoine: Ja, es kann manchmal für Außenstehende nicht offensichtlich sein ;-)"
+2015-10-25 23:53:44,Paddy,"In beiden Fällen, vermute ich *g*"
+2015-10-25 23:53:53,Antoine,Hochdeutsch ist viellecht etwas übertrieben *g*
+2015-10-25 23:54:12,Svenska,"...meine Deutschlehrerin nannte das mal ""Schriftdeutsch""."
+2015-10-25 23:54:22,XanClic,"Tut mir ja auch leid, aber als Sachse hat man halt doch einen gewissen Anspruch an gutes Hochdeutsch"
+2015-10-25 23:54:24,Paddy,"Von mir aus ""nôch dr Schrift gschwätzt"" ;-)"
+2015-10-25 23:55:18,Paddy,"XanClic: Was bleibt auch, wenn man kein ordentliches Sächsisch kann... :-P"
+2015-10-25 23:55:44,XanClic,Meine Sprache hat keinerlei Identität :-(
+2015-10-25 23:56:05,Paddy,"Siehsch, ich will dir ja bloß helfen ;-)"
+2015-10-25 23:56:16,Svenska,ich sprech' ja nichtmal nennenswert dialekt
+2015-10-25 23:56:26,Paddy,"Jo, keinerlei Identität"
+2015-10-25 23:56:34,XanClic,"Na, wenn man schon keine Identität hat und sich eine aussuchen soll, dann will ich aber schon eine ordentliche wählen :-P"
+2015-10-25 23:56:50,Paddy,"Ja, eben drum!"
+2015-10-25 23:56:54,XanClic,Genau!
+2015-10-25 23:57:23,Svenska,"Juhuu, ich habe zwei und keine taugt."
+2015-10-25 23:57:27,Svenska,"Öh, ups."
+2015-10-25 23:57:47,XanClic,"Ja, wenn ich Moselfränkisch könnte, das wär ja auch in Ordnung"
+2015-10-25 23:58:49,Paddy,Ist das knapp an Pälzisch vorbei?
+2015-10-25 23:59:39,XanClic,"In der Richtung ja, in der Sprache weiß ichs nicht"

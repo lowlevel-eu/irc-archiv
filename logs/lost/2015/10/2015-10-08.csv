@@ -1,0 +1,929 @@
+date/time,nick,message
+2015-10-08 00:30:07,masterq32,"ich stelle grade fest, ich habe relativ saubere arbeit geleistet"
+2015-10-08 00:30:22,masterq32,"hier und da schimmelts zwar noch im code, aber die stellen werde ich langsam ausgraben und putzen :D"
+2015-10-08 00:30:26,Svenska,"betonung auf ""relativ""? ;)"
+2015-10-08 00:30:30,masterq32,klar :D
+2015-10-08 00:30:44,masterq32,"PUB irq( id : INT32, data : CPUSTATE )"
+2015-10-08 00:30:51,masterq32,das sind grade meine IRQ-Routinen
+2015-10-08 00:33:50,masterq32,und ich kann eben mit relativ wenig aufwand die compound types erstellen
+2015-10-08 00:33:58,masterq32,welche dann den ganzen CPU-Status enthalten
+2015-10-08 12:22:51,masterq32,heyhey
+2015-10-08 13:35:18,iksnagreb,moin
+2015-10-08 14:19:43,masterq32,heyhey
+2015-10-08 15:24:29,Sur3,"hallo, ich hab momentan ein Problem mit meinem ATA/PI Treiber, ich muß manchmal einen Sektor zweimal lesen, weil es beim ersten Versuch nicht klappt, kann das irgendwie mit vorherigen unvollständig gelesenen Sektoren zusammen hängen die den neuen Lesevorgang beim ersten Versuch blockieren?"
+2015-10-08 15:32:32,kevin,"Was heißt ""nicht klappen"" denn genau?"
+2015-10-08 15:33:13,Sur3,"naja die entsprechenden sektordaten landen nicht im arbeitsspeicher, beim erneuten lesen des sektors klappt es dann"
+2015-10-08 15:36:40,kevin,"Das heißt, es sieht so aus als ob es funktionieren würde, aber du liest Müll ein?"
+2015-10-08 15:36:51,kevin,Keine Fehler gesetzt oder so?
+2015-10-08 15:38:40,Sur3,"nee das problem ist ich habe den vorherigen sektor unvollständig gelesen, also ich bruachte von dem einen sektor nur z.B. 13Bytes und hab deswegen nicht alle 512Bytes ausgelesen und dann nimmt er den lesebefehl für eine neue sektornummer irgendwie nicht richtig an danach, er soll einfach die restlichen bytes des vorherigen sektors verwerfen"
+2015-10-08 15:39:29,kevin,"Nein, du sollst sie einfach auslesen"
+2015-10-08 15:39:44,kevin,Festplatten arbeiten halt nur mit ganzen Sektoren
+2015-10-08 15:40:21,Sur3,kann ich dem controller nciht irgendwie sagen er soll die restlcihen bytes verwerfen und einen neuen sektor lesen??
+2015-10-08 15:40:36,kevin,"Und wenn er einen Befehl ""irgendwie nicht richtig"" annimmt, dann prüfst du offenbar nicht, ob du überhaupt einen Befehl senden darfst"
+2015-10-08 15:40:55,kevin,DRQ müsste nämlich noch gesetzt sein und dann wird kein neuer Befehl akzeptiert
+2015-10-08 15:41:10,kevin,"(Ich gehe mal von PIO aus, weil sonst macht halbe Sektoren lesen ja noch weniger Sinn)"
+2015-10-08 15:41:29,kevin,Sur3: Nein. Lies einfach die 512 Bytes und gut.
+2015-10-08 15:41:37,Sur3,"joa ich teste mit test al,080h auf die hostbasis+7"
+2015-10-08 15:43:00,kevin,Das ist nur BSY
+2015-10-08 15:43:23,Sur3,"aso ok dann liegt da vermutlich der fehler, ok dann werd ich DRQ mal implementieren danke"
+2015-10-08 15:46:32,Sur3,ist ein controller-reset wohl schneller oder langsamer als das auslesen eines sektors?
+2015-10-08 15:46:40,kevin,...
+2015-10-08 15:47:11,kevin,"Was genau an ""lies die 512 Bytes aus"" war missverständlich?"
+2015-10-08 15:47:49,Sur3,"joa ich hab das auslesen ja schon implementiert aber ich find es halt unnötig bytes auszulesen die ich eh verwerfe, wenn man den controller stattdessen vllt reseten könnte oder so"
+2015-10-08 15:48:46,kevin,"Die Daten sind längst von der Platte gelesen, und das war der Teil, der Zeit kostet"
+2015-10-08 15:49:10,Sur3,naja das auslesen kostet aber trotzdem cpu zeit
+2015-10-08 15:49:26,kevin,Du optimierst am falschen Ort
+2015-10-08 15:49:31,Sur3,hm ok
+2015-10-08 15:49:55,kevin,"CPU-Takte bei PIO zu optimieren - merkst du nicht selber, wie lächerlich das ist?"
+2015-10-08 15:50:22,kevin,"Wenn das für dich eine Rolle spielt, nimm DMA"
+2015-10-08 15:53:58,Sur3,joa irgendwo hast du recht
+2015-10-08 15:54:35,Sur3,DMA sollte ich mir irgendwann mal angucken
+2015-10-08 15:55:36,Sur3,zumal man mit DMA ja auch die Grafikkarte beschleunigen kann hab ich mal gelesen. ^^
+2015-10-08 16:05:17,darklink,hehe
+2015-10-08 16:25:19,Sur3,"ok mit dem DRQ-Flag hängt er sich jetzt auf wenn ich die restlcihen bytes ncith lese, aber ist immerhin besser als wenn er so tut als wär alles normal ^^"
+2015-10-08 16:28:20,Sur3,"aber interessant nach ATA/PI spezifikation ist das Reset die einzige möglichkeit aus so nem zustand rauszukommen wenn man die Bytes nicht ließt, die hätten ruhig mal nen Befehl um den Buffer zu clearen implementieren können, naja les' ich die daten halt aus.. ^^"
+2015-10-08 16:29:00,masterq32,@kevin: I feel with you
+2015-10-08 16:29:23,kevin,"Zu meiner Ehrenrettung: Was 0x80 ist, habe ich dann doch nachgeschaut *g*"
+2015-10-08 16:29:43,Sur3,"hehe, ok hab mich schon gewundert :D"
+2015-10-08 16:29:59,masterq32,128
+2015-10-08 16:30:00,masterq32,:D
+2015-10-08 16:30:04,masterq32,*duck*
+2015-10-08 16:30:20,Sur3,"1f0 als hostbasis hätt ich auch noch aus dem kopf gewußt, aber die offsets der einzelnen register braucht man so selten ^^"
+2015-10-08 16:31:01,Sur3,obwohl die offsets eigentlich wichtiger sind als die base ich hatte man nen SATA controller der irgendwo anders die base hatte
+2015-10-08 16:31:26,masterq32,http://eelslap.com/
+2015-10-08 16:31:45,kevin,"Sur3: Wenn du von AHCI redest, das ist was komplett anderes als das alte IDE-Interface"
+2015-10-08 16:33:00,Sur3,nee komplett anders kann man nicht sagen meine ATA Pio-Befehle liefen darauf ich mußte bloß die Host-Basis anpassen ^^
+2015-10-08 16:33:35,kevin,"Okay, dann war's wohl nicht AHCI, sondern ein IDE-Kompatibilitätsmodus"
+2015-10-08 16:34:18,masterq32,https://en.wikipedia.org/wiki/Wikipedia:Whacking_with_a_wet_trout
+2015-10-08 16:34:22,masterq32,ähm wat? :D
+2015-10-08 16:34:28,Sur3,"hm das kann sein, aber eben nicht an 0x1f0 sondern 0x018D8 als hostbasis"
+2015-10-08 16:34:36,masterq32,Wikipedia hat Artikeltemplats um Leute mit Trouts zu slappen
+2015-10-08 16:35:30,Sur3,naja in den wiki-diskussionsboards gehts halt auch heiß her :D
+2015-10-08 16:36:17,masterq32,scheint so
+2015-10-08 16:36:53,masterq32,"im februar 2014 hat polizei irl nach einem mädel gesucht, das ein wehrloses opfer mit einem fisch geschlagen hat :D"
+2015-10-08 16:37:38,Sur3,lol
+2015-10-08 16:38:06,masterq32,http://www.bbc.com/news/uk-northern-ireland-26345264
+2015-10-08 16:38:06,masterq32,:D
+2015-10-08 16:43:51,Sur3,die soll zwischen 15 und 18 sein? ich würd die eher auf 19 schätzen..
+2015-10-08 16:48:30,Sur3,"ich hätt kein mandelbrotprogramm für mein os schreiben sollen, man verschwendet viel zu viel zeit damit weil man nicht mehr aufhören kann in der mandelbrotmenge rumzuzoomen.. xD"
+2015-10-08 16:48:53,masterq32,:D
+2015-10-08 16:49:03,masterq32,muss ich später auch machen
+2015-10-08 16:49:32,Sur3,"aber jetzt wo mein LBA48-Treiber repariert ist kann ich endlich screenshots speichern, dann schalt ich mal die FAT-Schreibunterstützung an und hoffe daß die partition nicht schrott geht.. :D"
+2015-10-08 16:49:42,masterq32,:D
+2015-10-08 16:52:29,Sur3,huch was is denn jetzt verkehrt..
+2015-10-08 16:52:30,Sur3,Image format was not specified for '/dev/sda2' and probing guessed raw.
+2015-10-08 16:52:30,Sur3,"         Automatically detecting the format is dangerous for raw images, write operations on block 0 will be restricted."
+2015-10-08 16:52:50,Sur3,das hat qemu ja noch nie angezeigt muß ein neues nerviges feature sein
+2015-10-08 17:12:23,Sur3,so drückt mal die dauem das der screenshot geklappt hat.. ^^
+2015-10-08 17:12:45,masterq32,*drück*
+2015-10-08 17:14:34,Sur3,ok die RGB-Werte sind irgendwie vertauscht aber der Screenshot ist in der PArtition angelegt worden.. http://s1.postimg.org/yeguq6crx/image.png
+2015-10-08 17:15:09,Sur3,"scheinbar benutzt PPM eine andere RGB reihenfolge als VGA, das muß ich dann wohl noch konvertieren ^^"
+2015-10-08 17:15:19,masterq32,PPM nutzt afaik rgb
+2015-10-08 17:15:26,masterq32,wenn du P6 nimmst
+2015-10-08 17:15:35,Sur3,jop is P6
+2015-10-08 17:15:35,masterq32,vga wird bgra haben
+2015-10-08 17:15:41,masterq32,aber sieht cool aus
+2015-10-08 17:16:04,masterq32,http://mq32.de/?x76e
+2015-10-08 17:16:07,masterq32,bei mir siehts grade noch so aus
+2015-10-08 17:16:37,Sur3,"joa findest du es ist überladen? ich wollte alles zeigen was mein os kann, also mandelbrot, tetris, datum, uhrzeit der editor im hintergrund und die ebenenverschiebung das sind sozusagen fensterlose rahmen.. ^^"
+2015-10-08 17:17:10,masterq32,ist absolut überladen
+2015-10-08 17:17:17,masterq32,aber machts cool für ne kurze übersicht
+2015-10-08 17:17:28,masterq32,wie nutzt du VGA?
+2015-10-08 17:17:39,Sur3,ok dann reparier ich mal die farben und lad es auf die wikiseite hoch ^^
+2015-10-08 17:17:56,masterq32,:D
+2015-10-08 17:18:02,Sur3,"VGA nutz ich als lineare videoadresse, also hab dafür 4MB Ram reserviert"
+2015-10-08 17:18:21,Sur3,hat nen eigenen Deskriptor
+2015-10-08 17:18:46,Sur3,push word[CS:VideoSegSel]
+2015-10-08 17:18:46,Sur3,    pop word ds
+2015-10-08 17:18:46,Sur3,    
+2015-10-08 17:18:57,Sur3,und dann kann man malen ^^
+2015-10-08 17:20:25,Sur3,ist 1024x768 und dann liegt da bei den meisten programmen noch der hyperebenenprojektionstreiber dazwischen der transparenz und ebenenverschiebung bietet
+2015-10-08 17:20:33,masterq32,nutzt du VBE?
+2015-10-08 17:21:07,masterq32,oder wie erreichst du die auflöäsung?
+2015-10-08 17:21:29,Sur3,"jop nutze glaubich VBE, hab 3 jahre nicht mehr daran programmiert, muß ich grad mal nachgucken.."
+2015-10-08 17:21:35,masterq32,:D
+2015-10-08 17:21:43,masterq32,weil VGA kann max. 640x480 bildmodus
+2015-10-08 17:23:12,Sur3,also ich benutz erst int 0x10 mit ax=0x4f01 cx=0x4118 um den modus zu wechseln..
+2015-10-08 17:23:30,masterq32,du bist mit 16 bit unterwegs?
+2015-10-08 17:23:47,Sur3,nee das mach ich bevor ich in den PM wechsel
+2015-10-08 17:23:50,masterq32,ah
+2015-10-08 17:24:31,Sur3,aso und dann führ ich das heir aus is irgendwie doppelt gemoppelt..
+2015-10-08 17:24:32,Sur3,"	mov	    bx,04118h ;""??""   ;SVGA-Screen  118h"
+2015-10-08 17:24:32,Sur3,"	mov	    ax,04F02h ;""O?""      ;1024x768 x 24/32Bit"
+2015-10-08 17:24:32,Sur3,	int	    010h
+2015-10-08 17:25:02,masterq32,0x10 klingt nach bios mit VBE
+2015-10-08 17:25:20,Sur3,joa müßt es auch sein
+2015-10-08 17:25:37,masterq32,ich bleib bei VGA mit 640x480x4 Farben
+2015-10-08 17:25:45,masterq32,ähm 16 farben :D
+2015-10-08 17:25:46,Sur3,aso joa und im protected mode rufe ich dann noch den VESA BIOS ab
+2015-10-08 17:26:23,Sur3,ahh ok joa VGA hat auf jedenfall den vorteil daß man textunterstützung hat?
+2015-10-08 17:26:44,Sur3,ich hab jeden pixel meiner ANSI-Schriftzeichen programmiert ^^
+2015-10-08 17:28:08,masterq32,ähm dazu kleine sache
+2015-10-08 17:28:45,masterq32,objdump -B i386 -I binary -O elf32-i386 input output.o
+2015-10-08 17:28:49,masterq32,bekannt?
+2015-10-08 17:29:07,masterq32,http://mq32.de/?x770
+2015-10-08 17:29:11,masterq32,16 farben reichen definitiv :D
+2015-10-08 17:29:24,Sur3,"swap eax    ror eax,8  <<-ob das effektiv wäre um die RGB-Werte zu tauschen?"
+2015-10-08 17:29:55,masterq32,klingt gut
+2015-10-08 17:30:20,Sur3,ich bin mir nur nich sicher ob der swap befehl optimiert ist oder arschlangsam
+2015-10-08 17:30:51,Sur3,ok das 16 farben bild ich echt ganz hübsch mit dithering sieht man dann kaum noch nen unterschied zu 16 bit ;)
+2015-10-08 17:31:01,masterq32,GIMP halt
+2015-10-08 17:31:21,Sur3,joa du mußt das dithern statt nur die farben zu reduzieren dann wirds noch besser
+2015-10-08 17:31:35,masterq32,hehe
+2015-10-08 17:31:37,masterq32,kann ich sicher machen
+2015-10-08 17:31:44,masterq32,aber das kommt zu später zeit :D
+2015-10-08 17:32:26,Sur3,Floyd-Steinberg ftw ^^
+2015-10-08 17:32:39,masterq32,lass mal draufwerfen
+2015-10-08 17:33:03,Sur3,aber ich geb zu ich hab auch noch kein dithering oder antialiasing meine linien sehen noch total eckig aus das einzige was das kaschiert ist die hohe auflösung :D
+2015-10-08 17:34:06,masterq32,WAT?
+2015-10-08 17:34:18,masterq32,http://mq32.de/?x771
+2015-10-08 17:34:23,masterq32,ich lass mich gern verarschen :D
+2015-10-08 17:34:36,Sur3,"wieso veraraschen, sieht doch gut aus"
+2015-10-08 17:34:42,masterq32,ja das mein ich damit 
+2015-10-08 17:34:46,masterq32,sind immer noch 16 farben :D
+2015-10-08 17:35:11,Sur3,"hehe joa sag ich ja mit dithering sieht man kaum noch nen unterschied, FLoyd-Steinberg 4theWin"
+2015-10-08 17:35:33,masterq32,total
+2015-10-08 17:35:59,Sur3,hehe :D
+2015-10-08 17:36:10,masterq32,muss ja bei so ner mießen farbtiefe
+2015-10-08 17:36:26,Sur3,jop den wirst du vor mir programmiert haben ^^
+2015-10-08 17:36:39,Sur3,ich muß erstmal png implementieren ^^
+2015-10-08 17:36:44,masterq32,öhm
+2015-10-08 17:36:48,masterq32,mein aktueller Stand:
+2015-10-08 17:36:58,masterq32,ich kann auf eine taste drücken und dann ploppt ein text auf 
+2015-10-08 17:37:00,masterq32,ein mal :D
+2015-10-08 17:37:10,Sur3,LOL XD
+2015-10-08 17:37:39,Sur3,so hab ich auch mal angefangen damals als ich mein os noch in debug in dos geschrieben habe xD
+2015-10-08 17:38:14,masterq32,aber
+2015-10-08 17:38:16,masterq32,ich möchte dazu anmerken
+2015-10-08 17:38:23,Sur3,und dann jedesmal neustart um den code zu testen und hoffen daß der pc nicht durchbrennt xD
+2015-10-08 17:38:32,masterq32,"der code, der den Text ausgibt"
+2015-10-08 17:38:39,masterq32,läuft in einer Virtuellen Machine :D
+2015-10-08 17:38:40,Sur3,fasm und qemu sind da shcon ne rapide verbesserung xD
+2015-10-08 17:38:56,Sur3,VM hatte ich halt damals noch nciht
+2015-10-08 17:39:10,masterq32,"VM im Sinne von .NET oder Java, nicht Qemu oder VMWare"
+2015-10-08 17:39:17,Sur3,aso
+2015-10-08 17:39:20,masterq32,jo
+2015-10-08 17:39:26,masterq32,komplett self made :P
+2015-10-08 17:39:27,Sur3,dein os ist in java geschrieben?
+2015-10-08 17:39:32,masterq32,nein
+2015-10-08 17:39:42,Sur3,aso du hast ne eigene VM entwickelt?
+2015-10-08 17:39:42,masterq32,aber das wird n bisschen so :P
+2015-10-08 17:39:44,masterq32,ja
+2015-10-08 17:39:46,masterq32,so nebenher
+2015-10-08 17:39:48,masterq32,ausversehen :D
+2015-10-08 17:40:14,Sur3,"verstehe sowas in der art hab ich auch ncoh vor, mein os soll so ne scriptsprache implementieren die er bei tastendruck und so ausführen kann"
+2015-10-08 17:40:22,masterq32,hehe genau das ist der plan
+2015-10-08 17:40:33,Sur3,*check*
+2015-10-08 17:40:37,masterq32,"die VM supportet Multithreading, Multiprozess, Native Calls, blabla"
+2015-10-08 17:40:46,Sur3,oki cool
+2015-10-08 17:40:47,masterq32,"hab nen compiler, ne intermedia language und seit heute einen ""hochsprachen""compiler"
+2015-10-08 17:40:59,masterq32,verdammt
+2015-10-08 17:41:03,masterq32,ich habe heute einen compiler geschrieben
+2015-10-08 17:41:09,masterq32,irgendwie geht das noch nicht ganz in meinen kopf :D
+2015-10-08 17:41:11,Sur3,"nice, ich muß erstmal nen assembler und disassmebler für mein OS schreiben.. ^^"
+2015-10-08 17:41:16,masterq32,:D
+2015-10-08 17:41:21,masterq32,sind aber noch nicht auf dem OS lauffähig
+2015-10-08 17:41:29,Sur3,asooo xD
+2015-10-08 17:41:38,masterq32,ja klar
+2015-10-08 17:41:43,masterq32,muss ja irgendwie anfangen
+2015-10-08 17:41:45,masterq32,compilerbau und so
+2015-10-08 17:41:59,masterq32,man baue einen compiler für eine plattform und für eine sprache
+2015-10-08 17:42:13,Sur3,selbst die compilierten C-Programme machen teilweise probleme glaub die kommen nicht mit der segmentierung klar
+2015-10-08 17:42:15,masterq32,"dann baue man in der sprache den compiler neu, sodass er auf der plattform ausgeführt werden kann :D"
+2015-10-08 17:43:46,Sur3,"also wenn ich ein array definiere int a[2]={1,2} dann geht es aber wenn ich int a[2]={0} definiere dann geht es ncith er will alle arrays vorher belegt haben sonst zicken die rum -.-"
+2015-10-08 17:44:01,Sur3,kp was gcc da für nen mist macht
+2015-10-08 17:44:39,masterq32,hm
+2015-10-08 17:45:39,Sur3,"dummes ppm-format, leb wohl      rep movsd  :'("
+2015-10-08 17:45:47,masterq32,^^
+2015-10-08 17:46:33,Sur3,oder ich speicher es doch so und schreib dann nen konverter zwischen meinem OS-PPM und standard PPM.. xD
+2015-10-08 17:46:56,masterq32,:D
+2015-10-08 17:47:34,Sur3,dann nenn ich das format halt einfach Q6 statt P6 dann sollte das sicher sein :D
+2015-10-08 17:48:02,masterq32,^^
+2015-10-08 17:49:00,Sur3,nee S ist noch besser oder V für VGA/VESA
+2015-10-08 17:49:34,Sur3,"gibts nicht nen format was standardmäßig die vertauschten pixel hat, das problem müßte es doch generell geben?"
+2015-10-08 17:49:42,masterq32,bmp?
+2015-10-08 17:49:53,Sur3,echt bei bpm ist das normal?
+2015-10-08 17:50:02,masterq32,bmp/dib
+2015-10-08 17:50:20,masterq32,0xFF ist blau
+2015-10-08 17:50:28,masterq32,0xFF00 grün
+2015-10-08 17:50:31,masterq32,0xFF0000 rot
+2015-10-08 17:50:34,masterq32,haut das hin?
+2015-10-08 17:51:02,masterq32,https://de.wikipedia.org/wiki/Windows_Bitmap
+2015-10-08 17:51:56,Sur3,hm müßte passen
+2015-10-08 17:52:03,masterq32,joar
+2015-10-08 17:53:11,Sur3,"mir ist gradnoch ne andere alternative eingefallen, wenn ich movsb statt movsd verwende drehen sich vllt die farben richtig, is ja dieses komische litte/big ding"
+2015-10-08 17:53:25,masterq32,sollte passieren :D
+2015-10-08 17:53:35,Sur3,dauert dann 4mal so lang aber trotzdem besser als manuell die farben zu tauschen
+2015-10-08 17:53:48,masterq32,movsd swappt halt random farben durch die gegend :D
+2015-10-08 17:54:53,masterq32,okay
+2015-10-08 17:54:55,masterq32,mir fällt grade auf
+2015-10-08 17:55:04,masterq32,meine VM kann gar keine bitwise operations
+2015-10-08 17:55:05,masterq32,ups :D
+2015-10-08 17:55:09,masterq32,more operators! :D
+2015-10-08 17:55:24,Sur3,lol ich habs geschafft mein fat32 is verwirrt.. xD
+2015-10-08 17:55:40,Sur3,hab ausversehn zwei dateien mit dem selben namen angelegt und linux zeigt die sogar beide an xD
+2015-10-08 17:56:08,masterq32,lol :D
+2015-10-08 17:56:13,masterq32,lösch mal eine :D
+2015-10-08 17:56:31,Sur3,gleich ich versuch erstmal ob ich die getrennt öffnen kann :D
+2015-10-08 17:56:46,masterq32,^^
+2015-10-08 17:56:51,masterq32,cat *
+2015-10-08 17:56:54,Sur3,ok mein bildbetrachter öffnet immer nur die erste
+2015-10-08 17:57:13,Sur3,ups cat * gibt müll aus xD
+2015-10-08 17:57:26,Sur3,ich benenn mal eine um :D
+2015-10-08 17:57:36,Sur3,wtf
+2015-10-08 17:57:57,Sur3,beim umbenennen wurden beide umbenannt und eine neue mit dem alten namen erstellt aus zwei wird drei xD
+2015-10-08 17:58:24,masterq32,lol :D
+2015-10-08 17:59:57,Sur3,ok movsb scheint die farben auch zu verdrehen nur auf ne andere weise :D
+2015-10-08 18:00:06,masterq32,okay
+2015-10-08 18:00:10,masterq32,dann sollten sie korrekter verdreht sein
+2015-10-08 18:00:32,Sur3,dannbleib ich beim schnelleren movsd und mach das zum standardformat für kernel-screenshots ^^
+2015-10-08 18:00:43,masterq32,okay
+2015-10-08 18:00:58,masterq32,tu das .D
+2015-10-08 18:01:06,masterq32,ich werd mir wohl heute abend überlegen
+2015-10-08 18:01:23,masterq32,wie ich das mit den operatoren in meiner VM löse :D
+2015-10-08 18:01:41,Sur3,xlat
+2015-10-08 18:01:46,masterq32,xlat?
+2015-10-08 18:01:51,masterq32,"grade habe ich ""add,mul,div,sub,mod,cmp_eq, cmp_not_eq,...."" als instruktionen"
+2015-10-08 18:02:10,Sur3,joa mit xlat kannst du bis zu 256 implementieren
+2015-10-08 18:02:42,masterq32,meine VM ist kein X86
+2015-10-08 18:02:52,masterq32,habe keine register
+2015-10-08 18:02:58,Sur3,aso
+2015-10-08 18:03:07,Sur3,dachte es geht um den interpreter
+2015-10-08 18:03:16,masterq32,nene
+2015-10-08 18:03:27,masterq32,was eigentlich ganz gut wäre:
+2015-10-08 18:03:37,Sur3,du brauchst auf jedenfall noch kontrollfluß und ein-/ausgabe-befehle
+2015-10-08 18:03:46,masterq32,hm?
+2015-10-08 18:03:56,masterq32,ich kann von 1-5 zählen und das ausgeben lassen :D
+2015-10-08 18:04:02,masterq32,theoretisch kann ich sogar mehr
+2015-10-08 18:04:08,masterq32,lass ma kurz testen.... :D
+2015-10-08 18:04:13,masterq32,binapply $operatorID
+2015-10-08 18:04:15,masterq32,wäre eine option
+2015-10-08 18:04:17,Sur3,ok schleifen sind vorhanden?
+2015-10-08 18:04:26,masterq32,und add ist dann halt nen shorthand für binapply 10
+2015-10-08 18:04:47,masterq32,http://pastebin.com/s13ex8ZZ
+2015-10-08 18:04:51,masterq32,das ist grade der code für das OS
+2015-10-08 18:05:33,Sur3,was macht der load befehl?
+2015-10-08 18:05:37,masterq32,ah
+2015-10-08 18:05:57,masterq32,load offset lädt einen wert vom stack[offset] und pusht den auf den stack
+2015-10-08 18:06:15,masterq32,load 0 lädt hier also den integer von zeile 10
+2015-10-08 18:06:23,Sur3,und load 0 macht dann sinn?
+2015-10-08 18:06:39,masterq32,"okay, kurz ein paar infos"
+2015-10-08 18:06:48,masterq32,jmp erstellt einen rücksprungkontext
+2015-10-08 18:06:57,masterq32,verschiebt den stackoffset
+2015-10-08 18:07:01,masterq32,und macht noch n paar andere dinge
+2015-10-08 18:07:07,masterq32,ähm quatsch
+2015-10-08 18:07:09,masterq32,call macht das 
+2015-10-08 18:07:11,masterq32,jmp springt blos
+2015-10-08 18:07:12,Sur3,jo
+2015-10-08 18:07:28,masterq32,eine funktion pusht am anfang einfach all ihre lokalen variablen auf den stack
+2015-10-08 18:07:47,Sur3,"aso ja da hab ich von gehört, mein os macht das alles über register"
+2015-10-08 18:07:57,masterq32,joar
+2015-10-08 18:07:59,masterq32,auf jeden fall
+2015-10-08 18:08:02,masterq32,ein ret resettet den stack
+2015-10-08 18:08:08,masterq32,man kann sich den stack nicht verschießen
+2015-10-08 18:08:27,masterq32,weil ich hier ne trennung zwischen callstack und datenstack habe
+2015-10-08 18:08:47,masterq32,"okay, man KANN den stack zerschießen, sollte ich wohl mal fixen"
+2015-10-08 18:08:51,Sur3,aso verstehe du benutzt also garkein push/pop?
+2015-10-08 18:08:55,masterq32,doch
+2015-10-08 18:09:10,masterq32,pop zerstört den [top]
+2015-10-08 18:09:19,masterq32,push legt einen neuen immidiate auf den stack
+2015-10-08 18:09:26,masterq32,push ist also immer typenbezogen
+2015-10-08 18:09:30,Sur3,joa aber zur datenübergabe vermeistest du das push/pop=
+2015-10-08 18:09:38,Sur3,aso
+2015-10-08 18:09:49,masterq32,nen function call:
+2015-10-08 18:09:52,masterq32,pushi 10
+2015-10-08 18:09:54,masterq32,call fn 1
+2015-10-08 18:09:58,masterq32,rufe fn mit 1 argument auf
+2015-10-08 18:10:20,Sur3,ok
+2015-10-08 18:10:51,masterq32,"die VM ""verschiebt"" dann den stack so"
+2015-10-08 18:10:57,masterq32,"dass die 1, welche ich gepusht habe"
+2015-10-08 18:11:04,masterq32,jetzt an stack[-1] liegt
+2015-10-08 18:11:33,masterq32,*10
+2015-10-08 18:11:37,masterq32,also die gepushte 10
+2015-10-08 18:11:46,Sur3,komisch ich find den load befehl garnicht bei den x86 opcodes.. o.O
+2015-10-08 18:11:51,masterq32,und beim ret wird der alte stack context hergestellt und alle parameter runtergeworfen
+2015-10-08 18:11:55,darklink,Was ist denn das für ein assembler syntax
+2015-10-08 18:11:56,masterq32,das ist auch kein x86 :D
+2015-10-08 18:12:09,masterq32,ähm Spark für Conductance .D
+2015-10-08 18:12:12,masterq32,also alles selfmade
+2015-10-08 18:12:15,Sur3,asoo das erklärt meine verwirrung :d
+2015-10-08 18:12:22,masterq32,hab ich doch vorhin schon gesagt! :D
+2015-10-08 18:12:27,Sur3,^^
+2015-10-08 18:12:51,masterq32,"danke übrigens, ich hab hier ja quasi angefangen mir tipps für die doku zu geben"
+2015-10-08 18:13:31,Sur3,"no probleme, schrieb einfach fett in die Doku KEIN x86 :D"
+2015-10-08 18:13:42,masterq32,ja
+2015-10-08 18:14:05,Sur3,ich bin mal off meine sis is zu besuch ^^
+2015-10-08 18:14:09,masterq32,hau rein
+2015-10-08 18:14:13,masterq32,"wollte grade auch los, futter zubereiten"
+2015-10-08 18:14:18,Sur3,denne
+2015-10-08 18:46:32,masterq32,so bin auch weg
+2015-10-08 18:46:33,masterq32,cya
+2015-10-08 19:07:50,Jonathan,Moin
+2015-10-08 20:36:52,Sur3,jetzt wird mir einiges klar ich hab sowohl hexchat als auch xchat installiert hab mich schon gewudnert warum ich mal neuron und mal Sur3 hier heiße.. xD
+2015-10-08 20:38:21,darklink,Könntest du mir einen gefallen tun?
+2015-10-08 20:38:42,Sur3,welchen?
+2015-10-08 20:39:29,darklink,"könntest du bitte utf-8 als encoding nutzen? Das ist in diesem channel ""pflicht"""
+2015-10-08 20:40:12,darklink,Außerdem sehen weiße fragezeichen-blöcke blöd aus
+2015-10-08 20:40:37,Sur3,"aso ich hab utf8/irc hybridcodierung hier eingestellt, ich wechsel mal kurz auf heychat und guck was da eingestellt ist, weil ich auf lange sicht nur noch hexchat benutzen werde.."
+2015-10-08 20:42:18,neuron,"ok hier is utf8 eingestellt, obwohl ich nicht ganz verstehe was an dem irc-standard falsch ist"
+2015-10-08 20:42:27,darklink,> hybridkodierung
+2015-10-08 20:43:16,neuron,is hier jemand über sein eigenes OS on in dem IRC?
+2015-10-08 20:44:33,darklink,"Das heißt für alles, was man im iso-8859-1 encoding darstellen kann, wird mit iso-8859-1 kodiert, alles andere mit UTF-8"
+2015-10-08 20:45:05,darklink,das unterstützen nicht alle clients oder UTF8-decoder
+2015-10-08 20:45:35,neuron,"hm ok, ist aber doch eigentilch der standard im IRC, verstehe nicht daß IRC-Clients das nicht unterstützen"
+2015-10-08 20:45:53,darklink,"die können dann mit dem einzelnen zeichen, welches nicht passt, tun was sie wollen"
+2015-10-08 20:46:08,neuron,ok is es denn jetzt besser mit nur utf8?
+2015-10-08 20:46:29,darklink,die meisten ersetzen das durch einen schwarzen block mit fragezeichen
+2015-10-08 20:46:32,darklink,ja
+2015-10-08 20:47:48,Paddy,"neuron: Ich glaube, die meisten Hobby-OSse können sonst zu wenig, dass man sie die ganze Zeit laufen lassen und im IRC rumhängen würde"
+2015-10-08 20:48:32,darklink,týndur kann das
+2015-10-08 20:48:43,neuron,"aso, joa meins hat noch nichtmal netzwerktreiber, aber das soll sich auch ändern.. ^^"
+2015-10-08 20:48:48,darklink,und es gibt ein OS für irc
+2015-10-08 20:48:59,Paddy,"Können schon, aber da ist dann halt jemand hier, wenn er was testet"
+2015-10-08 20:50:20,Paddy,"Und ja, mein persönliches OS hat bisher auch kein Netzwerk, deswegen bin ich höchstens mal mit tyndur im IRC"
+2015-10-08 20:50:33,neuron,"btw weiß jemand wie ich in c am besten ne dateiendung änder? also ich hab argv[1] und will da in dem string die endung .svm in einen neuen string mit .ppm ändern, wie kann ich das am besten parsen?"
+2015-10-08 20:51:42,Paddy,Die letzten vier Zeichen anschauen und dann überschreiben?
+2015-10-08 20:52:11,neuron,hm ok klingt schlüssig
+2015-10-08 20:53:11,Paddy,"len = strlen(s); if (len >= 4 && !strcmp(s + len - 4, "".svm"")) { strcpy(s + len - 4, "".ppm""); }"
+2015-10-08 20:53:13,Paddy,Irgendwie so
+2015-10-08 20:53:14,neuron,muß ich da vorher nen stringcpy machen oder darf man argv[] überschreiben?
+2015-10-08 20:53:56,Paddy,Ist meines Wissen schreibbar
+2015-10-08 20:54:01,neuron,cool danke
+2015-10-08 20:55:02,Paddy,"Die Frage ist natürlich, ob du es überschreiben _willst_ und das Original wirklich nicht mehr brauchst."
+2015-10-08 20:57:21,neuron,joa das original hab ich bereits benutzt um eine datei zu öffnen und ich öffne als nächstes die ausgabedatei mit anderer endung
+2015-10-08 20:58:12,neuron,und danach kann ich ja ne filepointer benutzen und brauch die dateinamen nicht mehr
+2015-10-08 20:58:28,Paddy,"Außer du musst noch irgendwo eine Fehlermeldung ausgeben, die sich auf die erste Datei bezieht oder so"
+2015-10-08 20:58:49,neuron,"hm ok keine schlechte idee, dann sollte ich vllt doch malloc benutzen"
+2015-10-08 20:59:18,Paddy,strdup()
+2015-10-08 20:59:39,Paddy,Oder hast du sowas nicht?
+2015-10-08 21:00:06,neuron,"doch ist nen linux prog, kannte die funktion bloß nicht, cool danke ^^"
+2015-10-08 21:01:50,neuron,der hintergrund ist ich schreib ein kleines linux prog um meine screenshots im svm (Surlonische/Screenshot VGA/VESA Map) Format in ein standardformat PPM P6 umzuwandeln indem ich die RGB-Werte entsprechend tausche. ^^
+2015-10-08 21:02:06,Paddy,"Soll ich dir einen Tip geben, wie man die libc kennenlernt?"
+2015-10-08 21:02:21,neuron,indem man sie implementiert?
+2015-10-08 21:02:23,Paddy,"Man portiert Programme auf sein OS und rüstet die ganzen Funktionen nach, die die alle bruachen *g*"
+2015-10-08 21:02:23,darklink,Header angucken
+2015-10-08 21:03:19,neuron,haha joa das mit dem libc-portieren war mir zu kompliziert ich hab meine eigene libc geschrieben mit der ich auch malen und farbtexte ausgeben kann.. http://www.lowlevel.eu/wiki/SurO#Beispiel-Programm_f.C3.BCr_die_zugeh.C3.B6rige_C-Bibliothek
+2015-10-08 21:04:01,darklink,Meine libc besteht nur aus bildschirmausgabe.
+2015-10-08 21:04:18,darklink,da ist meine libc++ viel besser
+2015-10-08 21:04:50,neuron,libc++? wasn das fürn unsinn? man kompiliert doch c++ einfach zu c
+2015-10-08 21:04:52,darklink,das unterstützt sogar schreiben auf COM1
+2015-10-08 21:05:44,darklink,Hab halt keinen bock den kernel in c zu schreiben
+2015-10-08 21:05:55,darklink,ich schreib nur die HAL in c
+2015-10-08 21:07:04,neuron,"ich wüßte garnciht wie man einen kernel in c schreiben kann, da brauch man doch lauter inline-assembler und ob der compiler das richtig übersetzt mit übergängen zwischen 16 und 32 bit code etc ist auch fragwürdig, da hab ich lieber gleich in fasm geschrieben"
+2015-10-08 21:07:36,Paddy,Da wirst du aber nicht weit kommen
+2015-10-08 21:07:49,XanClic,"Och, IRC kann man damit schon schaffen"
+2015-10-08 21:07:54,Paddy,*g*
+2015-10-08 21:08:06,neuron,"doch eigentlich läuft mein os recht gut, aber ich hab auch nen jahrzehnt dran geschireben ^^"
+2015-10-08 21:08:44,Paddy,"Das heißt, es ist ein bisschen älter als tyndur noch?"
+2015-10-08 21:08:48,darklink,mein os könnte man #pf os nennen
+2015-10-08 21:09:26,Paddy,neuron: Wechselst du öfter zwischen PM und RM hin und her oder wie?
+2015-10-08 21:09:45,darklink,aber ne. Ich habe erstmal paging entfernt bis ich es zum 10. mal neuschreibe
+2015-10-08 21:10:19,neuron,"hm lass mich rechnen also angefangen hatte es in qbasic und ich hab dann immer mehr asm gerbaucht um maus und so anzusteuern daß ich irgendwann komplett auf asm gewechselt bin, ich überschlag grad mal 10 Jahre müßte hinkommen wenn man von dem Basic-original ausgeht eher 15 Jahre"
+2015-10-08 21:10:57,Paddy,"Paging entfernen ist zwar effektiv darin, #PFs loszuwerden, aber ob du deine Bugs damit losbist, ist die andere Frage ;-)"
+2015-10-08 21:11:05,neuron,@darklink paging hab ich nicht nur ab und an #gf wegen meiner segmentierung ^^
+2015-10-08 21:11:24,Paddy,#GP meinst du?
+2015-10-08 21:11:30,neuron,jop ^^
+2015-10-08 21:12:11,Paddy,"Spannend wird es ja immer erst, wenn man die komischen Exceptions kriegt, von denen man nichtmal die Abkürzung weiß"
+2015-10-08 21:13:00,neuron,"ich hab grad keinen aktuellen screenshot, mein letzter fehler war 6! glaub das ist invalid opcode oder so aber den hab ich behoben, ich lad man nen älteren gp-screenshot hoch.."
+2015-10-08 21:13:57,Paddy,"Jo, 6 ist #UD"
+2015-10-08 21:14:17,Paddy,Der kommt auch noch einigermaßen oft vor
+2015-10-08 21:14:25,Paddy,"Vor allem, weil das meine Implementierung von BUG() ist ;-)"
+2015-10-08 21:14:52,XanClic,"Wenn ich #UD bekomme, heißt das im Allgemeinen „Kernel neu schreiben“"
+2015-10-08 21:15:04,XanClic,Weil das meistens „Stack ist beim iret kaputt“ war
+2015-10-08 21:15:12,darklink,^^
+2015-10-08 21:15:19,Paddy,"""Kernel neu schreiben"" ist bei mir in der Regel nur, wenn ich den Code lese *g*"
+2015-10-08 21:15:32,XanClic,"Wer sowas macht, ist auch wirklich selber schuld ;-)"
+2015-10-08 21:15:45,Paddy,"Hm, wobei das eigentlich gar nicht stimmt."
+2015-10-08 21:16:01,neuron,"hier mein error-handler, die oberen zwei zeilen sind die ausgabe meines error-handlers das war nen spinlock-test meiner uhr-anzeige und die rot-grünen kästchen unten sind mein taskmanager der mir anzeig wieviele tasks auf wievielen kernen grad aktiv sind.. http://postimg.org/image/tecrcnhyn/"
+2015-10-08 21:16:02,darklink,wenn ich #ud bekomme dann liegt es an qemu
+2015-10-08 21:16:03,Paddy,"Eigentlich basiert Paddygree immer noch auf Code, der älter als tyndur ist."
+2015-10-08 21:16:58,Paddy,"""Der Compiler/Emulator ist kaputt"" sind Ausreden, denen ich generell eher skeptisch gegenüberstehe ;-)"
+2015-10-08 21:17:17,darklink,aufm pc funktionierts dann meist
+2015-10-08 21:17:40,darklink,"und wenns aufm emu funktioniert, funktioniert es nicht aufm pc"
+2015-10-08 21:17:43,XanClic,"Paddy, kommt auf den IRC-Channel an"
+2015-10-08 21:17:45,Paddy,"Je nachdem von wem sie kommen natürlich. Ich kenne ein paar wenige, die mit diesen Aussagen dann vermutlich auch recht haben."
+2015-10-08 21:17:52,XanClic,in #qemu finde ich „qemu ist kaputt“ durchaus valide ;-)
+2015-10-08 21:17:56,Paddy,darklink ist bisher nicht in dieser Liste
+2015-10-08 21:18:22,neuron,"hm daß sachen auf einem pc liefen und auf einem anderen nicht hatte ich damals bei hardwaremultitasking, das hat ewig gedauert bis das stabil überall lief, aber irgendwann hab ich dann auf sw gewechselt weil das doch schneller schien warum auch immer"
+2015-10-08 21:18:23,Paddy,"Das hängt auch in #qemu davon ab, wer die Aussage macht"
+2015-10-08 21:18:40,Paddy,"Also ""qemu ist kaputt"" von mir aus, aber ""qemu funktioniert nicht richtig"" ist nochmal was anderes ;-)"
+2015-10-08 21:18:59,XanClic,"Ja gut, kaputt und kaputt eben"
+2015-10-08 21:19:37,darklink,"in #zsnes ist passt beides ""zsnes ist kaputt"" ""zsnes funktioniert nich richtig"""
+2015-10-08 21:19:40,neuron,und dann mußte cih wegen qemu nen neuen bootloader schreiiben weil er die alten biosfunktionen nciht mehr unterstützt hat in ner neuen version
+2015-10-08 21:19:47,Paddy,"Hardwaremultitasking ist auch toll, wenn man Emulatoren verwirren will."
+2015-10-08 21:20:23,Paddy,"Wer einen eigenen Bootloader schreibt, wollte es so"
+2015-10-08 21:20:39,neuron,och das hw multitasking lief aber einigermaßen in qemu es war nur arschlangsam ^^
+2015-10-08 21:20:40,darklink,ich kann emulatoren einfacher verwirren
+2015-10-08 21:21:18,Paddy,Verwirren im Sinn von sie tun nicht mehr das richtige?
+2015-10-08 21:21:25,darklink,jo
+2015-10-08 21:21:50,darklink,ungemappten speicherbereich lesen
+2015-10-08 21:21:54,neuron,@darklink wenn du nen code hast um aus qemu rauszuspringen her damit :D
+2015-10-08 21:22:34,Paddy,darklink: Dann bekommst du einen #PF. Das ist meines Erachtens genau die richtige Reaktion.
+2015-10-08 21:22:37,neuron,gibt ungemappten speicherbereich lesen nicht einfach nur ne #pf?
+2015-10-08 21:22:44,darklink,kommen bei vielen emulatoren (egal was für welche) nicht die richtigen ergebnisse
+2015-10-08 21:22:50,Paddy,Quatsch
+2015-10-08 21:23:00,Paddy,Dann würde kein besseres OS vernünftig drin laufen
+2015-10-08 21:23:13,darklink,ich hab nicht von pc-emulatoren geredet
+2015-10-08 21:23:26,darklink,sondern von emulatoren allgemein
+2015-10-08 21:23:46,neuron,einmal lief mein OS in qemu schneller als nativ das hat mich etwas verwirrt ^^
+2015-10-08 21:23:56,darklink,^^
+2015-10-08 21:24:19,darklink,ich programmiere btw kein x86 assembler mehr
+2015-10-08 21:24:28,darklink,nurnoch 65c816 und arm
+2015-10-08 21:24:41,Paddy,Ich vermeide Assembler allgemein soweit es geht
+2015-10-08 21:24:50,darklink,ich auch
+2015-10-08 21:25:07,darklink,bei 65c816 gehts nicht anders
+2015-10-08 21:25:13,neuron,"joa ich hab auch überlegt mein OS auf ARM, Amiga500 und AVR zu portieren aber bei nem assmebler-OS dauert das zu lange an der x86 version schreib ich ja schon ewig xD"
+2015-10-08 21:25:20,darklink,da keine guten c compiler
+2015-10-08 21:25:38,Paddy,Von diesem Problem kann Jonathan ein Lied singen *g*
+2015-10-08 21:25:49,darklink,von welchem
+2015-10-08 21:25:54,Paddy,Kein guter C-Compiler
+2015-10-08 21:25:58,darklink,ah
+2015-10-08 21:26:19,Paddy,"Der ist übrigens auf meiner Liste von Leuten, bei denen ich ""der Compiler ist kaputt"" erstmal glaube ;-)"
+2015-10-08 21:26:22,darklink,"cc65 ist leider ""nur"" für 65c02"
+2015-10-08 21:26:35,darklink,und 6502
+2015-10-08 21:27:39,neuron,was kann denn dieser 65c so allgemein?
+2015-10-08 21:27:43,darklink,"und dann gibts nen 65c816 port von tcc, aber der kann nur c89"
+2015-10-08 21:28:44,neuron,scheint relativ wenig register zu haben?
+2015-10-08 21:29:08,darklink,https://en.m.wikipedia.org/wiki/WDC_65C02 
+2015-10-08 21:29:11,darklink,ja
+2015-10-08 21:29:28,darklink,das einzige register wo man mit rechnen kann ist A
+2015-10-08 21:29:54,Jonathan,"Paddy: Hey, das find ich ja echt nett von dir *g*"
+2015-10-08 21:29:54,darklink,also nicht wundern wenn ich nur mit eax rechnen sollte :P
+2015-10-08 21:30:33,darklink,X und Y sind zähler und indizieren speicheraddressen
+2015-10-08 21:30:43,neuron,is ja nervig dann is man ja nurnuch am stacken
+2015-10-08 21:30:52,neuron,*nurnoch
+2015-10-08 21:32:06,darklink,Nö
+2015-10-08 21:32:14,darklink,stack ist zu lahm
+2015-10-08 21:32:27,darklink,ist ja inkrementieren und speichern
+2015-10-08 21:32:35,darklink,dekrementieren*
+2015-10-08 21:32:46,neuron,is doch stack
+2015-10-08 21:33:02,Jonathan,Klar ist das ein Stack
+2015-10-08 21:33:05,Jonathan,Aber ein Stack ohne Cache und alles
+2015-10-08 21:33:11,neuron,oder hat der noch nen stackl zusätzlich der langsamer ist als inkrementieren und speichern? o.O
+2015-10-08 21:33:18,darklink,man benutzt eher scratch ram
+2015-10-08 21:33:29,neuron,aso heißt das ok ^^
+2015-10-08 21:33:30,darklink,wo man einfach irgendwas speichert
+2015-10-08 21:33:38,Jonathan,"Mit ner 8-Bit-ALU, die für jedes Stack-Dekrement/etc 2x mit Carry auf den 16 Bit rechnen muss... :D"
+2015-10-08 21:33:51,neuron,und hat der wenigstens nen ordentlichen ADC oder was kann man damit machen?
+2015-10-08 21:33:56,darklink,ja
+2015-10-08 21:34:17,darklink,aber der nimmt keine register
+2015-10-08 21:34:54,darklink,das heißt der addiert A mit dem argument oder ner ramaddresse
+2015-10-08 21:35:02,Jonathan,"Wenn man mit mehreren Sachen rechnen will, schiebt man meistens so viel wie möglich zwischen den einzelnen Registern hin und her"
+2015-10-08 21:35:17,Jonathan,INC/DEC gibt's übrigens für alle Register
+2015-10-08 21:35:21,darklink,ja
+2015-10-08 21:35:36,darklink,für alle gp register
+2015-10-08 21:35:37,Jonathan,"Und ein paar grundlegende 16-Bit-Befehle, die dann aber intern mit Carry rechnen (aber trotzdem schneller sind)"
+2015-10-08 21:35:43,darklink,ja
+2015-10-08 21:36:00,Jonathan,Halt eine CPU aus dem letzten Jahrhundert *g*
+2015-10-08 21:36:09,darklink,mvp und mvn :P
+2015-10-08 21:36:35,neuron,aso mit ADC meinte ich jetzt aber Analog-Digital-Übersetzer
+2015-10-08 21:36:43,Jonathan,Nö
+2015-10-08 21:36:44,darklink,äh
+2015-10-08 21:36:50,Jonathan,"Das ist ne reine CPU, kein Mikrocontroller"
+2015-10-08 21:36:56,neuron,asoo
+2015-10-08 21:36:57,Jonathan,Der Z80 hat nicht mal RAM/Flash intern ^^
+2015-10-08 21:37:06,darklink,^^;
+2015-10-08 21:37:17,darklink,wie der 65c816
+2015-10-08 21:37:22,Jonathan,"Muss man erst mal nen Chipsatz dran basteln, bevor sich da irgendwas tut :P"
+2015-10-08 21:37:29,Jonathan,(Im simpelsten Fall ist das ein ROM)
+2015-10-08 21:37:33,neuron,ok dann bleib ich lieber bei avr
+2015-10-08 21:37:37,Jonathan,Ja *g*
+2015-10-08 21:37:43,darklink,^^
+2015-10-08 21:37:48,Jonathan,"Z80 ist nur für Leute, die sich gern jede Menge Frust antun"
+2015-10-08 21:37:54,darklink,^^
+2015-10-08 21:37:58,Jonathan,:P
+2015-10-08 21:37:58,neuron,haha :D
+2015-10-08 21:38:22,darklink,selbes eigentlich auch für 65c816
+2015-10-08 21:39:20,neuron,"ich hab auch mal überlegt nen eigenen pc zusqammenzulöten aus transistoren und logikgattern, dann könnte ich mein eigenes instructionset entwickeln"
+2015-10-08 21:40:05,darklink,Ich könnte meinen gba als dualen z80/arm rechner nutzen
+2015-10-08 21:40:30,darklink,"Wissen, wie der gba roms unterscheidet weiß ich schon"
+2015-10-08 21:40:31,neuron,"aber theoretisch braucht man ja garnicht soviel, eine speicherverwaltung, eine shift-funktion und ein nor und man kann alles implementieren, ne addition dauert dann ewig aber es geht :D"
+2015-10-08 21:41:00,neuron,ich hab nur nen game boy color
+2015-10-08 21:41:10,darklink,3 transistoren reichen teilweise schon
+2015-10-08 21:41:36,darklink,not und or
+2015-10-08 21:41:48,neuron,nee mit drei transistoren bekommst du keine speicheransteuerung hin ^^
+2015-10-08 21:41:55,darklink,"Und 1 bit register, und jede menge ram"
+2015-10-08 21:42:02,darklink,Mom
+2015-10-08 21:42:11,darklink,3 transistoren alu
+2015-10-08 21:42:21,darklink,Bestehend aus not und or
+2015-10-08 21:42:21,neuron,"aber stimmt not und or reicht theoretisch, sogar nur ein nor reicht ja ^^"
+2015-10-08 21:42:44,darklink,Wieviele transistoren hat nor?
+2015-10-08 21:42:47,darklink,2?
+2015-10-08 21:43:17,neuron,jop 2
+2015-10-08 21:43:30,darklink,Dann werd ich das mal morgen in logisim implementieren
+2015-10-08 21:43:57,neuron,nand ginge auch sowohl nand als auch nor sind universell
+2015-10-08 21:44:50,darklink,54 bit opcode
+2015-10-08 21:45:01,darklink,16 MByte memory
+2015-10-08 21:45:05,Jonathan,darklink: Papp dir ein Mikrocode-ROM dran und ein bisschen Ansteuerungslogik rund um deine 1-Bit-ALU
+2015-10-08 21:45:19,Jonathan,Eventuell kannst du dann ein bestehendes Instruction Set abbilden
+2015-10-08 21:45:26,darklink,Nö das wird ein OISC
+2015-10-08 21:45:32,neuron,54bit opcode für eine 1bit alu? o.O
+2015-10-08 21:45:44,darklink,Zwei ram adressen
+2015-10-08 21:45:49,Jonathan,Ohje *g*
+2015-10-08 21:45:52,neuron,aso xD
+2015-10-08 21:46:08,darklink,27 bit addressraum
+2015-10-08 21:46:11,Jonathan,Bei sowas würde ich doch eher indirekten Zugriff mit Adresse aus Register empfehlen :P
+2015-10-08 21:46:34,Jonathan,Du kannst ja ein kleines RAM als Register File verbauen
+2015-10-08 21:46:41,Jonathan,Dann hast du massig Register
+2015-10-08 21:46:51,darklink,Nein. Das teil wird nur aus 3 transistoren und nem zähler bestehen
+2015-10-08 21:46:59,Jonathan,Ohje *g*
+2015-10-08 21:47:03,neuron,wenn du nen funktionstüchtigen schaltplan hast gib mir bescheid :D
+2015-10-08 21:47:10,darklink,Ok
+2015-10-08 21:47:13,Jonathan,Ohne indirekte Speicherzugriffe wird das aber nicht so doll laufen ;)
+2015-10-08 21:47:19,darklink,Ich schreib den assembler
+2015-10-08 21:47:23,Jonathan,Und Sprünge wären auch nett :P
+2015-10-08 21:47:33,darklink,Äh ja
+2015-10-08 21:47:49,neuron,springe wenn 
+2015-10-08 21:47:50,darklink,Vieleicht doch 24 bit addressraum?
+2015-10-08 21:47:59,Jonathan,24 Bit klingt schon schöner
+2015-10-08 21:48:12,Jonathan,Aber wozu so viel RAM auf so nem Bastelsystem?
+2015-10-08 21:48:16,Jonathan,Ich würde 16 Bit nehmen
+2015-10-08 21:48:19,Jonathan,Als ersten Versuch
+2015-10-08 21:48:39,darklink,aber dafür 72 bit opcode?
+2015-10-08 21:48:43,Jonathan,Aaaauweia
+2015-10-08 21:48:47,neuron,weil jede popeloperation mehrere kB instruktionsspeicher braucht :D
+2015-10-08 21:48:56,darklink,Ja
+2015-10-08 21:49:10,Jonathan,"darklink: Naja, probier du nur mal rum... *g*"
+2015-10-08 21:49:16,Jonathan,Mehr als schief gehen kann's ja nicht ;)
+2015-10-08 21:49:28,darklink,64 bit opcode
+2015-10-08 21:50:22,Jonathan,Du willst eher sowas wie 8 Bit Opcodes
+2015-10-08 21:51:00,Jonathan,Optional von Datenwörtern gefolgt z.B.
+2015-10-08 21:51:17,Jonathan,Die kannst du dann per Mikrocode in temporäre Register laden
+2015-10-08 21:51:24,neuron,das system was ich geplant hatte hat 5bit instruktionscode und 6bit registeradressierung die 5 bit opcode sind 4 bit die eine logigtabelle darstellen und die agtter ersetzen udn 1 bit für sprungbefehle etc.
+2015-10-08 21:51:29,Jonathan,(Dein Mikrocode kann einfach direkt irgendwelche Steuerleitungen betätigen)
+2015-10-08 21:51:44,darklink,SSSS SSSS SSSS SSSS DDDD DDDD DDDD DDDD AAAA AAAA AAAA AAAA JJJJ JJJJ JJJJ CCCC
+2015-10-08 21:52:09,Jonathan,darklink: 90% deiner Opcodes werden die meisten Bits deiner Instruktionen gar nicht benutzen ;)
+2015-10-08 21:53:07,neuron,sprich mein design hat garkeine logikgatter sondern nutzt die opcodes als logictabelle
+2015-10-08 21:54:03,darklink,"S= source addresse, D=drain addresse, A= 16-bit wert der addresse zur drainaddresse hinzugefügt, J= springe zu, C=condition"
+2015-10-08 21:54:22,neuron,eventuell kann ich bit 5 auch weglassen wenn ich statt dessen logikoperationen auf dem IP-Register ausführe aber da muß ich nochmal drüber nachdenken
+2015-10-08 21:56:17,neuron,die kleinste universelle turingmaschine hat übrigens nur 2 zustände und 3 farben ^^
+2015-10-08 21:57:00,darklink,"Condition: 0000 immer, 1000 niemals (=hlt), 0001 source null, 1001 source 1, 0010 drain 0, 1010 drain 1, 0100 drain gleich source, 1100 drain ungleich source"
+2015-10-08 21:57:12,neuron,sprich wenn man trinäre logik benutzt bräuchte man nur zwei zustände um universell zu sein :D
+2015-10-08 21:58:01,neuron,oder so in der art ^^
+2015-10-08 21:58:19,neuron,das 4bit opcodedesign sieht schon recht gut aus darklink
+2015-10-08 21:58:31,darklink,"Bits 0-2 können gleichzeitig benutzt werden, was einem logischem UND entspricht"
+2015-10-08 21:58:57,neuron,warum machst du nicht 1111 immer und 0000 niemals ?
+2015-10-08 21:59:01,darklink,Das ist ja nur der condition teil des 64-bit opcodes
+2015-10-08 21:59:12,neuron,aso
+2015-10-08 21:59:20,darklink,Bit 3 ist nicht
+2015-10-08 21:59:38,darklink,Und bei 000 gibt es keine einschränkung
+2015-10-08 22:00:06,neuron,64bit sinds inzwischen? was sind die restlichen 60 bit? sinds jetzt 30bit adressierung? xD
+2015-10-08 22:00:24,darklink,SSSS SSSS SSSS SSSS DDDD DDDD DDDD DDDD AAAA AAAA AAAA AAAA JJJJ JJJJ JJJJ CCCC
+2015-10-08 22:00:33,darklink,"S= source addresse, D=drain addresse, A= 16-bit wert der addresse zur drainaddresse hinzugefügt, J= springe zu, C=condition"
+2015-10-08 22:00:59,darklink,256 bit ram - ähh
+2015-10-08 22:01:17,neuron,ok jeder befehl ist also automatisch ein sprungbefehl ist das nicht ineffizient?
+2015-10-08 22:01:53,darklink,da gibt es keinen zähler mehr. Wir haben kaum transistoren
+2015-10-08 22:02:09,darklink,Außerdem ist das ein OISC
+2015-10-08 22:02:48,darklink,Da muss alles in 16 byte rein
+2015-10-08 22:03:04,darklink,Wobei ich das ganze verdoppeln würde
+2015-10-08 22:03:05,neuron,OISC? wofür steht das O?
+2015-10-08 22:03:10,darklink,One
+2015-10-08 22:03:14,darklink,-s
+2015-10-08 22:03:16,neuron,xD
+2015-10-08 22:04:03,darklink,Hat halt nur eine instruktion
+2015-10-08 22:04:12,neuron,jo schon verstanden XD
+2015-10-08 22:04:50,neuron,"mein design wär ja so ähnlich, aber mit bedingter adressierung ^^"
+2015-10-08 22:04:59,darklink,Und das ist halt nen one-bit nor
+2015-10-08 22:06:26,neuron,was macht dein system wenn die sprungbedingung nicht erfüllt ist??
+2015-10-08 22:07:08,darklink,"Ich schlaf mal ne nacht drüber. Bis morgen, wo ich endweder mein os weiter programmiere oder an dem 1bit oisc baue"
+2015-10-08 22:07:23,neuron,OIC
+2015-10-08 22:07:24,darklink,neuron: äh 
+2015-10-08 22:07:29,Svenska,nioM
+2015-10-08 22:08:10,darklink,"Endweder nochmal ausführen, oder nächste instruktion ausführen"
+2015-10-08 22:08:22,Sur3,ok also gibts doch nen zähler :D
+2015-10-08 22:08:27,darklink,thcaN
+2015-10-08 22:08:50,Sur3,fgjO
+2015-10-08 22:08:59,darklink,?
+2015-10-08 22:09:06,darklink,Ojfg?
+2015-10-08 22:09:14,darklink,Ojgf*
+2015-10-08 22:09:20,Svenska,Ojgf?
+2015-10-08 22:09:24,Sur3,kp ich hab nciht verstadnen was eure beiden wörter bedeutet haben ;)
+2015-10-08 22:09:32,Svenska,muttu rueckwärts lesen ;)
+2015-10-08 22:09:36,darklink,Moin und Nacht
+2015-10-08 22:09:38,Sur3,asoo ^^
+2015-10-08 22:09:52,Sur3,ich dachte einfach M N O
+2015-10-08 22:10:00,Sur3,der letzte buchstabe ^^
+2015-10-08 22:10:18,darklink,das war zufall
+2015-10-08 22:10:23,Sur3,jo schient so ^^
+2015-10-08 22:10:42,Sur3,dann thcan darklink
+2015-10-08 22:10:54,darklink,"svenska hätte auch sagen können: ""dnebA"""
+2015-10-08 22:11:04,Sur3,hat er abend nicht ^^
+2015-10-08 22:11:18,Svenska,unabhängig von der tageszeit
+2015-10-08 22:11:25,Sur3,oJ
+2015-10-08 22:11:45,darklink,"So wie andere leute ""nabend"" am frühen morgen verwenden"
+2015-10-08 22:12:33,Sur3,oder grüß gott wenn gott urlaub hat
+2015-10-08 22:13:14,darklink,Am sonntag also
+2015-10-08 22:13:22,Sur3,:D
+2015-10-08 22:15:06,darklink,stoneは日本人ですか？
+2015-10-08 22:15:21,darklink,ups falscher chan
+2015-10-08 22:15:38,Sur3,hajshijemaschte
+2015-10-08 22:15:52,Sur3,watashi namaewa simon desu!
+2015-10-08 22:15:54,darklink,ß?
+2015-10-08 22:16:01,Sur3,*no
+2015-10-08 22:16:11,Svenska,njet
+2015-10-08 22:16:19,Sur3,dawai dawai!
+2015-10-08 22:16:30,darklink,私はモテン
+2015-10-08 22:17:36,Sur3,wie kannst du japanisch tippen?
+2015-10-08 22:17:55,darklink,googles japanisch ime
+2015-10-08 22:18:03,Sur3,aso
+2015-10-08 22:18:51,darklink,動物は、何が好きですか？
+2015-10-08 22:18:51,Svenska,ich hab mit dem ß genug probleme. aber ich tippe ja auch kein ue von hier...
+2015-10-08 22:19:16,Sur3,ß und probleme? hast du keinen compose-key?
+2015-10-08 22:19:32,Svenska,nicht definiert... ß ist altgr+s
+2015-10-08 22:19:33,darklink,ich nutze qwertz
+2015-10-08 22:19:41,Svenska,"aber da wo andere ihr ü haben, hab ich ein å"
+2015-10-08 22:19:48,Sur3,ich hatte mal ne japanisch tastatur die war recht komfortabel von den möglichkeiten
+2015-10-08 22:19:49,Svenska,"und ü ist "" und u nacheinander ;)"
+2015-10-08 22:20:04,Sur3,aso ich hab compose auf capslock
+2015-10-08 22:20:06,Svenska,ich hab zuhause irgendwo ne dreisprachige tastatur ;)
+2015-10-08 22:20:13,Svenska,englisch / russisch / litauisch
+2015-10-08 22:20:23,Sur3,cool
+2015-10-08 22:20:38,Svenska,fand ich damals(TM) witzig. die litauischen sonderzeichen liegen auf den ziffern
+2015-10-08 22:20:45,XanClic,"Wenn die Tastatur anfängt zu sprechen, würde ich aufhören, das zu essen, was ich gerade esse"
+2015-10-08 22:20:47,Sur3,tbi gowariesch pa ruski?
+2015-10-08 22:20:53,Svenska,net
+2015-10-08 22:21:08,Svenska,nje panimaju pa ruski ;)
+2015-10-08 22:21:35,Svenska,"irgendwann mal, wenn ich zeit hab (hahaha)"
+2015-10-08 22:21:44,Sur3,"oh ok ^^ ich hatte es mal 1,5 semester in der uni udn war mal mit dem schulchor in st.petersburg ^^"
+2015-10-08 22:21:58,Svenska,"ich hatte es 0,5 semester in der uni :-D"
+2015-10-08 22:22:06,Sur3,:D
+2015-10-08 22:22:36,Svenska,"gäbe aber totale sprachverwirrung, russisch via schwedisch zu lernen *g*"
+2015-10-08 22:22:37,Sur3,"so ich werd mal weiter progen, sonst komm ich garnicht mehr vorran :D"
+2015-10-08 22:23:02,Sur3,wieso via schwedisch?
+2015-10-08 22:23:11,Svenska,guckst du mein hostname
+2015-10-08 22:23:21,Sur3,bist du schwede?
+2015-10-08 22:23:29,Svenska,nej
+2015-10-08 22:23:36,Svenska,leb aber da
+2015-10-08 22:23:39,Sur3,aso
+2015-10-08 22:23:43,Sur3,interessant
+2015-10-08 22:23:57,Sur3,ich war nur mal in stockholm ^^
+2015-10-08 22:24:07,Svenska,"schöne stadt, war ich letztens mit meiner mutter"
+2015-10-08 22:24:20,Svenska,"gibt's von hier sogar ne fluglinie hin, 2x täglich im sommer"
+2015-10-08 22:24:21,Sur3,war da nicht auch das KDW oder so?
+2015-10-08 22:24:31,Svenska,kdw?
+2015-10-08 22:24:37,Svenska,KaDeWe? das ist in berlin
+2015-10-08 22:24:56,Sur3,hm meine da oben im norden gab es irgendsowas ähnliches
+2015-10-08 22:24:59,darklink,ka. bei mir kommt es zu ner sprachverwirrung weil ich gleichzeitig japanisch und französisch lerne
+2015-10-08 22:25:07,XanClic,"Ach, bei dir auch?"
+2015-10-08 22:25:28,Svenska,"ich hab mal gebärdensprache gelernt, in schweden, von ner russin, und ich konnte kein schwedisch"
+2015-10-08 22:25:29,Sur3,japanisch und franze sind ja kein ding ich hatte damals in der schule franze und latein die sind sich viel zu ähnlich
+2015-10-08 22:25:29,XanClic,"Ich hatte Französisch zwar nur in der Schule, aber jedes Mal, wenn ich versuche, französische Sätze zu bilden, rutscht Japanisch rein"
+2015-10-08 22:25:30,Svenska,das war amuesant
+2015-10-08 22:25:58,Svenska,uiuiui
+2015-10-08 22:26:38,darklink,"Ich sag nur ""watashi va dire avec mon copain."
+2015-10-08 22:27:04,Svenska,"avec ist frz, mehr weiß ich nicht"
+2015-10-08 22:27:19,XanClic,"Na, bei mir ist es *immer* これは/それは anstatt von c'est"
+2015-10-08 22:27:26,Sur3,kaufhaus des nordens war glaubich.. https://de.wikipedia.org/wiki/Nordiska_Kompaniet
+2015-10-08 22:27:33,Svenska,aah das NK-haus
+2015-10-08 22:27:38,darklink,Und hinterher hab ich mich gefragt welche sprache das war
+2015-10-08 22:27:48,Svenska,"ja, das ist in stockholm, gibt's aber auch in göteborg"
+2015-10-08 22:28:00,Svenska,(uebrigens auch ne sehr schöne stadt)
+2015-10-08 22:28:52,Sur3,war das schweden wo die pizza so preiswert war oder verwechsel ich das mit finnland?
+2015-10-08 22:29:23,Svenska,in finnland hab ich noch nie pizza gegessen... finnland hat aber euro
+2015-10-08 22:29:27,Svenska,schweden hat krone
+2015-10-08 22:29:37,darklink,"Oder einmal hab ich im französischen das verb zum schluss gesagt: ""il la répétition générale a."" "
+2015-10-08 22:29:45,Sur3,dänemark hat auch kronen oder?
+2015-10-08 22:29:53,Svenska,"ja, auch norwegen"
+2015-10-08 22:30:19,Sur3,sind das alles die selben kronen oder muß man die von land zu land wieder wechseln?
+2015-10-08 22:30:31,Svenska,"sind verschieden (SEK, DKK, NOK)"
+2015-10-08 22:30:38,Sur3,ohh ok
+2015-10-08 22:30:48,Svenska,dänische muenzen haben teilweise löcher in der mitte
+2015-10-08 22:30:59,Sur3,jop weiß hab ich eine am schuh ^^
+2015-10-08 22:31:40,Sur3,von meiner fahrradtour dort zu nem dänischen sportinternat
+2015-10-08 22:31:41,Svenska,die dänen hatten vor ein paar jahren noch 25-øre stuecke
+2015-10-08 22:31:54,Svenska,die schweden haben die öre-muenzen aufgegeben
+2015-10-08 22:32:12,Svenska,"bin mal gespannt, wann sie das einkronenstueck weglassen..."
+2015-10-08 22:33:19,Sur3,voll lustig ich bin von flensburg nach dänemark geradelt und es lag 1m hoher schnee ich mußte in deutschland einen großteil der strecke schieben und in dänemark waren die radwege geräumt und ich konnte fahren :D
+2015-10-08 22:33:38,Sur3,und dann hab ich auf ner parkbank gepennt weil meine fähre nicht fuhr weil feiertag war -.-
+2015-10-08 22:33:39,Svenska,ach ja...
+2015-10-08 22:33:44,Svenska,lol
+2015-10-08 22:34:24,Svenska,wird dir wohl nicht mehr passieren ^^
+2015-10-08 22:35:04,Sur3,grad mal nachgesehn das an meinem schuh sind 2 kronen
+2015-10-08 22:35:21,Svenska,"wenn du ein schwedisches 2 kronen-stueck findest, will ich haben ;)"
+2015-10-08 22:35:39,Sur3,nee is dänisch sry die geldstücke mit löchern hebt man eher auf ^^
+2015-10-08 22:35:42,Svenska,(die werden seit den 70ern nicht mehr produziert und enthalten echtes silber; deutlich wertvoller als 2 kronen :D)
+2015-10-08 22:36:31,Sur3,"hehe ja die alten 5mark stücke hatten auch ncoh silber, aber bei uns wurd mal eingebrochen und die scheiß einbrecher haben meine ganze 5mark stück sammlung mitgenommen, zumindest fast.."
+2015-10-08 22:36:43,Svenska,echt?
+2015-10-08 22:37:07,Sur3,also ein paar sonderprägungen hab ich noch
+2015-10-08 22:37:32,Svenska,"hm, wir haben als kinder groschen auf die schienen gelegt und dann die straßenbahn drueberfahren lassen"
+2015-10-08 22:37:35,Sur3,trotzdem ärgerlich scheiß einbrecher und die dummen bullen haben nur eine gequalmt und nix gemacht -.-
+2015-10-08 22:37:45,Svenska,"die waren dann so groß wie 5-markstuecke, und sehr duenn ^^"
+2015-10-08 22:38:39,Sur3,nen 1 dollarschein hab ich auch hier mit dem schönen illuminatenzeichen drauf :D
+2015-10-08 22:39:16,Sur3,yay und 25 spanische peseten hab ich auch noch die haben auch ein loch in der mitte ^^
+2015-10-08 22:39:16,XanClic,Ich hab einen mit einem Stempel “Not to be used for bribing politicians” drauf
+2015-10-08 22:39:17,Svenska,"ich hab noch tschechiche kronen und österreichische schilling und so zeugs, und einen 2-dollar-schein zuhause"
+2015-10-08 22:39:48,Svenska,"und ein paar 50pf-stuecke und groschen von 1949, mit ""bank deutscher länder"" drauf"
+2015-10-08 22:40:00,Svenska,"apropros, guck dir mal die alte währung lettlands an (die lats)"
+2015-10-08 22:40:10,Svenska,wenn _die_ nicht kopiert hatten *g*
+2015-10-08 22:40:25,Sur3,und 10 entenhausener penny aus dem mixckey maus heft :D
+2015-10-08 22:40:58,Sur3,50 sveringe öre hab ich auch grad gefunden
+2015-10-08 22:41:05,Svenska,"ja, die sind inzwischen ungueltig"
+2015-10-08 22:41:16,Svenska,"die silbernen seit >10 jahren, die kupfernen seit 4 oder so"
+2015-10-08 22:41:16,Sur3,von 1999
+2015-10-08 22:41:30,Sur3,die sind ungültig echt? XD
+2015-10-08 22:41:49,Svenska,"vielleicht kannst du damit noch bezahlen, aber die sind nicht mehr im umlauf"
+2015-10-08 22:42:03,Svenska,"aber ich glaube, die kann man nicht mehr zum bezahlen nehmen"
+2015-10-08 22:42:11,Sur3,verdammt davon wollt ich doch beim nächsten schwedenurlaub mein hotel bezahlen :D
+2015-10-08 22:42:15,Svenska,:D
+2015-10-08 22:42:28,Svenska,"achso, island hat auch kronen. die sind noch weniger wert :D"
+2015-10-08 22:42:30,XanClic,Aber mit 2-Dollar-Scheinen bezahlen
+2015-10-08 22:42:38,XanClic,Da kann man ja auch gleich 1-Dollar-Münzen probieren
+2015-10-08 22:43:45,Sur3,boah warum zur hölle hab ich so viele ösi münzen ich war doch nie in österreich oder? o.O
+2015-10-08 22:43:52,Svenska,"och, meine mutter ist in deutschland ewig lange mit einer 50-öre-muenze rumgelaufen und wollte damit wohl x-mal bezahlen ;)"
+2015-10-08 22:44:03,Svenska,weil ist halt sowas wie ein 2ct-stueck
+2015-10-08 22:44:15,Sur3,eher 5cent
+2015-10-08 22:44:39,Sur3,obwohl  nee hast recht 2
+2015-10-08 22:45:54,Sur3,for sveringe i tiden was heißt das? stehrt auf der krone hier..
+2015-10-08 22:46:04,Svenska,fuer schweden in der zeit
+2015-10-08 22:46:08,Sur3,ah
+2015-10-08 22:46:14,Svenska,oder durch die zeit
+2015-10-08 22:46:40,Sur3,1988 ^^
+2015-10-08 22:48:00,Svenska,"auf kronenstuecken von 2007 steht ""den underbara sagan om ett land på andra sidan hafvet"" drauf (die wunderbare saga ueber ein land auf der anderen seite des meeres)"
+2015-10-08 22:48:21,Sur3,nett
+2015-10-08 22:48:31,Sur3,dei schweden sind also vom anderen Ufer :D
+2015-10-08 22:48:34,Svenska,damit ist finnland gemeint
+2015-10-08 22:48:48,Sur3,würd ich jetzt auch sagen ^^
+2015-10-08 22:48:54,Svenska,das ist 200 jahre nach dem finnischen krieg
+2015-10-08 22:49:22,Svenska,da ist finnland an russland gefallen
+2015-10-08 22:49:27,Sur3,und das steht auf den schwedischen kronen?
+2015-10-08 22:49:37,Svenska,"denen von 2009 (nicht 2007), ja"
+2015-10-08 22:49:45,Sur3,ok seltsam
+2015-10-08 22:51:11,Sur3,urgs wer auch immer mir vorhin den strcmp-C-Schnipsel geschickt hat benutzt Zeigerarithmetik.. xD
+2015-10-08 22:51:24,Paddy,Schuldig im Sinne der Anklage
+2015-10-08 22:51:36,Paddy,Wobei ich Pointerarithmetik auf char* jetzt eher harmlos finde ;-)
+2015-10-08 22:52:08,Sur3,naja man kann es auch in eine eckige klammer packen ;)
+2015-10-08 22:52:15,Paddy,Svenska: Tschechische Kronen sind doch sogar noch aktuell?
+2015-10-08 22:52:24,Svenska,keine ahnung
+2015-10-08 22:52:28,Sur3,aber stimmt bei 1Byte datentyplänge is es noch nciht so schlimm ^^
+2015-10-08 22:52:45,Paddy,"Sur3: Du meinst &s[len - 4]? Finde ich in diesem Fall unschöner, aber Geschmackssache."
+2015-10-08 22:52:46,Svenska,polnische słoty sinds jedenfalls noch
+2015-10-08 22:53:26,Sur3,dachte eigentlich an s[len-4] warum adressdings davor? o.O
+2015-10-08 22:53:37,Paddy,"Weil du sonst keinen Pointer mehr hast, sondern ein cahr"
+2015-10-08 22:53:39,Paddy,*char
+2015-10-08 22:53:54,Sur3,asoo du hast recht
+2015-10-08 22:54:13,Paddy,Du kannst natürlich auch & -4[len + s] mache (glaube ich jedenfalls)
+2015-10-08 22:54:45,Sur3,"joa da war irgendwas, cih mach es doch so wie du zu anfang ist doch das beste xD"
+2015-10-08 22:54:58,Sur3,hab nicht daran gedacht daß ich nen zeiger brauche ^
+2015-10-08 22:55:47,Svenska,&len[s-4] ?
+2015-10-08 22:56:06,Sur3,s+len-4
+2015-10-08 22:56:48,Paddy,"So, und um auch noch das letzte Thema aus dem Backlog zu beantworten: Verben aus Versehen ans Satzende stellen passiert mir nie. Die stehen nur immer am Anfang."
+2015-10-08 22:57:17,Sur3,joa meine verben auch nur am anfang stehen. ^^
+2015-10-08 22:58:10,Paddy,"Naja, im Deutschen krieg ich es grad noch so vermieden ;-)"
+2015-10-08 22:59:09,Sur3,so desne?
+2015-10-08 23:00:12,Svenska,"Nur so lange, bis du es nicht vermieden hast. ;-)"
+2015-10-08 23:00:42,Sur3,Yoda interessant das findet
+2015-10-08 23:00:56,Paddy,"Svenska: Äh, was? ;-)"
+2015-10-08 23:01:11,Svenska,Paddy: irgendwann ists kaputt gegangen worde ;-)
+2015-10-08 23:01:13,Svenska,*n
+2015-10-08 23:01:52,Svenska,"aber ich geb ja zu, mein deutsch leidet mit der zeit ein wenig"
+2015-10-08 23:02:12,Paddy,"Öhm, ich verstehe immer noch nicht, auf was du raus willst"
+2015-10-08 23:02:26,Sur3,lol beim googlen nach strdup hab ich grad was interessantes gefunden..
+2015-10-08 23:02:26,Sur3,"strcpy(ptr2, ptr1) is equivalent to while(*ptr2++ = *ptr1++)"
+2015-10-08 23:02:35,Paddy,Vermutlich ist es einfach schon zu spät um sowas zu verstehen ;-)
+2015-10-08 23:02:45,Svenska,"du vermeidest verben am satzende nur solange, bis du sie mal nicht vermeidest"
+2015-10-08 23:02:51,Svenska,dann sind sie nicht mehr am satzende
+2015-10-08 23:03:02,Svenska,*schulterzuck*
+2015-10-08 23:03:18,Svenska,"auf island hat mir ne österreicherin ins gesicht gesagt, dass mein deutsch so gut ist, dass ich fast hätte deutscher sein können"
+2015-10-08 23:03:28,Paddy,Oh. Ups. *g*
+2015-10-08 23:03:30,Svenska,aber nur fast *g*
+2015-10-08 23:03:42,Sur3,lol bist du nicht deutscher?
+2015-10-08 23:03:43,Paddy,"Das tut gut, oder? ;-)"
+2015-10-08 23:03:54,Svenska,"ja, da fuehlt man sich gleich wieder besonders ;-)"
+2015-10-08 23:03:58,Sur3,oder wo kommst du wech?
+2015-10-08 23:04:21,Svenska,"aber ich hatte nur meinen chef vorgestellt, und der kann zwar deutsch, aber eben kräftig akzentuiert und so"
+2015-10-08 23:04:43,Sur3,aus welchem bundesland kommst du denn?
+2015-10-08 23:04:45,Svenska,"von daher war das schon ein bisschen auf die falsche fährte gefuehrt, aber da kam ich dann doch ins gruebeln..."
+2015-10-08 23:04:50,Svenska,urspruenglich brandenburg
+2015-10-08 23:04:55,Sur3,aso
+2015-10-08 23:05:08,Sur3,nü so a ossidialekt dann eben :D
+2015-10-08 23:05:22,Svenska,"nee, das ueberlasse ich dem xanclic, der kann das vermutlich besser"
+2015-10-08 23:05:37,Svenska,"wirklich dialekt hab ich nicht, weil eltern und so"
+2015-10-08 23:05:41,Sur3,aber immernoch besser als bayern :D
+2015-10-08 23:06:01,Svenska,"mama darf nicht, papa kann nicht :D"
+2015-10-08 23:06:15,XanClic,"Ich bin zumindest gut darin, mich darüber aufzuregen, wenn jemand Sächsisch mit Umlauten darstellt, oder noch schlimmer, ausspricht"
+2015-10-08 23:06:33,Svenska,"ja, fuer den ""no""-laut gibt's keinen buchstaben"
+2015-10-08 23:06:47,Svenska,irgendwas zwischen no und nr
+2015-10-08 23:07:43,Sur3,xD
+2015-10-08 23:07:47,Sur3,nüh ^^
+2015-10-08 23:15:41,Sur3,"nüh eiverpipschkn'nöchnmöl mein ganzes system friert ein wärend ich nen screenshot mache, vllt sollte cih doch nen eigenen task dafür benutzen die datei in das FAT32 zu schreiben :D"
+2015-10-08 23:16:17,Svenska,fat32-treiber fixen? ;)
+2015-10-08 23:16:37,Paddy,"XanClic: Naja, irgendein Zwischending halt, oder?"
+2015-10-08 23:16:48,Sur3,"nee liegt nciht am fat32, sondern daran daß ich den screenshot direkt aus dem keyboard-interrupt heraus mache ^^"
+2015-10-08 23:17:10,Svenska,"wenn du das geschickt machst, hängt dann der plattentreiber"
+2015-10-08 23:17:19,Svenska,weil ja keine interrupts mehr gehen...
+2015-10-08 23:17:32,XanClic,"Paddy, bei „so“ ist es bspw. eher ein „sou“ als ein „sö“"
+2015-10-08 23:17:37,Sur3,nee er testet vorher ob fat frei ist und bricht den screenshot sonst ab
+2015-10-08 23:18:26,Paddy,"XanClic: Langes o wird aber nicht grundsätzlich zu einem Diphthong, oder?"
+2015-10-08 23:18:43,Sur3,"es geht halt alles die uhr bleibt nur wärend dem screenshot stehen, deswegen ich sollte den screenshot so lassen aber das auf platte schreiben auslagern in nen eigenen task"
+2015-10-08 23:18:59,XanClic,"Paddy, na ja, der Kiefer ist am Anfang weiter offen als am Ende"
+2015-10-08 23:19:00,Sur3,langes o ist ō
+2015-10-08 23:19:19,Sur3,aber ō ist kompliziert zu tippen deswegen tippt man lieber ö
+2015-10-08 23:19:25,Svenska,Sur3: dein plattentreiber ist also nicht interruptgetrieben?
+2015-10-08 23:19:30,XanClic,Auch bei „ohne“ oder so wäre es so
+2015-10-08 23:20:21,Sur3,"Svenska jein nicht aus dem Kernelmode, der Kernel kann den Plattentreiber direkt benutzen, geladene programme verwenden den System-Interrupt 0x35"
+2015-10-08 23:21:35,Paddy,"Hm, ok. Na gut, ich werde mich weiterhin zurückhalten, was Pseudosächsisch angeht. ;-)"
+2015-10-08 23:21:56,Sur3,und irgendwann kommt noch nen virtuelles dateisystem dazwischen
+2015-10-08 23:22:39,XanClic,"Sur3, für mich sind ö und ō ja genau gleich schwer zu tippen"
+2015-10-08 23:22:55,Svenska,us-tastatur?
+2015-10-08 23:23:04,XanClic,"jo, und compose"
+2015-10-08 23:23:18,XanClic,"Also deutsche Tastatur, aber US-Layout"
+2015-10-08 23:23:27,Svenska,"ich nutz ja kein compose, sondern die dritte ebene"
+2015-10-08 23:23:29,Sur3,pcitreiber->ata/pi<->partitionstreiber<->fat32<->vDS<->Kernel<-int0x35->programme
+2015-10-08 23:23:42,Sur3,das ist die treiberkette
+2015-10-08 23:23:42,Svenska,und deutsches und schwedisches layout unter linux sind da unterschiedlich :(
+2015-10-08 23:23:50,Sur3,vds und pci fehlen momentan noch
+2015-10-08 23:24:02,Svenska,warum int 0x35?
+2015-10-08 23:24:09,XanClic,"Vorratsdatenspeicherung direkt im OS? Na, wenn das nicht fortschrittlich ist"
+2015-10-08 23:24:13,Sur3,und der partitionstreiber und fat können nur bis 2TB
+2015-10-08 23:24:30,Svenska,...fat geht bis 2tb ?
+2015-10-08 23:24:36,Sur3,fat geht bis 8TB
+2015-10-08 23:24:42,Svenska,wo0ow
+2015-10-08 23:24:46,Paddy,"Hm, wieso ist ¯ bei mir kein Deadkey mehr? :-/"
+2015-10-08 23:24:47,Sur3,aber meins kann nur 32bit sektoren adresseiren momentan
+2015-10-08 23:25:01,Svenska,"ach, ich hab tyndur mal geärgert"
+2015-10-08 23:25:18,Svenska,mit einer nicht-lba-fähigen festplatte
+2015-10-08 23:25:37,Paddy,Du hast vermutlich bekommen was du verdient hast?
+2015-10-08 23:25:46,Svenska,kevin hatte einen test eingebaut
+2015-10-08 23:25:54,XanClic,Wie kann kevin nur
+2015-10-08 23:25:56,Sur3,joa klar wenn der bnd und die Nasa das erst patchen müssen wird das ja nur kaputt dann lieber gleich integrieren :D
+2015-10-08 23:25:58,Svenska,"dann sprach es ""CHS supported"" und hing sich auf"
+2015-10-08 23:26:17,Svenska,"(lag aber an zuwenig ram... der editor hat sich erstmal 8M gegriffen, was auf einem 8M-system eher unklug ist.)"
+2015-10-08 23:26:22,Svenska,(ist aber schon ne weile her.)
+2015-10-08 23:26:43,XanClic,"Das erinnert mich daran, wie tatsächlich mal jemand meinen GBA-Port von Paloxena4 oder was das war ausprobiert hat"
+2015-10-08 23:26:47,XanClic,Das kam auch sehr überraschend
+2015-10-08 23:26:51,Sur3,irgendwo hab ich noch nen CHS-Treiber für mein OS liegen ^^
+2015-10-08 23:26:55,XanClic,"Noch überraschender war, dass es tatsächlich etwas angezeigt hat"
+2015-10-08 23:27:11,Svenska,"aber ich hab auch ne schöne ide-platte, die an bisher keinem usb-ide-adapter gelaufen ist"
+2015-10-08 23:27:34,Svenska,"keine ahnung, warum nicht, an realen geräten läuft sie"
+2015-10-08 23:27:52,Paddy,XanClic: Einen lilanen Bildschirm oder so? *g*
+2015-10-08 23:28:05,Sur3,früher hab ich CHS direkt aus QBASIC adressiert :D
+2015-10-08 23:28:27,Svenska,"linux sagt ""hey, ich habe eine CONNOR 20MB platte gefunden"" - ""oh, sie reagiert nicht auf größenangaben"" - ""ich vermute mal, sie ist 2 TB groß"" - ""oh, sie mag nicht mehr"" ;)"
+2015-10-08 23:28:36,Sur3,redet ihr von dem Pink Screen of Death?
+2015-10-08 23:28:57,Paddy,"Svenska: Ach, bei dir ist meine alte Platte? ;-)"
+2015-10-08 23:28:59,Svenska,*weiter in ptx verbuddeln geh*
+2015-10-08 23:29:06,Svenska,ich nehm gern noch eine zweite ;)
+2015-10-08 23:29:24,Sur3,boah ej diese nervigen off-by-one fehler.. xD
+2015-10-08 23:29:26,Svenska,"wenn ich an dem laptop den stromstecker wechsle, kann ich auch ne modernere platte anbasteln"
+2015-10-08 23:29:35,XanClic,"Paddy, https://xanclic.moe/_/GBA_display.jpg"
+2015-10-08 23:29:39,Paddy,Aber einfach mal 2 TB raten klingt nach einer interessanten Strategie
+2015-10-08 23:29:45,Svenska,"ich hab ne 40 MB platte, die war da drin, und ist wohl sehr kaputt/langsam"
+2015-10-08 23:29:54,Svenska,"also hab ich da die 20er eingebaut, und die scheint wohl langsam auch zu sterben"
+2015-10-08 23:30:10,Paddy,"XanClic: Oh, sieht ja fast brauchbar aus"
+2015-10-08 23:30:26,XanClic,"Ja, nur dann hängt es sich auf ;-)"
+2015-10-08 23:30:38,Sur3,hat der gba nicht auch grafik?
+2015-10-08 23:30:42,Paddy,Den Rest gibt es eben erst in der Vollversion *g*
+2015-10-08 23:30:43,XanClic,Der hat nur Grafik
+2015-10-08 23:30:53,Sur3,aso :D
+2015-10-08 23:31:00,XanClic,"Paddy, stimmt, das ist ja nur eine Demo *hust hust* ;-)"
+2015-10-08 23:32:09,Sur3,wißt ihr ob SSD inzwischen was taugen oder sind die immernoch nach 3 schreibvorgängen kaputt?
+2015-10-08 23:32:28,Svenska,ich hab seit ein paar jahren eine 128er SSD im laptop
+2015-10-08 23:32:50,Sur3,"ich hatte mal luks-verschlüsseltes ext3/4 mit log, das hat jenen usb-stick kaputt bekommen :D"
+2015-10-08 23:32:51,XanClic,"Ich hab seit ein paar Jahren einer 128er SSD, mittlerweile in diesem Desktop hier"
+2015-10-08 23:33:00,Svenska,usb-stick != ssd
+2015-10-08 23:33:03,XanClic,Und die hat auch eine Weile swap gemacht
+2015-10-08 23:33:11,Sur3,*jeden
+2015-10-08 23:33:12,XanClic,Also dürfte die schon ein paar Schreibvorgänge hinter sich haben
+2015-10-08 23:33:17,Paddy,Also meine I/O-Benchmarks lass ich auch mal auf der SSD laufen und bisher tut sie noch
+2015-10-08 23:33:42,Sur3,ok cool dann werd ich mir sowas vermutlich auch mal anschaffen
+2015-10-08 23:37:20,Svenska,"hrhr, gerade gefunden https://www.youtube.com/watch?v=2bVAoVlFYf0 (das frozen-lied durch google translate)"
+2015-10-08 23:37:33,Sur3,hm kann man das hier irgendwie schöner schreiben? outname[len]='.'; outname[len+1]='p'; outname[len+2]='p'; outname[len+3]='m'; outname[len+4]='\0';
+2015-10-08 23:37:53,Svenska,"outname = "".ppm"" ?"
+2015-10-08 23:38:03,Sur3,nee muß ja mit offset len sein
+2015-10-08 23:38:05,XanClic,"strcpy(outname + len, "".ppm"");"
+2015-10-08 23:38:11,Svenska,achso
+2015-10-08 23:38:16,Svenska,"ja, dann strcpy"
+2015-10-08 23:38:16,XanClic,"strcat(outname, "".ppm"");"
+2015-10-08 23:38:16,Sur3,ahh das sieht shcon besser aus danke
+2015-10-08 23:38:26,XanClic,falls len == strlen(outname);
+2015-10-08 23:38:45,Sur3,ach strcat gibts auch krass
+2015-10-08 23:39:05,Svenska,"musst nur beachten, dass der string auch lang genug ist"
+2015-10-08 23:39:09,Sur3,aber ich benutz liebr strcpy das ist einfacher für den compiler zu optimieren
+2015-10-08 23:39:17,Svenska,"deswegen sind strcpy, strcat und so eher unschön :_)"
+2015-10-08 23:39:35,XanClic,"char *foo; asprintf(&foo, ""%s.ppm"", outname);"
+2015-10-08 23:40:14,Sur3,asprint reserviert automatisch speicher?
+2015-10-08 23:40:21,Svenska,steht so in der manpage
+2015-10-08 23:40:25,Sur3,krass
+2015-10-08 23:40:28,Svenska,ist aber gnu
+2015-10-08 23:45:25,Paddy,Nicht auch C11?
+2015-10-08 23:45:38,Paddy,"War das das, was es am Ende doch nicht reingeschafft hat?"
+2015-10-08 23:45:57,Svenska,"meine manpage sagt GNU, nicht C und nicht POSIX, aber dafuer auch in *BSD"
+2015-10-08 23:47:48,Paddy,tyndur hat es auch
+2015-10-08 23:48:54,XanClic,"Na ja, das selber zu implementieren ist ja auch kein Ding…"
+2015-10-08 23:49:29,XanClic,"vsnprintf(NULL, 0, …), Speicher anhand des Rückgabewerts reservieren, und dann vsnprintf() da rein"
+2015-10-08 23:52:17,Paddy,Das wäre ja viel zu einfach
+2015-10-08 23:52:40,Svenska,das klingt nach ineffizient
+2015-10-08 23:52:47,Sur3,"wenn ich in einem linux c program die datei ""-"" öffne erkennt der dann automatisch daß ich stdin/stdout meine?"
+2015-10-08 23:52:52,Svenska,"nicht, dass das wichtig wäre"
+2015-10-08 23:52:58,Svenska,normalerweise nicht
+2015-10-08 23:53:00,Paddy,"Naja, ich weiß nicht, ob das realloc()-Gefummel in tyndur wesentlich performanter ist *g*"
+2015-10-08 23:53:07,Sur3,aso schade
+2015-10-08 23:54:19,Svenska,wie macht es vsnprintf() denn sonst?
+2015-10-08 23:54:34,Svenska,in meiner welt arbeitet der auch nur auf einem puffer :-)
+2015-10-08 23:55:48,XanClic,vsnprintf() macht gar kein alloc
+2015-10-08 23:56:17,Svenska,"ne, aber asnprintf() muss ja einen erzeugen"
+2015-10-08 23:56:28,Svenska,"dann angucken, ob der groß genug war, dann nochmal?"
+2015-10-08 23:56:31,XanClic,Nein
+2015-10-08 23:56:51,XanClic,"*printf gibt die Anzahl der Zeichen zurück, die ausgegeben würden, wenn es alle hätte ausgeben können"
+2015-10-08 23:56:59,Svenska,hm
+2015-10-08 23:57:04,XanClic,"Für die *snprintf-Varianten heißt das, wenn der Puffer groß genug wäre"
+2015-10-08 23:57:09,XanClic,https://github.com/XanClic/muxomucota/blob/master/src/lib/common/stdio/asprintf.c

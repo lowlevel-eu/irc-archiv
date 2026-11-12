@@ -1,0 +1,120 @@
+date/time,nick,message
+2016-07-15 02:07:39,Quantenmagier,nabend
+2016-07-15 05:44:58,Quantenmagier,"hab mal mein tetris programm für SurO optimiert, das hat jetzt ne Punkteanzeige und wird schneller ^.^"
+2016-07-15 13:21:18,MasterQ32,moin+
+2016-07-15 15:00:20,Jonathan,Moin
+2016-07-15 15:00:29,MasterQ32,huhu
+2016-07-15 15:00:35,MasterQ32,"Jonathan, hast du Ahnung von DMA?"
+2016-07-15 15:01:29,Jonathan,"Öh... Von DMA generell ja, von x86-DMA nicht :D"
+2016-07-15 15:01:55,MasterQ32,okay
+2016-07-15 15:02:12,MasterQ32,"wie viel aufwand ist es, sowas zu bauen? :D"
+2016-07-15 15:04:10,MasterQ32,"kevin meinte, es wäre sinnvoll, sowas bei meiner CPU-Architektur zu haben, da ja Port IO so nervig sei :P"
+2016-07-15 15:04:18,MasterQ32,"aber ich glaube, das ist den aufwand nicht wert"
+2016-07-15 15:17:31,Jonathan,Naja... Du brauchst...:
+2016-07-15 15:18:02,Jonathan,"1. Einen Pin, der die CPU vom Bus ""fernhält"" + einen Acknowledge-Pin dafür"
+2016-07-15 15:19:13,Jonathan,"2. Einen Controller, der DMA-Requests von Devices entgegen nimmt und priorisiert (pro Gerät einen Request+Ack)"
+2016-07-15 15:20:48,Jonathan,3. Pro Device Adressregister etc.
+2016-07-15 15:21:04,Jonathan,Und du musst eben den Speicherbus an jedes Gerät führen
+2016-07-15 15:22:57,MasterQ32,*grübel*
+2016-07-15 15:26:46,MasterQ32,"Zu 1) Der Z80 hat ja nen ~WAIT Pin, wäre das sowas?"
+2016-07-15 15:27:22,MasterQ32,ah ne
+2016-07-15 15:27:28,MasterQ32,"busreq und busack wären das, oder? :D"
+2016-07-15 15:27:30,Jonathan,Jo :P
+2016-07-15 15:27:35,MasterQ32,okay
+2016-07-15 15:27:39,Jonathan,Machst du jetzt auch was mit dem Z80? ;)
+2016-07-15 15:27:55,MasterQ32,"nee, aber das ist die CPU, über die ich am meisten weiß"
+2016-07-15 15:28:00,Jonathan,Achso :P
+2016-07-15 15:28:11,MasterQ32,"ja, vorallem ist das komplexitätslevel da niht so krank wie bei x86 :D"
+2016-07-15 15:28:37,Jonathan,"Naja, du brauchst im Grunde genommen dazu nur noch nen Chip, der an BUSREQ/BUSACK vom Z80 angeschlossen wird und dann jede Menge BUSREQ/BUSACK-Paare zur Verfügung stellt"
+2016-07-15 15:29:08,MasterQ32,also ne art priority encoder
+2016-07-15 15:29:15,Jonathan,So ähnlich :D
+2016-07-15 15:29:16,MasterQ32,bzw. priority multiplexer
+2016-07-15 15:30:02,Jonathan,"Der Chip darf keinem Device sein BUSACK wegnehmen, während er BUSREQ konstant anlegt"
+2016-07-15 15:30:11,Jonathan,(Sonst gibt's Kollisionen)
+2016-07-15 15:30:32,Jonathan,"D.h. der erste, der BUSREQ anlegt, wird gelatcht, bis er es wieder weg nimmt"
+2016-07-15 15:30:41,Jonathan,Und bekommt das BUSACK von der CPU durchgestellt
+2016-07-15 15:31:08,MasterQ32,"okay, so hab ich das jetzt auch verstanden"
+2016-07-15 15:31:15,MasterQ32,"frag mich trotzdem, ob sich das so lohnt"
+2016-07-15 15:31:17,MasterQ32,:D
+2016-07-15 15:31:37,MasterQ32,"von svenska kam die Idee, den VRAM einfach in eine Bank zu legen und den Speicher in n Bänken anzulegen"
+2016-07-15 15:31:50,MasterQ32,"da ich ja eh in meiner HW nacher ROM und RAM haben werde, ist das auch gar nich so blöd"
+2016-07-15 15:32:12,Jonathan,MasterQ32: Mein VRAM ist auch in Bänken
+2016-07-15 15:32:27,MasterQ32,erfahrung/meinung? :D
+2016-07-15 15:32:34,Jonathan,Macht Sinn :D
+2016-07-15 15:32:40,MasterQ32,"gut, dann hab ich noch ein ack :D"
+2016-07-15 15:32:41,Jonathan,Besonders auf ner CPU mit 64k Adressraum
+2016-07-15 15:32:44,MasterQ32,:D
+2016-07-15 15:32:50,MasterQ32,was ich festgestellt hab:
+2016-07-15 15:32:54,Jonathan,Auf nem x86 macht es dagegen eher keinen Sinn :P
+2016-07-15 15:33:15,MasterQ32,"meine CPU kann 32bit Daten ansprechen und 32bit Programmcode, wobei (Programmcode << 3) gilt"
+2016-07-15 15:33:31,MasterQ32,"ich kann also prorgammcode in speicher ausführen, der durch load/store nicht mehr erreichbar ist :P"
+2016-07-15 15:33:36,Jonathan,Ohje :P
+2016-07-15 15:33:43,Jonathan,Das würd ich lieber nicht machen :D
+2016-07-15 15:33:52,Jonathan,"Aber wenn du 32 Bit Adressraum hast, mappe den VRAM ohne Banking"
+2016-07-15 15:34:06,Jonathan,"Banking ist Krätze, das willst du nur, wenn dein Adressraum zu klein ist"
+2016-07-15 15:34:13,MasterQ32,"hm, wie würde das dann mit mapping aussehen?"
+2016-07-15 15:34:28,Jonathan,? :D
+2016-07-15 15:34:38,MasterQ32,"naja, für mich wäre das jetzt halt sowas:"
+2016-07-15 15:34:43,Jonathan,Du packst einfach den ganzen VRAM linear in den Adressaum und fertig? :D
+2016-07-15 15:34:47,MasterQ32,"wenn oberstes bit gesetzt, blende VRAM ein"
+2016-07-15 15:34:56,Jonathan,"Nein, einfach rein und gut"
+2016-07-15 15:35:05,MasterQ32,"was heißt ""einfach rein""? :D"
+2016-07-15 15:35:18,Jonathan,Adressbereich raussuchen und dort komplett einblenden
+2016-07-15 15:35:19,MasterQ32,nen speichercontroller mit compare units finde ich irgendwie zu umständlich :D
+2016-07-15 15:35:23,Jonathan,Nö
+2016-07-15 15:35:27,Jonathan,Adressdekoder und gut
+2016-07-15 15:36:22,Jonathan,"""Wenn oberste Bits = 0101101..."" ---> Zugriff auf VRAM"
+2016-07-15 15:36:24,Jonathan,:D
+2016-07-15 15:36:31,MasterQ32,okay
+2016-07-15 15:36:35,Jonathan,So funktioniert das in der einfachsten Form
+2016-07-15 15:36:39,MasterQ32,und bei ROM dann das gleiche
+2016-07-15 15:36:42,Jonathan,Jo
+2016-07-15 15:36:47,MasterQ32,okay
+2016-07-15 15:36:48,Jonathan,So popelst du einfach alles in den Adressraum rein
+2016-07-15 15:36:49,MasterQ32,dann ist das klarer
+2016-07-15 15:36:50,Jonathan,"RAM, ROM, Devices"
+2016-07-15 15:36:51,Jonathan,:)
+2016-07-15 15:37:05,Jonathan,"Wenn man genug Adressraum hat, ist das das einfachste"
+2016-07-15 15:37:41,Jonathan,Sogar bei meinem 8086 (1MB Adressraum) mach ich das so :D
+2016-07-15 15:37:52,Jonathan,Beim Z80 dagegen nicht
+2016-07-15 15:38:12,Jonathan,(32k VRAM wären da einfach mal der halbe Adressraum... Den mappe ich in 128Byte-Stückchen)
+2016-07-15 15:41:10,MasterQ32,okay
+2016-07-15 15:43:23,MasterQ32,danke :)
+2016-07-15 15:57:57,Jonathan,Bitte :D
+2016-07-15 15:58:24,MasterQ32,"so, ich geh mal richtung heimat"
+2016-07-15 15:58:30,MasterQ32,"und grübel, ob ich DMA will oder nicht"
+2016-07-15 17:12:40,darklink,so
+2016-07-15 17:15:49,darklink,"  passwd = fallback_getpass(prompt, stream)"
+2016-07-15 17:15:57,darklink,/usr/lib/python3.5/getpass.py:92: GetPassWarning: Can not control echo on the terminal.
+2016-07-15 17:16:42,darklink,"damn. Ich muss mich erst mal korrekt mit dem server verbinden, um ein passwort zu generieren? :("
+2016-07-15 18:15:56,MasterQ32,was hast du vor?
+2016-07-15 18:19:34,darklink,ich habe das passwort für meine passwortdatenbank nirgendswo gespeichert
+2016-07-15 18:19:47,darklink,da ich sie immer neu generiere
+2016-07-15 18:24:23,MasterQ32,^^
+2016-07-15 18:24:49,MasterQ32,ich zock heute abend mal ne gediegene runde Factorio
+2016-07-15 18:25:43,darklink,Automate your developer workflow#
+2016-07-15 18:29:48,darklink,bah. kaum boot ich in freebsd rein will ich undertale spielen
+2016-07-15 18:29:57,darklink,-in -rein
+2016-07-15 18:47:23,darklink,Ich glaube ich schreibe MTGos für 3DS neu
+2016-07-15 18:50:59,darklink,find /usr -type f -exec chmod g+w {} \; braucht aber lange :(
+2016-07-15 18:58:32,darklink,Linux for the 3DS
+2016-07-15 18:58:40,darklink,"wisst ihr, was das bedeutet?"
+2016-07-15 18:58:41,darklink,:D
+2016-07-15 18:58:44,darklink,hehe
+2016-07-15 19:31:53,Quantenmagier,hm ne globale datenbank wär auch noch nen cooles feature für mein os
+2016-07-15 19:32:26,Quantenmagier,oder doch besser everything is a file?
+2016-07-15 19:33:10,darklink,Kannst doch irgendwie beides machen
+2016-07-15 19:33:21,darklink,ne globale datenbank für bestimmte dinge
+2016-07-15 19:33:29,darklink,und everything else is a file
+2016-07-15 19:34:45,Quantenmagier,hm oder die datenbank arbeitet auf nem verzeichnis wo dann die tabellen als textdateien drinliegen..
+2016-07-15 19:43:10,darklink,Ich würde für jedes programm ein eigenes verzeichnis nutzen
+2016-07-15 19:43:48,darklink,"im format /prog/compiler/{bin,lib,etc,run,var}"
+2016-07-15 20:17:39,darklink,"Note: Currently it doesn't support the SD card because only the ARM9 CPU has access to it, and Linux runs on the ARM11 CPU."
+2016-07-15 20:17:40,darklink,ahhh
+2016-07-15 20:17:57,darklink,dann kann ich doch kein LFS drauf bauen
+2016-07-15 20:18:00,darklink,zunächst
+2016-07-15 21:46:53,darklink,Checking for return value of vsnprintf()... Yes.
+2016-07-15 21:46:55,darklink,:D
+2016-07-15 21:47:16,darklink,"den returnwert ""Yes."" kenne ich gar nicth"
+2016-07-15 23:26:33,Quantenmagier,"so 797 packages to emerge, this could take a while think i'll go to bed then :D"
+2016-07-15 23:26:41,Quantenmagier,oh falsches fenster ^^

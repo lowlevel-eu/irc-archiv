@@ -1,0 +1,294 @@
+date/time,nick,message
+2012-08-06 00:00:03,Paddy,"Zweiter PD-Eintrag, je Eintrag 32 Bit"
+2012-08-06 00:02:07,PatrickBic,page_table =pmm_allloc();
+2012-08-06 00:02:08,PatrickBic,		pagedir[pd_index] = page_table | 0x1;
+2012-08-06 00:02:08,PatrickBic,		page_table = (unsigned int*) (pagedir[pd_index] & ~0xFFF);
+2012-08-06 00:02:11,PatrickBic,Paddy: so?
+2012-08-06 00:02:50,Paddy,Nicht wirklich
+2012-08-06 00:02:59,Paddy,Da würdest du doch wieder die physische Adresse auslesen?
+2012-08-06 00:03:16,PatrickBic,das dacht ich auch aber ich hab deine anleitung so verstanden.. moah ich fuehl mich schon so doof :P
+2012-08-06 00:03:30,PatrickBic,"also nochmal.. ich hol mir ne phys-addr, speicher die in das PD"
+2012-08-06 00:03:39,PatrickBic,hol mir dann (wie auch immer) die virt-addr davon
+2012-08-06 00:03:50,PatrickBic,die mach ich via invlpg bekannt und verwende diese weiter
+2012-08-06 00:03:56,Paddy,Ja
+2012-08-06 00:04:24,Paddy,"Das ""wie auch immer"" (also die 0x1000 in meinem Beispiel) ist einfach die passende Adresse innerhalb vom selbstgemappten Bereich"
+2012-08-06 00:05:02,Paddy,"UIm Beispiel fängt der Bereich bei 0 an und dazu zählst du dann pd_index * PAGE_SIZE dazu, dann kommst du bei der richtigen PT raus"
+2012-08-06 00:05:21,PatrickBic,d.h. das is eigentlich pagedir+pd_index*32
+2012-08-06 00:05:23,Paddy,"In deinem Kernel wird es was anderes als 0 sein, weil du das PD-Mapping ja nicht an Index 0 hast"
+2012-08-06 00:05:52,PatrickBic," nicht 32, 0x1000 "
+2012-08-06 00:05:53,Paddy,"Deine Formel stimmt nur, wenn du es an Index 0 hast, sonst liegt das PD selbst irgendwo in der Mitte des Bereichs"
+2012-08-06 00:05:55,PatrickBic,Paddy: DANKE
+2012-08-06 00:06:04,PatrickBic,ich glaub ich habs
+2012-08-06 00:06:06,PatrickBic,mal auscoden xD
+2012-08-06 00:06:25,Paddy,Also irgendiwe sowas wie PD_MAPPING_BASE + pd_index * 0x1000
+2012-08-06 00:06:34,PatrickBic,page_table = (unsigned int*) (pagedir+pd_index*0x1000 & ~0xFFF);
+2012-08-06 00:06:47,PatrickBic,wobei das 0xFFF eigentlich unnoetig ist
+2012-08-06 00:07:03,Paddy,Was ist pagedir bei dir?
+2012-08-06 00:07:51,PatrickBic,pointer aufn speicherbereich vom PD
+2012-08-06 00:08:15,Paddy,"Also auf das PD an sich, nicht auf den gesamten selbstmappenden Bereich?"
+2012-08-06 00:08:38,Paddy,"Du solltest da stattdessen eine Konstante nehmen, die auf den Anfang zeigt"
+2012-08-06 00:09:11,PatrickBic,ctx->pagedir =0x401000;  <= so halt
+2012-08-06 00:10:13,Paddy,"Hm, was ist das für eine Adresse? Hast du das PD in Index 1 selbst gemappt? Oder ist das eine physische Adresse?"
+2012-08-06 00:10:26,PatrickBic,phys
+2012-08-06 00:10:44,PatrickBic,vergessn die auch zu mappen.. meh
+2012-08-06 00:10:45,Paddy,"Dann solltest du das vielleicht nicht hernehmen, um virtuelle Adressen zu berechnen ;-)"
+2012-08-06 00:10:49,PatrickBic,joa
+2012-08-06 00:13:37,Paddy,"Wenn du das PD in Index 255 mappst (du wolltest doch wenn ich mich recht erinnere das knapp unter 1 GB haben), dann müsste das PD an 0x3fcff000 gemappt sein"
+2012-08-06 00:15:11,PatrickBic,d.h. an pagedir[0x3fcff000] = pagedir | 0x3; eintragen dann (wie oben beim page_table) die virt-addr rausrechnen und diese bei den page-tables verwenden fuer addr+pd_index*0x1000
+2012-08-06 00:15:13,Paddy,Also der Bereich fängt bei 0x3fc00000 an und da ist es dann an Offset 255 * 0x1000
+2012-08-06 00:15:39,Paddy,"PatrickBic: page_table | 0x3 willst du eintragen, nicht pagedir, oder?"
+2012-08-06 00:16:22,Paddy,Und in addr+pd_index*0x1000 wäre dann addr=0x3fc00000 
+2012-08-06 00:16:41,PatrickBic,Paddy: meinte beim PD selber mappen
+2012-08-06 00:16:50,PatrickBic,da trage ich ja pd[0x3fcff000] = pd | 0x3 ein
+2012-08-06 00:17:00,Paddy,Ach so
+2012-08-06 00:17:22,Paddy,"Um das PD selbst zu mappen, kannst du logischerweise das Selbstmapping noch nicht benutzen, weil es ja noch nicht existiert ;-)"
+2012-08-06 00:17:49,Paddy,Das machst du noch bevor du Paging anschaltest
+2012-08-06 00:18:10,Paddy,"Bzw. bei späteren PDs, bevor du zu diesem PD wechselst"
+2012-08-06 00:19:44,PatrickBic,"also ich mach folgendes:  (a) pd via pmm-alloc ""anlegen"" (phys) (b) phys ins pd eintragen pd[0x3fcff000] = pd | 0x3; (c) rest mappen (gdt, idt usw), (d) paging einschalten"
+2012-08-06 00:21:01,PatrickBic,und bei der page_table phys => addr konversion nehm ich 0x3fcff000+pd_index*0x1000
+2012-08-06 00:21:53,Svenska,pd[0x3fcff000] klingt falsch :)
+2012-08-06 00:22:07,Svenska,dein pd hat 1024 einträge je 4 byte = 4k byte
+2012-08-06 00:22:30,Svenska,"für ""uint32_t pd[1024]"" ist der index also 0..1023"
+2012-08-06 00:22:44,livinskull,wer weiss was pd fürn pointer ist^^
+2012-08-06 00:22:55,PatrickBic,0x3fcff000  >> 22 
+2012-08-06 00:22:58,Svenska,livinskull: ein bit-array? :D
+2012-08-06 00:23:00,PatrickBic,Svenska: falsch abgetippt
+2012-08-06 00:23:06,Svenska,"ja, das klingt besser"
+2012-08-06 00:23:11,PatrickBic,danke fuern hinweis :)
+2012-08-06 00:23:20,livinskull,void*? ulong*?
+2012-08-06 00:23:25,PatrickBic,was?
+2012-08-06 00:23:53,livinskull,pd ?
+2012-08-06 00:24:19,Paddy,[00:17] <PatrickBic> und bei der page_table phys => addr konversion nehm ich 0x3fcff000+pd_index*0x1000
+2012-08-06 00:24:28,Paddy,"Nein, 0x3fc00000+pd_index*0x1000"
+2012-08-06 00:24:30,PatrickBic,livinskull: uint-ptr
+2012-08-06 00:24:44,Paddy,0x3fcff000 ist schon für Index 255 (also das PD selbst)
+2012-08-06 00:26:56,PatrickBic,livinskull: ich versteh dich immer mehr bezueglich paging xD
+2012-08-06 00:27:20,livinskull,xD
+2012-08-06 00:28:15,Paddy,"Wieso, was war denn dein Fazit, livinskull?"
+2012-08-06 00:29:10,livinskull,mein Fazit? ich hab kb auf paging und bin deswegen beim osdev stecken geblieben :D
+2012-08-06 00:29:19,Paddy,Ah
+2012-08-06 00:29:53,livinskull,ich hatte den code sogar n paar mal fast efrtig :D
+2012-08-06 00:30:26,livinskull,"aber dann kommt immer dieser ""wtf"" teil mit der Rekursion :D"
+2012-08-06 00:30:37,PatrickBic,livinskull: du kannst meinen code dann haben
+2012-08-06 00:30:39,Svenska,mein vmm-code kann bisher nur den aktuellen kontext verarbeiten
+2012-08-06 00:30:42,PatrickBic,da is eh mehr vom irc drin also von mir 
+2012-08-06 00:30:44,PatrickBic,bezueglich paging
+2012-08-06 00:30:45,PatrickBic,xD
+2012-08-06 00:30:52,livinskull,lol
+2012-08-06 00:31:00,Svenska,"er scheitert an jeder stelle, die ram voraussetzt, weil physisches management nicht so richtig tut ^^"
+2012-08-06 00:31:01,Paddy,"Der ist doch gar nicht so wtf, man muss nur einmal verstanden haben, was man da eigentlich macht"
+2012-08-06 00:31:20,PatrickBic,ich hab in meinem kopf das es bei osdev 3 stufen gibt
+2012-08-06 00:31:36,PatrickBic,die (a) so gehoerts weils so is .. hardware und so (b) paging (c) alles danach 
+2012-08-06 00:31:41,PatrickBic,"a is halt so, b is doof, c is geil :D"
+2012-08-06 00:31:42,PatrickBic,^^
+2012-08-06 00:31:54,livinskull,ne. die Frage ist wie mappe ich ne neue page wenn ich erst ne pagetable mappen muss? dann fehlt mir wieder ne pagetable :D
+2012-08-06 00:32:03,Paddy,PatrickBic: Irgendwo muss man halt sieben *g*
+2012-08-06 00:32:06,Svenska,(a) ist der sinn von osdev (b) ist notwendiges übel und (c) ist die eigentliche zeitsenke
+2012-08-06 00:32:19,PatrickBic,Paddy: ich hab ja mit dem alten geklauten paging code weit mehr gehabt
+2012-08-06 00:32:25,PatrickBic,"also hdd erkennung, fat32 (mit dir usw) gingen ja"
+2012-08-06 00:32:33,Paddy,"livinskull: Musst du ja aber maximal einmal, wenn du alle PTs des aktiven Kontexts immer gemappt hast"
+2012-08-06 00:32:35,PatrickBic,aber is halt nen ungutes gefuehl wenn das nicht von einem selber is
+2012-08-06 00:32:39,Svenska,livinskull: der vmm-code reserviert sich selbst ein paar pages
+2012-08-06 00:33:12,Paddy,PatrickBic: Vor allem nicht dauerhaft tragfähig
+2012-08-06 00:33:30,PatrickBic,das auch
+2012-08-06 00:33:43,PatrickBic,hab noch ne frage (die 10.000tse)
+2012-08-06 00:34:01,PatrickBic,"wenn ich jetzt mein pd anlege, dann bei pd[0x3fcff000>>22] = (unsigned int)ctx->pagedir | 0x3; eintrage"
+2012-08-06 00:34:22,PatrickBic,"dann halt weiter mappe, paging einschalt usw"
+2012-08-06 00:34:42,PatrickBic,dann is mein pd =0x3fcff000; oder?
+2012-08-06 00:34:49,PatrickBic,ah ne
+2012-08-06 00:34:49,PatrickBic,moment
+2012-08-06 00:34:59,PatrickBic,pd = 0x3fc00000 so
+2012-08-06 00:35:26,Paddy,"Nein, 0x3fcff000 stimmt schon"
+2012-08-06 00:35:41,Paddy,Also als virtuelle Adresse des aktuellen PD
+2012-08-06 00:36:21,Paddy,Das ist 0x3fcff000 + 0x1000 * (0x3fcff000>>22)
+2012-08-06 00:36:27,Paddy,Meh
+2012-08-06 00:36:34,Paddy,0x3fc00000 + 0x1000 * (0x3fcff000>>22)
+2012-08-06 00:37:10,Jidder,ich finde der shift operator ist wie wenn der millenium falcon in den hyperraum geht
+2012-08-06 00:37:20,Jidder,und es ist garantiert kein mond
+2012-08-06 00:38:23,Svenska,"lol, grub4dos funktioniert in DOSBox :-)"
+2012-08-06 00:38:40,Paddy,Und dosbox auf tyndur. Hm... *g*
+2012-08-06 00:38:45,Svenska,"kann aber nichts sinnvolles tun, weil die virtuelle festplatte verschwindet (laufwerk c:)"
+2012-08-06 00:38:58,Paddy,Schade
+2012-08-06 00:38:59,Svenska,müsste man dann aus einem image booten
+2012-08-06 00:39:03,Svenska,dann sollte es gehen :D
+2012-08-06 00:39:12,Paddy,Kann dosbox das?
+2012-08-06 00:39:16,Svenska,ja
+2012-08-06 00:39:18,Svenska,IMGMOUNT
+2012-08-06 00:39:33,Paddy,"Na dann, echte Festplatte durchreichen ;-)"
+2012-08-06 00:39:42,Svenska,lieber nicht
+2012-08-06 00:39:50,Jidder,angsthase
+2012-08-06 00:39:55,Svenska,"dosbox kann kein windows 2.11 booten, und mit 3.1 hat der auch so seine probleme"
+2012-08-06 00:40:14,Svenska,(wobei gewisse personen es schonmal mit win95 geschafft haben wollen - ich aber nicht)
+2012-08-06 00:40:29,Paddy,Läuft Win 2.11 auf qemu?
+2012-08-06 00:40:43,Svenska,weiß nicht
+2012-08-06 00:40:56,livinskull,ich hatte ma win 3.1 in bochs iirc
+2012-08-06 00:40:56,Svenska,"ich habs nur real ausprobiert, mit winword und excel :-)"
+2012-08-06 00:42:50,Paddy,"Hm, PatrickBic rekursiert wohl gerade gedanklich, bis der Stack Overflow kommt"
+2012-08-06 00:43:08,PatrickBic,"http://qemu-buch.de/de/index.php/QEMU-KVM-Buch/_Gast-Systeme/_x86-Architektur/_DOS-,_Windows_und_Verwandte"
+2012-08-06 00:43:10,PatrickBic,so nebenbei
+2012-08-06 00:43:13,PatrickBic,Paddy: ja xD
+2012-08-06 00:46:06,Jidder,"tip des tages: word listet ""System"" zwar nicht als schriftart auf, aber wenn man es in der auswahlliste eingibt, kann man text trotzdem damit formierten"
+2012-08-06 00:46:30,Jidder,"die frage ist, was ""formierten"" heißt"
+2012-08-06 00:47:19,PatrickBic,die vergangensheitsform von formieren
+2012-08-06 00:47:24,PatrickBic,"also in etwa, aufstellung nehmen"
+2012-08-06 00:48:47,Jidder,falsch
+2012-08-06 00:49:03,PatrickBic,weil?
+2012-08-06 00:49:13,Jidder,ging mir leichter über die finger als korrekt
+2012-08-06 00:54:17,Paddy,gn8
+2012-08-06 00:55:06,Svenska,"hmm, dosbox von dos-floppy booten geht"
+2012-08-06 00:55:21,Svenska,"aber FDISK wirft nen division-durch-0, wenn ich ne partition erstellen will :-/"
+2012-08-06 00:58:11,Svenska,"hm, aber er hat es getan -.-"
+2012-08-06 00:59:21,PatrickBic,Svenska: http://i.eprci.net/div-zero-house-1
+2012-08-06 00:59:49,Svenska,"aah, fehler gefunden: man muss die geometrie mit angeben. :-)"
+2012-08-06 01:16:27,Scatha,absolute frechheit
+2012-08-06 01:16:41,Svenska,was - dass du jidder haust und er nicht reagiert?
+2012-08-06 01:16:54,Scatha,ouh ja
+2012-08-06 01:17:05,Svenska,ist halt schmerzbefreit...
+2012-08-06 01:17:35,Scatha,ich merk das schon
+2012-08-06 01:27:24,Svenska,"cool, win95 in dosbox bootet :D zumindest im abgesicherten modus"
+2012-08-06 01:31:00,Jidder,nachher marslandung
+2012-08-06 01:31:10,Jidder,frage ist nur: durchmachen oder noch ein kleines nickerchen einlegen
+2012-08-06 01:31:29,Svenska,wann isn die?
+2012-08-06 01:32:10,PatrickBic,7.30 denk ich
+2012-08-06 01:32:19,PatrickBic,oder wars 4.30 
+2012-08-06 01:32:46,PatrickBic,Am Montag um exakt 7.30 Uhr MESZ 
+2012-08-06 01:32:48,Jidder,früher
+2012-08-06 01:32:52,Jidder,ich will ja auch die mannschaftsaufstellung mitkriegen
+2012-08-06 01:33:36,PatrickBic,"7:30 atmosphaere, 7:37 landung"
+2012-08-06 01:34:00,Svenska,"also ausschlafen, vor 12 ist die sonde eh nicht da :D"
+2012-08-06 01:34:15,PatrickBic,bild braucht 14min fuer 1 richtung
+2012-08-06 01:35:14,PatrickBic,"Auch Bilder von der Landung wird es zunächst nicht geben. Frühestens 15 Stunden nach der Landung würden die ersten von „Curiosity“ geknipsten Fotos auf der Erde erwartet, sagte ein NASA-Sprecher."
+2012-08-06 01:35:21,PatrickBic,Jidder: dauert daher wohl 
+2012-08-06 01:35:26,PatrickBic,noch laenger als Svenska andeutete ;)
+2012-08-06 01:35:38,Svenska,"ich frag mich, womit die sendne"
+2012-08-06 01:35:55,Jidder,UHF an MRO und Odyssey
+2012-08-06 01:36:03,Svenska,die saturn oder venus-sonden hatten wenige bit/s :D
+2012-08-06 01:36:07,Jidder,MRO puffert das und transmittiert das 8 stunden nach der landung
+2012-08-06 01:36:08,PatrickBic,"Stattdessen sendet der Rover nach jedem erfolgreichen Teil des Landemanövers Ultrahochfrequenztöne an die Raumsonde „Odyssey“, die den Mars umkreist. „Odyssey“ leitet diese weiter an die Antennen des Deep Space Networks, unter anderem in der australischen Hauptstadt Canberra, wie die NASA und die Empfangsstation in Canberra mitteilten. Von dort aus werden die Signale ins Kontrollzentrum der NASA im US-Bundesstaat Kalifornien geschick"
+2012-08-06 01:36:08,PatrickBic,t.
+2012-08-06 01:36:12,Jidder,Odyssey machts life
+2012-08-06 01:36:16,Jidder,live
+2012-08-06 01:36:25,Svenska,"ok, also UHF"
+2012-08-06 01:36:31,Svenska,da kommt wenigstens bissl was durch
+2012-08-06 01:36:33,Jidder,die haben noch einen zweiten sender
+2012-08-06 01:36:38,Jidder,aber der macht keine bilder
+2012-08-06 01:36:40,Jidder,nur statussignale
+2012-08-06 01:36:55,Svenska,"naja, wenn der erste kaputt ist, kriegst du aus dem zweiten bestimmt auch bilder raus :D"
+2012-08-06 01:37:39,PatrickBic,"die ""aus xy abc machen"" erinenrt an die apollo mission wo die mond-landefaehre zur rettungskapsel wurde"
+2012-08-06 01:37:46,PatrickBic,apollo 13 oder so
+2012-08-06 01:54:15,Jidder,ich bereite mich mal mit einer weiteren runde kerbal space program darauf vor
+2012-08-06 01:56:05,Svenska,fürs log: windows 2.1 (windows/286) funktioniert im qemu. (zumindest ohne HMA und EMS.) es bleiben 378K freier speicher nach dem start übrig.
+2012-08-06 01:57:39,Svenska,"host ist ein ms-dos 6.22 (für windows 1.0 braucht man ms-dos 5.0 oder früher, aber ob's im qemu tut, weiß ich nicht)"
+2012-08-06 01:58:06,PatrickBic,ich krieg paging nicht gebacken.. :(
+2012-08-06 01:58:15,PatrickBic,hab jetzt alles was pady meinte beherzigt und immer noch ein PF
+2012-08-06 02:02:24,PatrickBic,"(1) PD = pmm_alloc();  (2) pd[0x3fc00000 >>22] = pd | 0x3; (3) map mit pd=0x401000, virt=0x 0x3fcff000; phys=0x401000  (0x401000 ist die physische addr vom PD) (5) cr3=0x401000 (6) paging einschalten (bit bei cr0) (7) zugriff auf pd (virtuell) mit pd[1]    wobei pd=0x3fcff000 => PF"
+2012-08-06 02:02:38,PatrickBic,PF gibt 0x3fcff004 als addr her was ne addr im pd selber is
+2012-08-06 02:02:43,Svenska,geht es um das erste PD oder ein späteres?
+2012-08-06 02:02:47,PatrickBic,erstes
+2012-08-06 02:02:53,PatrickBic,also kernel-pd
+2012-08-06 02:03:14,Svenska,"hm, das erste pd hab ich statisch alloziiert :-)"
+2012-08-06 02:03:32,Svenska,"und wenn dein PF als adresse mitten was im PD anzeigt, machst du irgendwas falsch"
+2012-08-06 02:03:36,PatrickBic,ja eben
+2012-08-06 02:03:38,PatrickBic,"aber nur,.. was?"
+2012-08-06 02:03:44,Svenska,"guck am besten in der qemu-console nach, was du da eigentlich für nen komisches mapping baust"
+2012-08-06 02:03:51,Svenska,"""info mem"" und ""info tlb"" sind deine freunde"
+2012-08-06 02:03:56,PatrickBic,hier laeuft bochs aber qemu is installiert
+2012-08-06 02:04:00,PatrickBic,mal sehen ob ich den debugger ankrieg
+2012-08-06 02:07:07,Svenska,"ich empfehle ja qemu, allein schon weil damit die mehrheit hier klarkommt"
+2012-08-06 02:07:16,Svenska,und du multibootkernel mit -kernel direkt starten kannst
+2012-08-06 02:07:44,PatrickBic,allerdings is es ohne kvm deutlich langsamer 
+2012-08-06 02:07:50,PatrickBic,kvm wurde mir gesagt soll ich nicht nehmen 
+2012-08-06 02:07:52,Svenska,als bochs?
+2012-08-06 02:08:09,PatrickBic,ja
+2012-08-06 02:08:14,Svenska,"bochs simuliert alles, qemu (ohne kvm) macht wenigstens dynamisches recompiling"
+2012-08-06 02:08:29,Svenska,und qemu (mit kvm) macht virtualisierung :D
+2012-08-06 02:08:38,PatrickBic,mit kvm is es eh angenehm schnell.. nen emulator halt
+2012-08-06 02:08:46,Svenska,kein emulator mehr...
+2012-08-06 02:08:47,PatrickBic,ohne kvm seh ich den bildaufbau zeichen fuer zeichen
+2012-08-06 02:08:53,PatrickBic,ka virtualisierung
+2012-08-06 02:08:57,Svenska,dann machst du was falsch :-)
+2012-08-06 02:08:57,PatrickBic,verzeih mir meine ausdrucksweise ;)
+2012-08-06 02:09:05,PatrickBic,Svenska: no-kvm switch
+2012-08-06 02:09:14,Svenska,"ich kann kein kvm benutzen, weil meine cpu das nicht kann"
+2012-08-06 02:09:18,Svenska,und qemu ist angenehm schnell
+2012-08-06 02:09:21,PatrickBic,http://pastebin.com/CQz7v4Mt
+2012-08-06 02:10:34,Svenska,"<Svenska> guck am besten in der qemu-console nach, was du da eigentlich für nen komisches mapping baust"
+2012-08-06 02:10:39,Svenska,gdb != qemu-console ...
+2012-08-06 02:10:44,PatrickBic,oh ueberlesen
+2012-08-06 02:10:46,PatrickBic,wird schon spaet :P
+2012-08-06 02:10:51,Svenska,es ist früh ^^
+2012-08-06 02:11:01,PatrickBic,nuja.. definitionssache
+2012-08-06 02:11:18,Svenska,das war (fast) gleichzeitig getippt ^^
+2012-08-06 02:11:58,PatrickBic,info mem gibt 0x0 bis 0x400.000 her
+2012-08-06 02:12:06,PatrickBic,als rw
+2012-08-06 02:12:21,Svenska,"teil mal nicht dreier, sondern vierergruppen ab, wenn es um hexzahlen geht"
+2012-08-06 02:12:21,Svenska,:-)
+2012-08-06 02:12:29,PatrickBic,tlb scrollt ne lange liste runter bis zu 0x3ff000 (letzte page vor 0x400.000
+2012-08-06 02:12:41,PatrickBic,oki :)
+2012-08-06 02:13:15,Svenska,"wenn die liste korrekt ist, sollte dein mapping auch stimmen"
+2012-08-06 02:13:32,Svenska,mit strg+pgup/strg+pgdown solltest du scrollen können
+2012-08-06 02:14:14,Svenska,"fürs log: os/2 warp 3 connect bootet im qemu auch (netzwerk ist unter os/2 extrem frickelig, daher kA)"
+2012-08-06 02:14:24,PatrickBic,der log ist zu lang zum scrollen
+2012-08-06 02:14:30,PatrickBic,kann nicht weiter als die haelfte der liste raufscrollen
+2012-08-06 02:14:39,Svenska,wieviel mappst du denn?
+2012-08-06 02:14:55,PatrickBic,"ersten 4mb, gdt, idt, kernel, video-speicher"
+2012-08-06 02:15:17,Svenska,also... meine liste ist kurz
+2012-08-06 02:15:24,PatrickBic,info tlb war gemeint
+2012-08-06 02:15:28,PatrickBic,info mem gibt eh nur 1 zeile her
+2012-08-06 02:15:37,PatrickBic,und die eine zeile is das erste MB
+2012-08-06 02:16:27,PatrickBic,http://i46.tinypic.com/34fh8j5.png  <- hier
+2012-08-06 02:17:13,Svenska,"""info mem"" zeigt 8 blöcke (9000-a000 [multiboot], b8000-b9000 [vram], 100000-105000 [preinit], e0105000-e012f000 [2 blöcke, kernel], ffc00000-ffc01000 [pd], fff80000-fff81000 [ein pt], fffff000-100000000 [noch ein pt]"
+2012-08-06 02:17:35,Svenska,"und die sind in ""info tlb"" dann noch aufgeschlüsselt"
+2012-08-06 02:18:09,PatrickBic,d.h. bei mir is nur das erste mb gemappt und sonst nichts (laut qemu)?
+2012-08-06 02:18:17,PatrickBic,*ersten vier mb
+2012-08-06 02:18:28,Svenska,ja
+2012-08-06 02:19:30,Svenska,jetzt darfst du in aller ruhe selbst fixen ^^
+2012-08-06 02:19:50,PatrickBic,aber das mach ich nachn schlafen+arbeit
+2012-08-06 02:19:56,Svenska,viel erfolg
+2012-08-06 02:19:57,PatrickBic,soll in ~5h zur arbeit gehen
+2012-08-06 02:19:58,PatrickBic,xD
+2012-08-06 02:20:17,Svenska,"ich müsste langsam anfangen, mein inventar umzugsfertig zu verpacken -.-"
+2012-08-06 02:20:24,Svenska,gn8
+2012-08-06 02:21:24,Svenska,"btw: in dem ""info tlb"" kannst du übrigens nicht nur gucken, was wie gemappt ist, sondern auch, was überhaupt benutzt wird"
+2012-08-06 02:21:57,Svenska,"W müsste writeable sein, A ist accessed/gelesen, D ist dirty/geschrieben jeweils pro page"
+2012-08-06 02:23:16,PatrickBic,gut das A passt schonmal
+2012-08-06 02:23:21,PatrickBic,bei der idt-page is es gesetzt
+2012-08-06 02:23:26,PatrickBic,aber der rest wie gesagt morgen
+2012-08-06 02:30:49,Jidder,"und wieder musste ein kerbonaut sterben, weil die physikengine nicht rechtzeitig abbremst, wenn man mit 1000x zeitbeschleunigung in die atmosphäre rast"
+2012-08-06 02:31:37,DesL,"hm, das hatte wahrscheinlich ähnlichkeit mit einem sicherheitszündholz. *wush* und weg"
+2012-08-06 02:32:31,Jidder,eigentlich eher mit einer diashow
+2012-08-06 02:32:36,Jidder,die fps gehen da leider auch in den keller ...
+2012-08-06 02:33:53,Svenska,gute nacht von mir :-)
+2012-08-06 09:34:40,alexander,Moin moin
+2012-08-06 09:53:17,micha,moin
+2012-08-06 09:56:37,alexander,Morgen micha 
+2012-08-06 10:35:04,alexander,"Guten Morgen kevin, sind Sie auch so hocherfreut an diesem wunderschoenen sonnigen Sonntag?"
+2012-08-06 10:35:37,kevin,In welcher Zeit- und Wetterzone lebst denn du? ;-)
+2012-08-06 10:36:54,kevin,Trotzdem einen guten Morgen ;-)
+2012-08-06 10:38:28,alexander,"Okay, man merkt erst recht, dass Montag ist, wenn das Gehirn noch beim Sonntag ist ;-)"
+2012-08-06 10:38:38,alexander,Aber sonnig ist es hier den(noch)
+2012-08-06 16:20:57,DesL,moin
+2012-08-06 16:26:50,DesL,olo
+2012-08-06 16:26:53,DesL,wikimedia ist grade down 
+2012-08-06 16:26:57,DesL,aber komplett XD
+2012-08-06 18:41:29,bluecode,goden dag
+2012-08-06 18:41:40,bluecode,ich bin ein azyklischer Graph
+2012-08-06 18:41:44,bluecode,Sortier mich!
+2012-08-06 18:42:48,bluecode,<sheldon couper>hint: there is only one correct answer</sheldon couper>
+2012-08-06 18:56:34,Jidder,cooper
+2012-08-06 19:05:45,bluecode,du hast Recht Jidder
+2012-08-06 19:05:55,bluecode,(aber ich geb natürlich nicht zu falsch gelegen zu haben)
+2012-08-06 19:06:42,PatrickBic,tut jidder doch auch nicht
+2012-08-06 19:09:19,Jidder,ich geb höchstens gas
+2012-08-06 19:09:51,bluecode,du bist aber nicht in der npd oder? *g*
+2012-08-06 19:11:52,Jidder,jo
+2012-08-06 19:12:47,bluecode,syntax error
+2012-08-06 19:12:52,bluecode,rebooting
+2012-08-06 20:13:30,DerHartmut,Nabend
+2012-08-06 20:25:35,bluecode,y0y0
+2012-08-06 20:25:40,bluecode,DerHartmut in da house
+2012-08-06 20:25:57,DerHartmut,lol wtf wazzup bluecode 
+2012-08-06 20:26:52,bluecode,the ceiling is up
+2012-08-06 21:28:41,DesL,moin
+2012-08-06 23:52:35,PatrickBic,warum kommt bei mir wenn ich mein os in qemu start ne andere adresse beim PF raus als bei bochs?
+2012-08-06 23:53:54,Jidder,andere memory map

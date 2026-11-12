@@ -1,0 +1,159 @@
+date/time,nick,message
+2015-12-14 16:12:05,kevin,"XanClic: Kann es sein, dass du dein Rebase auf max/tyndur.git master gemacht hast statt auf upstream?"
+2015-12-14 16:12:19,XanClic,*pfeif*
+2015-12-14 16:12:51,kevin,"Dürfte keinen großen Unterschied machen, aber den VESA-Patch würde es erklären ;-)"
+2015-12-14 16:13:35,XanClic,"Ich muss dann erstmal gucken, dass ich es überhaupt zum Laufen bekomme"
+2015-12-14 16:13:46,XanClic,"Mit -fno-pic kompiliert es zwar, aber ich hab natürlich nicht getestet, ob es auch läuft"
+2015-12-14 16:13:53,XanClic,"Und Triple Fault zählt eher weniger unter Laufen, glaub ich"
+2015-12-14 16:14:14,kevin,Ist das jetzt auf einem anderen Hostsystem oder wie?
+2015-12-14 16:14:23,XanClic,Das ist jetzt auf meinem Desktop mit gcc 5.3 eben
+2015-12-14 16:14:44,XanClic,"Und der einzige Unterschied in der Konfiguration vom Arch-gcc zwischen 5.2 und 5.3 ist, dass jetzt -with-default-libstdcxx-abi=gcc4-compatible fehlt"
+2015-12-14 16:14:56,XanClic,Aber das wird wohl eher wenig an C geändert haben…
+2015-12-14 16:15:06,kevin,Wäre anzunehmen
+2015-12-14 16:15:18,XanClic,Deshalb werd ich dann wohl mal wieder einen eigenen gcc kompilieren müssen
+2015-12-14 16:15:43,kevin,"Wo der TF herkommt, lässt sich nicht so einfach sagen?"
+2015-12-14 16:15:57,XanClic,PF bei ESP
+2015-12-14 16:16:15,XanClic,Und der ursprüngliche PF war auch im Kernel
+2015-12-14 16:18:48,kevin,Mit sehr kaputt aussehenden Adressen?
+2015-12-14 16:19:01,XanClic,"So komisch nicht, nein"
+2015-12-14 16:19:10,XanClic,Ich hab dooferweise den Interruptlog überschrieben
+2015-12-14 16:19:13,XanClic,Aber kann ich ja nochmal neu machen
+2015-12-14 16:21:24,XanClic,63630: v=0e e=0000 i=0 cpl=0 IP=0008:000000000041128b pc=000000000041128b SP=0010:0000000000655ec4 CR2=0000000000655ec4
+2015-12-14 16:21:48,XanClic,und auch EBP=00656edc ESP=00655ec4
+2015-12-14 16:22:13,XanClic,das ist free()+0xb
+2015-12-14 16:22:21,XanClic,"  411285:       81 ec 10 10 00 00       sub    esp,0x1010"
+2015-12-14 16:22:23,XanClic,"  41128b:       83 0c 24 00             or     DWORD PTR [esp],0x0"
+2015-12-14 16:23:31,kevin,Wieso denn so ein großes sub?
+2015-12-14 16:23:41,kevin,0x1010 finde ich einen ganzen Haufen für einen Kernelstack
+2015-12-14 16:23:42,XanClic,Das macht gcc eigentlich schon seit ein paar Versionen
+2015-12-14 16:23:59,XanClic,"Wenn man irgendwie mehr als nur eine handvoll Bytes benutzt, nimmt der sofort 4 kB"
+2015-12-14 16:24:18,XanClic,Das hat mich auch bei meinem Fiasco/L4-Zeug ein bisschen genervt *g*
+2015-12-14 16:24:53,kevin,"Also in Anbetracht der Tatsache, dass Kernelstacks in tyndur ziemlich genau 4k groß sind..."
+2015-12-14 16:24:54,XanClic,Wobei das eigentlich nur nach einer handvoll Bytes aussieht…
+2015-12-14 16:25:40,kevin,Dafür gibt's doch sicher eine Compileroption?
+2015-12-14 16:25:46,kevin,Sonst würde Linux wohl auch kaum noch funktionieren
+2015-12-14 16:26:37,XanClic,Es gibt -Wstack-usage ;-)
+2015-12-14 16:26:49,XanClic,-fconserve-stack klingt gut
+2015-12-14 16:28:20,XanClic,Tut in einem Testprogramm aber nicht viel
+2015-12-14 16:28:46,XanClic,foo():
+2015-12-14 16:28:47,XanClic,"   0:   48 81 ec 38 10 00 00    sub    rsp,0x1038"
+2015-12-14 16:28:49,XanClic,"   7:   48 83 0c 24 00          or     QWORD PTR [rsp],0x0"
+2015-12-14 16:28:50,XanClic,"   c:   48 81 c4 20 10 00 00    add    rsp,0x1020"
+2015-12-14 16:28:52,XanClic,Das ist ja interessanter Code…
+2015-12-14 16:29:31,XanClic,Auch mit -fno-stack-protector -fconserve-stack bleibt der
+2015-12-14 16:29:51,kevin,Was für C-Code verursacht das?
+2015-12-14 16:29:56,XanClic,Gar keiner
+2015-12-14 16:30:01,kevin,Hm?
+2015-12-14 16:30:08,kevin,Leere Funktion?
+2015-12-14 16:30:13,XanClic,"Na gut, nicht ganz ;-)"
+2015-12-14 16:30:34,XanClic,void bar(char *); int foo(void) { char buf[4]; bar(buf); return buf[0]; }
+2015-12-14 16:30:44,kevin,"Und vor allem: Was hat gcc geraucht, und warum hat Jidder ihm das gegeben?"
+2015-12-14 16:33:27,XanClic,"Das ist anscheinend noch keinem so wirklich aufgefallen, ""orq    $0x0,(%rsp)"" bringt jedenfalls keine Ergebnisse bei Google"
+2015-12-14 16:33:34,XanClic,Oder zumindest hat sich noch keiner beschwert
+2015-12-14 16:34:06,kevin,Florian ist leider nicht da ;-)
+2015-12-14 16:35:10,XanClic,"Mit clang ist das übrigens nicht, nur so nebenbei"
+2015-12-14 16:35:51,kevin,Mit dem RHEL-gcc auch nicht
+2015-12-14 16:36:06,XanClic,Dafür sieht der clang-Code anders kaputt aus
+2015-12-14 16:36:13,kevin,Und zwar?
+2015-12-14 16:36:21,XanClic,"Ach so, jetzt hab ichs verstanden"
+2015-12-14 16:36:25,XanClic,rax sind ja acht Byte
+2015-12-14 16:36:46,XanClic,"Der pusht jedenfalls am Anfang rax, aber offenbar nur, um rsp um acht zu verringern"
+2015-12-14 16:37:05,XanClic,"Weil er dann erstmal rsp+4 als Adresse des Puffers benutzt, und am Ende dann rax poppt"
+2015-12-14 16:37:43,XanClic,"Und was er bei -m32 macht, das versteh ich gar nicht mehr"
+2015-12-14 16:38:02,XanClic,http://pastebin.com/3FJQ8aBy
+2015-12-14 16:38:18,XanClic,"ach so, PIC vermutlich…"
+2015-12-14 16:38:46,XanClic,"Mit -fno-pic verschwindet zumindest das erste call, aber der Code wird nicht unkaputter"
+2015-12-14 16:40:03,kevin,"Der sieht seltsam aus, ja..."
+2015-12-14 16:40:19,kevin,Was sind das denn für Calls?
+2015-12-14 16:40:26,XanClic,Das erste ist halt zu rip+5
+2015-12-14 16:40:31,kevin,Ach so
+2015-12-14 16:40:32,XanClic,Und dann poppt er rip
+2015-12-14 16:40:42,XanClic,s/rip/eip/
+2015-12-14 16:41:09,kevin,"Sieht man so schlecht ohne aufgelöste Referenzen, was man wörtlich nehmen muss und was nicht ;-)"
+2015-12-14 16:53:37,XanClic,"Das schönste ist ja, dass gcc der Meinung ist, nur 32 Byte Stack für die Funktion zu benötigen"
+2015-12-14 17:04:23,XanClic,"gcc.git zu clonen war keine so gute Idee, glaube ich…"
+2015-12-14 17:04:29,XanClic,Wenn schon das Compressiong Objects ein paar Minuten dauert…
+2015-12-14 17:04:34,XanClic,*Compressing
+2015-12-14 17:26:12,Jonathan,Moin
+2015-12-14 17:32:12,kevin,Moin
+2015-12-14 17:32:28,kevin,"XanClic: Ach jetzt beantwortest du auch noch Mails. Und ich dachte, ich könnte mir noch Zeit lassen. ;-)"
+2015-12-14 17:32:30,XanClic,27 % bei 523 MB…
+2015-12-14 17:32:36,kevin,Oha
+2015-12-14 17:35:11,Jonathan,Moin Svenska
+2015-12-14 17:35:17,Svenska,moin
+2015-12-14 17:36:07,kevin,Moin
+2015-12-14 17:36:50,kevin,Oder moin schnippi oder so
+2015-12-14 17:37:10,Svenska,schnappi das kleine krokodil?
+2015-12-14 22:57:56,Svenska,Jonathan: lust auf sprache lernen? :-D
+2015-12-14 23:00:02,Paddy,Das klingt gefährlich
+2015-12-14 23:00:43,Svenska,duolingo funktioniert ... erstaunlich gut
+2015-12-14 23:00:51,Paddy,Naja
+2015-12-14 23:00:56,Paddy,Zu einem gewissen Grad ja
+2015-12-14 23:01:25,Svenska,"ich hab jetzt noch nix neues angefangen, aber bei en->sv scheitere ich gelegentlich am englischen"
+2015-12-14 23:01:32,Paddy,"Aber erstens wird es auf Dauer langweilig, und zweitens kommt man auch am Ende allerhöchstens auf B1, eher A2"
+2015-12-14 23:01:37,Svenska,"gilt das als schummeln, wenn ich ein de->en wörterbuch nehme? ;)"
+2015-12-14 23:02:03,Paddy,"Jo, an der englischen Ausgangssprache scheitern gehört bei mir auch zum Standard ;-)"
+2015-12-14 23:02:22,Paddy,Aber bei Schwedisch noch nicht *g*
+2015-12-14 23:02:23,Svenska,"naja, dafuer ist es onlinezeugs... ich glaube nicht, dass man irgendein C dafuer kriegt"
+2015-12-14 23:02:52,Svenska,"wenn das schwedische und das deutsche wort sich zu ähnlich sind, dann fällt mir das englische meist nicht ein. mir reicht schon, wenn ich ständig als wörterbuch von schweden missbraucht werde ^^"
+2015-12-14 23:03:54,Paddy,hehe
+2015-12-14 23:04:44,Paddy,"Für die Kurse, die es im Moment gibt, kann ich mich jedenfalls zur Zeit nicht so richtig motivieren"
+2015-12-14 23:05:29,Paddy,"Hm, Schwedisch bin ich angeblich auf Level 5. Das ist mein bestes von den Sprachen, die ich gar nicht kann. ;-)"
+2015-12-14 23:05:46,Svenska,lustig - der einstufungstest hat mich spontan auf level 6 eingestuft :D
+2015-12-14 23:06:16,XanCIic,"Soll ich das mal machen, um zu zeigen, was passiert, wenn man es wirklich gar nicht kann? :-P"
+2015-12-14 23:06:27,Svenska,"...ab dann muss ich einzeln weiter machen, weil ich zuviel kleinkram falsch mache (-ar statt -er, oder schlicht wörter vergessen zu uebersetzen)"
+2015-12-14 23:06:43,Svenska,"oder, was auch toll ist, in die ""was hast du gerade gehört?""-felder die uebersetzung reinzuschreiben ^^"
+2015-12-14 23:06:51,Svenska,kannst ja probieren
+2015-12-14 23:07:01,Paddy,"XanCIic: Auf Level 5 würdest du heute abend noch kommen, wenn du es drauf anlegst ;-)"
+2015-12-14 23:07:47,Paddy,Svenska: Einstufungstest hab ich nur bei Deutsch gemacht und da bin ich Level 11
+2015-12-14 23:08:10,XanCIic,"Genau so, wie am Samstag HID fertig geworden wäre, wenn wir es drauf angelegt hätten? :-P"
+2015-12-14 23:08:33,Paddy,Das kann ich dir mangels Wissen über HID nicht so genau sagen ;-)
+2015-12-14 23:08:49,Svenska,"hm, beim de->en test bin ich spontan auf level 10 eingestuft worden"
+2015-12-14 23:09:28,Paddy,"de->en hab ich normal gemacht, bis es mir zu langweilig geworden ist"
+2015-12-14 23:09:52,Svenska,"ja, wenn ich die sprache schon kann dann hab ich auf sowas keine lust ^^"
+2015-12-14 23:10:00,Paddy,Eben
+2015-12-14 23:10:42,Paddy,"XanCIic: Grad nachgeschaut, Level 5 sind 300 XP, also 30 Lektionen. Ohne weiteres an einem Abend machbar."
+2015-12-14 23:11:23,XanClic,OMG MIT XP?????
+2015-12-14 23:11:31,XanClic,Dann mach ich das sofort
+2015-12-14 23:11:34,XanClic,Gibts auch Achievements?
+2015-12-14 23:13:04,Svenska,"ja, es gibt ne ingame-werbung"
+2015-12-14 23:13:06,Svenska,*währung
+2015-12-14 23:13:08,Svenska,-.-
+2015-12-14 23:13:17,Svenska,"werbung gibt's keine, außer fuer sich selbst"
+2015-12-14 23:13:38,XanClic,Kann ich da eigentlich auch C lernen?
+2015-12-14 23:14:05,XanClic,"ich seh da nur englisch, französisch und spanisch"
+2015-12-14 23:14:52,Svenska,"wenn du die webseite auf englisch stellst, kriegst du mehr auswahl"
+2015-12-14 23:15:33,Paddy,Kann ich irgendjemanden zu Irisch motivieren? *g*
+2015-12-14 23:15:55,Svenska,ich hab ja irgendwo noch russisch auf meiner liste
+2015-12-14 23:16:19,Svenska,"...ist schon amuesant, kyrillisch was deutsches hinzuschreiben und dann von russen vorlesen zu lassen"
+2015-12-14 23:16:40,Svenska,aber eben weitab von der sprache ;)
+2015-12-14 23:17:01,Svenska,"hm, will ich sv 11 noch fertig machen oder nicht..."
+2015-12-14 23:18:49,Svenska,"achso, und ""Do sheep get sheep?"" ist wirklich eine offizielle frage ;)"
+2015-12-14 23:22:51,Paddy,Komische Fragen gibt es ja nun wirklich genug ;-)
+2015-12-14 23:23:02,Svenska,"ja, aber die antwort ist ""Får får får?"""
+2015-12-14 23:23:21,Paddy,*g*
+2015-12-14 23:23:50,Svenska,"hmm, das XP-system ist komisch. ""herz-bonus +2 XP"", aber irgendwie sind die XP immer durch 10 teilbar"
+2015-12-14 23:24:13,Paddy,Was ist denn Herz-Bonus?
+2015-12-14 23:24:23,Svenska,wenn du noch herzen uebrig hast
+2015-12-14 23:24:44,Paddy,Ist das Herz-System nicht seit Ewigkeiten abgeschafft?
+2015-12-14 23:24:51,Svenska,"öh, nein? ;)"
+2015-12-14 23:25:12,Svenska,"vielleicht fuer die lektionen, aber nicht fuer die ""ich will alle lektionen dieser kategorie freischalten""-dinge"
+2015-12-14 23:25:37,Paddy,"Ach so, das habe ich noch nie gemacht"
+2015-12-14 23:25:45,Svenska,lol
+2015-12-14 23:26:11,Paddy,"Wenn du die Sprache schon kannst, mag das ja Sinn ergeben, aber sonst nicht so besonders"
+2015-12-14 23:26:15,Svenska,ja
+2015-12-14 23:26:29,Svenska,ich will sv erstmal fertig machen und dann was neues anfangen
+2015-12-14 23:26:36,Svenska,"einmal durch den techtree, dann weiter im text ^^"
+2015-12-14 23:27:33,Svenska,langsam wirds aber tatsächlich anstrengend
+2015-12-14 23:27:38,Svenska,...oder ich bin muede.
+2015-12-14 23:28:13,Paddy,"Hm, kann man noch irgendwo nachvollziehen, wann man sich angemeldet hat und wann man den ersten Tree fertighatte?"
+2015-12-14 23:28:23,Paddy,Müsste irgendwas um die zwei Jahre gewesen sein...
+2015-12-14 23:28:33,Svenska,"öh, du hast oben activity"
+2015-12-14 23:28:39,Svenska,da kriegst du ne timeline.
+2015-12-14 23:28:54,Svenska,"meine fängt ""vor 2 stunden"" an, aber ich hab gestern ohne account schonmal gespielt"
+2015-12-14 23:29:08,Paddy,Die Timeline geht genau eine Woche lang
+2015-12-14 23:29:10,Svenska,nachdem ich den begriff auf reddit gefuehlte 100x gelesen habe
+2015-12-14 23:29:12,Svenska,oh
+2015-12-14 23:31:30,Paddy,Und die Aktivitäten im Profil haben eine Auflösung von einem Jahr. Das taugt auch nicht so richtig.
+2015-12-14 23:31:44,Svenska,frag im forum?
+2015-12-14 23:32:19,Paddy,So wichtig ist es auch wieder nicht ;-)

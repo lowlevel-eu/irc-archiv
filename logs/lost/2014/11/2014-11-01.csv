@@ -1,0 +1,185 @@
+date/time,nick,message
+2014-11-01 13:31:34,Svenska,nioM
+2014-11-01 13:36:32,XanClic,Zbva
+2014-11-01 14:53:07,Jonathan,"Hmm, ROT13 ;)"
+2014-11-01 14:54:33,XanClic,"Wenn es so lange gedauert hat, das zu knacken, dann hat Kevin ja recht, dass das eine sehr sichere Verschlüsselung ist"
+2014-11-01 14:55:10,Jonathan,*g*
+2014-11-01 14:55:20,Jonathan,"Nee, war so lange afk :P"
+2014-11-01 14:56:02,Svenska,"jede verschlüsselung ist sehr sicher, wenn der aufwand des entschlüsselns den wert des inhaltes überschreitet...."
+2014-11-01 15:22:17,iksnagreb,moin
+2014-11-01 21:57:38,Cjreek,wie verwaltet ihr euren virtuellen speicher? ich hab irgendwie noch keinen Ansatz gefunden der mir richtig gefallen hat.. und was für infos außer base adresse und größe speichert ihr zusätzlich noch?
+2014-11-01 21:59:07,Paddy,"Bisher hatte ich nie einen VMM, der mehr als die Page Tables braucht"
+2014-11-01 22:00:20,Cjreek,ja aber angenommen ich will jetzt ab adresse X 40KiB reservieren
+2014-11-01 22:00:35,iksnagreb,mein VMM verwendet ne bitmap
+2014-11-01 22:00:50,Svenska,"nimmst du dir 10 random pages aus dem physischen speicher, und mappst die nacheinander ab adresse X"
+2014-11-01 22:01:08,Cjreek,jo gut und wenn der speicher freigegeben werden soll
+2014-11-01 22:01:22,Cjreek,man muss sich dann ja gemerkt haben welche seiten ausm phys. speicher man benutzt hat
+2014-11-01 22:01:22,Svenska,"dann markierst du die einträge als ""not present"""
+2014-11-01 22:01:25,Cjreek,bzw. ne das steht da ja
+2014-11-01 22:02:05,Cjreek,ja mom. aber man kann in der pagetable ja nicht speichern wie viele seiten ab dieser adresse reserviert wurden
+2014-11-01 22:02:17,Svenska,spielt doch keine roll
+2014-11-01 22:02:19,Cjreek,man gibt beim free ja nur die base adresse des reservierten speichers an
+2014-11-01 22:02:23,Svenska,jede seite steht fuer sich
+2014-11-01 22:02:25,iksnagreb,man kann die physische adress aus den paging strukturen wieder auslesen
+2014-11-01 22:02:37,Svenska,jede page ist unabhängig von allen anderen
+2014-11-01 22:02:54,Cjreek,und wenn ich 40Kib will muss ich 40 mal VMM-Alloc aufrufen und mir die 40 Pointer merken?
+2014-11-01 22:02:55,Svenska,dass free arbeitet ja nicht mit dem vmm
+2014-11-01 22:03:05,Svenska,sondern mit der verwaltung des heaps
+2014-11-01 22:03:30,Cjreek,ja aber der heap kann/muss ja ggf auch speicher freigeben
+2014-11-01 22:03:37,Svenska,ja?
+2014-11-01 22:03:45,Cjreek,ja sonst wirds doch immer mehr
+2014-11-01 22:03:54,Svenska,dein malloc(40 KiB) wird 40 KiB vom HEAP anfordern
+2014-11-01 22:04:02,Cjreek,und was ist mit ner PID? muss man sich nicht merken zu welchem prozess der speicher gehört?
+2014-11-01 22:04:05,Cjreek,bzw
+2014-11-01 22:04:09,Cjreek,das hab ich noch nicht ganz gerafft
+2014-11-01 22:04:10,Svenska,"und der wird vermutlich ""40 KiB plus eine page"" vom VMM anfordern"
+2014-11-01 22:04:16,Cjreek,braucht jeder prozess seine eigene pagetable?
+2014-11-01 22:04:20,iksnagreb,ja
+2014-11-01 22:04:22,Svenska,"ist sinnvoll, ja"
+2014-11-01 22:04:29,Svenska,aber nicht notwendig ;)
+2014-11-01 22:04:49,Cjreek,alles nach der reihe jetzt :D
+2014-11-01 22:04:53,Cjreek,also 1)
+2014-11-01 22:05:11,Svenska,"die information, wieviel dein free() freigeben soll, steht in irgendeiner struktur, die deinen heap beschreibt"
+2014-11-01 22:05:30,Svenska,"das hat erstmal primär nichts mit dem vmm zu tun, denn da steht das nicht drin"
+2014-11-01 22:05:36,Cjreek,ich rede nicht von malloc(40KiB) sondern davon dass malloc ja ggf. vom kernel pages anfordern muss
+2014-11-01 22:05:44,Cjreek,heap ist klar. 
+2014-11-01 22:05:46,Cjreek,der ist gebaut
+2014-11-01 22:05:50,Cjreek,es geht nur um pages
+2014-11-01 22:06:04,Svenska,dein malloc(40 KiB) wird vom kernel 11 pages anfordern müssen
+2014-11-01 22:06:11,Cjreek,ja genau
+2014-11-01 22:06:13,Svenska,"10 pages = 40 KiB für die anwendung, plus ein paar bytes overhead"
+2014-11-01 22:06:27,Cjreek,jo soweit klar
+2014-11-01 22:06:29,Svenska,"und in diesen paar bytes overhead steht drin, wie groß der block ist, den du da gerade hast"
+2014-11-01 22:06:43,Svenska,"und wenn du weißt, wie groß dieser block ist, dann weißt du auch, wieviele pages er belgt"
+2014-11-01 22:06:45,Svenska,belegt
+2014-11-01 22:06:52,Cjreek,und wenn der anfordernde prozess diese infos überschreibt?
+2014-11-01 22:07:06,Svenska,"und wenn du weißt, wieviele pages er belegt, kannst du im vmm nacheinander diese pages als not present markieren"
+2014-11-01 22:07:14,Svenska,"tja, dann selbst schuld. :-)"
+2014-11-01 22:07:18,Svenska,gibt's nen page fault
+2014-11-01 22:07:20,XanClic,"Ich weiß ehrlich nicht, was du immer mit „der Prozess kann die Info überschreiben“ hast"
+2014-11-01 22:07:24,XanClic,Dann ist halt der Heap im Arsch
+2014-11-01 22:07:30,XanClic,Und der Prozess schmiert im besten Falle ab
+2014-11-01 22:07:34,Svenska,jeder prozess hat seine eigene page table
+2014-11-01 22:07:38,XanClic,Im schlimmsten Fall macht er sich seine Daten kaputt
+2014-11-01 22:07:52,Cjreek,ja pff.. ich fordere 4KiB vom kernel an. Er gibt mir die adresse $20000
+2014-11-01 22:08:01,Svenska,"das heißt, wenn er seinen eigenen heap zerstört, dann wird der kernel beim free() ungültige pages freigeben wollen"
+2014-11-01 22:08:02,XanClic,"Ja, in deinem eigenen virtuellen Adressraum"
+2014-11-01 22:08:05,XanClic,In dem nur du drin liegst
+2014-11-01 22:08:11,Svenska,"und wenn er das versucht, gibt's nen pagefault. _für diesen prozess_"
+2014-11-01 22:08:14,XanClic,"Und der Kernel, auf den du aber keinen Zugriff hast"
+2014-11-01 22:10:27,Cjreek,ich glaube ich muss woanders anfangen.. vielleicht erledigen sich dann diese (blöden) fragen... und zwar: jeder prozess hat seinen eigenen adressraum. es wurde aber eben gesagt dass nicht zwangsweise jeder prozess ne eigene pagetable braucht
+2014-11-01 22:10:40,Cjreek,wie das?
+2014-11-01 22:10:58,XanClic,Das ist äquivalent
+2014-11-01 22:11:14,XanClic,"Wenn nicht jeder Prozess eine eigene Pagetable hat, hat nicht jeder Prozess einen eigenen Adressraum"
+2014-11-01 22:11:25,XanClic,Was allerdings der gängigen Definition von „Prozess“ zuwider läuft
+2014-11-01 22:11:25,Cjreek,ok
+2014-11-01 22:11:29,Cjreek,verstanden
+2014-11-01 22:11:52,Cjreek,wie/wodurch switcht man zwischen der kernel pagetable und der der adressen
+2014-11-01 22:12:01,Cjreek,"""adressen"" = prozesse"
+2014-11-01 22:12:13,Svenska,page directory wechseln
+2014-11-01 22:12:19,Cjreek,ach klar
+2014-11-01 22:12:21,Cjreek,cr3
+2014-11-01 22:12:25,Cjreek,gut
+2014-11-01 22:12:52,iksnagreb,"der kernel kann aber auch in alles adressräume eingeblendet werden, spart wechsel"
+2014-11-01 22:13:21,XanClic,Und außerdem bewahrt das die geistige Gesundheit
+2014-11-01 22:13:58,Paddy,"Man kann aber auch das PD per Task Gate wechseln lassen, vor allem, wenn man mit Umweg über einen GPF aus dem VM86 kommt"
+2014-11-01 22:14:07,XanClic,"Sag ich doch, geistige Gesundheit :-P"
+2014-11-01 22:14:21,XanClic,Und die ist bei mir ja schon lange abhanden gekommen
+2014-11-01 22:14:38,Paddy,"Wer sowas baut, bei dem gibt es keine geistige Gesundheit, die bewahrt werden könnte"
+2014-11-01 22:14:50,Cjreek,aber wenn der kernel in den anderen prozessräumen ist.. dann braucht trotzdem jeder prozess seine eigene pagetable oder nicht?
+2014-11-01 22:14:57,XanClic,"Der Vorschlag kam von dir, also sitzen wir in einem Boot :-P"
+2014-11-01 22:15:15,Paddy,Ich habe nie was anderes behauptet
+2014-11-01 22:15:32,XanClic,"Ich wollte es auch nicht so klingen lassen, als hättest du"
+2014-11-01 22:15:49,Cjreek,?
+2014-11-01 22:15:55,XanClic,"Nix, nix *g*"
+2014-11-01 22:15:56,Jidder,die reden nicht mit dir Cjreek ^^
+2014-11-01 22:16:01,Cjreek,ja ich merks :D
+2014-11-01 22:16:31,Paddy,"Cjreek: Keine Sorge, deine geistige Gesundheit ist durch die Verwendung von Pascal auch in Frage gestellt ;-)"
+2014-11-01 22:16:42,Cjreek,ja das hab ich schon selbst gemerkt :D
+2014-11-01 22:16:50,Cjreek,aber ich kämpf mich durch^^
+2014-11-01 22:17:00,Paddy,Womit wir ebenfalls in einem Boot sitzen *g*
+2014-11-01 22:17:37,XanClic,Du sitzt offenbar in zweien
+2014-11-01 22:17:40,XanClic,Das klingt auch nicht so gesund
+2014-11-01 22:17:56,Cjreek,geht wenn wir direkt nebeneinander fahren
+2014-11-01 22:18:01,Cjreek,mit jedem fuß in einem
+2014-11-01 22:18:10,Cjreek,ist natürlich etwas gefährlich aber sollte gehn :D
+2014-11-01 22:18:14,XanClic,Das ist dann aber die Beine in zwei Boote legen
+2014-11-01 22:18:17,XanClic,Und zwischen zwei Booten sitzen
+2014-11-01 22:18:23,XanClic,"Nach meiner Definition, wo der Sitzplatz liegt"
+2014-11-01 22:19:00,Paddy,XanClic: Dass muss auch wieder direkt mit der geistigen Gesundheit zusammenhängen
+2014-11-01 22:19:25,Jonathan,Hmmm
+2014-11-01 22:19:27,XanClic,"Schade, dass ich entsprechende Symptome dann vermutlich nicht erkenne, sondern eher noch unterstütze"
+2014-11-01 22:19:43,XanClic,Ich bin immer noch für Assemblertestcases
+2014-11-01 22:20:03,Jonathan,Meine Nicht-Gesundheit ist dann durch Verwendung eines selbst gebauten Systems sowieso bewiesen? *g*
+2014-11-01 22:20:17,Paddy,Also zwei Schlitten gleichzeitig fahren funktioniert. Mit Booten hab ich es zugegebenermaßen noch nicht ausprobiert.
+2014-11-01 22:20:44,XanClic,Gibt ja auch mehr Berge als Wasser hier
+2014-11-01 22:20:53,Paddy,Für manche Werte von Berg
+2014-11-01 22:20:55,Cjreek,frage: brauche ich für n prozesse n 4 MiB pagetables? wenn nein dann kann jemand vllt. 1 (!) ansatz erklären wie mans sonst macht?
+2014-11-01 22:21:20,Cjreek,4 MiB weil das ganze ja ca 4MiB speicher braucht
+2014-11-01 22:21:32,Paddy,Du musst doch nicht alle PTs haben
+2014-11-01 22:23:18,Cjreek,"aber trotzdem für jeden prozess ein pagedirectory was ich beim taskwechsel (bitte keine details, soweit bin ich noch nicht) in cr3 lade?"
+2014-11-01 22:25:07,Jonathan,Ja
+2014-11-01 22:25:28,Jonathan,"Auf meinem System besteht das PD aus exakt 3 Bytes, das vereinfacht das Ganze ein wenig *g*"
+2014-11-01 22:25:40,Cjreek,hä?
+2014-11-01 22:25:41,Svenska,auf meinem immerhin aus 16 :D
+2014-11-01 22:25:50,Svenska,aber auf nem PC sinds 4096 bytes. fertig.
+2014-11-01 22:26:20,Jonathan,"Cjreek: Mein System hat 64kB Adressraum, der ist in 4 Banks unterteilt und eine davon ist fest mit Speicherseite 0 verdrahtet"
+2014-11-01 22:26:40,Cjreek,achso
+2014-11-01 22:26:53,Jonathan,"Also 16kB-""Pages"", 48KiB Adressraum pro Prozess und 4MiB Speicher maximal :P"
+2014-11-01 22:27:03,Jonathan,Die festen 16KiB sind Kernel
+2014-11-01 22:30:57,Svenska,für prozess wäre das auch ne doofe wahl :D
+2014-11-01 22:31:22,Paddy,"Hm, irgendein Paket zuviel hab ich jetzt deinstalliert... :-/"
+2014-11-01 22:32:15,isynax,"Hm, so ganz funktionierts doch nicht, aber ich hab irgendwie keine Lust, das zu fixen :-P"
+2014-11-01 22:32:34,XanClic,TCP in Assembler ist wirklich write-only
+2014-11-01 22:33:20,XanClic,Und alles neu schreiben will ich auch nur ungern
+2014-11-01 22:33:44,Paddy,hehe
+2014-11-01 22:34:50,Cjreek,"Wenn ein Prozess gestartet wird muss der Kernel ein Pagedirectory vorbereiten indem das Image des prozesses (bzw. halt der code des prozesses usw), der kernel (ggf) und das Pagedirectory dieses prozesses gemappt werden. Wenn die heapverwaltung dieses prozesses eine page braucht dann macht er einen syscall und fordert vom kernel eine page an. der kernel reserviert physischen speicher und mapped diesen speicher dann in der pagetable des prozes"
+2014-11-01 22:35:40,Svenska,klingt logisch
+2014-11-01 22:36:00,Cjreek,das freut mich
+2014-11-01 22:36:02,Cjreek,:D
+2014-11-01 22:36:44,Svenska,... 171 + 436 + 135 = 742 zeilen code
+2014-11-01 22:37:26,Svenska,und das ist n dämlicher formatkonverter für mails
+2014-11-01 22:38:18,Jonathan,Svenska: Klingt nach Spaß *g*
+2014-11-01 22:38:27,Svenska,ja.
+2014-11-01 22:38:29,Svenska,in eine richtung
+2014-11-01 22:38:32,Jonathan,Funktioniert es denn wenigstens?
+2014-11-01 22:38:39,Svenska,"zwischen zwei systemen, die nicht bijektiv ineinaner abbilden können"
+2014-11-01 22:38:58,Svenska,"naja, drei testmails haben den sprung geschafft :)"
+2014-11-01 22:39:09,Jonathan,Ist doch schonmal was ^^
+2014-11-01 22:39:27,Svenska,"mal schauen, wann ich testmails kriege, die anders aussehen"
+2014-11-01 22:39:41,Svenska,"ich weiß ja grob, an welchen stellen der parser explodieren wird :D"
+2014-11-01 22:40:40,Paddy,"Wie debuggt man das, wenn der X-Server gleich wieder beendet wird statt dass der Display Manager kommt?"
+2014-11-01 22:40:52,Svenska,man guckt in /var/log/Xorg.0.log ?
+2014-11-01 22:40:56,Jidder,systemsteuerung
+2014-11-01 22:42:02,Paddy,"Svenska: Das einzige (EE) ist die letzte Zeile: ""Server terminated successfully (0). Closing log file"""
+2014-11-01 22:42:31,Svenska,dann würde ich den x server mal trocken starten
+2014-11-01 22:42:40,Svenska,und dann von ner zweiten shell aus ein xterm drauf starten
+2014-11-01 22:42:56,Svenska,"wenn das gelingt (und die konfig die gleiche ist), dann wird vermutlich der display manager abschmieren"
+2014-11-01 22:43:44,Paddy,Was meinst du mit trocken starten?
+2014-11-01 22:44:02,Svenska,"""X"""
+2014-11-01 22:44:15,Paddy,Also startx tut
+2014-11-01 22:44:30,Svenska,"hm, dann müsste gleich dein desktop starten"
+2014-11-01 22:44:47,Paddy,Jo
+2014-11-01 22:44:52,Svenska,ok
+2014-11-01 22:45:00,Svenska,dann wird dein display manager nicht starten wollen
+2014-11-01 22:45:00,Paddy,Aber ich hätte eigentlich doch wieder gern einen grafischen Login ;-)
+2014-11-01 22:46:27,Paddy,"Nachdem das ein yum remove war, währenddessen das X abgeschmiert ist und nicht wiederkam, mal ein rpm -Va probieren..."
+2014-11-01 22:46:44,Svenska,naja
+2014-11-01 22:46:49,Svenska,"sicher, dass das X abgeschmiert ist?"
+2014-11-01 22:46:57,Svenska,"und nicht, dass das postinst-script den gdm neu starten wollte?"
+2014-11-01 22:47:39,Paddy,X war halt weg. Ich wollte nichts über die Gründe spekulieren. ;-)
+2014-11-01 22:48:23,Paddy,Also rpm -Va sieht an sich vernünftig aus
+2014-11-01 22:50:48,Paddy,Oh. systemctl start gdm tut ja sogar.
+2014-11-01 22:51:24,Paddy,"Jetzt müsste ich nur noch wissen, wie man das mit systemd automatisch starten lässt..."
+2014-11-01 22:51:45,Svenska,einfach mal system neu starten? :D
+2014-11-01 22:51:59,XanClic,systemctl enable
+2014-11-01 22:52:35,Paddy,Wenn das reicht
+2014-11-01 22:53:19,Paddy,"Jo, tut es. Dann bleibt nur noch die Frage, wer das disablet hat."
+2014-11-01 23:12:35,XanClic,KVM internal error. Suberror: 1
+2014-11-01 23:12:36,XanClic,"ach, schade"
+2014-11-01 23:13:44,Paddy,Wie hast du das denn hinbekommen?
+2014-11-01 23:13:56,XanClic,irgendwie mit isynax
+2014-11-01 23:14:01,XanClic,einfach beim gar nichts machen
+2014-11-01 23:18:17,XanClic,und irgendwie vertragen sich IRC innen und außen gar nicht so gut
+2014-11-01 23:18:26,XanClic,Ich kann nicht aus dem Gast heraus ein quit senden
+2014-11-01 23:18:31,XanClic,vielleicht liegts an -net user

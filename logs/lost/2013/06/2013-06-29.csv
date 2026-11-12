@@ -1,0 +1,122 @@
+date/time,nick,message
+2013-06-29 12:17:59,iksnagreb,moin
+2013-06-29 12:21:15,pocky,moin
+2013-06-29 13:34:16,iksnagreb,"weiß jemand, was ich hier gegen den ganzzahlüberlauf machen kann? http://pastebin.com/ZP9A1igi"
+2013-06-29 13:35:31,Paddy,i <= 0xfffff000
+2013-06-29 13:35:58,Paddy,"Ah, ne, geht nicht"
+2013-06-29 13:36:21,Paddy,Dann i als Index nehmen und erst im Schleifenrumpf mit 0x1000 mulitplizieren
+2013-06-29 13:36:52,Paddy,Oder auch check_if_page_free() gleich mit Pagenummer statt Adresse arbeiten lassen
+2013-06-29 13:46:44,iksnagreb,"jo, danke, jetzt gehts"
+2013-06-29 14:30:55,iksnagreb,"kann mir jemand helfen? ich bekomme beim kontext wechsel immer nen page fault, aber erst beim zweiten mal, einmal kann ich ohne probleme wechseln"
+2013-06-29 14:31:05,iksnagreb,hier der quelltext https://docs.google.com/file/d/0B3zUIFJ_B5J6b3oyNVdhS21WTDg/edit?usp=sharing
+2013-06-29 14:37:09,mgottschlag,"zu viel code, du solltest dazu sagen, was interessant ist."
+2013-06-29 14:38:31,iksnagreb,init_paging() activate_context() und map_page() irgendwo da muss der fehler sein
+2013-06-29 14:44:15,mgottschlag,"iksnagreb: das löst das Problem nicht, ich will immernoch nicht die ganze Dateiliste nach den Funktionsnamen durchsuchen ^^"
+2013-06-29 14:44:47,mgottschlag,"okay, ich hab sie jetzt gefunden, aber trotzdem ^^"
+2013-06-29 14:45:28,mgottschlag,"und ehrlich gesagt hab ich keine Lust, unkommentierten Code zu debuggen"
+2013-06-29 14:48:44,mgottschlag,"außerdem, wie und wo crashts, was kommen für exceptions?"
+2013-06-29 14:57:17,iksnagreb,"ich stell nachher mal alle informationen, die ich zu dem fehler hab zusammen, dann meld ich mich nochmal, muss, jetzt erst off"
+2013-06-29 15:18:25,tufel,huhu
+2013-06-29 15:23:28,tufel,kennt hier jemand ein gutes tutorial zu vivado ? :D
+2013-06-29 16:03:09,iksnagreb,hallo
+2013-06-29 16:04:57,iksnagreb,ich hab jetzt mal nen bild von dem pagefault gemacht http://iksnagreb.patov.com/mediaplayer.php?type=image&src=data/user/christoph/.//./public/Bilder/tertius_page_fault
+2013-06-29 16:06:02,iksnagreb,"und ich hab im quelltext die stelle markiert, an der de pf auftritt"
+2013-06-29 16:06:09,iksnagreb,http://iksnagreb.patov.com/index.php?do=browse&user=christoph&path=./public/tertius
+2013-06-29 16:16:20,mgottschlag2,wo im Quelltext? -.-
+2013-06-29 16:16:54,mroman,Mit einem Leerschlag denk!
+2013-06-29 16:17:06,iksnagreb,kernel/paging.c
+2013-06-29 16:17:06,mroman,oh :
+2013-06-29 16:17:08,mroman,D
+2013-06-29 16:19:56,iksnagreb,"ich vermute, es ist das mappen, beim aktivieren des kontext, aber ich weiß nicht, was da nicht passen könnte"
+2013-06-29 16:19:57,mgottschlag2,iksnagreb: und worauf greift der in der exception zu?
+2013-06-29 16:20:15,mgottschlag2,"also, wo befindet der sich beim pagefault genau?"
+2013-06-29 16:20:36,iksnagreb,auf 0x00501000 da sollte das aktuelle Page directory gemappt sein
+2013-06-29 16:21:34,mgottschlag2,übrigens: invtlb brauchst du nach dem Schreiben von CR3 nicht
+2013-06-29 16:21:42,mgottschlag2,"wenn das Pagedir neu geladen wird, wird alles invalidiert"
+2013-06-29 16:22:29,iksnagreb,"oh, danke gut zu wissen"
+2013-06-29 16:26:39,mgottschlag2,du solltest qemu mal die pagetables ausgeben lassen beim crash
+2013-06-29 16:26:48,mgottschlag2,*nach dem crash
+2013-06-29 16:28:20,iksnagreb,wie macht man das?
+2013-06-29 16:28:46,mgottschlag2,"kP, irgend ein befehl für die qemu-konsole"
+2013-06-29 16:28:52,mgottschlag2,"""info tlb"" oder so"
+2013-06-29 16:30:38,iksnagreb,"wo ist die qemu-konsole, ich kenn mich damit nicht gut aus"
+2013-06-29 16:34:19,iksnagreb,"ah, ich glaub ich habs gefunden"
+2013-06-29 16:38:26,iksnagreb,"der startup kontext ist in ordnung, ind jedem neuen kontext wird irgendwie nur der kernel und der vmem gemappt, der rest fehlt einfach"
+2013-06-29 16:39:45,iksnagreb,wenn ich jetzt nur wüste warum
+2013-06-29 16:40:20,iksnagreb,ich mus jetzt erst off
+2013-06-29 18:48:08,tufel,huhu
+2013-06-29 18:49:01,Jidder,hiho
+2013-06-29 18:50:06,tufel,kennst du ein gutes tutorial für vivado bzw ise ?
+2013-06-29 18:52:47,Jidder,keine ahnung was das ist
+2013-06-29 18:55:00,tufel,naja der VDHL - simulator und Editor von xilinx
+2013-06-29 18:55:28,Jidder,"klingt kompliziert genug, dass mir ein tutorial zu wenig erscheint ^^"
+2013-06-29 18:57:20,tufel,naja dann such ich mal 2 gute tutorials :D
+2013-06-29 18:57:58,Jidder,schon besser ^^
+2013-06-29 19:02:28,mroman,hm?
+2013-06-29 19:02:45,mroman,Normalerweise sind die doch nicht so kompliziert.
+2013-06-29 19:03:01,mroman,ich kenne zwar nur Quartus und GHDL
+2013-06-29 19:03:05,mroman,bzw. ModelSim
+2013-06-29 19:03:17,mroman,Quartus ist ein Sythesizer.
+2013-06-29 19:11:33,tufel,mmh ok
+2013-06-29 19:12:02,tufel,genau genommen macht mir eigentlich nur der simulator probleme :D
+2013-06-29 19:18:47,mgottschlag2,"hm, mit ModelSim hab ich zumindest während nem Praktikum schonmal gearbeitet"
+2013-06-29 19:18:57,mgottschlag2,"ich meine, ISE und ModelSim"
+2013-06-29 19:27:26,tufel,kennst du dazu ein cooles tutorial ? 
+2013-06-29 19:30:54,tufel,zu ise 
+2013-06-29 19:55:38,mgottschlag2,"ne, ich hab maximal nen Haufen Folien zum Praktikum"
+2013-06-29 19:55:49,mgottschlag2,aber das war eine Uralt-Version
+2013-06-29 19:56:57,mgottschlag2,http://capp.itec.kit.edu/teaching/prk/bpti/
+2013-06-29 19:58:58,mgottschlag2,"tufel: ich wollte mir evtl auch mal ein Board zulegen, kannst du da irgendwas empfehlen?"
+2013-06-29 20:04:47,tufel,"ne sorry, bin selber noch der totale anfänger was fpga's und boards angeht :D"
+2013-06-29 20:04:48,mgottschlag2,"(meine bisherige Recherche hat ergeben, dass das de0 nano ganz nett aussieht, aber da du xilinx verwendest, hast du da vielleicht Gründe dafür)"
+2013-06-29 20:04:51,mgottschlag2,okay ^^
+2013-06-29 20:06:00,mgottschlag2,womit arbeitest du dann?
+2013-06-29 20:08:49,tufel,"naja bisher hab ich meine schaltungen alle in logisim aufgebaut, aber langsam wird mir das zu unübersichtlich "
+2013-06-29 20:12:28,PascalJ,Hallo
+2013-06-29 20:13:24,mgottschlag2,"aso, also bis jetzt ist alles nur virtuell :D"
+2013-06-29 20:18:13,tufel,joar
+2013-06-29 21:25:13,iksnagreb,guten abend
+2013-06-29 21:26:51,Jidder,nabend
+2013-06-29 21:44:00,iksnagreb,"unglaublich, ich glaub ich hab den fehler gefunden!"
+2013-06-29 21:44:19,iksnagreb,es war wohl ein fehlendes & ~0xFFF
+2013-06-29 21:49:51,iksnagreb,"gibt es eine möglichkeit die serielle ausgabe von qemu auf ein anderes terminal, oder in eine datei umzuleiten?"
+2013-06-29 21:50:14,iksnagreb,ich hätt gern das terminal für den qemu monitor frei
+2013-06-29 21:51:40,bluecode,-serial dev    Redirect the virtual serial port to host character device dev. The default device is vc in graphical mode and stdio in non graphical mode
+2013-06-29 21:51:45,bluecode,qemu manual
+2013-06-29 21:58:01,DerHartmut,Nabend
+2013-06-29 22:01:05,DerHartmut,op is a fag
+2013-06-29 23:05:06,iksnagreb,"lol, ist sowas normal, oder mach ich wa falsch http://pastebin.com/xEpcTT0k"
+2013-06-29 23:06:25,Jidder,ist zu lang
+2013-06-29 23:06:40,iksnagreb,"ich konnt es noch kürzen, jetzt siehts besser aus"
+2013-06-29 23:06:41,XanClic,Das ist voll paranormal
+2013-06-29 23:09:34,DerHartmut,Generell finde ich iksnagreb solltest du darauf achten möglichst wenig Klammern zu benutzen
+2013-06-29 23:10:15,iksnagreb,"oh, fuck, wenn du meinen code sehen würdest"
+2013-06-29 23:10:35,DerHartmut,"Ich kenne einen potenten Doktor samt Projekt, der kann dir sagen, was guter didaktischer Code ist"
+2013-06-29 23:10:40,XanClic,"*sähest, wenn der Konjunktiv 2 sich vom Indikativ unterscheidet, ist er auch zu benutzen"
+2013-06-29 23:10:51,mroman,wer benutzt schon struct?
+2013-06-29 23:10:56,mroman,Das gehört doch getypedefed.
+2013-06-29 23:11:24,Jidder,wer benutzt typedef? das gehört geclasst
+2013-06-29 23:12:01,XanClic,"Unsere Diskussion in unserer fachlich hochkompetenten und didaktisch geschulten Runde hat ergeben, dass der Konjunktiv 1 („sehest“) ebenso funktioniert, da kein solcher Indikativ existiert"
+2013-06-29 23:12:38,DerHartmut,ich tutete sehen
+2013-06-29 23:12:44,XanClic,Auf stultus' Anraten werfe ich hiermit ein „#define“ in die Runde
+2013-06-29 23:13:08,mroman,Schweizer Konjunktiv ist viel einfacher.
+2013-06-29 23:13:17,Jidder,so ein käse
+2013-06-29 23:13:18,mroman,i ans Verb hängen und fertig.
+2013-06-29 23:13:22,XanClic,"*„Auf dem stultus sein Anraten"", sagt desl"
+2013-06-29 23:13:29,XanClic,*dem epOS sein Linus
+2013-06-29 23:13:33,XanClic,Der ist vielleicht ein Besserwisser
+2013-06-29 23:13:35,XanClic,Mann mann mann
+2013-06-29 23:14:02,DerHartmut,Der ist betrunken von deiner Ausstrahlung
+2013-06-29 23:14:13,bluecode,was strahlt der denn?
+2013-06-29 23:14:34,DerHartmut,Absolute Attraktivisexischönheitness
+2013-06-29 23:14:41,mroman,"Natürlich stirbt er auch hier, der Konjunktiv."
+2013-06-29 23:16:38,DerHartmut,Tutete er je leben?
+2013-06-29 23:18:01,DerHartmut,Wo ist eigentlich Paddy
+2013-06-29 23:18:04,DerHartmut,Ohne Paddy keine Paddy
+2013-06-29 23:22:25,iksnagreb,"NEIN!!! ich hab wieder eine fehler, der scheinbar zufällig auftritt"
+2013-06-29 23:26:08,stultus,scheinbar zufällig? mehr testcases!
+2013-06-29 23:26:32,DerHartmut,Generell alles durch ein Java-TDD-Framework bootstrappen und testen lassen
+2013-06-29 23:26:35,DerHartmut,Ist das Effektivste
+2013-06-29 23:36:44,iksnagreb,"komisch, die adresse wir richtig gemappt, aber wenn ich dann darauf zugreife, ist sie plötzlich nicht mehr gemappt"
+2013-06-29 23:51:03,stultus,iksnagreb: richtiges PD?
+2013-06-29 23:56:28,iksnagreb,"ich versteh es nicht,  er alloziert als adresse 0x2001000, wenn ich aber DANACH eine Zeile einfüge, die text ausgiebt, alloziert er 0x200a000 und stürtzt ab"

@@ -1,0 +1,189 @@
+date/time,nick,message
+2011-12-29 00:08:01,Threadcore,Kennt sich jmd mit Varaibeln in der Windows-CMD aus ?
+2011-12-29 00:08:54,taljeth,Können die irgendwas tolles?
+2011-12-29 00:10:00,Threadcore,naja das man nicht n-mal den selben Dreck schreiben muss 
+2011-12-29 00:10:39,Threadcore,"dachte zuerst an Env-Varaibeln, aber die immer zu ändern..hmm"
+2011-12-29 00:13:13,taljeth,"Naja, was anderes hast du nicht"
+2011-12-29 00:13:20,taljeth,Außer vielleicht temporäre Dateien
+2011-12-29 00:19:17,Threadcore,"sie sollten eben nicht temporär, sondern dauerhaft sein, aber ich glaub ich komm nicht um Env-Vars rum"
+2011-12-29 00:56:11,desl,"""in the settigns window"" klingt sehr denglish"
+2011-12-29 00:56:29,desl,m(
+2011-12-29 00:56:32,desl,ewindow
+2011-12-29 01:23:14,tibor,Es soll doch jetzt diese tolle powershell geben. Aber keine Ahnung was die kann
+2011-12-29 01:37:43,Jidder,ist schon wieder random-mittwoch?
+2011-12-29 01:39:06,SHyx0rmZ,erst in 6 Tagen wieder
+2011-12-29 02:25:34,tibor,gn8
+2011-12-29 02:51:46,Threadcore,tschau
+2011-12-29 10:13:21,alexander,Morgen
+2011-12-29 10:27:47,Homix,morgen
+2011-12-29 10:35:33,Threadcore,hi
+2011-12-29 10:39:44,SHyx0rmZ,Moin
+2011-12-29 10:48:48,alexander,Morgen
+2011-12-29 11:20:22,taljeth,Moin
+2011-12-29 11:22:54,Guest526709,Morgen
+2011-12-29 11:25:51,alexander,Morgen
+2011-12-29 11:36:19,Threadcore,Hi
+2011-12-29 11:48:47,Homix,"ich bin mal wieder an dem punkt angelangt, wo SMP abschalten sinnvoller ist als endlos zu debuggen^^"
+2011-12-29 12:06:25,alexander,*g*
+2011-12-29 12:20:59,Homix,"hm ok es lag an meinen neuen Lock-Sections, die sich, wenn per flag angegeben, um cli und sti kümmern^^"
+2011-12-29 13:57:12,Threadcore,"Man ich such jetzt die ganze Zeit nach dem Problem, warum der Timer-Interrupt nicht geht, bis ich merke, die Interrupts sind aus ;D"
+2011-12-29 14:00:55,Homix,muss ich zugriffe auf den local apic eigentlich locken?
+2011-12-29 14:12:17,tibor,Ich denke nicht
+2011-12-29 14:17:15,tibor,Den zugriff auf den I/O APIC musst du gegebenenfalls locken. Weil der nicht für jeden Core exklusiv ist
+2011-12-29 14:22:45,Homix,"hm irgwie versteh ich nicht, warum mein kernel selbst ohne SMP bei einer Threadbombe schon bei 110 Threads den geist aufgibt :("
+2011-12-29 14:24:14,tibor,Zu wenig Speicher?
+2011-12-29 14:24:56,Homix,ne kann nicht sein
+2011-12-29 14:27:36,tibor,"Kommt vielleicht der Thread, der die Interrupts abarbeitet zu kurz und die Hardware sagt dann einfach: ""nö, ich stürz jetzt ab""."
+2011-12-29 14:29:01,tibor,"Hmm ne, die Idee ist unlogisch. Dann müssten auch Systeme abstürzen, die für ein Gerät keinen Treiber haben"
+2011-12-29 14:30:19,Homix,;)
+2011-12-29 14:31:18,Homix,"hm dazu kommt noch dass jeder thread aus ""while true do PerformTaskswitch;"" besteht, zwar zusätzliche belastung wenn jeder der 100 threads immer thread wechseln will, aber eig sollte es kein problem sein :/"
+2011-12-29 14:33:56,tibor,"Ich bekomme, wenn ich den PIC deaktiviere einen 0xf Interrupt gesendet. Und ich hab keine Ahnung wo der her kommt"
+2011-12-29 14:34:33,Homix,irq15 ist eig IDE
+2011-12-29 14:37:29,tibor,Vielleicht sollte ich einfach den I/O APIC links liegen lassen und mich mit dem altbewährten PIC abfinden
+2011-12-29 14:38:52,taljeth,15 kann auch spurious sein
+2011-12-29 14:41:22,tibor,Dann verwerfe ich den einfach mal
+2011-12-29 14:49:56,tibor,Ich glaube ich hab einen Fehler im Wiki gefunden
+2011-12-29 14:50:51,tibor,Index für IOWIN ist hier 0x4: http://www.lowlevel.eu/wiki/I/O_APIC#memory-mapped_Register
+2011-12-29 14:51:25,tibor,Laut Intel Doku ist es aber 0x10: http://download.intel.com/design/chipsets/datashts/29056601.pdf
+2011-12-29 14:51:42,tibor,Vielleicht habe ich mich aber auch nur vertan
+2011-12-29 14:52:07,Homix,ok interessant ... wenn ich in meine init einfach ein AllocVirtual(1 MB) reintu kann er locker paar hundert threads erstellen *g*
+2011-12-29 14:52:09,tibor,In der Intel Doku ist es in Kapitel 3.0
+2011-12-29 14:52:57,tibor,Und was machst du mit dem angeforderten Speicher?
+2011-12-29 14:53:11,Homix,ganz normal allozieren und mappen^^
+2011-12-29 14:53:13,XanClic,*(volatile uint32_t *)(io_apic_base + IO_APIC_MMREG_IOWIN);
+2011-12-29 14:53:39,XanClic,offensichtlich wird da ein Index für 4-Byte-Register verwendet
+2011-12-29 14:53:45,XanClic,Also ist der offset 4 * 4 = 0x10
+2011-12-29 14:53:50,XanClic,"Genau so, wie es im Manual steht"
+2011-12-29 14:54:31,XanClic,"ok, ich sollte C lernen"
+2011-12-29 14:54:36,XanClic,volatile uint8_t * io_apic_base;
+2011-12-29 14:54:40,XanClic,vielleicht sollte man das korrigieren? *g*
+2011-12-29 14:55:00,XanClic,"Oder halt das andere, ja *g*"
+2011-12-29 14:55:24,tibor,"Da man aber ein 8 Bit und ein 32 Bit Register hat, ist das halt etwas schwer zu erraten, wie es gemeint ist"
+2011-12-29 14:56:14,XanClic,"Dann würde ich vorschlagen, das 0x04 jeweils durch 0x10 und das „Index“ durch ein „Offset“ zu ersetzen"
+2011-12-29 14:56:44,XanClic,"Also, wie du das auch gesagt hast :3"
+2011-12-29 14:57:06,tibor,*daumen hoch*
+2011-12-29 14:58:35,XanClic,"Hm, du bist nicht im Wiki angemeldet?"
+2011-12-29 15:01:02,tibor,"Nö, hab keinen Account"
+2011-12-29 15:01:09,XanClic,"Jut, dann tu ich das tun"
+2011-12-29 15:01:19,tibor,Danke
+2011-12-29 18:35:22,Homix,hm ich finde den fehler nicht :(
+2011-12-29 18:37:32,Homix,komischerweise läuft es auf VirtualBox^^
+2011-12-29 18:38:14,SHyx0rmZ,VirtualBox ist halt kaputt ^^
+2011-12-29 18:41:34,Darkchaos`DEV,Ist es eigentlich schwer die jre zu porten?
+2011-12-29 18:46:14,Homix,"naja eher würd ich sagen, dass irgwas mit dem Qemu Emulationszeug nicht stimmt^^"
+2011-12-29 18:46:16,Homix,bzw ich hoffe es ;)
+2011-12-29 18:50:06,Homix,ok ich teste mal auf real-pcs und anderen VMs^^
+2011-12-29 18:51:34,Homix,"ok fuck, vmware auch^^"
+2011-12-29 18:53:30,Homix,"hmm .. sobald es mehr threads wie CPUs werden, die dauerhaft taskswitchen wollen^^"
+2011-12-29 19:04:19,Darkchaos`DEV,"Sagt mal, was passiert, wenn ich apt-get install grub nutze? überschreibt das meinen Momentanen LILO Bootloader? ja oder?"
+2011-12-29 19:05:11,SHyx0rmZ,jup
+2011-12-29 19:05:29,SHyx0rmZ,obwohl man das nicht wirklich überschreiben nennen kann :D
+2011-12-29 19:05:55,Darkchaos`DEV,"wie komme ich dann an die grub binary? ich brauche sie um das image bootbar zu machen, d.h. stage1 und 2 sind in der .img Datei, aber diese device, root, setup befehle brauche ich noch"
+2011-12-29 19:06:29,Darkchaos`DEV,"ich hab so das Gefühl mein OS hat garkeinben Bootloader :P die Anwendung grub ist nicht installiert, lilo ist auch nicht installiert"
+2011-12-29 19:10:13,bluecode,es gibt grub2 ;-)
+2011-12-29 19:10:26,bluecode,und der ist inkompatibel mit grub legacy
+2011-12-29 19:10:44,bluecode,an die binaries von grub kommst du wenn du den source runterlädst und kompilierst
+2011-12-29 19:10:48,Darkchaos`DEV,grub2 als Befehl gibt es trotzdem nicht :P
+2011-12-29 19:10:49,Darkchaos`DEV,ok
+2011-12-29 19:11:16,bluecode,die Befehle heißen trotzdem grub-*
+2011-12-29 19:11:29,bluecode,das apt Paket ist allerdings grub2
+2011-12-29 19:11:41,Darkchaos`DEV,"ah ja die gibts, grub- ... aber das ist wohl grub2?"
+2011-12-29 19:12:09,bluecode,"hm stimmt nichtmal, die pakete heißen grub-*"
+2011-12-29 19:12:40,Darkchaos`DEV,grub legacy hat nur grub als Befehl oder?
+2011-12-29 19:12:47,bluecode,ne
+2011-12-29 19:12:53,bluecode,da gehören schon ein paar mehr dazu
+2011-12-29 19:12:58,Darkchaos`DEV,mir dreht es sich um folgende Stelle:
+2011-12-29 19:13:21,Darkchaos`DEV,http://www.lowlevel.eu/wiki/GRUB und da dann bei Linux-Diskettenimage
+2011-12-29 19:14:07,bluecode,wie gesagt source runterladen und selbst bauen
+2011-12-29 19:14:17,bluecode,(und mit --prefix irgendwohin installieren)
+2011-12-29 19:14:47,tibor,Darkchaos`DEV: Hat dein Kernel schon FS-Treiber?
+2011-12-29 19:14:50,bluecode,oder gleich grub2 benutzen
+2011-12-29 19:15:09,bluecode,"achso, oder alternativ die tyndur floppyimages klauen"
+2011-12-29 19:15:17,Darkchaos`DEV,nein hat er noch nicht
+2011-12-29 19:15:35,tibor,Bis du die grad am machen? Verwendest du bochs?
+2011-12-29 19:15:55,tibor,"Weil wenn nicht, nimm einfach: qemu -kernel"
+2011-12-29 19:16:09,tibor,Ist so schön bequem
+2011-12-29 19:16:36,bluecode,ist aber halt keine tolle lösung... man sollte schon auf mehr als nur qemu testen wenn das os was werden soll
+2011-12-29 19:16:53,bluecode,"und das natürlich auch regelmäßig, sonst sucht man sich nen Hengst bei Bugs"
+2011-12-29 19:17:11,tibor,Guter Einwand. Lass ich gelten ;)
+2011-12-29 19:17:18,Darkchaos`DEV,"problem ist bei mir, ich hatte schon einmal auf ner anderen Maschine ein Image gemacht und das ging gut, bis zu dem tag an dem ich auf die Idee kam einfach den ganzen Ordner immer auf das Image zu kopieren,. Das war aber ein Fehler, wenn du stage 1 und 2 kopierst ohne dannach diesen Finish zu machen, ist alles kaputt :("
+2011-12-29 19:17:33,Darkchaos`DEV,Mein System kommt schon mit GRUB und allem Klar und FS Treiber kommt auch Bald
+2011-12-29 19:17:43,Darkchaos`DEV,aber ich wollte mir halt auch vmWare etc frei lassen zum testen.
+2011-12-29 19:17:58,tibor,"Ah, ok"
+2011-12-29 19:18:03,Darkchaos`DEV,"daher muss ich einfach grub binaries ziehen, dann geht alles wieder xD"
+2011-12-29 19:18:23,tibor,Welche Distri verwendet denn noch Lilo?
+2011-12-29 19:19:44,Darkchaos`DEV,"Ich dachte mein xfce, aber es stimmt doch nicht"
+2011-12-29 19:20:21,Threadcore,CentOS ?
+2011-12-29 19:20:28,Threadcore,oder irre ich
+2011-12-29 19:21:42,tibor,Standardmäßig?
+2011-12-29 19:21:57,Threadcore,moment
+2011-12-29 19:22:12,tibor,Dann würde das ja Redhead auch tun
+2011-12-29 19:22:28,Threadcore,achja Thema Redhead..gehören die zu MS ?
+2011-12-29 19:22:47,tibor,Nein
+2011-12-29 19:22:52,Threadcore,Eben wusste ichs doch
+2011-12-29 19:22:53,taljeth,Es heißt Red Hat. Und wie kommst du auf zu MS gehören?
+2011-12-29 19:23:21,Threadcore,"Naja jmd meinte letztens so, ja MS kauft alles...OpenSuse und Red Hat"
+2011-12-29 19:23:21,bluecode,redhead ist aber auch nett *g*
+2011-12-29 19:23:30,tibor,Ich war grad gedanklich woanders :P
+2011-12-29 19:23:30,Threadcore,ich dachte rehead...schreibt man doch anders ;D
+2011-12-29 19:24:08,bluecode,"novell hat mit denen verträge (und suse gehört zu novell), aber gekauft wurde da doch noch nichts oder?"
+2011-12-29 19:24:23,tibor,MS hat ein paar Verträge mit Novell bezüglich SuSE. Ich weiß aber nicht mehr aus dem Kopf was das war
+2011-12-29 19:24:44,bluecode,taljeth mit seinen Insiderkenntnissen kann uns sicher erleuchten ;-)
+2011-12-29 19:24:49,tibor,"Ne, gekauft wurde garantiert nichts"
+2011-12-29 19:24:55,Threadcore,Businesslösungen von MS mit Suse
+2011-12-29 19:25:11,taljeth,Patentlizenzen vor allem
+2011-12-29 19:25:16,Homix,"hm wenn ich ein LocalApicEOI ausführen, obwohl ich kein IRQ bekommen hab ... könnte das zu problemem führen!?"
+2011-12-29 19:25:21,taljeth,"Und MS verkauft SLES, ja"
+2011-12-29 19:26:10,Homix,v.a. weil ich das innerhalb eines ints mache wo IF = 0 ist (also wie CLI)
+2011-12-29 19:27:17,bluecode,"taljeth: das .net zeuch für die linuximplementierung deren namen mir gerade nicht einfällt und auch was zum dateiformat von neueren MS Officeprodukten, oder?"
+2011-12-29 19:27:43,bluecode,"ist es denn so kompliziert das nicht zu tun, Homix? ;-)"
+2011-12-29 19:27:50,Darkchaos`DEV,ich finde kein grub legacy sourcecode download?
+2011-12-29 19:28:46,Homix,"bluecode: da reallife in 3 min ruft und ich das auf die schnelle nicht testen kann, aber sehr neugierig bin .,.."
+2011-12-29 19:29:25,taljeth,bluecode: Mono meinst du? Und was ist mit diesen Sachen?
+2011-12-29 19:30:45,bluecode,"jo, genau"
+2011-12-29 19:31:04,bluecode,"das sind die patente um die es für novell (auch?) ging, oder?"
+2011-12-29 19:31:52,taljeth,"Ich glaube, das war generell alle Patente"
+2011-12-29 19:32:03,bluecode,Darkchaos`DEV: http://grub.sourcearchive.com/
+2011-12-29 19:32:22,Darkchaos`DEV,Danke Sehr! Die GNU Seite und google fanden nur Grub2
+2011-12-29 19:33:32,bluecode,"ich hab das über google gefunden, insofern lügst du ;-P"
+2011-12-29 19:35:35,tibor,"Da Google so gut wie alles indiziert hat, ist die Aussage, dass Google etwas nicht findet sowieso falsch"
+2011-12-29 19:36:38,Darkchaos`DEV,:P
+2011-12-29 19:37:15,Darkchaos`DEV,Ja aber auf den ersten 2 Seiten fand ich nur Grub 2 und den Summer of Code
+2011-12-29 19:38:41,Darkchaos`DEV,Nur noch das Problem: Das sieht nicht wie ein TAR Archiv aus
+2011-12-29 19:41:27,bluecode,tar.gz ist das was ich sehe
+2011-12-29 19:41:41,bluecode,"und das kann man mit ""tar"" problemlos entpacken"
+2011-12-29 19:42:04,Darkchaos`DEV,"aber mein ""Archivmanager"" kann das nicht und normalerweiße gehts ja auch wenn du tar -xvf nutzt"
+2011-12-29 19:42:17,bluecode,hm
+2011-12-29 19:42:33,Darkchaos`DEV,ich hab die .orig.tar.gz gedownloaded
+2011-12-29 19:42:54,bluecode,"also mein archivmanager entpackt es, aber es geht nicht mit tar das stimmt"
+2011-12-29 19:43:08,Darkchaos`DEV,marc@os-dev:~/Downloads$ tar -xvf grub_0.97.orig.tar.gz 
+2011-12-29 19:43:08,Darkchaos`DEV,tar: Das sieht nicht wie ein „tar“-Archiv aus.
+2011-12-29 19:43:08,Darkchaos`DEV,tar: Springe zum nächsten Kopfteil.
+2011-12-29 19:43:08,Darkchaos`DEV,tar: Beende mit Fehlerstatus aufgrund vorheriger Fehler
+2011-12-29 19:43:13,Darkchaos`DEV,und genau das gibt auch der Archivmanager aus
+2011-12-29 19:44:44,Darkchaos`DEV,die .diff ist ja nur die Differenz zum Vorherigen commit oder?
+2011-12-29 19:45:06,Darkchaos`DEV,jep
+2011-12-29 19:46:52,Darkchaos`DEV,bluecode: Welche Version hast du gedownloaded?
+2011-12-29 19:47:08,bluecode,die unterste
+2011-12-29 19:47:11,Darkchaos`DEV,Ich hatte die 0.97-65
+2011-12-29 19:47:11,Darkchaos`DEV,jep
+2011-12-29 19:47:46,bluecode,versuch mal ftp://alpha.gnu.org/gnu/grub/
+2011-12-29 19:48:34,bluecode,die version mit 0.* logischerweise :-)
+2011-12-29 19:48:57,Darkchaos`DEV,Klar ;) aber die 0.97 oder die 0.97-i386-pc?
+2011-12-29 19:49:00,Darkchaos`DEV,die letzere oder?
+2011-12-29 19:50:25,Darkchaos`DEV,"ne die erstere, alleine von der Dateigröße^"
+2011-12-29 19:53:19,Darkchaos`DEV,Ok und dann alles bis auf make install? dann habe ich ja bei den Source Dateien die Executables
+2011-12-29 19:54:36,Darkchaos`DEV,Ok und dann alles bis auf make install? dann habe ich ja bei den Source Dateien die Executables
+2011-12-29 19:54:40,Darkchaos`DEV,ah sry^
+2011-12-29 20:23:29,Darkchaos`DEV,so ein müll.. 
+2011-12-29 20:24:14,Darkchaos`DEV,Grub lässt sich nicht konfigurieren. configure: error: GRUB requires a working absolute objcopy; upgrade your binutils
+2011-12-29 20:25:40,Darkchaos`DEV,"Das Internet ist voll mit Foreneinträgen, die aber alle nicht so wirklich helfen, werde ich wohl ne andere BuildMachine brauchen. Ubuntu ruled halt weniger als das was ich in Windows auf meiner VM hab xD"
+2011-12-29 20:37:28,DesL,moin
+2011-12-29 22:10:17,bluecode_,ping
+2011-12-29 22:52:44,Threadcore,hi
+2011-12-29 23:00:27,tibor,SMP tut :D
+2011-12-29 23:00:40,tibor,"Bestimmt noch irgendwo versteckte Bugs, aber es tut erstmal"
+2011-12-29 23:49:53,tibor,"Wenn man qemu mit ""-smp 2,threads=2"" startet, hat dann jeder Core seinen eigenen qemu Thread?"
+2011-12-29 23:53:25,taljeth,"Nein, qemu ist singlethreaded"
+2011-12-29 23:53:56,taljeth,"threads=2 heißt nur, dass die VM eine CPU mit zwei Threads sieht, also aktiviertes Hyperthreading"
+2011-12-29 23:57:24,tibor,Hmm

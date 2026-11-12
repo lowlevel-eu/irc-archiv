@@ -1,0 +1,299 @@
+date/time,nick,message
+2014-08-06 00:00:13,th3falc0n,und beim nächsten tastendruck fängt der iwie mein OS von _start an 
+2014-08-06 00:00:23,th3falc0n,oder so ähnlich
+2014-08-06 00:00:29,Svenska,"""oder so ähnlich"" ist doof."
+2014-08-06 00:00:57,Jidder,ich finde das ist eine gute diagnose ^^
+2014-08-06 00:01:39,th3falc0n,"so kurz ""vfs_exec(""/ibin/init"", 0, 0);"" auskommentiert, jetzt sollte ich auch sehen können, was da genau geloggt wird (ohne, dass der userspace terminal treiber einmal den bildschirm cleart)"
+2014-08-06 00:05:22,th3falc0n,hmm ok jetzt ist es iwie besser
+2014-08-06 00:05:52,th3falc0n,"er kommt zum initalisiern, wartet dann bis ich ne taste drücke (???) und macht dann relativ normal weiter"
+2014-08-06 00:06:09,Jidder,hast du vielleicht ein getchar() drin?
+2014-08-06 00:06:21,Svenska,"mach ein kprintf(""Please Press A Key To Continue...""); davor :D"
+2014-08-06 00:06:27,th3falc0n,-.-
+2014-08-06 00:06:30,Jidder,jo
+2014-08-06 00:06:44,th3falc0n,"das problem ist, dass danach kein einziges 0x21 interrupt mehr auftritt"
+2014-08-06 00:07:09,Svenska,"wenn der erste interrupt kommt, aber danach keine mehr, dann ACKst du den interrupt nicht ordentlich"
+2014-08-06 00:08:24,Svenska,"der bug mit dem kprintf(""%c"", keycode); ist uebrigens aus dem wiki kopiert"
+2014-08-06 00:08:29,Svenska,http://lowlevel.eu/wiki/KBC
+2014-08-06 00:08:49,th3falc0n,ähm eigentlich nicht
+2014-08-06 00:09:00,Svenska,"stimmt, hab da scancode und keycode verwechselt"
+2014-08-06 00:09:09,th3falc0n,eigentlich macht translate_scancode bei mir für jeden scancode 'c'
+2014-08-06 00:09:16,th3falc0n,also sollte da ein c ausgegeben werden
+2014-08-06 00:10:23,Svenska,insofern ist es im wiki auch kein bug
+2014-08-06 00:10:33,Svenska,"weil der scancode 16 bit hat, der keycode aber nicht."
+2014-08-06 00:11:02,th3falc0n,was genau muss ich dem KBC denn mitteilen im interrupt?
+2014-08-06 00:11:09,th3falc0n,bisher ist es ein inb(0x60)
+2014-08-06 00:11:09,Svenska,du musst den buffer lesen
+2014-08-06 00:11:15,Svenska,eins reicht nicht.
+2014-08-06 00:11:22,Svenska,"du musst so viele bytes lesen, wie drin sind"
+2014-08-06 00:12:04,th3falc0n,*kindestimme* uund wieso funktioniert das dann in tyndur?
+2014-08-06 00:14:29,Svenska,kA
+2014-08-06 00:14:32,th3falc0n,"ne mal ernsthaft, ich habs jetzt im prinzip 1 zu 1 aus tyndur übernommen und es tut nix"
+2014-08-06 00:14:35,Svenska,ackst du den pic ordentlich?
+2014-08-06 00:14:40,Svenska,bzw. die pics :)
+2014-08-06 00:14:40,th3falc0n,wie muss ich den acken?
+2014-08-06 00:14:43,Svenska,aah
+2014-08-06 00:14:46,Svenska,mit EOI
+2014-08-06 00:15:08,Svenska,"<Svenska> wenn der erste interrupt kommt, aber danach keine mehr, dann ACKst du den interrupt nicht ordentlich"
+2014-08-06 00:15:33,Endilas,"Ich geh pennen, bis die Tage :)"
+2014-08-06 00:15:37,Jidder,tschö
+2014-08-06 00:15:39,Svenska,"outb(0x20, 0x20);"
+2014-08-06 00:15:41,Svenska,gn8
+2014-08-06 00:15:53,Svenska,ich mach dann gleich mal feierabend :)
+2014-08-06 00:15:55,th3falc0n,gn8
+2014-08-06 00:16:16,th3falc0n,"und das outb(0x20, 0x20) war bei mir irgendwie in ein if zum interrupt 0x20 gerutsch"
+2014-08-06 00:16:18,th3falc0n,"und das outb(0x20, 0x20) war bei mir irgendwie in ein if zum interrupt 0x20 gerutscht"
+2014-08-06 00:16:42,th3falc0n,herrlich 
+2014-08-06 00:16:46,th3falc0n,ich sehe interrupts
+2014-08-06 00:17:20,Jidder,"so wie dieses phänomen, dass man von tetris träumt, wenn man es zu viel spiel"
+2014-08-06 00:17:21,Jidder,t
+2014-08-06 00:18:37,th3falc0n,"jetzt muss ich mir nurnoch überlegen, wie ich die keyboard input's gescheit buffer"
+2014-08-06 00:19:15,Jidder,das überlegen würde ich outsourcen
+2014-08-06 00:22:05,Svenska,am besten nach indien
+2014-08-06 00:22:16,Svenska,und das verstehen der einheimischen musst du aber auch outsourcen dann
+2014-08-06 00:24:18,th3falc0n,bzw wie gehts jetzt vom keycode event zur texteingabe?
+2014-08-06 00:24:24,th3falc0n,wat brauch ich da für  ne tabelle? xD
+2014-08-06 00:24:35,Jidder,http://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
+2014-08-06 00:24:42,Jidder,so eine wie die unter 1.4
+2014-08-06 00:24:44,Svenska,die tastatur gibt dir scancodes
+2014-08-06 00:24:50,Svenska,"was du damit machst, bleibt dir ueberlassen."
+2014-08-06 01:04:13,th3falc0n,Jidder: reicht ISO-8859-1 oder muss es UTF-8 sein?
+2014-08-06 01:31:04,th3falc0n,ich bin mal weg gn8
+2014-08-06 01:47:59,Jidder,iso reicht
+2014-08-06 12:41:38,iksnagreb,moin
+2014-08-06 14:09:48,Svenska,!nioM
+2014-08-06 14:34:12,kevin,"Niom niom, Svenska"
+2014-08-06 14:34:56,Svenska,"hm, stochastische partielle differentialgleichungen. klingt schwierig. :-)"
+2014-08-06 15:06:56,Svenska,"qemu-ppc kann uebrigens osx emulieren, zumindest 10.2 mit -M g3beige. 10.5 funktioniert nicht, weder mit g3beige (logisch, G3 wird nicht mehr unterstuetzt) noch mit mac99 (hängt)"
+2014-08-06 18:04:58,iksnagreb,moin
+2014-08-06 18:05:03,Jidder,moin
+2014-08-06 18:05:17,th3falc0n,hi
+2014-08-06 18:05:24,livinskull,moin
+2014-08-06 18:41:52,th3falc0n,ich hab ne shell
+2014-08-06 18:41:59,Endilas,gz
+2014-08-06 18:42:54,th3falc0n,danke
+2014-08-06 18:43:03,th3falc0n,aber iwie nach 10 commands oder so wird es arschlahm
+2014-08-06 18:43:07,th3falc0n,keine ahnung warum
+2014-08-06 18:43:14,Endilas,wie hast du die implementiert?
+2014-08-06 18:43:32,th3falc0n,naja bisher kann sie nichts wirklich
+2014-08-06 18:43:45,Endilas,was kann sie denn?
+2014-08-06 18:43:47,th3falc0n,http://pastebin.com/3NfnqHUZ
+2014-08-06 18:43:51,Endilas,bzw was für 10 commands sind das?
+2014-08-06 18:44:09,th3falc0n,na egal welche... nach 10 mal fexec ist mein betriebssystem langsam
+2014-08-06 18:44:15,th3falc0n,(scheinbar weil die prozesse nicht beenden)
+2014-08-06 18:44:34,Endilas,wird jeder prozess ein eigener task?
+2014-08-06 18:44:43,Endilas,und endet dann in ner endlosschleife?
+2014-08-06 18:44:52,th3falc0n,ja 
+2014-08-06 18:44:58,Endilas,da hast du dein problem
+2014-08-06 18:45:05,th3falc0n,also glaub ich zumindest
+2014-08-06 18:45:20,Endilas,nach dem 10. Task werden 90% der CPU Zeit verschwendet
+2014-08-06 18:45:40,Endilas,"implementier nen Systemcall, der die tasks beendet bzw zumindest aus dem scheduler nimmt"
+2014-08-06 18:45:57,th3falc0n,hab ich doch
+2014-08-06 18:45:59,th3falc0n,funktioniert auch
+2014-08-06 18:46:17,th3falc0n,(zumindest wird ein printf nach dem syscall nicht aufgerufen)
+2014-08-06 18:46:31,Endilas,was macht der syscall genau?
+2014-08-06 18:46:50,th3falc0n,den aktuellen prozess löschen
+2014-08-06 18:46:59,th3falc0n,(und leider noch nicht den speicher freigeben
+2014-08-06 18:47:03,th3falc0n,aber das kommt noch)
+2014-08-06 18:47:12,Endilas,okay
+2014-08-06 18:47:21,Endilas,wie funktioniert deine Speicherverwaltung?
+2014-08-06 18:47:31,th3falc0n,schlecht :D
+2014-08-06 18:47:35,Endilas,vlt sucht er in ner Liste ewig nach freiem Speicher
+2014-08-06 18:47:43,th3falc0n,ne
+2014-08-06 18:47:49,th3falc0n,oder doch
+2014-08-06 18:47:57,Endilas,Also machst du das in ner Liste? oder Heap/Fibheap/hashmap?
+2014-08-06 18:48:22,th3falc0n,er geht die pagetable durch und sucht nach ner freien page
+2014-08-06 18:48:27,th3falc0n,und malloc hat ne liste
+2014-08-06 18:49:43,Endilas,"Suchen in Listen hat lineare Laufzeit, bzw über die PT laufen auch"
+2014-08-06 18:50:22,Endilas,"wobei die Liste praktisch nicht so voll sein kann, dass es deswegen mehrere Sekunden oder so dauern sollte"
+2014-08-06 18:50:45,th3falc0n,ich hab noch jede menge speicherlecks im 3-4 byte bereich :D
+2014-08-06 18:50:58,th3falc0n,3-4 int meinte ich
+2014-08-06 18:51:01,Endilas,dann sollts daran ned liegen
+2014-08-06 18:51:12,Endilas,"ach warte, falsch gelesen"
+2014-08-06 18:51:25,Endilas,"hast du irgendnen Counter auf der Liste, ie viele Elemente grade drin sind?"
+2014-08-06 18:51:38,th3falc0n,ne
+2014-08-06 18:52:13,Endilas,"mach das mal, sollte ned schwer zu implementieren sein, und lass die Anzahl nach jedem task-Beenden ausgeben"
+2014-08-06 18:52:32,th3falc0n,ok hab mir kurz /ibin/memstat geschrieben: jeder aufruf in der shell frisst ~3.5MB 
+2014-08-06 18:52:51,Endilas,wieso so viel?
+2014-08-06 18:52:55,Endilas,was für Tasks sind denn das? :D
+2014-08-06 18:53:03,Endilas,das sind fast 1000 Pages
+2014-08-06 18:53:14,iksnagreb,"oha, das is ja sogar no schlimmer als mein letzter kernel"
+2014-08-06 18:53:26,th3falc0n,naja der preallocated die gesamte pagetable
+2014-08-06 18:53:49,Endilas,also jedes malloc sind immer 4kb?
+2014-08-06 18:54:00,th3falc0n,ne malloc(size_t sizeinbytes)
+2014-08-06 18:54:15,th3falc0n,der frisst nur das was er braucht
+2014-08-06 18:54:40,Endilas,"okay, 4 MB erscheint mir trotzdem viel für einen Befehl :o"
+2014-08-06 18:56:05,th3falc0n,"ich sorg mal eben dafür, dass er den speicher beseitigt, denn er alloziert hat"
+2014-08-06 18:56:28,Endilas,"wenn es dann geht, lags an der Liste :D"
+2014-08-06 18:56:39,Endilas,hast in AD nicht aufgepasst? :p
+2014-08-06 18:56:48,th3falc0n,"ne ich red jetzt nicht von der liste, ich red jetzt von Pagetables und sowas"
+2014-08-06 18:57:04,th3falc0n,die malloc lecks stopf ich später xD
+2014-08-06 18:57:17,Endilas,suchen in der Pagetable hat die gleiche laufzeit^^
+2014-08-06 18:57:48,Svenska,du alloziierst fuer jeden prozess ein komplettes page directory inklusive aller pagetables?
+2014-08-06 18:57:55,th3falc0n,ja
+2014-08-06 18:57:59,Svenska,autsch.
+2014-08-06 18:58:26,th3falc0n,hey es sollte am anfang einfach sein
+2014-08-06 18:58:31,th3falc0n,das kann ich jetzt immernoch ändern
+2014-08-06 18:58:37,Endilas,"dann map mit 4MB Pages, das ist einfach und verbraucht viel weniger Speicher"
+2014-08-06 18:58:55,Endilas,ist vermutlich ja eh noch alles direct mapped oder?
+2014-08-06 18:59:30,th3falc0n,was heisst direct mapped?
+2014-08-06 18:59:37,Svenska,1:1
+2014-08-06 18:59:53,Endilas,virt = phys
+2014-08-06 19:00:30,th3falc0n,also nicht jede virtuelle adresse ist auch die physische adresse
+2014-08-06 19:00:35,th3falc0n,wenn das so gemeint ist
+2014-08-06 19:00:41,Endilas,achso
+2014-08-06 19:00:41,th3falc0n,also nicht direct mapped
+2014-08-06 19:00:52,th3falc0n,sonst könnte ich kaum mehrere programme laufen lassen
+2014-08-06 19:00:57,Endilas,aber das meiste wirst du wohl trotzdem auch mit 4 MB pages machen können
+2014-08-06 19:01:17,Svenska,"th3falc0n: multitasking mit 1:1 mapping ist nicht unmöglich, wenn alle programme an verschiedene adressen gelinkt sind"
+2014-08-06 19:01:24,th3falc0n,sind sie aber nicht
+2014-08-06 19:01:28,th3falc0n,alle bei 0x40000000
+2014-08-06 19:01:51,Endilas,braucht irgendein Task bei dir mehr als 4 MB?
+2014-08-06 19:02:16,th3falc0n,noch nicht
+2014-08-06 19:02:16,Endilas,"wenn nein, reichen 4kb fürs Paging für jeden Task"
+2014-08-06 19:02:37,Svenska,8 kb: 1 pd und 1 pt
+2014-08-06 19:02:46,Svenska,(oder?)
+2014-08-06 19:02:53,th3falc0n,aber eigentlich sollte der ganze mist garnichts an der geschwindigkeit ändern
+2014-08-06 19:02:53,Endilas,bei mir sinds nur 4
+2014-08-06 19:03:10,th3falc0n,weil ich eig von der zeit von tastaturdruck bis bildschirm rede
+2014-08-06 19:03:19,th3falc0n,und auf dem weg ist kein alloc oder free
+2014-08-06 19:03:22,Svenska,hast du ne idle-loop mit HLT drin?
+2014-08-06 19:03:32,Svenska,"wenn ja, dann kannst du die auslastung der host-cpu beobachten"
+2014-08-06 19:03:46,Svenska,"und wenn die hochgeht fuer jeden beendeten task, dann rennt da irgendwas weiter"
+2014-08-06 19:04:03,th3falc0n,hmm also bisher hab ich kein idle
+2014-08-06 19:04:10,Endilas,God kväll btw^^
+2014-08-06 19:04:31,Svenska,namd^^
+2014-08-06 19:05:09,th3falc0n,"die tasks yielden sich immer gegenseitig die cpu zeit zu (weil die shell nix mehr zu lesen hat (buffer leer), der prng nix zu schreiben (buffer voll) und der vga treiber auch nix zu lessen (buffer leer)"
+2014-08-06 19:05:14,Endilas,"intuitiv würd ich auch sagen, dass da irgendwas weiterläuft"
+2014-08-06 19:05:39,Svenska,"dann erzeuge einen weiteren thread (oder nimm den vom kernel), der schlicht ""while(1) __asm__ volatile(""hlt"");"" ausfuehrt"
+2014-08-06 19:05:46,Endilas,"warte, es laufen 10 Tasks parallel, und dann ist die Eingabe langsam?"
+2014-08-06 19:05:48,th3falc0n,"ich bau mir gleich, sobald ich speicher freigebe mal ein syscall ""count_tasks()"""
+2014-08-06 19:10:03,Endilas,"Svenska, eine Frage hätte ich auch, weil ich grad an meinem Paging rumbastle"
+2014-08-06 19:11:34,Endilas,"wenn ein USER Task einen eigenen Kontext bekommt, und er selber nichts an der Pagedir verändern darf, kann ich dann einer den Bereich der Pagedir/Pagetable einfach als Ring0 markieren? Oder schmeißt er mich dann?"
+2014-08-06 19:11:44,Endilas,*einfach
+2014-08-06 19:11:53,Svenska,?
+2014-08-06 19:12:33,Svenska,"du hast zugriffsmechanismen im page dir und in der page table, jeweils das restriktivste fuer den bereich zählt"
+2014-08-06 19:12:42,Endilas,ja schon klar^^
+2014-08-06 19:13:05,Svenska,"also wenn dir einer einen page0-eintrag in die pt schmuggelt, hilft dir das genau nichts, solange nicht auch der passende bereich in der pd ring0 ist"
+2014-08-06 19:13:12,Svenska,oder ich missverstehe gerade :)
+2014-08-06 19:13:38,Endilas,"also ich würde den Bereich vom User selber als ring3 markieren, aber den Bereich, auf dem der Context (=Pagedir+ Pagetable) des Usertaskes liegt, würde ich ring 0 machen, damit er nichts verändern kann"
+2014-08-06 19:14:04,Endilas,also damit ich nicht in seinem eigenen Paging rumspielen kann
+2014-08-06 19:14:18,Endilas,"äh er selber, ich kann das natürlich schon :D"
+2014-08-06 19:14:19,Svenska,"ist sinnvoll. wobei ich mir gerade nicht sicher bin, ob du einem task seinen eigenen kontext ueberhaupt mappen musst"
+2014-08-06 19:14:34,Endilas,stimmt eigentlich auch wieder
+2014-08-06 19:15:02,Svenska,"und selbst wenn, dann ist das ja eine kernel-datenstruktur, die in den kernelbereich gehört (und der ist immer ring0)"
+2014-08-06 19:16:32,Endilas,"ja gut, aber beim Kernel kontext muss ich dann den Kontext des Taskes, der ja dynamisch alloziiert wird, dann auf ring 0 ändern (alles nach 64 MB ist bei mir auf Ring3 zu dem Zeitpunkt, ab dem Usertasks kommen können)"
+2014-08-06 19:17:39,Svenska,du kannst ja 4 MB im kernel-adressraum reservieren fuer das gerade aktive page directory
+2014-08-06 19:18:22,Svenska,"aber ja, wann immer du kernel-memory mappst, solltest du den als ring0 deklarieren"
+2014-08-06 19:18:37,Svenska,"es sei denn, er ist speziell fuer userspace-tasks da (und dann sollte er woanders gemappt sein)"
+2014-08-06 19:19:50,Endilas,"ja gut, hatte nen Denkfehler, der Usertask wird nichts von seinem eigenen Kontext sehen"
+2014-08-06 19:21:09,th3falc0n,ok ich lösche fork
+2014-08-06 19:21:26,th3falc0n,fork->exec ist ein kack prinzip
+2014-08-06 19:21:36,Svenska,warum? ;-)
+2014-08-06 19:21:48,th3falc0n,weil ich alle mappings löschen müsste beim exec
+2014-08-06 19:21:57,th3falc0n,was langsam ist
+2014-08-06 19:22:19,th3falc0n,"aber dabei müsste ich beachten, den stack nicht zu erwischen"
+2014-08-06 19:22:20,Svenska,?
+2014-08-06 19:22:36,Svenska,"du musst mappings immer dann löschen, wenn ein task endet"
+2014-08-06 19:22:56,Endilas,"wie gesagt, mach 4MB Mapping, und die Welt wird leichter :D"
+2014-08-06 19:23:14,Svenska,"das hat nicht unbedingt was mit langsam zu tun, aber es ist notwendig"
+2014-08-06 19:23:39,Svenska,"der unterschied zwischen exit() und exec() ist nur, dass einige kernel-datenstrukturen (also fd's und so) erhalten bleiben"
+2014-08-06 19:23:56,Svenska,"und wenn man es geschickt implementiert, ist fork() nahezu kostenlos."
+2014-08-06 19:24:49,Svenska,"das fuehrt dann dazu, dass das fork()/exec()-pärchen in sachen laufzeit vom exec() dominiert wird, was vom aufwand her ungefähr gleich einem CreateProcess() gleichkommt."
+2014-08-06 19:24:56,Svenska,-gleich ^^
+2014-08-06 19:34:27,th3falc0n,hmm
+2014-08-06 19:34:59,th3falc0n,"man sollte wenn man fork rausnimmt nicht vergessen trotzdem die wichtigen sachen zu machen (stdin, stdout und stderr übertragen von creator zum child)"
+2014-08-06 19:35:25,Svenska,"du willst fork/exec ersetzen durch ein createprocess, richtig?"
+2014-08-06 19:35:38,th3falc0n,ja
+2014-08-06 19:35:54,th3falc0n,bzw durch ein einzelnes execc
+2014-08-06 19:36:00,th3falc0n,das sich verhält wie fork/exec
+2014-08-06 19:36:02,Svenska,"dann ist der ansatz, stdin/stdout vom creator zum child zu uebertragen, unguenstig"
+2014-08-06 19:36:27,th3falc0n,naja ich hab ein syscall frei um eine version mit geändertem stdio zu machen ;)
+2014-08-06 19:36:29,Svenska,das exec trennt nämlich - ebenso wie ein createprocess - die verbindung zwischen den beiden prozessen auf
+2014-08-06 19:36:43,Svenska,danach laufen beide prozesse weiter.
+2014-08-06 19:37:00,Svenska,und zwar mit getrenntem stdin/stdout.
+2014-08-06 19:37:32,th3falc0n,ja immoment bin ich im kompatibiltätsmodus zu meinen programmen die schon existieren
+2014-08-06 19:37:56,Jidder,kompatibilität ist wichtig. man will ja die bestandskunden nicht verärgern
+2014-08-06 19:37:59,Svenska,"ich wollte nur sagen, dass es danach mehrere stdin/stdout gibt :D"
+2014-08-06 19:38:31,Svenska,"oder impliziert dein exec(), dass der creator endet?"
+2014-08-06 19:39:20,th3falc0n,nein
+2014-08-06 19:39:25,th3falc0n,mein exec ist create_process
+2014-08-06 19:39:27,Svenska,gut. :-)
+2014-08-06 19:47:51,th3falc0n,hmm
+2014-08-06 19:47:58,th3falc0n,irgendwas  geht bei meinem userspace free echt schief
+2014-08-06 20:31:39,th3falc0n,so jetzt bleiben nachm beenden eines prozesses 8KB speicherleck
+2014-08-06 20:33:36,Jidder,akzeptabel
+2014-08-06 20:33:59,Svenska,(mein armer z80...)
+2014-08-06 21:26:33,th3falc0n,so alles gefixt
+2014-08-06 21:26:39,th3falc0n,inklusive performance probleme
+2014-08-06 21:28:26,Paddy,"Hm, ""alles gefixt"" glaube ich grundsätzlich niemandem"
+2014-08-06 21:28:49,Svenska,ich hab in der zeit 4 formeln gesetzt. bin ich jetzt der könig? ;-)
+2014-08-06 21:28:51,th3falc0n,alles was das problem verursacht hat ist beseitigt
+2014-08-06 21:29:38,th3falc0n,also ich würd sagen mikrOS würde mit den nötigen programmen und treibern inzwischen als DOS-like durchgehen
+2014-08-06 21:30:10,Svenska,aber es passt nicht mehr in 128 KB RAM :-)
+2014-08-06 21:30:51,th3falc0n,hmm wohl war zu dem zeitpunkt wo du ne shell hast sind 24MB benutzt
+2014-08-06 21:31:05,Svenska,wow...
+2014-08-06 21:31:43,Svenska,linux und win95 laufen mit 4 MB RAM schlecht
+2014-08-06 21:31:44,Paddy,Wow trifft es *g*
+2014-08-06 21:31:52,th3falc0n,(3x 3.5MB tasks + 2x das initramfs etc.
+2014-08-06 21:31:54,th3falc0n,)
+2014-08-06 21:32:08,th3falc0n,+ 3MB ungenutztem kernel-init-pagedir
+2014-08-06 21:32:10,Paddy,"Mich wurmt es ja noch, dass Paddygree nicht mit < 1 MB läuft, weil Multiboot"
+2014-08-06 21:32:11,Svenska,"wobei ich mich immernoch daran erinnere, wie tyndur auf meinem 486er fuer den editor auch erstmal 8 MB auf vorrat alloziieren wollte"
+2014-08-06 21:32:25,Svenska,"...und natuerlich direkt rot produziert hat, weil nur 4 MB drin waren."
+2014-08-06 21:32:50,Paddy,"Ich glaube, tyndur auf 4 MB ist machbar, wenn man manuell ein paar Sachen wegkürzt"
+2014-08-06 21:32:51,Svenska,Paddy: kannst du nicht den entry point auf irgendwas unter 1 MB setzen?
+2014-08-06 21:32:59,Svenska,"also ja, es lief"
+2014-08-06 21:33:00,Paddy,GRUB kann nicht unter 1 MB laden
+2014-08-06 21:33:04,Svenska,"oh, schade."
+2014-08-06 21:33:12,Paddy,"Ob qemu es kann, weiß ich grad nicht"
+2014-08-06 21:33:40,Svenska,"allerdings hat er die festplatte nicht gefunden (weil die kein LBA konnte), und dann habe ich meinen tisch aufgeräumt. so ein gehäuseloser pc nimmt ziemlich viel fläche weg ;-)"
+2014-08-06 21:33:41,Paddy,Und syslinux weiß ich auch nicht
+2014-08-06 21:33:53,Svenska,naja dann wird's wohl nicht so richtig vorgesehen sein.
+2014-08-06 21:34:16,Paddy,"Du meinst Multiboot ist das, was in der Spec steht, plus das, was nicht drinsteht, aber GRUB so macht? ;-)"
+2014-08-06 21:34:24,Svenska,ja
+2014-08-06 21:34:33,Svenska,"grub ist die multiboot-referenzimplementation, oder irre ich da?"
+2014-08-06 21:34:41,Svenska,"wobei mir bisher noch kein 386+ mit unter 4 MB RAM vorgekommen ist, insofern kann man wenigstens _das_ schonmal annehmen"
+2014-08-06 21:35:21,Paddy,Unter Pentium dürfte mein Kernel eh nicht laufen...
+2014-08-06 21:35:40,th3falc0n,"ich hab mich gestern geärgert, dass qemu RDRAND nicht kann"
+2014-08-06 21:35:51,Paddy,"Hm, oder vielleicht geht 486 sogar. Ich glaube, die 4-MB-Pages benutze ich gar nicht mehr."
+2014-08-06 21:35:55,Svenska,"wobei man theoretisch tatsächlich 1 MB hinkriegen könnte (4x 256 KB-SIMMs), aber ob das so sinnvoll ist..."
+2014-08-06 21:36:56,Paddy,th3falc0n: Implementier es halt
+2014-08-06 21:37:11,Svenska,th3falc0n: reales rdrand duerfte sowieso bugdoors beinhalten :-)
+2014-08-06 22:02:56,Paddy,"Hm, warum sind Sachen wie ein make im binutils-Verzeichnis immer so ernüchternd?"
+2014-08-06 23:04:40,Paddy,Wie handhabt ihr Umgebungsvariablen? (falls ihr sowas überhaupt habt)
+2014-08-06 23:06:54,th3falc0n,"ich bisher garnicht, aber ich werde sie über einen syscall handhaben, als hashmap"
+2014-08-06 23:07:18,Paddy,"Einen Syscall, um sie vom Kernel abzuholen?"
+2014-08-06 23:08:06,th3falc0n,ja 
+2014-08-06 23:08:07,Paddy,"Das heißt, sie liegen für alle Prozesse, die laufen, im Kernelspeicher rum, falls der Prozess sie nochmal abholen will?"
+2014-08-06 23:08:14,th3falc0n,jap
+2014-08-06 23:08:17,Paddy,Hm...
+2014-08-06 23:08:21,th3falc0n,char* getEnvironment(uint64_t hash)
+2014-08-06 23:08:29,th3falc0n,oder uint32_t 
+2014-08-06 23:08:49,Paddy,"Ah, du greifst direkt auf eine einzelne Variable zu?"
+2014-08-06 23:08:56,th3falc0n,ja das hab ich vor
+2014-08-06 23:09:13,Paddy,"Ich dachte, das Programm holt sich am Anfang einfach alle, aber das war wahrscheinlich zu kompliziert gedacht"
+2014-08-06 23:09:37,th3falc0n,ich bin mir nicht sicher wie linux/windows/unix das machen aber ich hab vor das so zu machen :D
+2014-08-06 23:09:42,th3falc0n,aber ich mach auch vieles falsch
+2014-08-06 23:09:49,Paddy,"Falls du ein *nix baust, was machst du mit environ? Das ist irgendwie eine Sache, die mich schon immer stört :-/"
+2014-08-06 23:11:35,th3falc0n,"bishher bin ich nichtmal annähernd posix kompatibel, also hab ich keine ahnung :D"
+2014-08-06 23:11:53,Paddy,Keine Ahnung ist immer gut ;-)
+2014-08-06 23:12:25,Paddy,Vielleicht sollte ich lieber erstmal was leichtes implementieren
+2014-08-06 23:12:34,th3falc0n,threading?
+2014-08-06 23:12:34,th3falc0n,:D
+2014-08-06 23:12:38,Paddy,Ausgabeumleitung in der Shell oder so
+2014-08-06 23:12:50,Paddy,"Wer braucht Threads, wenn man Prozesse hat? *g"
+2014-08-06 23:12:53,th3falc0n,xD
+2014-08-06 23:13:14,Paddy,"Und nein, clone() wollte ich vorläufig nicht implementieren... ;-)"
+2014-08-06 23:13:31,th3falc0n,hmm ich hatte fork() und habs rausgeschmissen
+2014-08-06 23:13:56,Paddy,"Das mach ich nicht, ich bin absichtlich halbwegs POSIX-ähnlich"
+2014-08-06 23:14:27,th3falc0n,aber da ich vor hab RPC über dateien/streams zu machen (netzwerk-like) brauch ich nen zweiten thread dafür
+2014-08-06 23:15:56,Paddy,Das klingt komisch
+2014-08-06 23:17:04,th3falc0n,"damit brauch ich keine übergreifende block logik, weil der durch dateizugriffe automatisch blocken kann (meine fifo's returnen RW_BLOCK wenn sie nicht lesbar sind)"
+2014-08-06 23:17:11,Paddy,"Also RPC über Dateien nicht, pipe() wird dann bei mir vermutlich auch mal die erste halbwegs so bezeichenbare Form von IPC möglich machen"
+2014-08-06 23:17:33,Paddy,"Aber dass du Threads brauchst, um mit der Datei zu arbeiten, ist schon irgendwie kaputt"
+2014-08-06 23:17:50,th3falc0n,ne der thread ist für asynchron zum eigentlichen programm
+2014-08-06 23:18:05,Paddy,"Damit handelst du dir nur unnötigen Ärger ein, glaube ich"
+2014-08-06 23:18:07,th3falc0n,es geht auch in ner endlosschleife im main thread
+2014-08-06 23:25:22,Paddy,"Hm, ich glaube, ich löse das Problem einfach durch Aufschieben"
+2014-08-06 23:25:35,Paddy,Dann muss ich mich vor nächstem Jahr wahrscheinlich nicht mehr damit beschäftigen
+2014-08-06 23:25:58,Paddy,Heute war jedenfalls der erste Commit 2014

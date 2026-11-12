@@ -1,0 +1,102 @@
+date/time,nick,message
+2010-09-25 12:03:21,FreakyPenguin,taljeth: Sind wir gestern jetzt eigentlich zu einem Ergebnis bezüglich der Rückgabe von wait_event gekommen? ;-)
+2010-09-25 12:26:54,taljeth,"FreakyPenguin: Das Ergebnis war alles doof, oder so ;-)"
+2010-09-25 12:28:33,FreakyPenguin,Dann weiss ich ja was zu tun ist. *g*
+2010-09-25 12:29:45,taljeth,"Hm, machen wir einfach doch ein poll? ;-)"
+2010-09-25 12:31:00,taljeth,"Ich hab dafür immer noch keine Ahnung, wie das mit dem Vererben mit init zusammenspielen soll"
+2010-09-25 12:41:47,taljeth,"FreakyPenguin: Meinst du, der fd sollte erstmal an init vererbt werden, das dann weitervererbt; oder sollten wir irgendwas basteln, damit der eigentliche Aufrufer noch eine Chance hat, was zu verändern?"
+2010-09-25 12:42:54,FreakyPenguin,Was stellst du dir denn unter was verändern vor?
+2010-09-25 12:44:36,taljeth,Neue Pages oder Dateideskriptoren reinkopieren
+2010-09-25 12:45:22,taljeth,"Also dass erstmal init den neuen Prozess blockiert, und wenn es fertig ist, lässt es den Aufrufer blockieren und erst wenn der freigibt, geht es wirklich los"
+2010-09-25 12:46:23,taljeth,"Wobei sich mir grad auch die Frage stellt, inwiefern man an schon laufende Prozesse noch Dateideskriptoren weitergeben kann"
+2010-09-25 12:47:17,FreakyPenguin,Hm hast du dafür einen konkreten Anwendungsfall im Kopf?
+2010-09-25 12:47:40,taljeth,Deskriptoren an init weitergeben *g*
+2010-09-25 12:47:47,FreakyPenguin,Ah *g*
+2010-09-25 12:48:21,FreakyPenguin,Du könntest Attachments für RPCs einbauen. *g*
+2010-09-25 12:48:45,taljeth,Klingt gut *g*
+2010-09-25 12:49:12,taljeth,"Ich glaube, das größte Problem ist, dass man nicht einfach Deskriptoren verschicken können sollte, wenn der Empfänger gar keinen Deskriptor haben will"
+2010-09-25 12:49:22,taljeth,Sonst leaken wir Dateien
+2010-09-25 12:50:08,FreakyPenguin,Hm hat was
+2010-09-25 12:51:38,taljeth,Unter Unix geht das ja anscheinend mit ein bisschen Magie
+2010-09-25 12:51:43,FreakyPenguin,*g*
+2010-09-25 12:51:49,taljeth,"Der Empfänger muss den richtigen Nachrichtentyp erwarten, glaube ich"
+2010-09-25 12:53:29,FreakyPenguin,"Jo sowas könnten wir natürlich auch machen, init fordert die deskirptoren beim Aufrufer an, das klingt aber wieder nach mühsam. ;-)"
+2010-09-25 12:55:00,taljeth,Eben...
+2010-09-25 12:55:14,taljeth,"Mir graut übrigens davor, dieses Unix-Zeug zu implementieren *g*"
+2010-09-25 12:55:36,FreakyPenguin,Zum Glück kenne ich das nicht. ;-)
+2010-09-25 12:58:24,taljeth,"Hm, das mit dem attachen an einen RPC finde ich ja gar nicht so doof. Man bräuchte halt eine Methode, dass init beim ret sagen kann, ob ihm die Deskriptoren gefallen haben oder nicht"
+2010-09-25 12:59:30,taljeth,"Oder vielleicht ein extra Syscall zum Abholen der Deskriptoren, und wenn der nicht aufgerufen wird, schließt der Kernel die Dateien halt"
+2010-09-25 12:59:58,FreakyPenguin,Ah jo letzteres klingt garnicht so übel
+2010-09-25 13:02:03,taljeth,Klingt jedenfalls angenehmer und nach weniger Magie als SCM_RIGHTS ;-)
+2010-09-25 13:02:27,FreakyPenguin,Jo
+2010-09-25 13:02:50,FreakyPenguin,Dürfte auch mit einigermassen vernünftigem Aufwand machbar sein
+2010-09-25 13:02:56,taljeth,Und endlich mal wieder ein Syscall mit ein paar Parametern mehr *g*
+2010-09-25 13:03:14,taljeth,RPC war ja bisher eindeutig zu kurz ;-)
+2010-09-25 13:03:22,FreakyPenguin,*g*
+2010-09-25 13:03:58,FreakyPenguin,Schon bald holen wir linux ein mit der Anzahl unserer Syscalls ;-)
+2010-09-25 13:04:17,FreakyPenguin,Dann müssen wir nur noch ein bisschen an der Magie drin arbeiten ;-)
+2010-09-25 13:04:46,taljeth,"Aber ich glaube, in der Anzahl der ioctls ist Linux uneinholbar vorne ;-)"
+2010-09-25 13:05:49,taljeth,"Ach Mist, das kann ich ja gar nicht auf master entwickeln..."
+2010-09-25 13:06:22,taljeth,"Willst du wirklich erst mergen, wenn LIOv1 weg ist?"
+2010-09-25 13:12:24,FreakyPenguin,Wann hättest du denn gerne gemergt?
+2010-09-25 13:12:45,taljeth,Gestern *g*
+2010-09-25 13:13:34,taljeth,"Im Moment kann man auf master keine vernünftige Entwicklung mehr machen, weil es hoffnungslos veraltet ist"
+2010-09-25 13:15:25,FreakyPenguin,Kein lio meh war für mich halt immer so eine klare Trennline die sich angeboten hat
+2010-09-25 13:17:25,taljeth,"Das Problem ist, dass sich noch immer mehr Unterschiede zu master anhäufen werden"
+2010-09-25 13:17:35,taljeth,"Ich glaube, uns ist mittlerweile klar, dass da noch einiges bevorsteht"
+2010-09-25 13:18:04,taljeth,"Aber andererseits glaube ich auch, dass wir mittlerweile eine halbwegs stabile Grundlage haben, bei der es auch Sinn machen würde, Patches wieder zu reviewn"
+2010-09-25 13:22:36,FreakyPenguin,Was würdest dunn denn noch sehen wollen vor dem Merge?
+2010-09-25 13:23:09,taljeth,Stabilität ;-)
+2010-09-25 13:23:25,FreakyPenguin,Klingt gut
+2010-09-25 13:23:40,taljeth,"Dass dosbox auf master tut und auf lostio2 nicht, ist für mich noch ein bisschen ein Blocker"
+2010-09-25 13:24:00,taljeth,Ansonsten irgendwelche bekannten Kaputtheiten?
+2010-09-25 13:24:22,FreakyPenguin,"Hm das kernel-ata wollen wir wohl so eher nicht rübermergen, nehme ich an. ;-)"
+2010-09-25 13:24:44,taljeth,"Hm, stimmt. Und das Userspace-ata ist noch kaputt ;-)"
+2010-09-25 13:25:02,FreakyPenguin,Was ist denn dort kaputt?
+2010-09-25 13:25:04,taljeth,atapi
+2010-09-25 13:35:52,taljeth,"Naja, sollen wir uns jetzt erstmal um diese Kaputtheiten kümmern und versuchen zu mergen, oder erstmal neues Zeug einbauen und getrennte Branches plegen, bis LIOv2 irgendwann ""fertig"" ist?"
+2010-09-25 13:37:43,FreakyPenguin,Von mir aus können wir uns schon mal um die Kaputtheiten und das Mergen kümmern
+2010-09-25 13:40:03,FreakyPenguin,Was hast du eigentlich mit kernel1 vor? Den drin zu haben ist ja nach dem merge nicht mehr wirklich sinnvoll
+2010-09-25 13:41:30,taljeth,Zum Benutzen brauchen wir den wohl nicht mehr
+2010-09-25 13:41:53,taljeth,"Aber vielleicht, um die eine oder andere Sachen nachzuschlagen und/oder zu portieren"
+2010-09-25 13:42:05,taljeth,git mv kernel2/.nobuild kernel wäre vielleicht angemessen ;-)
+2010-09-25 15:21:16,FreakyPenguin,taljeth: Was ist denn bei atapi das Problem?
+2010-09-25 15:30:38,taljeth,"FreakyPenguin: Ich bin mir nicht mehr ganz sicher, aber ich glaube, dass es zumindest nicht mehr unter ata:/ auftaucht, weil es zum falschen Treiber gehört"
+2010-09-25 15:31:05,FreakyPenguin,Ist das ein Problem?
+2010-09-25 15:31:29,taljeth,"Die Frage ist, ob es dann unter atapi:/ auftaucht oder auch dort nicht *G*"
+2010-09-25 15:31:36,FreakyPenguin,*g*
+2010-09-25 15:31:46,FreakyPenguin,Der cdrom-Symlink könnte auch noch fehlen
+2010-09-25 15:32:04,taljeth,"Jo. Aber ich würde auch ansonsten dazu tendieren, einen Server pro Binary und nicht pro Treiber anzubieten"
+2010-09-25 15:32:19,taljeth,*Service
+2010-09-25 15:32:40,FreakyPenguin,Mit welchem Namen denn?
+2010-09-25 15:32:45,taljeth,argv[0]
+2010-09-25 15:33:07,taljeth,"Oder basename noch, falls da der ganze Pfad drin ist ;-)"
+2010-09-25 15:33:42,taljeth,"Aber vielleicht ist das auch eine d00fe Idee, weiß nicht"
+2010-09-25 15:35:06,taljeth,atapi:/ hat übrigens keinen Inhalt ;-)
+2010-09-25 15:35:23,FreakyPenguin,"Gut, dann weiss ich was zu tun ist ;-)"
+2010-09-25 15:35:52,taljeth,Übernimmst du das also?
+2010-09-25 15:36:19,FreakyPenguin,Jo
+2010-09-25 15:36:29,taljeth,"Ah, du könntest auch die paar kernel2-Patches schonmal nach master pushen, oder fehlt da noch was?"
+2010-09-25 15:37:07,FreakyPenguin,Ich glaube in einem davon muss ich noch was fixen
+2010-09-25 15:37:48,taljeth,"Stimmt, irgendwas war da. Dann halt nicht. ;-)"
+2010-09-25 15:38:02,FreakyPenguin,Aber das kann ich schon vorher noch machen. ;-)
+2010-09-25 15:38:44,FreakyPenguin,Hmpf und erst noch ein Fix wo ich nachdenken muss. ;-)
+2010-09-25 15:40:34,taljeth,*g*
+2010-09-25 21:57:04,FreakyPenguin,Hä was rebast der da für einen Mist zusammen :-/
+2010-09-25 22:18:49,taljeth,Worauf basierst du denn ein Reh?
+2010-09-25 22:23:14,FreakyPenguin,Halt mein lio2-branch (blub um genau zu sein *g*) auf den queue-Branch ;-)
+2010-09-25 22:23:38,taljeth,blub ist guter Name *g*
+2010-09-25 22:24:18,taljeth,"Hm, eigentlich könnte ich mal probieren, ob video-lio2 noch bootet, nachdem ich vorher regebast habe"
+2010-09-25 22:26:21,taljeth,Ui...
+2010-09-25 22:26:21,taljeth,"""PANIC: Stackframe von Interrupt liegt ausserhalb des Kernelstacks des aktuellen Threads. (pm_scheduler_yield() nach Thread-Wechsel?)"""
+2010-09-25 22:27:32,FreakyPenguin,"Mist, dann war ich wohl zu langsam mit pushen. *g*"
+2010-09-25 22:27:46,taljeth,"Hm, hast du noch so einen gefunden?"
+2010-09-25 22:28:03,FreakyPenguin,Nein ich meinte mit pushen nach master ;-)
+2010-09-25 22:29:36,FreakyPenguin,Hm oder ist das die eine Änderung die noch offen war?
+2010-09-25 22:31:12,taljeth,"Ich glaube nicht, dass das ein Problem mit deinem Patch ist"
+2010-09-25 22:31:20,taljeth,"Falls das ist, was du meinst"
+2010-09-25 22:31:23,taljeth,Ansonsten bin ich verwirrt
+2010-09-25 22:31:55,taljeth,Aber erstmal den Backtrace anschauen
+2010-09-25 22:34:57,taljeth,"Hm, kann es sein, dass das auch bei einer Exception im Kernel zuschlägt? ;-)"
+2010-09-25 22:36:04,taljeth,"So richtig viel Sinn ergibt der Backtrace aber so oder so nicht, da ist angeblich in mmc_activate ein Interrupt ausgelöst worden"
+2010-09-25 23:34:21,taljeth,"Hm, also dosbox macht nur noch rot :-/"

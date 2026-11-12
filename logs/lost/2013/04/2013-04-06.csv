@@ -1,0 +1,112 @@
+date/time,nick,message
+2013-04-06 14:28:52,DerHartmut,Morgen
+2013-04-06 14:40:23,XanClic,Moin
+2013-04-06 14:48:30,DerHartmut,Läuft
+2013-04-06 17:03:03,micha,ich krieg das mit dem higher-half kernel nicht hin :(
+2013-04-06 17:03:19,micha,zumindest in virtualbox
+2013-04-06 17:03:35,micha,in qemu gehts
+2013-04-06 17:29:06,Jidder,bootest du den kernel in qemu über das -kernel flag?
+2013-04-06 17:32:05,micha,mit GRUB
+2013-04-06 17:34:35,Jidder,du nutzt da ja den GDT trick
+2013-04-06 17:34:43,micha,ja
+2013-04-06 17:34:45,Jidder,"ich kann mir vorstellen, dass da was schief geht"
+2013-04-06 17:34:56,Jidder,wie weit kannst du den fehler denn eingrenzen?
+2013-04-06 17:35:29,micha,"beim ljmpl $0x8, $_higherhalf gibt virtualbox die fehlermeldung"
+2013-04-06 17:42:48,Jidder,"hm ich frage mich, ob virtualbox den gdt trick vielleicht nicht emulieren kann"
+2013-04-06 17:43:00,Jidder,da ist ja immerhin ein overflow involviert
+2013-04-06 17:43:15,Jidder,"wenn du den auf einem 64-bit system machst, wird der vielleicht nicht geprüft"
+2013-04-06 17:43:28,Jidder,bzw es gibt keinen wrap around
+2013-04-06 17:44:29,micha,"ja, ich habe ein 64bit system"
+2013-04-06 17:52:34,Jidder,"man könnte diese theorie testen, indem man das os auf einem realen pc bootet"
+2013-04-06 17:53:00,Jidder,"problem ist, dass wenn virtualbox defekt ist, du entweder auf virtualbox oder den gdt trick verzichten musst"
+2013-04-06 17:53:09,Jidder,"und wenn der reale boot nicht funktioniert, kann das auch andere ursachen haben"
+2013-04-06 17:54:17,micha,"hm, dann nehm ich lieber paging"
+2013-04-06 18:59:59,MrX,hi
+2013-04-06 19:01:40,Jidder,moin
+2013-04-06 19:02:05,MrX,"Wenn ihr beim Boot des PCs die Nummer des Laufwerks, von dem es gestartet wurde herausfinden wollt - wie würdet ihr das anstellen?"
+2013-04-06 19:02:33,Jidder,sollte in der multibootinfo stehen
+2013-04-06 19:02:48,MrX,"ich meine, als bootloader"
+2013-04-06 19:03:04,Jidder,steht in dl
+2013-04-06 19:03:12,Jidder,beim einsprung in den bootloader
+2013-04-06 19:03:18,MrX,hm - das lese ich auch überall
+2013-04-06 19:08:33,XanClic,Das erinnert mich an was
+2013-04-06 19:08:45,XanClic,"Es gibt wohl angeblich BIOSe, die auch ungültige Nummern liefern"
+2013-04-06 19:09:28,MrX,"Kennst Du einen Weg, aus anderer Quelle das Laufwerk herauszufinden?"
+2013-04-06 19:09:45,XanClic,Aus dem FAT-Header? *g*
+2013-04-06 19:10:45,MrX,"dazu müsste man ja schon bei der Erstellung des Dateisystems wissen, welche Laufwerksnummer das Drive mal bekommt"
+2013-04-06 19:11:13,MrX,"Das BIOS, dass ich erwischt habe, scheint jedenfalls 0xC0 zu liefern"
+2013-04-06 19:11:14,XanClic,"Jedenfalls hab ich bisher aber nur von einem solchen Fall gehört, und das war ein i486-Laptop"
+2013-04-06 19:11:26,XanClic,"Na, das klingt ungültig genug"
+2013-04-06 19:11:29,MrX,"Allerdings schafft es der FreeBSD-Bootloader, damit klar zu kommen"
+2013-04-06 19:11:34,XanClic,"Ich guck mal, ob ich den Code von meinem Bootloader von damals noch hab"
+2013-04-06 19:13:04,Jidder,wovon hast du denn gebootet als du die 0xc0 bekommen hast?
+2013-04-06 19:14:22,MrX,Medion Digitainer
+2013-04-06 19:14:29,MrX,USB-Stick
+2013-04-06 19:14:40,XanClic,"test  dl,0x7E"
+2013-04-06 19:14:42,XanClic,jz    nice_boot_drive
+2013-04-06 19:14:45,XanClic,Das war mein Test damals
+2013-04-06 19:14:58,XanClic,"Und wenn das nicht passte, wurde der Wert aus dem FAT-Header genommen"
+2013-04-06 19:15:03,MrX,ok
+2013-04-06 19:15:27,MrX,In meinem Fall kommt der Wert von dl allerdings vom FreeBSD-Bootloader - aber durch diese Codewüste bin ich noch nicht durchgestiegen.
+2013-04-06 19:16:09,MrX,Hab aber jetzt diesen Kommentar gefunden:
+2013-04-06 19:16:11,MrX,"*    %dl    drive number (0x80, 0x81, ... )"
+2013-04-06 19:16:49,XanClic,"Tjo, 0x80 und 0x81 bestehen meinen Test ja auch *g*"
+2013-04-06 19:18:02,MrX,"Die 0xC0, die ich behauptet habe, sind nicht sicher - könnte auch was anderes sein. War nur meine Interpretation von http://codepad.org/3YS5hI5a"
+2013-04-06 19:18:25,MrX,"Und die Ausgabe, die ich dem verwaschenen Bild des Röhrenfernsehers entnommen habe, war ein Zeichen, dass aus drei waagerechten Strichen besteht."
+2013-04-06 19:18:37,MrX,In CP437 ist das 0xF0. 0xF0-0x30=0xC0
+2013-04-06 19:23:12,MrX,"Nun denke ich gerade darüber nach, ob der FreeBSD-Stage0 - obwohl mit jedem mir bekannten anderen OS/Bootloader ohne weiteres kompatibel - das Register dl garnicht zurückschreibt."
+2013-04-06 19:24:34,MrX,"nein, das kann es auch nicht sein"
+2013-04-06 19:24:45,MrX,"""%dl and %si are set appropriately as when we were called"""
+2013-04-06 19:25:11,Jidder,"kannst ja mal sicherstellen, dass deine ausgabe korrekt ist und als zahl ausgeben lassen"
+2013-04-06 19:26:05,micha,wie schreibt man sowas wie 'times' in AT&T syntax?
+2013-04-06 19:26:22,iksnagreb,hallo
+2013-04-06 19:27:34,Jidder,moin
+2013-04-06 19:29:41,Jidder,http://sourceware.org/binutils/docs/as/Rept.html#Rept
+2013-04-06 19:29:46,Jidder,@ micha
+2013-04-06 19:30:16,micha,ah ok
+2013-04-06 20:06:49,micha,"irgendwie funktioniert das nicht so, wie ich mir das vorstelle: http://pastebin.com/EmtVX1Vy"
+2013-04-06 20:22:09,Jidder,was funktioniert denn nicht?
+2013-04-06 20:22:35,micha,der kernel bleibt stehen
+2013-04-06 20:23:04,Jidder,und wo?
+2013-04-06 20:23:19,micha,ab call init
+2013-04-06 20:24:17,Jidder,"das sieht nicht so aus, als ob die adresse geladen wird movl (_first_pd) - VADDR_KERNEL_START, %ecx"
+2013-04-06 20:25:01,Jidder,ein $ fehlt
+2013-04-06 20:25:36,micha,auch mit $ bleibt er stehen
+2013-04-06 20:26:08,Jidder,"wie stellst du fest, dass er stehen bleibt?"
+2013-04-06 20:26:22,Jidder,das geht ja eigentlich nur in einer endlosschleife
+2013-04-06 20:26:44,micha,mit int $0
+2013-04-06 20:27:06,micha,in init geht mit int $0 kein reset mehr
+2013-04-06 20:27:14,micha,vor call init schon
+2013-04-06 20:27:59,Jidder,dann wird init möglicherweise nicht aufgerufen
+2013-04-06 20:28:22,micha,"komisch, er bleibt bei setColor stehen"
+2013-04-06 20:28:45,micha,https://github.com/micha-/FruityOrange/blob/master/kernel/init/init.c
+2013-04-06 20:29:43,Jidder,also sorgt ein int $0 vor setcolor noch für einen reset?
+2013-04-06 20:29:49,micha,ja
+2013-04-06 20:30:45,Jidder,"es kann auch sein, dass der stack nicht korrekt ist"
+2013-04-06 20:30:55,Jidder,und dadurch setColor nicht zurückkehrt
+2013-04-06 20:31:51,micha,was soll den da falsch sein?
+2013-04-06 20:32:00,Jidder,weiß ich nicht
+2013-04-06 20:32:06,Jidder,falsche adresse
+2013-04-06 20:32:13,Jidder,.bss-sektion nicht gemappt
+2013-04-06 20:32:47,micha,es werden ja die ersten 4MB gemappt
+2013-04-06 20:32:52,micha,in einer page
+2013-04-06 20:34:16,Jidder,tjo müsste mal wer debuggen
+2013-04-06 20:36:01,micha,"also mit movl $kernel_stack - VADDR_KERNEL_START, %esp kommt setColor zurück"
+2013-04-06 20:36:37,micha,aber das ist die falsche adresse
+2013-04-06 20:37:40,micha,"in clearscreen() wird der cursor zwar gesetzt, aber der video-ram wird nicht beschrieben"
+2013-04-06 22:46:07,arbu,"Wie sieht eigentlich die Implementierung von malloc() normalerweise aus? Wenn ich z.B. 4 Bytes mit malloc(4) allokiere, werden dann wirklich nur 4 Bytes + minimaler Overhead allokiert, oder geschieht das immer 4K-Seitenweise? Wenn es nicht 4K aligned ist, wer übernimmt die korrekte Verwaltung? Der Kernel, oder die malloc-routine der eingesetzten Programmiersprache?"
+2013-04-06 22:47:14,martinFTW,Wenn du einen Heap hast geht das nicht seitenweise sondern ersteres ist der Fall
+2013-04-06 22:48:02,martinFTW,außerdem gibt es keine integrierte malloc routine das muss man schon selbst implementieren wenn man ein OS schreibt
+2013-04-06 22:48:04,arbu,aber die Verwaltung des Heaps ist Compilersache oder?
+2013-04-06 22:48:28,arbu,"ja, das ist der Grund, warum ich gerade ins Grübeln komme :)"
+2013-04-06 22:48:35,martinFTW,nö siehe oben das ist bloß bei statischem Speicher so
+2013-04-06 22:49:14,martinFTW,also bei Globalen/statischen Variablen verwaltet der Compiler das
+2013-04-06 23:17:56,Jidder,"arbu, ich glaube du vermischt da compiler und standardbibliothek"
+2013-04-06 23:18:03,Jidder,die bibliothek implementiert malloc
+2013-04-06 23:18:10,Jidder,also ist die auch für die verwaltung des heaps zuständig
+2013-04-06 23:18:38,arbu,"ja, ich glaub ich hab Defizite im Verständnis des Heaps"
+2013-04-06 23:19:40,arbu,"dachte bisher, dass der rein für die Verwaltung der Variablen vom Compiler genutzt wird"
+2013-04-06 23:23:23,Jidder,die variablen sind ja schon zur compilezeit bekannt und deswegen landen die statisch im datensegment (Bzw
+2013-04-06 23:23:26,Jidder,bss)
+2013-04-06 23:24:03,arbu,jo stimmt
+2013-04-06 23:27:52,arbu,"aber sehe auch gerade, dass es da einen passenden Artikel im Wiki gibt :)"

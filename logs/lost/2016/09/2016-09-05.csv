@@ -1,0 +1,220 @@
+date/time,nick,message
+2016-09-05 12:13:33,feliwir,"tyndur, isn't that the name of the community OS?"
+2016-09-05 12:14:55,kevin,"-ELANG, aber ja ;-)"
+2016-09-05 12:15:56,MasterQ32,"und gestern fragt mit feliwir noch, warum ich anfange englisch zu reden :D"
+2016-09-05 12:16:09,feliwir,ah ich hab ausversehen in englisch geschrieben :O Mag sich heute nochmal jemand anschauen warum meine .ctors sektion nachm linken weggeht
+2016-09-05 12:16:17,feliwir,"MasterQ32, ja da kommt man schonmal durcheinander :D"
+2016-09-05 12:17:30,feliwir,https://gist.github.com/feliwir/fcb5edb3dcb8e869ed9178e52f77537d 
+2016-09-05 12:17:49,kevin,"Section geht beim Linken weg klingt nach einem Fehler im Linkerskript, oder?"
+2016-09-05 12:18:32,feliwir,https://github.com/feliwir/benny/blob/master/kernel/arch/i386/linker.ld#L20 
+2016-09-05 12:18:48,feliwir,ich sag doch explizit das sie beibehalten werden soll
+2016-09-05 12:19:56,kevin,"Hm, was heißt denn dieses KEEP genau?"
+2016-09-05 12:20:04,kevin,"Ich hätte vermutet, du linkst sie nach .data rein"
+2016-09-05 12:21:30,kevin,"Jo, sieht so aus, dass KEEP nur dafür sorgt, dass die Daten nicht weggeworfen werden, aber sie werden wohl trotzdem da hingelinkt wo du es verlangst, also .data in diesem Fall"
+2016-09-05 12:23:06,kevin,"Was passiert, wenn du für die Ausgabe ein eigenes .ctors definierst?"
+2016-09-05 12:23:10,feliwir,hm. Also stimmt das? Ja ich hab halt nach dem Tutorial von lowlevel.eu gearbeitet
+2016-09-05 12:24:10,feliwir,wie meinst du das?
+2016-09-05 12:24:58,kevin,Welche Tut denn genau?
+2016-09-05 12:25:26,feliwir,http://www.lowlevel.eu/wiki/C%2B%2B
+2016-09-05 12:25:32,feliwir,und
+2016-09-05 12:25:33,feliwir,http://www.lowlevel.eu/wiki/C%2B%2B-Kernel_mit_GRUB
+2016-09-05 12:26:10,kevin,"Und ich meine einfach, dass du statt .data { ... ctors-Zeug ... *(.data) } ein separates .data { *(.data) } und .ctors { ... ctors-Zeug ... } machst"
+2016-09-05 12:26:55,kevin,Andererseits definerst du ja eigene Symbole um die Konstruktoren herum
+2016-09-05 12:27:14,feliwir,"ja, die brauche ich um anfang und ende der konstruktoren zu wissen"
+2016-09-05 12:27:17,kevin,"Also dürfte es gar nichts ausmachen, dass die Section fehlt, solange start_ctors/end_ctors am Ende als Symbole existierend"
+2016-09-05 12:27:47,kevin,"Ja, ich dachte, du nimmst vielleicht die impliziten __start_ctors und __stop_ctors-Symbole, die der Linker automagisch erzeugen würde"
+2016-09-05 12:28:06,kevin,"Aber wenn du das nicht tust, ist es eigentlich egal, ob du in der Ausgabe die Section noch hast"
+2016-09-05 12:28:23,feliwir,also ich hab jedenfalls die beiden symbols start_ctors und end_ctors
+2016-09-05 12:28:29,kevin,Gut...
+2016-09-05 12:28:30,feliwir,in meiner kernel.bin
+2016-09-05 12:28:33,kevin,Wo ist nochmal das Problem? :-)
+2016-09-05 12:30:14,feliwir,mein kernel schmiert hier ab: https://github.com/feliwir/benny/blob/master/kernel/kernel/vga.cpp#L9
+2016-09-05 12:30:37,feliwir,weshalb ich mal davon ausgegangen bin das meine Konstruktoren nicht gehen? aber kann auch was anderes sein
+2016-09-05 12:31:02,kevin,"Ob deine Konstruktoren gehen, kannst du ganz einfach rausfinden, indem du ein while(1) in einen Konstruktor schreibst"
+2016-09-05 12:31:20,kevin,Oder direkt auf den Videospeicher schreiben oder so
+2016-09-05 12:32:01,feliwir,"kevin, ich würde es ja debuggen aber ich kann nicht nach Dateien debuggen sondern nur nach Funktionsnamen und mein Konstruktor is gemangled"
+2016-09-05 12:32:01,kevin,"Woran siehst du denn, dass es in Zeile 9 crasht? (Kommt mir unwahrscheinlich vor, da ist nichtmal ein Speicherzugriff.)"
+2016-09-05 12:32:50,feliwir,ich weiß nur das es das in der Funktion crasht
+2016-09-05 12:33:24,kevin,"Was heißt ""Crash"" genau in diesem Fall?"
+2016-09-05 12:33:34,feliwir,"ich debug den kernel, also starte qemu mit meiner iso und setzt dann nen breakpoint in kernel_main "
+2016-09-05 12:34:45,kevin,Und dann singlesteppst du bis was passiert?
+2016-09-05 12:35:38,feliwir,bis es nicht mehr weiter steppt
+2016-09-05 12:35:59,feliwir,kann natürlich auch sein das ich mich sau blöd anstelle
+2016-09-05 12:36:32,kevin,"Das heißt, du hast keinen Crash, sondern rennst irgendwo in eine Endlosschleife?"
+2016-09-05 12:38:03,feliwir,ja kann gut sein. Das Problem ist halt wenn ich ein Breakpoint in meinen Konstruktor setze sehe ich das der nicht aufgerufen wird
+2016-09-05 12:39:09,feliwir,und wenn ich einen in Vga::Clear setzen will heißt es dass die Funktion nicht existiert
+2016-09-05 12:39:54,feliwir,(gdb) break kernel_main
+2016-09-05 12:39:54,feliwir,"Haltepunkt 1 at 0x100023: file kernel/kernel.cpp, line 9."
+2016-09-05 12:39:54,feliwir,(gdb) continue
+2016-09-05 12:39:54,feliwir,Continuing.
+2016-09-05 12:39:54,feliwir,"Breakpoint 1, kernel_main () at kernel/kernel.cpp:9"
+2016-09-05 12:39:55,feliwir,9         terminal.Clear();
+2016-09-05 12:39:57,feliwir,(gdb) s
+2016-09-05 12:40:09,feliwir,und dann ist er stecken geblieben
+2016-09-05 12:41:11,kevin,Vergiss das ganze gdb-Zeug am besten mal und schau dir die Sache von Hand an
+2016-09-05 12:42:02,kevin,"Evtl. Debugcode einbauen, ansonsten wenn er hängt info registers im qemu-Monitor, und Adressen mit disassemblierter Binary vergleichen"
+2016-09-05 12:44:36,feliwir,ich versuchs mal
+2016-09-05 13:16:43,feliwir,"kevin, you have any more good tips on kernel debugging?"
+2016-09-05 13:16:55,feliwir,"ähm, auf deutsch halt"
+2016-09-05 13:17:00,kevin,*g*
+2016-09-05 13:17:25,kevin,"Hast du inzwischen die Adresse der Instruktion, an der er hängt?"
+2016-09-05 13:17:41,feliwir,ne :(
+2016-09-05 13:18:18,feliwir,ich hab jetzt erstmal auf ubuntu gewechselt mit den subsystem for linux ist doch etwas umständlich
+2016-09-05 13:18:43,MasterQ32,^^
+2016-09-05 13:18:46,MasterQ32,taugt das?
+2016-09-05 13:18:49,MasterQ32,also so generell
+2016-09-05 13:18:50,MasterQ32,?
+2016-09-05 13:19:01,feliwir,ist halt ein ubuntu 14.04 ohne xserver
+2016-09-05 13:19:13,feliwir,also ich persönlich finds angenehmer als cygwin/msys etc.
+2016-09-05 13:19:28,feliwir,funktioniert alles wunderbar bei für os development
+2016-09-05 13:19:42,feliwir,"abgesehen davon das ich halt immer ""qemu -display none"" machen muss"
+2016-09-05 13:20:35,kevin,"Du weißt, was der qemu-Monitor ist?"
+2016-09-05 13:20:56,feliwir,nein :'( Ich hab qemu vor 2 Tagen das erste mal benutzt
+2016-09-05 13:21:03,kevin,Ok
+2016-09-05 13:21:27,kevin,Lass dein OS mal hängen und drücke dann Strg-Alt-2
+2016-09-05 13:21:36,kevin,Da müsste ein (qemu)-Prompt kommen
+2016-09-05 13:22:15,kevin,"Mit dem ncurses-Interface wäre das ein bisschen anders, aber du hast ja jetzt ein richtiges Linux ;-)"
+2016-09-05 13:26:22,feliwir,ja einen Moment installier eben alles :)
+2016-09-05 13:30:44,feliwir,ja bin im monitor glaub ich
+2016-09-05 13:38:36,feliwir,"das einzige was ich machen kann ist ""info registers"" der Rest hilft nicht wirklich"
+2016-09-05 13:49:11,feliwir,ah EIP=001000bd
+2016-09-05 13:56:51,feliwir,"Program received signal SIGQUIT, Quit."
+2016-09-05 13:56:51,feliwir,0x001000bd in Vga::Clear() ()
+2016-09-05 13:56:51,feliwir, 
+2016-09-05 13:56:57,feliwir,Ist also auf jedenfall dort
+2016-09-05 14:03:34,kevin,"Dann mach mal ein objdump -S kernel.bin | less und schau dir an, was an 001000bd steht"
+2016-09-05 14:03:55,kevin,Oder um die Adresse herum
+2016-09-05 14:04:12,feliwir,"movd   %eax,%xmm0"
+2016-09-05 14:04:17,MasterQ32,ah!
+2016-09-05 14:04:22,feliwir,ich darf xmm register im kernel nicht benutzen oder? 
+2016-09-05 14:04:25,MasterQ32,schalt mal sse und mmc ab
+2016-09-05 14:04:31,MasterQ32,"doch, aber qemu supported das by-default nicht"
+2016-09-05 14:04:39,MasterQ32,musst du entweder im kernel aus oder in qemu anschalten
+2016-09-05 14:05:57,kevin,Muss man das nicht explizit im Kernel aktivieren?
+2016-09-05 14:06:03,kevin,"Also damit es tut, meine ich"
+2016-09-05 14:06:13,kevin,Irgendein Bit in einem Steuerregister setzen oder so
+2016-09-05 14:06:44,kevin,"Aber sowas will man im Kernel eh nicht benutzen, wird sonst doof wenn man mal Userspace-Prozesse hat"
+2016-09-05 14:06:57,MasterQ32,jap
+2016-09-05 14:10:06,MasterQ32,gestern war der 2².3².4² ^^
+2016-09-05 14:10:18,feliwir,es geht <3
+2016-09-05 14:28:37,kevin,"Also mal wieder die alte Weisheit: Kaum macht man es richtig, tut es auch schon ;-)"
+2016-09-05 14:33:21,feliwir,in der Tat :D Jetzt kann ich ja richtig anfangen :P
+2016-09-05 14:39:21,Godwine,hoi
+2016-09-05 14:42:09,Godwine,"hey kevin, was war nochmal der fix wenn bei qemu -monitor stdio stdout nicht auf die konsole umgeleitet wird unter cygwin?"
+2016-09-05 14:42:34,Godwine,hab leider vergessen woran das lag
+2016-09-05 14:44:38,Godwine,ich glaube man musste irgendeine umgebungsvariable setzen
+2016-09-05 14:45:45,kevin,"SDL_STDIO_REDIRECT=""no"""
+2016-09-05 14:45:55,kevin,Behauptet Google
+2016-09-05 14:46:13,Godwine,wonach hast du denn gesucht? :O
+2016-09-05 14:46:51,Godwine,ich hab nach qemu cygwin stdio usw gesucht aber nix gefunden :/
+2016-09-05 14:47:58,Godwine,naja vielen dank ^^
+2016-09-05 14:48:07,Godwine,ich schreib mir das besser mal auf
+2016-09-05 18:03:27,darklink,Rust:
+2016-09-05 18:03:39,darklink,die definition von \n ist \n
+2016-09-05 18:03:45,MasterQ32,haha :D
+2016-09-05 18:03:47,MasterQ32,passt 
+2016-09-05 18:03:56,MasterQ32,und du hast Godwine vertrieben
+2016-09-05 18:03:59,MasterQ32,schäm dich!
+2016-09-05 18:03:59,darklink,"laut des rust compilers, der in rust geschrieben wird"
+2016-09-05 18:04:06,MasterQ32,hm?
+2016-09-05 18:04:48,darklink,"im code steht nicht, dass \n das byte 0x0A darstellt"
+2016-09-05 18:07:22,darklink,"Das steht im sourcecodes des rust compilers, dass rust gebaut hatte"
+2016-09-05 18:07:30,darklink,oder auch nicht :D
+2016-09-05 18:08:52,MasterQ32,:D
+2016-09-05 18:09:04,MasterQ32,also in meinem compiler wird '\n' auch nach '\n' übersetzt :D
+2016-09-05 18:09:59,feliwir,also ich muss jetzt wo alles geht bei mir sagen das clang definitiv angenehmer als gcc ist zum cross compilen :P
+2016-09-05 18:10:29,MasterQ32,warum?
+2016-09-05 18:10:38,MasterQ32,und: berichte von deinen erfahrungen
+2016-09-05 18:18:37,feliwir,na weil gcc muss ich mir ja für jede Architektur kompilieren
+2016-09-05 18:18:57,feliwir,"bei clang kann ich einfach ""clang -target i386-unknown-none-gnu"" und es funktioniert einfach"
+2016-09-05 18:19:43,feliwir,mein automatisiertes testen auf travis könnte ich beispielsweise mit gcc garnicht umsetzen da ich erstmal ein gcc kompilieren müsste das cross compilen kann
+2016-09-05 18:20:05,feliwir,https://travis-ci.org/feliwir/benny/jobs/157679025
+2016-09-05 18:20:23,feliwir,immer wenn ich was pushe baut mir travis automatisch eine iso :)
+2016-09-05 18:20:49,MasterQ32,cool
+2016-09-05 18:21:06,feliwir,ja und clang hat kürzere compile zeit als gcc
+2016-09-05 18:21:25,MasterQ32,"okay, muss ich also wohl mal reingucken"
+2016-09-05 18:21:51,feliwir,mich hat halt echt am meisten gestört das man sich gcc immer selbst builden muss einmal
+2016-09-05 18:22:21,feliwir,also so eine cross toolchain braucht. Also der ganze Quatsch hier: http://wiki.osdev.org/GCC_Cross-Compiler
+2016-09-05 18:22:24,MasterQ32,hat clang ein z80-target?
+2016-09-05 18:23:36,feliwir,klar
+2016-09-05 18:23:38,feliwir,https://olduino.wordpress.com/2014/12/30/llvm-for-the-z80-another-source-of-inspiration/
+2016-09-05 18:24:12,feliwir,aber mit so prähistorischen cpus wirds glaub ich schon komplizierter
+2016-09-05 18:24:24,feliwir,"ich will ja nur i386,x86_64 und ARM"
+2016-09-05 18:24:54,MasterQ32,aber mit z80 könnte ich endlich meinen Taschenrechner mit C programmieren
+2016-09-05 18:26:06,feliwir,ist der z80 nicht in der NES gewesen?
+2016-09-05 18:26:21,MasterQ32,"auch das, ja"
+2016-09-05 18:39:05,feliwir,"ehm, hat jemand Erfahrung mit x86_64 kernels?"
+2016-09-05 18:41:45,darklink,AUA
+2016-09-05 18:42:03,MasterQ32,"jammer nich, so feste war das gar nicht"
+2016-09-05 18:42:06,darklink,also der z80 war nicht in der NES
+2016-09-05 18:42:17,MasterQ32,"im Gameboy aber, oder?"
+2016-09-05 18:42:21,darklink,ja
+2016-09-05 18:43:04,darklink,Also x86_64 ist komplizierter
+2016-09-05 18:43:35,darklink,"hab da so einige CFLAGS und LDFLAGS, aber die funktionieren auch nur zufälligerweise"
+2016-09-05 18:43:50,feliwir,"in meinem bootcode beschwert sich der assembler das ich nicht ""pushl eax"" machen darf weil ich eben sag das es 64 bit ist"
+2016-09-05 18:44:03,feliwir,arch/x86_64/boot.S:34:2: error: instruction requires: Not 64-bit mode
+2016-09-05 18:44:29,feliwir,gibts da ne Anweisung zu sagen das ich noch 32 bit mode bin?
+2016-09-05 18:44:48,darklink,https://github.com/Mtgxyz/MTGos/blob/master/boot/x86_64/Makefile
+2016-09-05 18:45:18,darklink,äh
+2016-09-05 18:45:24,darklink,is das gnu assembler?
+2016-09-05 18:45:41,feliwir,"ja clang assembler, glaube das ist analog zueinander"
+2016-09-05 18:46:02,darklink,"wenn ja, dann nimm .code32 an beginn des 32-bit codwa"
+2016-09-05 18:46:14,darklink,und .code64 an beginn des 64-bit codes
+2016-09-05 18:46:46,feliwir,hm mein label heißt aber _start? Oder soll das kein label sein
+2016-09-05 18:46:55,darklink,Ne
+2016-09-05 18:47:02,darklink,das muss vor den code
+2016-09-05 18:48:29,feliwir,du gehst direkt in assembly in den longmode?
+2016-09-05 18:50:56,darklink,Ja
+2016-09-05 18:51:18,darklink,In c wäre schwierig 
+2016-09-05 18:52:18,feliwir,was machst du denn da ständig mit lodsl & stosl .Kenn die Instruktionen nicht :D
+2016-09-05 18:54:06,darklink,"lodsl macht mov eax, [esi]; add 0x4, esi"
+2016-09-05 18:54:22,Godwine,aber mit 8 bytes oder?
+2016-09-05 18:54:29,Godwine,lodsd macht 4 bytes
+2016-09-05 18:54:33,darklink,"Und stosl macht mov [edi], eax; add 0x4 edi"
+2016-09-05 18:54:57,darklink,Äh
+2016-09-05 18:55:24,darklink,"Also mein  code meint, dass das 32-bit sind"
+2016-09-05 18:55:40,Godwine,hm merkwürdig
+2016-09-05 18:55:53,Godwine,ist das intel syntax?
+2016-09-05 18:56:04,darklink,Lodsd ist intel
+2016-09-05 18:56:14,Godwine,ja okay dann liegt das daran
+2016-09-05 18:56:23,Godwine,für 8 byte gibts ja lodsq
+2016-09-05 18:56:30,darklink,Lodsl ist at&t
+2016-09-05 18:57:52,darklink,Bswap vertauscht die bitreihenfolge
+2016-09-05 18:58:06,darklink,Bytereihenfolge*
+2016-09-05 18:58:23,darklink,Also bswap 0xAFFE wird zu 0xFEAF<
+2016-09-05 19:53:35,feliwir,ist es eigentlich nicht möglich i386 und x86_64 in einem abzudecken? Weil man muss ja eh prüfen ob es longmode etc. gibt
+2016-09-05 19:53:45,feliwir,bzw. jeder macht es sowieso
+2016-09-05 19:56:10,kevin,Du meinst in einer Binary?
+2016-09-05 19:56:31,feliwir,"ne, aber mit dem selben code"
+2016-09-05 19:56:35,feliwir,nicht mit der selben binary
+2016-09-05 19:57:04,kevin,"Naja, der Großteil von einem OS sollte normal portabel sein"
+2016-09-05 19:57:08,kevin,Ein paar Details sind es nicht
+2016-09-05 19:57:23,kevin,Deswegen hat man ja ein arch/-Verzeichnis
+2016-09-05 19:59:43,feliwir,"ja, aber bei i386 und x64 weiß ich gar nicht großartig was ich da unterscheiden soll"
+2016-09-05 20:06:56,darklink,Size_t
+2016-09-05 20:07:02,MasterQ32,paging
+2016-09-05 20:07:27,darklink,Und VM8&
+2016-09-05 20:07:54,darklink,"also ich benutze für x86, x86_64, 3ds9 und 3ds11 den selben kernel"
+2016-09-05 20:08:00,darklink,bloß andere module
+2016-09-05 20:08:46,kevin,"GDT, IDT und so sehen auch anders aus"
+2016-09-05 20:08:54,feliwir,ok. Ich würde ja gerne NASM benutzen aber das funktioniert ja leider nur für x86 und x64 :(
+2016-09-05 20:08:58,kevin,Vermutlich anderes Syscallinterface
+2016-09-05 20:09:29,darklink,Ich benutze das selbe für alle archs
+2016-09-05 20:09:31,kevin,"Von nasm bin ich abgekommen, ich benutze lieber denselben Assembler, den mein C-Compiler auch nimmt"
+2016-09-05 20:09:50,darklink,werde es aber sicher bei dem PPC verändern müssen
+2016-09-05 20:10:09,kevin,"darklink: Ich meine den eigentlichen Mechanismus, int 0x30 vs. syscall und so"
+2016-09-05 20:10:31,MasterQ32,"darklink, du hast doch mal mit PIC rumexperimentiert"
+2016-09-05 20:10:36,MasterQ32,irgendwas sinnvolles bei rausgekommen?
+2016-09-05 20:10:43,kevin,Und Aufrufkonvention für die Syscalls auch
+2016-09-05 20:12:24,kevin,"Oh, 42 Patches im Pullrequest. Das hätte ich absichtlich nicht besser machen können. :-)"
+2016-09-05 20:20:19,darklink,Äh
+2016-09-05 20:20:39,darklink,ich habe einfach PD code aus dem wiki kopiert
+2016-09-05 20:21:26,MasterQ32,hm?
+2016-09-05 20:26:37,darklink,Also ich habe nix am PIC gemacht
+2016-09-05 20:26:46,darklink,außer das was im wiki an code war
+2016-09-05 20:30:09,MasterQ32,"brb, reboot"
+2016-09-05 20:51:31,MasterQ32,:D
+2016-09-05 22:03:05,HatteHeuteSpaghetti,"Paddy, hats geschmeckt?"
+2016-09-05 22:03:49,Paddy,Hat einen Tick zu virtuell geschmeckt ;-)
+2016-09-05 22:05:56,HatteHeuteSpaghetti,"mist, soll ich sie das nächste mal vorbeibringen?"
+2016-09-05 22:06:23,Paddy,Wär einen Versuch wert

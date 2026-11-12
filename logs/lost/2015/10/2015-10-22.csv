@@ -1,0 +1,865 @@
+date/time,nick,message
+2015-10-22 00:17:09,Guest280,Yay mein Elf-Beschwörer funktioniert endlich ^^
+2015-10-22 00:17:50,Guest280,wenn auch nur für spezielle Elf-Dateien aber das ist ja egal ^^
+2015-10-22 00:19:34,Sur3,und das Hallo Welt mit Standard libc funktioniert jetzt mit ddem Elf-Loader auch endlich ^^
+2015-10-22 01:26:04,Sur3,kann mir jemand sagen wo ich die stdarg.h in den tyndur sources finde?
+2015-10-22 01:28:25,Sur3,ah hab
+2015-10-22 03:27:43,Sur3,"so puts, putchar und abs hab ich jetzt, fehlt nurnoch der ganze rest.. xD"
+2015-10-22 03:33:16,Sur3,mir fehlen noch 7 standardfunktionen für mein schachprogramm und 13 Standardfunktionen für fasm.o ^^
+2015-10-22 09:03:23,Sur3,"so noch fgets, sscanf, vfprintf und scrolling und ich kann mein schachprogramm compilieren, aber denke das dauert noch, diese nervigen formatistringfunktionen sind echt aufwändig.. :-/"
+2015-10-22 09:53:22,kevin,Moin
+2015-10-22 09:53:41,masterq32,moin moin
+2015-10-22 09:55:00,kevin,Sur3: An sich gibt es doch nur zwei Formatstringfunktionen?
+2015-10-22 09:56:26,Sur3,"nicht 4? vfprintf, sfprintf, vsprintf, ssprintf ?"
+2015-10-22 09:56:42,Sur3,sry verschrieben
+2015-10-22 09:57:34,Sur3,"ich glaub die vier hier meinte ich vfprintf, vsprintf, vfscanf, vsscanf"
+2015-10-22 09:58:12,kevin,"Also wenn du es richtig machst, implementierst du nur eine printf-Kernfunktion und der Rest sind triviale Wrapper"
+2015-10-22 09:58:38,kevin,Und eine scanf-Kernfunktion natürlich
+2015-10-22 09:59:03,Sur3,joa aber ich brauch es ja jeweils für stream und variable
+2015-10-22 09:59:28,Sur3,bzw für stream und speicher
+2015-10-22 09:59:42,kevin,"Bau dir einen Pseudo-Stream, der in einen String streamt"
+2015-10-22 10:00:13,kevin,Oder in tyndur wird glaub ich ein Funktionspointer für ein spezifisches putc in das Kern-printf reingegeben
+2015-10-22 10:00:18,Sur3,ah interessante idee
+2015-10-22 10:12:53,masterq32,sollte ich glaube ich auch mal machen
+2015-10-22 10:14:55,masterq32,wolle eh irgendwann meine ganzen funktionspointer durch c-delegaten ersetzen
+2015-10-22 10:14:59,masterq32,also funktionspointer + userdata
+2015-10-22 10:17:38,Sur3,"aber ich denke ich werd die vier funktionen eher durch c&p-programmierung machen, statt unnötig zwischen komplett unterschiedlichen datentypen zu 'casten'"
+2015-10-22 10:17:45,masterq32,ohje :D
+2015-10-22 10:17:56,masterq32,mein prinft ist grade nen sprintf :P
+2015-10-22 10:18:01,masterq32,printet in einen buffer
+2015-10-22 10:18:08,masterq32,und verzweifelt dann :D
+2015-10-22 10:18:13,Sur3,xD
+2015-10-22 10:18:47,Sur3,mein printf ist ein funktionsaufruf auf vfprintf und das ist noch nicht implementiert :D
+2015-10-22 10:18:53,masterq32,:D
+2015-10-22 10:18:56,masterq32,auch geil
+2015-10-22 10:19:21,Sur3,"bzw ich hab vfprintf erstmal nach puts umgeleitet, sprich es schreibt den formatstruing wie einen normalen string"
+2015-10-22 10:19:38,Sur3,und hängt nen zeilenumbruch hinter ^^
+2015-10-22 10:20:16,masterq32,geil :D
+2015-10-22 10:20:21,kevin,Also ich würde ja lieber casten als Code zu duplizieren
+2015-10-22 10:20:26,masterq32,yep
+2015-10-22 10:20:49,kevin,"Allerdings verstehe ich auch nicht, wo du an dieser Stelle casten müsstest"
+2015-10-22 10:21:04,Sur3,aber das casten kostet zusätzliche rechenleistung das code kopieren kostet nur speicherplatz ^^
+2015-10-22 10:21:04,kevin,Also machst du vermutlich irgendwas anderes falsch ;-)
+2015-10-22 10:21:17,kevin,Was für ein Cast denn?
+2015-10-22 10:21:25,Sur3,das casten war ja bewußt in ''
+2015-10-22 10:21:28,masterq32,int i;
+2015-10-22 10:21:28,masterq32,char c = (int)i;
+2015-10-22 10:21:30,masterq32,das kostet nix :D
+2015-10-22 10:21:37,Sur3,es geht um ne umwandlung zwischen puffer und stream
+2015-10-22 10:21:42,masterq32,naja
+2015-10-22 10:21:43,masterq32,nein :D
+2015-10-22 10:21:47,kevin,"masterq32: Doch, der kostet, weil die hohen Bits genullt werden müssen"
+2015-10-22 10:21:53,masterq32,oh :D
+2015-10-22 10:21:53,masterq32,:D
+2015-10-22 10:21:54,masterq32,ups
+2015-10-22 10:21:57,masterq32,naja
+2015-10-22 10:22:00,masterq32,nicht viel
+2015-10-22 10:22:11,kevin,"Hm, wobei, ein mov ist es eh"
+2015-10-22 10:22:22,kevin,"Dann ist es auch egal, ob ein oder vier Bytes"
+2015-10-22 10:22:35,Sur3,movzx ^^
+2015-10-22 10:22:45,Sur3,aso nee umgekehrt
+2015-10-22 10:22:49,kevin,Genau
+2015-10-22 10:22:58,kevin,Selber Fehler ;-)
+2015-10-22 10:23:20,Sur3,joa hab mich auf das von dir bezogen xD
+2015-10-22 10:24:46,kevin,"Und wenn du kein Stream-Backend bauen willst, das in einen Puffer schreibt, weil du so davon besessen bist, Taktzyklen zu sparen, dann nimm halt den Funkionspointer"
+2015-10-22 10:25:19,kevin,"Ich glaube, es hat dir schonmal jemand gesagt, dass größerer Code automatisch auch langsamer ist"
+2015-10-22 10:25:28,masterq32,"flexprintf(void (*putc)(char c, void *udata), const char *fmt, ...);"
+2015-10-22 10:25:31,masterq32,wäre jetzt mein ansatz
+2015-10-22 10:25:53,masterq32,bzw natürlich mit va_list
+2015-10-22 10:26:03,kevin,Nicht ... sondern va_list aber sonst ja
+2015-10-22 10:26:14,masterq32,klar
+2015-10-22 10:26:20,masterq32,aber man kann ja auch flexprintf exportieren :D
+2015-10-22 10:27:50,kevin,"Kann man, aber dadurch lässt sich trotzdem nichts anderes nachbauen. Höchstens als Makro. ;-)"
+2015-10-22 10:28:46,Sur3,"ok terminal echo und getchar scheinen auch zu funktionieren aber fgets erkennt irgendwie den zeilenumbruch nicht, vllt hat '\n' doch nicht den wert 10 oder ich wandle es falsch um.."
+2015-10-22 10:28:59,kevin,"tyndur gibt eine struct rein, die eine putc_fct, putsn_fct und ein void* arg enthalten"
+2015-10-22 10:29:11,masterq32,ah
+2015-10-22 10:29:15,masterq32,"ja, macht sinn"
+2015-10-22 10:29:27,kevin,Das arg entspricht vermutlich deinem udata
+2015-10-22 10:29:30,masterq32,genau
+2015-10-22 10:29:34,kevin,Wobei du dann auch noch ein udata übergeben solltest ;-)
+2015-10-22 10:29:41,kevin,Also an flexprintf
+2015-10-22 10:29:47,masterq32,yep
+2015-10-22 10:29:53,masterq32,damit hast du wohl recht :D
+2015-10-22 10:29:58,masterq32,moin dar klink
+2015-10-22 10:30:35,darklink,hi
+2015-10-22 10:31:30,Sur3,"hmm mit funktionspointern hab ich in c ewig nicht gearbeitet, da muß ich mich erstmal wieder reinlesen"
+2015-10-22 10:31:36,masterq32,:D
+2015-10-22 10:31:54,darklink, Lol
+2015-10-22 10:32:01,darklink,ist einfach
+2015-10-22 10:32:16,Sur3,ok ich kenn die nur von threads
+2015-10-22 10:32:39,masterq32,hm :
+2015-10-22 10:32:44,masterq32,kann man ne menge damit anstellen
+2015-10-22 10:34:00,Sur3,ok joa ich les mich mal ein
+2015-10-22 10:34:38,kevin,Ich glaube ohne Funktionspointer würde bei mir wenig laufen
+2015-10-22 10:35:13,kevin,Da könnte man ja gar keine Vererbung machen ;-)
+2015-10-22 10:36:06,masterq32,solange man in c++ keine memberfunctionpointer auf templateparameter macht.... :D
+2015-10-22 10:36:08,darklink,"bool(*func)(int, int) = (void(*)(int, int)malloc(sizeof(void(*)(int, int)));"
+2015-10-22 10:36:49,masterq32,ähm nein.
+2015-10-22 10:37:07,masterq32,das macht keinen sinn
+2015-10-22 10:38:02,darklink,"bool(**functbl)(int, int) = (void(**)(int, int)malloc(sizeof(void(*)(int, int))*numEntries);"
+2015-10-22 10:38:25,Sur3,"@kevin warum braucht man denn vererbung, das ist doch so nen neumodisches c++ zeug, ich schreib c-code da macht man das über Datenstrukturen"
+2015-10-22 10:38:35,masterq32,jetzt macht das sinn :D
+2015-10-22 10:38:36,kevin,"structs und Funktionspointer, genau"
+2015-10-22 10:38:48,masterq32,joar :D
+2015-10-22 10:38:57,kevin,darklink: Wieso castest du ein malloc-Ergebnis?
+2015-10-22 10:39:14,masterq32,is ne vtable
+2015-10-22 10:39:19,masterq32,oder function table
+2015-10-22 10:39:32,darklink,Implizit casten gibt warnungen :(
+2015-10-22 10:39:37,kevin,In C?
+2015-10-22 10:39:40,masterq32,ja
+2015-10-22 10:39:43,masterq32,afaik schon
+2015-10-22 10:39:44,kevin,void* kann man doch zu allem casten?
+2015-10-22 10:39:56,masterq32,mit wall und wextra gibt auch das castwarnings
+2015-10-22 10:40:08,kevin,Weil Objekt- und Funktionspointer oder sowas?
+2015-10-22 10:40:22,Sur3,wall sollte ich garnciht erst versuchen xD
+2015-10-22 10:40:27,darklink,Nein weil implizit
+2015-10-22 10:40:59,kevin,"C-Casts von und nach  void* gehen immer implizit. Zumindest für Objektpointer, bei Funktionspointern eventuell nicht."
+2015-10-22 10:41:14,kevin,"Aber ich glaube, die sind laut Standard eh inkompatibel"
+2015-10-22 10:41:27,kevin,"Das heißt, mit dem Cast hast du dann UB"
+2015-10-22 10:43:04,masterq32,afaik nutzt darklink c++
+2015-10-22 10:43:07,Sur3,ok scheint echt nciht so schwer zu sein mit den funktionspointern
+2015-10-22 10:43:09,masterq32,und da geht das nicht
+2015-10-22 10:43:11,darklink,Ja
+2015-10-22 10:43:24,kevin,"Ja gut, C++ ist halt kaputt, da muss man nach malloc immer casten"
+2015-10-22 10:43:26,kevin,Aber in C nicht
+2015-10-22 10:43:41,masterq32,ich hab nen template für malloc :D
+2015-10-22 10:44:13,Sur3,bei mallov muß man doch eh immer casten von void* zu was man eben braucht
+2015-10-22 10:44:25,kevin,Nur in C++
+2015-10-22 10:44:36,masterq32,template<typename T> T *malloc(size_t size = sizeof(T))
+2015-10-22 10:44:45,kevin,In C kann ich selbstverständlich sowas wie char* s = malloc(42); sagen
+2015-10-22 10:45:15,Sur3,gibt das nciht ne warning?
+2015-10-22 10:45:19,kevin,Nein
+2015-10-22 10:45:32,Sur3,hmm komisch dann hab ich immer ganz umsonst gecastet XD
+2015-10-22 10:45:42,kevin,void* ist mit allen Objektpointern kompatibel
+2015-10-22 10:45:55,Sur3,ok war mir neu
+2015-10-22 10:46:59,kevin,darklink: Aber was willst du eigentlich mit einer zur Laufzeit allozierten Funktionstabelle? Das klingt ja schon irgendwie spaßig.
+2015-10-22 10:48:03,darklink,da könnten meine module rein :P
+2015-10-22 11:06:35,Sur3,so fgets funktioniert endlich die umwandlung des scancodes für die eingabetaste war bloß fehlerhaft
+2015-10-22 11:13:48,Sur3,"ich überleg immernoch wie ich mit segmentierung malloc machen soll, das programm hat ja seinen festen physischen bereich und da der gcc dumm ist darf ich nicht verlangen daß er das segment wechselt, dh ich vermutlich bei jedem malloc den gesamten speicherbereich den programms kopieren.. :-/"
+2015-10-22 11:14:44,Sur3,*ich muß vermutlich [..] des programms
+2015-10-22 11:15:59,kevin,wtf?
+2015-10-22 11:16:53,kevin,"Ach so, ja, wenn du keine Luft lässt über dem Programm, kann das Segment nicht größer werden. Stimmt auffallend."
+2015-10-22 11:17:03,kevin,Ohne Paging ist halt doch irgendwie doof.
+2015-10-22 11:17:18,Sur3,joa ich weiß ja vorher nciht wie viel speicher das programm anfordern will
+2015-10-22 11:17:40,Sur3,ich hab schon 4kB für den stack angehangen
+2015-10-22 11:18:02,kevin,"Wow, wie großzügig"
+2015-10-22 11:18:45,Sur3,joa hat mich auch einiges an überwindung gekostet das im elfen-beschwörer einzutippen ^^
+2015-10-22 11:19:26,kevin,"Falls dich meine Meinung interessiert, was sie natürlich nicht tut"
+2015-10-22 11:19:30,kevin,Schalte Paging an
+2015-10-22 11:20:03,Sur3,"paging kommt ja auch noch irgendwan, aber ich will halt daß das system auch ohne paging läuft und das paging sozusagen optional ist"
+2015-10-22 11:20:05,kevin,"Wenn du dann den Stack ganz unten im Datensegment lässt, kannst du dich mit kleinerem Limit in ss vielleicht sogar trotzdem noch gegen Stack Overflows schützen"
+2015-10-22 11:20:22,kevin,"Du merkst doch grad selber, dass Speicherverwaltung ohne Paging großer Mist ist"
+2015-10-22 11:20:50,Sur3,joa irgendwie schon aber nur weil der gcc keine segmentierung unterstützt
+2015-10-22 11:23:29,kevin,"Oh... Wieso benutzt tyndur eigentlich kein Expand-Down-Segment für ss? Wenn ich das so in der Doku lese, wäre das genau das richtige."
+2015-10-22 11:23:35,kevin,Hat sowas schonmal jemand von euch benutzt?
+2015-10-22 11:24:34,kevin,Sur3: Auch sonst würde das eher eklig werden
+2015-10-22 11:25:18,kevin,"Und vor allem langsam, wenn man ständig das Segment wechseln muss"
+2015-10-22 11:25:44,kevin,"Irgendwie schaust du immer auf die kleinen Performanceproblemchen, aber vergisst die großen"
+2015-10-22 11:26:54,Sur3,hmmm
+2015-10-22 11:28:24,Sur3,geht paging schon auf nem 486?
+2015-10-22 11:28:49,darklink,jo
+2015-10-22 11:29:03,kevin,Paging ist elementarer Bestandteil von i386
+2015-10-22 11:29:09,darklink,das macht segmentierung relativ unnoetig
+2015-10-22 11:29:09,Sur3,hm dann sollte ich das vllt wirklich mal implementieren
+2015-10-22 11:29:13,kevin,Geht also auf einem 386 auch schon
+2015-10-22 11:29:34,Sur3,an nem 386 hab ich nur einmal in meinem leben gesessen xD
+2015-10-22 11:29:56,Sur3,aber nen 486 hägt hier noch unter meinem schreibtisch ^^
+2015-10-22 11:30:00,kevin,"Dann wäre es wohl Zeit, von Techniken loszulassen, die vom 286 stammen ;-)"
+2015-10-22 11:30:11,masterq32,:D
+2015-10-22 11:30:38,darklink,haha
+2015-10-22 11:30:45,kevin,Wobei ich vermutlich öfter an einem 286 als an einem 386 gesessen bin
+2015-10-22 11:31:22,darklink,"x86_64 erzwingt sogar, dass die physische addresse gleich der linearen ist"
+2015-10-22 11:31:32,kevin,"Wobei der 286 ja so kaputt ist, dass er schon wieder cool ist"
+2015-10-22 11:32:01,kevin,"Angefangen mit Scherzen wie dem Wechsel zurück in den Real Mode, der nur per CPU-Reset geht"
+2015-10-22 11:32:13,Sur3,wat? physische adresse gleich lineare? o.O
+2015-10-22 11:32:49,kevin,"darklink: Stimmt nur eingeschränkt, fs und gs dürfen eine andere Basis haben. Und andere Register mittlerweile auch, teilweise, ein bisschen. ;-)"
+2015-10-22 11:37:26,kevin,"Äh, stimmt, Sur3 hat recht, das ist Quatsch"
+2015-10-22 11:37:41,kevin,"virtuelles Offset = linear, aber nicht linear = physisch"
+2015-10-22 11:38:11,Sur3,"abgesehn von der abwärtskompatibilität, gibt es einen grund nicht direkt auf PAE zu gehen sondern erst normales 2Level-Paging zu benutzen?"
+2015-10-22 11:38:29,kevin,PAE hat dein 486er nicht
+2015-10-22 11:38:48,Sur3,joa ich sag ja abgesehn von der abwärtskompatibilität
+2015-10-22 11:39:10,kevin,"Weiß nicht, ich hab PAE noch nie implementiert"
+2015-10-22 11:39:17,Sur3,aso
+2015-10-22 11:39:47,kevin,"Ich glaube, das wichtigste Kriterium wäre, ob rekursive PDs da noch gehen"
+2015-10-22 11:40:13,Sur3,rekursiv?
+2015-10-22 11:40:59,kevin,"Ein PDE zeigt wiederum auf das PD, das damit gleichzeitig als PT benutzt wird"
+2015-10-22 11:41:15,Sur3,aso
+2015-10-22 11:41:17,kevin,Dadurch hat man immer alle Page Tables des gemappt
+2015-10-22 11:41:34,kevin,"Was ein ziemlich angenehmer Trick ist, wenn man ihn mal verstanden hat"
+2015-10-22 11:41:56,kevin,Aber er hat auch das Potential für große Verwirrung
+2015-10-22 11:42:10,Sur3,also man sparrt damit speicherplatz für die tabellen?
+2015-10-22 11:44:10,kevin,Nein
+2015-10-22 11:44:27,kevin,"Es geht darum, dass du die Page Tables nachträglich verändern willst"
+2015-10-22 11:44:38,kevin,"Und dazu müssen sie gemappt sein, sonst kommst du ja mit aktiviertem Paging nicht mehr an sie ran"
+2015-10-22 11:45:50,kevin,"Und ohne diesen Trick wird es ziemlich eklig, wenn man für eine Speicherallokation eine neue Page Table anfangen muss"
+2015-10-22 11:45:59,kevin,Weil ja die PT selber auch erstmal alloziert und gemappt werden muss
+2015-10-22 11:46:04,kevin,Quasi ein Henne-Ei-Problem
+2015-10-22 11:46:23,Sur3,aso
+2015-10-22 11:47:29,Sur3,wußte garnicht daß man die tabelle selbst auch ausmappen kann
+2015-10-22 12:40:58,masterq32,hm
+2015-10-22 12:41:06,masterq32,schreib ich meinen assembler neu mit eigenem parser?
+2015-10-22 12:41:09,masterq32,aktuelle struktur ist bescheiden
+2015-10-22 12:42:07,kevin,Was hast du denn bisher?
+2015-10-22 12:43:34,masterq32,"ich hab ne BNF, welche das ganze irgendwie relativ generisch parsed"
+2015-10-22 12:43:45,masterq32,also via parser generator
+2015-10-22 12:44:00,masterq32,"aber irgendwie hab ich das gefühl, dass es besser läuft, wenn man das händisch parsed"
+2015-10-22 12:48:55,kevin,Inwiefern?
+2015-10-22 12:49:56,masterq32,naja
+2015-10-22 12:50:06,masterq32,grade ist das ein gefrickel weil ich nen syntaxbaum habe
+2015-10-22 12:50:14,masterq32,aber ein assembler ist ja ne syntaxliste :D
+2015-10-22 12:52:32,masterq32,"zudem sollte das mit direktiven usw leichter gehen, das zu erweitern"
+2015-10-22 12:54:27,kevin,Eine Liste ist auch nur ein Baum ;-)
+2015-10-22 12:55:15,masterq32,ja ich weiß
+2015-10-22 12:55:43,masterq32,ich glaub ich hab mich eh schon entschieden :P
+2015-10-22 12:55:46,masterq32,ich leg mal los :D
+2015-10-22 12:55:49,kevin,Normale x86-Assembler können ja auch konstante Ausdrücke parsen und so. Das wirst du nie haben wollen?
+2015-10-22 12:56:17,kevin,"Ich meine, kann man von Hand natürlich auch, aber wegen ""ist nur eine Liste"""
+2015-10-22 12:57:20,masterq32,naja nicht ganz
+2015-10-22 12:57:34,masterq32,sind grade 500 zeilen spaghetticode
+2015-10-22 12:57:35,masterq32,:D
+2015-10-22 13:54:58,masterq32,:D
+2015-10-22 13:55:09,darklink,und dann passiert mir sowas wie
+2015-10-22 13:56:18,darklink,"""mov eax, [esp+4] : mov [label+1], eax"
+2015-10-22 13:56:53,darklink,"label: do sth ; why wont this work??"""
+2015-10-22 14:04:24,masterq32,tyndur hat ne nachricht versemmelt
+2015-10-22 14:04:25,masterq32, :D
+2015-10-22 14:04:36,masterq32,man kann man mit meinem assembler spaghetticode schreiben
+2015-10-22 14:04:49,masterq32,dann generiert spaghetticode aus spaghetticode spaghettimaschinencode
+2015-10-22 14:04:50,masterq32,;:D
+2015-10-22 14:07:28,darklink,der spaghetticode erzeugt?
+2015-10-22 14:10:00,masterq32,yep :D
+2015-10-22 14:10:02,masterq32,bestenfalls! 
+2015-10-22 14:10:23,masterq32,und dieser spaghetticode steuert eine maschine die spaghettis produziert :D
+2015-10-22 14:11:14,darklink,"Damit der spaghetticode-assembler soviel spaghettimaschienencode erzeugen kann, dass es mehr spaghetticode als normalen code gibt?"
+2015-10-22 14:13:38,masterq32,;)
+2015-10-22 14:14:10,darklink,#verschwörungstheorie
+2015-10-22 14:14:49,darklink,Du willst die weltherrschaft mit spaghetticode an dich reißen?
+2015-10-22 14:17:32,masterq32,das werd ich doch hier nicht öffentlich schreiben
+2015-10-22 14:30:21,darklink,:(
+2015-10-22 14:31:11,darklink,du koenntest doch die antwort verschluesseln
+2015-10-22 14:31:33,masterq32,pöjjavhjnaoühjafhojafjodfaojafjsa
+2015-10-22 14:31:52,darklink,rsa verschluesselt?
+2015-10-22 14:32:39,masterq32,ähm kopf->keyboard->verschlüsselt
+2015-10-22 14:35:58,darklink,nimm als public key 23 und 143
+2015-10-22 14:36:36,masterq32,:D
+2015-10-22 14:36:51,masterq32,"very secure, much safety"
+2015-10-22 14:37:21,darklink,very doge
+2015-10-22 14:37:28,darklink,much amaze
+2015-10-22 14:38:12,darklink,"die sind so sicher die beiden zahlen, dass sie in wikipedia drinnestehen"
+2015-10-22 14:38:27,masterq32,:D
+2015-10-22 14:38:29,masterq32,okay
+2015-10-22 14:38:31,masterq32,die wird NIEMAND vermuten
+2015-10-22 14:38:36,masterq32,das ist zu offensichtlich
+2015-10-22 14:39:32,darklink,soll ich dir einen rsa-4096 pubkey geben/
+2015-10-22 14:49:21,Jonathan,Moin
+2015-10-22 14:59:07,masterq32,heyhey
+2015-10-22 15:16:27,darklink,"Telekom, masterq32 ?"
+2015-10-22 15:16:31,masterq32,"nein, uni :D"
+2015-10-22 15:16:44,masterq32,ich lauf durch die gegend und wechsel zwischen tab/laptop/handy und wlan-netzen :D
+2015-10-22 15:19:29,kevin,"Welchen Grund gibt es denn, durch die Gegend zu laufen, solange du Netz hast? ;-)"
+2015-10-22 15:19:40,masterq32,VL haben und Pflicht-Übungen
+2015-10-22 15:19:40,masterq32,:D
+2015-10-22 15:19:42,masterq32,ich glaub ich sollte meine doku für die VM nochmal neu schreiben
+2015-10-22 15:19:47,masterq32,bzw. mal ordentlich planen
+2015-10-22 15:21:24,kevin,Deiner Aktivität zufolge sind die Vorlesungen aber nicht besonders interessant? ;-)
+2015-10-22 15:21:43,masterq32,VL war zu kurz
+2015-10-22 15:21:53,masterq32,übungseinführung: wie lade ich kram im ilias hoch und wie lege ich ein eclipse-projekt an 
+2015-10-22 15:21:53,masterq32,D:
+2015-10-22 15:25:05,kevin,Na dann
+2015-10-22 15:28:17,masterq32,joar ... :D
+2015-10-22 15:49:36,Sur3,hmm lecker spaghetti Assembler.. ^^
+2015-10-22 15:50:06,darklink,Ich sag nur eins
+2015-10-22 15:50:10,Sur3,ich bin also nicht der einzige idiot der den plan hatte seinen eigenen asm dialekt zu schreiben soso :D
+2015-10-22 15:50:35,darklink,Unsere mathelehrerin zwingt uns flash zu installierem
+2015-10-22 15:50:47,Sur3,"autsch, warum das?"
+2015-10-22 15:50:47,darklink,Oder ein tablet zu kaufen...
+2015-10-22 15:50:47,masterq32,wat?
+2015-10-22 15:50:48,masterq32,wat=
+2015-10-22 15:50:58,darklink,Bettermarks.de
+2015-10-22 15:51:07,Sur3,"flash ist doch veraltet, selbst adobe geht davon ab"
+2015-10-22 15:51:08,darklink,Ich bin nicht schlecht in mathe
+2015-10-22 15:52:33,masterq32,rede mit ihr :D
+2015-10-22 15:52:36,masterq32,du kannst nicht
+2015-10-22 15:52:40,masterq32,gibt kein flash für deinen computer
+2015-10-22 15:52:48,masterq32,"aber so von wegen ""ich hab keine ahnung warums nicht geht"" :D"
+2015-10-22 15:53:09,darklink,^^
+2015-10-22 15:53:28,masterq32,"""ja welches windows nutzt du?"" – ""was ist windows?"""
+2015-10-22 15:53:42,Sur3,:D
+2015-10-22 15:53:48,masterq32,ich nutze CircuitOS :D
+2015-10-22 15:53:51,masterq32,was ist ein browser?
+2015-10-22 15:54:08,Sur3,hm mal googlen
+2015-10-22 15:54:18,masterq32,ist mein OS :D
+2015-10-22 15:54:55,Sur3,taucht aber nicht in wiki oder auf google auf?
+2015-10-22 15:55:05,masterq32,not yet
+2015-10-22 15:55:15,masterq32,schreib grade erst mal doku zu meiner VM
+2015-10-22 15:55:19,Sur3,aso
+2015-10-22 15:55:27,masterq32,und wenn das läuft kann ich das ganze mal ins Wiki packen :D
+2015-10-22 15:55:32,Sur3,^^
+2015-10-22 15:55:45,masterq32,die meisten infos darüber findest du wahrscheinlich grade auf irc.tyndur.org
+2015-10-22 15:56:16,Sur3,ich überleg noch ob ich mein os mit paging in C neu schreibe aber dann ist das so standard ich glaub ich schreib lieber nen netzwerktreiber dann bin ich fast fertig.. xD
+2015-10-22 15:56:24,masterq32,:D
+2015-10-22 15:56:52,masterq32,gibts dein OS im wiki?
+2015-10-22 15:57:06,darklink,https://imgur.com/a/DkJkM
+2015-10-22 15:57:19,Sur3,"wtf ich kann auf irc.tyndur.org live mitlesen was wir schreiben, spionagee!!"
+2015-10-22 15:57:19,darklink,suros ja
+2015-10-22 15:57:24,masterq32,so muss das!
+2015-10-22 15:57:43,masterq32,http://www.lowlevel.eu/w/index.php?title=Spezial%3ASuche&search=suros&go=Seite
+2015-10-22 15:57:44,masterq32,:D
+2015-10-22 15:57:57,masterq32,:D
+2015-10-22 15:57:59,masterq32,achso :P
+2015-10-22 15:58:04,masterq32,wie heißts? :D
+2015-10-22 15:58:30,Sur3,http://www.lowlevel.eu/wiki/SurO
+2015-10-22 15:58:56,Sur3,das O stand mal für Office und weil es dann nen eigenständiges OS wurde hab ich es zu O verkürzt ^^
+2015-10-22 15:58:59,iksnagreb,moin
+2015-10-22 15:59:23,masterq32,ah okay
+2015-10-22 15:59:23,darklink,Egal. Lerne ich statt mathe japanisch ¯\_(ツ)_/¯
+2015-10-22 15:59:36,Sur3,ni haõ!
+2015-10-22 15:59:43,masterq32,:)
+2015-10-22 15:59:48,darklink,wie bitte?
+2015-10-22 16:00:04,Sur3,das war chinesisch ich dachte das hat ähnlichkeit ^^
+2015-10-22 16:00:23,darklink,Nö
+2015-10-22 16:00:34,Sur3,"ok dann eben, genki desu-ka?"
+2015-10-22 16:00:45,darklink,im japanischen ist alles anders außer der schrift
+2015-10-22 16:00:57,darklink,Ee
+2015-10-22 16:00:59,Sur3,ich weiß ;D
+2015-10-22 16:01:15,Sur3,nicht alles aber das meiste ^^
+2015-10-22 16:01:17,darklink,Genki da ne?
+2015-10-22 16:01:39,Sur3,genki desu! :)
+2015-10-22 16:02:25,Sur3,watashi mite owari no seraph
+2015-10-22 16:02:51,Sur3,du hast mich daran erinnert daß ich noch die neue owari no seraph folge gucken muß ^^
+2015-10-22 16:03:20,darklink,漢字が練習するよ。
+2015-10-22 16:03:44,darklink,wie bitte?
+2015-10-22 16:04:45,Sur3,"boah ich muß erstmal meine hiragana und katakana wieder auffrischen, bevor ich kanji lerne xD"
+2015-10-22 16:06:02,Sur3,ohh da fällt mir ein ich muß meine japanische brieffreundin noch in fb adden
+2015-10-22 16:08:22,darklink,das geht so: オワリのセラッフを見なくてはなりません
+2015-10-22 16:09:50,darklink,oder doch オワリのセラッフが
+2015-10-22 16:10:11,darklink,letzteres macht mehr sinn
+2015-10-22 16:11:05,darklink,"(owari no seraph ist das ding, dass (ich/du/er/sie/es/wir/ihr/sie) sehen muss."
+2015-10-22 16:11:26,kevin,Seo í an teanga mhícheart.
+2015-10-22 16:12:07,Sur3,öhm
+2015-10-22 16:12:17,Sur3,letzteres macht überhaupt keinen sinn
+2015-10-22 16:12:38,darklink,"ich weiss, dass es fuer dich so aussieht, ob wir auf die tastatur gefallen sind, so sieht dein satz naehmlich auch fuer mich aus. "
+2015-10-22 16:12:47,kevin,Siehste
+2015-10-22 16:13:05,darklink,Sur3: es macht sinn
+2015-10-22 16:13:36,Sur3,achso du meinst als anfang des satzes davor
+2015-10-22 16:13:59,darklink,ja
+2015-10-22 16:14:05,masterq32,ii ist gruselig
+2015-10-22 16:14:12,Sur3,ich dachte die ganze zeit da fehlt doch was xD
+2015-10-22 16:14:14,masterq32,"aber es ist gruseliger, ii nach espeak zu pipen"
+2015-10-22 16:14:51,kevin,"Hm, GT ist auch nur eingeschränkt nützlich... ""Do not without looking at the Seraph of the End"""
+2015-10-22 16:15:49,darklink,"ii, yokunai, yokatta, yokunakatta"
+2015-10-22 16:15:56,darklink,boeses ii
+2015-10-22 16:16:06,masterq32,:D
+2015-10-22 16:16:17,masterq32,also ii := irc client
+2015-10-22 16:16:22,darklink,oh
+2015-10-22 16:16:23,Sur3,dto wmŋs ɦwm
+2015-10-22 16:16:38,darklink,bitte?
+2015-10-22 16:17:33,Sur3,dto = zum auge   wmŋs = lebendige fliegende perfektion    ɦwm = des todes
+2015-10-22 16:17:56,Sur3,"mit anderen worten ""gucken, engel des todes"""
+2015-10-22 16:18:19,Sur3,auf Dunkelalbisch :D
+2015-10-22 16:18:45,darklink,oh
+2015-10-22 16:19:44,Sur3,ok and ende muß noch nen 'o' sonst heißt es nciht engel des todes sondern toter engel :D
+2015-10-22 16:20:06,darklink,lol
+2015-10-22 16:26:21,Sur3,(e jave lon at xerxes nien)
+2015-10-22 16:26:40,darklink,wie bitte?
+2015-10-22 16:27:57,Sur3,e=ich jave=tue lon=begehren at=den xerxes=göttliche formel nien=des vergehens
+2015-10-22 16:28:58,Sur3,"das ist jetzt Surlonisch, hach cool daß ich in beiden sprachen ungefähr die bedeutung ausdrücken kann XD"
+2015-10-22 16:31:08,Sur3,"für die zweite sprache hatte cih damals sogar mal ein vokabelprogramm angepasst, aber das ist auch irgendeienr dieser tausend uralt festplatten das war ncoh auf meinem ersten 486 xD"
+2015-10-22 16:31:23,Sur3,*auf irgendeiner
+2015-10-22 16:31:40,darklink,lol
+2015-10-22 16:33:40,darklink,"ich sollte mal irgendein vokabelprogramm so modifizieren, dass es mich solange an den fuessen kitzelt, bis ich meine vokabeln lerne/"
+2015-10-22 16:34:30,darklink,weil bis jetzt habe ich keinen einzigen kanji gelern
+2015-10-22 16:34:57,Sur3,midori ^^
+2015-10-22 16:35:06,darklink,gruen
+2015-10-22 16:35:11,Sur3,korrekt ^^
+2015-10-22 16:35:20,darklink,akarui
+2015-10-22 16:35:25,Sur3,rötlich?
+2015-10-22 16:35:34,darklink,noe
+2015-10-22 16:35:35,darklink,hell
+2015-10-22 16:35:43,Sur3,asoo
+2015-10-22 16:35:59,darklink,ao bei ner ampel
+2015-10-22 16:36:08,Sur3,"interessant, weil aka ist ja rot, ob die beiden vokabeln wohl zusammen hängen?"
+2015-10-22 16:36:34,darklink,hashi hat ja auch nichts mit hashi zu tun
+2015-10-22 16:38:04,Sur3,hmm joa aber rot ist ne farbe und farben kann man nur sehen wenn es hell ist und die sonne ist morgens wenn sie aufgeht rötlich ^^
+2015-10-22 16:38:29,Sur3,und japan ist das land der aufgehenden sonne :D
+2015-10-22 16:38:41,Sur3,roter punkt auf weißer flagge ^^
+2015-10-22 16:38:58,Sur3,q.e.d.
+2015-10-22 16:41:08,darklink,japan ist ja nicht akabi
+2015-10-22 16:41:48,darklink,赤日
+2015-10-22 16:42:25,masterq32,https://de.wikipedia.org/wiki/Nippon_(Schokolade)
+2015-10-22 16:42:31,Sur3,nicht akabi und nicht wasabi :D
+2015-10-22 16:42:58,darklink,oder wie liesst man 赤日
+2015-10-22 16:44:02,Sur3,"was soll das heißen, roter Tag?"
+2015-10-22 16:44:26,Sur3,oder rote sonne?
+2015-10-22 16:45:10,darklink,japan das land der roten sonne
+2015-10-22 16:45:24,darklink,nicht das land des heutigen buches
+2015-10-22 16:46:15,Sur3,"joa aber 赤日 und 日本 sieht sich ja schon recht ähnlich, ich denke schon daß der rote punkt auf der flagge mal die aufgehende sonne darstellen sollte"
+2015-10-22 16:46:31,masterq32,"nein, das ist ein rundes buch :P"
+2015-10-22 16:46:36,darklink,ja
+2015-10-22 16:46:46,darklink,masterfrage
+2015-10-22 16:46:59,masterq32,an mich?
+2015-10-22 16:47:20,Sur3,dann ließ mal was in wiki hinter dem namen steht.. https://de.wikipedia.org/wiki/Flagge_Japans
+2015-10-22 16:47:38,Sur3,"""Die Flagge von Japan (jap. 日章旗 Nisshōki ‚Sonnenwappenflagge‘ bzw. 日の丸 Hi no Maru ‚Sonnenscheibe‘) zeigt auf weißem Grund einen genau mittig angeordneten großen zinnoberroten Kreis als Sonnensymbol."""
+2015-10-22 16:47:45,darklink,was ist der unterschied zwischen 日本 UND 本日
+2015-10-22 16:48:05,Sur3,du meinst 赤日 und 日本
+2015-10-22 16:48:14,darklink,いいえ\\
+2015-10-22 16:48:15,darklink,was ist der unterschied zwischen 日本 UND 本日
+2015-10-22 16:49:32,darklink,赤日 Gibts naehmlich nichtg
+2015-10-22 16:51:18,Sur3,das erste heißt sonnenland und das zweite heißt diese sonne bzw. dieser tag bzw. Heute!
+2015-10-22 16:52:38,masterq32,hm
+2015-10-22 16:52:47,masterq32,mal frage zu assembler-style
+2015-10-22 16:52:58,darklink,nasm
+2015-10-22 16:53:00,masterq32,ich hab ja grade massig call instructions und würde das ganze etwas optimieren
+2015-10-22 16:53:06,masterq32,beispiel:
+2015-10-22 16:53:14,darklink,kein at&T
+2015-10-22 16:53:15,masterq32,calln ?result 3
+2015-10-22 16:53:23,masterq32,"naja, geht eher um flags zur instruktion"
+2015-10-22 16:53:32,masterq32,würdet ihr sowas machen?
+2015-10-22 16:53:40,masterq32,oder tatsächlich unterschiedliche instruktionen verwenden?
+2015-10-22 16:53:42,Sur3,mach makros statt call ;) :D
+2015-10-22 16:53:45,masterq32,hm
+2015-10-22 16:53:49,masterq32,wäre eine option :P
+2015-10-22 16:53:52,Sur3,die kannst du dann durch cc jagen ^^
+2015-10-22 16:53:55,masterq32,joar
+2015-10-22 16:54:18,Sur3,cpp meinte ich
+2015-10-22 16:54:39,masterq32,ja schon
+2015-10-22 16:54:49,masterq32,ich muss eh noch alle tools auf unix-streaming umbauen :D
+2015-10-22 16:55:07,darklink,777777777
+2015-10-22 16:55:11,masterq32,wat? :D
+2015-10-22 16:55:12,Sur3,unix streaming? is das sowas wie ne pipe?
+2015-10-22 16:55:16,masterq32,ja :D
+2015-10-22 16:55:23,Sur3,okilu ^^
+2015-10-22 16:55:29,masterq32,meinte damit halt den typischen workflow
+2015-10-22 16:55:34,masterq32,copper file | spark | conductance
+2015-10-22 16:55:39,masterq32,"oder auch ""run file"" :D"
+2015-10-22 16:56:16,masterq32,sehr lila :D
+2015-10-22 16:56:19,masterq32,und mit webcam.... :D
+2015-10-22 16:56:28,masterq32,falscher chat :D
+2015-10-22 16:56:29,masterq32,ups :D
+2015-10-22 16:56:32,masterq32,egal :D
+2015-10-22 16:56:37,Sur3,wieso lila? 77777777 ist eher grau
+2015-10-22 16:56:37,darklink,copper file | spark2sparc | sparcdisasm | less
+2015-10-22 16:56:43,masterq32,viel spaß beim interpretieren
+2015-10-22 16:57:04,masterq32,bezog sich auf ein foto eines stream-layouts
+2015-10-22 16:57:23,masterq32,@darklink: sollte später gehen :D
+2015-10-22 16:57:28,darklink,was macht spark?
+2015-10-22 16:57:31,Sur3,cpp | copper | sparky | spasm |more
+2015-10-22 16:57:32,masterq32,spark ist mein assembler
+2015-10-22 16:57:58,masterq32,spencers z80 assembler war schon geil :D
+2015-10-22 16:58:33,darklink,copper | spark2c++ | cpp | disas | x86tospark | spark
+2015-10-22 16:58:55,masterq32,einmal im kreis! :D
+2015-10-22 16:59:02,masterq32,aber dann hab ich ne optimierung drin :P
+2015-10-22 16:59:24,Sur3,öhm @dakrlink du weißt aber daß cpp der preprozessor ist und nicht g++?
+2015-10-22 16:59:30,darklink,ja
+2015-10-22 16:59:48,Sur3,warum dann spark2c++ ?
+2015-10-22 17:00:03,darklink,weil ich einen fehler gemacht habe
+2015-10-22 17:00:08,Sur3,ahh ok ^^
+2015-10-22 17:00:09,masterq32,nein!
+2015-10-22 17:00:26,darklink,in der datei comp.sh: copper | sparkdecomp | ./comp.sh
+2015-10-22 17:00:59,darklink,copper 
+2015-10-22 17:01:01,masterq32,:D
+2015-10-22 17:01:04,masterq32,oh yeah
+2015-10-22 17:01:12,darklink,copper | iron | gold | diamond
+2015-10-22 17:01:20,Sur3,is copper nciht auch deine eigenentwicklung?
+2015-10-22 17:01:27,darklink,ja
+2015-10-22 17:01:31,Sur3,Warum nennst du es dann nicht Kupfer?
+2015-10-22 17:01:31,masterq32,schon
+2015-10-22 17:01:36,masterq32,hm
+2015-10-22 17:01:44,masterq32,"kupfer, leitfähigkeit, funke :D"
+2015-10-22 17:01:52,masterq32,auch gut :D
+2015-10-22 17:02:03,Sur3,kupfer | leitung | funke XD
+2015-10-22 17:02:12,masterq32,"anders rum, aber :D"
+2015-10-22 17:02:14,darklink,kupfer | dieb\
+2015-10-22 17:03:05,masterq32,"""copper | iron | gold | diamond"""
+2015-10-22 17:03:11,masterq32,das kommt (hoffentlich) alles noch :D
+2015-10-22 17:03:21,darklink,bei mir ist das so
+2015-10-22 17:04:01,darklink,hal | kernel | $(find /bin)
+2015-10-22 17:04:06,darklink,aeh ne
+2015-10-22 17:04:08,Sur3,stein | pickel | erz | ofen | kupfer | schmied | produkt
+2015-10-22 17:04:24,darklink,for f in $(find /bin)
+2015-10-22 17:04:28,darklink,do
+2015-10-22 17:04:33,Sur3,xD :D
+2015-10-22 17:04:41,masterq32,lol :D
+2015-10-22 17:04:43,masterq32,"ne, nicht ganz"
+2015-10-22 17:04:52,darklink,hal | kernel | $f; done
+2015-10-22 17:05:00,masterq32,hatte eigentlich ja elektrotechnischen kram gewählt für die namen :D
+2015-10-22 17:05:18,Sur3,du funkenzutzler
+2015-10-22 17:06:03,masterq32,:D
+2015-10-22 17:06:19,darklink,alias not='echo $1 | copper | transistor -n | copper'
+2015-10-22 17:07:04,darklink,oder das letzte uncopper?
+2015-10-22 17:07:18,Sur3,ich bin ja eher für germanium transistoren
+2015-10-22 17:08:43,darklink,ich bin fuer abstrakte betriebsysteme
+2015-10-22 17:09:19,Sur3,öhm abstrakt heißt sie existieren nur im konzept und ausführen muß man sie manuell? XD
+2015-10-22 17:10:32,Sur3,ich bin eher für konkrete betriebssysteme ^^
+2015-10-22 17:12:56,masterq32,was heißt abstrakt?
+2015-10-22 17:13:10,darklink,"abstrakte betriebsysteme: alles ist objekt und wenn ein objekt fehlt, ist das ganze betriebsystem nicht ladbar"
+2015-10-22 17:13:17,masterq32,ah :D
+2015-10-22 17:13:22,masterq32,das könnte bei mir passieren :D
+2015-10-22 17:13:56,Sur3,xD das könnte bei mir passieren wenn ich meinen TriebMeister fertiggestellt und alle Treiber ausgelagert habe xD
+2015-10-22 17:14:04,masterq32,:D
+2015-10-22 17:14:08,masterq32,wo laufen deine treiber?
+2015-10-22 17:14:32,Sur3,im kernel
+2015-10-22 17:14:46,Sur3,modularer monolith
+2015-10-22 17:15:05,masterq32,ah
+2015-10-22 17:15:19,masterq32,ich hab nen dicken mikrokernel :D
+2015-10-22 17:15:25,masterq32,weil tut nix von sich aus
+2015-10-22 17:15:25,masterq32,:D
+2015-10-22 17:15:41,darklink,ich habe einen objektkernel
+2015-10-22 17:15:51,Sur3,"aber sogar meien programme laufen momentan noch im kernel ich muß mal meinen ring 3 fertigstellen, dann kann ich vllt auch ein paar treiber in userland und kernelland teil aufteilen"
+2015-10-22 17:16:32,Sur3,das gute ist meine programme laufen zwar im kernel aber da gcc nix von segmenten weiß können sie eh nur auf ihren speicherbereich zugreifen XD
+2015-10-22 17:19:15,Sur3,"@masterq32 joa meins ist auch noch mehr monolith als modular, aber wenn ich meinen pci-treiber mal stärker mit dem triebmeister verknüpgt hab sollte er endlich die module automatisch laden können"
+2015-10-22 17:19:18,darklink,dann gib mir mal nen assembler XD
+2015-10-22 17:19:31,masterq32,:D
+2015-10-22 17:19:42,masterq32,bei mir ist alles grade schon auf mikrokernel getrimmt
+2015-10-22 17:20:04,masterq32,lade grade alle VM-Module via Multiboot-Modules
+2015-10-22 17:20:09,darklink,bei mir muss der kernel erst mal angefangen werden
+2015-10-22 17:20:19,Sur3,nen assembler? reichts wenn ich dir die 26kB assemblierten maschinencode gebe die kannste dann einfahc disassmeblieren oder willste die original asm files das sind ziemlich viele ^^
+2015-10-22 17:20:22,darklink,ich bin immernoch in der HAL
+2015-10-22 17:20:42,darklink,du kannst sie mir geben
+2015-10-22 17:20:49,darklink,den sourcecode
+2015-10-22 17:21:34,darklink,komprimiert mit tar -c dateien | xz -9 -e > code.tar.xz
+2015-10-22 17:22:52,Sur3,"nur mal so zum reinschnuppern, das hier ist die die hauptdatei die alles zusammenhält.. http://pastebin.com/gAJXwGnj"
+2015-10-22 17:24:05,darklink,"Ich weiß, warum ich assembler ausm kernel verbanne :O"
+2015-10-22 17:24:51,darklink,Außerdem ist alles auf deutsch
+2015-10-22 17:25:00,darklink, !pvggbv
+2015-10-22 17:25:43,Sur3,was heißt pvggbv?
+2015-10-22 17:26:06,darklink,Tastatur auf dem kopf
+2015-10-22 17:26:36,masterq32,:D
+2015-10-22 17:26:42,Sur3,"also include ""mKernel/PMinit.asm"" schaltet in den PM um, danach wird der PM stack erstellt und die wichtigsten treiber initialisiert und am ende der Nulltask geladen und die interrupts aktiviert was dann erlaubt das os über den tasterturtreiber zu steuern"
+2015-10-22 17:26:46,masterq32,"wie schaffst du es da, shift+1 zu drücken"
+2015-10-22 17:27:03,darklink,ka
+2015-10-22 17:27:25,darklink,hielt die shifttaste zu dem zeitpunkt?
+2015-10-22 17:27:30,Sur3,was hasst du gegen deutsch? -.-
+2015-10-22 17:27:41,darklink,nichts
+2015-10-22 17:27:44,Sur3,ok ^^
+2015-10-22 17:28:00,darklink,aber ich finde code sollte auf english geschrieben sein
+2015-10-22 17:28:11,masterq32,jep
+2015-10-22 17:28:15,masterq32,doku dazu auch :D
+2015-10-22 17:28:15,darklink,sieht sonst daemlich denglisch aus
+2015-10-22 17:28:36,Sur3,joa is ne mischung bei mir aus english und deutsch stimmt :D
+2015-10-22 17:28:40,darklink,das habe ich impliziert
+2015-10-22 17:29:15,darklink,WTAF: push esi
+2015-10-22 17:29:15,darklink,call zeichneHexWord_von_esi
+2015-10-22 17:29:15,darklink,call zeichneHexWord_von_esi
+2015-10-22 17:29:18,darklink,pop esi
+2015-10-22 17:29:20,darklink,ups
+2015-10-22 17:29:39,masterq32,wow :D
+2015-10-22 17:29:42,masterq32,das sieht falsch aus?
+2015-10-22 17:29:51,Sur3,nö das ist richtig
+2015-10-22 17:30:07,Sur3,ich schreibe damit die beiden wörter aus denen das dword esi besteht auf den bildschirm
+2015-10-22 17:30:08,masterq32,"naja, es sieht falsch aus im sinne von: total kaputt zum lesen"
+2015-10-22 17:30:10,masterq32,^^
+2015-10-22 17:30:12,masterq32,das is klar
+2015-10-22 17:30:51,Sur3,"das brauch ich so oft, daß ich es inzwischen mit call zhexesi abgekürzt habe :D"
+2015-10-22 17:31:19,darklink,";include ""zuImplementierendeCodeschnipsel.asm"""
+2015-10-22 17:31:24,darklink,Haha
+2015-10-22 17:31:28,Sur3,:D
+2015-10-22 17:31:34,masterq32,episch :D
+2015-10-22 17:31:46,Sur3,aso die sind inzwischen ingrafikroutinen drin
+2015-10-22 17:31:52,darklink,includes hat man eigentlich nur am anfang der datei
+2015-10-22 17:32:02,Sur3,das war code zum schreiben von strings
+2015-10-22 17:32:04,masterq32,:D
+2015-10-22 17:32:34,Sur3,"in c hat man den nur am anfang, in asm ist es egal weil man die funktionen nicht bekannt machen muß und überall hinspringen kann"
+2015-10-22 17:32:43,darklink,ich weiss
+2015-10-22 17:32:56,darklink,sieht trotzdem besser aus
+2015-10-22 17:33:11,darklink,ausserdem sind includes ueberall erlaubt in c
+2015-10-22 17:33:18,darklink,macht bloss wenig sinn
+2015-10-22 17:33:33,Sur3,joa c is halt kaputt :D
+2015-10-22 17:34:02,darklink,noe
+2015-10-22 17:34:53,Sur3,"wenn du wilst kann ich dir mal nen qemu image geben, dann kannste mal mit dem editor spielen ^^"
+2015-10-22 17:35:01,darklink,sollte ich jetzt endlich japanisch lernen oder doch assembler
+2015-10-22 17:35:03,masterq32,Data array[] = {
+2015-10-22 17:35:03,masterq32,"#include ""data.h"""
+2015-10-22 17:35:03,masterq32,};
+2015-10-22 17:35:15,darklink,Sur3: ich habe keinen pc
+2015-10-22 17:35:26,Sur3,wtf echt nciht?
+2015-10-22 17:35:30,Sur3,mac oder was?
+2015-10-22 17:35:37,darklink,nein
+2015-10-22 17:35:41,darklink,kaputt
+2015-10-22 17:35:48,Sur3,ohh krass
+2015-10-22 17:36:15,darklink,https://youtu.be/wFzn5iX65iY
+2015-10-22 17:36:32,darklink,sone krasse bootschleife hast du noch nie gesehen
+2015-10-22 17:38:46,Sur3,wat zur hölle is das?
+2015-10-22 17:38:58,masterq32,ein kaputtes PC
+2015-10-22 17:39:07,darklink,kaputter*
+2015-10-22 17:39:20,Sur3,deiner?
+2015-10-22 17:39:25,darklink,ja
+2015-10-22 17:40:05,Sur3,"ahh ok, und warum kapuut? weil du mtgos drauf laufen hast lassen oder weil du den pc lautsprecher mit dem cpu lüfter vertaischt hast?"
+2015-10-22 17:40:20,darklink,was?
+2015-10-22 17:40:23,Sur3,*vertauscht XD
+2015-10-22 17:40:28,darklink,was?
+2015-10-22 17:40:43,Sur3,warum der kaputt ist?
+2015-10-22 17:41:01,darklink,beim ersten mal ist alles i.o.
+2015-10-22 17:41:14,darklink,beim 2. mal war was mit dem mobo nicht i.o
+2015-10-22 17:41:36,Sur3,aso
+2015-10-22 17:41:37,darklink,beim 3. mal war was mit der stromversorgung des mobo nicht i.o.
+2015-10-22 17:43:21,Sur3,"joa mein mobo ist auch schrott ich nutz den pc trotzdem, ^^"
+2015-10-22 17:43:39,Sur3,irgendwie hat das mobo die 230V wechselspannung auf dem usb-port nciht vertragen XD
+2015-10-22 17:43:49,masterq32,wat? :D
+2015-10-22 17:44:07,Sur3,joa hab nen fehelr ind er verschaltung meines avr gehabt als er am programmer war ^^
+2015-10-22 17:44:14,masterq32,oh
+2015-10-22 17:44:15,masterq32,ups :P
+2015-10-22 17:44:52,Sur3,iich dachte der pc trafo würd galvanisch trennen das war ein irtum xD
+2015-10-22 17:45:08,darklink,"ich kann bloss schlecht den pc benutzen, wenn der ausm POST nicht rauskommt"
+2015-10-22 17:45:34,Sur3,.joa bei mir spinnen halt nur die usb ports und er schmiert manchmal ohne vorwarnung ab ansonsten alles fresh ^^
+2015-10-22 17:45:49,Sur3,und den avr auf dem programmer mußte ich auswechseln ^^
+2015-10-22 17:46:11,masterq32,warum das? *sarkasm*
+2015-10-22 17:46:27,darklink,"ich habe alles abgemacht ausser ram, mobo, netzteil, cpu, und luefter"
+2015-10-22 17:46:41,darklink,funktioniert nicht
+2015-10-22 17:46:55,Sur3,hmm schade
+2015-10-22 17:47:20,Sur3,"ich bin mal owari no seraph gucken, man sieht sich"
+2015-10-22 17:47:46,masterq32,hau rein
+2015-10-22 17:48:14,darklink,und ich gucke hnk
+2015-10-22 17:48:25,darklink,nachdem ich avgn gucke
+2015-10-22 17:48:26,masterq32,und was mach ich? 
+2015-10-22 17:48:37,Sur3,aso ich lass euch noch den code von meinem hyperebenenprojektionstreiber da.. http://pastebin.com/eCwsQ5nG
+2015-10-22 17:48:38,darklink,avgn gucken?
+2015-10-22 17:49:37,darklink,baeaeh
+2015-10-22 17:49:41,Sur3,das ist sozusagen der fenstermanager ^^
+2015-10-22 17:50:43,masterq32,:D
+2015-10-22 17:52:50,XanClic,"du kannst dir in erstelle_EbeneA das Pushen/Poppen von ax sparen, weil du einfach push 0x08; pop ds benutzen kannst, um ds zu setzen"
+2015-10-22 17:59:59,Sur3,oh du hast recht thx
+2015-10-22 18:10:25,masterq32,moinmoin
+2015-10-22 18:41:16,Sur3,ich hab grad mal alle treiber deaktiviert und nur taskmanager und rammanager drin gelassen dann hat mein kernel knapp 9kB auch wenn es ohne grafik nicht viel sinn macht :D
+2015-10-22 18:42:11,masterq32,nice
+2015-10-22 18:42:17,masterq32,"naja, server-os"
+2015-10-22 18:44:11,Sur3,hehe joa muß ich nur noch nen netzwerktreiber für schrieben ^^
+2015-10-22 18:44:15,masterq32,:D
+2015-10-22 18:44:20,masterq32,"ja, kommt bei mir auch noch"
+2015-10-22 18:44:37,Sur3,aber knapp 18kB mit Grafikroutinen und Fat-Dateisystem geht auch noch ^^
+2015-10-22 18:44:38,masterq32,die gute RTL8139
+2015-10-22 18:44:41,masterq32,joar
+2015-10-22 18:44:52,masterq32,mein kernel schnappt sich eiskalt alles von 4 MB bis 8 MB
+2015-10-22 18:45:05,Sur3,aso joa ich wollte gleich auf den nachfolger gehen dann hab ich Gigabitnetzwerk
+2015-10-22 18:45:10,masterq32,:D
+2015-10-22 18:45:14,masterq32,ich hab die karte hier rumliegen :D
+2015-10-22 18:45:18,masterq32,also daheim :P
+2015-10-22 18:45:34,Sur3,"ich wollt mir noch ne karte bestellen, kost ja nur 7 euro ^^"
+2015-10-22 18:46:02,masterq32,:D
+2015-10-22 18:46:11,masterq32,und ne fx2500 (?) als nvidia karte
+2015-10-22 18:46:21,masterq32,ma gucken ob man dafür vllt. open driver findet :D
+2015-10-22 18:46:32,Svenska,"du meintest fx5200, und ja, nouveau unterstuetzt die ;)"
+2015-10-22 18:46:36,Svenska,</erfahrung>
+2015-10-22 18:46:40,masterq32,:D
+2015-10-22 18:46:46,masterq32,kann gut sein
+2015-10-22 18:46:49,masterq32,kann mir sowas nich merken
+2015-10-22 18:46:57,Svenska,"allerdings leidet der code arg unter bitrot, daher hatte ich auf dem betreffenden gerät den nvidia-treiber im einsatz."
+2015-10-22 18:47:10,masterq32,hm
+2015-10-22 18:47:23,Sur3,bit-rotationen?
+2015-10-22 18:49:06,XanClic,Oder einfach gleich AMD/ATI mit vollständig verfügbarer Dokumentation
+2015-10-22 18:49:26,Svenska,oder intel...
+2015-10-22 18:49:34,Sur3,echt ati grafikkarten haben ne offene doku?
+2015-10-22 18:49:34,XanClic,Von 2003? Na dann :-P
+2015-10-22 18:49:40,Svenska,was aber vermutlich in den meisten fällen ohnehin keine rolle spielt.
+2015-10-22 18:49:54,Svenska,"ja, amd stellt sogar open-source treiber bereit"
+2015-10-22 18:50:03,Sur3,geil grafikbeschleunigung für meinen hyperebenenprojektionstreiber :D
+2015-10-22 18:50:11,Svenska,und intel ist hauptentwickler von mesa oder so ähnlich
+2015-10-22 18:56:41,darklink,Jetzt folge 73
+2015-10-22 18:57:01,Sur3,am sonntag folge 715 :D
+2015-10-22 19:12:59,Svenska,ich folge nichtmal twitter
+2015-10-22 19:17:09,Sur3,ich auch ncith
+2015-10-22 19:20:35,Sur3,push 8 ;von XanClic empfohlen
+2015-10-22 19:21:55,Sur3,"hab ich in meinem quelltext vermerkt, als dank und vorbild für andere meinen code zu verbessern :D"
+2015-10-22 19:24:08,darklink,Lol
+2015-10-22 19:28:57,Paddy,"Und wenn du irgendwann Segmentierung aufgibst, schreibst du den Namen von allen von uns hinter jede Zeile? ;-)"
+2015-10-22 19:30:11,darklink,jo
+2015-10-22 19:30:32,Svenska,"ich tippe mal darauf, dass es ohne das ""push 8"" nicht funktioniert?"
+2015-10-22 19:30:49,darklink,Und wenn du aufhörst in assembler zu schreiben tust du dasselbe?
+2015-10-22 19:31:42,darklink,Sur3: du kannst deine c-library in assembler schreiben; die header brauchst du dennoch
+2015-10-22 19:36:42,darklink,Svenska: nicht mehr
+2015-10-22 19:37:57,Svenska,?
+2015-10-22 20:05:43,Jonathan,Svenska: http://s11.postimg.org/watb5ukxf/laptop_pcie.jpg
+2015-10-22 20:06:35,Svenska,?
+2015-10-22 20:06:44,Jonathan,Schau's dir mal an *g*
+2015-10-22 20:09:17,Svenska,"sata, ram, luefter, heatpipes, ..."
+2015-10-22 20:09:23,Svenska,ein komisches flachbandkabel nach draußen...
+2015-10-22 20:12:11,darklink,http://imgur.com/Eyvcc8K
+2015-10-22 20:12:11,darklink,http://imgur.com/ZIfYr5E
+2015-10-22 20:16:04,Svenska,"kurz: kein plan, worauf du hinauswillst. ;)"
+2015-10-22 20:22:58,Jonathan,Svenska: Hehe ;)
+2015-10-22 20:23:20,Jonathan,"Das ""komische Flachbandkabel"" führt zu einem PCIe x1 Slot, hast du vermutlich schon gesehen *g*"
+2015-10-22 20:23:36,Jonathan,Funktioniert ziemlich gut :D
+2015-10-22 20:23:44,Svenska,"sagen wir ""jaein""? ;-)"
+2015-10-22 20:24:09,Svenska,"ich hab mit PCIe nicht wirklich zu tun gehabt bisher, da alle geräte, mit denen ich zu tun habe, notebooks sind"
+2015-10-22 20:24:23,Svenska,"daher erkenne ich die slots nur im zusammenhang mit ""mehr kontext"" *g*"
+2015-10-22 20:24:34,Jonathan,Achso *g*
+2015-10-22 20:24:50,Jonathan,"Naja, mein Mini-PCIe auf PCIe x1 Adapter ist jetzt da... Hab den gleich mal ausprobiert :P"
+2015-10-22 20:25:02,Svenska,"in meiner familie gibt's keine mini-tower mehr, außer bei meiner oma"
+2015-10-22 20:25:11,Jonathan,Muss nur noch irgendwie 12V in dem Laptop auftreiben :D
+2015-10-22 20:25:17,Svenska,"(oder midi-tower oder sowas.) und aufm dachboden hab ich viele, aber die sind alle prä-PCIe"
+2015-10-22 20:25:29,Jonathan,:)
+2015-10-22 20:25:37,Svenska,"hmm, was willst du da ueberhaupt anschließen?"
+2015-10-22 20:25:48,Jonathan,NVidia Geforce 7300LE. *g*
+2015-10-22 20:25:57,Jonathan,Passt super in den Slot vom CD-Laufwerk...
+2015-10-22 20:26:14,Jonathan,"Und frisst maximal 25W, was noch im Rahmen der Möglichkeiten für das Laptop ist"
+2015-10-22 20:26:32,Svenska,wtf
+2015-10-22 20:26:51,Jonathan,Höhöhöhö *g*
+2015-10-22 20:27:39,Svenska,was ist in dem teil normal fuer ne grafik drin?
+2015-10-22 20:27:46,Jonathan,Chipsatz-GPU.
+2015-10-22 20:27:47,Jonathan,10 Shader.
+2015-10-22 20:27:51,Jonathan,Sagt das genug? :D
+2015-10-22 20:27:57,Svenska,"""intel""? ;)"
+2015-10-22 20:28:01,Jonathan,Ja ;)
+2015-10-22 20:28:20,Jonathan,Die 7300LE macht vermutlich deutlich mehr Spaß :D
+2015-10-22 20:28:23,Svenska,wobei die gefuehlt nicht mehr schlecht sind
+2015-10-22 20:28:38,Jonathan,"Jaaaa, aber die Kiste hat nen Pentium. (Penryn-Familie)"
+2015-10-22 20:28:43,Jonathan,Ist schon ein paar Jährchen alt
+2015-10-22 20:28:47,Svenska,ahja
+2015-10-22 20:29:18,Svenska,jedenfalls macht der intel-chipsatz vom arbeitsrechner mehr spaß als die nvidia-grafik zuhause
+2015-10-22 20:29:21,Svenska,(7600 go)
+2015-10-22 20:29:45,Jonathan,"Klar, ist aber vermutlich auch ein moderner i5 oder so :D"
+2015-10-22 20:29:46,Svenska,"wobei ich nicht weiß, wie schlimm PCIe 1x fuer ne grafikkarte ist"
+2015-10-22 20:29:48,Svenska,ja
+2015-10-22 20:30:03,Jonathan,PCIe x1 ist für ne GPU von dem Kaliber ausreichend
+2015-10-22 20:30:06,Svenska,ziemlich genau ein i5 - und 7j juenger ;)
+2015-10-22 20:30:25,Jonathan,"Gut, die Dinger haben aber auch schon verdammt gute GPUs eingebaut ;)"
+2015-10-22 20:30:53,Svenska,"lspci sagt ""haswell"""
+2015-10-22 20:31:03,Jonathan,"Paar hundert Shader auf >1GHz hauen schon etwas mehr Leistung raus, als 10 Shader auf ~100MHz"
+2015-10-22 20:31:05,Jonathan,:)
+2015-10-22 20:31:37,Jonathan,"Der Chipsatz hat keinen Kühlkörper, das sagt vermutlich schon alles über die Leistung dieser GPU..."
+2015-10-22 20:31:48,Svenska,"ich wuerde ja eher auf ""besorg dir n neues notebook"" tippen..."
+2015-10-22 20:31:58,Jonathan,Macht aber keinen Spaß :P
+2015-10-22 20:32:45,Svenska,"ah, hier steht's ... i5-4310U CPU"
+2015-10-22 20:33:46,Jonathan,"1,1GHz GPU, maximal 1,7GB VRAM"
+2015-10-22 20:33:53,Svenska,"""kann minecraft fluessig"""
+2015-10-22 20:33:58,Jonathan,Meine hat maximal 64MB :)
+2015-10-22 20:34:13,Svenska,hrhr
+2015-10-22 20:34:23,Jonathan,*g*
+2015-10-22 20:34:30,darklink,Meine midrange graka hab ich als lowrange graka gekauft
+2015-10-22 20:34:47,Svenska,"ich muss langsam anfangen, meinen fuhrpark zu erneuern. mein navi ist wohl tot, mein netbook langsam echt nicht mehr lustig"
+2015-10-22 20:34:54,Svenska,und das tablet macht auch zunehmend weniger spaß
+2015-10-22 20:35:06,Jonathan,"Außerdem hab ich die NVidia hier sowieso rumfliegen, der Adapter aus China hat 10€ gekostet, und die restlichen Kabel etc aus Schrottteilen"
+2015-10-22 20:35:23,Jonathan,Insofern kann ich das ja einfach mal probieren :D
+2015-10-22 20:35:25,Svenska,*g
+2015-10-22 20:36:00,Jonathan,"Und wenn es *richtig* gut läuft, hol ich mir ne passive 2xx Graka von AMD"
+2015-10-22 20:36:00,Jonathan,*g*
+2015-10-22 20:36:11,Jonathan,Und stöpsel die da rein...
+2015-10-22 20:36:26,Svenska,"ich behaupte aber mal, dass die mobilität des systems eher eingeschränkt sein wird ;)"
+2015-10-22 20:36:32,Jonathan,Wieso? ;)
+2015-10-22 20:36:52,Jonathan,"50Wh Akku, 25W maximale Leistung für die GPU."
+2015-10-22 20:36:54,Svenska,"ich stell mir grad so vor, wie du in der vorlesung erstmal alles auspackst, zusammenbaust und ..."
+2015-10-22 20:36:59,Jonathan,lol *g*
+2015-10-22 20:37:02,Jonathan,"Nee, wie gesagt"
+2015-10-22 20:37:12,Jonathan,"Der ganze Krempel verschwindet dort, wo das CD-Laufwerk war"
+2015-10-22 20:38:16,Jonathan,Oh... 12V muss ich mir selbst machen :(
+2015-10-22 20:38:20,Jonathan,Hat das Laptop nicht.
+2015-10-22 20:38:28,Jonathan,Fehlt am SATA-Anschluss der Festplatte einfach.
+2015-10-22 20:38:39,Jonathan,Wie doof.
+2015-10-22 20:51:00,darklink,ich möchte etwas mit gpio-pins machen
+2015-10-22 20:51:24,Svenska,die meisten gpio-pins können aber mit 12 volt garnichts anfangen...
+2015-10-22 20:51:58,darklink,Lol
+2015-10-22 20:52:27,Jonathan,*g*
+2015-10-22 20:53:34,darklink,Das bezog sich eher auf den satz von Jonathan 
+2015-10-22 20:57:16,Sur3,kann man paging und segmentierung eigentlich kombinieren oder kommt sich das irgendwie in die quere?
+2015-10-22 20:57:27,Svenska,ja und höchstens in deinem kopf
+2015-10-22 20:57:38,Sur3,"ok gut, danke ^^"
+2015-10-22 20:58:18,darklink,die arme mmu
+2015-10-22 20:58:34,Svenska,"da du allerdings optimierst, bevor du ueberhaupt weißt, ob es sich lohnt, rate ich dir davon ab ;)"
+2015-10-22 20:58:42,darklink,Die muss die virtuelle addresse in eine lineare addresse umwandeln
+2015-10-22 20:58:55,darklink,Und die dann in die physische
+2015-10-22 20:59:13,Svenska,wieso arme mmu? arm dran ist sie in allen anderen welten ... wo die hälfte der mmu rumliegt und sich zu tode langweilt
+2015-10-22 20:59:50,darklink,Sur3: bezahlst du die mmu dafür?
+2015-10-22 21:00:23,Sur3,klaro die mmu is meine biatch und kriegt ordentlich weser energy dafür :D
+2015-10-22 21:00:40,Jonathan,"Svenska: Ich glaub, ich muss direkt die Akkuspannung anzapfen und nen Step-Up dahinter hängen"
+2015-10-22 21:01:23,Jonathan,"Der Akku hat 12,6V maximal und PCIe spezifiziert 13V maximal auf der 12V-Rail :D"
+2015-10-22 21:01:50,Sur3,ich hab halt keinen bock die ganze segmentierung aus meinem kernel zu schmeißen bevor ich paging implementiere deswegen würd ich das paging erstmal darauf aufsetzen
+2015-10-22 21:01:55,Svenska,hm.
+2015-10-22 21:02:26,darklink,unmaintain
+2015-10-22 21:02:39,Svenska,"wie sieht's denn mit der akkuspannung während des ladevorgangs aus, und wie hoch ist sie bei ""akku leer""?"
+2015-10-22 21:03:52,Svenska,"Sur3: linux nutzt auf x86 die segmentierung, um (soweit möglich) NX zu implementieren"
+2015-10-22 21:03:57,Jonathan,"Svenska: Wie gesagt, maximal 12,6V, das entspricht 4,2V pro Zelle (alles höher als das ist gefährlich für den Akku)... Leer sind es knapp über 9V"
+2015-10-22 21:04:10,Sur3,"nee das maintaining ist nicht so schwer wie es wirken mag, ich packd as paging erstmal in nen eigenes modul mit precompilerdirektiven im ram-manager, und dann kann ich stückweise precompiler direktiven einführen um die segmentierung stückweise zu entfernen"
+2015-10-22 21:04:40,Sur3,ahh ok geht NX nicht auch mit PAE?
+2015-10-22 21:04:56,Sur3,aber ja wegen dem NX hab ich die segmentierung auch erst drin behalten
+2015-10-22 21:05:20,Sur3,aber da gcc das nicht unterstützt klappt das nx leider nicht
+2015-10-22 21:05:33,Svenska,was nicht unterstuetzt?
+2015-10-22 21:05:35,Sur3,nur bei meinem selbstgeschriebenem asm klappt das nx
+2015-10-22 21:06:19,Sur3,"naja elf dateien brauchen ja für daten und textbereich und stack das selbe segment, deswegen kann ich da kein nx drauf setzen nur auf die bereiche für sich, aber das ist ja nur ne semitrennung"
+2015-10-22 21:07:16,Svenska,?
+2015-10-22 21:07:33,Svenska,also ... linux nutzt auf x86 auch elf und kann das ...
+2015-10-22 21:07:42,Sur3,"also klar ist mein daten und codebereich sind entsprechend abgesichert daß man datensegmente nicht ausführen und codesegmente nciht schreiben kann, aber da die segmente sich für elf überlappen müssen bringt der schutz nix"
+2015-10-22 21:08:01,darklink,NX? Virtualisierung?
+2015-10-22 21:08:03,Svenska,warum muessen die sich ueberlappen?
+2015-10-22 21:08:14,Svenska,"darklink: NX ist no-execute, hat erstmal nix mit virtualisierung zu tun"
+2015-10-22 21:08:18,darklink,Oh
+2015-10-22 21:09:00,Sur3,"naja wenn ich dem stack nen eigenes segment gebe funktioniert zum beispiel der .bss bereich nciht mehr, der stack brauch also ne überlappung mit dem datanbereich für einige funktionen von gcc"
+2015-10-22 21:09:42,Svenska,äh?
+2015-10-22 21:10:08,Sur3,"und kevin meinte ich solle am besten den codebereich ebenfalls überlappen lassen, weil gcc eben keine segmente und dadurch getrennte bereiche kennt"
+2015-10-22 21:10:18,Svenska,"also, kann gut sein, dass die libgcc nicht fuer segmentierung gebaut ist"
+2015-10-22 21:11:07,Sur3,"joa schient so, sonst würde die nicht den .bss bereich über SS sondern über DS initialisieren"
+2015-10-22 21:11:25,Svenska,"achso, das wusste ich nicht."
+2015-10-22 21:11:44,Svenska,"ansonsten kannst du ja gucken, ob du andere compiler findest, die mit segmentierung klarkommen"
+2015-10-22 21:12:02,Svenska,"quasi alle compiler der 16-bit-zeit können das, und vermutlich auch im 32-bit-modus"
+2015-10-22 21:12:04,darklink,Ich wuerde bloß unterschiedliche code und datensegmente haben
+2015-10-22 21:12:09,Sur3,ich auch nicht aber ich hatte getrennte bereiche und dann hatte ich immer probleme mit nicht initialisierten variablen und seit ich ss und ds den selben bereich gegeben habe ist das problem weg
+2015-10-22 21:13:04,Sur3,was an sich mal totaler schwachsinn ist weil ein getrennter stack viel sicherer wäre
+2015-10-22 21:13:13,darklink,arbeitet paging mit linearen oder mit physischen addressen?
+2015-10-22 21:13:52,Sur3,"ich meine paging baut auf der gdt auf, also auf linearen"
+2015-10-22 21:13:59,darklink,Ok
+2015-10-22 21:14:01,Svenska,"hm, ich initialisiere auf ARM .data und .bss per hand"
+2015-10-22 21:14:27,Svenska,"segmentierung macht ""virtuell -> linear"" und paging macht ""linear -> physisch"""
+2015-10-22 21:14:28,darklink,Vieleicht sollte ich NX supporten
+2015-10-22 21:14:37,Sur3,echt
+2015-10-22 21:14:42,Sur3,ok ich guck das nochmal nach
+2015-10-22 21:14:47,Svenska,protipp: nimm x86_64 da geht das ;)
+2015-10-22 21:14:56,darklink,"Mit einem PMM, einem LMM und einem VMM"
+2015-10-22 21:14:59,Antoine,Sur3: Ein getrenntes Stack segment ist wohl schwer mit C. Damit kannst du nicht mehr einfach nur pointer auf irgendwas im stack rumreichen und es funktioniert. Sondern jede Funktion müsste dann wissen ob ein pointer im ss oder ds liegt.
+2015-10-22 21:14:59,Svenska,"wenn die CPU das unterstuetzt, per Paging"
+2015-10-22 21:15:17,Svenska,oh hallo antoine ;)
+2015-10-22 21:15:28,Antoine,Moin Svenska ;-)
+2015-10-22 21:16:22,Sur3,@Antoine ahh ok aber wenn ich nur den codebereich trenne und stack und ds zusammen lasse müßte gehen?
+2015-10-22 21:16:43,Svenska,"das ist das prinzip, was linux nimmt"
+2015-10-22 21:16:56,Svenska,"code ist rx, daten+stack ist rw"
+2015-10-22 21:16:59,darklink,(der LMM ist von außerhalb nicht sichtbar)
+2015-10-22 21:17:52,Sur3,"ok ich hätte gerne den stack auch getrennt aber das ist dann ja auch schon gut, dann muß ich mal den elfLoader umschreiben daß er die sections ausließt und den .text-bereich gesondert reserviert"
+2015-10-22 21:18:51,darklink,Warum NX nicht beim paging mit drinneist
+2015-10-22 21:19:01,Antoine,Sur3: Würde ich annehmen jo. Ausser gcc wird sehr kreativ und benutzt irgendwas aus .text was eigentlich .rodata sein sollte
+2015-10-22 21:19:33,Antoine,"Sur3: Und du musst nicht unbedingt die sections aufteilen, du kannst auch das Linkerscript so anpassen dass der die in separate PHs steckt"
+2015-10-22 21:19:42,Sur3,warum gibt es in elf eigentlich segments und sections?
+2015-10-22 21:19:51,Svenska,aber er nutzt doch kein linkerscript ^^
+2015-10-22 21:19:59,Sur3,doch ich hab inzwischen nen linkersscript
+2015-10-22 21:20:00,Antoine,Dann ist halt schade
+2015-10-22 21:20:38,Sur3,aber wie sag ich im linkerscript daß er nen neues segment anfangen soll hab das irgendwie nicht gefunden?
+2015-10-22 21:21:17,Svenska,du kannst dem haufen virtuelle adressen geben
+2015-10-22 21:21:51,Sur3,http://pastebin.com/raw.php?i=PmyWj4vP
+2015-10-22 21:21:54,Svenska,"und du kannst sagen, dass z.B. "".text .rodata"" nach ""mein_code_seg"" und "".data .bss"" nach ""mein_data_seg"" gehen sollen"
+2015-10-22 21:22:38,Sur3,"ich will data und bss in nen eigenes segment packen, ich dachte das align 4 würde dabei helfen aber es ist immernoch im selben segment"
+2015-10-22 21:23:17,Antoine,Sur3: Fürs aufteilen in separate PHs kannst du folgendes machen: Zuerst PHDRS { foo_ph PT_LOAD; bar_ph PT_LOAD }; und dann sowas .text : { *(.text*) } : foo_ph
+2015-10-22 21:23:54,Sur3,ahh thx
+2015-10-22 21:24:07,Antoine,Oder sowas ähnliches... Ich hab meinen Code da grad nicht zur Hand und keine Zeit das rauszusuchen.
+2015-10-22 21:41:38,Sur3,"hm macht es wohl sinn rodata und text zu trennen, weil man rodata ja nciht ausführen kann?"
+2015-10-22 21:42:08,Svenska,"wenn du mittelfristig segmentierung eh rauswerfen willst, vermutlich nein."
+2015-10-22 21:42:40,Sur3,"aso rodata muß vermutlich aber eh zusammen mit data, bss und stack geladen werden oder?"
+2015-10-22 21:42:54,Svenska,"und du solltest darueber nachdenken, dass JIT-compiler in jeder form ihre daten ausfuehren muessen"
+2015-10-22 21:42:58,Svenska,*schulterzuck*
+2015-10-22 21:43:41,Sur3,hmm wie macht linux das denn mit nx bei jit?
+2015-10-22 21:44:00,Svenska,kA
+2015-10-22 21:44:43,Sur3,naja sonst müssen halt spezielle programme die daten ausführen müssen als omagic compiliert werden dann werden die mit meinem alten elfloader geladen der die bereiche nicht trennt
+2015-10-22 21:48:53,Sur3,durch das trenenn der segmente hab ich plötzlich wieder so nen großes offest in der datei und ein align bei 0x1000 -.-
+2015-10-22 21:49:19,Svenska,gn8
+2015-10-22 21:54:26,Sur3,kann ich im linker script irgendwie sagen daß er eine section nciht in die enddatei packen soll?
+2015-10-22 22:34:54,Antoine,Sur3: Es gab da irgendwas mit DISCARD
+2015-10-22 22:37:36,Sur3,ahh da das scheints zu sein danke
+2015-10-22 22:39:13,Antoine,"Und betreffend JIT: Wenn du W^X (entweder schreibbar oder ausführbar, in OpenBSD-Terminologie) implementieren willst würde das wohl etwa so laufen: der JIT generiert ein stück code während die Page schreibbar ist, dann wenn er damit fertig ist wird die Page als nicht mehr schreibbar aber dafür ausführbar markiert (mprotect() auf unix, glaub ich)"
+2015-10-22 22:41:19,Paddy,Reh
+2015-10-22 22:43:11,Antoine,Paddy: Hirsch
+2015-10-22 22:43:43,Sur3,werwolf
+2015-10-22 22:46:29,Paddy,Ah Antoine. was verschafft uns die Ehre? ;-)
+2015-10-22 22:46:39,XanClic,Elch
+2015-10-22 22:47:36,Paddy,Ich registriere deutlich erhöhte Anwesenheit. Bei anderen würde ich auf Prüfungszeitraum tippen. *g*
+2015-10-22 22:47:58,Antoine,Paddy: Ich hab nur endlich mal #lost in meine andere irssi session übernommen wo ich regelmässig drauf schaue. ;-)
+2015-10-22 22:48:20,Antoine,Hm dann wären doch alle mit Putzen beschäftigt und nicht #lost *g*
+2015-10-22 22:48:35,Paddy,Mit über Putzen diskutieren in #lost ;-)
+2015-10-22 22:48:42,Antoine,Noch besser ;-)
+2015-10-22 22:50:42,Paddy,"Hm, ich sehe, die Logs sind zur Zeit auch mal wieder spannend. Sur3 und Jonathan überbieten sich ja richtig in kranken Hacks. ;-)"
+2015-10-22 22:57:31,Jonathan,"Paddy: Natürlich. Ich dachte, hier gibt's nen Preis zu gewinnen für kranke Hacks, oder so. *g*"
+2015-10-22 23:00:22,Jonathan,"Bin dann aber auch mal weg, gute Nacht ;)"
+2015-10-22 23:01:15,Paddy,"Was will denn jemand, der schon +v hat, noch für einen Preis?"
+2015-10-22 23:05:15,Sur3,ok das virtuelle layout der mit meinem linkerscript generierten Elfen paßt jetzt nur die dateigröße ist ein wenig groß verglichen mit -N ich frag mich ob man irgendwie rausfinden kann wie das Standard-Linkerscript zu der Option -N aussieht
+2015-10-22 23:06:26,Sur3,@Paddy naja ich hatte die tage auch mal +v vllt will er mit mir um seinen status wettstreiten :D
+2015-10-22 23:08:29,Paddy,Keine Ahnung. Bei euch beiden muss ich jedenfalls die Waffen strecken.
+2015-10-22 23:10:27,Sur3,"kopf hoch, wenn man weniger verrückte ideen hat hat mans meist einfacher ^^"
+2015-10-22 23:12:01,Antoine,Sur3: Probier mal ld mit -verbose
+2015-10-22 23:16:03,Sur3,"ahh cool das scheint zu gehen, aber ganz schön lang das script  ^^"
+2015-10-22 23:17:38,Antoine,"Tja, alles kann man halt nicht haben ;-)"
+2015-10-22 23:24:39,Paddy,"Offenbar doch, sonst wär es ja nicht so lang ;-)"

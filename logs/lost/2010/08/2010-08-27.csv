@@ -1,0 +1,972 @@
+date/time,nick,message
+2010-08-27 00:05:27,taljeth,gn8
+2010-08-27 09:06:15,kwolf,"Ach wie schön, am Morgen gleich mit einem Kernel Panic begrüßt zu werden"
+2010-08-27 09:06:17,kwolf,Moin
+2010-08-27 09:27:06,pgahlen,"lol ich krieg n Page Fault, wenn ich den Cursor auf dem Bildschirm bewege"
+2010-08-27 09:27:30,pgahlen,zumindest auf reeler Hardware
+2010-08-27 10:14:04,tev,moin
+2010-08-27 10:15:16,kwolf,Moin
+2010-08-27 10:16:40,DerHartmut,"Einen wunderschönen, wenn gleich auch sehr verregneten, guten Morgen zusammen :D"
+2010-08-27 10:34:39,FreakyPenguin,Hmpf ich bin nichtmal mehr fähig etwas zu bauen was sich von Grub booten lässt :-/
+2010-08-27 10:38:04,DerHartmut,:O
+2010-08-27 10:38:51,kwolf,Was hast du denn vor?
+2010-08-27 10:39:09,kwolf,"Also einen einfaches Hello World würde ich wohl noch hinbekommen, ohne irgendwas nachzuschlagen."
+2010-08-27 10:39:45,FreakyPenguin,"Eigentlich wollte ich nur meinen Kernel mal wieder durchbauen, aber der fiese ld füllt da irgendwo mit massenhaft 0en auf, so dass der MBH zu weit nach hinten rutscht"
+2010-08-27 10:39:46,kwolf,"Andererseits tendiere ich ja in letzter Zeit dazu, meine Kernel nicht von GRUB, sondern von qemu laden zu lassen ;-)"
+2010-08-27 10:40:11,kwolf,Ah...
+2010-08-27 10:40:25,kwolf,Sind ein paar falsche Sections reingerutscht?
+2010-08-27 10:41:41,bluecode,FreakyPenguin: 1MiB an 0en?
+2010-08-27 10:42:00,FreakyPenguin,"Jo, aber das + SIZEOF_HEADERS headers habe ich eigentlich drin ;-)"
+2010-08-27 10:42:21,bluecode,da gabs aber auch ein ld-flag zu
+2010-08-27 10:42:53,FreakyPenguin,Du weisst nicht zufällig welches? ;-)
+2010-08-27 10:43:36,bluecode,"""#  Make sure you're compiling with the -nostdlib -nodefaultlibs options "" sagt osdev.org"
+2010-08-27 10:43:52,pgahlen," mal ne Frage, wie kann es sein, das mein Kernel n Page Fault auslöst wenn er den Cursor verschiebt?"
+2010-08-27 10:43:55,bluecode,wobei eigentlich linken gemeint ist...
+2010-08-27 10:44:12,pgahlen,CR2 ist dann 0xfffffffa
+2010-08-27 10:44:29,bluecode,und von welchem code wird der page fault ausgelöst?
+2010-08-27 10:44:44,FreakyPenguin,Hm das hilft ja tatsächlich. ;-)
+2010-08-27 10:44:47,FreakyPenguin,Thx
+2010-08-27 10:44:55,pgahlen,von move_hw_cursor
+2010-08-27 10:45:02,bluecode,und was tut der?
+2010-08-27 10:46:19,bluecode,"hm, sry muss gehen"
+2010-08-27 10:46:34,pgahlen,ok
+2010-08-27 10:47:07,pgahlen,shr  $0x8 %ax löste den aus
+2010-08-27 10:47:43,pgahlen,muss auch ma weg
+2010-08-27 10:49:28,derhartmut_,Uh
+2010-08-27 10:49:32,derhartmut_,Teh virtual machine has turned on
+2010-08-27 11:01:46,kwolf,FreakyPenguin: Hast du eigentlich irgendwo ein git für deinen Kernel? Oder lohnt sich das nicht? ;-)
+2010-08-27 11:02:06,FreakyPenguin,Lokal schon ;-)
+2010-08-27 11:02:31,DerHartmut,>.<
+2010-08-27 11:02:39,kwolf,"Ich meinte öffentlich, und ob es sich lohnen würde, den anzuschauen ;-)"
+2010-08-27 11:02:54,kwolf,DerHartmut: Was ist denn niwoio jetzt genau?
+2010-08-27 11:04:06,FreakyPenguin,"Im Moment nicht. Irgendwann wenn das Userland auch was sinnvolles macht, könnte ich das dann mal pushen ;-)"
+2010-08-27 11:04:16,DerHartmut,"Im Grunde genommen sollte es eine Art ""Treiberregistrierungsbaum"" werden: Ein Treiber registriert sich bei niwoio, wobei es dann für ein Device auch mehrere Treiber geben kann (Sinn?). Nutzt der nette Programmierer dann z.B. fwrite wird ein Syscall aufgerufen und die Anfrage an niwoio weitergegeben, welche über einen ""Baumpfad"" das richtige Device und den richtigen Treiber sucht"
+2010-08-27 11:05:07,DerHartmut,"Aber nach anfänglicher Euphorie (Juhu, ich schreib da was voll tolles) kommt nun die Erkenntnis: Was für ein doch eigentlich doofes Konzept..."
+2010-08-27 11:05:24,FreakyPenguin,*g*
+2010-08-27 11:06:00,FreakyPenguin,Immerhin kommt sie ;-)
+2010-08-27 11:06:06,kwolf,"Vor allem, wenn man eh schon ein VFS hat ;-)"
+2010-08-27 11:06:10,DerHartmut,*g*
+2010-08-27 11:06:36,kwolf,"FreakyPenguin: Hm, was heißt denn ""was sinnvolles""? ;-)"
+2010-08-27 11:07:04,DerHartmut,Somit könnte ich auch niwoio einen billigen und kaputten und hässligen LostIO-Abklatsch machen oder einfach git rm niwoio
+2010-08-27 11:07:36,FreakyPenguin,kwolf: Gute Frage. ;-)
+2010-08-27 11:08:25,FreakyPenguin,"Ich wollte eigentlich etwas mit fs und storage-treiber rumprobieren und der schnittstelle dazwischen, um mal zu sehen wie lahm das wirklich sein muss. ;-)"
+2010-08-27 11:08:28,kwolf,"DerHartmut: Naja, an LIO selbst kannst du noch genug arbeiten, bevor es hilfreich wäre, einen Abklatsch zu machen ;-)"
+2010-08-27 11:09:01,DerHartmut,*g*
+2010-08-27 11:10:26,kwolf,FreakyPenguin: Vermutlich nicht so lahm wie in tyndur ;-)
+2010-08-27 11:10:48,FreakyPenguin,"Jo, das ist anzunehmen. ;-)"
+2010-08-27 11:11:14,kwolf,Und LIOv2 bringt bisher auch nicht so richtig viel
+2010-08-27 11:12:00,FreakyPenguin,Jo zwischen ata und ext2 könnte man wohl schon noch ein bisschen was rausholen
+2010-08-27 11:12:06,kwolf,"Wobei ich manche Sachen noch nicht probiert habe, weil lpt scheitert und indirekt zu einem Double Fault führt ;-)"
+2010-08-27 11:12:17,FreakyPenguin,Hm autsch ;-)
+2010-08-27 11:13:50,kwolf,"Ich schätze mal, die Übersetzungstabellen könnten ein bisschen was bringen. Vor allem könnte ext2 die ersten paar Blöcke jeder Datei direkt eintragen, weil es die Inode sowieso lesen muss. Das könnte dem Szenario mit vielen kleinen Dateien helfen."
+2010-08-27 11:14:27,FreakyPenguin,Hm stimmt
+2010-08-27 11:14:39,FreakyPenguin,Da müssten wir aber wohl cdi/fs etwas überarbeiten
+2010-08-27 11:15:42,FreakyPenguin,"Ich wollte mir eigentlich mal btrfs ansehen, um zu sehen wie das Interface da aussehen müsste damit das einigermassen effizient umgesetzt werden kann"
+2010-08-27 11:16:02,kwolf,cdi/fs mag ich wie mehrfach gesagt sowieso nicht
+2010-08-27 11:16:24,FreakyPenguin,Darfst du gerne überarbeiten ;-)
+2010-08-27 11:16:32,kwolf,Ich hatte jetzt von beiden Seiten damit zu tun und fand es beidesmal umständlich ;-)
+2010-08-27 11:19:54,kwolf,"Aber bevor wir noch eine Baustelle anpacken, sollten wir vielleicht erstmal die bestehenden zu Ende bringen"
+2010-08-27 12:35:22,redeagle,hi
+2010-08-27 12:40:26,DerHartmut,Hello.
+2010-08-27 12:41:29,DerHartmut,Ernährungstipps von Dr. Ehenkes himself: http://www.henkessoft.de/Ern%E4hrung/Ernaehrung.htm
+2010-08-27 12:43:10,kwolf,"Ui, müssen wir jetzt auch noch didaktisch essen?"
+2010-08-27 12:59:33,DerHartmut,"""(...) melden und bei zu niedrigen Werten ""Hungeralarm"" schlagen"" - Ich habe ""Fruchtalarm"" gelesen und habe mich gefragt, ob er zu viel fern sieht"
+2010-08-27 13:00:16,DerHartmut,"Aber wenigstens weiß ich jetzt, wie ich mich didaktisch wertvoll ernähre."
+2010-08-27 13:07:47,Programm_Noob,Moin
+2010-08-27 13:14:58,DerHartmut,Hallo.
+2010-08-27 13:15:15,DerHartmut,Programm_Noob: Ich hab da mal so eine Frage: Inwiefern würdest du NandOS als stabil bezeichnen?
+2010-08-27 13:15:41,Programm_Noob,wie meinst du das?
+2010-08-27 13:20:00,kwolf,"Du willst doch nicht etwa behaupten, er hätte instabilen Code kopiert?"
+2010-08-27 13:20:29,Programm_Noob,warum bezeichnet ihr eigentlich NandOS als mein Betriebsystem?
+2010-08-27 13:22:26,DerHartmut,Habe ich bislang nicht so bezeichnet
+2010-08-27 13:23:47,DerHartmut,"kwolf: Nee, ich habe mir nur die Logs durchgelesen und mitbekommen, dass XanClic nur kaputte Kernel schreibt und dass týndur und niwohlOS gleichermaßen kaputt sind (oder halt im generellen kaputt)"
+2010-08-27 13:23:59,DerHartmut,"Programm_Noob: Ich hätte nur gern gewusst, ob du NandOS als stabil bezeichnen würdest."
+2010-08-27 13:24:21,kwolf,"Ah, stimmt, da waren so ein paar Aussagen..."
+2010-08-27 13:24:23,Programm_Noob,DerHartmut: Was soll denn an NandOS instabil sein?
+2010-08-27 13:24:48,kwolf,Wäre die richtige Frage dann nicht s/stabil/nicht kaputt/?
+2010-08-27 13:26:09,Programm_Noob,Wie heißt die standard c++ Lib bei Linux?
+2010-08-27 13:26:17,Programm_Noob,also wie heißt die .a Datei?
+2010-08-27 13:27:30,kwolf,"Keine Ahnung, vielleicht libstdc++.a?"
+2010-08-27 13:28:59,Programm_Noob,bei cygwin müsste die doch dabei sein oder?
+2010-08-27 13:29:34,DerHartmut,Programm_Noob: Korrigiere: Was ist an NandOS nicht kaputt?
+2010-08-27 13:30:02,Programm_Noob,cds.c
+2010-08-27 13:30:17,Programm_Noob,und das was aus dem Tut stammt
+2010-08-27 13:31:00,DerHartmut,...
+2010-08-27 13:31:02,DerHartmut,*lol*
+2010-08-27 13:31:19,DerHartmut,Ich glaube diese Aussage mit denen von gestern lasse ich unkommentiert im Raume stehen.
+2010-08-27 13:32:15,Programm_Noob,"DerHartmut: Ich habe nie behauptet, das meine KErnel nicht kaputt wären."
+2010-08-27 13:32:24,Programm_Noob,willst du mal Pexus oder Meeriao
+2010-08-27 13:32:33,Programm_Noob,*MeeriOS sehen
+2010-08-27 13:32:42,DerHartmut,"Ich habe auch nie gesagt, dass du das behauptet hast."
+2010-08-27 13:33:13,Programm_Noob,"Darf ich dann nicht die Aussage machen, das XanClic's Kernel kaputt sind?"
+2010-08-27 13:35:10,DerHartmut,<Programm_Noob> SHyx0rmZ: Ich hab doch gesagt. Alle OS´e an denen XanClic mitgeasrbeitet hat sind kaputter als kaputt.
+2010-08-27 13:36:02,DerHartmut,"Ich würde das als Beleidigung auffassen. Aber ich mach direkt mal einen Deckel auf die Diskussion, oder wir reden in #niwohlos weiter, weil das hier ist #lost hier herrscht Zucht und Ordnung."
+2010-08-27 13:36:04,DerHartmut,*hust*
+2010-08-27 13:36:04,DerHartmut,xD
+2010-08-27 13:36:42,Programm_Noob,Sie sind aus #niwohlos verbannt worden
+2010-08-27 13:39:47,DerHartmut,Hmm
+2010-08-27 13:41:43,DerHartmut,Versuch nun mal zu joinen
+2010-08-27 13:42:12,DerHartmut,"Hm, trotz +e kickt ChanServ dich"
+2010-08-27 13:42:26,Programm_Noob,(13:41:54) Sie wurden hinausgeworfen von ChanServ: (Not a typewriter)
+2010-08-27 13:42:33,DerHartmut,"Jo, habe ich auch gelesen"
+2010-08-27 13:42:41,Programm_Noob,was sollen diese merkwürdigen meldungen?
+2010-08-27 13:42:53,DerHartmut,Kp
+2010-08-27 13:45:29,JanDing,moin
+2010-08-27 13:46:15,DerHartmut,"Huhu, Grüß' dich und Hey Hey hey JanDing"
+2010-08-27 13:46:19,Programm_Noob,Moin JanDing
+2010-08-27 13:50:50,mastamind,ich hab ein eigenartiges problem.
+2010-08-27 13:51:01,mastamind,ich vesuche einen farjump zum protected mode.
+2010-08-27 13:51:03,DerHartmut,Hallo mastamind
+2010-08-27 13:51:11,mastamind,hallo DerHartmut
+2010-08-27 13:51:25,mastamind,"und dabei meint bochs dann, das offset wäre außerhalb des CS limits."
+2010-08-27 13:51:26,Programm_Noob,Moin mastamind
+2010-08-27 13:51:38,mastamind,"was eigenartig ist, da das codesegment bei 0 beginnt und 4 gib groß ist."
+2010-08-27 13:54:08,mastamind,http://pastebin.com/XxhFY6SV das ist der code dazu.
+2010-08-27 13:54:37,mastamind,die gdt is korrekt geladen. das hab ich geprüft.
+2010-08-27 13:54:56,mastamind,"das ""jmpl *%cs:(trampoline)"" in zeile 27 verursacht den fehler."
+2010-08-27 14:03:02,JanDing,%cs: ist nicht richtig
+2010-08-27 14:03:05,JanDing,du musst einen zahlenwert angeben
+2010-08-27 14:03:21,JanDing,"ljmp $selector_code, trampoline"
+2010-08-27 14:03:24,JanDing,oder so
+2010-08-27 14:03:58,JanDing,ah ne du hast das in einer variable ...
+2010-08-27 14:05:02,JanDing,"hm interssante methode ... du musst drauf achten, dass der offset in .long 1b kleiner als 2^16 ist"
+2010-08-27 14:06:35,JanDing,"und bist du dir sicher, dass jmpl der richtige befehl ist?"
+2010-08-27 14:06:41,JanDing,erzeugt das einen far jump?
+2010-08-27 14:08:21,kwolf,Würde mich wundern
+2010-08-27 14:09:13,kwolf,"Huch, soll das einen relativen Far Jump geben, oder wie?"
+2010-08-27 14:10:10,kwolf,"Ah, nein, jetzt verstehe ich das..."
+2010-08-27 14:11:59,PopUp,Xylit ist EPISCH
+2010-08-27 14:13:26,Programm_Noob,"könnt ihr euch mal im nandOS Repo die Datei pthread.h ansehen. Ich bekomme in jeder Zeile, wo als paramenter ristrict angegeben ist diesen Fehler:"
+2010-08-27 14:13:26,Programm_Noob,"pthread.h:120 error: conflicting types for ""restrict"""
+2010-08-27 14:13:26,Programm_Noob,"pthread.h:120 note: previous definition of ""restrict"" was here"
+2010-08-27 14:13:26,Programm_Noob, Hier der Link: http://nandos.svn.sourceforge.net/viewvc/nandos/trunk/libs/libc/include/pthread.h?revision=56&view=markup
+2010-08-27 14:16:32,kwolf,Wie kompilierst du?
+2010-08-27 14:16:58,mastamind,"JanDing: sorry, war kurz weg."
+2010-08-27 14:17:27,Programm_Noob,i586-elf-gcc -c -DASMV -DSTDC_HEADERS=1 -DHAVE_UNISTED_H=1 _DDIRENT?1 -O gzip.c
+2010-08-27 14:17:31,mastamind,JanDing: das offset ist 10250 ca.
+2010-08-27 14:17:51,mastamind,"der grund für %cs: ist, dass der code damit pic ist."
+2010-08-27 14:17:54,kwolf,Programm_Noob: Evtl. musst du als C99 kompilieren
+2010-08-27 14:18:41,Papierkorb,moin
+2010-08-27 14:18:51,Programm_Noob,Moin papierkorb
+2010-08-27 14:19:47,Programm_Noob,taljeth: Danke. JEtzt gehts
+2010-08-27 14:20:11,JanDing,mastamind: ist positionsunabhängigkeit denn notwendig?
+2010-08-27 14:20:41,mastamind,"JanDing: kommt drauf, wie weit ich mit den features komme."
+2010-08-27 14:21:11,mastamind,im endeffekt könnte es so funktionieren: mbr -> raid -> ext3.
+2010-08-27 14:21:25,mastamind,oder auch nur mbr -> ext3.
+2010-08-27 14:21:38,mastamind,"damit sind die vielleicht an verschiedenen orten. damit das zum laden einfacher ist, ist der code pic."
+2010-08-27 14:21:41,JanDing,ich weiß nicht was du vorhast ...
+2010-08-27 14:22:11,JanDing,also du kannst ja positionsunabhängigkeit im real mode über die segmente realisieren
+2010-08-27 14:22:32,JanDing,"wenn der kernel an einer festen position ist, brauchst du diese zeigerindirektion nicht"
+2010-08-27 14:22:44,mastamind,im den kernel gehts da noch nicht.
+2010-08-27 14:22:55,mastamind,der kernel wird so und so vom stage3 geladen. der code ist nur zum laden des stage3.
+2010-08-27 14:23:52,JanDing,naja die kannst du ja auch an einen festen ort platzieren
+2010-08-27 14:24:23,mastamind,ja eh. aber was tu ich dann mit dem raid code und dem ext3 code? sie können beide vorhanden sein oder nur einer.
+2010-08-27 14:25:00,JanDing,kommen auch an einen festen ort
+2010-08-27 14:25:02,mastamind,warum musst das offset kleiner as 64 kib sein?
+2010-08-27 14:25:08,mastamind,-t
+2010-08-27 14:25:21,JanDing,weil du im real mode nur 16 bit offsets benutzen kannst
+2010-08-27 14:25:26,mastamind,"ich spring ja zuerst zum segment, dann läd er das und dann an ein offset in das segment."
+2010-08-27 14:25:37,mastamind,selbst wenn ich ein 32 bit segment springe?
+2010-08-27 14:26:13,mastamind,"das würde bedeuten, dass der protected mode code immer in den ersten 64 kib liegen muss."
+2010-08-27 14:27:11,JanDing,"nein das würde bedeuteten, dass die *erste* sprungadresse in den protected mode unter 1 MB sein muss"
+2010-08-27 14:27:18,JanDing,ich schau mal in meine code sammlung
+2010-08-27 14:27:33,mastamind,das tut sie bei mir jedenfalls.
+2010-08-27 14:29:21,Programm_Noob,was soll error: expected expression bevor ')' token mir sagen?
+2010-08-27 14:29:38,JanDing,das ist das problem an c
+2010-08-27 14:29:43,JanDing,dass du irgendwas falsch gemacht hast
+2010-08-27 14:30:17,Programm_Noob,Hier die Code Zeile:
+2010-08-27 14:30:17,Programm_Noob,"foreground = signal(SIGINT, SIG_IGN) != SIG_IGN;"
+2010-08-27 14:30:33,Programm_Noob,JanDing gehts auch etwas genauer?
+2010-08-27 14:30:47,JanDing,"Programm_Noob: nein. wie gesagt, dass ist das problem an C"
+2010-08-27 14:30:57,JanDing,wenn ich raten soll hat es was mit SIGINT oder SIG_IGN zu tun
+2010-08-27 14:31:02,JanDing,das sind die dinge vor )
+2010-08-27 14:31:12,JanDing,mastamind: ich weiß es nicht
+2010-08-27 14:31:25,JanDing,"musst du ins manual schauen, wann welche sprünge möglich sind"
+2010-08-27 14:31:31,mastamind,ok
+2010-08-27 14:31:44,mastamind,"ich hab zumindest gestern nichts entdeckt, was gegen meinen sprung sprechen würde..."
+2010-08-27 14:31:44,JanDing,meine codes springen immer nur an adressen mit offset < 2^16
+2010-08-27 14:33:17,JanDing,was ist das eigentlich mit dem raid? hast du support für software raids oder wie?
+2010-08-27 14:33:33,mastamind,ist nur eine idee.
+2010-08-27 14:33:42,mastamind,und ich möchte mir das nicht gleich verbauen.
+2010-08-27 14:35:24,mastamind,"ich glaub, dass sich das meiste nicht wirklich ausgehen wird, da der mbr so winzig ist. der ist jetzt schon fast voll. und ich hab dort kaum features. eigentlich sollt der mbr von jeder partition der platte, auf der er drauf ist, das erste kib laden. in dem ist dann eine signatur, die das kib als stage2 auszeichnet. findet der mbr das, führt er den stage2 an position 0x10000 aus."
+2010-08-27 14:36:04,mastamind,der stage2 kann dann weiteres nachladen oder hat es schon eingebaut. der existierende stage2 kann eine datei aus einem ext2 image laden.
+2010-08-27 14:36:32,mastamind,"die man per pfad angibt im stage2. das ist der stage3, der in c++ und im protected mode ist."
+2010-08-27 14:36:32,JanDing,"das heißt du ignorierst das flag, ob eine partition bootbar ist?"
+2010-08-27 14:36:41,mastamind,ja
+2010-08-27 14:36:51,mastamind,man kann das aber auch als feature einbauen.
+2010-08-27 14:36:53,mastamind,wäre eine idee.
+2010-08-27 14:38:53,mastamind,und auch sehr einfach zu implementieren.
+2010-08-27 14:49:51,Programm_Noob,kann sich einer von euch mal unsere libc ansehen und gucken wo etws nicht stimmt.ich bekomme gzip einfach nicht kompiliert
+2010-08-27 14:52:49,mastamind,wie lautet der fehler von gzip?
+2010-08-27 14:54:48,Programm_Noob,http://pastebin.com/8240SPTH
+2010-08-27 14:55:05,Programm_Noob,So das ist alles was gcc ausspuckt an Fehlern
+2010-08-27 15:03:38,Programm_Noob,Moin Dickhuuhn
+2010-08-27 15:03:38,Programm_Noob,So ein paar Fehler hab ich geunden. Hier die übrigen Fehler: http://pastebin.com/MqMSz0BA
+2010-08-27 15:06:11,mastamind,"also das mit struct stat ist klar, oder?"
+2010-08-27 15:06:24,mastamind,der compiler kennt die struct einfach nicht.
+2010-08-27 15:06:39,mastamind,"dh, du hast sie gar nicht oder in der falschen header datei deklariert."
+2010-08-27 15:07:01,mastamind,"das gleiche gilt für die warnungen zu den funktionen, die er nicht kennt."
+2010-08-27 15:07:17,mastamind,"S_ISDIR ist ein macro, das er nicht kennt."
+2010-08-27 15:07:59,Programm_Noob,"Die ersten Fehler, sind die die mich vorrangig interressieren."
+2010-08-27 15:08:37,mastamind,"die kann dir keiner lösen, da man dazu die code zeile kennen muss."
+2010-08-27 15:08:44,mastamind,außerdem sind alle fehler gleich wichtig.
+2010-08-27 15:10:05,Programm_Noob,Hier ist die gzip.c : http://pastebin.com/2uv8iDgS
+2010-08-27 15:11:24,Programm_Noob,Moin Tederian
+2010-08-27 15:11:28,Tederian,Hallo
+2010-08-27 15:12:13,mastamind,"foreground = signal(SIGINT, SIG_IGN) != SIG_IGN; das steht in 446. jetzt musst halt schaun, was nicht vorhanden ist. hast du die funktion signal? ist sie an der richtigen stelle definiert und auch richtig? das gleiche gilt für SIGINT und SIG_IGN. ich denke, dass wahrscheinlich SIG_IGN nicht definiert wurde oder so was."
+2010-08-27 15:18:06,DickHuuhn,http://en.wikipedia.org/wiki/Russian_Woodpecker
+2010-08-27 15:18:09,DickHuuhn,grad bei fefe gesehen
+2010-08-27 15:18:12,DickHuuhn,das find ich cool :3
+2010-08-27 15:19:28,Tederian,"Habe beim letzten Unterbruch von UVB-76 mehr oder weniger über ein Webinterface für Radiostationen mitgehört. Das nimmt 30 Sek. auf und lädt die dann auf deinen Rechner. Frequenz von UVB-76 rein, und ein halber Programmierer-Channel hörte zu wie sie teils schwach stimmen un kratzen hörten"
+2010-08-27 15:38:09,bluecode,moinsen
+2010-08-27 15:38:58,SHyx0rmZ,moin
+2010-08-27 15:43:17,MrX,hi
+2010-08-27 15:43:55,bluecode,tach MrX
+2010-08-27 16:41:23,Programm_Noob,Soll das hier ein Pagefault darstellen oder ein Tripplefault?
+2010-08-27 16:41:23,Programm_Noob,"02372883470e[CPU0 ] exception(): 3rd (14) exception with no resolution, shutdown status is 00h, resetting"
+2010-08-27 16:41:41,bluecode,triple fault
+2010-08-27 16:42:37,bluecode,"falls die anderen zwei exceptions nicht drüberstehen, musst du im bochs-NMenü unter Logging was umstellen"
+2010-08-27 16:44:23,bluecode,"wobei die Antwort eigentlich ""beides"" ist"
+2010-08-27 16:52:30,mastamind,"ich frag mich, wer auf die idee gekommen ist, eine triple fault mit 3rd abzukürzen."
+2010-08-27 16:53:01,bluecode,"eh? Da steht doch ""3rd exception""...?"
+2010-08-27 16:53:02,Tederian,Ich denke eher das heisst dass es der dritte Fehler ist
+2010-08-27 16:53:40,mastamind,vielleicht.
+2010-08-27 16:53:49,mastamind,3rd ist third und triple.
+2010-08-27 16:54:00,Tederian,Ich kenne es nur als third ;)
+2010-08-27 16:55:08,Programm_Noob,Ihr dürft mich ab sofort den dümmsten OS-Entwickler der Welt nennen :(
+2010-08-27 16:55:53,JanDing,OS_Noob?
+2010-08-27 16:56:09,Programm_Noob,jo geht auch
+2010-08-27 16:57:02,OS_Noob,wollt ihr auch Wissen warum ihr mich so nennen dürft?
+2010-08-27 16:57:21,Tederian,Sind wir Dr. Sommer?
+2010-08-27 16:57:35,OS_Noob,Tederian: Nö
+2010-08-27 16:57:52,Tederian,Da hast du die Antwort. ;>
+2010-08-27 17:03:11,OS_Noob,Mir gefällt der Name nicht.
+2010-08-27 17:03:23,Programm_Noob,Sieht viel besser aus
+2010-08-27 17:03:59,kwolf,"Es geht nicht darum, dass es gut aussähe, sondern um eine möglichst präzise Beschreibung"
+2010-08-27 17:07:11,Programm_Noob,kwolf: Es sieht trotzdem beschissen aus.
+2010-08-27 17:07:29,Programm_Noob,und ich habe einen Fehler in deinem Tutorial gefunden.
+2010-08-27 17:07:48,kwolf,Und zwar?
+2010-08-27 17:08:05,Programm_Noob,du vergisst beim paging den Videomemory zu mappen.
+2010-08-27 17:08:18,Programm_Noob,deher stürtzt der Kernel ab
+2010-08-27 17:09:00,kwolf,"Hm, ich weiß nicht, wie oft ich es wiederholen soll, aber Paging ist nicht fertig"
+2010-08-27 17:09:17,bluecode,"und ein ""Tutorial"" gibts doch dazu noch garnicht"
+2010-08-27 17:09:18,kwolf,"Und in der Version, die im git ist, tut das, weil der Videospeicher innerhalb der ersten 4 MB liegt"
+2010-08-27 17:09:31,kwolf,Und die werden 1:1 gemappt
+2010-08-27 17:10:24,Programm_Noob,OK Ich nehme alles zurück. Aber du solltest im Tutorial drauf hinweisen.
+2010-08-27 17:11:01,kwolf,Worauf?
+2010-08-27 17:11:41,Programm_Noob,"Das wenn man den Kernel wo anders hat und man deshalb nicht die ersten 4MB mappt, das man den Videospeicher mappen muss."
+2010-08-27 17:12:18,bluecode,"""wenn man den Kernel wo anders hat"", dann sollte man selbst darauf kommen, imho"
+2010-08-27 17:12:20,kwolf,"Wie gesagt, das Tut ist noch nicht fertig. Die ersten 4 MB zu mappen ist ein kaputter Ansatz, deswegen bleibt das auch nicht so."
+2010-08-27 17:12:35,kwolf,Das ist nur der Code für den ersten Teil des Tutorials
+2010-08-27 17:12:43,bluecode,bzw. den Pagefault richtig deuten können
+2010-08-27 17:13:25,kwolf,Einen Abschnitt zum Thema Pagefaults deuten hab ich schon drin ;-)
+2010-08-27 17:13:41,bluecode,wo ist das Tutorial denn?
+2010-08-27 17:13:46,kwolf,Auf meiner Festplatte
+2010-08-27 17:13:48,Programm_Noob,Stell doch das was du schon hast schonmal ins Wiki
+2010-08-27 17:14:03,kwolf,"Nein, sonst benutzen es noch mehr Leute und weisen mich drauf hin, dass da was fehlt"
+2010-08-27 17:14:06,Programm_Noob,Was wird eigentlich Teil 10?
+2010-08-27 17:14:14,kwolf,Weiß ich nicht
+2010-08-27 17:15:15,Programm_Noob,"Dick und FETT drunter schreiben: """"Dieser Tutorialteil ist in Arbeit. Wir geben dazu keinen Support ;)"""
+2010-08-27 17:16:18,Programm_Noob,für Teil 10 hätte ich nen Vorschlag: VFS & RamDisk
+2010-08-27 17:17:20,kwolf,Solcher dicker und fetter Text interessiert die Leute nicht
+2010-08-27 17:17:39,bluecode,"offensichtlich, Programm_Noob ignoriert ja auch kontinuierlich was du dazu sagst"
+2010-08-27 17:17:54,kwolf,"So explizit wollte ich es nicht sagen, aber genau das meine ich ;-)"
+2010-08-27 17:18:03,Programm_Noob,bluecode: Was ignoriere ich?
+2010-08-27 17:18:10,Programm_Noob,Moin mgottschlag.
+2010-08-27 17:18:20,bluecode,das der Code nicht vollständig ist bzw. das Tutorial fertig
+2010-08-27 17:18:51,kwolf,"Ehrlichgesagt bin ich mir nichtmal mehr sicher, ob es eine gute Idee war, tutorial.git öffentlich zu machen"
+2010-08-27 17:19:03,Programm_Noob,wieso?
+2010-08-27 17:19:18,kwolf,Weill es Leute zum Kopieren verleitet
+2010-08-27 17:19:25,kwolf,-l
+2010-08-27 17:19:49,mastamind,"ist dir das wichitg, dass sie es nicht tun?"
+2010-08-27 17:20:09,kwolf,"Nein, aber es wäre besser für sie"
+2010-08-27 17:20:24,Programm_Noob,"Lass doch andere machen, solange du es nicht machst"
+2010-08-27 17:20:25,kwolf,"Wobei, das mit dem Nein ist nicht ganz ehlrich"
+2010-08-27 17:20:36,kwolf,"Das Ergebnis sind ja die Fragen, die ich bekomme"
+2010-08-27 17:20:38,mastamind,"wenn jemand den charakter zum kopieren hat, wird er sowieso nicht weit kommen."
+2010-08-27 17:21:17,kwolf,"Je mehr es zu kopieren gibt, um so weiter kommt er"
+2010-08-27 17:22:12,Programm_Noob,und irgendwann hört das Tut dann auf und die Leute fliegen mächtig auf die Schnauze.
+2010-08-27 17:22:33,Tederian,Oder sie fragen sich im Channel durch
+2010-08-27 17:22:41,mastamind,kwolf: das zeug ist aber dann eh nicht seines.
+2010-08-27 17:23:45,kwolf,"Tederian: Das ist der Punkt. Je mehr kopiert wird, um so weniger haben sie Ahnung, was sie eigentlich kopiert haben. Und um so hoffnungsloser sind die Fragen im Channel."
+2010-08-27 17:24:42,Tederian,Dann kopieren sies von tyndur ;)
+2010-08-27 17:25:22,kwolf,"Hm, dort geben die meisten schon wieder auf, weil sie in der Masse nicht mehr finden, was sie suchen ;-)"
+2010-08-27 17:25:41,Tederian,Das ist ein Punkt :)
+2010-08-27 17:26:12,kwolf,"Kein besonders schmeichelhafter für den tyndur-Code, aber es ist wohl einer"
+2010-08-27 17:26:14,MrX,Oder sie kopieren das komplette tyndur.
+2010-08-27 17:26:14,Tederian,Wobei sie dann vielleicht das Forum zuposten :)
+2010-08-27 17:27:03,Programm_Noob,kwolf: Tyndur ist noch recht übersichtlich.
+2010-08-27 17:27:05,kwolf,"MrX: Hm, ich glaube, so dreist war bisher noch niemand *g*"
+2010-08-27 17:27:40,MrX,"mh... Wenn man nicht weiß, wo genau der Code ist, den man braucht könnte man auf die Idee kommen, einfach alles zu kopieren in der Hoffnung, das gesuchte ist bestimmt dabei^^"
+2010-08-27 17:27:51,Programm_Noob,"Was extrem unübersichtlich für das bisschen können, ist Der erste Linux Kernel den man finden kann."
+2010-08-27 17:28:05,Tederian,Ich fand den übersichtlich.
+2010-08-27 17:28:15,Programm_Noob,Tederian: welchen?
+2010-08-27 17:28:20,Tederian,v0.01 oder so
+2010-08-27 17:28:38,kwolf,Ich fand den auch unübersichtlich als ich ihn angeschaut habe. Heute würde ich ihn vermutlich übersichtlich finden.
+2010-08-27 17:29:03,kwolf,MrX: Machst du das immer so? ;-)
+2010-08-27 17:29:19,MrX,^^
+2010-08-27 17:29:29,MrX,Meist kopiere ich garnicht.
+2010-08-27 17:29:54,Programm_Noob,MrX: kopiert immer PrettyOS Code ;)
+2010-08-27 17:30:10,Tederian,"Ausdrucken und abtippen ist ebenfalls kopieren, MrX!"
+2010-08-27 17:30:37,MrX,Tederian: Was????? ;-)
+2010-08-27 17:30:39,Programm_Noob,Oh dann habe ich ja Den Bootloader von ehenkes kopiert.
+2010-08-27 17:30:50,Programm_Noob,Ich hab mir den irgendwann mal ausgedruckt.
+2010-08-27 17:30:55,kwolf,Den kaputten?
+2010-08-27 17:30:57,Tederian,(Benutzt doch einfach GRUB)
+2010-08-27 17:31:49,MrX,"(Nein, tun wir nicht)"
+2010-08-27 17:32:00,Programm_Noob,den kleinen FAT bootloader aus seinem Tut.
+2010-08-27 17:32:41,kwolf,"MrX: Ich glaube, das war eher an Programm_Noob gerichtet"
+2010-08-27 17:33:02,MrX,"kwolf: Nö, nicht unbedingt..."
+2010-08-27 17:33:06,kwolf,"Dass PrettyOS sich weigert, sich der Vernunft zu beugen, ist ja bekannt"
+2010-08-27 17:33:30,Programm_Noob,MrX: Wir benutzen GRUB
+2010-08-27 17:33:37,Programm_Noob,daher kann es nicht an mich gerichtet sein.
+2010-08-27 17:33:54,Tederian,"Oh nein kwolf, sei nicht so ein herzloser Kommunistennazikapitalist, die Realität ist zu hart für sie ;("
+2010-08-27 17:35:00,kwolf,"Ach, von MrX halte ich schon so viel, dass ich denke, dass er selbst weiß, an welchen Stellen sie Mist bauen ;-)"
+2010-08-27 17:37:48,bluecode,*g*
+2010-08-27 17:51:45,MrX,"Was tut die NASM-Option -O32? Garnichts, soweit ich das aus dem Manual lese. Seh ich das Richtig? (http://www.nasm.us/doc/nasmdoc2.html#section-2.1.22)"
+2010-08-27 17:52:21,PopUp,jo
+2010-08-27 17:52:26,PopUp,backward compatibility
+2010-08-27 17:52:26,kwolf,"Hm, gute Frage"
+2010-08-27 17:52:40,kwolf,"Das heißt, das bleibt dann beim Default?"
+2010-08-27 17:52:59,MrX,"WIrd zu -Ox, denke ich"
+2010-08-27 17:53:17,kwolf,"""For compatability with earlier releases, the letter x may also be any number greater than one."""
+2010-08-27 17:53:19,kwolf,Also ja
+2010-08-27 17:54:12,kwolf,"PopUp: Also nicht für Kompatibilität, sondern Kompatabilität ;-)"
+2010-08-27 17:58:14,MrX,"""error: dereferencing type-punned pointer will break strict-aliasing rules"" <-- Der Fehler kommt bei der Zeile: ((uint32_t*)cpu_vendor)[0] = cpu_idGetRegister(0, CR_EBX);"
+2010-08-27 17:58:16,MrX,Warum kommt er?
+2010-08-27 17:58:39,MrX,Vor allem: Warum kam er früher nicht? ;-)
+2010-08-27 18:01:03,JanDing,"ich glaube strict aliasing bedeutet, dass zeiger unterschiedlicher typen nicht auf die selbe stelle zeigen dürfen"
+2010-08-27 18:01:39,JanDing,"vermutlich ist cpu_vendor ein char-array oder zeiger. kannst da entweder ein union draus machen, oder die compiler flags lockern"
+2010-08-27 18:01:47,pgahlen,"lohnt es sich auf einem PC , 1GHz, 128 MB RAM und 40 GB HDD Linux draufzupacken?"
+2010-08-27 18:02:34,PopUp,jep
+2010-08-27 18:02:40,PopUp,slitaz/puppy
+2010-08-27 18:03:34,pgahlen,hm ok
+2010-08-27 18:03:42,pgahlen,aber Ubuntu net oder?
+2010-08-27 18:08:22,PopUp,nee
+2010-08-27 18:15:37,pgahlen,ich hasse Windows installationen
+2010-08-27 18:15:54,JanDing,nimm halt ne live cd
+2010-08-27 18:15:54,Programm_Noob,Windows ist nicht Schlimm.
+2010-08-27 18:16:16,pgahlen,"was würded ihr sagen, ist das Laufwerk, was am IDE Kabel in der Mitte ist D, oder das am Ende"
+2010-08-27 18:16:51,Programm_Noob,Das in der Mitte ist Slave das am ende Master
+2010-08-27 18:16:57,JanDing,"das, wo das das betriebssystem nicht drauf ist, ist D"
+2010-08-27 18:17:03,JanDing,angenommen auf beiden ist nur eine partition
+2010-08-27 18:17:25,pgahlen,es geht um ne CD
+2010-08-27 18:18:09,JanDing,die CD laufwerke bekommen buchstaben nach den festplatten
+2010-08-27 18:18:16,pgahlen,"ich hab nur eine Partition auf einer HDD, der Rest sind 3 DVD Laufwerke, von denen eins an den IDE-HDD Stecker angeschlossen ist"
+2010-08-27 18:18:27,JanDing,welches windows hast du?
+2010-08-27 18:18:51,JanDing,vermutlich kann man überall den laufwerkbuchstaben ändern
+2010-08-27 18:18:52,pgahlen,versuche XP zu installieren
+2010-08-27 18:18:55,JanDing,gemacht hab ich das aber nur ab XP
+2010-08-27 18:19:17,pgahlen,"das weiss ich, aber bei der Installation ja noch nich"
+2010-08-27 18:19:21,Programm_Noob,Soweit ich weiß geht das schon unter Win95
+2010-08-27 18:19:25,JanDing,ist das nicht bei der installation egal?
+2010-08-27 18:19:46,pgahlen,er will ne CD in Laufwer D haben
+2010-08-27 18:20:00,Programm_Noob,einfach testen
+2010-08-27 18:20:01,JanDing,und du hast alle 3 durchprobiert und keinen erfolg gehabt?
+2010-08-27 18:20:58,pgahlen,"jo, ich glaube er will, das ich das DVD Laufwerk wieder anschliesse, kann ich aber nich, weil er dann davon bootet, und während er startet, wird der PC hier voll heiss"
+2010-08-27 18:21:24,JanDing,"du kannst doch einfach eine taste drücken, damit er nicht von cd bootet"
+2010-08-27 18:21:33,MrX,Dann konfigurier doch die Bootreihenfolge im BIOS um
+2010-08-27 18:21:36,JanDing,oder umgekehrt?
+2010-08-27 18:22:06,JanDing,steht auf jeden fall auf dem bildschirm
+2010-08-27 18:22:16,pgahlen,"haha wie witzig, das DVD Laufwer muss ja als HDD0 erkannt werden"
+2010-08-27 18:22:51,JanDing,DVD laufwerk als HDD erkennen?
+2010-08-27 18:22:51,Programm_Noob,Das DVD Laufwerk muss nicht als HDD0 erkannt werden
+2010-08-27 18:23:02,JanDing,das sowieso. aber was soll das bedeuten?
+2010-08-27 18:24:34,pgahlen,"ah geht wieder, hab das DVD-Laufwerk angeschlossen, während er bootete"
+2010-08-27 18:24:55,pgahlen,"das knackt jetz so komisch, aber das soll nich mein Problem sein"
+2010-08-27 18:25:36,JanDing,"naja derjenige, dem du den computer einrichtest, wird dann halt noch mehr supportanfragen an dich richten"
+2010-08-27 18:26:19,pgahlen,tja das is mir egal
+2010-08-27 18:26:55,pgahlen,hat schon ma jemand Google Chromium getestet?
+2010-08-27 18:26:57,JanDing,hm löbliche ausdauer
+2010-08-27 18:27:12,JanDing,mich haben diese ganzen computerprobleme anderer leute seit ich 15 bin angekotzt
+2010-08-27 18:28:01,pgahlen,"ich bin 15 und es kotzt mich an, seit ich 13 bin"
+2010-08-27 18:28:15,JanDing,"dann verstehe ich deine egal haltung nicht, aber egal^^"
+2010-08-27 18:29:13,pgahlen,"egal war darauf bezocgen, das es ins eine Ohr reingeht und aus dem anderen rausgeht und in mir n Sysall auslöst, der meinem Mund sagt, mach ich nächste Woche"
+2010-08-27 18:29:27,JanDing,aha
+2010-08-27 18:29:32,pgahlen,sprich nie
+2010-08-27 18:29:54,Programm_Noob,"pgahlen ich hab das Problem, das meine Großeltern direkt neben an wohnen und wenn mein Opa mit seinem PC probleme hat, dann klingelt unser Telefon und es heißt nur komm mal eben rüber Ich hab da nen Problem mit meinem Computer."
+2010-08-27 18:30:46,pgahlen, sprich eine Dauerleitung zu euch xd
+2010-08-27 18:31:10,pgahlen,pmg ist das Setup billig
+2010-08-27 18:31:43,pgahlen,die Auflösunf ist ja wohl zum kotzen
+2010-08-27 18:32:03,MrX,Die ist ja auch sehr wichtig beim installieren^^
+2010-08-27 18:32:12,Programm_Noob,"ich schließe ihm dann lieber sein Monitorkabel wieder an, was er beim aufräumen ausersehen abgezogen hat, als das er dann wohlmöglich sich mit seiner Zeitung auf die Terasse setzt und den rasen sieht, denn ich mal wieder 2 Wochen nicht gemäht habe."
+2010-08-27 18:32:19,pgahlen,und jetzt meint er schon seit 5 Minuten noch 39 Minuten
+2010-08-27 18:32:32,Programm_Noob,Das geht gleich runter.
+2010-08-27 18:32:54,Programm_Noob,irgendwann gehts dann auf einmal auf 20 dann auf 16 dann auf 9 auf 3 und dann ist er fertig
+2010-08-27 18:33:22,pgahlen,"ich weiss, und bei der Gerätetreiberinstallation hackt er manchmal"
+2010-08-27 18:33:26,pgahlen,ah es geht weiter
+2010-08-27 18:33:43,pgahlen,die Geräteinstallation wer sagts denn
+2010-08-27 18:33:59,pgahlen,"wow, bei einem GHz geht das ja richtig ab"
+2010-08-27 18:34:06,pgahlen,"wow, ich kann mich kaum halten"
+2010-08-27 18:35:07,pgahlen,"was schätzt ihr, wieviel € verbraucht dieses Netzteil bei 300 Watt in der Stunde, wenn man n durchschnittlichen Anbieter hat?"
+2010-08-27 18:35:19,Tobiking,Die Jugend von heute hat keinen Respekt mehr vor dem was damals High End war ^^
+2010-08-27 18:35:35,pgahlen,ne würd mich ma interresiieren
+2010-08-27 18:35:48,Tederian,pgahlen: Wie viel zahlst du pro kWh?
+2010-08-27 18:36:03,pgahlen,"weiss ich nich, was ist denn so der Schnitt?"
+2010-08-27 18:36:24,Programm_Noob,Ich glaube 9ct oder so
+2010-08-27 18:36:25,Tederian,Wenn du es rausfindest ist es eine sehr sehr leichte Rechnung :)
+2010-08-27 18:36:41,pgahlen,sagen wir 9ct
+2010-08-27 18:36:48,Programm_Noob,"wenn der PC 300 Watt verbraucht, dann verbraucht das Netzteil ca; 330 Watt."
+2010-08-27 18:37:11,Programm_Noob,Die älteren Netzteile hatten Ca 10% verlust.
+2010-08-27 18:37:24,Programm_Noob,die heutigen nur noch um die 7%
+2010-08-27 18:37:26,pgahlen,ist hier noch jemand bei RWE?
+2010-08-27 18:37:33,Tederian,pgahlen: Man installiert auch nicht Windows auf alte Maschinen
+2010-08-27 18:37:39,Tederian,Nimm lieber ArchLinux oder sowas.
+2010-08-27 18:37:57,pgahlen,"tja, mein Bruder will aber Win haben, und solange es Geld gibt bin ich dabei"
+2010-08-27 18:38:08,pgahlen,also mein Vater zahlt XD
+2010-08-27 18:38:18,JanDing,letztens haben wir mal ausgerecht
+2010-08-27 18:38:27,JanDing,300 eur/jahr bei 24 stunden betrieb
+2010-08-27 18:38:32,JanDing,aber auch nur überschlagen^^
+2010-08-27 18:38:36,JanDing,und wir = ich
+2010-08-27 18:38:38,Tederian,Wieso will denn dein Bruder unbedingt Windows?
+2010-08-27 18:39:04,pgahlen,bei welchem Netzteil?
+2010-08-27 18:39:15,Programm_Noob,330 Watt pro Stunde sind 1KWh in 3 Stunden
+2010-08-27 18:39:42,Programm_Noob,der Tag hat 24 Stunden durch 3 ergibt 8 KWh pro Tag
+2010-08-27 18:39:43,pgahlen,aber 330 ist schon viel oder?
+2010-08-27 18:39:45,Tederian,"nein, in 3.3 (gerundet) stunden"
+2010-08-27 18:40:01,Tederian,bzw
+2010-08-27 18:40:19,Programm_Noob,Tederian: soll nur ne grobe rechnung werden.
+2010-08-27 18:40:28,Tederian,3h und 20 Minuten :o
+2010-08-27 18:40:47,Programm_Noob,bei 9ct/KWh also 72ct pr tag
+2010-08-27 18:40:51,Tederian,20 Minuten ausser acht lassen sind etwas sehr grob
+2010-08-27 18:41:18,JanDing,du kannst dir den prozentualen fehler merken und aufs endergebnis wieder raufrechnen
+2010-08-27 18:41:39,pgahlen,"ok, aber was sind denn 330 Watt sind das viel oder wenig, kann das gar nich einschätzen"
+2010-08-27 18:41:51,Tederian,Schon ziemlich viel für so eine Krücke
+2010-08-27 18:42:03,JanDing,wäre wohl ein 400-500 watt netzteil unter dauerlast
+2010-08-27 18:42:27,JanDing,oder darf man da die effizienz nicht rausrechnen?
+2010-08-27 18:42:27,JanDing,keine ahnung
+2010-08-27 18:42:45,Programm_Noob,pgahlen ich würde bei der krücke auf 100 - 125 Watt tippen.
+2010-08-27 18:42:53,Tederian,Ich habe hier ein 650 Watt Netzteil und dabei eine GTX480 drin. (Welche angeblich sehr viel Strom fresse)
+2010-08-27 18:43:04,pgahlen,"ok, kann man schätuen, was ein Netzteil von 2003 mit einem Intel Pentium 4 2.66 GHz verbraucht?"
+2010-08-27 18:43:34,Tederian,Ja. Gibt Stromverbrauchmessgeräte
+2010-08-27 18:43:42,Programm_Noob,also als Netzteil. verbrauch vieleicht so um die 80 Watt vol voll ausgelastet.
+2010-08-27 18:44:04,pgahlen,"meint ihr, hatte mit mehr gerechnet"
+2010-08-27 18:44:10,pgahlen,kann aber sein
+2010-08-27 18:44:32,Tederian,Was soll denn aus dem Computer werden?
+2010-08-27 18:45:03,MrX,"Ein SpielePC ja wohl eher nicht, oder?"
+2010-08-27 18:45:03,Programm_Noob,"ich hab hier nen Server stehen, mit nem 1GHZ Prozessor drinn. der verbraucht mit nem 400 Watt Netzteil, hatt kein anderes Leises da"
+2010-08-27 18:45:04,pgahlen,"eigentlich jetzt gar nix mehr, wollte nur wissen, wie viel meine Eltern immer bezahlen wenn ich am PC bin"
+2010-08-27 18:45:36,Programm_Noob,unter volllast 79 Watt
+2010-08-27 18:46:18,Programm_Noob,Ich tippe bei dem Verbrauch dieses Server so auf 40€ im Jahr
+2010-08-27 18:46:25,mastamind,pgahlen: http://www.meisterkuehler.de/content/energierechner-fuer-computer-79.html
+2010-08-27 18:46:45,mastamind,9 cent ist viel zu wenig. zu zahlst eher 20 cent.
+2010-08-27 18:46:51,mastamind,pro kwh.
+2010-08-27 18:47:09,mastamind,Programm_Noob: das bezweifle ich sehr.
+2010-08-27 18:48:29,Programm_Noob,wir haben uns da letztens in Wirtscahft drüber unterhalten. unser Lehrer sagte was von 9ct pr KWh
+2010-08-27 18:48:36,Programm_Noob,*Wirtschaft
+2010-08-27 18:48:51,mastamind,das muss aber billigster atomstrom sein. *g*
+2010-08-27 18:48:58,mastamind,"dass der strom nur 9 cent kostet, wird stimmen."
+2010-08-27 18:49:08,mastamind,du musst aber weiter kosten meistens einrechnen. zumindest bei uns.
+2010-08-27 18:49:17,mastamind,"steuern, abgaben und leitungskosten."
+2010-08-27 18:49:29,mastamind,irgendwie muss das kwh ja auch zu dir kommen.
+2010-08-27 18:49:37,mastamind,bei uns kostet eine kwh ca 20 cent.
+2010-08-27 18:51:45,MrX,http://de.wikipedia.org/wiki/Strompreis#J.C3.A4hrlicher_Durchschnittsstrompreis_in_Deutschland
+2010-08-27 18:52:16,pgahlen,"ok, ich koste 50€ im Jahr"
+2010-08-27 18:52:25,pgahlen,geht ja wohl
+2010-08-27 18:53:02,pgahlen,ich mach ma extremfall
+2010-08-27 18:56:07,pgahlen,33000€
+2010-08-27 18:56:10,pgahlen,hey
+2010-08-27 18:56:45,Programm_Noob,Wer gibt mir so einen PC
+2010-08-27 18:57:09,Programm_Noob,Wer gibt mir nen eigenen Stromkreis für meinen PC?
+2010-08-27 18:57:20,Programm_Noob,und wer bezahlt die Stromrechnung?
+2010-08-27 18:58:30,JanDing,"wer baut das ganze zeug ein, ohne sich am gehäuse zu verletzen?"
+2010-08-27 18:58:54,JanDing,bei dutzenden festplatten und optischen laufwerken wird das in einem ATX gehäuse schnell eng
+2010-08-27 19:00:33,Programm_Noob,Moin cjuner
+2010-08-27 19:00:47,mastamind,der günstigste anbieter bei mir verlangt 19 cent/kwh.
+2010-08-27 19:00:57,Programm_Noob,JanDing: Das mach ich 
+2010-08-27 19:01:00,cjuner,moin
+2010-08-27 19:01:03,mastamind,"bei uns ist der strom zwar recht günstig, aber die restlichen gebühren sind sehr hoch."
+2010-08-27 19:11:11,erik,Guten Abend
+2010-08-27 19:11:21,bluecode,abend erik
+2010-08-27 19:11:47,Programm_Noob,Moin erik
+2010-08-27 19:12:57,XanClic,Grüß Gott
+2010-08-27 19:13:06,erik,"Programm_Noob: was soll ich jetzt eigentlich mit der PM im forum machen, was ist die relevante Information???"
+2010-08-27 19:13:30,erik,XanClic: wenn ich tot bin vielleicht aber vorher grüße ich das Leben
+2010-08-27 19:13:51,XanClic,"I komm grad aus Wien, deshalb sprech i noch a bissel so"
+2010-08-27 19:14:15,erik,Ist es schön da?
+2010-08-27 19:14:18,XanClic,Oh ja
+2010-08-27 19:14:22,Programm_Noob,Moin XanClic
+2010-08-27 19:14:57,erik,was macht man in dieser Jahreszeit in Wien?
+2010-08-27 19:15:07,XanClic,Studienfahrt
+2010-08-27 19:15:18,XanClic,"Also Klassenfahrt, nur in der zwölften und letzten Klasse"
+2010-08-27 19:15:33,erik,was studiert man in Wien? das Nachleben?
+2010-08-27 19:16:12,erik,"sorry, da fehlt ein t"
+2010-08-27 19:16:55,XanClic,"Man grillt, man geht ins Hundertwasserhaus und kauft einen Kunstdruck, man geht in die TU und macht tolle Experimente, dann geht man auf den Prater sowie ins technische Museum und außerdem noch zu Schloss Schönbrunn und den anderen großartigen Bauwerken. Ach, und ins Theater geht man auch noch."
+2010-08-27 19:17:48,erik,das klingt nach viel intellektuellen Kram :(
+2010-08-27 19:17:58,XanClic,War aber toll
+2010-08-27 19:18:09,erik,dann ist gut
+2010-08-27 19:18:09,XanClic,(Kaffeehaus hab ich btw noch vergessen)
+2010-08-27 19:19:03,mastamind,XanClic ist ein intellektueller. :-)
+2010-08-27 19:19:16,mastamind,"fein, dass es dir bei uns gefallen hat. :-)"
+2010-08-27 19:19:21,XanClic,*g*
+2010-08-27 19:19:51,Programm_Noob,"erik: du hast doch auf der Discoussions Seite gesagt, das ich dir die Ausgabe geben soll."
+2010-08-27 19:20:04,XanClic,"mastamind: Und jetzt hoffst du, dass es mir in der Uni nicht so gut gefallen hat, dass ich hinkomme, was? *g*"
+2010-08-27 19:20:13,Programm_Noob,Ich kann mit der Ausgabe nicht soviel anfangen
+2010-08-27 19:20:24,erik,"Programm_Noob: ja klar, von der HW die Dir Probleme macht. welche ist es?"
+2010-08-27 19:21:42,mastamind,XanClic: :-) das willst du gar nicht wissen.
+2010-08-27 19:25:24,Programm_Noob,"soziemlich alle,"
+2010-08-27 19:26:00,Programm_Noob,"nur die Grafikkarte und noch eins, das fällt mir aber gerade nicht ein. und momentan geht das Teil gar nicht mehr."
+2010-08-27 19:26:11,mastamind,XanClic: außerdem hast du die uni ja eh nicht wirklich kennengelernt. ein paar simple experimente machen hat mit studieren nix zu tun.
+2010-08-27 19:26:16,Programm_Noob,"kann also auch sein, das es nicht an dem Code liegt sondern an Hardware"
+2010-08-27 19:26:43,XanClic,"mastamind: Das ist mir schon klar, aber der Professor, der mit uns experimentiert hat, macht schon Lust auf da studieren ;-)"
+2010-08-27 19:26:54,mastamind,war der dicke?
+2010-08-27 19:26:56,mastamind,das
+2010-08-27 19:26:59,XanClic,Denke schon
+2010-08-27 19:27:03,mastamind,hm ja.
+2010-08-27 19:27:04,XanClic,"Weiße, lange Haare mit Vollbart"
+2010-08-27 19:27:12,XanClic,"Und in Schlappen, ein echter Physiker :-)"
+2010-08-27 19:27:15,mastamind,aso... dann mein ich einen anderen.
+2010-08-27 19:27:29,mastamind,willst du physik studieren?
+2010-08-27 19:27:38,XanClic,Ich werde sehen
+2010-08-27 19:27:43,XanClic,Physik oder Informatik
+2010-08-27 19:27:47,mastamind,ok
+2010-08-27 19:27:59,mastamind,in innsbruck kannst du beides machen im ersten semester. *g*
+2010-08-27 19:28:06,XanClic,*g*
+2010-08-27 19:28:19,mastamind,physik und informatik sind im ersten semester das gleiche.
+2010-08-27 19:28:23,mastamind,erst dann trennt es sich.
+2010-08-27 19:28:36,erik,Programm_Noob: Ich kann an keinem der Geräte was sonderbares erkennen
+2010-08-27 19:28:46,XanClic,Ich darf doch nicht in Österreich studieren ;-)
+2010-08-27 19:29:07,mastamind,wer soll dich daran hindern?
+2010-08-27 19:29:13,XanClic,Du? *g*
+2010-08-27 19:29:27,XanClic,"Immerhin hast du uns lang und breit erklärt, dass sowas nicht sein kann ;-)"
+2010-08-27 19:29:30,mastamind,"soll ich an der grenze stehen und versuchen, dich wieder zurück zuwerfen? *g*"
+2010-08-27 19:29:40,mastamind,bei physik und informatik ist das kein problem.
+2010-08-27 19:29:45,mastamind,bei anderen fächern schon.
+2010-08-27 19:30:08,XanClic,Na dann bin ich ja beruhigt :-)
+2010-08-27 19:30:12,Programm_Noob,dann muss es irgendwie an der hardware liegen.
+2010-08-27 19:30:20,mastamind,"auch wenn du es nicht verstehen wills: gäbe es keine quoten bei medizin, gäbe es kaum mehr österreichische medizinstudenten an österreichischen unis."
+2010-08-27 19:30:36,erik,Programm_Noob: an welcher Hardware?
+2010-08-27 19:30:52,Programm_Noob,Mainboard
+2010-08-27 19:31:18,erik,was hat das Mainboard damit zu tun?
+2010-08-27 19:31:42,erik,die Straße ist doch auch nur selten an defekten Autos schuld
+2010-08-27 19:32:55,Programm_Noob,weil auf dem Mainboard die meisten PCI Geräte als onboard drauf sind.
+2010-08-27 19:33:14,Programm_Noob,und weil der Primary IDE seit einem halben jahr kaputt  ist.
+2010-08-27 19:34:06,mastamind,bis dann
+2010-08-27 19:37:45,erik,Programm_Noob: was ich nicht verstehe ist warum Du ein HW-Problem vermutest obwohl allem Anschein nach verschiedene OSe auch dem PC laufen
+2010-08-27 19:38:48,erik,sorry
+2010-08-27 19:39:40,Tederian,Defekte Onboard karten lassen sich prinzipiell glaube ich per jumper deaktivieren oder soetwas :o
+2010-08-27 19:40:15,JanDing,"wenn du mit jumper mainboard austausch meinst, ja"
+2010-08-27 19:41:01,Tederian,Kann man auch machen
+2010-08-27 19:41:27,erik,Programm_Noob: welcome back
+2010-08-27 19:41:45,Programm_Noob,zwangstrennung von der Telecom
+2010-08-27 19:42:15,erik,dann such Dir ne andere Telekom
+2010-08-27 19:42:36,erik,gibt doch genuch
+2010-08-27 19:43:30,kwolf,Oder mach die Zwangstrennung nachts wie jeder andere aucgh
+2010-08-27 19:44:18,XanClic,"Och, der taljeth hat ja vm86 immer noch nicht fertig gemacht :-("
+2010-08-27 19:44:58,kwolf,Der wartet auf deinen Code ;-)
+2010-08-27 19:45:21,XanClic,"Solange er nicht hier ist, ist ja alles gut *g*"
+2010-08-27 19:48:24,erik,Guten Abend Chefchen
+2010-08-27 19:48:37,taljeth,ClicXan: Ist das ein Tarnungsversuch? ;-)
+2010-08-27 19:49:00,ClicXan,ich binn noi hiehr
+2010-08-27 19:49:12,taljeth,*g*
+2010-08-27 19:49:26,Tederian,"Willst du uns graficken machen, ClicXan? :)"
+2010-08-27 19:49:29,taljeth,"Ich bin mir nicht sicher, ob du mit fkrauthan verwechselt werden willst ;_)"
+2010-08-27 19:49:59,ClicXan,Tederian: ich kann jpg!!111elf
+2010-08-27 19:50:06,ClicXan,"taljeth: Hm, gutes Argument *g*"
+2010-08-27 19:50:08,Tederian,Mit Photoschopp?
+2010-08-27 19:50:54,taljeth,"Hm, wie kommt der denn auf diese Idee... <tyndur-devel@tyndur.xn--org-una>: Host or domain name not found."
+2010-08-27 19:51:07,XanClic,Schweinerei
+2010-08-27 19:51:29,Tederian,juhui USA führt nun den totalen Krieg gegen die Muslimische Welt
+2010-08-27 19:52:21,erik,"hoffentlich auf eigenen Boden, dann stört mich das auch nicht"
+2010-08-27 19:52:24,XanClic,"Hitlerwitze hab ich in Österreich genug gehabt. Am unauffälligsten war aber eine Werbung in einer U-Bahn-Station, in der ein Kind seinem Vater ein Bild mit der Aufschrift „führ Papi“ gemalt hat."
+2010-08-27 19:52:57,Tederian,"erik: Nö, sie zerbomben ja schon pakistanische zivilisten"
+2010-08-27 19:53:57,Tederian,"XanClic: Lol, der ist genial"
+2010-08-27 19:55:15,erik,Kinder brauchen eben führung
+2010-08-27 19:56:41,Tederian,"Kommt der englische Ausdruck ""bonkers"" (für Verrückt) eigentlich vom Führerbunker? Würde total passen sprachgeschichtlich gesehen"
+2010-08-27 19:57:02,XanClic,xD
+2010-08-27 20:16:36,erik,"so, meine Chipstüte ist leer und hier ist auch tote Hose, Gute Nacht"
+2010-08-27 20:16:45,XanClic,gn8
+2010-08-27 20:17:12,Tederian,"""Tote Hose"". Noch drauf rumreiten ey :("
+2010-08-27 20:19:01,taljeth,"So nachdem erik und Tederian weg sind, können wir hier ja richtig anfangen ;-)"
+2010-08-27 20:19:27,JanDing,yay
+2010-08-27 20:19:27,JanDing,nay
+2010-08-27 20:19:33,taljeth,"Hm, schon wieder vorbei"
+2010-08-27 21:00:48,JanDing,wie kann ich denn in c++ einen pointer auf einen pointer auf eine membervariable casten? list_node T::*_head = reinterpret_cast<list_node T::*>(anchor.next); nimmt er nicht an
+2010-08-27 21:01:57,JanDing,wer sich das nicht vorstellen kann: struct list_node { struct list_node *next; }; und struct T { struct list_node anchor; }
+2010-08-27 21:02:12,JanDing,äh ne natürlich nich
+2010-08-27 21:02:22,Programm_Noob,Hilfe
+2010-08-27 21:02:45,JanDing,das letztere: struct T { struct list_node node; } und struct list { struct list_node anchor; }
+2010-08-27 21:03:12,JanDing,"in c gibt es dafür das makro containerof, das mit zeigerarithmetik das löst"
+2010-08-27 21:03:14,Programm_Noob,Mein Paging macht nicht das was ich will.
+2010-08-27 21:03:31,Programm_Noob,wb DerHartmut
+2010-08-27 21:04:09,JanDing,achne containerof wäre dann der nächste schritt erst ... ich will dann von dem pointer auf den member auch noch auf den container schließen
+2010-08-27 21:04:48,JanDing,"ob es zu spät ist, einen containerof operator in c++0x einzubauen?"
+2010-08-27 21:04:48,JanDing,ja
+2010-08-27 21:04:49,JanDing,ist es 
+2010-08-27 21:04:53,JanDing,aber in c++1x?
+2010-08-27 21:06:51,DerHartmut,Programm_Noob: Danke.
+2010-08-27 21:08:38,Programm_Noob,DerHartmut: kannst mir bei paging helfen?
+2010-08-27 21:09:33,DerHartmut,"KÖnnen sicher, nur ob ich es kann ist die Frage"
+2010-08-27 21:11:47,Programm_Noob,"also im SVN Repo liegt der Code so wie ich ihn auch gerade hab, kannst mal schauen warum die Schleife in malloc in mm_paging.c nie durchlaufen wird"
+2010-08-27 21:12:12,Programm_Noob,Ich hab dort ne Textausgabe plaziert und die wird nie ausgegeben.
+2010-08-27 21:12:28,Programm_Noob,dabei müsste die mindestens 2 mal aufgerufen werden.
+2010-08-27 21:12:40,DerHartmut,pastebin.com
+2010-08-27 21:13:12,Programm_Noob,Warum nicht svn repo?
+2010-08-27 21:13:33,Programm_Noob,http://pastebin.com/x9s8Ywru
+2010-08-27 21:13:39,Programm_Noob,Moin chris12
+2010-08-27 21:13:54,JanDing,die variable i ist nicht initialisiert
+2010-08-27 21:14:51,JanDing,start++ soll vielleicht auch start+=PAGE_SIZE sein oder so
+2010-08-27 21:16:22,Programm_Noob,"die Schleife wird ja nie aufgerufen, daher kann das nicht der Fehler sein. aber trotzdem muss das da hin."
+2010-08-27 21:18:52,Programm_Noob,also die variable page_anzahl hat beide male direkt vor der schchleife ne 1 drin.
+2010-08-27 21:19:30,JanDing,jetzt müssen wir mal die terminologie kläre
+2010-08-27 21:19:45,JanDing,"eine schleife kann nicht aufgerufen werden, sondern ausgeführt oder durchlaufen werden"
+2010-08-27 21:20:12,JanDing,"wenn sie nicht durchlaufen wird, heißt das nicht, dass der kontrollfluss nicht bis zu dem for kommt"
+2010-08-27 21:20:38,JanDing,"das heißt entweder testest du jetzt ob das for erreicht wird (was definitiv nur mit einem debugger geht, aber ein kprintf direkt davor, kann immerhin schon mal eine negative antwort geben)"
+2010-08-27 21:21:05,Programm_Noob,direkt vor den for habe ich ein kprintf gesetzt um mir die page_anzahl auszugeben. die wird ausgegeben.
+2010-08-27 21:21:17,JanDing,"dann gehe ich mal davon aus, dass die schleife erreicht wird"
+2010-08-27 21:21:28,JanDing,wahrscheinlicher ist dass die schleifenbedingung unwahr ist
+2010-08-27 21:21:37,JanDing,"und deswegen nicht das kprintf(""malloc\n"") ausgeführt wird"
+2010-08-27 21:21:48,Programm_Noob,beide male ist page_anzahl 1
+2010-08-27 21:21:58,Programm_Noob,also muss die schleife einmal durchlaufen werden.
+2010-08-27 21:22:11,JanDing,mit was hast du denn i initialisiert?
+2010-08-27 21:22:24,Programm_Noob,erst mit nichts und jetzt mit 0
+2010-08-27 21:22:33,Programm_Noob,aber es ändert sich nichts.
+2010-08-27 21:23:00,JanDing,"wenn du sie mit 0 initialisierst, dann wird sie einmal zu oft durchlaufen"
+2010-08-27 21:23:42,JanDing,"ich sehe sonst keinen fehler im code, und zweifle deswegen die wirksamkeit deiner testmethoden an"
+2010-08-27 21:24:03,JanDing,"zum beispiel, dass du eine alte version des codes testest"
+2010-08-27 21:25:30,Programm_Noob,ich teste jedes mal eine neue version
+2010-08-27 21:26:42,JanDing,"wenn der code, auf den du gerade schaust, korrekt ist, und wenn deine methode ihn zu testen hinreichend und selbst fehlerfrei ist, dann liegt das problem woanders"
+2010-08-27 21:26:54,JanDing,programmieren kann so einfach sein
+2010-08-27 21:30:33,Programm_Noob,Ich lad jetzt den ganzen code so wie ich ihn hab hoch. könnt ihr auch den nochmal ansehen.
+2010-08-27 21:32:15,Programm_Noob,http://ul.to/uid0xl
+2010-08-27 21:32:24,Programm_Noob,gepackt als rar
+2010-08-27 21:34:24,JanDing,datei nicht gefunden
+2010-08-27 21:35:06,JanDing,ah jetzt
+2010-08-27 21:35:51,JanDing,wo rufst du denn malloc auf?
+2010-08-27 21:36:21,JanDing,ah in kmalloc
+2010-08-27 21:36:39,JanDing,da hab ich natürlich als letztes gesucht -.-
+2010-08-27 21:37:43,Programm_Noob,"also es knallt nicht beim Taskwechsel, sondern beim erstellen des Kernel tasks"
+2010-08-27 21:38:51,JanDing,wenn ich das mit qemu teste spammt der mich mit PCI zeug voll und dann ist ende
+2010-08-27 21:39:31,Programm_Noob,das floppy image ist auch alt.
+2010-08-27 21:39:39,JanDing,wie teste ich das sonst?
+2010-08-27 21:40:05,Programm_Noob,floppy mounten und neuen kernel draufkopieren.
+2010-08-27 21:41:04,bluecode,"reinterpret_cast<T::*list_node>(anchor.next), JanDing?"
+2010-08-27 21:41:24,JanDing,"bei mir läuft der die schleife einmal durch, und gibt dann einen page fault. hast du das auch?"
+2010-08-27 21:41:37,Programm_Noob,ja
+2010-08-27 21:41:56,Programm_Noob,der pagefault kommt scheinbar beim mappen
+2010-08-27 21:42:03,JanDing,dann solltest du deinem page fault handler als erstes beibringen die fault adresse mitzuteilen
+2010-08-27 21:42:03,JanDing,aha
+2010-08-27 21:42:25,Programm_Noob,eip wird doch ausgegeben
+2010-08-27 21:43:06,JanDing,der fault muss aber nicht unbedingt durch den zugriff auf den speicher an der adresse in eip aufgetreten sein
+2010-08-27 21:43:24,JanDing,bluecode: ich habs schon aufgegeben ...
+2010-08-27 21:43:47,Programm_Noob,ah du meinst also die adresse der page?
+2010-08-27 21:43:54,JanDing,ja
+2010-08-27 21:44:01,JanDing,steht in cr2
+2010-08-27 21:46:22,Programm_Noob,cr2 = 0
+2010-08-27 21:46:45,bluecode,JanDing: schade
+2010-08-27 21:47:33,JanDing,Programm_Noob: ist denn context->pagedir gemappt? sieht für mich nämlich nicht so aus. oder hast du identity mapping garantiert für die rückgabewerte von pmm_alloc?
+2010-08-27 21:48:39,JanDing,mein objdump mit -g gibt sachen auf stderr aus -.-
+2010-08-27 21:48:45,JanDing,wie blöd issn des
+2010-08-27 21:49:06,Programm_Noob,das könnt ein der Tat sein das dort der wurm drin ist.
+2010-08-27 21:49:57,JanDing,naja was -g macht versteh ich eh nicht. war eh das falsche flag^^
+2010-08-27 21:50:28,bluecode,JanDing: wobei ich eigentlich garnicht verstehe was du da machst...
+2010-08-27 21:51:03,JanDing,hmmm
+2010-08-27 21:51:58,bluecode,aber ich hab auch nicht so richtig Lust darüber nachzudenken *g*
+2010-08-27 21:52:03,JanDing,"also in c kann man so schön mit makros verkettete listen implementieren, wobei der name der membervariable, die den next-zeiger enthält, als parameter übergeben wird (bzw. ein struct, das next- und prev-zeiger enthält)."
+2010-08-27 21:52:04,Programm_Noob,jetzt gibts ganz oft invalid opcode
+2010-08-27 21:52:15,JanDing,"und da hab ich mir gedacht, dass geht doch auch ohne makros, aber dafür mit templates"
+2010-08-27 21:53:30,bluecode,und was liefert dann das Makro zurück?
+2010-08-27 21:53:33,JanDing,bsp: http://git.newos.org/?p=lk.git;a=blob;f=include/list.h;hb=HEAD
+2010-08-27 21:54:02,bluecode,und was genau meinst du da?
+2010-08-27 21:54:18,JanDing,die gesamte datei. das magische makro ist da containerof in zeile 28
+2010-08-27 21:55:24,bluecode,und was macht das? *g*
+2010-08-27 21:56:15,JanDing,"wenn du z.b. ein struct thread { ... struct list_node queue_node; ... } hast, kannst du diese queue_node-members verketten"
+2010-08-27 21:56:31,chris12,achso moin ... ich dachte ich hätte das schon gesagt
+2010-08-27 21:56:53,bluecode,JanDing: und wie das?
+2010-08-27 21:57:08,bluecode,"achso, ist ja list_node"
+2010-08-27 21:57:09,JanDing,"in der liste sind also nur zeiger auf diese struct list_node-objekte. um jetzt von einem objekt in der liste, wieder auf das struct thread zu schließen, musst du struct thread *x = containerof(list.head, struct thread, queue_node); verwenden"
+2010-08-27 21:57:19,bluecode,ah
+2010-08-27 21:57:37,Programm_Noob,"trotz mappen des pagedirs, gibts das pagefault"
+2010-08-27 21:58:03,JanDing,"Programm_Noob: ja 0 als pagefault adresse könnte auch bedeuten, dass da noch viel mehr schief läuft"
+2010-08-27 21:58:16,bluecode,ich sehe aber nicht so ganz wie/wieso da Zeiger auf Member helfen sollen...
+2010-08-27 21:58:55,bluecode,bzw. wie du auf den oberen Code kommst *g*
+2010-08-27 21:59:14,Programm_Noob,könnt ihr mir bitte helfen diesen Fehler zu finden
+2010-08-27 22:00:21,JanDing,bluecode: ja ich auch nicht. ich hab mich da wohl ein wenig in einen rausch programmiert^^
+2010-08-27 22:00:29,bluecode,*g*
+2010-08-27 22:01:06,JanDing,"ich hab eine implementierung mit templates, die halt ohne externe list-nodes auskommt, aber da hab ich eine write-only-funktion, deswegen wollte ich das mal neu schreiben"
+2010-08-27 22:02:08,bluecode,"hm, würde ich gerne mal sehen"
+2010-08-27 22:02:36,JanDing,ich glaube man erkennt sie leicht: http://pastebin.com/105n6EY3
+2010-08-27 22:02:39,JanDing,wobei es eigentlich zwei sind
+2010-08-27 22:03:02,JanDing,die remove funktion ist auch nicht ganz clever
+2010-08-27 22:03:16,taljeth,"XanClic: Ich glaube, ich bräuchte mal das neue VM86, das jetzige stürzt mir zu oft ab. Oder ist das neue genauso schlimm? ;-)"
+2010-08-27 22:03:39,XanClic,"„neu“? Das, was ich noch vom letzten Sonntag hab, macht nicht viel außer rot ;-)"
+2010-08-27 22:03:44,JanDing,"bluecode: damit kannst du dann halt struct foo { foo *next, *prev; }; schreiben und dann bekommste list<foo> blah; frei haus"
+2010-08-27 22:04:13,taljeth,"XanClic: Neuer als das kaputte, das ich habe ;-)"
+2010-08-27 22:04:25,taljeth,"Aber wäre natürlich schön, wenn da mehr als rot käme ;-)"
+2010-08-27 22:04:50,XanClic,"Na ja, ich hab da wie gesagt letzten Sonntag nicht mehr viel hinbekommen und bin vorhin erst zurückgekommen"
+2010-08-27 22:04:56,taljeth,"Jo, schon klar"
+2010-08-27 22:05:00,bluecode,"JanDing: jo, so hätte ich das auch gemacht"
+2010-08-27 22:05:22,XanClic,"Abgesehen davon, dass das alles kaputt ist *g*"
+2010-08-27 22:05:49,bluecode,JanDing: wobei du mir zuviel in eine Zeile und zu viel in eine Funktion packst *g*
+2010-08-27 22:06:21,JanDing,hehe
+2010-08-27 22:06:25,taljeth,XanClic: Dann fügt es sich wenigstens schön ein ;-)
+2010-08-27 22:07:07,taljeth,Oder meinst du richtig ernsthaft kaputt?
+2010-08-27 22:07:24,JanDing,"ich hab mich ja schon wie ein keks gefreut, dass ich diese symmetrien bei den inserts erkannt und funktionierend umgesetzt habe^^"
+2010-08-27 22:08:01,XanClic,"taljeth: So kaputt, dass ich wohl am besten nochmal anfange, da ich jetzt ja ein Wochenende Zeit hab ;-)"
+2010-08-27 22:08:02,Programm_Noob,JanDing: start war die ganze Zeit 0
+2010-08-27 22:08:31,taljeth,XanClic: Hm... *g*
+2010-08-27 22:09:33,taljeth,"Bäh, es kann doch nicht so schwer sein, rauszufinden, warum sich ein Programm beendet :-/"
+2010-08-27 22:10:40,XanClic,Wieso regt sich SHyx0rmZ hier über Paging im Scheduler auf
+2010-08-27 22:10:46,XanClic,Das liegt alles hübsch in arch/i386
+2010-08-27 22:10:52,taljeth,*g*
+2010-08-27 22:11:14,XanClic,"Ich kann ja nix dafür, wenn er nur wieder meinen Code kopiert und auf den amd64-Branch committet"
+2010-08-27 22:11:18,JanDing,kurz physische netzwerkkonfiguration durchführen
+2010-08-27 22:11:45,taljeth,"Scheduling und Paging ist ein hochoptimierter und hochkomplexer Einheitskomplex, oder wie?"
+2010-08-27 22:12:00,XanClic,Bei uns liegt einfach so gut wie alles in arch/ und fertig *G*
+2010-08-27 22:12:03,XanClic,s/G/g/
+2010-08-27 22:12:20,taljeth,"Bei uns liegt es nicht in arch, sondern man muss einfach wissen, dass es arch ist *g*"
+2010-08-27 22:12:27,XanClic,Richtig so ;-)
+2010-08-27 22:12:41,taljeth,"Aber arch/ gibt es natürlcih trotzdem, um den Gelegenheitsleser zu verwirren"
+2010-08-27 22:13:00,JanDing,"irgendwie muss ich mal rauskriegen, wie ich das windows netzwerk durch den router bekomme ..."
+2010-08-27 22:14:10,Programm_Noob,jetzt ist mein Kernel ganz im Arsch
+2010-08-27 22:14:28,JanDing,ich hoffe nur virtuell?
+2010-08-27 22:14:53,Programm_Noob,ja nur virtuell
+2010-08-27 22:15:00,XanClic,"Programm_Noob: Wer sagt eigentlich, dass meine Kernel kaputt sind?"
+2010-08-27 22:15:04,XanClic,"Meistens bin das ich, iirc"
+2010-08-27 22:15:09,taljeth,XanClic: Programm_Noob sagt das
+2010-08-27 22:16:00,XanClic,"Ach so, dann brauch ich aber eine Begründung, damit ich kernel4 anfangen kann, in dem alles perfekt wird"
+2010-08-27 22:16:38,Programm_Noob,XanClic: Ich habe diese Aussagen wieder zurückgenommen.
+2010-08-27 22:17:20,XanClic,"Also hast du die Aussage zurückgenommen, dass das mal jemand im Log gesagt hat? Auch gut *g*"
+2010-08-27 22:17:51,Programm_Noob,frag DerHartmut
+2010-08-27 22:18:14,Programm_Noob,Ich hab mit ihm darüber im Query gesprochen
+2010-08-27 22:18:29,XanClic,Na denn is ja ois gut
+2010-08-27 22:18:41,Programm_Noob,was liegt an der adresse 0x1500000 ?
+2010-08-27 22:18:58,JanDing,die startadresse für dein malloc
+2010-08-27 22:19:07,JanDing,task->malloc = 0x1500000 oder so steht in deinem code
+2010-08-27 22:19:15,Programm_Noob,weil seit ich dorthin was mappe und drauf zugreifen will zerlegt er mir scheinbar die GDT
+2010-08-27 22:19:28,JanDing,unwahrscheinlich
+2010-08-27 22:21:09,taljeth,"Hm, das ist natürlich schade: ""Could not set windowed video mode 1077184068x2-600"""
+2010-08-27 22:21:16,taljeth,Würde aber vermutlich eh nicht auf meinen Bildschirm passen
+2010-08-27 22:21:24,XanClic,Probieren geht über Studieren
+2010-08-27 22:22:16,taljeth,Das sollte man den ganzen Deutschen in Österreich dann wohl auch mal sagen
+2010-08-27 22:22:27,XanClic,hehe
+2010-08-27 22:28:25,Programm_Noob,Hier kommt der Bochs Log
+2010-08-27 22:28:56,Programm_Noob,http://pastebin.com/AAqH6QTU
+2010-08-27 22:29:45,Programm_Noob,ich glaube das es was mit der GDT zu tun hat.
+2010-08-27 22:31:01,Programm_Noob,Moin SHyx0rmZ
+2010-08-27 22:31:09,SHyx0rmZ,moin o/
+2010-08-27 22:31:17,taljeth,Moin
+2010-08-27 22:31:37,XanClic,"moin, SHyx0rmZ"
+2010-08-27 22:31:42,taljeth,"*argh* Sag mir doch jemand, dass die Fehlermeldung kaputt ist"
+2010-08-27 22:32:01,JanDing,"Programm_Noob: der erste fehler ist ""00056683777i[CPU0 ] LOCK prefix unallowed (op1=0x53, attr=0x0, mod=0x0, nnn=0)"" und das gibt keinen hinweis auf die gdt"
+2010-08-27 22:32:31,JanDing,entweder eip irgendwo im nirvana gelandet oder es wurde der code nicht korrekt gemappt
+2010-08-27 22:32:39,JanDing,du kannst in den bochs logs eip anzeigen lassen
+2010-08-27 22:32:53,Programm_Noob,wie?
+2010-08-27 22:33:00,XanClic,Vielleicht ja physisch NULL nach 0x100000 gemappt
+2010-08-27 22:33:12,JanDing,Programm_Noob: einen moment ich googel das gerade
+2010-08-27 22:33:56,Programm_Noob,glaub ich nicht
+2010-08-27 22:34:00,JanDing,logprefix: %t-%e-@%i-%d
+2010-08-27 22:34:02,JanDing,doch
+2010-08-27 22:35:37,JanDing,ich denke XanClic hat recht
+2010-08-27 22:35:57,JanDing,"lock ist 0xf0, der opcode ist 0x53. das ist sehr typisch dafür"
+2010-08-27 22:36:25,JanDing,also diese werte stehen da überall nahe 0
+2010-08-27 22:38:02,Programm_Noob,also hier ist das neue Bochlog
+2010-08-27 22:38:04,Programm_Noob,http://pastebin.com/MpSNqvYv
+2010-08-27 22:39:03,Programm_Noob,"Da ich oaging und so nicht ganz am anfang initialisiere sondern erst noch ein paar ausgaben habe und diese schon nicht mehr angezeigt werden, kann XanClic Theorie nicht so ganz stimmen."
+2010-08-27 22:41:10,JanDing,"00075919798-i-@00000000-[CPU0 ] LOCK prefix unallowed (op1=0x53, attr=0x0, mod=0x0, nnn=0) <--- eip ist einfach 0"
+2010-08-27 22:41:31,JanDing,das heißt er hatte schon irgendwie recht
+2010-08-27 22:41:58,XanClic,"Wobei ich mich dann frage, wie 00075921449-e-@010055a8-[CPU0 ] check_cs(0x5587): not a valid code segment ! plötzlich reinpasst"
+2010-08-27 22:42:01,JanDing,als nächstes kommt die frage: wie kommt dieser wert 0 in eip rein?
+2010-08-27 22:42:31,XanClic,Vielleicht kaputter Stack des neuen Tasks
+2010-08-27 22:42:59,Programm_Noob,XanClic soweit kommt der kernel doch gar nicht
+2010-08-27 22:43:04,JanDing,"ich vermute eher, dass der timer irq durchkommt"
+2010-08-27 22:43:19,JanDing,"aber sehr nett, dass sich cs immer ändert^"
+2010-08-27 22:43:19,JanDing,^^
+2010-08-27 22:43:42,JanDing,also um auf meine frage zurückzukommen: die antwort: stack
+2010-08-27 22:43:59,JanDing,"irgendwas am stack ist kaputt. überschrieben, falsch platziert, nicht gemappt, was weiß ich"
+2010-08-27 22:45:36,Programm_Noob,paging ist scheiße
+2010-08-27 22:45:44,SHyx0rmZ,nein :)
+2010-08-27 22:45:52,JanDing,aber scheiße ist paging
+2010-08-27 22:46:04,SHyx0rmZ,"oh, i smell a reverse trap"
+2010-08-27 22:46:04,Programm_Noob,SHyx0rmZ: was ist paging denn dann?
+2010-08-27 22:46:19,JanDing,eine implementierung von virtual memory
+2010-08-27 22:46:24,SHyx0rmZ,"Programm_Noob, ziemlich nützlich, und auch nicht so kompliziert, wie es auf den ersten Blick scheint"
+2010-08-27 22:47:10,Programm_Noob,SHyx0rmZ: Zeig mir mal wie man das implementiert?
+2010-08-27 22:47:32,Tederian,Zauberwort? :o
+2010-08-27 22:47:37,SHyx0rmZ,"Programm_Noob, ich kann dir nur meine Implementierung zeigen"
+2010-08-27 22:47:43,JanDing,"Programm_Noob: du bist jetzt frustriert, weil die bisherigen dinge, die du angegangen bist, total trivial waren."
+2010-08-27 22:47:46,SHyx0rmZ,Und im LM hat das Paging noch zwei Ebenen mehr
+2010-08-27 22:47:55,JanDing,"Programm_Noob: aber das waren sie nur, weil andere vorarbeit geleistet haben"
+2010-08-27 22:48:22,Programm_Noob,An Paging ist pgahlen auch gescheitert.
+2010-08-27 22:48:28,SHyx0rmZ,http://www.gitorious.org/nuke/kernel4/blobs/master/src/kernel4/paging.cpp#line75
+2010-08-27 22:48:32,SHyx0rmZ,"Programm_Noob, ich auch schon 2 mal"
+2010-08-27 22:48:40,SHyx0rmZ,Deswegen ist's ja auch schon kernel4
+2010-08-27 22:48:55,JanDing,"ich bin nicht gescheitert. ich habe mich einfach so lange damit auseinander gesetzt, bis es funktioniert hat"
+2010-08-27 22:49:11,Programm_Noob,taljeth: hast du nicht zufällig den rest des paging tutorial codes liegen?
+2010-08-27 22:49:15,SHyx0rmZ,Das hab ich dann beim dritten Versuch geschafft ^^
+2010-08-27 22:49:24,XanClic,"JanDing: Du hast einfach Intel befohlen, wie sie Paging zu implementieren haben, nicht wahr? *g*"
+2010-08-27 22:49:35,Tederian,"Programm_Noob, code doch zur Abwechslung mal selbst etwas"
+2010-08-27 22:49:41,Papierkorb,"Ich habs ähnlich gehalten wie JanDing. Erste Implementation ging total in die Hose, die zweite Version lief dagegen ganz akzeptabel. nicht perfekt, aber es lief halt ;)"
+2010-08-27 22:49:41,Programm_Noob,Bäh das ist ja c++
+2010-08-27 22:49:46,JanDing,"XanClic: ja. dafür musste ich zwar meine zeitmaschine aus dem keller holen, aber der spaß war es mir wert"
+2010-08-27 22:50:06,Programm_Noob,Tederian: Ich code sehr viel selbst
+2010-08-27 22:50:14,Papierkorb,Also solch einen Code von C++ auf C zu bringen sollte jetzt nicht so das problem sein ...
+2010-08-27 22:50:36,SHyx0rmZ,"jo, das ist, man verzeihe mir die Formulierung, stinkeeinfach"
+2010-08-27 22:50:38,Tederian,"Programm_Noob: Wei tasks.c sind sogar noch die Kommentare aus dem Tutorial drin, also laber keinen Käse"
+2010-08-27 22:50:40,JanDing,"zeitmaschinen niemals in räumen starten, in denen loses papier liegt"
+2010-08-27 22:50:49,JanDing,das fliegt total durch die gegend
+2010-08-27 22:51:04,XanClic,Und landet dann womöglich in der Steinzeit und wird als Gottesgeschenk verehrt?
+2010-08-27 22:51:22,JanDing,es fliegt urigst durch die gegend
+2010-08-27 22:51:23,Tederian,Oder als erstes Toilettenpapier der Geschichte benutzt
+2010-08-27 22:51:29,Programm_Noob,Ich mag aber kein C++
+2010-08-27 22:51:32,SHyx0rmZ,"JanDing, hat uns die Schrift gebracht \o/"
+2010-08-27 22:51:38,SHyx0rmZ,"Programm_Noob, siehst du, und ich mag kein C"
+2010-08-27 22:51:47,JanDing,ich mag keine vitamine
+2010-08-27 22:51:50,SHyx0rmZ,Deswegen lese ich mir trotzdem C Code durch und portiere ihn
+2010-08-27 22:51:52,XanClic,I a net
+2010-08-27 22:51:56,Tederian,Programm_Noob: Sollte für dich kein Problem sein das von C++ nach C umzuwandeln
+2010-08-27 22:52:41,Programm_Noob,"SHyx0rmZ: erlaubst du mir, wenn ich den code von c++ nach c portiere, das ich den dann so verwenden darf?"
+2010-08-27 22:53:01,taljeth,"Naja, C oder C++, jeder wie er's mag. Aber ich schlage mich grad durch C+-Code..."
+2010-08-27 22:53:04,Papierkorb,"Les die Lizenz, die seinen Code unterliegt"
+2010-08-27 22:53:17,Programm_Noob,Die ist das Problem
+2010-08-27 22:53:26,Programm_Noob,Wir haben BSD und er GPL
+2010-08-27 22:53:29,Tederian,"Programm_Noob: Den kannst du im PM eh nicht benutzen, aber nur zu"
+2010-08-27 22:54:07,SHyx0rmZ,"Programm_Noob, Tederian hat Recht, hab ich ihm ja auch grad gesagt"
+2010-08-27 22:54:22,JanDing,c < c++
+2010-08-27 22:54:24,SHyx0rmZ,"Nix kopiering bei mich, es sei denn, du willst auf x86-64 wechseln"
+2010-08-27 22:54:24,Programm_Noob,SHyx0rmZ: Das ist paging für 64 Bit
+2010-08-27 22:54:25,JanDing,wahr oder falsch?
+2010-08-27 22:54:33,SHyx0rmZ,"Programm_Noob, jo, und das ist komplizierter"
+2010-08-27 22:54:57,Programm_Noob,x86_64 steht auf unserer Todo Liste
+2010-08-27 22:55:03,taljeth,"Oh, schick, der kann ja sogar im Grafikmodus rot. *g*"
+2010-08-27 22:55:08,Tederian,Dann viel Spass.
+2010-08-27 22:55:11,SHyx0rmZ,+1
+2010-08-27 22:55:11,Programm_Noob,aber erst für Version 0.02
+2010-08-27 22:55:20,SHyx0rmZ,Das wird SEHR viel Frickelsarbeit
+2010-08-27 22:55:26,Programm_Noob,und wir arbeiten gerade an der Version 0.01
+2010-08-27 22:55:27,SHyx0rmZ,Und Tutorials gibt es dazu fast keine
+2010-08-27 22:55:43,JanDing,irgendwann ist das internet aus
+2010-08-27 22:55:44,XanClic,Außer die vom Schücksi :D
+2010-08-27 22:55:45,SHyx0rmZ,-fast
+2010-08-27 22:55:49,JanDing,und dann gibts gar keine tutorials mehr
+2010-08-27 22:55:50,JanDing,und keine katzenbilder
+2010-08-27 22:55:58,XanClic,:O
+2010-08-27 22:56:14,SHyx0rmZ,Wie soll ich denn ohne Katzenbilder noch leben können?
+2010-08-27 22:56:21,SHyx0rmZ,"Tederian, halt jetzt bloß die Klappe xD"
+2010-08-27 22:56:26,JanDing,schnell welche ausdrucken
+2010-08-27 22:56:28,Tederian,...ich wollte gerade was sagen
+2010-08-27 22:56:34,JanDing,oder eine katze einscannen
+2010-08-27 22:56:35,Tederian,"Shit, du bist gut :D"
+2010-08-27 22:56:43,SHyx0rmZ,^^
+2010-08-27 22:56:51,Tederian,JanDing. was wird am Problem gelöst wenn du eine Katze einscannst?
+2010-08-27 22:57:01,JanDing,dann gibts wieder katzenbilder
+2010-08-27 22:57:11,JanDing,paging funktioniert damit natürlich nicht
+2010-08-27 22:57:23,Papierkorb,Moin pgahlen
+2010-08-27 22:57:37,SHyx0rmZ,"Dann Scan doch ein Bild von dir beim umblättern der Katzenbilderalben ein, das ist doch dann auch Paging?"
+2010-08-27 22:57:38,Programm_Noob,irre ich oder ist  das hier PM Code http://www.gitorious.org/nuke/kernel4/blobs/master/src/rocket/paging.c
+2010-08-27 22:57:41,Papierkorb,aber man hat Katzenbilder zum anschauen. ist durchaus ein Kompromiss
+2010-08-27 22:58:01,SHyx0rmZ,"Programm_Noob, das ist LM Code"
+2010-08-27 22:58:06,SHyx0rmZ,Also PM
+2010-08-27 22:58:11,SHyx0rmZ,Aber der setzt LM Paging auf
+2010-08-27 22:58:13,JanDing,eigentlich wird er im PM ausgeführt
+2010-08-27 22:58:40,SHyx0rmZ,Der hat aber ein paar Bugs
+2010-08-27 22:58:54,SHyx0rmZ,"Wenn du nicht weißt, was der tut, dann wirst du da nicht viel Spaß dran haben"
+2010-08-27 22:59:00,taljeth,"Hm, okay, der Check war also nicht zum Spaß drin. Wo ist stultus, wenn man ihn braucht?"
+2010-08-27 22:59:29,SHyx0rmZ,"afk, kennt man doch"
+2010-08-27 23:00:21,pgahlen,moin Papierkorb 
+2010-08-27 23:00:32,taljeth,"Okay, anderer Ansatz. Was passiert, wenn ich zwar immer noch abbreche, aber Erfolg zurückmelde?"
+2010-08-27 23:00:46,taljeth,Experimentelles Programmieren ;-)
+2010-08-27 23:01:30,taljeth,"Hm, auch ein PF. Schade."
+2010-08-27 23:01:47,SHyx0rmZ,PFs sind deine Freunde. Du weißt es nur noch nicht.
+2010-08-27 23:02:22,taljeth,Ich? Freunde? Du musst dich irgendwo irren. ;-)
+2010-08-27 23:03:50,Programm_Noob,"DerHartmut: kannst du kurz XanClic sagen, worüber wir vorhin gesprochen haben."
+2010-08-27 23:04:08,Tederian,Warum tust du das nicht? :c
+2010-08-27 23:04:53,Programm_Noob,Moin Padddy
+2010-08-27 23:05:57,Paddy,Hi
+2010-08-27 23:06:08,Papierkorb,Moin Paddy
+2010-08-27 23:08:40,DerHartmut,PADDY
+2010-08-27 23:08:43,DerHartmut,IT IS PADDY
+2010-08-27 23:08:44,DerHartmut,:D
+2010-08-27 23:08:52,DerHartmut,Programm_Noob: Mach du es doch. Steh zu deinen Taten. DÖMDÖMDÖM
+2010-08-27 23:09:44,Programm_Noob,"XanClic: hat die Logs gelesen und ich hab ihm gesagt, das ich die Aussagen zurückgenommen hätte."
+2010-08-27 23:10:25,Programm_Noob,"bestätige ihm das mal, weil er sich ""beschwert"" hat weil das nicht im Log stand."
+2010-08-27 23:11:27,XanClic,[22:18:49] <XanClic> Na denn is ja ois gut
+2010-08-27 23:11:31,XanClic,Des hob i gsogt
+2010-08-27 23:30:21,pgahlen,"juhu, hab vorhin ma Fussball geguckt, endlich haben die Bayer ma n 2:0 kassiert"
+2010-08-27 23:30:21,pgahlen,und dann noch gegen den Aufsteiger Lautern
+2010-08-27 23:34:21,pgahlen,hat ma einer n spannendes Thema?
+2010-08-27 23:34:21,pgahlen,mir is langweilig
+2010-08-27 23:35:13,Tederian,pr-- oh ECHAN.
+2010-08-27 23:36:25,pgahlen,ah
+2010-08-27 23:36:27,pgahlen,iergendwas spannendes dazu?
+2010-08-27 23:37:19,bluecode_,nope
+2010-08-27 23:37:25,Programm_Noob,wie funktioniert scanf möchte pgahlen Wissen.
+2010-08-27 23:37:52,Tederian,Wie soll es denn gross funktionieren?
+2010-08-27 23:38:30,Tederian,"Tastendrücke aufzeichnen ist ja nicht so schwierig wenn man nen tastaturtreiber hat, oder? :p"
+2010-08-27 23:38:52,Programm_Noob,aber wann ist scanf zuende
+2010-08-27 23:39:10,bluecode_,beim newline
+2010-08-27 23:39:18,pgahlen,"ja, aber laut posix ist das so int scanf(const char* format, ...);"
+2010-08-27 23:39:47,bluecode_,und weiter?
+2010-08-27 23:40:03,pgahlen,"das war mir alles schon klar, aber was soll ich mit der deklaration anfangen, das passt hinten und vorne nicht"
+2010-08-27 23:40:06,bluecode_,-newline +}0
+2010-08-27 23:40:10,bluecode_,\0
+2010-08-27 23:40:25,pgahlen,"return, wenn nstring ausgegeben werden soll, wohl kaum n int"
+2010-08-27 23:40:30,pgahlen,sry Zeichenkette
+2010-08-27 23:40:35,bluecode_,scanf gibt nichts aus...
+2010-08-27 23:40:52,pgahlen,oh
+2010-08-27 23:40:55,bluecode_,du solltest mal ein Tutorial zu C lesen
+2010-08-27 23:41:00,Tobiking,Das ist doch wie printf nur umgekeht. Statt ausgeben wird die liste eingelesen
+2010-08-27 23:41:07,bluecode_,korrekt
+2010-08-27 23:41:30,Tederian,oh hui stimmt
+2010-08-27 23:41:35,Tederian,Hab ich nun auch verwechselt
+2010-08-27 23:41:42,pgahlen,"das hab ich, und ich hab auch n paar manpages zu scanf gelesen, da steht immer nur, das es was einliest und es in dem format wieder ausgibt"
+2010-08-27 23:42:03,pgahlen,"die sache ist ja nur die, was soll mir dann dieses ... sagen"
+2010-08-27 23:42:23,pgahlen,"ich meien Format geht ja nich, das ist ja in der Specs drin"
+2010-08-27 23:42:23,Tobiking,"Das gleiche wie bei printf, beliebige Anzahl argumente"
+2010-08-27 23:42:32,Tederian,pgahlen: Unbegrenzte anzahl von parametern
+2010-08-27 23:42:42,pgahlen,aber was soll ich mit den Argumenten?
+2010-08-27 23:42:57,Tederian,Deine Hypothese stützen.
+2010-08-27 23:43:03,Tobiking,"scanf(""%c %d"", &a, &b) liest erst ein character, dann eine Zahl und schreibt die nach a und nach b"
+2010-08-27 23:43:08,Tederian,Habt ihr kein printf?
+2010-08-27 23:43:23,Tederian,Oder habt ihr euer printf einfach irgendwo abgekupfert ohne es zu verstehen?
+2010-08-27 23:43:53,Papierkorb,wohl eher kopiert :D
+2010-08-27 23:43:55,Tobiking,"Man geht halt den format string durch, und versucht die Eingaben darauf abzubilden und dementsprechend in die übergebenen Variablen zu schreiben"
+2010-08-27 23:44:24,pgahlen,"ok, gehösrt vielleicht zum c Grunverständnis, aber wie soll ich denn diese variablen zurückgeben, wenn ich die beschrieben habe?"
+2010-08-27 23:44:43,Papierkorb,"scanf scheint nicht nur umgekehrt zu funktionieren wie printf, nein, die implementierung ist sogar anders rum :o"
+2010-08-27 23:44:47,bluecode_,dafür sind die parameter dahinter gefacht
+2010-08-27 23:44:50,bluecode_,*gedacht
+2010-08-27 23:45:01,bluecode_,also in dem oberen Beispiel a und b
+2010-08-27 23:45:24,bluecode_,"man muss natürlich pointer darauf übergeben, deswegen &a und &b"
+2010-08-27 23:45:35,Tobiking,"Du bekommst halt Pointer, da kannst du reinschreiben und die gelten dann auch nach der Funktion noch"
+2010-08-27 23:46:13,Papierkorb,Siehe auch: http://www.youtube.com/watch?v=mnXkiAKbUPg
+2010-08-27 23:46:18,pgahlen,"achso, also dieses & sagt auch das Pointer da hin müssen?"
+2010-08-27 23:46:19,bluecode_,ist das pinky?
+2010-08-27 23:46:23,bluecode_,ne binky
+2010-08-27 23:46:24,Papierkorb,jep
+2010-08-27 23:46:45,bluecode_,pgahlen: das & liefert einen Pointer auf die Variable dahinter
+2010-08-27 23:46:50,Tobiking,"Das & gibt halt die Adresse einer Variablen, also ein Pointer"
+2010-08-27 23:47:02,bluecode_,srsly... wtf...
+2010-08-27 23:47:05,Papierkorb,Strg+A ENTF -.-
+2010-08-27 23:47:12,bluecode_,wie kann man ne C lib anfangen ohne das zu wissen? Oo
+2010-08-27 23:47:26,bluecode_,bzw. wie kann man da mehr als zwei meter kommen
+2010-08-27 23:47:32,bluecode_,Respekt :-)
+2010-08-27 23:47:35,SHyx0rmZ,"bluecode_, in dem man sie zusammenkopiert?"
+2010-08-27 23:47:39,SHyx0rmZ,- 
+2010-08-27 23:48:36,bluecode_,das würde ich ihm erstmal nicht unterstellen
+2010-08-27 23:48:54,Tederian,Lol. NandOS wird bestimmt total cool
+2010-08-27 23:50:10,Tederian,broken pipe. eww.
+2010-08-27 23:50:23,Papierkorb,das muss weh tun :/
+2010-08-27 23:52:32,pgahlen,"ok, jetzt bin ich etwas gekränkt, wo mir vorgeworfen wird zu kopieren"
+2010-08-27 23:52:32,pgahlen,aber nicht jeder benutzt scanf mit diesem & soll ich dann immer n Fehler zurückgeben oder was ?
+2010-08-27 23:52:51,Papierkorb,zB bei strings ist das nicht nötig
+2010-08-27 23:52:55,XanClic,"Der Prozess pagefaultet in dem Fall, wenn es ein kaputter Parameter war und alles ist gut"
+2010-08-27 23:52:58,Papierkorb,denn strings in C sind... Arrays!
+2010-08-27 23:53:26,pgahlen,dieser komische binkie oder so hat auch keine Hobbys oder?
+2010-08-27 23:53:43,Papierkorb,"char eingabe[128]; int zahl; scanf (""%s %i"", eingabe, &zahl);"
+2010-08-27 23:54:01,pgahlen,ok
+2010-08-27 23:54:07,pgahlen,danke
+2010-08-27 23:54:30,pgahlen,ich komme meinem endgültigem C-Verständnis näher
+2010-08-27 23:55:01,XanClic,"Es hat btw einen Grund, wenn im Wiki steht, dass man erstmal ein paar Userprogramme in der Programmiersprache seiner Wahl schreiben sollte"
+2010-08-27 23:55:10,XanClic,(no offense)
+2010-08-27 23:55:30,pgahlen,"aber wenn man mal logisch denkt, müsste man um eine vollständige libc zu schreiben ein 100%iges c verständnis haben"
+2010-08-27 23:56:33,pgahlen,"haha, das wollte ich ja auch, aber ich werde mir nicht einen Pascal-Compiler von Borland kaufen, geschweigedenn mich an FPC gewöhnen"
+2010-08-27 23:56:39,Tobiking,Oder man hat ein solides C Verständniss und eine Dokumentation die alle Befehle und deren Verhalten aufführt
+2010-08-27 23:57:02,pgahlen,"jo, sprich die POSIX Spec"
+2010-08-27 23:57:28,XanClic,Du willst in Pascal schreiben hast aber keinen Compiler?
+2010-08-27 23:57:39,Tederian,"Ist es überhaupt nötig den gcc zu portieren und eine eigene libc zu machen? Natürlich ist es toll um zeugs zu portieren, aber man könnte doch z.B. auch einfach einen Brainfuck-Compiler bauen"
+2010-08-27 23:57:42,pgahlen,nein ich will ja eig auch nich
+2010-08-27 23:58:12,pgahlen,"wer sagt denn, das ich gcc portiere?"
+2010-08-27 23:58:25,pgahlen,ich will erstmal nur ne ordentliche lib haben
+2010-08-27 23:59:14,Tederian,Und was machst du dann mit der?
+2010-08-27 23:59:29,pgahlen,"btw, das einzige was ich mal kopiert habe, war der Keybordhandler von Tyndur, und da war ich noch ziemlich neu hier"
+2010-08-27 23:59:59,Papierkorb,"eingabe ist ein pointer, der auf die 128 bytes zeigt, die ihm zugeordnet sind. Strings in C sind im Regelfall Arrays von chars (char*). wie du schon siehst an char*, ist das ein pointer, alles super. integer (zB) sind keine arrays, ein scanf (""%i"", zahl); würde also schief gehen. damit das auch am gcc vorbei kommt, sind wir mal böse: scanf (""%i"", (int*)zahl); ← Ausführen und den seg fault bestaunen. denn so behandelst du den inhalt von "

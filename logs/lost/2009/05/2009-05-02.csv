@@ -1,0 +1,757 @@
+date/time,nick,message
+2009-05-02 01:18:33,Jidder,von wegen wifi
+2009-05-02 01:20:15,Jidder,"wenn ich es nicht besser wüsste, treiben es mein mauskabel und mein stromkabel miteinander"
+2009-05-02 08:21:05,Homix,morgen
+2009-05-02 08:25:03,FreakyPenguin,Moin
+2009-05-02 10:53:04,taljeth,Moin
+2009-05-02 10:56:10,FreakyPenguin,Moin taljeth
+2009-05-02 11:02:05,taljeth,Was machst du grad so kaputt?
+2009-05-02 11:02:37,FreakyPenguin,Das Schreibpuffer-Gefrickel
+2009-05-02 11:03:00,taljeth,Ah. Hast du eigentlich auch Lesepuffergefrickel in deiner Serie oder fehlt das noch ganz?
+2009-05-02 11:03:31,FreakyPenguin,"Das fehlt leider noch, das ist mir nämlich noch mehr zuwider. ;-)"
+2009-05-02 11:03:57,taljeth,"Ich habe halt den Eindruck, nano liest zeichenweise..."
+2009-05-02 11:04:09,taljeth,Mal in den Code schauen
+2009-05-02 11:04:25,FreakyPenguin,gcc hätte vermutlich auch nichts gegen Lesepuffer
+2009-05-02 11:04:47,taljeth,"Der hat doch aber größere Lesezugriffe gemacht, oder?"
+2009-05-02 11:05:10,taljeth,"Ich mein, wenn ich das über den ungetc-Puffer hacke, dann werde ich da sicher keine großen Datenmengen puffern"
+2009-05-02 11:05:21,FreakyPenguin,"Hm kann sein, das weiss ich nicht mehr so genau"
+2009-05-02 11:06:10,FreakyPenguin,"Das Problem ist halt die Position, wenn Lese- und Schreibzugriffe gemischt werden"
+2009-05-02 11:06:46,taljeth,"Ach Mist, LIOv1 hat die ja serverseitig..."
+2009-05-02 11:06:57,taljeth,Wer hat sich denn das ausgedacht? ;-)
+2009-05-02 11:07:19,FreakyPenguin,Genau das ist ja der Grund warum ich da noch nichts gemacht habe. ;-)
+2009-05-02 11:07:34,taljeth,Veständlich
+2009-05-02 11:07:40,FreakyPenguin,Hm so abwegig ist das doch nicht? *nix macht das doch auch? ;-)
+2009-05-02 11:08:00,taljeth,Wirklich?
+2009-05-02 11:08:38,taljeth,Wenn ich ihn denn finden würde
+2009-05-02 11:08:58,FreakyPenguin,"Hm jo, gute Frage wo das ding ist... *g*"
+2009-05-02 11:09:24,taljeth,"Also das read hat da schonmal ein Offset, scheint nicht ganz serverseitig zu sein ;-)"
+2009-05-02 11:12:16,FreakyPenguin,Wie erklärst du dir denn den lseek-Syscall? ;-)
+2009-05-02 11:13:20,taljeth,Du vergleichst Äpfel und Birnen
+2009-05-02 11:13:34,taljeth,Der Linux-Kernel ist nicht komplett serverseitig
+2009-05-02 11:13:50,taljeth,Mit FUSE hast du was schön äquivalentes zu LIOv2
+2009-05-02 11:14:15,taljeth,Ansonsten mußt du die Linie irgendwo zwischen dem allgemeinen FS-Code und FS-Treiber im Kernel ziehen
+2009-05-02 11:16:34,FreakyPenguin,"Die offenen Streams werden bei uns ja von den Treibern verwaltet und wir haben pro Stream dort eine Position gespeichert, die mit einem RPC geaendert werden kann, die Dateideskriptoren sind doch aus sicht des Clients genau das selbe, zu Ihnen gehört doch auch eine Position, die mit einem Systemaufruf verändert wird?"
+2009-05-02 11:17:10,taljeth,Die Position wird unter Linux eben genau nicht vom Treiber verwaltet
+2009-05-02 11:17:14,taljeth,Vermute ich *g*
+2009-05-02 11:17:32,taljeth,"Sondern vom allgemeinen FS-Code, der in etwa unserem LIO-Code auf Clientseite entspricht"
+2009-05-02 11:17:48,FreakyPenguin,"Nein, eben nicht, in LIO1"
+2009-05-02 11:17:53,taljeth,"Doch, gerade in LIOv1"
+2009-05-02 11:17:59,taljeth,In LIOv2 ist das Kernelcode
+2009-05-02 11:18:41,taljeth,"Äh, halt, letzteres nehme ich zurück"
+2009-05-02 11:19:05,FreakyPenguin,"Wir haben doch clientseitig eigentlich keine IO-Funktionalität, abgesehen von den RPCs? Der zentrale Teil, das Verwalten der Streams, ist ja den Servern auferlegt."
+2009-05-02 11:19:46,taljeth,Genau das ist ja das Problem
+2009-05-02 11:20:37,taljeth,"Konzeptionell entspricht der LIO-Client-Teil dem Linuxteil bis zum allgemeinen FS-Code. Linux läßt diesen Code (""den Client"") die Position verwalten, LIOv1 den Treiber (""den Server"")"
+2009-05-02 11:20:51,taljeth,Und letzteres ist Müll ;-)
+2009-05-02 11:21:58,bluecode,moin
+2009-05-02 11:22:08,taljeth,Moin bluecode 
+2009-05-02 11:22:16,bluecode,taljeth: was geht denn mit den qemu leuten? ;-)
+2009-05-02 11:23:54,taljeth,"Wieso? Daß es eine stable-Branch gibt, dürftest du ja mittlerweile mitbekommen haben? ;-)"
+2009-05-02 11:24:19,FreakyPenguin,"taljeth: Aber die Treiber sind unter Linux wohl trotzdem für die seeks zuständig, wenn ich das richtig sehe, auch wenn dort halt oft ein generic_file_llseek als Handler eingetragen wird. ;-)"
+2009-05-02 11:25:09,bluecode,taljeth: das gabs vorher nicht oder wie? Oo
+2009-05-02 11:26:31,taljeth,bluecode: Nicht wirklich
+2009-05-02 11:26:51,taljeth,"FreakyPenguin: Ach, alles doof. Mit LIOv2 wird alles besser ;-)"
+2009-05-02 11:27:37,FreakyPenguin,Ich hoffe nur dass wir keine Probleme mit dem fehlenden Seek bekommen. ;-)
+2009-05-02 11:29:55,taljeth,*g*
+2009-05-02 11:29:59,taljeth,Welche sollten das sein?
+2009-05-02 11:30:46,FreakyPenguin,Das weiss ich ja noch nicht. Aber das werden wir ja sehen. ;-)
+2009-05-02 11:31:17,taljeth,Falls Hurd irgendwann rauskommt ;-)
+2009-05-02 11:32:46,FreakyPenguin,Hm hast du eine Ahnung wie die das machen? ;-)
+2009-05-02 11:33:09,taljeth,"Nein, und ich will's nicht wissen ;-)"
+2009-05-02 11:34:22,bluecode,*g*
+2009-05-02 11:34:31,bluecode,augen zu und den freaky frickeln lassen *g*
+2009-05-02 11:35:04,FreakyPenguin,Das kommt immer gut. *g*
+2009-05-02 11:35:30,FreakyPenguin,Aber jetzt ist der taljeth dran und darf beweisen ob er mit seinem Coda an mich ran kommt. *g*
+2009-05-02 11:36:12,FreakyPenguin,bluecode: Wie kaputt ist denn dein IO-Kram? ;-)
+2009-05-02 11:36:37,bluecode,"total natürlich, wie der jedes guten Deutschen ;-)"
+2009-05-02 11:37:26,bluecode,aber irgendwie soll sich das irgendwann ändern
+2009-05-02 11:42:41,taljeth,Sobald du LIOv2 portiert hast? *g*
+2009-05-02 11:43:07,FreakyPenguin,Passt ja auch vom Namen her. ;-)
+2009-05-02 11:43:52,taljeth,*g*
+2009-05-02 11:46:59,bluecode,xD
+2009-05-02 12:18:05,taljeth,FreakyPenguin: Du machst den Socketcode ja noch häßlicher als er eh schon ist *g*
+2009-05-02 12:19:31,user94,moin
+2009-05-02 12:19:43,bluecode,moin user94
+2009-05-02 12:19:54,user94,"wie kann ich eigentlich mit 64bit variablen rechnen, wenn long 4 bytes sind"
+2009-05-02 12:20:04,bluecode,mit long long?
+2009-05-02 12:20:10,user94,???
+2009-05-02 12:20:14,bluecode,falls das unter deinem Compiler 64bit hat.
+2009-05-02 12:20:22,bluecode,"""long long"" ist ein Datentyp"
+2009-05-02 12:20:29,user94,also schau ich mit sizeof(long long) oder wie?
+2009-05-02 12:20:40,bluecode,wobei brauchst du nichtmal
+2009-05-02 12:20:50,bluecode,"wenn s einen long long gibt, dann ist der mindestens 64bit"
+2009-05-02 12:20:54,bluecode,*es
+2009-05-02 12:21:05,bluecode,gcc hat long long btw
+2009-05-02 12:21:21,bluecode,braucht aber unter x86 dazu die libgcc
+2009-05-02 12:21:40,user94,long long hat 8 byte
+2009-05-02 12:21:42,user94,passt
+2009-05-02 12:21:44,user94,danke
+2009-05-02 12:22:12,user94,wie würden dann 128 bit gehen
+2009-05-02 12:22:28,bluecode,"da hat gcc eine erweiterung, ist aber nicht C standard"
+2009-05-02 12:22:44,user94,ach so brauch ich aber nicht
+2009-05-02 12:22:47,user94,cu
+2009-05-02 12:22:51,user94,danke
+2009-05-02 12:29:57,bluecode,moin Coffee
+2009-05-02 12:30:34,Coffee,hoi
+2009-05-02 12:32:49,taljeth2,"FreakyPenguin: Kann es ein, daß lpt.tyndur.org kaputt ist?"
+2009-05-02 12:45:51,FreakyPenguin,"taljeth2: Jo, overgames.de ist auch nicht erreichbar."
+2009-05-02 12:46:06,FreakyPenguin,stultuuus! ;-)
+2009-05-02 12:47:20,taljeth,"Huch, das SVN hat doch aber getan?"
+2009-05-02 12:47:40,taljeth,Oder war das gestern? ;-)
+2009-05-02 12:47:48,taljeth,FreakyPenguin: Testest du deine Patches eigentlich auch?
+2009-05-02 12:48:14,taljeth,"Oder sind die nur so kaputt, wenn man die Patches davor nicht hat? In dem Fall müßte es halt eine Serie sein statt unabhängigen Patches."
+2009-05-02 12:48:48,FreakyPenguin,"Die Kiste ist per ssh erreichbar, von daher kann das schon sein."
+2009-05-02 12:49:39,FreakyPenguin,"Also das mit den Puffern war ja eine Serie, beim ersten Anlauf hat halt die Nummerierung nicht geklappt"
+2009-05-02 12:50:38,taljeth,"Das hilft nichts, ich hab ja schön den ersten Patch der Serie angewandt und es geht Zeug kaputt. Der dürfte eigentlich von nichts anderem abhängen."
+2009-05-02 12:50:58,taljeth,"Und dann hab ich den zweiten Patch draufgepackt, weil da so viele Ausrufezeichen drin sind. Jetzt ist es ganz kaputt."
+2009-05-02 13:19:24,FreakyPenguin,Jo der Pascal-Kram ist wohl noch nicht ganz in Ordnung...
+2009-05-02 13:20:06,FreakyPenguin,"Hm sehe ich das richtig, dass die sysutils-Funktionen einfach darauf hoffen, dass nicht gepuffert wird? Da ist ja nichtmal ein flush vorgesehen"
+2009-05-02 13:20:59,taljeth,"Hm, hab ich sysutils selber implementiert oder geht das an system durch?"
+2009-05-02 13:21:20,taljeth,"Aber getterm ist sowieso nicht in Pascal geschrieben, glaube ich ;-)"
+2009-05-02 13:21:30,FreakyPenguin,Die hast du wohl selbst gemacht
+2009-05-02 13:21:51,FreakyPenguin,Hm getterm? Da wäre mir jetzt nichts aufgefallen...
+2009-05-02 13:22:48,taljeth,"Hm, das sieht wirklich seltsam aus mit den sysutils. Aber für stdout werden diese Funktionen nicht benutzt und da sind mir die Bugs aufgefallen."
+2009-05-02 13:23:19,taljeth,Vielleicht ist auch was mit der Zeilenpufferung kaputt?
+2009-05-02 13:23:36,FreakyPenguin,"Aber für tcpip werden sie benuzt, und das kann halt dann lange warten, bis da was ankommt. ;-)"
+2009-05-02 13:26:45,FreakyPenguin,"Hm im Pascal-Code warst du wohl mit flushes generell etwas Sparsam, oder? :/"
+2009-05-02 13:29:41,taljeth,Wieso?
+2009-05-02 13:30:03,taljeth,"Die FPC-RTL puffert eh schon. Wenn da was kaputt ist, müßte es schon vorher kaputt gewesen sein. Insofern nehme ich an, daß das an den meisten Stellen drin ist."
+2009-05-02 13:30:08,taljeth,Außer halt bei sysutils.
+2009-05-02 13:30:27,taljeth,"Aber Netzwerk ist mir jetzt noch nicht als kaputt aufgefallen, nur die Terminalausgabe. Und das ist system, nicht sysutils."
+2009-05-02 13:31:11,taljeth,Vielleicht sollte man in system beim Open den Puffer gleich komplett abschalten. Die RTL puffert ja schon selber.
+2009-05-02 13:31:39,FreakyPenguin,"Hm, könnte sein"
+2009-05-02 13:32:08,FreakyPenguin,Aber warum funktioniert denn der crt-Kram wenn die RTL puffert?
+2009-05-02 13:33:26,taljeth,Weil geflusht wird?
+2009-05-02 13:34:08,FreakyPenguin,"Ein Write flusht also immer, oder wie?"
+2009-05-02 13:34:50,taljeth,"Nicht wirklich. Die Programme flushen manuell, wenn ich das richtig weiß."
+2009-05-02 13:34:53,FreakyPenguin,"Oder bin ich einfach selbst schuld, wenn ich nach dem ClrScr nicht flushe?"
+2009-05-02 13:35:35,taljeth,"Das readkey flusht und deckt damit die interessanten Sachen ab. Ja, das sieht nach Hack aus. ;-)"
+2009-05-02 13:37:39,FreakyPenguin,"Hm stimmt, damit könnte man Glück haben und es tut. ;-)"
+2009-05-02 13:38:17,taljeth,Es tut bisher ;-)
+2009-05-02 13:42:28,Jidder,moin moin
+2009-05-02 13:42:47,taljeth,Moin
+2009-05-02 13:56:06,FreakyPenguin,"Hm, aber lpt hat eigentlich bei meinen Tests funktioniert, ich glaube das ist ein anderes Problem..."
+2009-05-02 13:57:27,FreakyPenguin,Hm warum kennt denn unser Standardnameserver die Hostnamen in meinem LAN nicht? Schweinerei! *g*
+2009-05-02 13:57:36,taljeth,"Das mit dem Paketliste speichern tut auch wieder, wenn ich Patch 2 dazunehme. Da ist nur die Patchreihenfolge falsch."
+2009-05-02 13:58:00,taljeth,Aber der macht dafür eben stdio kaputt
+2009-05-02 13:58:31,FreakyPenguin,Hm was hast du denn für ein Problem mit getterm?
+2009-05-02 13:58:49,taljeth,"Gibt keine Meldung, ich muß mein Enter blind drücken"
+2009-05-02 13:59:22,user94,hi
+2009-05-02 13:59:26,taljeth,"Normal kommt doch da dieses ""Enter drücken für eine Shell"" (sinngemäß)"
+2009-05-02 13:59:29,user94,ich hab noch ein problem
+2009-05-02 13:59:31,XanClic,meun
+2009-05-02 13:59:49,FreakyPenguin,taljeth: Hm das kommt bei mir... Hast du alle 3 Pätsches genommen?
+2009-05-02 14:00:17,user94,ich hab ja die speichermap - einträge an der adresse 0x2000
+2009-05-02 14:00:33,user94,und will über ein struktur daruaf zugreifen
+2009-05-02 14:00:40,user94,wie geht das?
+2009-05-02 14:00:51,FreakyPenguin,Indem man C lernt. ;-)
+2009-05-02 14:00:57,user94,^^
+2009-05-02 14:01:02,bluecode,struct mystruct *foo = (struct mystruct*)0x2000;?
+2009-05-02 14:01:05,XanClic,"eigtl. ""struct [sname] = (struct [sname] *)0x2000"""
+2009-05-02 14:01:14,user94,aha
+2009-05-02 14:01:15,FreakyPenguin,Du machst ertmal deine Struktur und erstellst dann einen Pointer darauf.
+2009-05-02 14:01:16,user94,danke
+2009-05-02 14:01:32,XanClic,"oh, ich habe einen Stern vergessen"
+2009-05-02 14:01:39,bluecode,und einen bezeichner
+2009-05-02 14:01:42,user94,also schreib ich nocht struct xy liste[5]
+2009-05-02 14:02:18,FreakyPenguin,"bluecode: Ih, da ist ja der Stern am falschen ort. ;-)"
+2009-05-02 14:02:20,bluecode,"^ unwahrscheinlich, dass das sinn ergibt"
+2009-05-02 14:02:31,bluecode,FreakyPenguin: stimmt
+2009-05-02 14:02:40,taljeth,"FreakyPenguin: Nein, nur zwei von dreien"
+2009-05-02 14:02:42,bluecode,"ich versuch mich ja dran zu gewöhnen, aber es passiert halt einfach"
+2009-05-02 14:02:47,taljeth,Sollte der dritte daran was ändern?
+2009-05-02 14:02:49,user94,was soll foo
+2009-05-02 14:02:51,user94,heißen
+2009-05-02 14:02:57,bluecode,der Bezeichner
+2009-05-02 14:03:02,bluecode,dein Variablenname
+2009-05-02 14:03:13,bluecode,du solltest wirklich C lernen.
+2009-05-02 14:03:16,user94,aso
+2009-05-02 14:03:22,user94,kann ich ja
+2009-05-02 14:03:23,FreakyPenguin,Sag ich doch. ;-)
+2009-05-02 14:03:25,FreakyPenguin,Nein.
+2009-05-02 14:03:27,user94,aber noch nicht so gut
+2009-05-02 14:03:31,user94,^^
+2009-05-02 14:03:34,bluecode,"eben, kannst du nicht."
+2009-05-02 14:03:40,user94,naja egal
+2009-05-02 14:03:42,user94,danka
+2009-05-02 14:03:43,user94,cu
+2009-05-02 14:03:58,bluecode,bis später :-P
+2009-05-02 14:04:06,taljeth,Bis gleich ;-)
+2009-05-02 14:04:07,bluecode,bzw. gleich
+2009-05-02 14:04:10,bluecode,ebend
+2009-05-02 14:04:13,taljeth,*g*
+2009-05-02 14:04:41,FreakyPenguin,"Hm, ich glaube ich komme von jetzt an auch nur immer kurz mit meinen Problemen hier her und gehe dann wieder. ;-)"
+2009-05-02 14:05:23,bluecode,"das fällt dir erst jetzt auf, dass er das macht? ;-)"
+2009-05-02 14:05:24,FreakyPenguin,"taljeth: Ich glaube du musst ihm mal dein ""Learning the C Proffesionel"" zu zukommen lassen. ;-)"
+2009-05-02 14:05:33,bluecode,uh
+2009-05-02 14:05:47,FreakyPenguin,"bluecode: Nein, aber ich finde es eigentlich eine gute idee, fällt mir grad so auf. ;-)"
+2009-05-02 14:05:58,taljeth,FreakyPenguin: Hieß das nicht irgendwie anders?
+2009-05-02 14:06:02,bluecode,ROFL
+2009-05-02 14:06:03,taljeth,*lol*
+2009-05-02 14:06:08,FreakyPenguin,"taljeth: Doch, kann schon sein."
+2009-05-02 14:06:09,FreakyPenguin,*g*
+2009-05-02 14:06:22,taljeth,"Moin user94, wie geht es dir?"
+2009-05-02 14:06:30,bluecode,"wir sollten das sowieso mal gemeinsam überarbeiten, damit da wirklich was bei rauskommt"
+2009-05-02 14:06:36,FreakyPenguin,Hm jo war wohl eher genuine
+2009-05-02 14:06:39,bluecode,das wäre doch eine Hackathon angelegenheit
+2009-05-02 14:06:43,user94,taljeth: immer noch gut
+2009-05-02 14:06:44,user94,^^
+2009-05-02 14:06:54,bluecode,welches Problem hast du denn?
+2009-05-02 14:06:54,taljeth,"FreakyPenguin: ""Programming the C proffesionel"" war es, glaube ich"
+2009-05-02 14:06:56,FreakyPenguin,user94: Schon lange nicht mehr gesehen. Wo warst du nur? ;-)
+2009-05-02 14:07:06,user94,ka
+2009-05-02 14:07:22,FreakyPenguin,bluecode: Du lädst also ein zum Hackathon? ;-)
+2009-05-02 14:07:35,bluecode,ich dachte du lädst ein? ;-)
+2009-05-02 14:07:54,FreakyPenguin,Vor mitte Juni sicher nicht mehr. ;-)
+2009-05-02 14:08:10,bluecode,"ach komm schon, abi ist doch nicht wirklich wichtig"
+2009-05-02 14:08:48,FreakyPenguin,"Jo, aber so toll dass man es gleich 2x machen möchte halt auch nicht. ;-)"
+2009-05-02 14:08:52,taljeth,"Ah, PDF wieder gefunden."
+2009-05-02 14:10:49,bluecode,"dann kannst ja gleich mal die tyndur success secrets da einbauen, taljeth"
+2009-05-02 14:11:07,bluecode,damit ich davon provitieren kann :-)
+2009-05-02 14:12:59,taljeth,Ach die sind eigentlich ganz einfach: Die wesentliche Grundlage ist kaputter Code ;-)
+2009-05-02 14:15:46,taljeth,"FreakyPenguin: Mit dem dritten Patch geht getterm wieder. Für C müßtest du also hinkommen, wenn du die Serie rumdrehst. Pascal ist aber immer noch kaputt."
+2009-05-02 14:16:15,FreakyPenguin,"Jo, da habe ich schon einen 3-Zeiler für ;-)"
+2009-05-02 15:41:56,FreakyPenguin,"Hm, am Mailman-Problem scheint auch debian schuld zu sein, die spielen da irgendwas an der pipermail.py rum, wenn ich das rückgängig mache und das Archiv neu baue, tutet das schon besser..."
+2009-05-02 15:42:51,stultus,moin
+2009-05-02 15:43:11,FreakyPenguin,Moin stultus
+2009-05-02 15:43:32,FreakyPenguin,Hast du lpt.tyndur.org kaputt gemacht? ;-)
+2009-05-02 15:44:12,taljeth,"FreakyPenguin: Wird halt doch Zeit, daß wir das alles auf tyndur laufen lassen ;-)"
+2009-05-02 15:44:42,stultus,FreakyPenguin: KA was damit los ist.
+2009-05-02 15:44:47,FreakyPenguin,taljeth: Jo. *g*
+2009-05-02 15:44:48,stultus,"Netzwerk ging eben noch, ssh jedenfalls ;)"
+2009-05-02 15:44:50,stultus,Ich schau mal nach
+2009-05-02 15:44:59,FreakyPenguin,Jo ssh geht
+2009-05-02 15:47:27,stultus,Hm. 
+2009-05-02 15:48:01,FreakyPenguin,stultus: Dort auch gleich ein tyndur installieren? ;-)
+2009-05-02 15:48:12,stultus,"was, auf dem server? ^^"
+2009-05-02 15:48:24,stultus,Könnt ich sogar machen. *g*
+2009-05-02 15:48:26,FreakyPenguin,Jo ;-)
+2009-05-02 15:48:49,stultus,Aber vermutlich keine gute Idee ;)
+2009-05-02 15:50:42,stultus,"hm, tut wieder."
+2009-05-02 15:51:59,FreakyPenguin,taljeth: Ich habe die Serie für die Pufferung jetzt nochmals geschickt.
+2009-05-02 15:52:16,stultus,"taljeth: der Split von TCP-Paketen... interpretier ich das richtig, die Kartentreiber können von korrekter Paketgröße ausgehen?"
+2009-05-02 15:53:19,FreakyPenguin,Hm und wo kriege ich Jumbo Frames her? ;-)
+2009-05-02 15:53:51,stultus,"Wo ist da der Unterschied zu normalen Frames, außer inner Größe? ;)"
+2009-05-02 15:54:23,taljeth2,FreakyPenguin: Von deinem lokalen Patch natürlich ;-)
+2009-05-02 15:54:30,FreakyPenguin,taljeth2: Ah *g*
+2009-05-02 15:54:38,FreakyPenguin,stultus: Ich glaube nur dort. ;-)
+2009-05-02 16:36:20,FreakyPenguin,Hm irgendwie mache ich ein bisschen viel off by one...  ;-)
+2009-05-02 16:38:08,taljeth2,Du solltest halt doch einsbasierte Arrays nehmen ;-)
+2009-05-02 16:38:35,FreakyPenguin,*g*
+2009-05-02 16:55:40,Fireknight,Tag.
+2009-05-02 16:55:59,FreakyPenguin,Moin Fireknight
+2009-05-02 16:59:24,Fireknight,"mov  dl, al ; <- geht im PM nicht mehr?"
+2009-05-02 16:59:48,Fireknight,"eax ist 0xF, also muesste edx auch 0xF sein."
+2009-05-02 17:01:18,taljeth2,Nein
+2009-05-02 17:01:29,Fireknight,Wie kann man den Wert von AL denn sichern?
+2009-05-02 17:01:43,taljeth2,edx müßte (edx & ~0xFF) | (eax & 0xFF) werden
+2009-05-02 17:01:46,Fireknight,push eax scheint zu veraendern.
+2009-05-02 17:02:07,taljeth2,"Der Rest von edx wird nicht verändert, wenn du nur mit dem untersten Byte rumspielst"
+2009-05-02 17:04:11,taljeth2,"Was passiert denn genau bei deinem mov dl,al was du nicht erwartet hättest?"
+2009-05-02 17:04:47,Fireknight,"Nun, offensichtlich liegt es demfall nicht am mov dl, al"
+2009-05-02 17:05:00,Fireknight,http://rafb.net/p/C4Ep5t26.html <- rein von den Werten in edi und eax sieht das eigentlich OK aus.
+2009-05-02 17:05:09,Fireknight,Aber das Zeichen scheint nicht ausgegeben zu werden.
+2009-05-02 17:06:22,Jidder,mul		dword[80] macht keinen sinn
+2009-05-02 17:06:37,Jidder,du liest da die speicherstelle 80 aus
+2009-05-02 17:07:12,Fireknight,Ok. Das habe ich wohl nicht bemerkt weihl cursor_pos_rw ein dd 0 ist.
+2009-05-02 17:07:31,Fireknight,Wobei
+2009-05-02 17:07:36,Fireknight,"mul dword, 80; geht gar nicht."
+2009-05-02 17:07:43,Jidder,jop
+2009-05-02 17:07:50,Jidder,du musst den operanden in ein register laden
+2009-05-02 17:07:55,Fireknight,"ok, dann wohl ein size dd 80 machen"
+2009-05-02 17:08:04,Fireknight,dann muesste mul dword[size]; gehen?
+2009-05-02 17:08:12,Jidder,assemblerprogrammierer kommen echt auf die blödesten ideen
+2009-05-02 17:08:15,Jidder,ja müsste aber gehen
+2009-05-02 17:09:16,Fireknight,Wieso meinst du? @bloedesten Ideen
+2009-05-02 17:09:43,Jidder,"naja, man programmiert doch assembler, weil man eine gewisse maschinennähe haben will"
+2009-05-02 17:09:52,Fireknight,"Jedenfalls, edi und eax sind unveraendert da cursor_pos_row ja 0 ist. Dass das Zeichen nicht gedruckt wird muss einen anderen Grund haben."
+2009-05-02 17:10:16,Jidder,"wenn du alles über zig indirektionen machst, dann kannst du auch gleich eine hochsprache nehmen"
+2009-05-02 17:10:39,taljeth2,"Jidder: Nein, die Hochsprache würde schnellen Code erzeugen, das geht ja mal gar nicht"
+2009-05-02 17:11:10,Jidder,stimmt. da könnte ja performance versteckt sein ...
+2009-05-02 17:11:17,Fireknight,*g*
+2009-05-02 17:12:04,Jidder,gibst du denn ein sichtbares zeichen in einer sichtbaren farbkombination aus?
+2009-05-02 17:12:43,Fireknight,"    xor		eax,	eax"
+2009-05-02 17:12:43,Fireknight,"	mov		bl,		0xF"
+2009-05-02 17:12:43,Fireknight,"	mov		al,		65"
+2009-05-02 17:12:43,Fireknight,	call	putchar
+2009-05-02 17:13:08,Fireknight,Weiss und ein grosses 'A'.
+2009-05-02 17:13:25,Jidder,kay ... 
+2009-05-02 17:13:28,Jidder,segmentbasen sind 0?
+2009-05-02 17:14:16,Fireknight,"ds,ss,es sind auf das Datasegment gesetzt."
+2009-05-02 17:14:20,Fireknight,Aber es scheint an Qemu zu liegen.
+2009-05-02 17:14:48,taljeth2,Das glaube ich nicht.
+2009-05-02 17:14:49,Jidder,BUG!!!!
+2009-05-02 17:15:34,Jidder,doch klar. das is doch uralte software. letzte version schon 1 tag alt. bald zerfällt die wieder zu bits und bytes
+2009-05-02 17:16:41,Fireknight,QEMU ist kuhl.
+2009-05-02 17:16:55,Jidder,Fireknight: welche basis hat dein datensegment?
+2009-05-02 17:17:07,Fireknight,0
+2009-05-02 17:17:55,Jidder,schon versucht statt stosb mal ein mov zu nehmen? soll den code auch kürzer machen hab ich gehört
+2009-05-02 17:19:52,Jidder,"ich finde gut, dass du die register leerst, bevor du da neue werte reinlädst. das ist sehr reinlich."
+2009-05-02 17:20:37,FreakyPenguin,*g*
+2009-05-02 17:21:34,Jidder,"in manchen gegenden wird sowas ja nicht gemacht. da haben die register schon eine kruste mit bitresten. die kriegt man nur wieder raus, wenn man die register mit einem kaltstart schockgefriert"
+2009-05-02 17:23:37,FreakyPenguin,"Hm bevor ich commiten kann, muss ich erstmal dafür sorgen, dass tyndur das dann auch meldet. ;-)"
+2009-05-02 17:24:57,tyndur,"r1120 | svn-taljeth | 2009-05-01 23:22:55 +0200 (Fri, 01 May 2009) | 4 lines"
+2009-05-02 17:24:57,tyndur,kedit: Fix fuer ueberschuessige Leerzeichen
+2009-05-02 17:24:57,tyndur,! kedit: Wenn man auf dem letzten Zeichen einer Zeile (oder dahinter)
+2009-05-02 17:24:57,tyndur,"  was eintippt, hat kedit ein Leerzeichen zuviel eingefuegt"
+2009-05-02 17:25:28,FreakyPenguin,"Ups, ohne installiertes svn logs abrufen zu wollen ist natürlich doof. ;-)"
+2009-05-02 17:25:34,taljeth,"tyndur: Wow, du hast heute aber eine Reaktionszeit *g*"
+2009-05-02 17:25:43,taljeth,-heute +diese Woche ;-)
+2009-05-02 17:26:01,FreakyPenguin,taljeth: Willst du die restlichen Commits auch noch haben? *g*
+2009-05-02 17:26:28,taljeth,Ich bestehe nicht drauf ;-)
+2009-05-02 17:32:01,FreakyPenguin,Ich hätte aber gerne noch ein paar Acks ;-)
+2009-05-02 17:33:01,FreakyPenguin,Welches denn? ;-)
+2009-05-02 17:34:31,taljeth2,apr-util im Moment ;-)
+2009-05-02 17:38:49,Fireknight,"Ich frage mich gerade, ob es nicht einfacher ist die IDT in ASM oder in C aufzusetzen."
+2009-05-02 17:40:13,Jidder,das könnte sein
+2009-05-02 17:41:03,mgottschlag,ich bin für D
+2009-05-02 17:56:09,taljeth2,"*argh* Jetzt ist das ganze Zeug kompiliert und ich weiß nicht, wie ich es dazu bringe, die richtigen Dateien zum Linken zusammenzusammeln..."
+2009-05-02 17:58:14,Fireknight,Ich versuch mal etwas C-Code hinzuzulinken ;)
+2009-05-02 17:59:59,Fireknight,Ich auch.
+2009-05-02 18:00:25,Fireknight,"Aber C-Code ist kuerzer als ""Objectdatein mit gcc kompiliert""."
+2009-05-02 18:01:33,Fireknight,*Objektdateien
+2009-05-02 18:11:44,Fireknight,bin\kernel32.obj: file not recognized: File format not recognized
+2009-05-02 18:11:53,Fireknight,Ich wusste doch dass man unter Windows nicht richtig linken kann.
+2009-05-02 18:13:01,FreakyPenguin,Das hat doch mit Windows nichts zu tun?
+2009-05-02 18:13:08,taljeth,"Man kann, wenn man passende Formate und Toolchain benutzt"
+2009-05-02 18:13:23,Fireknight,ld von Linux kann jedenfalss ein nasm -f aout linken.
+2009-05-02 18:13:27,Fireknight,ld unter Windows kann es nicht.
+2009-05-02 18:13:35,Fireknight,und das obwohl es Cygwin ist.
+2009-05-02 18:13:52,taljeth,Windows benutzt auch ein anderes Binärformat
+2009-05-02 18:14:40,taljeth,http://lowlevel.brainsware.org/wiki/index.php/Crosscompiler_für_Windows
+2009-05-02 18:16:28,Fireknight,Ich denke ja eher dass es am Linker liegt anstatt am Compiler.
+2009-05-02 18:17:34,FreakyPenguin,"Das kann man sehen wie man will, wenn die beiden nicht zusammenpassen gehts halt nicht."
+2009-05-02 18:17:34,taljeth2,"Nein, an beidem"
+2009-05-02 18:17:38,taljeth2,Und der Artikel geht auch über beides
+2009-05-02 18:17:57,taljeth2,"FreakyPenguin: Die beiden passen zusammen, sie wollen beide COFF"
+2009-05-02 18:18:07,taljeth2,"Aber nasm will a.out, das geht dann nicht mehr ;-)"
+2009-05-02 18:18:33,Fireknight,NASM erzeugt mir ja ein aout
+2009-05-02 18:18:34,FreakyPenguin,"Ah, die kernel32.obj ist also von nasm? ;-)"
+2009-05-02 18:18:46,Fireknight,gemaess Forum und dem Wikiartikel muesste aout ok sein
+2009-05-02 18:18:57,Fireknight,elf darf man logischerweise ja nicht verwenden unter Windows.
+2009-05-02 18:19:16,FreakyPenguin,"Doch, eben mit einem Crosscompiler"
+2009-05-02 18:19:23,Fireknight,oh
+2009-05-02 18:19:24,Fireknight,doch
+2009-05-02 18:19:28,Fireknight,Cygwin kann elf linken :D
+2009-05-02 18:20:02,FreakyPenguin,taljeth2: Hm und nasm sagen er solle coff machen tut nicht?
+2009-05-02 18:20:37,taljeth2,Kann der das?
+2009-05-02 18:20:55,FreakyPenguin,"Mach mal ein nasm -hf, der kann so einiges  ;-)"
+2009-05-02 18:21:07,taljeth2,"Dann würde am Ende halt COFF statt ELF rauskommen - ob man das will, ist dann aber wieder eine Designentscheidung"
+2009-05-02 18:21:35,FreakyPenguin,"Jo, mir ist schon klar, dass es aufs gleiche rauskommt. ;-)"
+2009-05-02 18:21:36,taljeth2,"GRUB wäre damit nicht so glücklich, da müßte man dann die a.out-Kludge benutzen"
+2009-05-02 18:22:02,taljeth2,Wäre jetzt aber auch kein unüberwindbares Hindernis
+2009-05-02 18:22:22,FreakyPenguin,Aber er benutzt doch eh keinen Grub?
+2009-05-02 18:22:28,taljeth2,Selber schuld
+2009-05-02 18:22:31,taljeth2,;-)
+2009-05-02 18:22:32,FreakyPenguin,Jo
+2009-05-02 18:24:35,Fireknight,Puh. Wohin wirft GCC die Outputfiles :(
+2009-05-02 18:27:20,FreakyPenguin,"Normalerweise gibt gcc eigentlich eine Fehlermeldung aus, wenn was nicht klappt."
+2009-05-02 18:27:34,FreakyPenguin,Versuchs mal mit -v
+2009-05-02 18:27:40,Fireknight,Ist mir bewusst @normalerweise ;)
+2009-05-02 18:28:14,FreakyPenguin,Und sonst akzeptieren die natürlich auch Patches
+2009-05-02 18:29:08,Fireknight,http://rafb.net/p/Vs5dCG43.html
+2009-05-02 18:29:42,Fireknight,Keine Fehlermeldung :(
+2009-05-02 18:29:52,Fireknight,Kein ckernel.obj :(
+2009-05-02 18:30:43,stultus,was für ne Umgebung ist das?
+2009-05-02 18:30:43,FreakyPenguin,Lass mal den Leerschlag zwischen -o und I: weg
+2009-05-02 18:31:04,FreakyPenguin,"stultus: Sieht man doch, dass das cygwin ist?"
+2009-05-02 18:31:19,stultus,"cygwin ja. aber die frage ist ob aus ner cygwin-bash heraus, oder cmd.exe ;)"
+2009-05-02 18:31:39,mgottschlag,backslashes gehen doch unter cygwin selbst nicht?
+2009-05-02 18:32:04,stultus,genau deswegen fragte ich ja. wie genau die backslashes ärger machen ist ja egal.
+2009-05-02 18:33:07,stultus,"Cygwin hatte doch ne Mapping-Funktion, oder?"
+2009-05-02 18:33:31,stultus,"dasses nen entsprechenden Pfad in / gibt, der auf die Win-Dinger verweist"
+2009-05-02 18:33:35,stultus,vllt. mal damit arbeiten 
+2009-05-02 18:34:07,FreakyPenguin,Oder einfach einen relativen Pfad nehmen mal
+2009-05-02 18:34:37,stultus,"ansonsten, wenn hier eh schon mit standard-gnu-tools gearbeitet werden soll, aber das Win nicht weg soll.... andLinux?"
+2009-05-02 18:38:16,taljeth2,lynx neu kompilieren und per lpt installieren reicht nicht.
+2009-05-02 18:38:30,taljeth2,Man müßte vorher auch noch das neue Paket ins Repo kopieren
+2009-05-02 18:38:49,stultus,Ich dachte lpt kann mittlerweile mit lokalen Paketen umgehen? ;)
+2009-05-02 18:38:54,Fireknight,das ist cmd.exe
+2009-05-02 18:39:30,taljeth2,stultus: Hast du es etwa heimlich implementiert? ;-)
+2009-05-02 18:39:40,stultus,nö
+2009-05-02 18:39:46,stultus,wolltest du doch machen
+2009-05-02 18:40:07,stultus,"Ich müsste mich für sowas erst in Pascal einarbeiten. Ekelhafte Sprache, imho ;)"
+2009-05-02 18:40:10,taljeth2,"Jetzt macht erstmal jeder das, was er in der 0.2.1 auf jeden Fall drin haben möchte ;-)"
+2009-05-02 18:40:23,taljeth2,"Wesentlich angenehmer als C, eigentlich"
+2009-05-02 18:40:33,taljeth2,Ich sag nur Strings.
+2009-05-02 18:40:38,stultus,Naja. Aber mit C kann man leben.
+2009-05-02 18:40:51,stultus,"Mich stört diese wirre Struktur von Paketen, Funktionen, Variablen, ..."
+2009-05-02 18:40:57,taljeth2,Hö?
+2009-05-02 18:41:00,stultus,oder allgemein jede art von sichtbarkeitshierarchie 
+2009-05-02 18:41:18,taljeth2,Du meinst verschachtelte Funktionen oder was?
+2009-05-02 18:41:32,stultus,genau solche dinger.
+2009-05-02 18:41:37,taljeth2,Benutzt doch eh keiner
+2009-05-02 18:44:16,Fireknight,cannot perform PE operations on non PE output  file bin/c32kernel.bin
+2009-05-02 18:44:21,Fireknight,von ld
+2009-05-02 18:44:52,stultus,also kommt der ld doch nur mit PE klar
+2009-05-02 18:45:06,taljeth2,Was eigentlich keine Neuigkeit ist. ;-)
+2009-05-02 18:46:04,taljeth2,FreakyPenguin: Deine Patchserie macht lynx kaputt
+2009-05-02 18:46:07,stultus,*g*
+2009-05-02 18:46:13,stultus,"afk, abendessen"
+2009-05-02 18:49:38,Fireknight,Genau _das_ ist der Grund wieso ich lieber bei Assembler bleibe ;)
+2009-05-02 18:51:14,taljeth2,"Weil du zu faul bist, dir eine ordentliche Entwicklungsumgebung einzurichten?"
+2009-05-02 18:52:04,taljeth2,"Ich mein, den passenden Link mit Crosscompiler hast du ja bekommen. Du meinst nur, es besser zu wissen, als alle anderen vor dir, die dasselbe Problem schon hatten."
+2009-05-02 18:55:35,Fireknight,Es ist einfach aufwendig.
+2009-05-02 18:57:59,Fireknight,so.
+2009-05-02 18:58:00,taljeth,Und Assembler ist nicht aufwendig?
+2009-05-02 18:58:12,Fireknight,Da entfaellt kompliziertes linken ;)
+2009-05-02 18:58:20,Fireknight,so. undefined reference to ___main.
+2009-05-02 18:58:25,Fireknight,Das ist schonmal besser :D
+2009-05-02 19:01:40,Fireknight,oder auch nicht.
+2009-05-02 19:03:37,Fireknight,wie er ueberhaupt auf __main kommt?
+2009-05-02 19:03:44,Fireknight,gcc duerfte ja nur _main schreiben?
+2009-05-02 19:05:15,mgottschlag,"""<Fireknight> so. undefined reference to ___main."" - das hatten wir doch letztens erst. Benenn das von main in was anderes um"
+2009-05-02 19:05:37,taljeth,FreakyPenguin: Wie linkst du denn genau?
+2009-05-02 19:05:53,taljeth,"mgottschlag: Huch, war das nicht was anderes?"
+2009-05-02 19:06:08,taljeth,Und das da oben sollte Fireknight heißen.
+2009-05-02 19:06:13,taljeth,Tab considered harmful.
+2009-05-02 19:06:30,mgottschlag,also zumindest war es auch undefined reference to __main
+2009-05-02 19:06:44,taljeth,"Hm, ok"
+2009-05-02 19:06:44,Fireknight,hm
+2009-05-02 19:06:57,Fireknight,"in der Tat. Wenn ich foo und call _foo nehme, geht das o_O"
+2009-05-02 19:07:17,taljeth,Windows ist schon ganz schön kaputt
+2009-05-02 19:13:54,FreakyPenguin,taljeth: Na dann übe ich jetzt halt ein Bisschen -.-
+2009-05-02 19:17:28,Fireknight,Hm.
+2009-05-02 19:17:37,Fireknight,Warum gibt x/80d 0xB8000 nicht lauter nullen?
+2009-05-02 19:19:53,Fireknight,Das call 0x10210 duerfte mein call _foo sein. Das jmp 0x10205 das STOP: jmp STOP
+2009-05-02 19:20:07,Fireknight,$eip ist momentan jmp STOP. _foo wurde wohl also ausgefuehrt.
+2009-05-02 19:20:36,Fireknight,"Kann QEMU im Speicher nach ""Welcome to Protected Mode"" suchen? *g*"
+2009-05-02 19:33:54,Fireknight,Hm.
+2009-05-02 19:34:08,Fireknight,Mal schauen ob ich es im Hexdump finde.
+2009-05-02 19:34:19,Fireknight,"Irgendwo muss ja ein ""Welcome to Protected Mode"" stecken."
+2009-05-02 19:49:28,taljeth,FreakyPenguin: Übst du immer noch? ;-)
+2009-05-02 20:17:57,stultus,re
+2009-05-02 20:18:03,taljeth2,wz
+2009-05-02 20:21:36,stultus,"darf ich lpt dahingehend modden das holen und installieren getrennt sind, also Funktionen im Code?"
+2009-05-02 20:22:15,taljeth2,Ist das nicht schon halbwegs getrennt?
+2009-05-02 20:22:53,taljeth2,"Aber solange du es richtig machst und es am Ende irgendwas verbessert, darfst du wegen mir an allem rumbasteln"
+2009-05-02 20:22:54,stultus,Naja. Prinzipiell dürfte das ein Block verschieben sein ;)
+2009-05-02 20:23:09,stultus,nur das die Codeduplikation wegfällt.
+2009-05-02 20:23:34,taljeth2,"Mach einfach einen Patch, das ist eine bessere Diskussionsgrundlage ;-)"
+2009-05-02 20:23:45,stultus,*g* ok
+2009-05-02 20:24:39,taljeth2,*lol* Ist mir grad erst aufgefallen: lpt fängt ja noch mit program pashello; an *g*
+2009-05-02 20:25:18,FreakyPenguin,taljeth2: Ich dachte ja das müsse so sein. ;-)
+2009-05-02 20:25:31,taljeth2,Ach so ;-)
+2009-05-02 20:25:37,taljeth2,Fertig geübt? ;-)
+2009-05-02 20:26:12,FreakyPenguin,"Nein, damit fange ich jetzt an. Zuerst hat noch der 2. Teil der Nahrungsaufnahme angestanden. ;-)"
+2009-05-02 20:26:33,stultus,2. Teil -> Nachtisch?
+2009-05-02 20:26:43,FreakyPenguin,Richtig erkannt ;-)
+2009-05-02 20:33:17,Jidder,"ick hab die schürze um, ick dreh die würschte um"
+2009-05-02 20:33:22,Jidder,ick bin der bernd und steh am grill
+2009-05-02 20:33:48,Jidder,"und mitm bierchen in der kralle, grill ick, immer wird dit alle"
+2009-05-02 20:33:58,Jidder,fleischen und würschte grilln is allet wat ick will
+2009-05-02 20:34:18,Jidder,und jetzt alle  ^^
+2009-05-02 20:49:45,stultus,taljeth
+2009-05-02 20:49:48,FreakyPenguin,"taljeth2: Aber langsam ging es auch ohne meine Patches, oder? ;-)"
+2009-05-02 20:49:51,stultus,PPC  system.pas
+2009-05-02 20:49:51,stultus,"system.pas(11,2) Fatal: Can't open include file ""systemh.inc"""
+2009-05-02 20:49:57,stultus,ne idee?
+2009-05-02 20:50:27,FreakyPenguin,Hast du die fpc-rtl kopiert?
+2009-05-02 20:50:48,stultus,"Ah, klar"
+2009-05-02 20:50:56,stultus,im git nicht *g*
+2009-05-02 20:52:36,taljeth2,FreakyPenguin: Was ging langsam?
+2009-05-02 20:53:27,FreakyPenguin,"taljeth2: Naja, das gibt immer etwa 1 Sekunde pause, wenn der Lynx beim verbinden eine neue Meldung anzeigt"
+2009-05-02 20:54:27,taljeth2,"Ach so, das schon"
+2009-05-02 20:54:33,taljeth2,"Bin mir nicht sicher, das könnte Absicht sein"
+2009-05-02 20:54:45,taljeth2,Oder ein Stub von mir *g*
+2009-05-02 20:55:19,taljeth2,"Apropos Stub... Ich versuch grad, den select()-Stub von lynx in die libc rüberzunehmen und behaupte, das wird der längste Stub, den wir haben *g*"
+2009-05-02 20:55:39,stultus,also doch nicht so viel stub? ^^
+2009-05-02 20:57:00,taljeth2,"Nein, eigentlich nicht richtig Stub, nur kaputt ;-)"
+2009-05-02 20:58:39,FreakyPenguin,taljeth2: Ist es sinnvoll die Pufferung für sockets generell auszuschalten? *hust* ;-)
+2009-05-02 20:59:31,taljeth2,Könnte man wohl vertreten ;-)
+2009-05-02 21:00:03,FreakyPenguin,"Aber dass sich der Lynx manchmal einfach beendet, ist wohl so nicht gewollt..."
+2009-05-02 21:02:02,taljeth2,"Der beendet sich doch nicht einfach so. Der macht das brav mit einer Fehlermeldung ""Unbekannter Fehler"". *g*"
+2009-05-02 21:03:06,FreakyPenguin,Du meinst wir sollten mal ein strerror machen? ;-)
+2009-05-02 21:03:48,taljeth2,"Ach, wird völlig überbewertet ;-)"
+2009-05-02 21:05:32,FreakyPenguin,ti
+2009-05-02 21:05:39,FreakyPenguin,Bäh
+2009-05-02 21:06:06,FreakyPenguin,Falsches Fenster und erst noch falsches Layout. *g*
+2009-05-02 21:07:45,FreakyPenguin,Hm aber ich komme nichtmal ins Forum.
+2009-05-02 21:08:30,taljeth2,Mußt du evtl. ein Cookie bestätigen?
+2009-05-02 21:08:51,taljeth2,Manchmal hängt das (Y/N) über den Bildschirmrand raus
+2009-05-02 21:08:58,taljeth2,"Da war ich am Anfang auch verwirrt, was er von mir will ;-)"
+2009-05-02 21:08:59,FreakyPenguin,"Jo, und wenn ich das mache, sehe ich wieder die shell"
+2009-05-02 21:09:09,taljeth2,Dann ist bei dir was kaputt
+2009-05-02 21:09:22,taljeth2,Auf master ging das vorhin
+2009-05-02 21:09:43,FreakyPenguin,Das ist aber toll. ;-)
+2009-05-02 21:11:09,taljeth2,Find ich schon ;-)
+2009-05-02 21:22:35,stultus,FreakyPenguin: kannst du lbuilds erweitern?
+2009-05-02 21:22:41,stultus,Metadaten in den Archiven wären toll ;)
+2009-05-02 21:22:50,stultus,Sonst muss ich für lokale Pakete anfangen Dateinamen zu parsen. Imho nicht so toll 
+2009-05-02 21:24:08,stultus,wirst du es tun? ;)
+2009-05-02 21:24:26,stultus,"Und, darf ich einfach so nen file:/tmp/ einführen?"
+2009-05-02 21:24:41,FreakyPenguin,"Im Moment sicher nicht, nein. ;-)"
+2009-05-02 21:25:00,FreakyPenguin,Aber du darfst es gerne machen. ;-)
+2009-05-02 21:25:08,stultus,damnit. ^^
+2009-05-02 21:26:41,FreakyPenguin,"Du meinst sowas wie das tar-Archiv in data.tar umzubenennen und es dann in ein ar-Archiv zu stecken, noch ein Bisschen mehr reinzupacken und mit der Endung.deb zu versehen? ;-)"
+2009-05-02 21:27:11,stultus,Ganz so schlimm nicht
+2009-05-02 21:27:26,stultus,nur ne Datei versioninfo mit Name/Sektion/Version/Architektur im Archiv. Mehr brauch ich nich ;)
+2009-05-02 21:28:49,FreakyPenguin,"Hm mist, es war ja erst noch data.tar.gz ;-)"
+2009-05-02 21:28:50,taljeth2,Das brauchen wir eh mal
+2009-05-02 21:29:26,taljeth2,Meine update.sh im Repo nimmt nämlich im Moment auch Dateinamen auseinander
+2009-05-02 21:29:42,FreakyPenguin,Mein skript tut das auch. *g*
+2009-05-02 21:29:50,stultus,*g*
+2009-05-02 21:29:53,stultus,es geht ums Prinzip.
+2009-05-02 21:30:05,taljeth2,Und das war gar nicht so einfach in bash *g*
+2009-05-02 21:30:05,stultus,Hast du irgendwo ne Übersicht was Umgebungsvariablen in lbuild.sh angeht?
+2009-05-02 21:30:06,FreakyPenguin,Scheint sich also zu bewähren. *g*
+2009-05-02 21:30:33,FreakyPenguin,taljeth2: Also ich kopiere das ja immer aus der lbuild.sh *g*
+2009-05-02 21:31:11,stultus,gibt es irgendne andere Sektion als bin?
+2009-05-02 21:31:20,FreakyPenguin,"Jo, lib"
+2009-05-02 21:32:11,FreakyPenguin,"Dort sind alle Pakete drin, die mit lib anfangen, wie beispielsweise libc, zlib oder ncurses *g*"
+2009-05-02 21:33:06,taljeth2,"FreakyPenguin: Hm, stimmt, die müßte das ja auch können. Noch nie angeschaut ;-)"
+2009-05-02 21:34:05,FreakyPenguin,"taljeth2: Mein add_package script nimmt halt bin, sofern nichts anderes spezifiziert wird auf der Kommandozeile ;-)"
+2009-05-02 21:34:47,taljeth2,Jo
+2009-05-02 21:35:15,taljeth2,"Ich geh jetzt mal Punkt kaputtmachen, in der Hoffnung, daß meine Patches hinterher geackt sind ;-)"
+2009-05-02 22:06:50,stultus,"Ehm, kann es sein das man mit lpt aktuell nur bin-Pakete direkt getten kann, libs gehen nur als Dep?"
+2009-05-02 22:08:14,FreakyPenguin,"Hm, hat taljeth das noch nicht gefixt?"
+2009-05-02 22:08:26,stultus,ah
+2009-05-02 22:08:29,stultus,"moment, ich nehm alles zurück"
+2009-05-02 22:08:39,stultus,im Quelltext steht was von name/sektion wenn man libs installieren will ;)
+2009-05-02 22:09:20,FreakyPenguin,"Ah es war mir doch so, dass ich letztens sowas geackt habe... *g*"
+2009-05-02 22:09:45,stultus,"Btw, so ne lustige Macke von lpt"
+2009-05-02 22:09:55,stultus,"nicht wirklich fehler, aber unschön wenn man mehrere shells offen hat."
+2009-05-02 22:10:01,stultus,Deps werden nach Paket installiert ;)
+2009-05-02 22:10:30,taljeth2,Falsch.
+2009-05-02 22:10:40,taljeth2,Deps werden an zufällliger Position installiert
+2009-05-02 22:10:53,stultus,Auch gut.
+2009-05-02 22:10:57,stultus,"bzw, auch schlecht ;)"
+2009-05-02 22:11:04,taljeth2,"Ich glaube jedenfalls, daß diese Container ungeordnet sind"
+2009-05-02 22:11:04,stultus,"Sieht hier nur so aus, gcc zuerst, dann libc, dann binutils."
+2009-05-02 22:11:11,FreakyPenguin,"taljeth2: Hast du eine Ahnung wie lynx darauf kommt, dass /tmp/ kein Verzeichnis sei? ;-)"
+2009-05-02 22:11:24,stultus,FreakyPenguin: es gibt keins? ^^
+2009-05-02 22:11:29,taljeth2,Was ruft er denn dazu auf?
+2009-05-02 22:11:37,FreakyPenguin,stultus: Bei mir schon?
+2009-05-02 22:11:40,taljeth2,stultus: Also ich hab ein file/tmp
+2009-05-02 22:11:42,taljeth2,+:
+2009-05-02 22:12:08,stultus,bei mir gibts keins.
+2009-05-02 22:12:42,taljeth2,Auf einem Plattenimage?
+2009-05-02 22:12:46,FreakyPenguin,taljeth2: LYOpenTemp und dann kommt lynx_temp_space is not a directory
+2009-05-02 22:12:50,stultus,jup.
+2009-05-02 22:13:12,FreakyPenguin,"taljeth2: Ah er will wohl das .gz entpacken, wies aussieht"
+2009-05-02 22:13:36,taljeth2,"Ah, das klingt eigentlich schonmal sehr gut. Ursprünglich hat er es nämlich einfach angezeigt. ;-)"
+2009-05-02 22:13:57,FreakyPenguin,*g*
+2009-05-02 22:14:25,taljeth2,"Hm, lstat haben wir sinnvoll implementiert?"
+2009-05-02 22:14:45,taljeth2,return -1;
+2009-05-02 22:14:48,taljeth2,Eher nicht ;-)
+2009-05-02 22:15:05,FreakyPenguin,*g*
+2009-05-02 22:15:15,FreakyPenguin,Mit lio2 wird das alles besser. ;-)
+2009-05-02 22:15:26,taljeth2,"Ich würde mal vorschlagen, das genau jetzt zu fixen ;-)"
+2009-05-02 22:16:05,FreakyPenguin,Aber für lio2 ist das doch schon gefixt. ;-)
+2009-05-02 22:16:50,taljeth2,Aber 0.2.1 hat eher kein LIOv2 ;-)
+2009-05-02 22:20:00,taljeth2,"Was passiert, wenn man einen Nicht-Link mit ""lr"" öffnet?"
+2009-05-02 22:20:50,FreakyPenguin,Hoffentlich das was ich bei meiner lstat-Implementierung gerade angenommen habe. *g*
+2009-05-02 22:22:55,taljeth,*hehe*
+2009-05-02 22:23:41,taljeth,"Hm, blockierendes Lesen ist serverseitig implementiert, oder? Das kann ich für das select() auch nicht kurzzeitig abstellen?"
+2009-05-02 22:24:23,FreakyPenguin,Nein sowas ist im Moment nicht vorgesehen
+2009-05-02 22:24:48,taljeth,"Naja, select ist eh nur für Sockets sinnvoll. Hoffen wir, daß es niemand für Dateien benutzt."
+2009-05-02 22:25:14,FreakyPenguin,*g*
+2009-05-02 22:25:27,taljeth,Hast du eigentlich auch den Spezialfall mit select() als sleep regeviewt? ;-)
+2009-05-02 22:25:58,FreakyPenguin,"Cool, dann muss ich es also nicht dafür sorgen, dass immer blockierend gelesen wird? ;-)"
+2009-05-02 22:26:43,taljeth,Das ist doch ein Fietscher ;-)
+2009-05-02 22:27:01,FreakyPenguin,*g*
+2009-05-02 22:27:19,FreakyPenguin,Ist sowas denn auch vorgesehen? ;-)
+2009-05-02 22:28:04,taljeth,"""sowas""?"
+2009-05-02 22:28:20,FreakyPenguin,Das mit dem sleep meine ich ;-)
+2009-05-02 22:28:41,taljeth,"Ob es so gedacht ist, weiß ich nicht. Benutzt wird es."
+2009-05-02 22:28:50,taljeth,Ist dir das in deinen lbuilds noch nie begegnet? ;-)
+2009-05-02 22:28:58,FreakyPenguin,Nein ;-)
+2009-05-02 22:29:20,taljeth,"Das ist die Art von select, wo man denkt ""Puh, kann ich durch ein msleep ersetzen"" *g*"
+2009-05-02 22:29:31,FreakyPenguin,*g*
+2009-05-02 22:30:08,taljeth,"Die anderen sind halt die wo man denkt ""Sch...ade"" ;-)"
+2009-05-02 22:30:38,Fireknight,"Ok, langsam hab ich das Gefuehl das er gar nicht in den C-Kernel springt :("
+2009-05-02 22:31:16,taljeth,Dann machst du was falsch
+2009-05-02 22:32:42,Fireknight,Wohl war.
+2009-05-02 22:33:11,Fireknight,es gibt ein 0x0010200: call 0x10210
+2009-05-02 22:33:20,FreakyPenguin,"taljeth2: So, jetzt konnte ich auch ins Forum posten. ;-)"
+2009-05-02 22:33:22,Fireknight,0x10210 duerfte int foo() von meinem C-Kernel sein.
+2009-05-02 22:33:27,FreakyPenguin,Aber irgendwie war die Ansicht nicht ganz sauber...
+2009-05-02 22:33:35,FreakyPenguin,*Anzeige
+2009-05-02 22:34:25,taljeth,FreakyPenguin: Das Forum macht eigentlich kein gzip
+2009-05-02 22:34:25,taljeth,Aber das Wiki
+2009-05-02 22:34:34,Fireknight,"dem mov al,edx inc edx movb 0x7,edx anzunehmen ist dass wirklich int foo"
+2009-05-02 22:34:40,Fireknight,*das
+2009-05-02 22:35:12,Fireknight,Verwenden Qemu das mov genau andersrum?
+2009-05-02 22:35:14,FreakyPenguin,taljeth: Hm also ich hatte irgnedwann meldungen dass irgend ein gz-File benutzt würde...
+2009-05-02 22:35:17,Fireknight,*Verwendet
+2009-05-02 22:35:29,Fireknight,"also mov a,b -> verschiebt a nach b statt b nach a"
+2009-05-02 22:35:44,Fireknight,"mov $0xb8000,%edx macht sonst ja nicht wirklich Sinn?"
+2009-05-02 22:35:54,taljeth,"FreakyPenguin: Hm, komisch"
+2009-05-02 22:36:23,FreakyPenguin,taljeth: Ah da waren noch ein paar sscanf-Meldungen...
+2009-05-02 22:36:49,taljeth,"Fireknight: Bei deinem Stand ist es etwas lächerlich, qemu für Bugs verantwortlich machen zu wollen. Ruf dir mal in Erinnerung, daß sowohl Windows als auch Linux drin klaglos laufen. Das würde mit einem kaputten mov nicht gehen."
+2009-05-02 22:37:10,Fireknight,Ich mache nicht Qemu verantwortlich.
+2009-05-02 22:37:19,taljeth,"mov $0xb800, %edx ist AT&T-Syntax, ja."
+2009-05-02 22:37:37,taljeth,Erkennbar am $ und %
+2009-05-02 22:38:09,taljeth,FreakyPenguin: Willst du auch noch kurz ein sscanf schreiben? ;-)
+2009-05-02 22:38:21,Fireknight,"Ich frage mich nur, wieso er ""Welcome to Protected Mode"" nicht in den Videospeicher schreibt."
+2009-05-02 22:38:29,FreakyPenguin,taljeth: Hm lass mich mal überlegen... *g*
+2009-05-02 22:40:07,taljeth,"Du überlegst lange. Ein Zeichen, daß es dich langsam auch nervt, kein sscanf zu haben. ;-)"
+2009-05-02 22:43:15,tyndur,"r1121 | svn-taljeth | 2009-05-02 22:43:52 +0200 (Sat, 02 May 2009) | 4 lines"
+2009-05-02 22:43:15,tyndur,libc: POSIX: Mehr errno
+2009-05-02 22:43:15,tyndur,"+ libc: POSIX: Zusaetzliche errno-Fehlercodes, die sich in den Patches"
+2009-05-02 22:43:15,tyndur,  zu lbuilds angesammelt haben
+2009-05-02 22:43:25,tyndur,"r1122 | svn-taljeth | 2009-05-02 22:44:31 +0200 (Sat, 02 May 2009) | 3 lines"
+2009-05-02 22:43:25,tyndur,libc: POSIX: readlink()
+2009-05-02 22:43:25,tyndur,+ libc: POSIX: readlink()
+2009-05-02 22:43:44,FreakyPenguin,Geht doch ;-)
+2009-05-02 22:46:17,stultus,kommt die Pascal-RTL mit Text klar?
+2009-05-02 22:46:39,Fireknight,"Kann man Qemu sagen er soll nach einem ""call"" anhalten sodass man nachher durchsteppen kann?"
+2009-05-02 22:48:43,taljeth,stultus: Mit Text?
+2009-05-02 22:49:04,taljeth,Fireknight: Du kannst einen gdbserver starten und dann mit gdb drauf verbinden und einen Breakpoint setzen
+2009-05-02 22:49:35,stultus,taljeth: hab in nem Tutorial nen typ Text für Textfiles gefunden. 
+2009-05-02 22:49:50,stultus,Erübrigt sich natürlich wenn ich ReadLn auch mit File verwenden kann ;)
+2009-05-02 22:49:53,FreakyPenguin,Fireknight: http://lowlevel.brainsware.org/wiki/index.php/GNU_Project_Debugger_und_QEMU
+2009-05-02 22:50:43,taljeth,stultus: Kannst du? Ich kenn das nur mit text ;-)
+2009-05-02 22:51:02,taljeth,"Aber bei unserer Pascal-RTL kannst du davon ausgehen, daß sie relativ vollständig ist"
+2009-05-02 22:51:08,stultus,ok
+2009-05-02 22:56:22,Fireknight,"Wow, das ist ja kuhl."
+2009-05-02 22:58:30,Fireknight,"Ist ein test al,al; je 0x1022c immer wahr?"
+2009-05-02 22:58:39,Fireknight,"(also, wird der Sprung immer ausgefuehrt)"
+2009-05-02 22:58:41,taljeth,Nein
+2009-05-02 22:59:00,taljeth,"Wenn al = 0, dann dürfte er nicht ausgeführt werden"
+2009-05-02 22:59:23,stultus,was ist ein Runtime error 103 ?
+2009-05-02 23:01:38,taljeth,Das steht in der Doku ;-)
+2009-05-02 23:01:45,taljeth,Irgendwas mit Dateien dürfte das sein
+2009-05-02 23:02:02,stultus,:D
+2009-05-02 23:02:07,Fireknight,gcc optimiert ja echt geil.
+2009-05-02 23:02:08,stultus,teste ja auch nur Dateijonglieren
+2009-05-02 23:02:08,stultus,"okay, nachsehen"
+2009-05-02 23:02:55,taljeth,103 File not open
+2009-05-02 23:03:08,taljeth,Fireknight: Was hast du denn schönes gefunden?
+2009-05-02 23:03:30,Fireknight,Er schneidet nach einem while(1) {} ab ;)
+2009-05-02 23:04:02,Fireknight,(Das sollte er auch)
+2009-05-02 23:04:05,taljeth,Ah. Clever. ;-)
+2009-05-02 23:04:16,taljeth,Außer natürlich irgendein Assemblercode springt dahinter hin.
+2009-05-02 23:04:33,Fireknight,"Jedenfalls weiss ich nun, dass mein int foo angesprungen wird."
+2009-05-02 23:05:09,Fireknight,"push %ebp mov %esp,%ebp (nachher jmp $) sieht nach cdecl aus."
+2009-05-02 23:05:33,mgottschlag,deswegen heißts ja so :D
+2009-05-02 23:09:11,FreakyPenguin,taljeth: 
+2009-05-02 23:09:25,FreakyPenguin,Den Socket-Patch kannst du dir als 3.5/4 denken. ;-)
+2009-05-02 23:09:42,taljeth,Hm? *g*
+2009-05-02 23:10:20,stultus,what the...
+2009-05-02 23:10:36,Fireknight,ok
+2009-05-02 23:10:43,stultus,ne Idee wieso FileExists schon den 103er wirft???
+2009-05-02 23:10:46,Fireknight,"movb  $0x41, 0xb8000"
+2009-05-02 23:10:59,Fireknight,"movb $0x7, 0xb8001"
+2009-05-02 23:11:10,Fireknight,Wieso geht nicht?
+2009-05-02 23:11:37,Jidder,komputer caputt
+2009-05-02 23:11:45,taljeth,"""Geht nicht"" as in ""assembliert nicht"" oder ""tut nicht, was es soll""?"
+2009-05-02 23:12:25,Fireknight,"x/80hx 0xB8000 sagt mir, dass da ein 0x0b50 statt ein 0x4107"
+2009-05-02 23:12:35,Fireknight,und das A wird nicht angezeigt.
+2009-05-02 23:12:52,Fireknight,Angezeigt wird ein P
+2009-05-02 23:13:25,taljeth,stultus: Das klingt seltsam
+2009-05-02 23:13:34,Fireknight,das P von Plex86/Bochs VGABios [...]
+2009-05-02 23:13:58,Jidder,Fireknight: wird der code ausgeführt?
+2009-05-02 23:14:07,FreakyPenguin,taljeth: Ich meinte den patch den ich als antwort auf deine Reklamation geschickt habe. ;-)
+2009-05-02 23:14:25,Jidder,Fireknight: und wenn ja: bist du dir da sicher?
+2009-05-02 23:14:40,Jidder,"nicht dass nachher rauskommt, dass du die ganze zeit einen alten kernel testet"
+2009-05-02 23:14:41,Jidder,testest
+2009-05-02 23:14:59,Fireknight,"Ich hab vor der Ausgabe eine while(1) {} geschrieben, und da ist er stecken geblieben."
+2009-05-02 23:15:10,taljeth,FreakyPenguin: So weit bin ich noch nicht ;-)
+2009-05-02 23:15:16,Jidder,Fireknight: wie prüfst du das? bist du dir da sicher?
+2009-05-02 23:15:38,Jidder,"Fireknight: ganz offensichtlich ist irgendeine deiner annahmen falsch, bei so einem trivialen code."
+2009-05-02 23:15:42,Fireknight,weil eip auf 0x0010213 ist und 0x0010213 ein jmp 0x0010213 ist?
+2009-05-02 23:15:44,FreakyPenguin,taljeth: Und das obwohl es der kürzere Patch ist? *g*
+2009-05-02 23:15:58,stultus,"taljeth: okay, korrigiere, ist doch das Assign. Aber mit gleichem Pfad wie das erfolgreiche FileExists..."
+2009-05-02 23:16:30,taljeth,FreakyPenguin: Tut der l-Teil vom lstat irgendwas sinnvolles?
+2009-05-02 23:16:49,Fireknight,ich hab das while(1) wieder weggenommen.
+2009-05-02 23:17:09,taljeth,stultus: Auch das Assign sollte sowas nicht liefern können
+2009-05-02 23:17:25,Jidder,Fireknight: was passiert dann?
+2009-05-02 23:17:28,Fireknight,0x0010200: call 0x10210 ;10210 ist int foo() 
+2009-05-02 23:17:33,FreakyPenguin,taljeth: Mit einem Link habe ich das natürlich nicht getestet... ;-)
+2009-05-02 23:17:39,taljeth,*lol*
+2009-05-02 23:17:48,taljeth,"Wie kommst du auf die Idee, daß stat da -1 zurückgibt?"
+2009-05-02 23:17:48,Fireknight,0x0010205: jmp 0x10205; Das ist der Endlos loop
+2009-05-02 23:17:55,Fireknight,eip ist momentan auf 0x0010205
+2009-05-02 23:17:55,Jidder,Fireknight: kannst du irgendwie deinen kompletten code hochladen?
+2009-05-02 23:18:04,Fireknight,Jidder: Ja
+2009-05-02 23:18:04,stultus,*ouch*
+2009-05-02 23:18:07,stultus,Habs. 
+2009-05-02 23:18:34,stultus,Reset vergessen. ^_^
+2009-05-02 23:19:07,Fireknight,http://rafb.net/p/4eEGia78.html
+2009-05-02 23:19:10,taljeth,"FreakyPenguin: Ah, du meinst, ein fopen scheitert mit ""lr"", wenn es kein Link ist?"
+2009-05-02 23:19:21,taljeth,Darauf Wetten würde ich ja nicht *g*
+2009-05-02 23:19:22,FreakyPenguin,Jo
+2009-05-02 23:19:36,FreakyPenguin,Das kommt ganz auf den Server an. *g*
+2009-05-02 23:19:45,taljeth,Eben...
+2009-05-02 23:20:05,FreakyPenguin,Aber wimre macht cdi/fs das richtig ;-)
+2009-05-02 23:20:40,Jidder,"Fireknight: alles klar. wie rufst du compiler, assembler und linker auf?"
+2009-05-02 23:22:07,Jidder,Fireknight: ah ich sehs. du hast die segmentregister gar nicht geladen
+2009-05-02 23:25:59,Fireknight,vor dem Sprung in den PMode?
+2009-05-02 23:26:13,Jidder,danach geht auch
+2009-05-02 23:26:22,Jidder,ich würds danach machen
+2009-05-02 23:26:47,Fireknight,"also es,ss,fs,gs auf ax (0x1000) setzen?"
+2009-05-02 23:26:55,Jidder,"ne, auf deinen datenselektor"
+2009-05-02 23:27:02,Fireknight,k
+2009-05-02 23:27:13,Jidder,also datasel
+2009-05-02 23:27:28,FreakyPenguin,Ach wenn du gerne mal einen Tripple-Fault hättest geht auch ersteres. ;-)
+2009-05-02 23:28:41,taljeth,Triple Faults sind doch was nettes
+2009-05-02 23:29:40,Jidder,aber nicht rot
+2009-05-02 23:29:56,taljeth,"Wenn du deinen qemu nicht geh4x0rt hast, natürlich nicht"
+2009-05-02 23:30:52,Fireknight,Jetzt schmiert Qemu wieder ab :*
+2009-05-02 23:32:41,taljeth,Abschmieren? Dann war's wohl ein Triple Fault.
+2009-05-02 23:34:37,Fireknight,http://rafb.net/p/du0vqN72.html
+2009-05-02 23:35:10,Fireknight,"das mov ax, datasel [...] mag er wohl nicht."
+2009-05-02 23:36:55,taljeth,Dein Null-Deskriptor kommt mir irgendwie kurz vor
+2009-05-02 23:37:07,FreakyPenguin,taljeth: Ist der andere Patch so anspruchsvoll? ;-)
+2009-05-02 23:37:14,taljeth,"Fireknight: Ah, nein, da ist ein Komma. Dann kommt er mir lang vor. ;-)"
+2009-05-02 23:37:36,taljeth,"FreakyPenguin: Ja, der wird im Gegensatz zum anderen getestet ;-)"
+2009-05-02 23:37:43,FreakyPenguin,Ah *g*
+2009-05-02 23:39:09,taljeth,Was sagst du eigentlich mit deinem Signed-off-by aus? Etwas undefiniertes zu unterschreiben ist ja halbwegs sinnlos. ;-)
+2009-05-02 23:39:22,Fireknight,In Assembler haette ich meine Ausgabe :(
+2009-05-02 23:39:49,Jidder,Fireknight: das org 0x10000 ist falsch
+2009-05-02 23:40:04,Jidder,du kannst im 16 code keine 32 bit orgs nutzen
+2009-05-02 23:40:07,FreakyPenguin,taljeth: Müssen wir da noch diesen Standardtext ins Repo kopieren? *g*
+2009-05-02 23:40:25,Jidder,"Fireknight: ich dachte zuerst, dass das ein netter workaround ist, aber ich glaube der funktioniert nicht"
+2009-05-02 23:40:31,FreakyPenguin,"Ah endlich, ein ack. ;-)"
+2009-05-02 23:40:31,taljeth,FreakyPenguin: Willst du das DCO von Linux übernehmen?
+2009-05-02 23:40:52,Fireknight,Wenn ich eine Assemblervariante bei PMode: [..] platziere funktioniert sie jedenfalls.
+2009-05-02 23:41:11,taljeth,"FreakyPenguin: Aber vergiß nicht, vor dem Einchecken Patch 2 und 3 in die richtige Reihenfolge zu bringen. ;-)"
+2009-05-02 23:41:37,FreakyPenguin,"Jo, habe ich schon, ich musste ja eh rebasen für Nummer 3.5 ;-)"
+2009-05-02 23:41:40,Jidder,"Fireknight: hä? was heißt ""Assemblervariante""? und meinst du mit funktionieren?"
+2009-05-02 23:42:08,taljeth,Gut. Man muß bisect ja nicht gerade absichtlich kaputtmachen
+2009-05-02 23:42:24,Fireknight,"Jidder: Eine Funktion zum Zeichen ausgeben. Und funktionieren im Sinne von ""Der Text ist nachher lesbar auf dem Schirm""."
+2009-05-02 23:42:47,Fireknight,einfach in Assembler statt in C.
+2009-05-02 23:43:07,Jidder,achso hmm
+2009-05-02 23:43:18,Fireknight,"also, nicht mehr nach dieser Aenderung mit datasel."
+2009-05-02 23:43:27,Fireknight,da schmiert es ab.
+2009-05-02 23:43:34,Fireknight,aber ohne die letzte Aenderung klappts.
+2009-05-02 23:43:52,Jidder,"also du musst die segmentregister mit den datenselektoren laden. wenn du es nicht tust, bist du noch halb im real mode"
+2009-05-02 23:44:10,FreakyPenguin,"taljeth: Jo, ich hätte jetzt den Text von Linux übernommen..."
+2009-05-02 23:44:40,Jidder,Fireknight: ich hab keine erklärung. vergiss erstmal meinen kommentar zum org. ich weiß nicht was mir mein disassembler sagen will. es macht irgendwie keinen sinn
+2009-05-02 23:45:35,taljeth,FreakyPenguin: Steht der denn unter einer freien Lizenz? ;-)
+2009-05-02 23:46:01,Fireknight,Ich glaube das wird nichts mit meinem TicTacToe ;P
+2009-05-02 23:46:15,FreakyPenguin,Hm muss ich jetzt noch nachsehen wo da FDL steht? ;-)
+2009-05-02 23:46:22,Fireknight,Oder ich schreib es halt ganz in Assembler *g*
+2009-05-02 23:46:25,Jidder,"du kannst das ganze auch als erfahrung abbuchen, und mit grub anfangen"
+2009-05-02 23:46:40,Jidder,das problem liegt im assembler code ;(
+2009-05-02 23:46:40,Jidder,;)
+2009-05-02 23:46:45,Fireknight,Passt GRUB auf eine Diskette?
+2009-05-02 23:46:52,Jidder,jep
+2009-05-02 23:47:12,Jidder,"greif dir ein tyndur image, schmeiss tyndur runter (aber lass die menu.lst drauf) und los gehts"
+2009-05-02 23:47:35,Jidder,ein floppy image von hier sollte gehen: http://nightlies.tyndur.org/
+2009-05-02 23:47:46,FreakyPenguin,und stage1/2 besser auch in Frieden lassen. ;-)
+2009-05-02 23:48:03,Jidder,das is besser ;)
+2009-05-02 23:48:28,stultus,ansonsten is grub ne eierlegende wollmilchsau ;)
+2009-05-02 23:48:55,stultus,"bootet von so gut wie allem, floppys, hdd, cd/dvd(eltorito), teilweise auch netzwerk"
+2009-05-02 23:49:16,Jidder,"und befördert dich in einen anderen problemraum: du musst dich plötzlich entscheiden, was für features du in deinem os haben willst, anstatt dich mit eigenheiten der x86 cpu abzuquälen"
+2009-05-02 23:50:52,Jidder,in welchen wikiartikel vandalier ich denn heute nacht?
+2009-05-02 23:51:01,Jidder,-n+m (sucht euch eins aus)
+2009-05-02 23:51:28,Jidder,"hab ja mir schon was für assembler überlegt, aber an lizenz-ungeklärt-artikel geh ich nich ran ..."
+2009-05-02 23:53:57,Fireknight,"Hm, wenn meine IDT 256 Eintrage enthaelt, dann muss die groesse beim Selektor 256*8 sein?"
+2009-05-02 23:54:16,Jidder,ne 256*8-1
+2009-05-02 23:54:41,Fireknight,Das -1 ist jetzt weird.
+2009-05-02 23:54:43,Jidder,"das ist das limit. hat bestimmt irgendeinen grund, warum das so ist. aber ich kann da nur raten ;)"
+2009-05-02 23:55:23,Fireknight,Groesse und Laengen sind idr ja ohne ein -1 im Gegensatz zum maximalen Index.
+2009-05-02 23:55:46,Fireknight,Wohin wird dieser Selektor eigentlich geladen?
+2009-05-02 23:56:22,Jidder,"intel manuals volume 3a, kapitel 5.10: Because IDT entries are always eight bytes long, the limit should always be one less than an integral multiple of eight (that is, 8N – 1)."
+2009-05-02 23:56:52,Jidder,"der wird nirgendwo hingeladen, wenn du einfach nur interrupts in form von irqs, exceptions oder INTs aufrufst"
+2009-05-02 23:57:07,Jidder,"da schaut die cpu nur rein, um die adresse (selektor vom handler"
+2009-05-02 23:57:20,Jidder,"da schaut die cpu nur rein, um die adresse (selektor+offset+flags für ringwechsel etc.) vom handler zubekommen"
+2009-05-02 23:57:48,Fireknight,Die CPU musst doch irgendwo Speichern wo die IDT liegt?
+2009-05-02 23:57:52,Fireknight,*speichern
+2009-05-02 23:58:03,Fireknight,bzw. der Selektor.
+2009-05-02 23:58:07,Jidder,"ah ja, dafür gibt es das IDTR (interrupt descriptor table register)"
+2009-05-02 23:58:21,Fireknight,k.
+2009-05-02 23:58:21,Jidder,das lädst du mit lidt [idtr]. funktioniert genauso wie lgdt 
+2009-05-02 23:59:40,Jidder,"wenn ich hier aus den manuals zitiere schaut keiner nach, oder?"
+2009-05-02 23:59:58,Jidder,dann lass ich das nämlich. der suchenbutton von adobe ist schon total abgenutzt ^^

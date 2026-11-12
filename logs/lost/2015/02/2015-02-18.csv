@@ -1,0 +1,583 @@
+date/time,nick,message
+2015-02-18 13:31:29,Jonathan,Moin
+2015-02-18 13:32:09,kevin,Moin
+2015-02-18 13:33:12,Jonathan,"kevin: Ob meine Lehrer wohl damit zufrieden sind, wenn ich meine Präsentation einfach mit less aus ner Textdatei abspiele? *g*"
+2015-02-18 13:33:46,Jonathan,Dafür ist das System immerhin schon zu gebrauchen :P
+2015-02-18 13:35:24,kevin,Warum denn nicht
+2015-02-18 13:35:50,kevin,Du musst nur genug Steuerzeichen in der Textdatei unterbringen *g*
+2015-02-18 13:55:25,Jonathan,Hmmm *g*
+2015-02-18 13:58:01,Jonathan,Verdammt
+2015-02-18 13:58:08,Jonathan,Jetzt ist irgendwie das ROM-FS broken
+2015-02-18 14:01:28,Jonathan,...oder vielleicht hätte ich einfach die neue Version auch compilieren sollen
+2015-02-18 14:03:58,kevin,Wird überbewertet
+2015-02-18 14:07:34,Jonathan,Na super
+2015-02-18 14:07:51,Jonathan,"Wenn ich von meiner Shell aus die Shell nochmal starten will, crasht mir irgendwie das ganze OS"
+2015-02-18 14:07:52,Jonathan,:D
+2015-02-18 14:07:59,Jonathan,Wie doof
+2015-02-18 14:09:36,kevin,Schade
+2015-02-18 14:09:50,kevin,Ist das in der Präsentation auch vorgesehen oder ist es egal? ;-)
+2015-02-18 14:10:12,Jonathan,Hmmm *g*
+2015-02-18 14:10:23,Jonathan,"Ich denke mal, ich sollte das lieber fixen ;)"
+2015-02-18 14:10:50,Jonathan,Keine weiteren Tasks als die Shell starten zu können ruiniert irgendwie den Sinn vom OS
+2015-02-18 14:12:41,kevin,Ach was *g*
+2015-02-18 14:16:45,Jonathan,Hmmm...
+2015-02-18 14:17:12,Jonathan,"Zumindest scheint er das Executable richtig in den Speicher zu laden, ohne dabei was kaputt zu machen"
+2015-02-18 14:17:37,Jonathan,"Wenn ich ihm ne Textdatei als Executable vorwerfe, lädt er's in den Speicher und scheitert dann an der Magic Number"
+2015-02-18 14:17:49,Jonathan,Und es gibt korrekt nen Fehler zurück
+2015-02-18 14:19:12,Jonathan,Oh mann
+2015-02-18 14:19:18,Jonathan,Ich bin soooooooo blöd xD
+2015-02-18 14:19:50,Jonathan,Mein Code initialisiert den Stackpointer vom neuen Task nach 0x4000 * last_task_page_slot - 1
+2015-02-18 14:20:08,Jonathan,D.h. für einen Task mit 1 Page packt er den nach 0x3FFF
+2015-02-18 14:20:14,Jonathan,...voll in die Kernelpage rein
+2015-02-18 14:21:18,Jonathan,*Seufz*
+2015-02-18 14:27:59,Jonathan,Jetzt crasht er immerhin schonmal nicht mehr
+2015-02-18 14:31:12,Jonathan,"Noch besser: Jetzt funktioniert das Starten von Tasks ansich, aber der Parent-Task denkt immer sofort, sein Child hätte sich beendet."
+2015-02-18 14:31:39,Jonathan,Und dann lauschen zwei Shell-Tasks gleichzeitig am selben tty.
+2015-02-18 14:31:43,Jonathan,Das ist voll super.
+2015-02-18 14:32:11,Jonathan,Kann man die beiden Shells dann immer schön abwechselnd bedienen... xD
+2015-02-18 14:36:05,yayachiken,erinnert an linus erste versuche
+2015-02-18 14:36:14,yayachiken,wo der seiner schwester die AAAAABBBBB gezeigt hat
+2015-02-18 14:36:19,yayachiken,"und die so ""ok"""
+2015-02-18 14:37:35,kevin,Deswegen zeige ich mein AAAAABBBBBB nie her
+2015-02-18 14:38:15,kevin,"Und committe Code nur, wenn LIOv2 dabeisteht, damit es sicher niemand anschaut"
+2015-02-18 15:57:14,Svenska,moin
+2015-02-18 16:23:03,kevin,"max: Hm, lese ich das richtig als ""keine Ahnung, warum das das Problem fixt""? ;-)"
+2015-02-18 16:23:12,max,Klar *g*
+2015-02-18 16:23:35,kevin,"Gut, soweit war ich nämlich auch *g*"
+2015-02-18 16:24:05,max,"Das war wieder ein Fall von „Ich vergaß, dass Coroutinen uns vor reentrant-Zeug bewahren“"
+2015-02-18 16:24:21,max,"Also, gut, nicht reentrant"
+2015-02-18 16:24:34,max,Aber halt parallele Ausführung von nicht-yieldenden Funktionen
+2015-02-18 16:24:54,kevin,"Dachte ich mir schon, so wie du das Lock platziert hast ;-)"
+2015-02-18 16:25:12,max,"Na ja, wenn ich das eine Zeile tiefer setze, gehts kaputt"
+2015-02-18 16:25:38,kevin,"Öh, wie das?"
+2015-02-18 16:25:47,max,"[10:23:03] <kevin> max: Hm, lese ich das richtig als ""keine Ahnung, warum das das Problem fixt""? ;-)"
+2015-02-18 16:26:01,max,Ich hab keine Ahnung
+2015-02-18 16:26:23,max,"Wenn nicht sowohl das Auslesen aus der bmap als auch das bdrv_write() des neuen Blocks geschützt sind, gehts kaputt"
+2015-02-18 16:26:29,kevin,Okay... Also das Problem ist das bmap_entry = le32_to_cpu(s->bmap[block_index])?
+2015-02-18 16:26:32,max,jo
+2015-02-18 16:27:35,kevin,"Hm, na gut, das ergibt sogar Sinn"
+2015-02-18 16:27:40,kevin,Aber nur weil die Mutex yielden kann
+2015-02-18 16:27:50,kevin,Ohne die Mutex sollte da nichts passieren...
+2015-02-18 16:27:57,max,"Hm, stimmt"
+2015-02-18 16:28:02,max,Tuts aber ;-)
+2015-02-18 16:28:10,kevin,Blöd ;-)
+2015-02-18 17:50:57,Jonathan,Svenska! :D
+2015-02-18 17:51:07,Jonathan,Meine Shell kann Programme vom Dateisystem starten. :D
+2015-02-18 17:51:22,Svenska,gratuliere :p
+2015-02-18 17:51:25,Jonathan,Danke :P
+2015-02-18 17:51:27,Jonathan,Nur eins ist doof:
+2015-02-18 17:51:46,Jonathan,"Irgendwas sagt der Shell, dass ihr Child-Task sofort nach Erstellung tot ist"
+2015-02-18 17:51:50,Jonathan,...was natürlich nicht stimmt
+2015-02-18 17:52:08,Jonathan,Und dadurch wechseln sich dann beide Tasks mit ihrem Zugriff auf fgets() ab
+2015-02-18 17:52:19,Jonathan,D.h. man wird ständig von einem Programm ins andere geworfen *g*
+2015-02-18 17:52:55,Svenska,wie erzeugst du einen neuen prozess? fork/exec oder eher createprocess? ;)
+2015-02-18 17:52:59,Jonathan,"Wenigstens weiß ich jetzt, dass das Locking von Modulen korrekt funktioniert... Ansonsten wäre das Ding dabei sofort abgeschmiert, wenn das VFS nicht thread-safe wäre"
+2015-02-18 17:53:04,Jonathan,Eher createprocess ;)
+2015-02-18 17:53:22,Jonathan,"create_task(char* path, process_info_t* all_neccessary_stuff_to_start_a_task);"
+2015-02-18 17:53:33,Svenska,und wie kommuniziert diese funktion mit der shell? blocken ist ja doof :)
+2015-02-18 17:54:02,Jonathan,"Sie startet das Executable und gibt entweder ne PID, oder nen Errorcode zurück"
+2015-02-18 17:54:38,Svenska,"passiert irgendwas besonderes, wenn der neue prozess endet?"
+2015-02-18 17:54:47,Jonathan,Das ist es ja: Er endet garnicht
+2015-02-18 17:54:50,Jonathan,Er lebt
+2015-02-18 17:54:54,Jonathan,"Nur die Shell denkt, er wäre tot"
+2015-02-18 17:55:04,Svenska,"ja, ich meinte, wenn er denn mal endet ;)"
+2015-02-18 17:55:07,Jonathan,Nein
+2015-02-18 17:55:26,Jonathan,"Wenn ich einem der beiden Tasks ein exit reindrücken kann, beendet er sich normal und alles ist super"
+2015-02-18 17:55:27,Svenska,"wie stellt die shell dann fest, ob ein prozess lebt?"
+2015-02-18 17:55:43,Jonathan,Naja
+2015-02-18 17:55:50,Jonathan,Da gibt's task_exist(uint8_t pid);
+2015-02-18 17:55:53,Jonathan,Aber das ist nicht das Problem
+2015-02-18 17:56:09,Jonathan,"Die Shell denkt aus $gründen, ihr create_task() wäre fehlgeschlagen und es gäbe gar keinen neuen Task"
+2015-02-18 17:56:26,Jonathan,Und macht dann mit der command prompt weiter
+2015-02-18 17:56:39,Jonathan,Was natürlich doof ist
+2015-02-18 17:56:45,Svenska,"ok, _das_ ist ein problem ^^"
+2015-02-18 17:57:00,Jonathan,Eigentlich sollte die danach brav task_exist() pollen und yield() ausführen *g*
+2015-02-18 17:57:23,Jonathan,Signale...gibt's später vielleicht mal
+2015-02-18 17:57:41,Jonathan,Geht momentan auch noch ohne :P
+2015-02-18 17:57:58,Svenska,jo
+2015-02-18 17:58:00,Jonathan,"Nur wieso die Shell denkt, da wäre ein Fehler aufgetreten... Ich hab keine Ahnung"
+2015-02-18 17:58:10,Svenska,bug in create_task() ? ;)
+2015-02-18 17:58:27,Jonathan,Tja
+2015-02-18 17:58:31,Jonathan,Das weiß ich noch nicht
+2015-02-18 17:58:35,Jonathan,Muss ich wohl rausfinden *g*
+2015-02-18 17:58:42,Jonathan,create_task() ist auch so ne Sache...
+2015-02-18 17:59:03,Svenska,*g*
+2015-02-18 17:59:17,Jonathan,"Geht über mehrere Trampoline zweimal durch's Modulsystem, um mit diesem verdammten kleinen Adressraum klar zu kommen"
+2015-02-18 17:59:22,Jonathan,*Seufz*
+2015-02-18 17:59:36,Svenska,klingt...lecker
+2015-02-18 17:59:38,Jonathan,Ja
+2015-02-18 17:59:39,Jonathan,*g*
+2015-02-18 18:00:08,Svenska,"das ist mir uebrigens mal aufgefallen... ein unix auf ner 8- oder 16-bit-maschine kann prinzipbedingt kein ""configure""-script mehr ausfuehren..."
+2015-02-18 18:00:21,Jonathan,Wieso das?
+2015-02-18 18:00:23,Svenska,...weil die teile >64 KB environment erzeugen.
+2015-02-18 18:00:28,Jonathan,...oh
+2015-02-18 18:00:32,Jonathan,:(
+2015-02-18 18:01:05,Svenska,"ich mein, es fetzt schon, wenn man ein ibm unix auf nem original-pc hat, und ""configure"" tatsächlich losläuft"
+2015-02-18 18:01:16,Svenska,"(vor allem, weil es da sonstwas fuer tolle dinge findet)"
+2015-02-18 18:01:34,Jonathan,:D
+2015-02-18 18:01:35,Svenska,"aber irgendwann ist halt die shell out of memory, und das script noch lange nicht durch"
+2015-02-18 18:01:42,Jonathan,Schade
+2015-02-18 18:01:58,Jonathan,Apropos
+2015-02-18 18:02:10,Jonathan,Über's Wochenende bin ich das doofe Speicherplatzproblem losgeworden
+2015-02-18 18:02:27,Jonathan,EEPROM + Register + Random Logic = Speicherplatz! :D
+2015-02-18 18:02:37,Svenska,die sache mit dem quarz war uebrigens gemein
+2015-02-18 18:02:45,Jonathan,*g*
+2015-02-18 18:02:48,Svenska,"der tms9929 braucht nen 10.7 mhz quarz, den ich natuerlich nicht habe"
+2015-02-18 18:03:21,Jonathan,Nimm einen VCO und ein 10-Gang-Potentiometer? *g*
+2015-02-18 18:04:04,Svenska,"ich fuerchte, der takt muss relativ genau sein, weil der chip daraus die fernsehsignale erzeugt..."
+2015-02-18 18:04:09,Jonathan,Ja
+2015-02-18 18:04:14,Jonathan,10-Gang-Poti
+2015-02-18 18:04:16,Jonathan,Ist genau :P
+2015-02-18 18:04:23,Svenska,damit fällt irgendwie ein kleiner avr raus
+2015-02-18 18:04:36,Jonathan,"Kannst ja den Fernseher anschließen und dann so lange am Poti drehen, bis ein Bild rauskommt"
+2015-02-18 18:04:48,Svenska,was fuer ein sauberes design :D
+2015-02-18 18:04:53,Jonathan,:D
+2015-02-18 18:05:09,Jonathan,"Seit wann ist ""PCF-Chips überschreiben"" ein sauberes Design? ;)"
+2015-02-18 18:05:26,Svenska,die sind dafuer vorgesehen
+2015-02-18 18:05:38,Svenska,denn sonst kannst du sie nicht als inputs benutzen
+2015-02-18 18:05:45,Svenska,was laut datenblatt aber vorgesehen ist
+2015-02-18 18:05:57,Jonathan,*g*
+2015-02-18 18:06:10,Jonathan,Dann ist das Design der Chips kaputt ;)
+2015-02-18 18:06:13,Jonathan,Aber gut
+2015-02-18 18:06:23,Jonathan,In den Zeiten von LS-Logik mag das okay gewesen sein *g*
+2015-02-18 18:06:36,Svenska,"es gibt i2c-chips, die push-pull-outputs haben, und die haben auch immer ein zweites register fuer die richtungsumschaltung"
+2015-02-18 18:06:53,Jonathan,Ja
+2015-02-18 18:06:56,Svenska,"uebrigens ist das konzept aus ""weak pullup"" und ""input"" ganz normal... *g*"
+2015-02-18 18:06:58,Jonathan,Aber dein PCF hat das nicht
+2015-02-18 18:08:54,Svenska,seufz... ich wollte gerade sshfs nach hause bauen und bisschen musik hören
+2015-02-18 18:09:04,Svenska,der upsteram reicht nicht fuer mp3 :(
+2015-02-18 18:09:27,Jonathan,... :(
+2015-02-18 18:10:02,Svenska,"bzw es ist arg grenzwertig. mit ordentlichem cache ist da 1min zwischen den liedern, dann gehts :)"
+2015-02-18 18:10:30,Svenska,"achso, und ich hab mein netbook gepimpt. es kann jetzt 720p ""fast in echtzeit"" dekodieren ;)"
+2015-02-18 18:11:04,Jonathan,lol *g*
+2015-02-18 18:11:57,Svenska,"das hauptproblem ist, dass das wlan etwa 25% der cpu fuer sich braucht, d.h. streams taugen nix, und dateien werden gegen ende plötzlich fluessig"
+2015-02-18 18:12:04,Svenska,seufz
+2015-02-18 18:12:31,Jonathan,100MHz-CPU?
+2015-02-18 18:12:56,Svenska,"1000mhz cpu, via c7"
+2015-02-18 18:13:10,Jonathan,Hmmm ;)
+2015-02-18 18:13:25,Svenska,"es geht um h264, da steigt ne 100 mhz cpu schon bei 64x64 aus :)"
+2015-02-18 18:13:29,Jonathan,Vielleicht kann man das Ding ja in einen stromfressenderen Modus schalten?
+2015-02-18 18:13:52,Jonathan,Und haben die meisten Netbooks nicht nen h264-Decoder in der GPU?
+2015-02-18 18:14:02,Svenska,"so lange auf die gpu einpruegeln, bis sie das selbst dekodiert...?"
+2015-02-18 18:14:09,Jonathan,*g*
+2015-02-18 18:14:12,Svenska,"ja, die hardware kann das. aber die software kann das nicht."
+2015-02-18 18:14:16,Jonathan,Achso
+2015-02-18 18:14:24,Jonathan,Na dann beschwer dich nicht beim Netbook :P
+2015-02-18 18:14:27,Jonathan,Das ist unschuldig
+2015-02-18 18:14:38,Svenska,via produziert kein x86 mehr. :(
+2015-02-18 18:14:58,Jonathan,Schreib dir doch deinen eigenen Treiber? *g*
+2015-02-18 18:15:30,Jonathan,Und create_task() scheint wohl auch bei Erfolg irgendwie -1 zurückzugeben
+2015-02-18 18:15:42,Svenska,"tja... via hat zwar mal doku veröffentlicht, aber nur registerlisten"
+2015-02-18 18:15:47,Jonathan,"...eigentlich gibt es das immer zurück, egal, was für ein Fehler oder kein Fehler auftritt"
+2015-02-18 18:15:51,Svenska,"ob da der dekoder drin war, weiß ich nicht"
+2015-02-18 18:16:04,Jonathan,Hmm
+2015-02-18 18:16:10,Jonathan,Schonmal Google um einen Treiber bemüht?
+2015-02-18 18:16:25,Jonathan,Kennst doch das xkcd-Comic mit dem USB-Port? ;)
+2015-02-18 18:16:43,Svenska,"ja, es gibt einen fuer windows xp, einen open-source treiber von via, der das nicht kann, und einen closed-source-treiber von via, der das zwar kann, aber unsicher, instabil und nur fuer alte kernel ist :D"
+2015-02-18 18:17:01,Svenska,"hast du sowas wie ""errno"", oder warum kann dein create_task() nicht sagen, was kaputt ist? :D"
+2015-02-18 18:20:50,Jonathan,"create_task() *sollte* mir sagen, was kaputt ist"
+2015-02-18 18:21:13,Jonathan,z.B. ENOTEXECUTABLE oder EOUTOFMEMORY
+2015-02-18 18:21:13,Svenska,:)
+2015-02-18 18:21:13,Jonathan,Stattdessen gibt es *immer* -1 zurück
+2015-02-18 18:21:22,Jonathan,"Völlig unabhängig davon, was für ein Fehler aufgetreten ist"
+2015-02-18 18:21:47,Jonathan,Oder ob überhaupt ein Fehler aufgetreten ist
+2015-02-18 18:22:01,Jonathan,(Im Erfolgsfall sollte es nämlich die Nummer des erzeugten Tasks zurückgeben)
+2015-02-18 18:24:58,Jonathan,AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARGH
+2015-02-18 18:25:17,Jonathan,Ich bin so blöd...
+2015-02-18 18:25:38,max,inb4 der neue Task hat die Nummer -1
+2015-02-18 18:25:40,Svenska,entwicklunsgbug?
+2015-02-18 18:25:50,Jonathan,Pure Blödheit
+2015-02-18 18:25:51,Jonathan,Wie immer
+2015-02-18 18:26:05,max,Manchmal ist es auch Blödheit gemischt mit Pech
+2015-02-18 18:26:07,Jonathan,http://pastebin.com/2RXc7dsa
+2015-02-18 18:26:11,Jonathan,^Findet den Fehler
+2015-02-18 18:26:15,max,"Das ist ganz besonders schlimm, weil man die Blödheit dann erst später bemerkt"
+2015-02-18 18:26:21,Jonathan,Ja... :(
+2015-02-18 18:26:26,max,Tabs statt Leerzeichen?
+2015-02-18 18:26:28,Jonathan,Nein
+2015-02-18 18:26:29,max,Fehler gefunden
+2015-02-18 18:26:31,Jonathan,:D
+2015-02-18 18:26:31,max,Doch!
+2015-02-18 18:26:33,Jonathan,Nein
+2015-02-18 18:26:38,Jonathan,Keine Tabs
+2015-02-18 18:26:44,Svenska,break vergessen
+2015-02-18 18:26:46,max,Dann halt zu viele Leerzeichen
+2015-02-18 18:26:51,Jonathan,Es war das break
+2015-02-18 18:26:53,Jonathan,:(
+2015-02-18 18:26:55,Jonathan,Gnarf
+2015-02-18 18:26:59,Svenska,tipp
+2015-02-18 18:27:03,max,Mit vier Leerzeichen wär das nicht passiert
+2015-02-18 18:27:16,Svenska,"immer das break hinschreiben, und wenn man es absichtlich weglässt, dann ein /* continue */ ;)"
+2015-02-18 18:27:28,Svenska,"(oder ""fall-through"", was ich auch schon gesehen habe)"
+2015-02-18 18:28:35,Jonathan,facepalm_factor = triviality_of_mistake * time_spent_to_find_mistake;
+2015-02-18 18:29:07,Svenska,einheit in stunden? :)
+2015-02-18 18:29:18,Jonathan,Tage
+2015-02-18 18:29:19,Jonathan,*g*
+2015-02-18 18:29:58,Jonathan,"Eine schöne Sache hat das mit dem EEPROM: Für einen Fix im OS muss ich nicht das ganze ROM-FS neu bauen, und umgekehrt"
+2015-02-18 18:30:01,Svenska,ich hab grad mit nem problem anderer art zu kämpfen
+2015-02-18 18:30:18,Jonathan,"Insbesondere war es lästig, jedes mal ein neues Image vom OS zu erstellen, um was an der Shell zu ändern"
+2015-02-18 18:30:22,Svenska,"dynamische datenstrukturen, und malloc() funktioniert nicht -.-"
+2015-02-18 18:30:30,Jonathan,"SDCC braucht 20 Minuten, um mein OS durchzunudeln :("
+2015-02-18 18:30:33,Jonathan,Hmmm
+2015-02-18 18:30:35,Jonathan,Auch kacke
+2015-02-18 18:30:36,Svenska,bzw.
+2015-02-18 18:30:38,Jonathan,Speicherpools?
+2015-02-18 18:30:50,Svenska,malloc()s erste antwort ist 0x8f000008
+2015-02-18 18:31:08,Svenska,auf jedem kern :D
+2015-02-18 18:31:36,Jonathan,Was bedeutet der Code? :D
+2015-02-18 18:31:37,Svenska,"(das ist im extrem langsamen, gemeinsam genutzten speicher.)"
+2015-02-18 18:32:04,Svenska,"(und damit mitten in meiner datenaustauschstruktur, obwohl das linkerscript nen richtigen heap definiert...)"
+2015-02-18 18:32:24,iksnagreb,nabend
+2015-02-18 18:32:47,Svenska,"d.h. erstmal ein malloc() definieren, free() brauche ich nicht, also alles hintereinander pappen... *seufz*"
+2015-02-18 18:33:13,Jonathan,... :(
+2015-02-18 18:33:23,Jonathan,"Wie gut, dass mein System erst gar kein malloc() hat"
+2015-02-18 18:33:31,Jonathan,Und SDCCs malloc() ist sowieso broken
+2015-02-18 18:33:39,Jonathan,Geben die auch offen zu
+2015-02-18 18:33:52,Svenska,"wird zeit, ein llvm-backend zu bauen :D"
+2015-02-18 18:34:05,Jonathan,"Hey, ich hab bald mein Abitur"
+2015-02-18 18:34:07,Jonathan,Danach gern :D
+2015-02-18 18:34:18,Svenska,"(btw: kann sein, dass ich sowas bald mal tun muss. allerdings nicht z80, auch wenn's lustig wär. *g*)"
+2015-02-18 18:34:23,Jonathan,Hmmm *g*
+2015-02-18 18:34:30,Jonathan,Und dann mein OS auf llvm portieren
+2015-02-18 18:34:40,Svenska,"hey, das kann nur besser werden. *g*"
+2015-02-18 18:34:40,Jonathan,Und die ganzen Würgarounds rausschmeißen *g*
+2015-02-18 18:34:47,Jonathan,Ja :P
+2015-02-18 18:34:56,Svenska,alternativ sdcc fixen :p
+2015-02-18 18:35:00,Jonathan,Nein
+2015-02-18 18:35:01,Jonathan,Bäh :D
+2015-02-18 18:35:10,Jonathan,Der produziert sowieso richtig bescheuerten Code
+2015-02-18 18:35:16,Svenska,fixen! :D
+2015-02-18 18:35:19,Jonathan,NEIN! :D
+2015-02-18 18:35:23,max,Doch!
+2015-02-18 18:35:24,Jonathan,fixen = neu schreiben
+2015-02-18 18:35:32,Jonathan,Und da kann ich auch gleich ein llvm-Backend machen
+2015-02-18 18:35:34,Svenska,"mit richtig bescheuert meinst du "">> 16 statt +2"" ?"
+2015-02-18 18:35:35,Jonathan,Ist vermutlich besser
+2015-02-18 18:35:42,Jonathan,Ja
+2015-02-18 18:35:43,Jonathan,Sowas
+2015-02-18 18:35:49,Jonathan,So Sachen tut der dauernd
+2015-02-18 18:35:56,Svenska,"ich vermute, bevor man mit dem llvm anfängt, sollte man binutils porten"
+2015-02-18 18:36:01,Svenska,ELF-z80 und so *g*
+2015-02-18 18:36:08,Jonathan,"Genauso wie das hier: ld l, h | ld h, l | ld l, h | push hl"
+2015-02-18 18:36:13,Jonathan,^fand ich so in meinem Code wieder
+2015-02-18 18:36:50,Svenska,"hm, das ist ne missing optimization in der peephole-liste"
+2015-02-18 18:37:10,Svenska,"wenn ich die doku richtig verstanden hab, funktioniert der ja genau nach dem prinzip"
+2015-02-18 18:37:25,Svenska,"""erzeug erstmal korrekten, wenn auch unsinnigen code, und werf dann den dummfug raus"""
+2015-02-18 18:37:50,Jonathan,Ja
+2015-02-18 18:38:00,Jonathan,Nur wirft er 75% des Dummfugs eben nicht raus
+2015-02-18 18:38:13,Svenska,dann fix es :D
+2015-02-18 18:38:23,Jonathan,Weil ein Peephole-Optimizer bei vergeigter Registernutzung usw. eben einfach nichts mehr bringt
+2015-02-18 18:38:25,Svenska,solche offensichtlichen dinge sollten einfach sein
+2015-02-18 18:38:32,Svenska,hm
+2015-02-18 18:38:36,Svenska,hmmm
+2015-02-18 18:38:46,Svenska,den register-allocator weiter pimpen? :D
+2015-02-18 18:38:54,Svenska,(= aus 20min mach 200 min ?)
+2015-02-18 18:38:56,Jonathan,Geh mal weg und fix deine eigenen Sachen :D
+2015-02-18 18:39:20,Jonathan,"Übrigens ist SDCC in einer Hinsicht auch toll: Er verwendet malloc(), aber kein free()"
+2015-02-18 18:39:30,Jonathan,D.h. jeder irgendwann genutzte Speicher sammelt sich an
+2015-02-18 18:39:41,Svenska,hm
+2015-02-18 18:39:43,Svenska,ich merk schon
+2015-02-18 18:39:48,Jonathan,Und deshalb kann man auch die Optimierung nicht auf ein gescheites Maximum setzen
+2015-02-18 18:40:03,Jonathan,"Irgendwann läuft dadurch einfach der Speicher voll, und da ist Schluss, selbst wenn meine CPU mehr könnte"
+2015-02-18 18:40:04,Svenska,"...das teil richtet sich an die leute, die auch den einen geschlossenen pic-compiler nutzen"
+2015-02-18 18:40:14,Svenska,"also den, der genau EINE datei in genau EIN binary pappen kann"
+2015-02-18 18:40:23,Jonathan,...*g*
+2015-02-18 18:40:30,Jonathan,Das Teil ist Schrott
+2015-02-18 18:40:36,Jonathan,"Also, irgendwie funktionierender Schrott"
+2015-02-18 18:40:57,Svenska,"ich frag mich, ob der vllt beim 8051-target besser ist"
+2015-02-18 18:41:02,Jonathan,"Nur leider der einzige für mich verfügbare C-Compiler für Z80... Außer Z88DK, und der ist noch schlimmer"
+2015-02-18 18:41:06,max,kann man da nicht einfach einen gc dagegen linken
+2015-02-18 18:41:15,max,so boehmgc oder wie der hieß
+2015-02-18 18:42:28,Jonathan,"Ich wette, mit einem gescheiten Compiler wäre mein OS 3x so schnell und bräuchte vllt nur sowas wie 5kB :("
+2015-02-18 18:43:06,Svenska,also doch den kritischen kram in asm schreiben
+2015-02-18 18:43:12,Jonathan,Ja
+2015-02-18 18:43:16,Svenska,"boah irgendwie ist hier kalt, ich mach nur tippfehler... mal n tee kochen :/"
+2015-02-18 18:43:23,Jonathan,Tu das ^^
+2015-02-18 18:44:56,Svenska,neeein die haben das linkerscript verbockt :/
+2015-02-18 18:46:20,Svenska,".heap_dram fängt bei shared+24M an, aber _heap_start_ liegt bei shared+16M"
+2015-02-18 18:47:49,Jonathan,xD
+2015-02-18 18:48:19,Jonathan,"Hm, geil"
+2015-02-18 18:48:21,Svenska,"die ersten 16 MB sind fuer die libc reserviert, alles weitere fängt bei +16M an"
+2015-02-18 18:48:31,Svenska,der heap sollte dann bei +24M liegen :(
+2015-02-18 18:48:39,Jonathan,ROM-FS mit einer Funktion zum Burst-Read vom ROM ausgestattet
+2015-02-18 18:48:51,Jonathan,System startet anstatt in 5 Sekunden in 1 Sekunde
+2015-02-18 18:49:08,Jonathan,Svenska: Dann fix es? ;)
+2015-02-18 18:49:29,Svenska,"kann ich nicht, weil ich nicht an 20 boards gehe und da anfange, linkerscripts zu manipulieren"
+2015-02-18 18:49:53,Svenska,"""static const void *heap_base = 0x8fxxxxxx"""
+2015-02-18 18:50:15,Jonathan,Ohje... xD
+2015-02-18 18:51:12,Svenska,wird dann später zu nem pointer auf ein array
+2015-02-18 18:58:07,Jonathan,"So, noch einen Bug gefunden"
+2015-02-18 18:58:32,Jonathan,"Wenn ein Task nicht existiert, setze ich SP in seiner Struct auf 0"
+2015-02-18 18:59:25,Jonathan,"Um einen Task zu beenden, tötet der Task seinen eigenen SP, free()'t alle Pages, macht dann yield() und geht in ne Endlosschleife"
+2015-02-18 18:59:42,Jonathan,Dummerweise schreibt der Task Switcher daraufhin wieder einen SP ungleich 0...
+2015-02-18 18:59:43,Svenska,klingt...interessant :D
+2015-02-18 18:59:53,Jonathan,Womit der Task kurz tot war und dann wieder lebt xD
+2015-02-18 19:00:43,Jonathan,"Fix: Wenn SP=0, verwirft der Task Switcher den Kontext des aktuellen Tasks, und alle sind glücklich"
+2015-02-18 19:01:07,Svenska,"""dich gibt's doch garnicht, geht weg"""
+2015-02-18 19:01:13,Jonathan,*g*
+2015-02-18 19:01:15,Jonathan,Jo
+2015-02-18 19:02:04,Jonathan,"Ein toter Task läuft noch so lange mit bereits gelöschten Pages und Kontext weiter, bis ihm der Task Switcher den Saft abdreht *g*"
+2015-02-18 19:02:10,Svenska,"lol liedtext, reim von ""gemein"" auf ""hygiene"" ;)"
+2015-02-18 19:02:13,Jonathan,Was dank yield() aber ziemlich schnell geht
+2015-02-18 19:02:22,Jonathan,xD
+2015-02-18 19:02:31,Svenska,"""ich find das zwar gemeene, doch verlangt es die hygiene"" :D"
+2015-02-18 19:02:37,Jonathan,*g*
+2015-02-18 19:04:30,Jonathan,So... Damit ist das Beenden von Tasks zwar jetzt ein absoluter Würgreizerreger
+2015-02-18 19:04:33,Jonathan,Aber es funktioniert
+2015-02-18 19:06:02,Jonathan,"Ha, geil xD"
+2015-02-18 19:06:12,Jonathan,Von einer Shell aus starte ich eine zweite Shell
+2015-02-18 19:06:23,Jonathan,Mache von da aus cd rom0
+2015-02-18 19:06:29,Jonathan,Stecke dann mit der Shell in /rom0
+2015-02-18 19:06:34,Jonathan,"Führe ""testprogram"" aus"
+2015-02-18 19:06:41,Jonathan,"Das Programm startet, ich tu was sinnloses damit"
+2015-02-18 19:06:44,Jonathan,Beende das Programm
+2015-02-18 19:06:51,Jonathan,"Lande wieder in der Shell, die in /rom0 steckt"
+2015-02-18 19:07:13,Jonathan,"Gebe exit ein, die Shell beendet sich, und als Prompt steht wieder ""/> "" da, also das working directory von der ersten Shell"
+2015-02-18 19:07:43,Jonathan,Das verdammte Ding funktioniert!!! :D
+2015-02-18 19:07:53,Svenska,mein malloc auch :p
+2015-02-18 19:07:58,Jonathan,:D
+2015-02-18 19:08:18,Jonathan,Hmmmm
+2015-02-18 19:08:42,Jonathan,"Also rein theoretisch sollte das Ding nach 16x Shell starten mit ""Out of Memory"" aussteigen, weil das momentan die maximale Anzahl Tasks ist"
+2015-02-18 19:08:46,Jonathan,Muss ich mal testen
+2015-02-18 19:09:02,Jonathan,"Vorallem, wie die Performance von dem Ding mit 16 Tasks aussieht *g*"
+2015-02-18 19:09:23,Svenska,hast du ne led an HALT ?
+2015-02-18 19:09:33,Jonathan,Das Teil macht atm noch kein idle
+2015-02-18 19:09:39,Svenska,schade ^^
+2015-02-18 19:09:43,Jonathan,Ist auch eigentlich nicht nötig ^^
+2015-02-18 19:09:53,Svenska,sieht aber schicker aus *g*
+2015-02-18 19:10:25,Jonathan,"Hey, mit 14 Shells wird es nur ein bisschen langsamer"
+2015-02-18 19:10:32,Svenska,"hm, blöde frage... wenn man die led umdreht und nach Vcc verdrahtet, dann ist die ja invertiert. kann der z80 so viel sourcen? ;)"
+2015-02-18 19:10:42,Svenska,(gnd statt vcc)
+2015-02-18 19:10:43,Jonathan,Der Z80-CMOS ja
+2015-02-18 19:10:51,Jonathan,Die NMOS-Version nicht
+2015-02-18 19:10:56,Svenska,mist. :)
+2015-02-18 19:10:57,Jonathan,Ein paar Mikroampere
+2015-02-18 19:11:02,Jonathan,"Okay, 16 Shells offen"
+2015-02-18 19:11:11,Jonathan,Bei der 17. müsste es jetzt Out of Memory geben
+2015-02-18 19:11:46,Jonathan,./rom0> shell
+2015-02-18 19:11:46,Jonathan,.Out of memory.
+2015-02-18 19:11:51,Jonathan,:D
+2015-02-18 19:11:52,Svenska,"aber das wäre fuer mich schon grund genug, eine echte idle-loop einzubauen, damit man eine schöne BUSY-led hat *g*"
+2015-02-18 19:11:55,Jonathan,Es geht!!! :D
+2015-02-18 19:11:57,Jonathan,xD
+2015-02-18 19:11:59,Jonathan,"Ja, schon"
+2015-02-18 19:12:02,Jonathan,Sähe schön aus
+2015-02-18 19:12:08,Jonathan,Würde aber eigentlich nur Performance fressen
+2015-02-18 19:12:10,Svenska,?
+2015-02-18 19:12:14,Jonathan,Naja
+2015-02-18 19:12:23,Jonathan,Tasks können nicht in irgendeinen Idle-State gehen
+2015-02-18 19:12:32,Jonathan,Sie können nur in Warteschleifen mit yield() pollen
+2015-02-18 19:12:34,Jonathan,*g*
+2015-02-18 19:12:47,Svenska,"ach, du hast garkein blocking?"
+2015-02-18 19:13:02,Jonathan,"Naja, vfs-Calls blocken schon"
+2015-02-18 19:13:09,Jonathan,Aber die Treibermodule pollen ihre Devices
+2015-02-18 19:14:17,Svenska,"also wirds zeit, langfristig auf interruptdriven umzustellen ^^"
+2015-02-18 19:14:42,Jonathan,Ja :P
+2015-02-18 19:14:46,Jonathan,Aber jetzt...
+2015-02-18 19:14:48,Jonathan,Nööööö
+2015-02-18 19:14:51,Jonathan,Das Ding läuft
+2015-02-18 19:14:55,Jonathan,Hat ausreichend Performance
+2015-02-18 19:14:57,Jonathan,---> Reicht
+2015-02-18 19:15:15,Jonathan,Ich kann sogar mit ner lustigen kleinen Shell Dateien öffnen und Programme starten
+2015-02-18 19:15:35,Svenska,"""reicht fuers abi""? ;)"
+2015-02-18 19:15:36,Jonathan,"Das ist mehr, als die meisten anderen Hobby-OS-Hallo-Welt-Programme"
+2015-02-18 19:15:38,Jonathan,Ja ;)
+2015-02-18 20:12:42,Jonathan,Svenska: https://www.dropbox.com/s/m6gnvi8nps62kuf/Shell4.png?dl=0
+2015-02-18 20:13:21,Svenska,schick
+2015-02-18 20:13:48,Jonathan,:D
+2015-02-18 20:14:09,Jonathan,"Damit wäre das System jetzt beim Zustand ""brauchbar"" angelangt :)"
+2015-02-18 20:14:15,Svenska,*g*
+2015-02-18 20:14:21,Jonathan,Ich werf auch grad nochmal den Bildschirmtreiber drauf *g*
+2015-02-18 20:15:43,Jonathan,Compiliert sogar.
+2015-02-18 20:18:51,Jonathan,Geht! :D
+2015-02-18 20:19:09,Jonathan,"Input ist zwar immernoch per RS232, aber Output geht jetzt perfekt auf den Bildschirm"
+2015-02-18 20:19:28,Jonathan,Also bastel ich demnächst noch die PS/2-Karte zusammen
+2015-02-18 20:29:00,Jonathan,Svenska: https://www.dropbox.com/s/ida48x1bmnp7nik/IMG_20150218_202628.jpg?dl=0
+2015-02-18 20:29:22,Svenska,"mir ist uebrigens zum tms aufgefallen, dass ich so ein schönes bild nie haben werde ;)"
+2015-02-18 20:30:27,Jonathan,Wieso? :(
+2015-02-18 20:30:36,Svenska,weil der bei 32x24 endet im textmodus
+2015-02-18 20:30:44,Jonathan,Oh
+2015-02-18 20:30:45,Jonathan,Schade
+2015-02-18 20:30:59,Svenska,"vielleicht kriege ich 64x32 hin, aber vermutlich nicht"
+2015-02-18 20:31:01,Jonathan,Ist dafür besser lesbar *g*
+2015-02-18 20:31:12,Jonathan,Meins ist wirklich arg klein
+2015-02-18 20:31:13,Svenska,"aber der ""multicolor""-modus hat eine auflösung von *staun* 64x32"
+2015-02-18 20:31:15,Svenska,PIXEL :D
+2015-02-18 20:31:25,Jonathan,xD
+2015-02-18 20:32:05,Svenska,ich mag ja 80x32 oder 80x30 auf 640x480
+2015-02-18 20:32:33,Jonathan,Joa
+2015-02-18 20:32:55,Paddy,Ketzer
+2015-02-18 20:33:08,Paddy,"Es weiß doch jeder, dass 80x25 der einzige wahre Modus ist"
+2015-02-18 20:33:10,Jonathan,"Ich dachte mir halt: ""Du hast sowieso 80x256 Scrolling-Buffer. Kann man ja auch gleich mal etwas mehr auf dem Bildschirm anzeigen..."""
+2015-02-18 20:33:18,Svenska,"irgendwo gammeln ja noch zwei displays bei mir rum... einmal TTL 1024x768, einmal DSTN 640x480"
+2015-02-18 20:33:19,Jonathan,"80x60 ftw, Paddy ;)"
+2015-02-18 20:33:20,Paddy,*g*
+2015-02-18 20:33:39,Svenska,Paddy: 80x25 _ist_ der einzig wahre modus. aber eben fuer 640x400 :D
+2015-02-18 20:33:46,Paddy,Pack doch alle deine 256 Zeilen auf den Bildschirm
+2015-02-18 20:34:16,Jonathan,"Paddy: 1,8 Pixelzeilen pro Textzeile? ;)"
+2015-02-18 20:35:02,Paddy,"Du meinst, mit Subpixeln arbeiten? Von mir aus *g*"
+2015-02-18 20:35:12,Jonathan,*g*
+2015-02-18 20:35:59,Paddy,"Wie viele Farben hast du denn? Vielleicht kann man ja einfach jedes Zeichen auf eine Farbe mappen, dann reicht ein Pixel pro Zeichen."
+2015-02-18 20:36:14,Svenska,lol
+2015-02-18 20:36:31,Jonathan,2 shades of grey
+2015-02-18 20:36:43,Jonathan,...*g*
+2015-02-18 20:36:53,Jonathan,"Mein ""DAC"" ist ein Schieberegister :D"
+2015-02-18 20:36:53,Svenska,"dazu käme dann eine bibliothek, die das als vollgrafik-modus bereitstellt und dann text rendert ^^"
+2015-02-18 20:37:01,Jonathan,Genau *g*
+2015-02-18 20:37:18,Svenska,"Jonathan: kannst du nicht relativ einfach auf 80x32 umstellen, mit 8x14 pixeln pro zeichen?"
+2015-02-18 20:37:27,Jonathan,8x16 wäre machbar
+2015-02-18 20:37:30,Paddy,"Hm, zwei Farben und 1,8 Pixel. Ich gebe zu, das wird knapp."
+2015-02-18 20:37:39,Svenska,naja 8x16 mit randzeichen wäre das
+2015-02-18 20:37:52,Svenska,wären dann 80x30
+2015-02-18 20:37:59,Jonathan,Müsste ich eine Adressleitung mehr ans Character ROM hängen
+2015-02-18 20:38:08,Jonathan,Und eine vom VRAM abklemmen
+2015-02-18 20:38:12,Jonathan,Bzw. nein
+2015-02-18 20:38:22,max,"Paddy, kommt drauf an"
+2015-02-18 20:38:24,Svenska,"achso, und du hast ja keinen komparator, sondern das alles in logik geklebt"
+2015-02-18 20:38:29,max,"Paddy, hat doch niemand von lateinischen Buchstaben geredet"
+2015-02-18 20:38:41,Jonathan,"Kommt darauf an, ob der ATMega8 für den vertikalen Zähler noch einen Pin frei hat :D"
+2015-02-18 20:39:00,Jonathan,"Wenn ja, könnte ich den Pin an's Char-ROM klemmen und den Controller so programmieren, dass er 8x16-Zeichen macht"
+2015-02-18 20:39:06,Jonathan,Wäre relativ einfach möglich
+2015-02-18 20:39:07,Svenska,:D
+2015-02-18 20:39:11,Jonathan,"Aber nee, keine Lust :P"
+2015-02-18 20:39:14,Svenska,"""ist alles software"""
+2015-02-18 20:39:20,Jonathan,Naja
+2015-02-18 20:39:23,Svenska,*g*
+2015-02-18 20:39:23,Jonathan,Nicht alles *g*
+2015-02-18 20:39:58,Svenska,dämliche 25 mhz pixeltakt
+2015-02-18 20:40:06,Svenska,ein stm32 fruehstueckt das in der idle-loop weg :(
+2015-02-18 20:40:16,Jonathan,"Du kennst ja meine Verwurstungen mit den ""Komparatoren"" am Pixelzähler? ;)"
+2015-02-18 20:40:21,Svenska,"ja, die meinte ich ja"
+2015-02-18 20:40:38,Jonathan,Ein GAL22V10D hätte die ganzen Komparatoren usw. in einem Chip verschlucken können
+2015-02-18 20:40:56,Jonathan,"Da ich damals leider noch keine GALs hatte, musste ich ""Geschickte Bitvernuckelung"" anwenden ;)"
+2015-02-18 20:40:56,Paddy,"max: Hm, stimmt. Morse wäre eine machbare Alternative."
+2015-02-18 20:41:08,Svenska,Paddy: 256 zeichen = 8 pixel
+2015-02-18 20:41:15,Svenska,"1 pixelbreite hoch, 8 pixel breit, passt. ;)"
+2015-02-18 20:41:20,Jonathan,Ansonsten hätte ich drei(!) 8-Bit-Komparatoren gebraucht... :(
+2015-02-18 20:41:26,Jonathan,"Und das wäre eklig geworden, in reiner Logik"
+2015-02-18 20:41:54,Paddy,"Svenska: Hm, stimmt irgendwie auffallend."
+2015-02-18 20:42:11,Jonathan,Und wer soll das dann lesen? ;)
+2015-02-18 20:42:19,Paddy,"Dann müsste man nur noch lernen, das zu lesen, geanu"
+2015-02-18 20:42:27,Jonathan,Muss man dann mit QR-Code-Scanner vor dem Bildschirm hocken? *g*
+2015-02-18 20:42:35,Jonathan,Wobei das ja inzwischen irgendwie Trend wird
+2015-02-18 20:42:38,Jonathan,lol
+2015-02-18 20:42:42,Paddy,"Aber wenn man das mal drauf hat, dann muss man endlich nicht mehr scrollen"
+2015-02-18 20:44:47,Jonathan,Naja
+2015-02-18 20:44:47,Paddy,"Bzw. wenn man scrollen muss, wird es Zeit, eine neue Sourcedatei anzufangen *g*"
+2015-02-18 20:44:47,Jonathan,*g*
+2015-02-18 20:44:47,Jonathan,Stimmt
+2015-02-18 20:44:47,Jonathan,Einen Assembler brauch ich für die Kiste noch
+2015-02-18 20:44:47,Jonathan,:D
+2015-02-18 20:44:47,Svenska,man könnte sich ja auf baudor beschränken
+2015-02-18 20:44:47,Svenska,baudot
+2015-02-18 20:44:47,Svenska,"5 bit pro zeichen, reicht aus. c kennt trigraphs."
+2015-02-18 20:44:47,Jonathan,Hmmm
+2015-02-18 20:44:47,Svenska,"6 bit, wenn man kleinbuchstaben und ziffern braucht ;)"
+2015-02-18 20:44:47,Svenska,wolltest du nicht sowieso auf 480 zeilen umstellen? :D
+2015-02-18 20:44:47,Jonathan,"Kriegt man die Sources von den ganz alten C-Compilern irgendwo noch, die mit sowas wie 4kB RAM Sachen kompilieren konnten?"
+2015-02-18 20:44:47,Svenska,teilweise ja
+2015-02-18 20:44:47,Jonathan,Svenska: 480/60 = 8
+2015-02-18 20:44:53,Svenska,"nur die können alle kein c, sondern nur etwas c-ähnliches"
+2015-02-18 20:45:00,Jonathan,Hmmm
+2015-02-18 20:45:05,Svenska,SMALL-C fuer CP/M gibt's jedenfalls noch
+2015-02-18 20:45:15,Jonathan,Also ich hab ja maximal 48k für Userspace-Programme *g*
+2015-02-18 20:47:26,Jonathan,Da sollte ja theoretisch ein Compiler drin laufen können...?
+2015-02-18 20:47:26,Svenska,http://en.wikipedia.org/wiki/Small-C
+2015-02-18 20:47:26,Svenska,http://www.cpm.z80.de/small_c.html
+2015-02-18 20:50:40,Jonathan,Hmmmm :D
+2015-02-18 20:50:42,Jonathan,Wäre eine Idee
+2015-02-18 20:57:38,Jonathan,Diese uralten Bugs...
+2015-02-18 20:57:42,Jonathan,Nervig
+2015-02-18 20:57:58,Jonathan,Da stecken seit Monaten Fehler im Code und ich merk's nicht :D
+2015-02-18 21:00:07,Paddy,Du meinst unentdeckte Features
+2015-02-18 21:01:55,Jonathan,Genau *g*
+2015-02-18 21:02:02,Jonathan,"So, hab ich das Feature mal beseitigt"
+2015-02-18 21:02:18,Paddy,"Genau, von Homix lernen heißt siegen lernen"
+2015-02-18 21:02:29,Paddy,"Ach, kennst du den überhaupt noch?"
+2015-02-18 21:03:10,Jonathan,"Nein, wieso? ;)"
+2015-02-18 21:03:34,Paddy,HomixOS hat halt von Version zu Version immer mehr Features verloren
+2015-02-18 21:03:42,Paddy,Dafür ist die Roadmap immer länger geworden *g*
+2015-02-18 21:03:53,max,jetzt fühl ich mich alt
+2015-02-18 21:04:04,Paddy,"Du _bist_ alt, max"
+2015-02-18 21:04:14,max,"Na, du bist ja der Experte :-P"
+2015-02-18 21:04:31,Paddy,"Wir haben dieselbe Ziffer vorne stehen, oder? ;-)"
+2015-02-18 21:04:38,max,"Nicht mehr lange, oder? ;-)"
+2015-02-18 21:04:50,max,"Gut, kommt immer auf die Definition von „lange“ an, ich weiß"
+2015-02-18 21:05:00,max,Aber zumindest für endliche Zeit
+2015-02-18 21:05:15,Paddy,Also jetzt in ein paar Tagen ist erstmal ein Update nur der zweiten Ziffer fällig
+2015-02-18 21:05:33,max,"Daraus schließe ich, noch ein Jahr? *g*"
+2015-02-18 21:05:42,Paddy,Wie kommst du nur drauf? *g*
+2015-02-18 21:07:03,Paddy,"Auf jeden Fall bist du im Vergleich zu Jonathan alt, um aufs Thema zurückzukommen ;-)"
+2015-02-18 21:07:10,max,Hm…
+2015-02-18 21:07:19,max,"Ich glaube, du bist weiter von mir entfernt als Jonathan :-P"
+2015-02-18 21:07:28,Jonathan,Hmm? *g*
+2015-02-18 21:07:34,Paddy,Auch in Prozent gerechnet? ;-)
+2015-02-18 21:07:38,max,Bah *g*
+2015-02-18 21:07:57,max,Ist knapp
+2015-02-18 21:08:09,Paddy,"Ich kann's nicht ausrechnen, mangels genauer Daten"
+2015-02-18 21:08:19,max,"Ich auch nicht, aber dass es knapp ist, da bin ich mir relativ sicher"
+2015-02-18 21:08:34,Jonathan,18
+2015-02-18 21:08:40,Jonathan,Genau genug? :P
+2015-02-18 21:08:40,max,Dann auch in Prozent :-P
+2015-02-18 21:08:51,max,Auch 17 wäre genug gewesen
+2015-02-18 21:08:53,Jonathan,Hmmm *g*
+2015-02-18 21:08:58,Jonathan,Wie alt seid ihr denn jetzt überhaupt? :P
+2015-02-18 21:09:03,Paddy,Jidder ist 12
+2015-02-18 21:09:06,max,"Kannst du doch jetzt ausrechnen, oder? ;-)"
+2015-02-18 21:09:15,Jonathan,"Ich weiß nur, wer älter ist, als wer ;)"
+2015-02-18 21:09:22,max,"Du solltest wissen, wie alt Paddy ist"
+2015-02-18 21:09:30,Paddy,"Jonathan: Na, ein paar mehr Hinweise haben wir schon gegeben"
+2015-02-18 21:09:39,Jonathan,Ohje *g*
+2015-02-18 21:09:40,max,Und aus meinem „Es ist knapp“ und „17 wäre genug gewesen“ kannst du dir mein Alter ausrechnen
+2015-02-18 21:09:48,Jonathan,xD
+2015-02-18 21:09:56,Jonathan,Ohje
+2015-02-18 21:10:01,Paddy,max: Hast du unseren Altersunterschied ganzzahlig gerechnet?
+2015-02-18 21:10:09,max,Ja? *g*
+2015-02-18 21:10:28,max,Das Sechstel Jahr hab ich jetzt mal weggelassen
+2015-02-18 21:10:53,max,Und wäre ja eh für mich eher positiv
+2015-02-18 21:11:31,max,"„Zusicherung nicht erfüllt“, das ist aber schade"
+2015-02-18 21:11:49,Paddy,"Huch, auf deutsch?"
+2015-02-18 21:11:56,max,Irgendwie schon *g*
+2015-02-18 21:12:30,Paddy,Das ist bestimmt ein Fake *g*
+2015-02-18 21:14:01,max,"Kein Grund, Ausreden zu suchen, die Zeile ist nicht von dir und kaputt gemacht hab ichs selbst *g*"
+2015-02-18 21:15:06,Paddy,"Willst du etwa sagen, dass ich gar nicht mehr gebraucht werde? *g*"
+2015-02-18 21:16:20,max,"Ach, so offensichtliche Kaputtheiten bekomm sogar ich hin ;-)"
+2015-02-18 21:16:28,max,"Aber subtile Kaputtheiten, das ist schon schwieriger"
+2015-02-18 21:16:45,Paddy,"Ach so, du meinst, micht braucht man dann wieder, um den gdb segfaulten zu lassen? ;-)"
+2015-02-18 21:16:53,max,"Sowas, ja *g*"
+2015-02-18 21:17:20,Paddy,"Hm, rechnet Jonathan noch immer?"
+2015-02-18 21:17:33,Paddy,"Vielleicht hätte er es im Kopf statt auf dem Drahthaufen machen sollen, wenn das so lang dauert"
+2015-02-18 21:17:43,max,Oder einfach im Wiki nachsehen *g*
+2015-02-18 21:17:49,Paddy,Steht das da?
+2015-02-18 21:17:55,Paddy,Also meins
+2015-02-18 21:17:59,max,"Nicht direkt, aber es gibt ja eine History ;-)"
+2015-02-18 21:18:25,max,"Also, wenn er noch an deinem rechnet, dann sollte er wirklich einen neuen Compiler suchen"
+2015-02-18 21:22:33,Paddy,"Ich glaube, das sollte er sowieso"
+2015-02-18 21:28:25,Svenska,erinnert mich an gestern
+2015-02-18 21:28:45,Svenska,"als ein pakistani auf die frage ""ist das nicht indien?"" geantwortet hat, die sind schon sehr lange nicht mehr indien..."
+2015-02-18 21:29:25,Svenska,bzw bangladesh als teil von pakistan
+2015-02-18 21:35:11,Jonathan,War afk ;)
+2015-02-18 21:35:14,Jonathan,Ist ja schon spät
+2015-02-18 21:35:23,Jonathan,Schulzeug für morgen packen und sowas *g*
+2015-02-18 21:35:24,Svenska,jetzt fangen meine meetings an ;)
+2015-02-18 21:35:43,Jonathan,Welche Meetings? ;)
+2015-02-18 21:35:46,max,Und die Sonne ist noch nicht mal untergegangen
+2015-02-18 21:36:18,Svenska,"die diskussionen ueber wie man die lib am besten progammiert, wie pipelining funktioniert usw"
+2015-02-18 21:36:29,Jonathan,Okay
+2015-02-18 21:36:33,Jonathan,Viel Spaß dabei? ;)
+2015-02-18 21:36:50,Svenska,:)
+2015-02-18 21:37:18,Jonathan,"Ist das ein ""Und-Gleich-Beiß-Ich-Dir-Den-Kopf-Ab-Lächeln"" oder ein echtes Lächeln? *g*"
+2015-02-18 21:38:10,Svenska,mir machts spaß
+2015-02-18 21:38:23,Svenska,aber ich muss ja auch die pruefungen nciht mehr machen
+2015-02-18 21:38:28,Svenska,(nur die lib bauen...)
+2015-02-18 21:46:01,Jonathan,Na dann ^^
+2015-02-18 22:30:14,Jonathan,"Bin mal weg, gute Nacht ;)"
+2015-02-18 23:24:26,Manello,abend
+2015-02-18 23:24:43,iksnagreb,nabend Manello
+2015-02-18 23:24:49,Paddy,Moin
+2015-02-18 23:26:52,Manello,Hat jemand momentan auch so Probleme mit Floppy Laufwerken oder bin ich da er einzigste D:
+2015-02-18 23:27:30,Paddy,Mit Floppy hatte ich zum Glück schon länger nichts mehr zu tun
+2015-02-18 23:27:47,Manello,"Die 2 Laufwerke auf meinem PC gehen nicht mehr, und ein paar Floppy-Befehle in meinem Minni OS gehen auch nicht mehr :("
+2015-02-18 23:28:32,Paddy,Dann hat es schonmal funktioniert?
+2015-02-18 23:28:42,Paddy,"Vielleicht solltest du dann einfach schauen, was du seither verändert hast"
+2015-02-18 23:29:28,Manello,"Die Befehle waren auf 3'5 Floppys ausgerichtet, jetzt sollten sie unabhängig sein, wobei dies nicht allzu große Änderungen waren"

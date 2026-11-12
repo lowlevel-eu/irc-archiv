@@ -1,0 +1,147 @@
+date/time,nick,message
+2017-04-11 11:12:09,Svenska,moin
+2017-04-11 11:23:39,kevin,Moin
+2017-04-11 21:09:43,dietzi,Wunderschönen guten Abend an ale
+2017-04-11 21:10:26,Paddy,Guten Abend ;-)
+2017-04-11 21:10:33,Svenska,nahbent
+2017-04-11 21:10:43,dietzi,Da hab ich ja schon die beiden richtigen ;)
+2017-04-11 21:10:50,Paddy,Ist das das Gegenteil von fernbent?
+2017-04-11 21:11:05,Svenska,"jahp, ihst ehs :D"
+2017-04-11 21:11:47,dietzi,Habe das Problem gefunden weshalb der LAN-Controller nicht reagiert hat.... Man muss im PCI-ISA-Controller-Config den LAN-Controller aktivieren.....
+2017-04-11 21:12:24,Paddy,PCI-ISA-Controller-Config? Klingt kaputt. ;-)
+2017-04-11 21:12:49,Svenska,sollte sowas nicht das BIOS machen?
+2017-04-11 21:13:01,dietzi,Genauer gesagt: ISA Bus Control
+2017-04-11 21:13:11,Paddy,"Kommt wohl drauf an, was er damit genau meint?"
+2017-04-11 21:13:20,Paddy,"Ich versteh nämlich noch nciht ganz, was das sein soll"
+2017-04-11 21:13:27,Paddy,"Entweder PCI oder ISA, oder?"
+2017-04-11 21:13:54,Svenska,ich tippe ja eher auf ein allgemeines configurationsregister(-system)
+2017-04-11 21:14:16,dietzi,"Der Chip (VT8235) beinhaltet LAN, Audio, Modem, IDE, USB, KBC, RTC, ...."
+2017-04-11 21:14:22,dietzi,Ich meinte PCI-ISA-Bridge
+2017-04-11 21:14:49,Svenska,"ja, aber der lan-controller ist doch kein isa-gerät?"
+2017-04-11 21:15:01,dietzi,Da kommt nach den allgemeinen Header-Spezifikationen alles mögliche was Einstellungen des Chips betrifft
+2017-04-11 21:15:16,dietzi,Der LAN-Controller ist aber auf dem VT8235 (Southbridge)
+2017-04-11 21:16:01,Svenska,"also so rein technisch ist die southbridge doch nur ein pci-controller, wo der pci-bus (mit all seinen geräten) dranhängt"
+2017-04-11 21:16:12,dietzi,http://www.yuiop.co.uk/epia/stuff/South%20%20Bridge/VT8235.pdf
+2017-04-11 21:16:13,Svenska,"und ein pci-gerät ist dann eine isa-bridge, wo der isa-bus (mit all seinen geräten) dranhängt"
+2017-04-11 21:16:21,dietzi,Seite 65 Offset 0x51
+2017-04-11 21:16:34,Svenska,"ob man das nu in einen chip stopft, sollte darauf ja keinen einfluss haben..."
+2017-04-11 21:17:09,dietzi,"Man kann aber in den ""allgemeinen"" Configs Geräte de-/aktivieren"
+2017-04-11 21:17:35,Svenska,ok
+2017-04-11 21:17:54,Svenska,"das ist aber nicht die isa-bridge, dann"
+2017-04-11 21:18:25,Paddy,wtf
+2017-04-11 21:18:37,Paddy,"Der Controller ist disabled, aber taucht trotzdem als PCI-Gerät auf?"
+2017-04-11 21:18:38,Svenska,Paddy: das läuft unter power management
+2017-04-11 21:19:34,dietzi,"Ich verstehe das als eine Art ""Stummschaltung"" der Geräte"
+2017-04-11 21:19:40,Svenska,"äh, naja"
+2017-04-11 21:19:51,dietzi,Ganz vereinfacht ausgedrückt......
+2017-04-11 21:19:51,Svenska,"wenn das gerät aus ist, duerftest du es beim enumerieren des pci *nicht* finden"
+2017-04-11 21:20:02,dietzi,Deswegen sag ich ja stummschalten.....
+2017-04-11 21:20:03,Svenska,(clock gating ist dann noch ne andere sache)
+2017-04-11 21:20:13,Svenska,die frage ist: hast du es denn *gefunden*?
+2017-04-11 21:20:42,Svenska,"oder hast du schlicht versucht, ein nicht existierendes gerät anzusprechen und dich gewundert, dass es nichts tat?"
+2017-04-11 21:20:47,dietzi,Das Gerät wird grundsätzlich gefunden. Egal ob enabled oder disabled
+2017-04-11 21:21:02,Paddy,"Im Sinn von Vendor/Device-ID passt, oder?"
+2017-04-11 21:21:27,dietzi,Über die ID's habe ich den LAN-Controller identifiziert und bin durch langes Suchen zur entsprechenden Doku gekommen
+2017-04-11 21:21:49,dietzi,Demzufolge passen die ID's
+2017-04-11 21:22:37,Paddy,Komisch das
+2017-04-11 21:22:47,Paddy,"Aber wenn du es enablest, dann antwortet der Netzwerkchip auch?"
+2017-04-11 21:23:13,Svenska,"da wuerd ich mal in einen linux-treiber (oder bsd-treiber) reingucken, ob das so gedacht ist, wie du dir das vorstellst, oder ob das irgendwelche anderen hintergruende hat"
+2017-04-11 21:23:17,dietzi,Wenn ich die Interrupts maskiere spuckt er öfter IRQ's als IRQ0
+2017-04-11 21:23:36,Svenska,"die via-doku ist ja nur ne registerbeschreibung, da steht nix zum ""was haben die sich eigentlich dabei gedacht"""
+2017-04-11 21:23:43,dietzi,Durch einen Linux-Treiber bin ich auf diese Config gekommen.....
+2017-04-11 21:26:03,dietzi,Jetzt kommt aber das nächste Problem....: sobald ich den LAN-Controller aktiviere und ic eine Taste auf der Tastaur drücke hängt die CPU
+2017-04-11 21:26:27,dietzi,bzw. friert das System ein
+2017-04-11 21:28:41,Svenska,naja
+2017-04-11 21:28:54,Svenska,"wenn du den interrupt nicht sauber ACKst, dann kommt der wieder"
+2017-04-11 21:31:13,dietzi,"Das Problem ist aber, dass kein IRQ ausgelöst wird wenn ich alle Interrupts des LAN-Controller demaskiere"
+2017-04-11 21:31:37,Svenska,"""maskieren"" heißt ""ausblenden"", d.h. wenn du IRQs maskiert, kommen keine mehr"
+2017-04-11 21:31:44,Svenska,unmask = einschalten
+2017-04-11 21:31:55,Svenska,hast du mal meinen vorschlag mit den timern ausprobiert?
+2017-04-11 21:32:58,dietzi,Habe ich versucht. Habe die Timer-Werte per Befehl eingebunden -> kann den Befehl aber nicht ausführen da bei aktiviertem LAN-Controller die CPU bei Tastendruck einfriert
+2017-04-11 21:33:16,Svenska,dann ist deine interruptlogik kaputt
+2017-04-11 21:33:23,dietzi,Vor Aktivierung des LAN-Controller haben sich die Werte nicht geändeert (auch nach 10 Minuten nicht)
+2017-04-11 21:34:32,Svenska,ich vermute spontan mal nen interrupt storm oder sowas
+2017-04-11 21:34:53,Svenska,"z.B. dass der lan-controller den irq anmacht und du dem lan-controller nicht sagst, dass er wieder aufhören soll"
+2017-04-11 21:35:03,Svenska,"ergo ist die cpu nur noch mit ""lan controller interrupts"" beschäftigt"
+2017-04-11 21:35:15,Svenska,"der chip kriegt ja nix davon mit, dass du dem PIC bescheid sagst"
+2017-04-11 21:35:18,Paddy,Das würde ein printf im IRQ-Handler aber zeigen
+2017-04-11 21:35:48,dietzi,Ich lasse derzeit alle IRQ's per printf anzeigen außer IRQ0. Auch da kommt nichts.....
+2017-04-11 21:36:42,Svenska,"blöde frage: du schaltest aber nicht nur den eth ein, sondern auch dessen clock, oder?"
+2017-04-11 21:36:55,dietzi,"pci_config_writed(addr1,0x51,pci_config_readd(addr1,0x51) & 0x10);"
+2017-04-11 21:37:23,Svenska,das sagt mir jetzt nix
+2017-04-11 21:37:40,dietzi,ich lese den Wert von 0x51 und nehme 0x10 dazu
+2017-04-11 21:37:43,Svenska,du musst im reg51 bit 4 und 5 setzen
+2017-04-11 21:37:51,Svenska,"ja, dann bist du selbst schuld"
+2017-04-11 21:38:02,Svenska,"du schaltest den lan-controller ein, gibst ihm aber kein taktsignal"
+2017-04-11 21:38:07,Svenska,mach mal ein 0x30 draus
+2017-04-11 21:38:16,Paddy,Wo schaltet er mit der Zeile was ein?
+2017-04-11 21:38:17,dietzi,Rechner startet.....
+2017-04-11 21:38:22,Paddy,Schaltet er nicht nur alles andere aus?
+2017-04-11 21:38:40,Svenska,"stimmt, muesste außerdem noch ein OR sein"
+2017-04-11 21:39:06,Paddy,"Um so komischer ist es natürlich, dass ein deaktivierter KBC die CPU aufhängt"
+2017-04-11 21:39:24,Svenska,"naja, vielleicht reagiert sie auch nicht mehr auf tastendruecke?"
+2017-04-11 21:39:26,Paddy,"Wobei, wer deaktiviert den schon. Kann genausogut einfach kaputt sein."
+2017-04-11 21:39:50,Svenska,"ich wuesste jetzt im kernel nicht soo viele möglichkeiten, um mal was auszulösen..."
+2017-04-11 21:40:05,Svenska,dietzi: also pci_read(...) | 0x30
+2017-04-11 21:40:06,dietzi,Ein OR hat geholfen. Tastatur läuft wieder
+2017-04-11 21:44:35,dietzi,"Jetzt gehts weiter...... Interrupts habe ich alle aktiviert in der LAN-Config. Schicke ich ein WOL-Paket an den Testrechner, dann wird IRQ1 (KBC) ausgelöst. Das gleiche passiert auch bei Tastendruck auf der Maus"
+2017-04-11 21:44:52,dietzi,Jetzt muss ich die Doku wieder mal durchsuchen wo das eingestellt wird....
+2017-04-11 21:45:00,Svenska,hm?
+2017-04-11 21:45:05,dietzi,Laut BIOS belegt der LAN-Controller IRQ15
+2017-04-11 21:48:46,Svenska,"boah, warum muss usb so kompliziert sein"
+2017-04-11 21:49:35,dietzi,USB.... Da denk ich noch nicht mal dran......
+2017-04-11 21:50:30,Svenska,"ich fummel grad descriptoren zusammen, um einen avr zu einem composite zu machen"
+2017-04-11 21:50:46,Svenska,acm (seriell) und msc (scsi)
+2017-04-11 21:51:16,Svenska,und da ist der treiber fuer den chip noch nichtmal drin
+2017-04-11 21:54:59,dietzi,Sind diese Funktionen so richtig? https://pastebin.com/F5SHr0nn
+2017-04-11 21:55:00,dietzi,https://pastebin.com/yjK5y0Vp
+2017-04-11 21:55:32,Svenska,"bei den ganzen masken empfehle ich ja leerzeichen, die machen das lesbarer - ist aber geschmackssache"
+2017-04-11 21:56:16,Svenska,"und zur sicherheit wuerde ich ""bus"", ""dev"" und ""func"" noch auf die passende breite maskieren"
+2017-04-11 21:56:39,Svenska,"also wenn bus 5 bits breit ist, dann ""addr.bus & 0x1F"" nehmen"
+2017-04-11 21:57:07,Svenska,ansonsten hab ich von PCI keine ahnung :D
+2017-04-11 21:57:41,dietzi,Die pci_config_read_32 habe ich genau so vom Wiki genommen und hoffe dass bei 16 und 8 bit alles richtig ist....
+2017-04-11 21:58:05,Svenska,"solange dir keiner eine bus-nummer von 32100 gibt, wird das schon passen..."
+2017-04-11 21:59:50,dietzi,gut
+2017-04-11 22:06:24,Paddy,read_8/16 sehen kaputt aus
+2017-04-11 22:06:32,dietzi,inwiefern?
+2017-04-11 22:07:00,Paddy,Du rundest das Offset ab
+2017-04-11 22:08:15,Paddy,Und liest dann trotzdem vom ersten Byte der Datenports
+2017-04-11 22:09:30,dietzi,Das heißt ich muss die Differenz zu 32 bei der Adresse addieren?
+2017-04-11 22:09:46,dietzi,Das gleiche betrifft ja dann auch die write Funktionen
+2017-04-11 22:09:59,Svenska,adressen zeigen auf bytes
+2017-04-11 22:10:00,Paddy,Wieso 32?
+2017-04-11 22:10:12,Svenska,fuer einen 32-bit-zugriff muss die adresse durch 4 teilbar sein (letzten zwei bits 0)
+2017-04-11 22:10:23,Svenska,fuer einen 16-bit-zugriff muss die adresse durch 2 teilbar sein (letztes bit 0)
+2017-04-11 22:10:32,Svenska,fuer einen 8-bit-zugriff darf die adresse beliebig sein
+2017-04-11 22:10:42,Paddy,"Ob das PCI-Adressregister beliebige Adressen nimmt, weiß ich nicht"
+2017-04-11 22:11:11,Svenska,"naja, im prinzip schon. ob das entsprechende register dann ueberhaupt 8-bit-zugriffe unterstuetzt, sei ja dahingestellt"
+2017-04-11 22:11:56,Paddy,"Unser Wiki sagt ""Registernummer Bit 0 u. Bit 1 sind 0"", also tendenziell nicht"
+2017-04-11 22:12:35,Paddy,"Würde auch erklären, warum mein Code das mit dem Abrunden im Adressregister genauso macht und dann halt entsprechend beim Datenport richtig auswählt"
+2017-04-11 22:12:40,Svenska,"es gibt auch keinen grund fuer pci, sowas zu unterstuetzen..."
+2017-04-11 22:12:42,dietzi,"wie müsste dann ""int address = 0x80000000 | (bus << 16) | (dev << 11) | (func << 8) | (offset & 0xFC);"" für 16 but und 8 bit aussehen?"
+2017-04-11 22:13:03,Svenska,"...das einzige wären irgendwelche legacy-geräte, die nur 8 bit breit sind"
+2017-04-11 22:13:19,Paddy,dietzi: Genau so
+2017-04-11 22:13:30,Paddy,Das inb/inw ist das Problem
+2017-04-11 22:13:32,Svenska,"aber im prinzip ist bei nem 8-bit-zugriff jede adresse möglich, weil ""muss durch 1 teilbar sein"""
+2017-04-11 22:13:56,dietzi,also muss ich immer inl nehmen und entsprechend shiften?
+2017-04-11 22:14:04,Paddy,"Nö, du kannst auch inb nehmen"
+2017-04-11 22:14:18,Svenska,inl macht einen 32-bit-zugriff
+2017-04-11 22:14:24,Paddy,Aber inb(PCI_CONFIG_DATA) gibt dir halt immer das erste Byte aus dem dword
+2017-04-11 22:14:45,Paddy,"Wenn du das Offset komplett berücksichtigen willst, brauchst du inb(PCI_CONFIG_DATA + (offset & 0x3))"
+2017-04-11 22:15:07,dietzi,Aber nur bei 16 und 8 bit oder wie?
+2017-04-11 22:16:00,dietzi,Und inb inl oder inw?
+2017-04-11 22:16:11,dietzi,Bin grad total verwirrt......
+2017-04-11 22:16:14,Paddy,"Bei 32 Bit kannst du es auch hinschreiben, aber da ist offset & 0x3 halt immer 0"
+2017-04-11 22:17:44,dietzi,inl oder inb?
+2017-04-11 22:17:49,dietzi,bei 16 und 8 bit
+2017-04-11 22:18:05,Paddy,Das hier ist aus meinem PCI-Code: https://pastebin.com/umECpxvv
+2017-04-11 22:18:30,Paddy,"Direkt abschreiben kannst du eh nicht, von daher kann ich das posten ;-)"
+2017-04-11 22:18:48,dietzi,Völlig OK
+2017-04-11 22:35:06,Svenska,hmm... wie kann ich in C mehrere arrays hintereinanderpappen?
+2017-04-11 22:35:37,Svenska,"const struct { const uint8_t desc[]; } = { { DescA }, { DescB } }"
+2017-04-11 22:35:40,Svenska,geht schonmal nicht
+2017-04-11 22:36:16,Paddy,"Wüsste nicht, dass das geht"
+2017-04-11 22:36:39,Svenska,"naja, dann schreib ich das alles in ein array..."
+2017-04-11 22:36:48,Svenska,ist eh alles kreuz und quer referenziert -.-
+2017-04-11 22:37:01,Paddy,"Ich glaube, da wo sowas vorkommen soll, kenne ich das mit Makros. Wird seinen Grund haben."
+2017-04-11 22:37:21,Svenska,ja

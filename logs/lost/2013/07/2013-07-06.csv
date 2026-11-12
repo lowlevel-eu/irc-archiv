@@ -1,0 +1,117 @@
+date/time,nick,message
+2013-07-06 00:07:23,tufel,huhu
+2013-07-06 09:00:23,pocky,nabend
+2013-07-06 11:01:33,pocky,jmd da?
+2013-07-06 11:02:22,Paddy,Angeblich fünfzehn Benutzer
+2013-07-06 11:02:39,pocky,"ja, angeblich"
+2013-07-06 11:03:41,pocky,"mein printf macht nur ne neue zweile wenn ich \n\n schreibe... kprintf machts richtig. beide benutzen die gleichen unterfunktionen, nur kprintf ruft die funktion direkt auf, printf machts mit nem interrupt..."
+2013-07-06 11:04:48,Paddy,Das klingt komisch
+2013-07-06 11:05:59,pocky,so kommts mir auch vor
+2013-07-06 11:06:20,pocky,"interessanterweiße macht er aber bei \n\n\n schon 2 neue zeilen, als der ignoriert immer nur das erste"
+2013-07-06 11:14:53,mgottschlag,"das klingt nicht nur komisch, das klingt sogar ziemlich kaputt :p"
+2013-07-06 11:15:07,mgottschlag,welches der beiden wird ignoriert? zufällig immer das am Stringende?
+2013-07-06 11:15:26,pocky,"mh, wenn ich nach \n ein ' ' mach, funktionierts, scheinbar ist irgendwo ne stringlänge falsch =_="
+2013-07-06 11:15:32,pocky,_irgendwo_
+2013-07-06 11:26:07,pocky,"interessant ist auch, das wenn ich mit sprintf erst nen string erstelle und den direkt in printf schiebe gehts, obwohl printf selber nix anderes macht"
+2013-07-06 11:28:15,pocky,"char s[] = ""Hello, World!\n"";"
+2013-07-06 11:28:15,pocky,printf(s);
+2013-07-06 11:28:17,pocky,funktioniert
+2013-07-06 11:28:24,pocky,"printf(""Hello, World!\n"");"
+2013-07-06 11:28:26,pocky,nicht
+2013-07-06 11:28:28,pocky,oô
+2013-07-06 11:46:26,pocky,"das ist schon im speicher falsch, kann das sein das gcc da mist baut?"
+2013-07-06 11:50:36,mgottschlag,"üblicherweise kannst du davon ausgehen, dass der Compiler alles richtig macht"
+2013-07-06 11:51:11,mgottschlag,"das kann maximal irgendwo beim Linken abgeschnitten werden, aber auch nur, wenn du irgendwo irgendetwas manuell spezifizierst, dass das kaputt macht"
+2013-07-06 11:51:39,mgottschlag,"außerdem, was heißt ""im speicher falsch""? wie sieht es in der Kerneldatei aus?"
+2013-07-06 12:06:00,pocky,http://www.enlightenment.org/ss/e-51d7eb6e7fe8e0.83371750.jpg
+2013-07-06 12:06:00,pocky,"es geht um die funktion ""kernel_task"" ganz oben, interessant soll jetzt mal nur der string ""Kernel-Task start\n"" sein. wie man in qemu sieht, fehlt hier das '\n'"
+2013-07-06 12:06:20,pocky,http://www.enlightenment.org/ss/e-51d7eb99a98849.06209243.jpg
+2013-07-06 12:06:20,pocky,"anders wenn ich hinter dem '\n' ein leerzeichen mache, dann ist es vorhanden"
+2013-07-06 12:12:02,mgottschlag,pocky: dein puts ist kaputt und macht kein newline nach dem string
+2013-07-06 12:12:20,mgottschlag,"und gcc macht aus printf ohne weitere Parameter automatisch puts, wenn du entsprechende Optimierungen aktiviert hast"
+2013-07-06 12:18:00,pocky,http://nopaste.info/78d710e3b9.html
+2013-07-06 12:18:48,mgottschlag,pocky: hast du dir die Doku zu puts durchgelesen?
+2013-07-06 12:19:05,mgottschlag,"http://www.cplusplus.com/reference/cstdio/puts/ - ""and appends a newline character"""
+2013-07-06 12:19:24,mgottschlag,"ich weiß jetzt nicht, was dein Syscall da macht, aber ich behaupte mal, das er das nicht macht ^^"
+2013-07-06 12:19:39,mgottschlag,"aso, moment, das ist ja sogar der syscall"
+2013-07-06 12:19:50,pocky,"ok, das puts ein newline macht wusste ich net"
+2013-07-06 12:20:10,mgottschlag,"ich bis eben auch nicht, aber das war die einzige logische Erklärung ^^"
+2013-07-06 12:22:21,pocky,aber deswegen darf der doch das \n nicht einfach wegoptimieren
+2013-07-06 12:22:42,Paddy,Warum nicht?
+2013-07-06 12:23:08,mroman,Hm?
+2013-07-06 12:23:16,pocky,"naja, wenn ich ne leerzeile haben will, und weiß das puts eh ne neue macht kann ich als programmierer mir ja denken ""machst nur ein \n mit puts, und ich hab ne neue zeile"
+2013-07-06 12:23:19,mroman,"printf(""foo\n""); darf zu puts(""foo""); optimiert werden"
+2013-07-06 12:23:23,mroman,es hat den gleichen Effekt.
+2013-07-06 12:23:35,pocky,aso
+2013-07-06 12:23:39,pocky,jetzt geht mir ein licht auf
+2013-07-06 12:23:40,Paddy,pocky: Das tastet der Compiler ja auch nicht an
+2013-07-06 12:23:54,pocky,oder besser ne ganze kerzenfabrik...
+2013-07-06 12:23:55,pocky,danke
+2013-07-06 12:23:57,mroman,der Compiler erwartet dass puts so funktioniert wie es der Standard verlangt.
+2013-07-06 12:24:13,Paddy,"-fno-builtin gibt es übrigens noch, wenn man das nicht will"
+2013-07-06 12:24:34,mroman,wenn sich puts anders verhält... pech.
+2013-07-06 12:25:09,mroman,"gut möglich dass printf(""foo""); ohne new line zu fputs(stdout,""foo""); wird"
+2013-07-06 12:25:19,mroman,"bzw. fputs(""foo"",stdout)"
+2013-07-06 12:28:18,pocky,"funktionukelt, danke euch"
+2013-07-06 13:40:35,iksnagreb,moin
+2013-07-06 14:36:41,iksnagreb,"hat vielleicht irgend jemand zeit, sich mein paging anzusehen? ich kann den fehler einfach nicht finden, weil in qemu alles richtig funktioniert"
+2013-07-06 14:36:49,iksnagreb,http://iksnagreb.patov.com/index.php?do=browse&user=iksnagreb&path=./public/tertius
+2013-07-06 15:36:19,iksnagreb,was ist der unterschied zwischen 
+2013-07-06 15:36:20,iksnagreb,"asm volatile(""invlpg %0"" : : ""m"" (virt_addr));"
+2013-07-06 15:36:27,iksnagreb,und
+2013-07-06 15:36:28,iksnagreb,"asm volatile(""invlpg (%0)"" :: ""r"" (virt_addr) : ""memory"");"
+2013-07-06 15:36:57,iksnagreb,"mit dem ersten gehts nicht in einer vm mit dem zweiten schon, warum?"
+2013-07-06 15:39:26,iksnagreb,in qemu geht beides
+2013-07-06 15:40:37,Mtgxyz,tach
+2013-07-06 15:40:40,SHyx0rmZ,tach
+2013-07-06 15:41:24,Mtgxyz,"kann es sein, dass mein PC durch den Windows 7 64-bit kram langsamer wurde?"
+2013-07-06 15:41:25,iksnagreb,"auf echter hardware gehts jetzt auch, ich versteh das nicht, bin aber froh, dass es geht xD"
+2013-07-06 15:41:57,SHyx0rmZ,was bezeichnest du als Kram?
+2013-07-06 15:42:16,SHyx0rmZ,"ich würde ja mal mit &virt_addr und *virt_addr rumspielen, wenn ich mir meinen Code so anschau"
+2013-07-06 15:42:20,SHyx0rmZ,aber ich hab ja keinen Plan D:
+2013-07-06 15:42:33,Mtgxyz,das ich ca 10x Länger zum Installieren von Windows brauchte :D
+2013-07-06 15:42:55,SHyx0rmZ,Win 7 64 Setup länger als Win 7 32?
+2013-07-06 15:43:15,Mtgxyz,ne als Windows XP
+2013-07-06 15:43:23,SHyx0rmZ,...
+2013-07-06 15:43:32,SHyx0rmZ,was erwartest du denn bitte?
+2013-07-06 15:43:43,SHyx0rmZ,Windows XP hatte vllt 2 GB?
+2013-07-06 15:43:47,SHyx0rmZ,Win 7 eher 20
+2013-07-06 15:44:43,Mtgxyz,also... mein PC fühlt sich eher nach 1 GHz und nich nach 3 GHz an...
+2013-07-06 15:46:36,SHyx0rmZ,wieviel RAM hast du denn?
+2013-07-06 15:46:50,SHyx0rmZ,und wieviele CPUs?
+2013-07-06 15:47:25,Mtgxyz,2 GB und Intel Pentium 4 HT (Also 1x2)
+2013-07-06 15:47:30,SHyx0rmZ,ok
+2013-07-06 15:47:42,SHyx0rmZ,da würde ich Win 7 nicht drauf installieren wollen
+2013-07-06 15:47:58,Mtgxyz,"bei 3,06 GHz *g*"
+2013-07-06 15:48:02,SHyx0rmZ,"und 64 bit schonma gar nicht (wobei ich Leute hasse, die 32 bit installieren)"
+2013-07-06 15:48:25,Mtgxyz,Meine Freunde besitzen neue rechner und haben auch 64-bit und 2-GB ram
+2013-07-06 15:48:41,SHyx0rmZ,was zum...?!
+2013-07-06 15:48:53,SHyx0rmZ,"ich beneide Leute, die so wenig RAM brauchen"
+2013-07-06 15:49:00,Mtgxyz,Und es läuft... :D
+2013-07-06 15:49:12,SHyx0rmZ,ich hab nichtma wirklich was offen und er zieht 4 GB
+2013-07-06 15:50:25,Mtgxyz,moment gleich kommt ein bild mit der auslastung...
+2013-07-06 15:52:29,Mtgxyz,http://ptcklick.cwsurf.de/privatemtg/MTGxyz_Unbenannt.png
+2013-07-06 15:53:29,Mtgxyz,Schade das die TU-Utilities nich auf Win7 loofen
+2013-07-06 15:53:33,SHyx0rmZ,das sieht aber mehr nach Win 8 als nach Win 7 aus
+2013-07-06 15:53:57,Mtgxyz,ist das W8-Transformation-Pack
+2013-07-06 15:54:20,SHyx0rmZ,oO
+2013-07-06 15:54:29,SHyx0rmZ,i don't get people
+2013-07-06 15:54:32,SHyx0rmZ,https://www.dropbox.com/s/wovobxamiybdz5u/last.png
+2013-07-06 15:55:36,Mtgxyz,http://ptcklick.cwsurf.de/privatemtg/MTGxyz_Unbenannt3.png
+2013-07-06 15:56:47,Mtgxyz,konnichiwa Shyx0rmZ-kun!
+2013-07-06 15:57:09,SHyx0rmZ,こんにちはMTGxyzさん
+2013-07-06 15:58:44,Mtgxyz,そして今日、あなたどのようにあるので、そう、Shyx0rmzくんですか？
+2013-07-06 15:59:25,Mtgxyz,achja ich bin männlich also -kun und nich -san
+2013-07-06 16:01:59,Mtgxyz,私は男性ですので、彼らは私がとさんとくんに話をされないであろうという事実に調整することができますか？迅速なご理解をありがとう、私はクリアし続けることを望みます！
+2013-07-06 16:03:30,Mtgxyz,Das mit dem ます-Stamm habe ich erst vor ein paar monaten gelernt :D
+2013-07-06 16:32:55,Mtgxyz, Huch?
+2013-07-06 16:42:06,Mtgxyz,hallo tyndurcgi65!
+2013-07-06 16:42:48,Mtgxyz,wer?
+2013-07-06 16:43:02,wer,was?!?!
+2013-07-06 16:43:44,Mtgxyz,omg...
+2013-07-06 16:43:59,Mtgxyz,JIDDER! *brüll*
+2013-07-06 16:44:15,wer,Wem interresiert das?
+2013-07-06 16:47:55,wer,lolol
+2013-07-06 17:46:04,mroman,ja
+2013-07-06 17:46:08,mroman,WEM interresiert das
+2013-07-06 22:08:33,DerHartmut,Nabend

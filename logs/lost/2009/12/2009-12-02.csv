@@ -1,0 +1,1006 @@
+date/time,nick,message
+2009-12-02 00:40:59,JanDing,schrubbel schrubbel schrubbel
+2009-12-02 01:38:45,Tobiking,gn8
+2009-12-02 08:44:27,schnippi,wo bleibt denn kwolf?
+2009-12-02 08:45:48,schnippi,"ach, der kommt bestimmt erst nach neun."
+2009-12-02 09:10:09,schnippi,jetzt z.b.
+2009-12-02 09:15:08,kwolf,schnippi: So sieht's aus
+2009-12-02 09:17:58,schnippi,*g*
+2009-12-02 09:18:56,schnippi,guten morgen kwolf 
+2009-12-02 09:19:56,schnippi,kennst du dich mit (non)conforming codesegmenten aus?
+2009-12-02 09:20:20,schnippi,und wie es sich dabei jeweils mit dem privilegstufenübergang verhält?
+2009-12-02 09:20:25,DerHartmut,Das ist leicht gruselig
+2009-12-02 09:20:29,DerHartmut,Und moin moin schnippi und kwolf 
+2009-12-02 09:21:29,schnippi,guten morgen DerHartmut 
+2009-12-02 09:21:57,kwolf,"schnippi: Ich weiß nur, dass ich sowas nicht brauche *g*"
+2009-12-02 09:22:43,kwolf,"Ich fände es schon mal spannend, die ganzen Segmentierungsfeatures wirklich auszuprobieren, aber der Aufwand war's mir bisher nicht wer."
+2009-12-02 09:23:06,kwolf,+t
+2009-12-02 09:23:13,schnippi,hehe
+2009-12-02 09:23:51,schnippi,"ich habe demnächst eine prüfung, in der segmentierung vorkommen wird. zwar nicht unbedingt mit (non)conforming codesegmenten, aber ich möchte es trotzdem exakt verstehen"
+2009-12-02 09:24:06,schnippi,sonst fehlt mir jegliches vertrauen in mein wissen
+2009-12-02 09:24:46,schnippi,"ich schnappe mir einfach mal meinen loader, lege ein paar segmente an, und springe einfach mal hin und her - wie ein hoppelndes häschen *g*"
+2009-12-02 09:25:08,schnippi,bochs dürfte mir ja CPL anzeigen
+2009-12-02 09:25:15,kwolf,"Hm, jo"
+2009-12-02 09:25:37,schnippi,kann gdb+qemu auch CPU registerdumps anzeigen?
+2009-12-02 09:25:50,kwolf,"Hat das (non-)conforming nicht nur damit zu tun, ob ein Wechsel erlaubt ist, d.h. ob ein GPF fliegt oder nicht?"
+2009-12-02 09:26:07,kwolf,schnippi: Ich würde info registers im qemu-Monitor nehmen
+2009-12-02 09:26:48,DerHartmut,"Hat jemand ne' Ahnung, warum sich unter openSuSE mein UMTS-Stick zwar verbindet (bis zum WSDPA-Netz), aber trotzdem keine Verbindung hergestellt wurde, sprich keine Hostnamen etc. aufgelöst werden können weil nichts gefunden wird?"
+2009-12-02 09:26:48,schnippi,"ein GPF sollte immer dann fliegen, wenn die privilegstufen nicht stimmen (auch bei datensegmenten)"
+2009-12-02 09:27:10,schnippi,DerHartmut: stimmt der DNS server?
+2009-12-02 09:27:17,schnippi,cat /etc/resolv.conf
+2009-12-02 09:27:17,kwolf,"schnippi: Ja, aber sagt conforming nicht irgendwas drüber aus, unter welchem Umständen sie stimmen?"
+2009-12-02 09:28:09,schnippi,kwolf: moment
+2009-12-02 09:29:01,DerHartmut,"schnippi: Doofe Frage, aber: Ist der DNS-Server immer der gleiche?"
+2009-12-02 09:29:25,kwolf,Normal schon
+2009-12-02 09:29:47,kwolf,"Aber ob es am DNS liegt, kriegst du ja einfach raus, indem du eine IP im Internet pingst"
+2009-12-02 09:30:25,DerHartmut,"Hmm...mal gleich probieren. Nervt ganz schön, unter der LiveCD von openSuSE funzt UMTS, aber bei der Platteninstallation hapert's"
+2009-12-02 09:31:35,schnippi,"kwolf: info registers gefällt mir, guter tipp."
+2009-12-02 09:31:47,schnippi,jetzt lese ich nochmal über die codesegmente
+2009-12-02 09:32:41,schnippi,das intel manual sagt dazu folgendes:
+2009-12-02 09:32:50,schnippi, Nonconforming code segment (without using a call gate) — The DPL
+2009-12-02 09:32:52,schnippi,indicates the privilege level that a program or task must be at to access the
+2009-12-02 09:32:53,schnippi,"segment. For example, if the DPL of a nonconforming code segment is 0, only"
+2009-12-02 09:32:57,schnippi,programs running at a CPL of 0 can access the segment.
+2009-12-02 09:33:12,schnippi,fangen wir erstmal mit nonconforming an
+2009-12-02 09:34:04,schnippi,"angenommen, CPL ist 0 und ich möchte in ein nonconforming codesegment mit DPL 1 springen. wenn ich den text richtig verstehe, müsste das eine GPF werfen, oder?"
+2009-12-02 09:34:53,schnippi,oder kann ich mit CPL 0 überall hinspringen? *g*
+2009-12-02 09:34:57,kwolf,"Klingt irgendwie untypisch, aber der zitierte Text sieht so aus"
+2009-12-02 09:35:09,kwolf,"Normal heißt es überall ""gleich oder kleiner"""
+2009-12-02 09:37:39,schnippi,">=, wenn ich die numerischen werte betrachte"
+2009-12-02 09:38:18,schnippi,ich komme auf keinen grünen zweig damit
+2009-12-02 09:40:02,kwolf,"Also zu einer niedrigeren Privilegstufe darf man gar nicht jumpen, das gibt immer einen GPF"
+2009-12-02 09:40:07,kwolf,Gleiche Privilegstufe geht immer
+2009-12-02 09:40:47,kwolf,"Höhere Privilegstufe gibt bei non-conforming einen GPF und bei conforming geht es, aber der Code läuft in der aktuellen Privilegstufe"
+2009-12-02 09:42:32,schnippi,wieso kann ich nicht zu einer niedrigeren privilegstufe springen? von CPL 0 nach DPL 3 z.b.?
+2009-12-02 09:43:55,schnippi,"oder ist ""niedrigere privlegstufe"" für dich äquivalent mit ""numerisch kleinerer privilegstufe""?"
+2009-12-02 09:44:42,schnippi,weniger privilegiert entspricht für mich einer numerisch höheren privilegstufe
+2009-12-02 09:45:33,kwolf,niedriger heißt numerisch höher
+2009-12-02 09:45:41,schnippi,genau
+2009-12-02 09:45:53,schnippi,also kann ich deiner meinung nicht von CPL 0 nach CPL 3 springen?
+2009-12-02 09:45:56,kwolf,Also von Ring 1 nach Ring 2 jumpen geht nicht
+2009-12-02 09:46:14,kwolf,"Und von 0 nach 3 auch nicht, genau ;-)"
+2009-12-02 09:47:11,schnippi,"ok. da hätte ich jetzt angenommen, dass dies klappt"
+2009-12-02 09:47:54,kwolf,Steht aber explizit da
+2009-12-02 09:47:59,schnippi,"lassen wir das an dieser stelle einfach mal so stehen. ich schreibe mir jetzt ein paar segmente und teste das mal in der VM. falls ich dann noch fragen habe, melde ich mich nochmal"
+2009-12-02 09:48:57,schnippi,:-O
+2009-12-02 09:50:46,kwolf,Kannst du KVM nehmen?
+2009-12-02 09:51:02,kwolf,Oder fehlt dir da die passende Hardware?
+2009-12-02 09:51:57,schnippi,"ja, KVM könnte ich verwenden"
+2009-12-02 09:52:41,schnippi,"wobei es mir am liebsten wäre, den kram nur durch lesen zu verstehen *g*"
+2009-12-02 09:54:03,kwolf,Dann mach halt das
+2009-12-02 09:54:23,schnippi,"ich lese schon mehrere tage an verschiedenen quellen darüber, und es ist eher schlimmer geworden"
+2009-12-02 09:55:40,kwolf,"Wenn du Code brauchst, würde ich KVM nehmen. Das läuft dann auch auf echter Hardware statt in einem für Segmentierung schlecht getesteten Emulator."
+2009-12-02 09:57:03,schnippi,hehe
+2009-12-02 09:57:33,schnippi,"ich glaube, ich habe wieder ein stück mehr verstanden"
+2009-12-02 09:58:03,schnippi,"wenn ich mit CPL 0 in ein nonconforming codesegment mit DPL 1 springen will, geht dies schief"
+2009-12-02 09:58:20,kwolf,"Wenn du am Ende die Frage beantworten kannst, wie man die ganzen Techniken alle sinnvoll in ein OS einbauen könnte, hast du es verstanden. Und darfst erstmal einen Wikiartikel schreiben. *g*"
+2009-12-02 09:58:42,kwolf,schnippi: Bei conforming aber auch
+2009-12-02 09:58:44,schnippi,"mit CPL 0 in ein conforming codesegment mit DPL 1 springen klappt, aber CPL bleibt dabei auf 0"
+2009-12-02 09:59:01,kwolf,"Nein, falsche Richtung"
+2009-12-02 09:59:26,kwolf,"CPL 1 nach DPL 0 geht, aber CPL bleibt auf 1"
+2009-12-02 09:59:45,schnippi,stimmt!
+2009-12-02 09:59:52,schnippi,for god's sake
+2009-12-02 10:00:39,kwolf,"Es wird explizit das Beispiel gegeben, dass ein Exceptionhandler (also Kernelcode) in Ring 3 laufen könnte"
+2009-12-02 10:02:05,schnippi,"solange, bis er lgdtr aufruft *g*"
+2009-12-02 10:02:18,schnippi,lgdt
+2009-12-02 10:02:33,schnippi,oder einen anderen privilegierten befehl
+2009-12-02 10:05:24,schnippi,"jedenfalls folgt aus der eigenschaft, dass bei nonconforming codesegmenten CPL und DPL übereinstimmen müssen und ich bei conforming codesegmenten nur in höher privilegierte segmente springen kann, dass man generell z.b. nicht von CPL 0 auf CPL 3 springen kann"
+2009-12-02 10:05:34,schnippi,stimmst du mir da zu?
+2009-12-02 10:07:20,kwolf,schnippi: Jo
+2009-12-02 10:12:08,schnippi,ich finde diesen abschnitt des intel manuals schon echt krass geschrieben
+2009-12-02 10:13:33,kwolf,"Hm, wieso?"
+2009-12-02 10:13:42,schnippi,"den sollte man mal bei PISA vorlegen, um leseverständnis abzuprüfen"
+2009-12-02 10:17:05,schnippi,"da stehen viele informationen drin, die nicht gerade einfach zu verstehen sind"
+2009-12-02 10:17:32,schnippi,oder ich bin in der sache einfach schon zu festgefahren
+2009-12-02 10:17:50,DerHartmut,Network unreachable.
+2009-12-02 10:24:55,schnippi,DerHartmut: ist dein netzwerkinterface bei ifconfig gelistet und wurde dir eine IP vom ISP zugewiesen?
+2009-12-02 10:30:07,kwolf,Und die Routingtabelle anschauen schadet auch nie
+2009-12-02 10:30:46,schnippi,die käme dann danach *g*
+2009-12-02 11:13:05,JanDing,"messer, gabel, schere, nicht?"
+2009-12-02 11:15:14,schnippi,ist für kleine kinder licht?
+2009-12-02 11:15:48,JanDing,jop
+2009-12-02 11:15:55,JanDing,so wie mein haupt
+2009-12-02 11:15:58,JanDing,also innen drin
+2009-12-02 11:16:05,schnippi,"jo, JanDing die lichtgestalt."
+2009-12-02 11:16:23,JanDing,demnächst an jedem weihnachtsbaum
+2009-12-02 13:17:46,schnippi,hallo JSheridan 
+2009-12-02 13:18:06,schnippi,"nur für dich, drei mal getabbt"
+2009-12-02 13:19:53,JanDing,"und ich [drei] = { drei, sechs, neun, ..., drei mal n mit n ist eine natürliche Zahl } mal"
+2009-12-02 13:21:10,schnippi,äquivalenzklassen? ;)
+2009-12-02 13:21:17,JanDing,"hm müsste das nicht eigentlich so sein: [drei] = { null, drei, minus drei, sechs, minus sechs, ..., drei mal n, minus drei mal n mit n ist eine natürliche Zahl }"
+2009-12-02 13:21:43,JanDing,jo ich gehe in die dritte klasse
+2009-12-02 13:22:26,JanDing,"wo gibts einen irc client, bei dem man auch der letzten definition entsprechend tabben kann?"
+2009-12-02 13:22:32,JanDing,für windows
+2009-12-02 13:23:52,JanDing,wtf wie kommt denn spaceemotion ins archiv rein ...
+2009-12-02 13:23:56,JanDing,ich dachte das ist vip only
+2009-12-02 13:38:34,Tobiking,Huhu
+2009-12-02 13:39:11,JanDing,moin
+2009-12-02 14:34:05,bluecode,rofl http://www.spiegelfechter.com/img/tango_gr.jpg
+2009-12-02 14:57:31,kwolf,JanDing: Was hat denn eine console.h mit OS-Design zu tun?
+2009-12-02 14:59:24,bluecode,"kwolf: es ist essenziell so eine Datei zu haben, sonst ist es schlechtes Design"
+2009-12-02 15:01:01,kwolf,"Gut, mit diesem Argument kriegt man alles irgendwie für dieses Board gerechtfertigt ;-)"
+2009-12-02 15:01:08,JanDing,ich hab mir kekse gekauft
+2009-12-02 15:01:13,JanDing,kwolf: stimmt ^_^
+2009-12-02 15:01:30,JanDing,macht das thema halt eine rundreise im forum
+2009-12-02 15:01:51,kwolf,"Hm, du meinst, ich soll es erstmal ins Literarische Eck schieben, damit du weitermachen kannst? ;-)"
+2009-12-02 15:02:01,XanClic,"Yeah, Paloxena2 beginnt zumindest dort nicht gleich mit schlechtem Design *g*"
+2009-12-02 15:02:03,JanDing,joar zum beispiel
+2009-12-02 15:02:06,bluecode,wie ich sehe hat sich im Forum die aufteilung immernoch nicht geändert
+2009-12-02 15:02:14,kwolf,"Ach, lyrisch war das Eck, nicht literarisch"
+2009-12-02 15:02:23,kwolf,"Ich wusste doch, dass das falsch klingt"
+2009-12-02 15:02:37,bluecode,"wobei doch, SW-Entwicklung gibts"
+2009-12-02 15:02:44,kwolf,"bluecode: Öh, doch? Wir haben doch geradezu revolutionär umgestellt"
+2009-12-02 15:03:23,JanDing,"hm lowlevel coding ist das wohl am ehesten, oder?"
+2009-12-02 15:03:37,JanDing,aber so richtig low ist das nicht
+2009-12-02 15:03:51,JanDing,gibts kein middlelevel coding?
+2009-12-02 15:04:12,kwolf,Ich hätte es nach SW-Entwicklung gepackt
+2009-12-02 15:04:18,JanDing,a-bit-more-than-low-but-nowhere-near-high-level coding
+2009-12-02 15:04:24,bluecode,kwolf: huh? was hat sich denn sonst geändert?
+2009-12-02 15:04:29,kwolf,"JanDing: Weil halt letztendlich ""ich kann kein C"""
+2009-12-02 15:05:05,JanDing,stimmt eigentlich
+2009-12-02 15:05:05,kwolf,bluecode: Die ungenutzten Boards sind in ein geheimes Archiv verschwunden worden
+2009-12-02 15:05:27,JanDing,das war nicht so geheim
+2009-12-02 15:05:49,kwolf,Nächstes Mal lass ich das dich machen ;-)
+2009-12-02 15:06:02,JanDing,der post war ursprünglich in einem 4 jahre altem thread in Tutorial-Diskussionen gelandet
+2009-12-02 15:06:07,kwolf,Was hab ich denn übersehen bei den Rechten?
+2009-12-02 15:06:09,bluecode,"die anzahl der boards hat sich doch garnicht verändert, oder?"
+2009-12-02 15:06:16,kwolf,"Zwei weg, eins dazu"
+2009-12-02 15:06:50,JanDing,"die unterforen Resource Center und Tutorial-Diskussionen waren immer noch zugreifbar, nur halt nicht mehr sichtbar"
+2009-12-02 15:06:58,JanDing,also wenn man die url der foren kannte
+2009-12-02 15:07:25,kwolf,"Hm, okay... Vermutlich irgendwo ein alter Link"
+2009-12-02 15:07:48,JanDing,jop
+2009-12-02 15:09:08,JanDing,ich hab 9 kekse gegessen
+2009-12-02 15:09:12,JanDing,in der packung waren 12 kekse
+2009-12-02 15:09:29,JanDing,dann sind weniger als 12 übrig
+2009-12-02 15:09:49,JanDing,deswegen kann ich die packung nicht mehr umtauschen
+2009-12-02 15:10:24,JanDing,soll ich euch meinen trick verraten?
+2009-12-02 15:10:51,JanDing,"ich hab solange kekse gegessen, bis nur noch so viele übrig waren, wie ich zählen"
+2009-12-02 15:10:52,JanDing,kann
+2009-12-02 15:11:31,JanDing,"und dann hab ich die verpackung einmal voll und einmal leer gewogen, die differenz durch 3 geteilt, dann hab ich das gewicht eines einzelnen keks"
+2009-12-02 15:11:52,JanDing,auf der verpackung steht das gesamt gewicht drauf. das einfach durch den eben ermittelten wert teilen und schon kommt 12 raus
+2009-12-02 15:12:16,JanDing,easy as cookie
+2009-12-02 15:12:41,akluth,Cookies are delicious
+2009-12-02 15:12:52,bluecode,"wie kannst du die volle Packung wiegen, wenn du bereits Teilweise kekse rausgefuttert hast?!??!^^1^11"
+2009-12-02 15:13:24,JanDing,hm mist bin aufgeflogen
+2009-12-02 15:13:36,JanDing,*brille und falschen schnurrbart abnehm*
+2009-12-02 15:15:37,bluecode,und fast hätt ich es nicht gemerkt!
+2009-12-02 15:16:13,JanDing,hm da sind noch keksreste im bart
+2009-12-02 15:16:23,JanDing,ich hab das keksessen aus dem fernsehen gelernt
+2009-12-02 15:16:29,JanDing,ich esse so wie krümelmonster
+2009-12-02 15:16:40,XanClic,"Das isst nicht, das tut nur so"
+2009-12-02 15:16:49,JanDing,wie??????????????????
+2009-12-02 15:16:57,XanClic,"Hm, es sei denn, es hat einen Staubsauger im Mund"
+2009-12-02 15:17:13,XanClic,"Und da du Hardware verspeist, könnte das schon funktionieren..."
+2009-12-02 15:23:32,JanDing,die krümelt nicht
+2009-12-02 15:23:41,JanDing,da brauch ich keinen staubsauger
+2009-12-02 15:23:47,XanClic,Aber die Kekse krümeln
+2009-12-02 15:24:04,XanClic,"Und wenn du die nur vor deinem Mund zerbröselst, brauchst du einen Staubsauger im Mund, damit sie auch dort landen"
+2009-12-02 15:24:30,JanDing,aber ein staubsauger ist auch hardware
+2009-12-02 15:24:34,JanDing,was ist wenn ich den verschlucke?
+2009-12-02 15:24:41,JanDing,gibts da keine softwarelösung?
+2009-12-02 15:24:41,XanClic,Dann saugt der die Kekskrümel an
+2009-12-02 15:24:48,XanClic,Und du kannst sie essen
+2009-12-02 15:24:53,JanDing,hm ...
+2009-12-02 15:28:37,kwolf,"Hm, mit valgrind läuft auch ein KVM fast rückwärts"
+2009-12-02 15:30:36,FreakyPenguin,Moin
+2009-12-02 15:30:41,JanDing,moin
+2009-12-02 15:31:00,XanClic,"Moin, moin, SHyx0rmZ und FreakyPenguin"
+2009-12-02 15:31:04,kwolf,Moin FreakyPenguin
+2009-12-02 15:36:17,SHyx0rmZ,Moin
+2009-12-02 15:46:42,JanDing,hm wollen wir mal über den heißen brei reden?
+2009-12-02 15:48:18,JanDing,also er ist ja nicht mehr kochend heiß
+2009-12-02 15:48:25,JanDing,kleine häppchen und pusten
+2009-12-02 15:48:57,JanDing,"vom rand vom teller nehmen, da is der etwas kühler"
+2009-12-02 16:25:34,Sandra3,Hay zusammen
+2009-12-02 16:26:33,kwolf,Hallo
+2009-12-02 16:26:38,kwolf,Was treibt dich hierher?
+2009-12-02 16:26:52,Sandra3,ICh kenne euch
+2009-12-02 16:26:55,Sandra3,Ich kenne euch alle
+2009-12-02 16:27:13,kwolf,"Ach, guten Tag, Herr Schäuble! :-)"
+2009-12-02 16:27:14,Sandra3,"Und ich verrat enicht, wer ich bin..."
+2009-12-02 16:27:43,XanClic,"Hm, falsch geschriebene Part-Nachrichten sind doof *g*"
+2009-12-02 16:29:43,kwolf,Ihr treibt schon komische Leute hierher. Womöglich alles Persönlichkeiten vom Jidder.
+2009-12-02 16:30:03,XanClic,"Wir treiben niemanden her, wir lernen nur von euch"
+2009-12-02 16:30:12,XanClic,In Sachen multiple Persönlichkeiten
+2009-12-02 16:31:11,kwolf,"Hm, haben multiple Persönlichkeiten es überhaupt nötig, von anderen Persönlichkeiten zu lernen?"
+2009-12-02 16:31:22,XanClic,Frag mich nicht ;-)
+2009-12-02 16:34:58,JanDing,es gibt regelmäßig interne weiterbildung bei im cerebralen cortex. da tauschen wir dann neue und alte erkenntnisse aus
+2009-12-02 16:35:43,Sandra3,Ja gut
+2009-12-02 16:35:47,Sandra3,Ich löse das Geheminis
+2009-12-02 16:37:06,Sandra3,Ich bin...
+2009-12-02 16:37:09,Sandra3,...der Grinch.
+2009-12-02 16:37:22,XanClic,"War das nicht der, der Weihnachten kaputtmachen wollte?"
+2009-12-02 16:37:32,JanDing,nein umgekehrt
+2009-12-02 16:37:40,XanClic,"Ah, Weihnachten hat ihn kaputtgemacht?"
+2009-12-02 16:37:59,JanDing,nein umgekehrt
+2009-12-02 16:38:01,JanDing,^^
+2009-12-02 16:38:15,XanClic,"Hm, kommen wir jetzt zu komplexen Zahlen? *g*"
+2009-12-02 16:38:25,XanClic,"Nicht negativ, nicht positiv... Es ist komplex."
+2009-12-02 16:38:27,JanDing,nein zu umgekehrten zahlen
+2009-12-02 16:38:32,JanDing,8 und 0 zum beispiel
+2009-12-02 16:38:32,XanClic,Oder 0.
+2009-12-02 16:38:35,Sandra3,Sind das dann BUchstaben?
+2009-12-02 16:38:54,JanDing,8 ist eine umgedrehte 8
+2009-12-02 16:39:10,Sandra3,Das irritiert mich
+2009-12-02 16:39:17,JanDing,um 360°
+2009-12-02 16:39:57,XanClic,"Na, da kann ich aber auch 42 nehmen"
+2009-12-02 16:40:07,Sandra3,"kwolf: btw, der Patch mit dem Standardchannel funzt irgendwie nicht...nach dem vom IRC-Server gesendetetn Befehl 376 will ich joinen, aber er joint nicht"
+2009-12-02 16:40:52,kwolf,"Tja, dann ist da wohl was falsch"
+2009-12-02 16:41:15,XanClic,Man kann den join auch mit dem pong schicken
+2009-12-02 16:41:55,Sandra3,Aber was? Wenn was eingebe steht dann anstatt Ungültiger Befehl kütt Kann keine NAchrichten von außen schiken
+2009-12-02 16:42:46,kwolf,"Hm, also gemäß der Meldung würde ich mal das schiken fragen, ob das was weiß"
+2009-12-02 16:43:16,kwolf,Wird der Join denn gesendet?
+2009-12-02 16:43:42,Sandra3,Scheinbar...quasi...ja...
+2009-12-02 16:45:15,kwolf,Dann solltest du das fixen
+2009-12-02 16:45:41,kwolf,Scheinbares Senden bringt nämlich nichts ;-)
+2009-12-02 17:25:56,schnippi,Reh
+2009-12-02 17:27:03,kwolf,Hirsch
+2009-12-02 17:28:51,cjuner,Geweih
+2009-12-02 17:29:32,XanClic,Weihnachtsmann
+2009-12-02 17:30:55,schnippi,ach freunde
+2009-12-02 17:31:05,schnippi,ich habe meine last mit der segmentierung *g*
+2009-12-02 17:31:16,FreakyPenguin,"Das hesst doch ""ach kindas"" ;-)"
+2009-12-02 17:31:31,FreakyPenguin,"Oder von mir aus auch ""ach kinders"" ;-)"
+2009-12-02 17:31:52,kwolf,schnippi: Ist sie etwa non-conforming mit deinen Erwartungen? *g*
+2009-12-02 17:32:01,schnippi,kwolf: hehe
+2009-12-02 17:32:23,schnippi,ich lerne hier obsolete scheiße
+2009-12-02 17:33:08,kwolf,"Ach, man könnte da bestimmt tolle Sachen damit machen, wenn man sich mal näher damit beschäftigt"
+2009-12-02 17:36:31,schnippi,hehe
+2009-12-02 17:36:52,schnippi,"ich glaube, selbst der prof hat dabei fehler im skript gemacht"
+2009-12-02 17:39:10,JSheridan,hat jemand zufällig eine ahnung wo ich am besten suchen sollte bei folgender fehlermeldung in bochs (beim versuch in 16 bit protected zu wechseln) (64bit -> 32bit comp -> 16bit protected -> 16bit real   war die idee)
+2009-12-02 17:39:13,JSheridan,read_virtual_checks(): read beyond limit
+2009-12-02 17:39:13,JSheridan,interrupt(): gate descriptor is not valid sys seg (vector=0x0d)
+2009-12-02 17:39:13,JSheridan,interrupt(): gate descriptor is not valid sys seg (vector=0x08)
+2009-12-02 17:40:20,JanDing,"cpu zustand (insbesondere eip) angucken, und schauen wo genau das passiert"
+2009-12-02 17:42:19,JSheridan,"eip stimmt und der code geht auch solang ich den ausführe direkt nachdem ich in 64 bit geschaltet habe, danach springt er zwar korrekt rein, gelangt auch bis 32 bit compa-mode aber bei lgdt für den 32/16bit gdt crasht er dann mit der obigen meldung"
+2009-12-02 17:42:28,JSheridan,zuvor deaktiviere ich nur paging und pae
+2009-12-02 17:43:28,JSheridan,gibt es in irgend einem register ein bit das mir dort vielleicht einen strich durch die rechnung machen könnte?
+2009-12-02 17:43:43,JSheridan,oder im descriptor
+2009-12-02 17:43:53,JanDing,eip stimmt eben niciht
+2009-12-02 17:44:23,JanDing,"und was ich damit sagen will, ist dass du irgendwelchen code vergessen oder falsch hast ^^"
+2009-12-02 17:45:05,JanDing,also eip <= 0xffff?
+2009-12-02 17:45:07,JSheridan,hmmm...
+2009-12-02 17:45:17,JanDing,und alle anderen speicherzugriffe auch?
+2009-12-02 17:45:39,JSheridan,eip ist laut bochs aber dort korrekt^^ c8a3 (dort liegt der code und ist passend in der sequenz)
+2009-12-02 17:46:11,JanDing,"jaja ich wollte sagen: ""wie kann eip korrekt sein, wenn der code fehlerhaft ist"" ... aber ich werd schon wieder philosophisch^^"
+2009-12-02 17:46:33,JanDing,aber c8a3 ist wohl erstmal in ordnung
+2009-12-02 17:46:37,JSheridan,"hihi, okay so betrachtet"
+2009-12-02 17:46:39,JanDing,esp auch <= 0xffff
+2009-12-02 17:47:00,JanDing,und addr vom lgdt [addr] auch?
+2009-12-02 17:47:19,JSheridan,"jup, die passt auch :/"
+2009-12-02 17:48:58,JSheridan,"okay das problem ist, zuvor ist ein kernel aktiv vondem ich nicht weiß was er alles eingestellt hat^^, ich weiß nur das ich von dem aus meinen code rufe und versuche aus dem 64-bit raus zu kommen. ich bin aber im ring 0 soweit sollte das ja passen."
+2009-12-02 17:49:00,JanDing,hm 32 bit compatability mode. das heißt EFER.LME = 1?
+2009-12-02 17:49:31,JSheridan,"genau long mode an, op size = 32"
+2009-12-02 17:49:42,JSheridan,also D/P = 0 müsste das sein
+2009-12-02 17:50:34,JanDing,hm joar dann weiß ich auch nicht weiter. kannste das komplette bochs.log posten?
+2009-12-02 17:50:45,JanDing,auf pastebin
+2009-12-02 17:51:06,JSheridan,kann ich versuchen^^
+2009-12-02 17:54:55,schnippi,"hehe, der prof hat definitiv nen fehler im skript :>"
+2009-12-02 17:55:10,schnippi,"der wird sich freuen, wenn ich in der scheiss segmentierungs-wunde bohre"
+2009-12-02 17:55:20,schnippi,nichts lieber als das! :-D
+2009-12-02 17:55:37,JanDing,hehe
+2009-12-02 17:56:28,schnippi,"er sagt, dass alle anwendungssegmente ladbar sind, wenn CPL <= DPL"
+2009-12-02 17:56:58,schnippi,"das ist aber käse, weil ein anwendungssegment könnte ein nonconforming codesegment sein, dann muss CPL=DPL sein"
+2009-12-02 17:57:31,schnippi,CPL <= DPL gilt nur für datensegmente
+2009-12-02 17:59:36,schnippi,das wurde jetzt selbst kwolf zu viel
+2009-12-02 17:59:54,JanDing,hehe
+2009-12-02 18:00:01,schnippi,"ach, 18 uhr, feierabend :P aber pünktlich wie sonstwas"
+2009-12-02 18:00:06,JanDing,tjo ich halte mich von non-conforming fern^^
+2009-12-02 18:00:30,schnippi,hehe
+2009-12-02 18:00:40,JSheridan,^^
+2009-12-02 18:00:51,schnippi,zeigt ein call gate bei euch auf das kernelcodesegment?
+2009-12-02 18:01:15,schnippi,braucht man sowas nicht für system calls?
+2009-12-02 18:01:37,JanDing,ne da nimmt man ... trap gates oder interrupt gates
+2009-12-02 18:01:42,JanDing,glaub trap gates waren das
+2009-12-02 18:01:45,JanDing,50:50 ^^
+2009-12-02 18:01:51,XanClic,Kommt drauf an
+2009-12-02 18:01:52,schnippi,willst du jemanden anrufen? *g*
+2009-12-02 18:02:09,XanClic,"Wenn der Kernel mit mehreren Syscalls gleichzeitig klarkommt, nimmt man Trap Gates"
+2009-12-02 18:02:14,XanClic,"Wenn nicht, dann Interrupt Gates"
+2009-12-02 18:02:38,XanClic,Oder man ist hochproffesionel und nimmt sysenter/sysexit bzw. syscall/sysret *g*
+2009-12-02 18:03:19,schnippi,was ist das?
+2009-12-02 18:03:32,schnippi,geklauter code von tyndur? *g*
+2009-12-02 18:03:32,XanClic,Das sind Funktionen für Syscalls ;-)
+2009-12-02 18:03:38,XanClic,týndur hat das gar nicht :-P
+2009-12-02 18:03:47,XanClic,http://lowlevel.brainsware.org/wiki/index.php/Sysenter
+2009-12-02 18:04:24,schnippi,im LM von AMD-Prozessoren löst ihre Verwendung hingegen eine Invalid-Opcode-Exception aus.   :-O
+2009-12-02 18:04:34,XanClic,Da gibts syscall
+2009-12-02 18:04:58,schnippi,-.-
+2009-12-02 18:05:06,XanClic,Hu?
+2009-12-02 18:05:16,XanClic,"""sysenter"" wurde von Intel eingeführt"
+2009-12-02 18:05:18,XanClic,"""syscall"" von AMD"
+2009-12-02 18:05:26,schnippi,"jo, schon klar"
+2009-12-02 18:05:32,XanClic,"Warum dann ""-.-""?"
+2009-12-02 18:05:33,schnippi,"""-.-"" = muss sowas sein?"
+2009-12-02 18:05:41,XanClic,Offensichtlich ;-)
+2009-12-02 18:06:16,schnippi,ich erfinde ja auch nicht einfach deimuddasystemrein/deimuddasystemraus
+2009-12-02 18:06:41,schnippi,ofmg dafür muss man extra cpuid machen? oder wie finde ich intel/amd cpus heraus? *g*
+2009-12-02 18:06:54,XanClic,Jo
+2009-12-02 18:07:04,XanClic,"bzw. du findest per cpuid raus, ob die CPU sysenter unterstützt"
+2009-12-02 18:07:09,schnippi,jo
+2009-12-02 18:07:17,schnippi,oder ich führe im invalid opcode handler einfach syscall aus *g*
+2009-12-02 18:07:34,JSheridan,http://pastebin.com/m2cbde280
+2009-12-02 18:08:43,JanDing,hm das meinte ich nicht
+2009-12-02 18:08:55,schnippi,ich dringe langsam ein in die wunderbare welt der betriebssystementwicklung
+2009-12-02 18:08:56,JanDing,bochs erstellt im verzeichnis mit der bochs.bxrc eine datei namens bochs.log
+2009-12-02 18:09:31,JSheridan,ach okay das andere ^^
+2009-12-02 18:09:52,JSheridan,http://pastebin.com/m8cd951c
+2009-12-02 18:10:34,schnippi,und wieso zur hölle will man aus dem LM wieder in den RM? *g*
+2009-12-02 18:11:00,schnippi,"JSheridan: ich reiß mir hier den arsch auf, um in den LM zu gelangen, und du bist so arrogant und fastelst von RM! :-P  *g*"
+2009-12-02 18:11:08,schnippi,faselst
+2009-12-02 18:11:13,JSheridan, *lach*
+2009-12-02 18:11:37,JSheridan,hmmm naja mir fehlt leicht das basiswissen dazu aber ich brauch dummerweise noch einen bios call
+2009-12-02 18:11:49,schnippi,"ja, das hatte ich vermutet"
+2009-12-02 18:11:52,JSheridan,und ich denke da muss man in den real mode zurück
+2009-12-02 18:11:58,schnippi,"soweit ich weiß, schon"
+2009-12-02 18:12:11,schnippi,ich könnt so ausrasten und alles kaputt hauen hier
+2009-12-02 18:12:17,JSheridan,warum?
+2009-12-02 18:12:24,schnippi,weil x86 irgendwie so mistig ist
+2009-12-02 18:12:39,JSheridan,solang man keinen bios call braucht ^^
+2009-12-02 18:12:49,schnippi,"für VESA muss man afaik auch in den RM zurück, wenn man dort was umschalten muss"
+2009-12-02 18:12:59,JSheridan,exakt das will ich ja o.O
+2009-12-02 18:13:06,schnippi,VESA?
+2009-12-02 18:13:16,JSheridan,"ja, also ich will es nicht, der prof aber schon ^^"
+2009-12-02 18:13:23,schnippi,*g*
+2009-12-02 18:13:24,JSheridan,und das in nem kernel den ich nicht geschrieben habe
+2009-12-02 18:13:28,schnippi,uni?
+2009-12-02 18:13:31,JSheridan,jup
+2009-12-02 18:13:33,schnippi,wo?
+2009-12-02 18:13:37,JSheridan,ulm
+2009-12-02 18:13:39,schnippi,lol
+2009-12-02 18:13:58,schnippi,mein BS prof stammt aus ulm *g*
+2009-12-02 18:14:22,JSheridan,^^
+2009-12-02 18:15:53,XanClic,"Also, ich finde es Quälerei, wenn man VESA in ein OS einbauen *muss*"
+2009-12-02 18:16:40,JSheridan,ich auch o.O
+2009-12-02 18:16:44,JSheridan,geht soweiso nichts^^
+2009-12-02 18:18:02,JanDing,JSheridan: also eine heiße spur hab ich auch noch nicht. aber ich glaube es ist immer noch EFER.LME = 1 und das ist vielleicht nicht korrekt
+2009-12-02 18:19:52,JSheridan,hmmm
+2009-12-02 18:20:56,chris12,moin
+2009-12-02 18:20:58,chris12,moin
+2009-12-02 18:21:03,JSheridan,"also long mode bleibt solange an bis ich den compa-mode verlasse, den kann ich aber nur verlassen indem ich einen 32 bit gdt lade um in den 32 bit protected zu springen, richtig?"
+2009-12-02 18:21:03,JanDing,mein chris12
+2009-12-02 18:21:08,XanClic,"moin, chris12"
+2009-12-02 18:21:08,JanDing,oh und ich seh gerade: ds hat ein limit von 0
+2009-12-02 18:21:20,XanClic,"Hm, das klingt doof *g*"
+2009-12-02 18:21:32,XanClic,"So viel zu ""read_virtual_checks(): read beyond limit"" *g*"
+2009-12-02 18:21:34,JanDing,ich glaub ich würd mich erstmal um das limit kümmern^^
+2009-12-02 18:23:55,JSheridan,hmmmm
+2009-12-02 18:24:07,DerHartmut,Nabend
+2009-12-02 18:24:53,XanClic,"Moin, moin, DerHartmut"
+2009-12-02 18:25:13,DerHartmut,ehenkes mag uns nicht
+2009-12-02 18:25:17,DerHartmut,Joint und geht
+2009-12-02 18:25:32,XanClic,"Joint, *sieht dich* und geht *g*"
+2009-12-02 18:26:19,DerHartmut,Richtig so
+2009-12-02 18:26:26,DerHartmut,Aber wirke ich so abschreckend?
+2009-12-02 18:26:27,DerHartmut,Ich bin doch nett
+2009-12-02 18:26:29,DerHartmut,Lieb
+2009-12-02 18:28:43,JSheridan,"also ich schau dann mal die gdt descriptoren durch, und den limit bei der idt/ivt durschauen. jedenfalls macht der komische kernel hier was komisches ;)"
+2009-12-02 18:28:54,JSheridan,gut java-syntax & compiler alleine ist schon komisch
+2009-12-02 18:29:16,mastamind,"woran liegt das, dass so viele open source leute, extremst aggressiv und wirklich nivealos werden, sobald man das wort betriebessystementwicklung in dem mund nimmt?"
+2009-12-02 18:29:34,DerHartmut,niwohlos bitte
+2009-12-02 18:29:51,DerHartmut,Also ich werde selten aggressiv und schon gar nicht niwohlos
+2009-12-02 18:29:55,mastamind,"es is echt heftig, wie extrem man dann beschimpft wird teilweise. da kommt dann echt alles. von vollidiot, bis du kannst gar nichts, du hast keine ahnung."
+2009-12-02 18:30:07,mastamind,"naja hier wird das kaum passieren, aber wo anders."
+2009-12-02 18:30:25,mastamind,ich bin sogar schon als dämlich bezeichnet worden.
+2009-12-02 18:30:29,mastamind,aber vielleicht geht es nur mir so.
+2009-12-02 18:30:41,DerHartmut,"Also selbst wenn sich hier jemand selten doof anstellt wird er nicht beleidigt, weil wir haben alle mal ähnlich angefangen"
+2009-12-02 18:30:53,XanClic,*weil wir alle mal ähnlich angefangen haben xD
+2009-12-02 18:31:04,XanClic,(Das mal so als Beleidigung *g*)
+2009-12-02 18:31:18,DerHartmut,"""höhöhö"" *g*"
+2009-12-02 18:31:42,schnippi,"mir wurde mal unterstellt, ich würde nur codes klauen :-P"
+2009-12-02 18:31:44,schnippi,:-O
+2009-12-02 18:31:45,XanClic,"Hm, also mein Englischlehrer fand OS-Dev cool *g*"
+2009-12-02 18:32:04,DerHartmut,"Mir wird dauernd unterstellt, ich sei doof"
+2009-12-02 18:32:06,DerHartmut,"Gut, stimmt auch"
+2009-12-02 18:32:07,DerHartmut,Aber dennoch
+2009-12-02 18:32:09,schnippi,"dabei schreibe ich den tyndur text doch sorgfältig um, DAS IST AUCH ARBEIT! :-D"
+2009-12-02 18:32:43,mastamind,"ja, bei mir hies es auch, dass ich mein pdf von wikipedia abgeschrieben hätte."
+2009-12-02 18:33:10,mastamind,"das find ich echt krank. die leute sind aber dann großteils gebildet und sollten wissen, was ein plagiat ist."
+2009-12-02 18:33:13,schnippi,"mir ist es egal, ob jemand sein OS nur zusammenkopiert"
+2009-12-02 18:33:29,XanClic,"Mir nicht, vor allem nicht, wenn er dabei GNUs quält. :-P"
+2009-12-02 18:33:36,DerHartmut,na
+2009-12-02 18:33:36,schnippi,"solange er den hintergrund nicht versteht, hat er sowieso verloren"
+2009-12-02 18:33:42,DerHartmut,Ich will hier nichts von fricken hören XanClic 
+2009-12-02 18:33:43,DerHartmut,;-)
+2009-12-02 18:33:43,XanClic,Und wenn er den zusammenkopierten Code als Buch veröffentlichen will...
+2009-12-02 18:33:48,schnippi,"und wenn er den hintergrund versteht, wäre es leicht, den code selbst zu schreiben"
+2009-12-02 18:33:49,mastamind,"mir auch... ich wollte nur mal nachfragen, ob das normal ist, dass man derart aggressiv beleidigt wird."
+2009-12-02 18:33:52,XanClic,DerHartmut: schnippi hat doch angefangen *g*
+2009-12-02 18:33:52,JSheridan,<- afk
+2009-12-02 18:33:54,DerHartmut,...nennt er sich Klaus-Kürgen
+2009-12-02 18:33:56,mastamind,nämlich auch persönlich.
+2009-12-02 18:33:58,DerHartmut,*Jürgen
+2009-12-02 18:34:20,DerHartmut,"mastamind: Jeder mit ein bisschen Anstand untersteht sich, ahnungslose Leute zu beileidigen"
+2009-12-02 18:34:24,DerHartmut,Oder überhaupt zu beleidigen
+2009-12-02 18:34:45,DerHartmut,"Außer es geht darum, einen GNU-Raper zu beleidigen, das ist dann erlaubt *g*"
+2009-12-02 18:35:04,mastamind,"ich tu mich so extrem schwer, über dem zu stehen, weil ich mir dann überlegt, ob sie vielleicht recht haben und ich wirklich viel zu verbessern hab an meinem code. wobei den sich eh keiner ansieht."
+2009-12-02 18:35:05,JanDing,oder wenn er op hat
+2009-12-02 18:35:22,schnippi,XanClic: womit habe ich angefangen?
+2009-12-02 18:35:28,XanClic,"<schnippi> mir ist es egal, ob jemand sein OS nur zusammenkopiert"
+2009-12-02 18:35:30,DerHartmut,schnippi: GNU-Raper
+2009-12-02 18:35:39,schnippi,gnu raper?
+2009-12-02 18:36:05,XanClic,"Wenn wir von Leuten hören, die ihr OS zusammenkopieren, denken wir eben an GNU-Raper ;-)"
+2009-12-02 18:36:13,XanClic,Besonders an ganz bestimmte GNU-Raper
+2009-12-02 18:36:20,DerHartmut,"Wie zum Beispiel ""stricky"""
+2009-12-02 18:36:24,XanClic,Oder so
+2009-12-02 18:36:31,schnippi,"ich meine nur, ohne die theorie zu verstehen, schafft man es doch eh nicht weiter, als nen buchstaben auf dem bildschirm auszugeben"
+2009-12-02 18:36:41,XanClic,Och...
+2009-12-02 18:36:53,XanClic,"Ich kenne da jemanden, der schafft es, jede Menge Code zusammenzusuchen"
+2009-12-02 18:37:09,XanClic,Vom FAT12-Treiber über vollständigen TCP/IP-Treiber bis hin zu USB
+2009-12-02 18:37:16,schnippi,:-O
+2009-12-02 18:37:27,XanClic,bzw. FAT im Allgemeinen
+2009-12-02 18:37:43,schnippi,"ich könnte fremdcode nichtmal in mein ""OS"" einbauen"
+2009-12-02 18:37:56,schnippi,weil er sicher an 1000 stellen haken würde *g*
+2009-12-02 18:37:58,Homix,das wird aber nicht funktionieren ;) weil das OS an sich dann nur aus einzelteilen besteht^^
+2009-12-02 18:38:07,XanClic,"Na, dann erzähl dem das mal"
+2009-12-02 18:38:13,XanClic,"Und du weißt wohl, wen ich meine, Homix ;-)"
+2009-12-02 18:38:34,Homix,"der, der dann ein buch schreiben will? ;)"
+2009-12-02 18:38:35,schnippi,EH? ;)
+2009-12-02 18:38:42,XanClic,"Homix: Nein, der andere ;-)"
+2009-12-02 18:38:48,schnippi,toaster? :-P
+2009-12-02 18:38:52,Homix,hm?
+2009-12-02 18:38:52,XanClic,Nein *g*
+2009-12-02 18:38:58,XanClic," <DerHartmut> Wie zum Beispiel ""stricky"""
+2009-12-02 18:39:16,schnippi,kenn ich nicht *g*
+2009-12-02 18:39:19,Homix,kenn ich nicht
+2009-12-02 18:39:26,XanClic,<XanClic> Oder so
+2009-12-02 18:39:41,XanClic,"Homix: Dann such mal in deinem Gedächtnis nach Leuten, deren Name so ähnlich klingt ;-)"
+2009-12-02 18:39:56,XanClic,"Oder guck einfach in den Channels nach, in denen du bist *g*"
+2009-12-02 18:40:00,schnippi,prettyos?
+2009-12-02 18:40:16,XanClic,"Hm, mehr sag ich nicht, sonst prangert ehenkes wieder das Log an *g*"
+2009-12-02 18:40:22,mastamind,"dort is doch nichts kopiert, oder? schreibt das nicht der eh alles selbst? inklusive des zugs."
+2009-12-02 18:40:28,schnippi,hieß nicht der gefolgsmann von ehenkes fricky oder so? ;)
+2009-12-02 18:40:33,XanClic,*hust*
+2009-12-02 18:40:37,XanClic,*g*
+2009-12-02 18:40:43,Homix,lol
+2009-12-02 18:41:01,XanClic,mastamind: Schon der ist doch geklaut xD
+2009-12-02 18:41:03,DerHartmut,*hatschi*
+2009-12-02 18:41:11,schnippi,schweinegrippe!!1
+2009-12-02 18:41:15,XanClic,"Und die Stringfunktionen doch jetzt auch, wie ich lesen durfte xD"
+2009-12-02 18:41:25,mastamind,"XanClic: ich wüsste nicht mal, woher ich sowas klauen könnte..."
+2009-12-02 18:41:35,XanClic,mastamind: Hat er doch ins Forum geschrieben?
+2009-12-02 18:41:40,DerHartmut,Was haben die überhapt selber geschrieben außer ihre Flames gegen andere OS/Communites?
+2009-12-02 18:41:49,Homix,"ich wüsste zwar woher ich alles klauen könnte, aber leider mag mein Pascal Compiler kein C Code :D"
+2009-12-02 18:41:49,mastamind,XanClic: das verfolg ich nicht....
+2009-12-02 18:42:05,schnippi,"ich frage mich, wie man einen perfekt funktionierenden TCP/IP stack hernehmen und in sein billig OS einpflanzen kann?"
+2009-12-02 18:42:06,XanClic,"mastamind: ""- Modul gags.h/c mit fahrendem Zug (aus wikipedia) <--- unbedingt ansehen!"""
+2009-12-02 18:42:17,XanClic,Im Code:
+2009-12-02 18:42:19,XanClic,// Zug als Beispiel übernommen aus 
+2009-12-02 18:42:21,XanClic,// http://de.wikipedia.org/wiki/ASCII-Art#Allgemeine_Beispiele
+2009-12-02 18:42:36,schnippi,gags?
+2009-12-02 18:42:36,XanClic,"schnippi: Wenn man dann noch CDI.net hat, sollte das gehen ;-)"
+2009-12-02 18:42:44,XanClic,Und Ethernet ist nicht so schwer
+2009-12-02 18:42:57,schnippi,was suchen gags im kernel?
+2009-12-02 18:43:04,XanClic,Das ist didaktisch
+2009-12-02 18:43:11,XanClic,+gut
+2009-12-02 18:43:11,DerHartmut,xD
+2009-12-02 18:43:25,mastamind,"ich glaub, eh mag mich nicht."
+2009-12-02 18:43:36,DerHartmut,ehenkes mag viele/s nicht
+2009-12-02 18:43:46,Homix,"ich krieg schon immer nen schock wenn ich ""didaktisch"" les"
+2009-12-02 18:43:52,XanClic,xD
+2009-12-02 18:43:58,DerHartmut,Homix: *lol*
+2009-12-02 18:44:00,XanClic,"Hm, ich könnte mir mal wieder /join und bei Gelegenheit auch einen Autojoin leisten"
+2009-12-02 18:44:14,DerHartmut,"Denk dran, ich stell die Anträge auf Vertagnung"
+2009-12-02 18:44:16,schnippi,in #prettyos?
+2009-12-02 18:44:29,XanClic,"thx für den Link, da muss ich nicht lange eingeben *g*"
+2009-12-02 18:51:28,mastamind,"ich glaub, dass immer noch massenhaft leute einen beschimpfen würden, wenn man für seine os programmierungen den turingpreis gewonnen hätte."
+2009-12-02 18:52:00,JanDing,wer beschimpft dich denn?
+2009-12-02 18:52:28,mastamind,"leute, die ich frage, ob sie mitmachen wollen."
+2009-12-02 18:52:45,schnippi,lol
+2009-12-02 18:53:00,schnippi,mach doch bei prettyos mit
+2009-12-02 18:53:27,schnippi,der aufsteigende stern in der osdev szene
+2009-12-02 18:53:46,mastamind,darum geht es mir gar nicht...
+2009-12-02 18:53:54,XanClic,Wird er die Chandrasekhargrenze überschreiten?
+2009-12-02 18:54:13,DerHartmut,Die was?
+2009-12-02 18:54:16,DerHartmut,Wer hat dich entführt?
+2009-12-02 18:54:19,XanClic,http://de.wikipedia.org/wiki/Chandrasekhar-Grenze
+2009-12-02 18:54:26,DerHartmut,"Och ne, erklär das doch mal so du doof"
+2009-12-02 18:54:29,DerHartmut,Immer diese doofen Links
+2009-12-02 18:54:30,XanClic,*g*
+2009-12-02 18:54:31,mastamind,"dabei wird doch die sonne zu einem roten risen, oder?"
+2009-12-02 18:54:32,DerHartmut,Man man man
+2009-12-02 18:54:38,XanClic,mastamind: Die Sonne überschreitet die nicht
+2009-12-02 18:54:47,XanClic,"""Die Chandrasekhar-Grenze ist die theoretische obere Grenze für die Masse eines Weißen Zwergsterns"""
+2009-12-02 18:54:49,mastamind,oder zum neutronenstern oder schwarzenloch.
+2009-12-02 18:54:54,XanClic,Genau
+2009-12-02 18:54:58,mastamind,ok
+2009-12-02 18:58:58,mastamind,XanClic: studierst du physik?
+2009-12-02 18:59:11,XanClic,"Nö, ich bin Schüler und hab eine Facharbeit zu Sternentwicklung geschrieben ;-)"
+2009-12-02 18:59:19,mastamind,ah ok. :-)
+2009-12-02 18:59:45,schnippi,bootet jemand von euch seinen kernel über PXE?
+2009-12-02 18:59:58,schnippi,"ich würde das gerne mal einrichten, nur habe ich keine ahnung davon *g*"
+2009-12-02 19:00:18,schnippi,also einen tftp server habe ich laufen und mit speziellen ubuntu images klappt das auch halbwegs
+2009-12-02 19:02:05,DaCodaaa,hi
+2009-12-02 19:02:19,DerHartmut,Ein wunderschönes Moin moin DaCodaaa 
+2009-12-02 19:03:03,XanClic,"moin, DaCodaaa"
+2009-12-02 19:04:07,DaCodaaa,weiß jemand wie genau eine gleitkommavar funzt? ich mach grade kprintf floatfähig
+2009-12-02 19:04:39,XanClic,"Hm, ein Buch, das ich hier hab, weiß das *g*"
+2009-12-02 19:05:05,DaCodaaa,dann frag doch bitte dein Buch
+2009-12-02 19:05:12,DerHartmut,Das kann doch nicht reden
+2009-12-02 19:05:13,DerHartmut,Weiß doch jeder
+2009-12-02 19:05:22,XanClic,http://de.wikipedia.org/wiki/IEEE_754
+2009-12-02 19:05:27,XanClic,Ich frag Wikipedia
+2009-12-02 19:05:36,XanClic,Da muss ich nicht so schwer heben
+2009-12-02 19:05:46,DaCodaaa,nee nur schwer laden
+2009-12-02 19:08:34,DaCodaaa,ohohooo das ist aber viel!
+2009-12-02 19:08:46,XanClic,"Hm, hast du ein 56k-Modem?"
+2009-12-02 19:08:56,XanClic,Oder warum brauchst du drei Minuten für die Seite?
+2009-12-02 19:09:14,DaCodaaa,ich brauch dri minuten um die zu überfliegen
+2009-12-02 19:09:24,DaCodaaa,*drei
+2009-12-02 19:09:25,schnippi,"Mantisse m (p Bits), manchmal als Signifikant bezeichnet"
+2009-12-02 19:09:26,schnippi,signifant?
+2009-12-02 19:09:47,schnippi,das ist doch ein tippfehler in der WP ;)
+2009-12-02 19:09:57,DerHartmut,Kwatsch
+2009-12-02 19:10:01,DaCodaaa,ich glaub davon lass ich die finger bis ichs wirklich brauche
+2009-12-02 19:10:02,XanClic,Als wären die Signifanten so trivial
+2009-12-02 19:10:03,DerHartmut,Kennst du etwa keine Signifanten? :-O
+2009-12-02 19:10:09,XanClic,Dass man die in Gleitkommazahlen verwendet
+2009-12-02 19:10:56,schnippi,fließkomma im kernel *kotz*
+2009-12-02 19:11:14,DaCodaaa,y not?... ok weils kompli ist
+2009-12-02 19:11:22,FreakyPenguin,schnippi: Also die Register Sichern sollte man da schon. ;-)
+2009-12-02 19:11:31,FreakyPenguin,*sichern
+2009-12-02 19:11:34,schnippi,braucht man die im kernel überhaupt?
+2009-12-02 19:11:48,schnippi,FreakyPenguin: was wie wo?
+2009-12-02 19:11:51,FreakyPenguin,"Nein, aber der Userspace braucht die ;-)"
+2009-12-02 19:12:09,FreakyPenguin,"Der hat nämlich unter umständen nicht freude, wenn ihm die beim Taskwechsel jemand überschreibt ;-)"
+2009-12-02 19:12:10,schnippi,kprintf ist userspace?
+2009-12-02 19:12:30,schnippi,"wir reden aneinander vorbei, kann das?"
+2009-12-02 19:12:35,DaCodaaa,wenn dus als prog machst schon
+2009-12-02 19:12:36,XanClic,kprintf ist Kernel und braucht deshalb keine Gleitkommazahlen
+2009-12-02 19:12:36,FreakyPenguin,"Nö, aber da braucht man dann halt doch Fliesskomma im Kernel ;-)"
+2009-12-02 19:13:22,DaCodaaa,ich kann printf auch über ints oder listten als prog steuern dann wärs user
+2009-12-02 19:13:25,schnippi,FreakyPenguin taucht aus dem nichts auf und verwirrt mich komplett
+2009-12-02 19:13:54,DerHartmut,MYSTERIÖS
+2009-12-02 19:14:19,schnippi,jetzt müsste noch einer die akte-x melodie pfeifen
+2009-12-02 19:14:38,DaCodaaa,omg aus dem nichts kann doch garnichts zurückkommen weil da kein raum und keine Zeit ist!!!!!
+2009-12-02 19:16:01,cjuner,"Boah ich hab ganz vergessen wie die Melodie geht :'( ... so lange kein Akte X mehr gesehen :-/ Kommt da jetzt eigentlich noch ein Film, der die Story weiterführt?"
+2009-12-02 19:18:07,DerHartmut,Wulle-Wulle-Bing-Bong
+2009-12-02 19:18:26,DaCodaaa,dadadadadong
+2009-12-02 19:24:08,DaCodaaa,boah little endian macht mich bekloppt: also wenn ich für das Pagedir present und write -flags setze kommen die dann (im int) nach links oder nach rechts?
+2009-12-02 19:24:37,schnippi,:-O
+2009-12-02 19:24:48,XanClic,"Steht da nicht, dass das Bit 0 und so ist?"
+2009-12-02 19:24:56,XanClic,Bit 0 ist immer das niederwertigste Bit
+2009-12-02 19:25:22,XanClic,"Da hat dich, solange du nicht mit einzelnen Bytes arbeitest, nicht zu interessieren, welchen Endian deine CPU verwendet ;-)"
+2009-12-02 19:25:22,DaCodaaa,also rechts? und die addresse kommt nach links? kommt die dann falschrum dahin?
+2009-12-02 19:25:38,XanClic,"Jo, aber warum falschrum?"
+2009-12-02 19:26:14,DaCodaaa,weil ders andersrum ausliest?
+2009-12-02 19:26:22,DaCodaaa,also doch richtigrum
+2009-12-02 19:26:24,XanClic,Das kann dir doch völlig wurscht sein
+2009-12-02 19:26:34,DaCodaaa,ok
+2009-12-02 19:26:40,XanClic,"Wenn du 0x12345678 reinschreibst, dann liest der Prozessor auch 0x12345678 ein"
+2009-12-02 19:26:45,XanClic,"Es sei denn, er will dich verwirren *g*"
+2009-12-02 19:26:49,Tobiking,Wieso sollte man so einen Eintrag anders festlegen als der Prozessor arbeitet
+2009-12-02 19:27:36,DaCodaaa,weil ich die flags setze(rechts und dann die Addresse hinzufüge(nach links verschieben
+2009-12-02 19:27:39,DaCodaaa,)
+2009-12-02 19:28:07,schnippi,du setzt rechts flags?
+2009-12-02 19:28:12,DaCodaaa,oder sollte ich die Addresse 4kb aligned machen und einsetzen und DANN erst die flags addieren?
+2009-12-02 19:28:36,DaCodaaa,Page_Directory[i] = 3;
+2009-12-02 19:28:39,XanClic,"Öhm, wäre sinnvoll, ja."
+2009-12-02 19:28:45,Tobiking,"Klingt sinnvoller, sparst dir damit warscheinlich ne variable"
+2009-12-02 19:28:46,DaCodaaa,ok dann machichdas
+2009-12-02 19:29:05,XanClic,"Wäre doof, wenn du eine Adresse wie 0x10000001 hast und dann das Bit 1 *addierst* :-P"
+2009-12-02 19:29:13,schnippi,"ich habe nichtmal das problem verstanden, aber gut *g*"
+2009-12-02 19:30:06,DaCodaaa,jaaaaa wenn die addresse 4kb aligned ist hab ich nur die 20 höchstwertigen bits also kann mir bei den flags nix passieren
+2009-12-02 19:30:23,XanClic,"Ja, und wenn die Adresse nicht 4kB-aligned ist, hast du Mist gebaut ;-)"
+2009-12-02 19:30:32,schnippi,*g*
+2009-12-02 19:30:37,DaCodaaa,schnippi: freu dich ;-)
+2009-12-02 19:31:33,DaCodaaa,wieos das
+2009-12-02 19:32:40,DaCodaaa,die zeigt doch nur auf ne 4kb Page
+2009-12-02 19:33:19,XanClic,"Du fragst grad, warum die 4-kB-aligned sein soll?"
+2009-12-02 19:33:45,DerHartmut,I gotta Feeling...
+2009-12-02 19:33:53,schnippi,lol
+2009-12-02 19:34:47,DaCodaaa,nee ich sage die ist 4kb gross also können mir die letzten 12 bits den Buckel runterrutschen
+2009-12-02 19:35:07,DerHartmut,"Sei nicht so frech zu den Bits, irgendwann rächen die sich"
+2009-12-02 19:35:39,DaCodaaa,das nennt man dann ABSTURTZ
+2009-12-02 19:36:00,DerHartmut,"Ich würde behaupten ABSTURZ, aber mach du mal"
+2009-12-02 19:36:05,XanClic,Die können dir nicht den Buckel runterrutschen
+2009-12-02 19:36:11,XanClic,Die _müssen_ dir den Buckel runterrutschen
+2009-12-02 19:36:18,DaCodaaa,dann tun dies eben nich
+2009-12-02 19:36:18,XanClic,"Sonst hast du, wie gesagt, Mist gebaut ;-)"
+2009-12-02 19:36:46,XanClic,"Und überleg dir vor dem Drücken von Return/Enter in Zukunft mal, ob dein Satz noch zu dem passt, was geschrieben wurde, während du getippt hast xD"
+2009-12-02 19:37:04,DerHartmut,Oder du tippst schneller ;-)
+2009-12-02 19:37:16,DaCodaaa,"ich habe schon mitbekommen, dass die nachrichten mit verzögerung ankommen"
+2009-12-02 19:37:37,XanClic,8 Sekunden sind seeeehr viel ;-)
+2009-12-02 19:37:46,XanClic,[CTCP] CTCP-PING-Antwort von DaCodaaa empfangen: 0 seconds.
+2009-12-02 19:37:53,XanClic,Schlechte Ausrede. Gaaaanz schlechte Ausrede. *g*
+2009-12-02 19:37:58,DaCodaaa,?
+2009-12-02 19:38:15,DaCodaaa,ich habs gesendet und genau dann kam auch deine Antwort
+2009-12-02 19:38:18,XanClic,Die Verzögerung von mir zu dir beträgt unter einer Sekunde ;-)
+2009-12-02 19:38:31,DaCodaaa,kann sein
+2009-12-02 19:39:06,XanClic,"Ich meinte btw ""Die _müssen_ dir den Buckel runterrutschen"""
+2009-12-02 19:39:12,DaCodaaa,ja
+2009-12-02 19:39:13,XanClic,Aber ist ja auch wurscht
+2009-12-02 19:39:15,DaCodaaa,ja
+2009-12-02 19:39:54,DaCodaaa,du kannst mir ja mal den compnamen geben dann zeig ich dir wie lang ein Ping braucht
+2009-12-02 19:40:02,XanClic,xanclic.is-a-geek.org
+2009-12-02 19:40:24,XanClic,"Und per IRC gibt es btw ""/ctcp XanClic ping"" ;-)"
+2009-12-02 19:40:33,DerHartmut,derhartmut.hat-einen-kleiderschrank-da-sind-kleider-drin.de
+2009-12-02 19:42:30,XanClic,"Hm, ""[CTCP] Unbekannte CTCP-PING-Anfrage von DaCodaaa empfangen."" ist komisch"
+2009-12-02 19:42:44,XanClic,"Das sollte normalerweise ""[CTCP] CTCP-PING-Anfrage von DaCodaaa empfangen, Antwort wird gesendet."" heißen"
+2009-12-02 19:42:48,DaCodaaa,jo bei mir kommen pings garnich wieder an...
+2009-12-02 19:43:00,XanClic,"Also, wenn ich mich selbst pinge, geht es *g*"
+2009-12-02 19:43:04,DaCodaaa,kann daran liegen dass ich win hab
+2009-12-02 19:43:34,XanClic,Eigentlich nicht
+2009-12-02 19:44:02,DaCodaaa,boah ein ping von mir zu mir braucht 2 sekunden wie geht das?
+2009-12-02 19:44:33,XanClic,Du kannst nur jede Sekunde oder so eine Nachricht abschicken
+2009-12-02 19:44:47,DerHartmut,*lol*
+2009-12-02 19:44:53,DerHartmut,DaCodaaa: Könnte daran liegen weil du Windows hast
+2009-12-02 19:44:55,DerHartmut,Nein Spaß ;-)
+2009-12-02 19:45:24,XanClic,"Führt dazu, dass dein Rechner ein CTCP-PING abschickt, das bekommt und dann ein CTCP-PONG zurückschickt, das dauert aber eine Sekunde, bis das wirklich losgeschickt wird"
+2009-12-02 19:46:18,DaCodaaa,"also von DerHartmut keommen sie wieder, aber dann steht da ? seconds"
+2009-12-02 19:46:50,DerHartmut,Ich lagge auch wie nen beklioppter
+2009-12-02 19:46:57,DerHartmut,Und wieso pingst du m ich?
+2009-12-02 19:47:00,DerHartmut,Was hab ich dir getan?
+2009-12-02 19:47:04,XanClic,"Also, CTCP-PINGs VomHartmut beantwortet mein Rechner brav ;-)"
+2009-12-02 19:49:39,DaCodaaa,also pings von comp zu comp gehn suppi
+2009-12-02 19:50:16,DerHartmut,Is jut DaCodaaa 
+2009-12-02 19:50:36,DaCodaaa,ich krieg immer ? seconds
+2009-12-02 19:50:48,DerHartmut,MYSTERIÖS
+2009-12-02 19:51:20,DaCodaaa,da zahlen mir die bits was zurück...
+2009-12-02 19:51:33,DerHartmut,Oder mein PC mag dich einfach nicht
+2009-12-02 19:52:23,DerHartmut,;-)
+2009-12-02 19:52:43,DaCodaaa,hmmm bisher hatten die Bluescreens immer andere :-)
+2009-12-02 19:53:01,DerHartmut,Also ich habe hierkeine Bluescreens
+2009-12-02 19:53:06,XanClic,Ich schon
+2009-12-02 19:53:12,DerHartmut,Außer ich mache ein blaues Bild in den Vollbildschirmmodus
+2009-12-02 19:53:12,XanClic,Wenn ich den Computer eine Minute lang in Ruhe lasse
+2009-12-02 19:53:15,XanClic,PLIMM
+2009-12-02 19:53:17,XanClic,Sofort BSOD
+2009-12-02 19:53:20,XanClic,"Keine Ahnung, warum"
+2009-12-02 19:53:37,DerHartmut,*G*
+2009-12-02 19:53:38,XanClic,Vielleicht sollte ich mir ja das Bildschirmschonermenü nochmal genauer ansehen
+2009-12-02 19:53:54,DerHartmut,Daran könnte es liegen
+2009-12-02 19:54:00,XanClic,Bin mir aber nicht sicher
+2009-12-02 19:54:17,DerHartmut,"mach mal sudo rm -rfv /, dann klärt sich alles auf"
+2009-12-02 19:54:26,DerHartmut,"Aber psst, Geheimtipp,"
+2009-12-02 19:54:30,XanClic,bash: Permission denied.
+2009-12-02 19:54:32,XanClic,:-(
+2009-12-02 19:54:41,DerHartmut,"Hm ja, dann musst du tricks anwenden"
+2009-12-02 19:54:43,DaCodaaa,"ich fands mal lustig in der schule ein script zu schreiben, dass den kompletten verfügbaren speicher überschreibt und den in den Autostart aufm server fgetan"
+2009-12-02 19:54:46,DerHartmut,rm -rfv /home/akluth XanClic 
+2009-12-02 19:54:48,DerHartmut,Ne halt
+2009-12-02 19:54:50,DerHartmut,FAlL xD
+2009-12-02 19:54:54,XanClic,"DaCodaaa: Klingt richtig lustig, DaCodaaa"
+2009-12-02 19:54:56,XanClic,DerHartmut: xD
+2009-12-02 19:55:07,DerHartmut,DaCodaaa: Hihi
+2009-12-02 19:55:13,DaCodaaa,XanClic: wars auch alle in der schule hatten bluescreens
+2009-12-02 19:55:20,XanClic,Klingt megalustig
+2009-12-02 19:55:32,DerHartmut,"Ja, da war dein jugendliches Ego auf Wolke 83 was DaCodaaa ;-)"
+2009-12-02 19:55:35,taljeth,Reh
+2009-12-02 19:55:36,DerHartmut,Ich grüße dich taljeth 
+2009-12-02 19:55:43,XanClic,"Moin, moin, taljeth"
+2009-12-02 19:55:46,DerHartmut,"Ich habe heute keine Hirsche gesehen, aber danke der Nachfrage"
+2009-12-02 19:55:48,DaCodaaa,nabend
+2009-12-02 19:56:08,DaCodaaa,rehformhaus hirschhintermhaus
+2009-12-02 19:56:57,DaCodaaa,DerHartmut ist heute ja total gut gelaunt heute
+2009-12-02 19:57:09,DaCodaaa,*ein heute wegdenken bidde
+2009-12-02 19:57:14,DerHartmut,Ich bin immer gut gelaunt
+2009-12-02 19:58:28,DaCodaaa,dann solltest du die finger von cofein lassen...das kann auch ne droge sein
+2009-12-02 19:58:54,XanClic,"Oh, so jung und schon Kaffee?"
+2009-12-02 19:58:59,DerHartmut,"Ich denke, ich bin alt genug um zu entscheiden, von was ich die Finger lasse und was nicht ;-) Und Koffein ist der Retter in einer langen Nacht DaCodaaa "
+2009-12-02 19:59:04,XanClic,"Weiß nicht, wie man das Zeug trinken kann"
+2009-12-02 19:59:29,DaCodaaa,naja den von meinem vater kann man auch nich trinken aber sonst gehts schon
+2009-12-02 19:59:59,DerHartmut,"Ach, ihr wisst doch gar nicht, was Genuss bedeutet "
+2009-12-02 20:00:23,DaCodaaa,aufjedenfall nich 10 esslöffel kaffe auf einen halben litter wasser
+2009-12-02 20:01:37,XanClic,"Aber bitte 4 richtig tiefe Löffel (also solche besonderen Löffel, wohl ein Esslöffel) Kakaopulver pro Tasse Milch"
+2009-12-02 20:02:02,DerHartmut,Kakao ist auch gut
+2009-12-02 20:02:10,DerHartmut,An kalten Wintertagen vorm' Karmin
+2009-12-02 20:02:13,DerHartmut,So ganz ohne Karmin
+2009-12-02 20:02:33,DaCodaaa,jupp wer kann schokolade denn schon wiederstehen
+2009-12-02 20:03:40,DerHartmut,Ich.
+2009-12-02 20:04:30,DaCodaaa,"naja ich würd dir ja das gegenteil beweisen das bietet sich aber grad nich an, da ich nich weiß wo du wohnst"
+2009-12-02 20:04:48,XanClic,Aber ich
+2009-12-02 20:04:50,XanClic,Query?
+2009-12-02 20:05:12,DaCodaaa,?
+2009-12-02 20:05:18,DerHartmut,"DaCodaaa: Falls das eine Anmache war: Nein danke, ich lehne dankend ab, danke"
+2009-12-02 20:05:41,DaCodaaa,Anmache? bin ich denn schwul? ich hoffe nich!
+2009-12-02 20:05:48,XanClic,Du hoffst? *g*
+2009-12-02 20:05:54,DaCodaaa,ich bin mir sicher
+2009-12-02 20:06:08,XanClic,"Hoffen klingt ja so, als würdest du Homosexuelle ausschließen"
+2009-12-02 20:06:13,DerHartmut,Tun wir hier nicht
+2009-12-02 20:06:16,DerHartmut,Patrick kommt immer wieder
+2009-12-02 20:06:16,XanClic,+1
+2009-12-02 20:06:19,DerHartmut,Und ist gerne gesehen
+2009-12-02 20:06:24,XanClic,:-P *g*
+2009-12-02 20:07:21,DaCodaaa,"naja philosophisch gesehn gibts ja nur eine sicherheit für mich und zwar, dass ich denke sonst würd ichs ja nich denken..."
+2009-12-02 20:07:46,DerHartmut,Gehaltvoll und nahrhaft
+2009-12-02 20:07:59,JSheridan,JanDing?
+2009-12-02 20:08:31,DaCodaaa,ist wohl grad nich da
+2009-12-02 20:08:38,JSheridan,schade^^
+2009-12-02 20:11:22,DerHartmut,DaCodaaa: Wie alt warst du eigentlich noch gleich? Nur aus reiner Neugierde
+2009-12-02 20:11:34,DaCodaaa,13 un du?
+2009-12-02 20:11:45,DerHartmut,Ach doch noch so Jung
+2009-12-02 20:11:47,DerHartmut,Ich bin 18
+2009-12-02 20:12:22,taljeth,DerHartmut: Merkt man das etwa nicht?
+2009-12-02 20:12:25,DaCodaaa,hmm wär ic auc gern schule ist langweilig und beibringen tun die mir schon lang nix neues mehr
+2009-12-02 20:12:59,DerHartmut,"Wieso impliziert das 18. Lebensjahr denn, dass man mit der Schule fertig ist?"
+2009-12-02 20:12:59,taljeth,"Jo, die Einstellung ist perfekt, wenn du auf die Schnauze fliegen willst"
+2009-12-02 20:13:07,DerHartmut,"Gut, ich bin's zwar aber trotzdem"
+2009-12-02 20:13:20,DerHartmut,taljeth: Ich wollte mich nur vergewissern und meine Befürchtungen untermauern
+2009-12-02 20:13:44,DaCodaaa,auf die schnauze fliegen werd ich so schnell wohl auch nich weil ich nen durchschn von 2 hab
+2009-12-02 20:14:02,DerHartmut,2?
+2009-12-02 20:14:08,DerHartmut,Hochmut kommt vor dem Fall
+2009-12-02 20:14:28,DaCodaaa,Note 2 aufm Zeugniss und der Fall wär schon längst gekommen
+2009-12-02 20:14:29,JanDing,Hartmut kommt vor Helmut
+2009-12-02 20:14:31,JanDing,im Telefonbuch
+2009-12-02 20:14:31,Tobiking,Auf nem Gymnasium?
+2009-12-02 20:14:41,DaCodaaa,jo
+2009-12-02 20:15:05,DaCodaaa,und DaCodaaa kommt vor DerHartmut
+2009-12-02 20:15:20,DerHartmut,+in der Channelliste ;-)
+2009-12-02 20:15:25,DerHartmut,Zeugnis_s_...
+2009-12-02 20:15:36,DerHartmut,"Nadenn DaCodaaa, allet allet Jute, auch Beruflich und so ;-)"
+2009-12-02 20:15:59,Tobiking,"Informier dich mal ab wann du die ersten Vorlesungen hören kannst, dann wird das Studium kürzer"
+2009-12-02 20:16:46,taljeth,"Naja, ohne Abi gar kein Studium..."
+2009-12-02 20:16:52,XanClic,"Hm, Schülerstudium ;-)"
+2009-12-02 20:17:05,Tobiking,In Analysis 1 hat nen 14-15 jähriger bei uns das beste Prüfungsergebnis erreicht
+2009-12-02 20:17:07,XanClic,Und das geht so ab 9. Klasse - frühestens (zumindest hier in Dresden)
+2009-12-02 20:17:10,DerHartmut,taljeth: mit einem Durchschnitt von 2 ist das Abi doch nur noch zwei mal in der Schule pennen entfernt
+2009-12-02 20:17:19,taljeth,"XanClic: Du kannst per Schülerstudium keinen Abschluss machen, oder? ;-)"
+2009-12-02 20:17:30,XanClic,"Hm, ich darf die Prüfung machen ;-)"
+2009-12-02 20:17:39,XanClic,Und dann muss ich die Vorlesungsreihe theoretisch nicht nochmal machen
+2009-12-02 20:17:58,taljeth,"DerHartmut: Ein Durchschnitt von 2 in der 8. Klasse (oder wo auch immer er gerade sein mag), hat ziemlich genau null Bedeutung"
+2009-12-02 20:18:11,DaCodaaa,in Amerika Unterrichtet ein 5jähriger(inzwischen wird der wohl 6 sein) Musik an ner Uni
+2009-12-02 20:18:21,DaCodaaa,ich bin in der 9 hab gesprungen
+2009-12-02 20:18:27,DerHartmut,"taljeth: Eben, mein Sarkasmus ist glaube ich nicht angekommen ^^"
+2009-12-02 20:18:31,XanClic,In Amerika herrscht ja auch ein Bildungsniveau xD
+2009-12-02 20:18:48,XanClic,"Sagen zumindest die, die jetzt ein Jahr in den USA waren und zurückgekommen sind"
+2009-12-02 20:18:54,DaCodaaa,das isn Autist
+2009-12-02 20:18:57,taljeth,"XanClic: Jo, aber du kannst keinen kompletten Diplom/Bachlorabschluss machen, nehme ich an ;-)"
+2009-12-02 20:19:05,XanClic,"Ne, das nicht *g*"
+2009-12-02 20:19:22,taljeth,DerHartmut: Dann hab ich mich wohl vertabbt *g*
+2009-12-02 20:19:35,DerHartmut,"DaCodaaa: Ruh' dich ja nicht auf deinen ""lorbeeren"" aus..."
+2009-12-02 20:19:36,DerHartmut,taljeth: *g*
+2009-12-02 20:19:52,XanClic,"Und es macht sich auch nicht so gut, das komplette Studium durchzuziehen, während man eigentlich Schule hat..."
+2009-12-02 20:19:59,DaCodaaa,tu ich doch garnich ich sach nur schule ist langweilig
+2009-12-02 20:20:08,taljeth,"XanClic: Ach, wenn man einen Schnitt von 2 hat, geht das sicher *g*"
+2009-12-02 20:20:12,XanClic,*g*
+2009-12-02 20:20:41,XanClic,"Na, am Freitag in einer Woche bekomme ich die Bioklausur zurück, dann kann ich berichten, was schon eine Vorlesung für Auswirkungen hat ;-)"
+2009-12-02 20:22:39,Tobiking,"Das mit Langeweile in der Schule kenn ich aber auch, nur hab ich damals nichts gemacht..."
+2009-12-02 20:22:57,Tobiking,Hätte zumindest aufs Gymnasium wechseln sollen
+2009-12-02 20:23:01,DerHartmut,Wer hat sich nicht schonmal in der Schule gelangweilt
+2009-12-02 20:23:18,Tobiking,Langweilen weil man kein Interesse daran hat ist aber was anderes
+2009-12-02 20:23:42,DaCodaaa,Langweiln weil mans schon kennt ist dumm
+2009-12-02 20:24:02,DerHartmut,"DaCodaaa: Dann frag doch einfach, ob du den Orthographiekursus belegen darfst"
+2009-12-02 20:24:11,XanClic,"DaCodaaa: Vor allem, wenn man sich vorher drauf gefreut hat, weil man es schon kennt *g*"
+2009-12-02 20:24:15,DerHartmut,Denn vernünftige Rechtschreibung scheinst du ja noch nicht zu kennen
+2009-12-02 20:24:52,DaCodaaa,wenn ich möchte und mir Zeit lasse kann ich auch ohne rechtschreibfehler schreiben
+2009-12-02 20:25:05,Tobiking,Oder Langweilen weil der Rest der Klasse es nicht versteht und es deswegen dauernd wiederholt wird
+2009-12-02 20:25:06,DaCodaaa,tu ich aber nich :-P
+2009-12-02 20:25:20,taljeth,DaCodaaa: Dann tu das doch mal. Der Respekt vor deinen Lesern gebietet das eigentlich.
+2009-12-02 20:25:51,DaCodaaa,wie soll ich denn dan mithalten wenn alle so schnell schreiben?
+2009-12-02 20:26:14,Tobiking,Wir haben in der 9. Klasse in Mathe jede Stunde die Flächenberechnung für einfache Geometrische Formen wiederholt...
+2009-12-02 20:26:19,taljeth,"DaCodaaa: Im Zweifelsfall nur dann was schreiben, wenn du auch was zu sagen hast"
+2009-12-02 20:26:28,taljeth,"Tobiking: Meinst du etwa, ich kann das noch? *g*"
+2009-12-02 20:26:46,taljeth,"Okay, ein Dreieck  krieg ich vielleicht schon noch hin"
+2009-12-02 20:26:56,XanClic,"Komm, ein Quadrat auch ;-)"
+2009-12-02 20:27:07,DerHartmut,DaCodaaa: Deine andere Hand ebenfalls fürs schreiben verwenden
+2009-12-02 20:27:18,Tobiking,Trapez war damals die Hölle für die meisten...
+2009-12-02 20:27:28,XanClic,A = (a+c)*h/2
+2009-12-02 20:27:36,XanClic,"Hm, kann ich sogar noch *g*"
+2009-12-02 20:27:38,DaCodaaa,jo
+2009-12-02 20:27:44,DaCodaaa,kreise?
+2009-12-02 20:27:51,XanClic,Pi * r²
+2009-12-02 20:27:54,DaCodaaa,A = 2r * Pi
+2009-12-02 20:27:57,DaCodaaa,jo
+2009-12-02 20:28:38,DaCodaaa,XanClic: das war was anderes
+2009-12-02 20:28:52,Tobiking,DaCodaaa: Deins ist der Umfang
+2009-12-02 20:28:53,XanClic,"Nein, das ist die Fläche."
+2009-12-02 20:28:56,XanClic,Genau
+2009-12-02 20:28:59,DaCodaaa,hmm stimmt
+2009-12-02 20:29:07,Tobiking,Deswegen wohl nur der 2er schnitt ^^
+2009-12-02 20:29:12,taljeth,So geht's schon abwärts
+2009-12-02 20:29:42,Tobiking,Aber sowas in der 9. Klasse immer die ersten 15 Minuten der Stunde
+2009-12-02 20:29:42,DaCodaaa,shit happens
+2009-12-02 20:29:55,DaCodaaa,oh das ist s*
+2009-12-02 20:30:49,Tobiking,Als ich dann nach der 10. aufs Gymnasium gegangen bin musste ich erstmal einiges nachlernen
+2009-12-02 20:31:16,DaCodaaa,von wo bisse denn gewechselt
+2009-12-02 20:31:33,Tobiking,Realschule
+2009-12-02 20:32:36,DaCodaaa,happich
+2009-12-02 20:33:52,Tobiking,Früher wechseln wäre auf jeden Fall besser gewesen
+2009-12-02 20:36:35,taljeth,Tobiking: Funktioniert hat es ja anscheinend trotzdem
+2009-12-02 20:37:02,Tobiking,"Das schon, aber ich kann jetzt nur hoffen das ich mein Studium schaffe und sich keiner fürs Abizeugnis interessiert ^^"
+2009-12-02 20:38:41,taljeth,"Wenn du ein Diplom in der Tasche hast, wird sich kaum jemand fürs Abizeugnis interessieren"
+2009-12-02 20:38:45,taljeth,War's so schlecht?
+2009-12-02 20:39:15,Tobiking,"Schnitt von 3,6 mit einer 5 in Deutsch..."
+2009-12-02 20:40:17,Tobiking,Bei einigen Fächern fehlte dann auch das Interesse um aufzuholen
+2009-12-02 20:41:36,taljeth,"Naja, in unserem Bereich ist eher Mathe interessant als Deutsch"
+2009-12-02 20:43:07,Tobiking,"Mathe LK war die Note ordentlich, das hat viel rausgeholt"
+2009-12-02 20:44:22,taljeth,Na also
+2009-12-02 20:45:19,taljeth,Für meine aktuelle Stelle hab ich übrigens kein einziges Zeugnis hergezeigt...
+2009-12-02 20:46:00,taljeth,"Aber gut, direkt von der Uni weg ist das wohl eher selten so"
+2009-12-02 20:57:55,Homix,also funktional kommt meine 0.2.0 dem Release immer näher :)
+2009-12-02 21:26:13,DerHartmut,Mir fehlt hier irgendwie ein bisschen Paddy
+2009-12-02 21:41:43,chris12,"es ist erstaunlich, dass auch unter lowlevelern stargate fans existieren"
+2009-12-02 21:41:57,DerHartmut,Der absoulte Megawahnsinn
+2009-12-02 21:42:04,XanClic,Link or it didn't happen
+2009-12-02 21:42:27,DerHartmut,See Wiki
+2009-12-02 21:42:51,XanClic,"Been there, tried it, didn't work"
+2009-12-02 21:54:15,taljeth,DerHartmut: Der Paddy ist frustriert weil ihn hier niemand mag
+2009-12-02 21:54:24,DerHartmut,:-O
+2009-12-02 21:54:27,DerHartmut,Das kann doch gar nicht sein
+2009-12-02 21:54:34,DerHartmut,Es ist Paddy!!!1111elfzwölfabcdefg
+2009-12-02 21:54:51,DerHartmut,Ohne Paddy keine Paddy und ohne Paddy keine Paddy
+2009-12-02 21:55:16,chris12,bdl
+2009-12-02 21:55:33,DerHartmut,"Da geht schon der erste, es geht bergab"
+2009-12-02 21:55:44,taljeth,"Tja, der bluecode war da recht deutlich dem Paddy gegenüber"
+2009-12-02 21:55:55,DerHartmut,"Oha, oha"
+2009-12-02 22:04:52,mastamind,wer is hier stargate fan?
+2009-12-02 22:06:05,taljeth,"Nein, nein, das hast du falsch verstanden. Task Gate, nicht Stargate"
+2009-12-02 22:06:09,taljeth,Und schnippi ist es
+2009-12-02 22:06:45,mastamind,:-)
+2009-12-02 22:07:45,mastamind,Tobiking: was studierst du denn?
+2009-12-02 22:07:56,Tobiking,Informatik
+2009-12-02 22:08:12,mastamind,ok
+2009-12-02 22:08:25,mastamind,tun das viele hier?
+2009-12-02 22:08:44,DerHartmut,Quasi
+2009-12-02 22:08:51,mastamind,du auch?
+2009-12-02 22:09:13,DerHartmut,"Ich denke mal nächstes Jahr, mal schauen"
+2009-12-02 22:09:16,DerHartmut,Oder erst Ausbildung
+2009-12-02 22:10:12,mastamind,ist das studium keine ausbildung?
+2009-12-02 22:10:32,DerHartmut,"Ausbildung im Sinne von Geld verdienen, einen Job haben"
+2009-12-02 22:10:58,taljeth,"Hey, Taxifahrer ist auch ein Job"
+2009-12-02 22:11:13,DerHartmut,Jetzt nicht unbedingt mein Interessengebiet
+2009-12-02 22:11:34,DerHartmut,"Und nein, auch nicht mein Kompetenzbereich"
+2009-12-02 22:11:54,mastamind,hm studium und arbeiten ist sicher nicht leicht.
+2009-12-02 22:12:21,FreakyPenguin,Jo Arbeiten möchte ich auch nicht
+2009-12-02 22:13:09,mastamind,wer tut das schon gerne? *gg*
+2009-12-02 22:13:24,DerHartmut,*g*
+2009-12-02 22:15:24,mastamind,"könnte jemand bitte einen kommentar zu meinem code abgeben und mir sagen, ob der wirklich so minderwertig ist, wie manche behaupten?"
+2009-12-02 22:15:37,JanDing,nö ist er nicht
+2009-12-02 22:15:41,DerHartmut,Find ich auch nicht
+2009-12-02 22:15:48,FreakyPenguin,"Das muss der taljeth machen, der kann das so gut. *g*"
+2009-12-02 22:16:16,Tobiking,Wer behauptet denn sowas (außer fricky der das wohl zu jedem Stück c++ code sagt)?
+2009-12-02 22:16:18,mastamind,hm ich kenn ihn nicht.
+2009-12-02 22:16:29,JanDing,"nicht zu lang, nicht zu kurz, gute farbe, klebt nicht und riecht gut"
+2009-12-02 22:16:45,mastamind,leute aus einem anderen channel.
+2009-12-02 22:17:38,DerHartmut,#HobbyOS?
+2009-12-02 22:17:41,DerHartmut,Die haben keine Ahnung
+2009-12-02 22:17:43,DerHartmut,#niwohlos? 
+2009-12-02 22:17:45,DerHartmut,Die sind alle dumm
+2009-12-02 22:17:54,DerHartmut,#tyndur?
+2009-12-02 22:17:55,DerHartmut,Da ist nie einer
+2009-12-02 22:18:09,mastamind,"nein. mit os hat es nichts zu tun. is auch nicht wichtig, wer das gesagt hat. ich frag mich nur, ob es viel zu verbessern gibt."
+2009-12-02 22:18:33,mastamind,"und da von der anderen seite keine konstruktive kritik kam, sondern einfach nur ein generelles ""du bist scheiße"", hat mir das nicht wirklich viel geholfen."
+2009-12-02 22:18:42,JanDing,"code der nicht zu verbessern ist, ist in einer schreibgeschützten datei bespeichert"
+2009-12-02 22:18:48,JanDing,*gespeichert
+2009-12-02 22:19:58,JanDing,"mastamind: merkste nicht, dass die leute im internet keine ahnung haben"
+2009-12-02 22:20:13,JanDing,informier dich mal über diskussionskultur im internet
+2009-12-02 22:20:19,JanDing,inzwischen schreibt sogar spiegel.de darüber
+2009-12-02 22:20:39,mastamind,hmm was hab ich denn falsch gemacht jetzt?
+2009-12-02 22:20:39,JanDing,hier gibts nichts zu gewinnnen
+2009-12-02 22:20:47,JanDing,du hast nach unserer meinung gefragt
+2009-12-02 22:20:54,mastamind,"ja, wieso nicht?"
+2009-12-02 22:20:57,JanDing,hier kriegste 36 meinungen
+2009-12-02 22:21:02,JanDing,18 von mir und 18 von den anderen hier
+2009-12-02 22:21:03,mastamind,ja und?
+2009-12-02 22:21:08,JanDing,und keine fundiert
+2009-12-02 22:21:12,mastamind,wieso nicht?
+2009-12-02 22:21:20,JanDing,weil jeder von uns keine ahnung hat
+2009-12-02 22:21:24,mastamind,seit wann?
+2009-12-02 22:21:30,FreakyPenguin,"Hier darf sich ja auch nur äussern wer keine Ahnung hat, jo ;-)"
+2009-12-02 22:21:44,TecGod,moin alle zusamm
+2009-12-02 22:21:51,DerHartmut,Nabend tecgod 
+2009-12-02 22:22:09,TecGod,ha ich habe selber mein GDT Problem gelöst :)
+2009-12-02 22:22:15,mastamind,"DerHartmut: du schreibst doch an tyndur mit, oder?"
+2009-12-02 22:22:33,DerHartmut,"Ja, ich schraub' mal hier und da"
+2009-12-02 22:22:35,taljeth,mastamind: Wo kann man deinen minderwertigen Code denn überhaupt anschauen?
+2009-12-02 22:22:41,DerHartmut,Und schicke wertvolle Patches
+2009-12-02 22:23:00,mastamind,taljeth: http://abox.el1t3.org/webgit
+2009-12-02 22:23:12,mastamind,JanDing: dann hat er wohl ahnung.
+2009-12-02 22:23:20,JanDing,wer DerHartmut hat ahnung?
+2009-12-02 22:23:33,mastamind,das nehm ich wohl an.
+2009-12-02 22:24:16,taljeth,"Hm, ich möchte jetzt nicht behaupten, dass es falsch ist, aber vorher fallen mir noch ein paar andere ein ;-)"
+2009-12-02 22:24:30,mastamind,ich kenne leider noch nicht so viele hier.
+2009-12-02 22:24:33,mastamind,bluecode scheint auch ahnung zu haben.
+2009-12-02 22:24:40,mastamind,aber sonst kenn ich kaum welche hier.
+2009-12-02 22:24:44,JanDing,ich hab auch an tyndur mitgeschrieben
+2009-12-02 22:24:46,DerHartmut,Also ich finde ich habe Ahnung aber andere haben weit weit weit mehr Ahnung als ich
+2009-12-02 22:24:53,JanDing,ich finde meinen eigenen code am besten
+2009-12-02 22:24:55,DerHartmut,Und wiederrum andere haben viel viel viel weniger Ahnung als ich
+2009-12-02 22:25:05,DerHartmut,Außerdem bin ich total Lied und so man
+2009-12-02 22:25:09,FreakyPenguin,JanDing: Der Startsound fehlt ja noch immer ;-)
+2009-12-02 22:25:25,mastamind,DerHartmut: also mir reicht dein ahnungsgrad.
+2009-12-02 22:25:43,JanDing,FreakyPenguin: der compiler läuft noch^^
+2009-12-02 22:25:50,DerHartmut,"Ich hab an und für sich mehr auf den Kasten, zeige das aber nicht immer *g*"
+2009-12-02 22:26:10,taljeth,mastamind: Kommt es mir nur so vor oder ist das os-Repo ziemlich leer?
+2009-12-02 22:26:41,JanDing,er schreibt noch am bootloader^^
+2009-12-02 22:26:45,mastamind,"talijeth: ist es, ja."
+2009-12-02 22:27:03,taljeth,"Hm, Bootloader mag ich nicht. Dein Code ist also wirklich doof. *g*"
+2009-12-02 22:27:12,mastamind,hmpf...
+2009-12-02 22:27:37,mastamind,"JanDing: ja, ich schreib noch am bootloader. was ist schlimm daran?"
+2009-12-02 22:27:40,taljeth,"Also, wohlgemerkt, das bezieht sich auf Bootloader allgemein. Deinen hab ich noch nicht angescahut"
+2009-12-02 22:27:59,mastamind,schaust ihn dir? :-)))
+2009-12-02 22:28:00,JanDing,mastamind: naja manche leute denken bootloader schreiben gehört zum OS schreiben
+2009-12-02 22:28:13,mastamind,"irgendwie muss ich es ja auch laden können, oder?"
+2009-12-02 22:28:19,JanDing,gibt ja auch fertige
+2009-12-02 22:28:45,taljeth,Mehr als genug davon
+2009-12-02 22:29:00,mastamind,aber sie laden alle nur eine datei.
+2009-12-02 22:29:42,mastamind,sie sind alle auf monolithische kernel aufgebaut. sie laden maximal eine initrd.
+2009-12-02 22:30:01,XanClic,Ähm
+2009-12-02 22:30:06,XanClic,týndur kommt gut mit GRUB klar
+2009-12-02 22:30:12,XanClic,"Und zwar per ""module"""
+2009-12-02 22:30:13,DerHartmut,Und ist ein Microkernel
+2009-12-02 22:30:21,mastamind,es ist aber statisch.
+2009-12-02 22:30:32,XanClic,Ist es?
+2009-12-02 22:30:36,XanClic,Was verstehst du darunter?
+2009-12-02 22:30:43,XanClic,Eine einzige Datei als Kernel?
+2009-12-02 22:30:47,XanClic,týndur hat das aber nicht
+2009-12-02 22:31:15,mastamind,"ich versteh darunter, dass du in der konfiguration von grub die dateien statisch einbauen musst."
+2009-12-02 22:31:35,DerHartmut,"Der kernel alleine steht recht doof da ohne Module, die GRUB mitlädt (als Module)"
+2009-12-02 22:31:39,taljeth,Wie sieht denn dein Gegenentwurf aus?
+2009-12-02 22:32:07,taljeth,while (module = kristallkugel.pop()) load_module(module); oder sowas?
+2009-12-02 22:32:24,mastamind,ja... ok.
+2009-12-02 22:32:29,mastamind,lassen wir es. :-)
+2009-12-02 22:32:30,XanClic,gn8
+2009-12-02 22:32:33,DerHartmut,gn8 XanClic 
+2009-12-02 22:32:33,JanDing,gn8 XanClic
+2009-12-02 22:32:51,JanDing,mastamind: also dokumentiert ist der code ja bisher gar nicht
+2009-12-02 22:32:52,JanDing,oder?
+2009-12-02 22:32:59,taljeth,"mastamind: Die Frage war ernstgemeint. Ich kann es mir im Moment nicht vorstellen, wie du es planst"
+2009-12-02 22:33:36,mastamind,"taljetz: ja, das merk ich. *g*"
+2009-12-02 22:33:47,DerHartmut,talwann? taljetz!
+2009-12-02 22:33:54,mastamind,sorry.
+2009-12-02 22:33:57,mastamind,falsch geschrieben.
+2009-12-02 22:34:04,DerHartmut,tal<TAB> ;-)
+2009-12-02 22:34:07,mastamind,"taljeth: ja, das merk ich. *g*"
+2009-12-02 22:34:32,taljeth,Willst du mich dumm sterben lassen?
+2009-12-02 22:34:42,mastamind,taljeth: dumm bist du sicher nicht.
+2009-12-02 22:35:00,FreakyPenguin,"Dann musst du dich beeilen, der taljeth ist nämlich schon alt ;-)"
+2009-12-02 22:35:04,JanDing,aber sterblich *gnuhahaha*
+2009-12-02 22:35:11,taljeth,FreakyPenguin: :-P
+2009-12-02 22:35:18,mastamind,also keiner will sich den code mal ansehen und einen kommentar abgeben?
+2009-12-02 22:35:33,JanDing,ich hab einen kommentar: warum ist der code nicht dokumentiert?
+2009-12-02 22:36:03,mastamind,JanDing: weil kaum was fix ist. ein teil ist per doxygen dokumentiert.
+2009-12-02 22:36:26,taljeth,"Inhaltlich kann man auf einen Blick wenig Kommentare abgeben. Aber ich habe den Eindruck, dass der Codestil nicht sehr einheitlich ist, was nicht unbedingt zur Übersicht beiträgt"
+2009-12-02 22:36:45,mastamind,taljeth: sagst mit ein beispiel bitte.
+2009-12-02 22:37:27,taljeth,Nimm zum Beispiel mal die standard/string.cc
+2009-12-02 22:37:36,mastamind,jep
+2009-12-02 22:37:42,taljeth,"Mal zwei Zeichen Einrückung, mal vier"
+2009-12-02 22:37:52,taljeth,"Mal definierst du eine Funktion komplett in einer Zeile, mal nicht"
+2009-12-02 22:38:16,taljeth,Bzw. den then-Zweig
+2009-12-02 22:38:27,mastamind,"das stimmt. da hast du recht. ich bin dabei, das nach und nach zu ändern."
+2009-12-02 22:38:41,mastamind,"jemand anderer, der gemeint hat, er arbeitet was mit, wollte eine änderung."
+2009-12-02 22:38:55,taljeth,"Und fast überall geht der Code über 80 Zeichen pro Zeile raus, aber das ist wohl Geschmackssache"
+2009-12-02 22:38:58,mastamind,"deshalb hab ich das nach und nach geändert, aber dann hat er doch nie was beigetragen."
+2009-12-02 22:39:18,mastamind,code brechen wir nicht um. wurde so ausgemacht.
+2009-12-02 22:40:03,mastamind,"taljeth: es sieht nur so aus, als wäre nicht gleichmäßig eingerückt. wir haben es nur von zwei leerzeichen zu einem tab geändert."
+2009-12-02 22:40:06,mastamind,aber eben noch nicht überall.
+2009-12-02 22:40:48,taljeth,"Ah stimmt, das sind ja Tabs."
+2009-12-02 22:41:36,mastamind,der neue code ist immer per tab eingerückt und blöcke haben mindestens eine zeile mit code.
+2009-12-02 22:41:52,taljeth,"Also auf den ersten Blick würde ich sagen, ich habe schon Code gesehen, der angenehmer zu lesen ist, aber auch schon Code, der wesentlich schlechter war"
+2009-12-02 22:42:12,mastamind,"was würdest du ändern, damit er besser zu lesen ist?"
+2009-12-02 22:42:14,mastamind,bis auf die 80 zeichen jetzt...
+2009-12-02 22:43:07,taljeth,Nach einer if- oder Schleifenbedingung immer umbrechen wäre ein Ansatz
+2009-12-02 22:43:29,taljeth,"Und längere Funktionen kann man auch in logische Einheiten gliedern, Leerzeilen sind nicht verboten"
+2009-12-02 22:43:30,mastamind,passt
+2009-12-02 22:43:45,mastamind,ok
+2009-12-02 22:43:58,taljeth,"Wenn man richtig gut drauf ist, kann man den logischen Einheiten sogar noch einen zusammenfassenden Kommentar spendieren"
+2009-12-02 22:44:33,mastamind,"extn/image.cc. da is manches schon so drin, wie du meinst."
+2009-12-02 22:46:10,taljeth,"Ui, das ist wirklich fast das Gegenteil."
+2009-12-02 22:46:24,mastamind,zu viel des guten? *g*
+2009-12-02 22:47:01,taljeth,"Hm, ich glaube, die Kommentare dort haben schon ihre Berechtigung"
+2009-12-02 22:47:34,taljeth,"Obwohl man sicher auch darauf verzichten könnte, zu erklären wie ext2 funktioniert, weil es dazu externe Doku gibt"
+2009-12-02 22:47:48,taljeth,"Ist halt die Frage, was man voraussetzen möchte"
+2009-12-02 22:49:04,taljeth,"Hm, also in image::open finde ich die Kommentare nicht so glücklich"
+2009-12-02 22:49:32,taljeth,"""Loop until cut returned an empty string"" sehe ich selber im Code. Die große Frage ist, was die while-Schleife überhaupt insgesamt macht und warum man hier einen leeren String haben will"
+2009-12-02 23:00:51,Homix,mein floppy treiber ist fast 4 mal schneller als mein cdrom treiber ;)
+2009-12-02 23:02:58,taljeth,"Hm. Ich glaube, irgendwo gibt es da noch Optimierungspotential *g*"
+2009-12-02 23:03:20,taljeth,"Aber ich weiß gar nicht, wie schn^Wlangsam unser CD-Treiber ist"
+2009-12-02 23:03:42,Homix,also 30 KB und 8 KB sind sowohl für floppy als auch cdrom nicht besonders schnell
+2009-12-02 23:04:03,taljeth,Pro Sekunde jeweils?
+2009-12-02 23:04:12,Homix,ja ;)
+2009-12-02 23:04:30,taljeth,"Ich glaub, 30 für Floppy ist gar nicht so schlecht"
+2009-12-02 23:04:57,taljeth,Das wären 48 Sekunden um eine komplette Floppy einzulesen
+2009-12-02 23:05:03,Homix,aber ich denk da gibts trotzdem noch optimierungspotential ;)
+2009-12-02 23:05:20,taljeth,Viel schneller geht das unter DOS/Linux/whatever auch nicht
+2009-12-02 23:06:42,Homix,hm so 50 KB/s hät ich schon erwartet ;)
+2009-12-02 23:13:49,taljeth,Hast du es mal unter Linux oder Windows gemessen?
+2009-12-02 23:22:39,FreakyPenguin,Benchmark läuft wohl noch. *g*
+2009-12-02 23:25:00,Homix,ne weil mein bench.exe nur unter Xantorix läuft ;)
+2009-12-02 23:25:09,taljeth,gn8
+2009-12-02 23:25:18,Homix,gn8 ;)
+2009-12-02 23:25:18,FreakyPenguin,gn8 taljeth
+2009-12-02 23:28:13,DerHartmut,gn8
+2009-12-02 23:35:11,Tobiking,gn8
+2009-12-02 23:44:05,mastamind,"sorry, mein internetzugang war schon wieder mal kaputt. :-()"
+2009-12-02 23:44:25,mastamind,taljeth ist eh nicht mehr da.

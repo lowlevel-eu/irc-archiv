@@ -1,0 +1,132 @@
+date/time,nick,message
+2015-11-09 15:25:52,Jonathan,Moin
+2015-11-09 15:27:33,darklink,Hi
+2015-11-09 17:39:52,iksnagreb,moin
+2015-11-09 22:37:11,Svenska,öhm... kennt sich wer ein bisschen mit pthreads und signalen aus?
+2015-11-09 22:37:41,Svenska,"ich hab einen signal-handler, der einfach nur ein flag setzt, ist also definitiv sicher"
+2015-11-09 22:38:24,Svenska,"und im hauptprogramm eine endlosschleife, die (a) das flag abfragt und reagiert, (b) eine exit-condition abfragt, (c) nachschauen soll, ob alle worker-threads fertig sind (alternative exit-condition)"
+2015-11-09 22:39:02,Svenska,"(a) und (b) funktionieren. fuer (c) rufe ich einfach pthread_join() fuer jeden thread auf, geht auch"
+2015-11-09 22:39:20,Svenska,"aber gemeinsam geht das nicht, weil pthread_join() durch signale nicht unterbrochen wird, also die schleife nicht läuft"
+2015-11-09 22:39:27,Svenska,jemand ne idee?
+2015-11-09 22:44:20,Paddy,"Thread eine Variable setzen lassen, wenn er fertig ist?"
+2015-11-09 22:44:32,Svenska,das will ich gerade nicht
+2015-11-09 22:44:37,tDwtp,einfach ne kleine Atomic am schluss hätt ich gesagt
+2015-11-09 22:44:46,tDwtp,oh ok
+2015-11-09 22:44:50,Svenska,der thread selbst soll keine aktion ausueben sollen
+2015-11-09 22:44:56,tDwtp,hm
+2015-11-09 22:44:57,Svenska,(grammatik selbst fixen)
+2015-11-09 22:45:10,Paddy,"Ich vermute, du meinst nicht das, was du sagst"
+2015-11-09 22:45:20,Paddy,"Wenn der Thread nichts tun sollte, würde er nicht existieren"
+2015-11-09 22:45:20,Svenska,"hintergrund: das teil ist compilable fuer 2 systeme, einmal threaded, einmal manycore"
+2015-11-09 22:45:20,tDwtp,wie?
+2015-11-09 22:45:38,Svenska,im manycore-fall habe ich ein flag und muss pollen
+2015-11-09 22:45:55,tDwtp,pollen? ok... aba wie meinst du das er macht nichts?
+2015-11-09 22:45:56,Svenska,"im threaded-fall kann ich zusätzlich pruefen, ob alle threads beendet sind"
+2015-11-09 22:46:07,Svenska,also keine zusätzliche aktion (das sind compute-kernels)
+2015-11-09 22:46:10,tDwtp,checkt der einfach nur ob alle zu sind und schließt dann alles?
+2015-11-09 22:46:15,tDwtp,aw
+2015-11-09 22:46:44,Paddy,Warum dürfen die keine zusätzliche Aktion machen?
+2015-11-09 22:46:46,tDwtp,haste OpenCL probiert? (compilieren auch für CPUs)
+2015-11-09 22:46:51,tDwtp,oder CUDA?
+2015-11-09 22:46:55,Svenska,"mir geht's grad um das hauptprogramm, bzw. den thread-manager"
+2015-11-09 22:47:08,tDwtp,oder wäre das zu OP?
+2015-11-09 22:47:08,Svenska,Paddy: weil die nicht unter meiner kontrolle stehen (im engeren sinn)
+2015-11-09 22:47:27,Paddy,"Ach so, das ist natürlich blöd"
+2015-11-09 22:47:29,Svenska,"tDwtp: OpenCL könnte man auf der architektur auch fahren, aber das ist fuer unsere anwendungsfälle nicht unbedingt toll"
+2015-11-09 22:47:30,tDwtp,Die Computes würden gestört werden und das will man nicht...
+2015-11-09 22:47:30,Svenska,ist keine GPU
+2015-11-09 22:47:59,Paddy,"Die Manpages sagen, dass pthread_tryjoin_np() nicht blockiert und man damit pollen könnte"
+2015-11-09 22:48:08,tDwtp,ne...
+2015-11-09 22:48:13,Paddy,"Pollen ist eklig, aber wenn du im Thread nichts machen darfst..."
+2015-11-09 22:48:14,Svenska,"also, im manycore-fall habe ich ja das atomic-flag (wenn das gesetzt wird, beendet sich das hauptprogramm)"
+2015-11-09 22:48:16,tDwtp,das macht nen atomic dann bessser
+2015-11-09 22:48:28,tDwtp,ok
+2015-11-09 22:48:47,tDwtp,ich mein eig: ein atomic um die thread id zu bekommen und die dann zu schließen...
+2015-11-09 22:48:56,tDwtp,du pollst aber auf nen anderen atomic
+2015-11-09 22:49:04,tDwtp,der sagt ob was in id drin steht
+2015-11-09 22:49:31,Svenska,pthread_tryjoin_np klingt erstmal interessant...
+2015-11-09 22:49:31,tDwtp,so hätt ichs gemacht... das tryjoin is bissl kernel lastig
+2015-11-09 22:49:39,tDwtp,probiers mal
+2015-11-09 22:49:57,Svenska,"mir gehts im prinzip nur darum, dass ein _join() auf alle threads funktioniert"
+2015-11-09 22:50:10,Svenska,"ich aber ein SIGQUIT schicken können muss, damit mir der state gedumpt wird"
+2015-11-09 22:50:12,Paddy,"tDwtp: Wenn die Anforderung, dass der Thread nichts zusätzliche machen darf, unabänderlich ist, sehe ich keine andere Lösung"
+2015-11-09 22:50:36,Paddy,"Wenn die Threads was machen dürften, würde ich halt das Ende eines Threads über eine Condition Variable signalisieren"
+2015-11-09 22:50:40,tDwtp,wieso wird ab und an der Text rot angezeit?
+2015-11-09 22:50:47,tDwtp,ich hab den privat chat auf grün?
+2015-11-09 22:50:54,Paddy,"Vermutlich, weil dein Name erwähnt wurde"
+2015-11-09 22:51:00,Svenska,"(das system wird ohnehin 100% cpu auf allen kernen ziehen; pthreads ist nur fuer die entwicklung sinnvoll. auf der zielarchitektur muss ich sowieso pollen, da kommts dann auch nicht mehr drauf an.)"
+2015-11-09 22:51:03,tDwtp,aw... ok
+2015-11-09 22:51:41,Svenska,wieso wirft _join nicht einfach EINTR und gut -.-
+2015-11-09 22:52:05,tDwtp,also... evtl ne semaphore machen und die runtwerzählen
+2015-11-09 22:52:12,tDwtp,(sind die anzahl an threads bekannt?)
+2015-11-09 22:52:17,Svenska,ja
+2015-11-09 22:52:38,tDwtp,dann damit initialisieren und immer am ende von einem compute thread die semaphore runterzählen
+2015-11-09 22:52:38,Svenska,im normalfall 17 (16 plus hauptprogramm)
+2015-11-09 22:52:54,tDwtp,du musst nur die anzahl an compute cthreads wissen
+2015-11-09 22:53:05,tDwtp,der main thread liegt solange auf eis
+2015-11-09 22:53:30,Svenska,genau das ist darf er nicht - er soll mit 100% cpu-last pollen :-D
+2015-11-09 22:53:39,tDwtp,am ende des computes is halt ne menge kernel aktivität... das könnte unerwünscht sein
+2015-11-09 22:53:59,tDwtp,warte der MAIN thread soll mit 100% CPU LAST pollen?
+2015-11-09 22:54:14,Svenska,auf epiphany kann ich nix anderes machen
+2015-11-09 22:54:22,tDwtp,lol
+2015-11-09 22:54:28,tDwtp,denk dir nen anderes system aus
+2015-11-09 22:54:30,Paddy,Mit allen anderen Threads würde es noch weniger Sinn ergeben ;-)
+2015-11-09 22:54:37,tDwtp,warum willst du nen heißlaufenden prozessor?
+2015-11-09 22:54:39,Svenska,und die threaded-variante soll die gleiche struktru haben
+2015-11-09 22:54:53,Svenska,"beschwer dich beim designer der architektur, da kann ich doch nix fuer"
+2015-11-09 22:54:58,tDwtp,lol
+2015-11-09 22:55:12,tDwtp,dann die atomic variante
+2015-11-09 22:55:16,tDwtp,sonst wird das nix
+2015-11-09 22:55:25,tDwtp,dein join wird auch kaum cpu last erzeugen
+2015-11-09 22:55:37,tDwtp,außer du schreibst es um :)
+2015-11-09 22:55:40,Svenska,ein _join() schläfert den thread ein
+2015-11-09 22:55:54,tDwtp,nein er wartet darauf ob er beendet ist
+2015-11-09 22:55:57,Svenska,"keine signale mehr, kein flag-checking mehr, ..."
+2015-11-09 22:55:58,tDwtp,(oder?)
+2015-11-09 22:56:02,tDwtp,so kenne ich dass
+2015-11-09 22:56:14,Svenska,"_join() schläfert den aktuellen thread ein, bis ein ANDERER thread endet"
+2015-11-09 22:56:26,tDwtp,awrte
+2015-11-09 22:56:28,tDwtp,*warte
+2015-11-09 22:56:32,tDwtp,ich muss mal was schauen
+2015-11-09 22:56:44,Svenska,"d.h. das signal läuft in einen zufälligen thread (soweit egal), aber der thread, der auf den tod aller threads wartet, blockiert ewig"
+2015-11-09 22:58:07,Paddy,"Und das ist doof, weil du darauf dann keine Eier mehr braten kannst?"
+2015-11-09 22:58:20,tDwtp,aw jetzt hab ichs geschnallt... sry bin müde
+2015-11-09 22:58:38,tDwtp,hast du auf die reihenfolge geachtet?
+2015-11-09 22:58:40,Paddy,"Ach nein, wegen zusätzlicher Abbruchbedingung"
+2015-11-09 22:58:56,Svenska,"nee, ich will in den compute-kernels so nette features wie printf() nutzen"
+2015-11-09 22:59:07,Svenska,das hilft unglaublich beim debuggen von zeugs
+2015-11-09 22:59:22,Svenska,"daher die idee, die lib einfach fuer beides kompilierbar zu machen"
+2015-11-09 22:59:42,tDwtp,"das is ja schön und gut, aber wenn du joins auf sihch nicht beendenede threads machst ... nützt dir das nix"
+2015-11-09 23:00:00,Svenska,"sind jetzt n haufen #define und #ifdefs drin, um den nahezu gleichen code auf beiden architekturen laufenzulassen"
+2015-11-09 23:00:10,tDwtp,das is schlecht
+2015-11-09 23:00:14,Svenska,"scheint so. deswegen das _tryjoin_np, das sieht gut aus"
+2015-11-09 23:00:31,tDwtp,mach nen paar inline funtionen oder funktionspointer die du initialisierst
+2015-11-09 23:00:43,Svenska,?
+2015-11-09 23:01:18,tDwtp,du macht für jede arch ne eigene funktion und eine init funktion die dir einen funktionspointer setzt
+2015-11-09 23:01:22,tDwtp,die nutzt du dann...
+2015-11-09 23:01:31,tDwtp,so kannst du die funktionen dynamisch laden
+2015-11-09 23:01:42,Svenska,hab ich doch
+2015-11-09 23:01:42,tDwtp,und brauchst nur die arch lib vom zielsys
+2015-11-09 23:01:45,tDwtp,ok
+2015-11-09 23:01:57,tDwtp,warum dann ifdef?
+2015-11-09 23:01:58,Svenska,"aber eine ringpuffer-implementation, die sich effektiv nur im read_shm und write_shm unterscheidet..."
+2015-11-09 23:02:07,tDwtp,hm
+2015-11-09 23:02:13,Svenska,...da kann ich auch die read() und write() durch nen arch-spezifischen wrapper schicken
+2015-11-09 23:02:26,tDwtp,k
+2015-11-09 23:02:28,Svenska,"hat den vorteil, dass der einmal funktionierende code in beiden fällen funktionierend bleibt, und ich keine arch-spezifischen bugs hab"
+2015-11-09 23:03:44,tDwtp,hast du es schon mit tryjoin ausprobiert?
+2015-11-09 23:04:10,Svenska,"nö, bin grad dabei"
+2015-11-09 23:04:13,tDwtp,k
+2015-11-09 23:04:30,Svenska,"testen kann ich den kram noch nicht, weil ich den kernel noch nicht auf die neue codebasis portiert hab"
+2015-11-09 23:04:39,Svenska,der ganze pthread-kram ist noch ungetestet ^^
+2015-11-09 23:12:36,Svenska,yeah
+2015-11-09 23:12:47,Svenska,pthread_tryjoin_np braucht #define _GNU_SOURCE
+2015-11-09 23:13:01,Svenska,"jetzt hab ich _POSIX_SOURCE, _BSD_SOURCE und _GNU_SOURCE defined ;)"
+2015-11-09 23:14:53,Paddy,Du wolltest es so ;-)
+2015-11-09 23:15:21,Svenska,"ja... _POSIX_SOURCE fuer sigaction(), _BSD_SOURCE fuer usleep() und _GNU_SOURCE auch noch ;)"
+2015-11-09 23:15:34,Svenska,krieg trotzdem noch implicit declaration
+2015-11-09 23:16:05,Svenska,ah tut
+2015-11-09 23:16:16,Svenska,danke. ;-) debugging kommt demnächst(TM)
+2015-11-09 23:16:28,Paddy,Das war wohl selbst für Jonathan zu hart
+2015-11-09 23:17:14,Svenska,"(achso, noch ein grund, warum das teil endlos loopen muss: die kommunikationskanäle muessen auch verarbeitet werden, während das programm läuft. wenn das programm steht, laufen die puffer leer/voll und gut ist)"
+2015-11-09 23:30:45,Svenska,"so. kein essen mehr im buero, supermarkt zu, gerade kein regen -> feierabend"

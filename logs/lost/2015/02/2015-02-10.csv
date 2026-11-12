@@ -1,0 +1,629 @@
+date/time,nick,message
+2015-02-10 00:01:14,Jidder,"ich muss das eben mal mit eigenen worten formulieren um zu gucken, ob ich dich verstehe"
+2015-02-10 00:01:57,Jidder,"1) du machst einen stacktrace und verwendest das ebp register, um von einem frame zum nächsten zu kommen"
+2015-02-10 00:02:26,Arakis,richtig. Beim interrupt zeigt der dann aber rein nur den interrupt stack an.
+2015-02-10 00:02:40,Arakis,"also nutze ich den EBP, der mit der interrupt handler mitliefert"
+2015-02-10 00:02:53,Arakis,"""DANN"" bekomme ich auch den stack des auslösers"
+2015-02-10 00:03:18,Jidder,"ich verstehe nicht, was du meinst mit ""zeigt der dann aber rein nur den interrupt stack an"""
+2015-02-10 00:03:20,Arakis,"ergo gehe ich davon aus, dass der stack sich ändert"
+2015-02-10 00:03:51,Arakis,"naja, wenn mein stack trace nur aus einer einzelnen zeile besteht: ProcessInterruptEvent"
+2015-02-10 00:03:57,Arakis,"anstatt kerne.main, kerne.init........."
+2015-02-10 00:04:25,Arakis,"als ob es ein eigener ""thread"" wäre (c# mäßig ausgedrückt)"
+2015-02-10 00:05:31,Jidder,"aber falls die problematik ist, dass du gerade im interrupt handler bist, behandelst und dort einen stacktrace ausgehend von der behandelnden funktion machst, und im stacktrace die verursachende funktion nicht findest, dann ist das klar"
+2015-02-10 00:05:54,Jidder,-behandelst
+2015-02-10 00:06:31,Arakis,"richtig. Deshalb darf ich nicht den normalen EBP nehmen, sondern den, der mit der interrupt händler mit übergibt."
+2015-02-10 00:06:33,Jidder,weil der stacktrace algorithmus ganz offensichtlich nicht mit dem stack layout eines interrupts umgehen kann
+2015-02-10 00:06:40,Jidder,ja
+2015-02-10 00:06:59,Jidder,"das heißt aber nicht, dass es zwei unterschiedliche stack sind"
+2015-02-10 00:07:17,Jidder,"es heißt nur, dass diese kette, die von framepointern (ebp), die auf dem stack liegen, nicht durchgängig ist"
+2015-02-10 00:07:21,Arakis,Aha....wieder mal was dazugelernt
+2015-02-10 00:08:16,Jidder,"das kannst du überprüfen, indem du den letzten ebp wert des stack trace ausgehen von der behandelnden funktion mit dem ebp wert auf dem interrupt stack frame vergleichst"
+2015-02-10 00:08:23,Jidder,die sollten sich nur um wenige bytes unterscheiden
+2015-02-10 00:09:49,Jidder,"oh mann hier lernst du grammatik, wa?"
+2015-02-10 00:10:37,Arakis,Ich kann wenn ich möchte absolut fehlerfrei schreiben....gebe mir nur in aller Regel zu wenig Mühe bzw. schreibe zu schnell.
+2015-02-10 00:13:17,Jidder,ich schreibe mit schlechter grammatik weil das cool ist
+2015-02-10 00:13:35,Arakis,"Sag mal, wie alt bist du eigentlich?"
+2015-02-10 00:13:40,Jidder,12
+2015-02-10 00:13:46,Jidder,",5"
+2015-02-10 00:14:01,Arakis,"Nun, das nehme ich dir nicht ab ;)"
+2015-02-10 00:14:06,Jidder,okok
+2015-02-10 00:14:19,Jidder,12 jahre 5 monate und 20 tage
+2015-02-10 00:16:16,Jidder,mal gucken was ich so in den letzten jahren auf diese frage geantwortet habe
+2015-02-10 00:16:35,Jidder,das log lässt mich schon mal nicht 100000 einträge anzeigen
+2015-02-10 00:18:50,Jidder,2013 habe ich mehrfach behauptet 14 zu sein
+2015-02-10 00:18:56,Jidder,da kann ja irgendwas nicht stimmen
+2015-02-10 00:20:34,Arakis,"da ich bisher selten (nie) mit flachem speicher gearbeitet habe, was ist die beste lösung listen abzubilden. Gehen wir mal von einer List of Pages aus. Hab da ne struct PageList {uint Length; Pages* items}. Wird nur schnell unübersichtlich, wenn man ne list of page lists, braucht, da mal für die struct selbst, als auch für den ""items"" liste speicher reservieren muss"
+2015-02-10 00:21:02,Arakis,"sorry, meinte oben Page* items"
+2015-02-10 00:22:06,Jidder,zeigt Page* items dann auf ein array?
+2015-02-10 00:23:22,Arakis,jupp
+2015-02-10 00:24:04,Arakis,"c# arrays kann ich in diesem init-stage kernels nicht nutzen, weil das ja die speicherverwaltung selbst ist"
+2015-02-10 00:25:01,Jidder,"also das ist eine problematik, mit der ich mich bisher nicht auseinander gesetzt habe"
+2015-02-10 00:25:13,Jidder,"in c ist es glücklicherweise egal, wo der speicher herkommt"
+2015-02-10 00:25:40,Jidder,"da kann ich meine voll ausgebaute speicherverwaltung mit meiner ""boot-speicherverwaltung"" initialisieren"
+2015-02-10 00:28:07,Arakis,"naja, ich will mich ja jetzt endlich mal eine malloc funktion ranmachen"
+2015-02-10 00:34:08,Jidder,also eine verkettete liste scheint auszuscheiden
+2015-02-10 00:34:18,Jidder,dann halt ein array mit einem übersichtlichen algorithms
+2015-02-10 00:43:33,Arakis,"Bin am überlegen, wie ich möglichst effectiv das PageTableEntry aus deiner PageDirectory-->PageTable heraussuchen kann anhand einer bestimmten (physikalischen) page start adresse, ohne die liste entry for entry zu iterieren"
+2015-02-10 00:46:20,Jidder,"Dictionary<PhysicalAddress, VirtualAddress>"
+2015-02-10 00:48:01,Arakis,"Hm....ist ne idee. Also über nen hash lookup. Muss mir da aber was eigenes schreiben, weil ich in diesem status ""noch immer"" kein malloc nutzen darf. Ich muss halt die Init-Stages des kernes beachten"
+2015-02-10 00:48:52,Arakis,Die speicher verwaltung darf halt nicht selber von der speicherverwaltung abhängig sein ;)
+2015-02-10 00:49:32,Arakis,"gut, dann mach ich das ober nen doppel array, halte es sortiert und kann dann in max. 32 durchläufen 4,3 mrd. einträge durchlaufen *hust+"
+2015-02-10 00:49:54,Jidder,wofür musst du denn von einer phyischen adresse die virtuelle bekommen?
+2015-02-10 00:49:54,Arakis,"jaja, grammatik"
+2015-02-10 00:50:28,Arakis,ich habe nicht von einer virtuellen gesprochen. Ich brauch das pagetable entry
+2015-02-10 00:50:29,Jidder,genau
+2015-02-10 00:50:29,Jidder,^^
+2015-02-10 00:50:36,Jidder,wofür brauchst du den entry?
+2015-02-10 00:50:40,Arakis,z.b. um schreibschutz reinzu machen (nachträglich)
+2015-02-10 00:50:47,Jidder,warum nachträglich?
+2015-02-10 00:51:52,Arakis,weil ich erst das page system initialisiere. und dann den memory manager. welcher aud das page system aufsetzt.
+2015-02-10 00:52:12,Arakis,"ich woltle es erst umgekerht machen, habe mich dann aber für diesen reihenfolge entschieden"
+2015-02-10 00:52:52,Arakis,ach quark. Ich mach es ja schon umgekehrt.
+2015-02-10 00:53:02,Arakis,aber da lege ich schon schreibrechte in einer eigenen page struct fest
+2015-02-10 00:53:41,Arakis,"egal, ich brauche so oder so ab und zu mal zugriff auf die page table entries"
+2015-02-10 00:53:57,Arakis,und wenn es nur ist um zu schaub wegen des dirty/access flags und so
+2015-02-10 00:54:11,Jidder,"ja, aber dann sollte deine highlevel speicherverwaltung aktiv sein"
+2015-02-10 00:54:33,Jidder,ja eine speicherverwaltung kann für sich selbst speicher anfordern. sie muss nur wissen wieviele reserven sie braucht
+2015-02-10 00:54:39,Jidder,damit die das rechtzeitig zun kann
+2015-02-10 00:58:08,Jidder,"das problem, dass ich mit malloc in einer .net umgebung habe, ist, dass es ja nicht mit new zusammenpasst"
+2015-02-10 00:58:34,Jidder,weil malloc einen zeiger zurückgibt und new ein objekt oder ein array von objekten
+2015-02-10 00:58:57,Jidder,"da ist es doch sinnlos einen kernel in c# zu schreiben, wenn der auf zeiger zurückgreifen muss"
+2015-02-10 00:59:03,Jidder,kann man ja gleich c nehmen
+2015-02-10 00:59:27,Jidder,oder c++ wenn es sein muss
+2015-02-10 00:59:28,Arakis,"das regelt der compiler. Der compiler an sich ruft intern ne ""fake"" maloc auf (kein freigeben von speicher drin), und der reserviert genau so wiel speicher, wie das objekt gerade braucht"
+2015-02-10 00:59:48,Arakis,"wie, gesagt, GC ist nicht drin"
+2015-02-10 00:59:55,Arakis,"ist aber auch nciht die aufgabe von ""malloc"""
+2015-02-10 01:00:00,Arakis,GC ist ne ebene drüber
+2015-02-10 01:00:13,Arakis,GC bzw. new werden hinterher auf malloc aufsetzen
+2015-02-10 01:00:48,Arakis,"hab schon mindestens zwei malloc funktionen gefunden, welche BSD/MIT compatibel sind"
+2015-02-10 01:01:00,Jidder,tyndur hat 3
+2015-02-10 01:01:02,Jidder,^^
+2015-02-10 01:01:07,Arakis,"nur, ach herreje, unter 5-6k zeilen code läfut da nix"
+2015-02-10 01:01:18,Arakis,"nene, soll schon schnell sein"
+2015-02-10 01:01:27,Arakis,und ohne memory leaks
+2015-02-10 01:01:32,Jidder,autsch
+2015-02-10 01:01:56,Arakis,ftp://g.oswego.edu/pub/misc/malloc-2.8.6.c
+2015-02-10 01:01:58,Arakis,so als beispiel
+2015-02-10 01:02:18,Arakis,gibt auch ncoh ne implementierung von freebsd/openbsd
+2015-02-10 01:02:56,Arakis,"und ich glaub, daran würde sich jeder C 2 c# code converter die zähne ausbeißen"
+2015-02-10 01:03:25,Arakis,"wobei die ja nix krankes verwenden, also keine C compiler eigenheiten. Ist alles verdammt sauberer code, die malloc implementierungen"
+2015-02-10 01:03:32,Arakis,(muss ja auch)
+2015-02-10 01:04:09,Arakis,"Erstmal ""erholen"" und nen film schauen mit meiner Freundin"
+2015-02-10 01:04:13,Arakis,bis später
+2015-02-10 01:04:23,Arakis,mogen ist auch ncoh nen tag für malloc...
+2015-02-10 01:04:35,Jidder,viel spaß
+2015-02-10 01:06:28,Arakis,"bin am rätseln, wass die mit mmap andauernt meinen"
+2015-02-10 01:06:43,Arakis,http://en.wikipedia.org/wiki/C_dynamic_memory_allocation#FreeBSD.27s_and_NetBSD.27s_jemalloc
+2015-02-10 01:07:02,Arakis,"also wenn malloc ""mmap"" nutzt."
+2015-02-10 01:07:08,Jidder,"das ist ein systemaufruf, der speicher anfordert"
+2015-02-10 01:07:11,Arakis,hab davon auch schon im linux kernel gelesen
+2015-02-10 01:07:14,Jidder,(unter anderem)
+2015-02-10 01:07:29,Arakis,"stimmt. klapt dann aber auch ""nur"" für virtuellen speicher, richtig?"
+2015-02-10 01:07:42,Arakis,also nicht für den flachen kernel spciher
+2015-02-10 01:07:54,Jidder,der kernel speicher ist flach?
+2015-02-10 01:07:58,Jidder,mmap ist für den user space
+2015-02-10 01:08:03,Jidder,es fordert also virtual memory an
+2015-02-10 01:08:08,Arakis,ok
+2015-02-10 01:08:15,Arakis,ich brauche ja gerade was für den kernel
+2015-02-10 01:08:23,Arakis,"und ""später"" mal was für den user space"
+2015-02-10 01:08:34,Arakis,"gut, nennen wir das kind kmalloc :P"
+2015-02-10 01:08:37,Jidder,ersetze alle aufrufe von mmap durch aufrufe die X seiten virtuellen speicher anfordern
+2015-02-10 01:15:51,Jidder,"ob wohl ein slab allocator für eine gemanagte sprach gut kommt? das einzige was man sicherlich gesondert behandeln müsste, wären strings"
+2015-02-10 01:16:11,Jidder,aber ansonsten hat man ja immer den typ und kann daraus den zu verwendenden allokator ableiten
+2015-02-10 13:49:47,darklink,So
+2015-02-10 13:50:19,darklink,der vmm mappt die page maps
+2015-02-10 13:50:24,darklink,1:1
+2015-02-10 15:40:09,max,"kevin, du weißt nicht zufällig, wieso der qcow2-Cache-Patch mit meiner Refcountserie bei ""./qemu-img create -f qcow2 -o cluster_size=1k,refcount_bits=32 /tmp/test.qcow2 36M; ./qemu-io -c 'write -P 123 0 36M' /tmp/test.qcow2"" einen geleakten Cluster ergibt, oder?"
+2015-02-10 15:40:53,kevin,"Der Cache-Patch ist der, der die Hits nicht auf 0 fallen lässt?"
+2015-02-10 15:41:28,kevin,"Wenn ja, sehe ich da ziemlich genau null Zusammenhang"
+2015-02-10 15:43:06,max,"Danke, dass du mir da zustimmst *g*"
+2015-02-10 15:43:16,max,"Aber wenn ich den obendrauf reverte, gibts keinen Leak mehr"
+2015-02-10 15:45:22,kevin,"Selbst wenn ein Bug dadurch expost wird, ist das eher seltsam"
+2015-02-10 15:45:55,kevin,Schon probiert den Cache-Patch drunterzupacken und dann mal zu bisecten?
+2015-02-10 15:46:17,max,"Na ja, das Problem ist das -o refcount_bits=32"
+2015-02-10 15:46:28,max,"Das heißt, ich kann überhaupt nur bis zu dem Moment, wo das eine valide Option ist"
+2015-02-10 15:46:31,kevin,Ah... Ohne die ist es nicht reproduzierbar?
+2015-02-10 15:46:32,max,Und da tritt das schon auf
+2015-02-10 15:46:39,max,"Jo, passiert nur mit 32 und 64"
+2015-02-10 15:46:45,kevin,Schade
+2015-02-10 15:47:03,kevin,Hatte ich soweit schon gereviewt?
+2015-02-10 15:47:42,max,Vermutlich nicht
+2015-02-10 15:47:50,max,Aber ich such mal weiter
+2015-02-10 15:48:08,max,Ist irgendwas mit dem Vergrößern der Refcounttabelle
+2015-02-10 15:51:23,kevin,"Hm, also manchmal meint es Eric _wirklich_ zu gut. Jetzt muss ich mir schon Kritik am Shellbefehl gefallen lassen, mit dem ich getestet habe und den ich unvorsichtigerweise in die Commitmessage kopiert habe *seufz*"
+2015-02-10 15:51:30,max,jo *g*
+2015-02-10 15:51:49,max,"Aber gab doch trotzdem ein R-b, also ist doch alles gut ;-)"
+2015-02-10 15:51:58,kevin,"Ja, aber irgendwie nervt's ;-)"
+2015-02-10 15:52:10,max,Ich fands lustig *g*
+2015-02-10 15:53:47,kevin,"Du beschwerst dich auch immer, wenn er's bei dir macht ;-)"
+2015-02-10 15:54:06,max,"Ja, diesmal hat ers aber nicht bei mir gemacht *g*"
+2015-02-10 15:54:16,kevin,*g*
+2015-02-10 15:55:05,Svenska,"hm, konnte die qemu console die am host vorhandenen usb-geräte anzeigen?"
+2015-02-10 15:55:40,max,Gibts dafür nicht lsusb außerhalb von qemu?
+2015-02-10 15:55:50,Svenska,"ah, ""info usbhost"" war's"
+2015-02-10 15:55:55,max,ist ja gruselig
+2015-02-10 15:56:06,Svenska,ich finds praktisch
+2015-02-10 15:56:19,Svenska,"console auf, gucken wie das teil heißt, usb_add"
+2015-02-10 15:56:27,max,"Erinnert mich nur an die Diskussion, ob man einen host-eject-Befehl in QMP haben sollte…"
+2015-02-10 15:56:51,Svenska,"ist auch praktisch, wenn man das cd-laufwerk gerade weiterreicht"
+2015-02-10 15:56:59,max,"Ja, genau darum gings…"
+2015-02-10 15:57:19,Svenska,"""ich will im windows rechtsklick>auswerfen, und dann soll die cd rauskommen"""
+2015-02-10 15:57:27,max,Tut sie ja auch
+2015-02-10 15:57:31,Svenska,prima :-D
+2015-02-10 15:57:33,max,Das ist ja das Problem
+2015-02-10 15:57:35,max,:-/
+2015-02-10 15:57:44,Svenska,warum ist das ein problem?
+2015-02-10 15:57:46,max,"Denn wenn man es nicht im Windows macht, kommt sie manchmal raus"
+2015-02-10 15:57:53,max,"Also, wenn man es über den Monitor macht"
+2015-02-10 15:58:02,Svenska,oh
+2015-02-10 15:58:03,max,"Dann hängt es davon ab, ob der Gast die Lade blockiert hat"
+2015-02-10 15:58:11,max,"Wenn ja, dann kommt sie raus, wenn nein, dann nicht"
+2015-02-10 15:58:27,Svenska,"öh, fehlermeldung anzeigen?"
+2015-02-10 15:58:51,max,"Nö, eigentlich sollte sie gar nicht aufgehen"
+2015-02-10 15:58:57,max,Weil das ein anderes eject ist
+2015-02-10 15:59:10,Svenska,"ok, wusste ich nicht"
+2015-02-10 15:59:27,Svenska,"naja egal. feature request: ""info usbhost"" darf auch gern die beschreibung des geräts anzeigen ;)"
+2015-02-10 15:59:38,max,Dafür gibts lsusb :-P
+2015-02-10 15:59:46,max,Genau wie es für die Hostlade eject gibt
+2015-02-10 15:59:58,Svenska,vmware hat da sogar ein menue...
+2015-02-10 16:00:14,max,"Na, immerhin etwas, in dem qemu dann vmware voraus ist"
+2015-02-10 16:00:17,Svenska,devices -> usb_add -> auswählen ;)
+2015-02-10 16:00:34,max,Und vielleicht hat virt-manager das ja auch
+2015-02-10 16:00:43,Svenska,"keine ahnung, nie benutzt"
+2015-02-10 16:00:57,max,Das wird das Problem sein :-P
+2015-02-10 16:01:16,Svenska,"ich tippe ja darauf, dass ""info usbhost"" älter ist als virt-manager"
+2015-02-10 16:01:30,Svenska,"egal, afk"
+2015-02-10 16:01:32,max,"Und ich tippe darauf, dass es heute nicht mehr in qemu implementiert würde, wenn man die Wahl hätte"
+2015-02-10 16:58:49,max,"kevin, Problem gefunden"
+2015-02-10 16:59:00,kevin,Jetzt bin ich gespannt
+2015-02-10 16:59:13,max,"Wenn die Refcounttabelle vergrößert und verschoben wird, sollte man den Cache nicht nur flushen, sondern auch leeren"
+2015-02-10 16:59:35,max,"Wieso das genau jetzt unter diesen Umständen sichtbar wird, weiß ich aber nicht"
+2015-02-10 17:00:16,kevin,"Hm, und wieso?"
+2015-02-10 17:00:29,kevin,Im Cache sind doch nur Refcount Blocks?
+2015-02-10 17:00:48,max,"Hm, guter Punkt *g*"
+2015-02-10 17:00:53,max,"Dir reicht wohl nicht, dass es das fixt? *g*"
+2015-02-10 17:00:58,kevin,Und wieso muss man die überhaupt flushen?
+2015-02-10 17:01:23,kevin,"Ach so, weil Refcount Table synchron geschrieben wird und die Reihenfolge stimmen muss. Ok."
+2015-02-10 17:01:44,kevin,"Ich hätte gern was, was es fixt und was ich verstehe ;-)"
+2015-02-10 17:02:02,max,Schade *g*
+2015-02-10 17:02:07,max,"Na gut, dann such ich halt weiter"
+2015-02-10 17:03:00,kevin,Aber im Moment bin ich eh nicht gut im Verstehen. Deinen qemu-img-convert-Einwand habe ich auch noch nicht ganz verarbeitet. ;-)
+2015-02-10 17:03:23,max,Hm?
+2015-02-10 17:04:27,kevin,Warum ich dazu -B brauche
+2015-02-10 17:05:49,max,Das weiß ich doch jetzt nicht mehr *g*
+2015-02-10 17:06:08,max,"Weil man dann halt schon drauf achten sollte, was unallocated ist und was nicht"
+2015-02-10 17:06:10,max,Denke ich
+2015-02-10 17:06:24,kevin,"Hm, vielleicht wird ohne -B eingelesen und dann weggeworfen, weil der Puffer komplett genullt istr"
+2015-02-10 17:07:00,kevin,Wäre dann ein Performanceproblem (und das ist vermutlich kritischer als ein kaputtes -B)
+2015-02-10 17:11:44,max,Ich hab keine Lust auf alloc_refcount_block() mehr…
+2015-02-10 17:13:04,kevin,Das dachte ich mir damals auch...
+2015-02-10 17:14:53,max,Hm.
+2015-02-10 17:15:03,max,/* Calculate the number of refcount blocks used so far */
+2015-02-10 17:15:06,max,Da benutzt er cluster_index
+2015-02-10 17:15:12,max,"Das ist an sich nicht doof, weil der ja noch nicht benutzt ist"
+2015-02-10 17:15:27,max,"Kann aber doof werden, weil er new_block nicht berücksichtigt"
+2015-02-10 17:15:37,max,Und new_block kann durchaus auch gleich cluster_index sein
+2015-02-10 17:16:20,max,Hier ist new_block sogar ein bisschen größer als cluster_index
+2015-02-10 17:16:26,max,Problem gefunden? *g*
+2015-02-10 17:18:21,max,"MAX(cluster_index, (new_block >> s->cluster_bits) + 1) statt nur cluster_index in der Rechnung fixt es jedenfalls auch"
+2015-02-10 17:18:34,max,Darf ich jetzt aufhören? *g*
+2015-02-10 17:18:52,SHyx0rmZ,das ist aber ziemlich egozentrisch
+2015-02-10 17:19:00,max,So bin ich halt
+2015-02-10 17:19:11,SHyx0rmZ,"ein KEVIN(cluster_index, (new_block >> s->cluster_bits) + 1) wäre doch auch mal eine schöne Abwechslung"
+2015-02-10 17:19:19,max,Das ist aber so viel länger
+2015-02-10 17:19:24,max,Kann man sich bei 80-Zeichen-Limit nicht leisten
+2015-02-10 17:19:29,SHyx0rmZ,dann nimm die Leerzeichen raus
+2015-02-10 17:19:38,max,Dann haut mich kevin aber
+2015-02-10 17:19:46,max,"Wobei, ich bin weit genug weg, dass er das nicht kann"
+2015-02-10 17:19:49,max,Dann sollte ich das tun
+2015-02-10 17:21:51,kevin,max: Wo kommt denn das + 1 her?
+2015-02-10 17:22:02,kevin,"Aber klingt grundsätzlich nach einem Problem, ja..."
+2015-02-10 17:22:12,max,"kevin, weil der Cluster benutzt ist"
+2015-02-10 17:22:54,kevin,"Hm, aber cluster_index will auch benutzt werden"
+2015-02-10 17:23:02,max,"Will, ja ;-)"
+2015-02-10 17:23:04,max,Das ist ein Unterschied *g*
+2015-02-10 17:23:16,max,Dafür gibts ja -EAGAIN
+2015-02-10 17:23:30,kevin,"Ja, und dann muss man im Zweifelsfall gleich nochmal reallozieren, oder wie?"
+2015-02-10 17:23:44,max,In dem Fall wird immer -EAGAIN zurückgegeben
+2015-02-10 17:23:48,kevin,Ich weiß
+2015-02-10 17:23:59,max,"Ja, hab ich den Code geschrieben? :-P"
+2015-02-10 17:24:39,max,"An der Stelle gehts ja nur darum, wo man die Reftable sicher hinschieben kann"
+2015-02-10 17:24:40,kevin,"Aber wenn das + 1 den Unterschied macht, dass wieder ein neuer Block angebrochen werden muss, dann muss man zwei Iterationen machen, oder?"
+2015-02-10 17:24:45,max,Und das muss nach allen anderen Clustern sein
+2015-02-10 17:24:59,kevin,"Also, worauf ich rauswill: Wäre das +1 nicht in beiden Fällen geschickt, wenn es in einem davon nötig ist?"
+2015-02-10 17:25:20,max,Ich fände den Code aber so noch schwieriger zu verstehen…
+2015-02-10 17:26:12,kevin,Hm
+2015-02-10 17:26:14,max,"Ich meine, die Reftable wächst hier einen ganzen Cluster"
+2015-02-10 17:26:25,kevin,Aber dass er nur einmal statt zweimal wächst fände ich eher beruhigend ;-)
+2015-02-10 17:26:26,max,"Da glaube ich nicht, dass das +1 irgendeinen Unterschied machen würde"
+2015-02-10 17:26:42,kevin,"Das halbiert schonmal die Chance, dass er irgendwas kaputtmacht"
+2015-02-10 17:26:59,kevin,"Okay, dann lass es halt"
+2015-02-10 17:27:50,kevin,Und... was hat das jetzt mit dem Cache zu tun?
+2015-02-10 17:27:59,kevin,Macht für mich immer noch keinen Sinn
+2015-02-10 17:28:01,max,Muss ich mir das wirklich überlegen? *g*
+2015-02-10 17:28:16,kevin,"Nein, aber interessant fände ich es trotzdem *g*"
+2015-02-10 17:28:18,max,"Na gut, dann schreib ich halt, was ich denke"
+2015-02-10 17:28:24,max,Wird aber sehr zusammenhanglos sein
+2015-02-10 17:28:42,max,"Also, der Block, um den es geht (new_block), wird vorher aus dem Cache erzeugt (get_empty)"
+2015-02-10 17:28:57,max,"In diesem Fall hier ist er selbstreferenzierend, also wird sein eigener Refcount in sich selbst gesetzt"
+2015-02-10 17:29:11,max,"Und dann kommt raus, dass die Reftable wachsen muss, also wird er zurück in den Cache gepackt, aber sonst passiert nichts"
+2015-02-10 17:29:50,max,"Dann kommt die Reftable-Grow-Funktion, die hier jetzt einfach mal die Referenz auf den Block in der Reftable mit einem anderen Block überschrieben hat"
+2015-02-10 17:30:08,max,"Das Ergebnis war, dass alles funktioniert hat, nur, dass halt der neue Block leer war, weil er durch einen anderen referenziert wurde"
+2015-02-10 17:30:37,max,"Wenn man jetzt den Block aus dem Cache angefordert hat, kam aber der alte raus"
+2015-02-10 17:30:41,max,Der sich selbst referenziert hat
+2015-02-10 17:30:48,max,Jetzt ist das aber ein ganz anderer Cluster
+2015-02-10 17:31:09,max,Weil die Indizes in der Reftable von dem ursprünglichen Refblock und diesem neuen nicht gleich sind
+2015-02-10 17:31:19,max,Und dadurch wurde dann dieser ganz andere Cluster geleakt
+2015-02-10 17:31:37,max,"Ich weiß nicht, warum das erst durch den Cachepatch sichtbar wurde"
+2015-02-10 17:32:31,max,"Aber wo ich das so aufschreibe, stellt sich mir die Frage…"
+2015-02-10 17:33:31,max,"Sollten wir nicht nach dem qcow2_cache_put() in alloc_refcount_block() (vor ""If we come here"") nochmal den Cache flushen?"
+2015-02-10 17:33:51,max,"Oder sollte das qcow2_cache_put() nicht unter ""Now the new refcoutn block needs to be written to disk"" sein?"
+2015-02-10 17:33:54,max,*refcount
+2015-02-10 18:57:25,darklink,Hi
+2015-02-10 18:57:58,darklink,Ich bin grade beim paging
+2015-02-10 18:58:19,darklink,und habe versucht den usermode zu fixen
+2015-02-10 18:58:23,darklink,naja
+2015-02-10 18:58:54,darklink,auf jeden fall schmiert er mir mit nem pagefault ab
+2015-02-10 19:00:19,darklink,"nur bei qemu so bei adresse 0x20E (was sucht er da?) und auf echter hw dort, wo er was zu suchen hat"
+2015-02-10 21:37:36,Svenska,Jonathan: hattest du dir den link mal angeschaut?
+2015-02-10 21:39:45,Jonathan,Ja ;)
+2015-02-10 21:39:56,Svenska,"coole idee, oder?"
+2015-02-10 21:39:57,Jonathan,Svenska: Der NMI-Bootloader ist einfach nur krank
+2015-02-10 21:39:59,Jonathan,*g*
+2015-02-10 21:40:06,Jonathan,Wieso würde man sowas tun wollen?
+2015-02-10 21:40:15,Svenska,weil man's kann?
+2015-02-10 21:40:23,Jonathan,"Gut, das lasse ich gelten ;)"
+2015-02-10 21:40:37,Jonathan,Hab inzwischen übrigens 14 Seiten Ausarbeitung zum Drahthaufensystem fertig
+2015-02-10 21:40:54,Jonathan,Wird vermutlich noch viel mehr
+2015-02-10 21:40:59,Svenska,wow
+2015-02-10 21:41:06,Jonathan,:D
+2015-02-10 21:41:45,Jonathan,"Und ich hab ne Drahthaufenshell, chdir(), Multitasking, Executables und anderen Krempel"
+2015-02-10 21:42:15,Svenska,"also schon ein richtiges betriebssystem, fast. :-)"
+2015-02-10 21:42:20,Jonathan,Jap ;)
+2015-02-10 21:42:31,Jonathan,Nur hab ich jetzt tatsächlich die 16k voll...
+2015-02-10 21:42:31,Jonathan,:(
+2015-02-10 21:42:52,Jonathan,D.h. das ROM-FS wird jetzt wirklich ausgelagert.
+2015-02-10 21:43:01,Jonathan,(Schluckt etwa 3kB)
+2015-02-10 21:43:23,Jonathan,Dann sollte das OS bequem passen und alles ist super. ;)
+2015-02-10 21:43:31,Jonathan,Der Kernel selbst ist soweit auch fertig.
+2015-02-10 21:43:56,Jonathan,Fehlen noch zwei kleine Treiber und dann läuft das System.
+2015-02-10 21:44:03,Svenska,"hmm, was ist denn so groß?"
+2015-02-10 21:44:15,Jonathan,RS232-Treiber und Shell
+2015-02-10 21:44:19,Jonathan,"Jeweils mit etwa 1,5k"
+2015-02-10 21:44:25,Svenska,warum ist der rs232 so groß?
+2015-02-10 21:44:38,Jonathan,Weil SDCC so viel Code erzeugt
+2015-02-10 21:44:49,Jonathan,Viel C-Code ist das nicht
+2015-02-10 21:45:05,Svenska,öh... ist das ein interruptgetriebener treiber mit dicken buffers?
+2015-02-10 21:45:10,Jonathan,Nö
+2015-02-10 21:45:19,Jonathan,Polling ohne jede Buffer
+2015-02-10 21:45:24,Svenska,*das* ist krass viel
+2015-02-10 21:45:27,Jonathan,Ja
+2015-02-10 21:45:36,Jonathan,Leider... :(
+2015-02-10 21:45:40,Svenska,*gruebel*
+2015-02-10 21:45:47,Jonathan,Dabei hab ich alle Reads/Writes auf Steuerregister schon per define gemacht
+2015-02-10 21:46:02,Svenska,"hast du geguckt, was da so ineffizient ist?"
+2015-02-10 21:46:06,Jonathan,Ja
+2015-02-10 21:46:08,Jonathan,Funktionsaufrufe
+2015-02-10 21:46:25,Svenska,wieviele funktionen sind denn das?
+2015-02-10 21:46:46,Jonathan,Für jeden Registerzugriff auf die RS232-Karte einen
+2015-02-10 21:47:03,Svenska,?
+2015-02-10 21:47:31,Jonathan,SDCC kann IN/OUT nur auf fixe Adressen
+2015-02-10 21:47:46,Jonathan,Arrays/Pointer auf I/O-Adressraum lässt er nicht zu
+2015-02-10 21:47:52,Svenska,also hast du eine funktion pro register?
+2015-02-10 21:47:55,Jonathan,Nein
+2015-02-10 21:48:08,Jonathan,"Ich hab eine einzige Funktion readIO(slot, register)"
+2015-02-10 21:48:15,Jonathan,Und writeIO
+2015-02-10 21:48:23,Svenska,hm
+2015-02-10 21:48:31,Jonathan,"Nur sichert SDCC bei jedem Aufruf dieser Funktionen alle Register, die er noch braucht"
+2015-02-10 21:48:47,Jonathan,Und dieses Verhalten kann man nicht abstellen
+2015-02-10 21:48:59,Svenska,diese funktionen hast du in assembler geschrieben?
+2015-02-10 21:49:04,Jonathan,"(Es gibt zwar einen Schalter dafür, aber das führt dazu, dass SDCC *garnichts* mehr sichert)"
+2015-02-10 21:49:05,Jonathan,Ja
+2015-02-10 21:49:22,Svenska,"naja, du hast ja dem sdcc auch gesagt, er soll _alles_ reentrant machen, wenn ich mich nicht irre?"
+2015-02-10 21:49:33,Jonathan,Ja
+2015-02-10 21:49:46,Svenska,kannst du diese funktionen als callee-saved deklarieren?
+2015-02-10 21:49:59,Svenska,"weil das geht, glaube cih"
+2015-02-10 21:50:12,Jonathan,Das ist noch nicht vollständig implementiert
+2015-02-10 21:50:16,Jonathan,Siehe Dokumentation
+2015-02-10 21:50:20,Svenska,alternativ: kannst du diese funktionen inline machen? :-D
+2015-02-10 21:50:28,Jonathan,SDCC unterstützt keinen Inline-Asm
+2015-02-10 21:50:34,Svenska,"naja, du kannst global caller-/callee-saved machen"
+2015-02-10 21:50:45,Jonathan,Dann sichert SDCC gar keine Register mehr.
+2015-02-10 21:50:49,Svenska,?
+2015-02-10 21:50:50,Jonathan,Und produziert crashenden Code.
+2015-02-10 21:51:19,Jonathan,Er generiert keinen Code für callee-saves... Die Funktionen sichern die Register nicht.
+2015-02-10 21:51:24,Svenska,"naja, entweder jede funktion sicher ihre eigenen register, oder jede funktion sichert/restoreed vor/nach jedem call"
+2015-02-10 21:51:29,Jonathan,Ja
+2015-02-10 21:51:33,Svenska,wtf?
+2015-02-10 21:51:39,Svenska,"ich dachte, callee-saved wäre standard?"
+2015-02-10 21:51:48,Svenska,(und du kannst die abi fuer jede funktion einstellen?)
+2015-02-10 21:51:48,Jonathan,"Wenn man callee-saves verwendet, sichert es weder vor dem call, noch in der aufgerufenen Funktion"
+2015-02-10 21:52:03,Jonathan,"Und dann geht alles kaputt, weil es sich gegenseitig Register überschreibt"
+2015-02-10 21:52:15,Svenska,"fuer die eine funktion wäre das ja egal, die ist eh nackig..."
+2015-02-10 21:52:21,Jonathan,Ja gut...
+2015-02-10 21:52:29,Svenska,ich hab ansonsten ne andere idee
+2015-02-10 21:52:30,Jonathan,Wäre einen Versuch wert.
+2015-02-10 21:52:39,Svenska,mach readIO/writeIO zu einem makro ;)
+2015-02-10 21:52:48,Jonathan,Das geht nicht... Dx
+2015-02-10 21:52:51,Jonathan,Ich hab alles versucht
+2015-02-10 21:52:53,Svenska,do { #asm ... #endasm } while(0);
+2015-02-10 21:52:56,Jonathan,Ja
+2015-02-10 21:53:01,Jonathan,Schön
+2015-02-10 21:53:07,Svenska,wieso geht das nicht?
+2015-02-10 21:53:16,Jonathan,Weil Inline-Asm nicht auf lokale Variablen zugreifen kann!
+2015-02-10 21:53:31,Jonathan,SDCC ist SCHEISSE!!!
+2015-02-10 21:53:37,Svenska,...
+2015-02-10 21:54:00,Jonathan,Ich hab doch auch schon an Makros dafür gedacht... :(
+2015-02-10 21:54:11,Jonathan,Und stundenlang rumprobiert
+2015-02-10 21:54:14,Jonathan,Und Dokus gelesen
+2015-02-10 21:54:22,Jonathan,"Und...nein, es geht einfach nicht"
+2015-02-10 21:54:32,Svenska,mach' den rs232 treiber komplett in asm?
+2015-02-10 21:54:35,Jonathan,:(
+2015-02-10 21:54:46,Jonathan,"Ja, das wäre die letzte Möglichkeit"
+2015-02-10 21:54:46,Svenska,so viel ist das ja nun auch wieder nicht... im gegensatz zur shell
+2015-02-10 21:55:04,Svenska,"wäre aus meiner sicht immernoch besser, als extra-hardware zu verbauen *g*"
+2015-02-10 21:55:17,Jonathan,"Aber ich hab irgendwie keine Lust, mich nochmal in das ganze Stack-Frame-Geraffel einzugraben"
+2015-02-10 21:55:21,Jonathan,Das ist so eklig
+2015-02-10 21:55:39,Jonathan,"Und die Extra-Hardware brauche ich sowieso, da ich noch ein paar mehr Programme ins ROM tun will."
+2015-02-10 21:55:47,Jonathan,Sowas wie cat wäre doch mal was.
+2015-02-10 21:55:53,Svenska,hm
+2015-02-10 21:56:10,Svenska,ich hätte die evtl als builtins in die shell geta
+2015-02-10 21:56:11,Svenska,n
+2015-02-10 21:56:16,Jonathan,Joa
+2015-02-10 21:56:22,Svenska,"weil effektiv willst du doch alle programme auf ""diskette"" haben?"
+2015-02-10 21:56:43,Jonathan,"Ich hab die Idee ""Festplatte"" erstmal als ""Aufwändig, doof"" abgestempelt"
+2015-02-10 21:56:46,Jonathan,Ein ROM ist völlig ausreichend
+2015-02-10 21:57:04,Svenska,muss ja nicht ide sein. ein avr mit sd-karte wäre auch groß genug ;)
+2015-02-10 21:57:17,Jonathan,"Klar, aber das kann ich später noch dran machen ;)"
+2015-02-10 21:57:24,Svenska,= nie
+2015-02-10 21:57:33,Jonathan,"Ein System, das mit den nötigsten Unix-Utilities von nem ROM bootet, ist doch auch schonmal was Feines"
+2015-02-10 21:59:34,Svenska,naja
+2015-02-10 21:59:50,Svenska,bootet dein system eigentlich aus einem rom?
+2015-02-10 21:59:55,Jonathan,Ja
+2015-02-10 22:00:03,Svenska,"das waren doch ""nur"" deine 16 kb unteres ram, oder?"
+2015-02-10 22:00:18,Jonathan,"Also, ja, es bootet indirekt aus einem ROM"
+2015-02-10 22:00:29,Jonathan,Der Inhalt vom ROM wird halt in den RAM kopiert *g*
+2015-02-10 22:00:36,Jonathan,Und von da aus geht's dann los
+2015-02-10 22:00:51,Svenska,mh
+2015-02-10 22:01:20,Svenska,"also in den eh konstant gemappten kram wuerde ich kernel+treiber tun, weil du die sowieso ständig brauchst, aber nicht unbedingt anwendungen"
+2015-02-10 22:04:44,darklink,Ich wette ich habe sehr offensichtliche fehler im code
+2015-02-10 22:05:28,darklink,naja
+2015-02-10 22:06:14,darklink,er pagefaultet mir dauernd wegen unauthorisierten writes in ungemapptes gebiet
+2015-02-10 22:06:17,darklink,als user
+2015-02-10 22:06:56,Svenska,"wenn du zu viel platz hast, wuerde ich da vielleicht sogar ein paar funktionen der libc auslagern"
+2015-02-10 22:07:47,darklink,Ich hab bereits n printf im usermode btq
+2015-02-10 22:07:51,darklink,btw*
+2015-02-10 22:08:35,darklink,Und es ia
+2015-02-10 22:08:41,darklink,-.-
+2015-02-10 22:08:56,Jonathan,"Svenska: Ich hab aber definitiv nicht zu viel Platz, das ist ja das Problem"
+2015-02-10 22:09:12,Jonathan,"Alles, was ich nicht in der Kernelpage haben muss, will ich da nicht haben"
+2015-02-10 22:09:14,Svenska,"Jonathan: ja, aber dann wuerde ich den vorhandenen gerade nicht mit apps zustopfen (auch nicht mit der shell)"
+2015-02-10 22:09:20,Jonathan,Richtig
+2015-02-10 22:09:28,Jonathan,Deshalb wandern die in ein externes 32k EEPROM
+2015-02-10 22:09:38,Svenska,hmmmm
+2015-02-10 22:09:43,Svenska,warum kein 256 KB Flash?
+2015-02-10 22:09:45,Jonathan,"Welches als Erweiterungskarte installiert wird, mit ID-Register und allem"
+2015-02-10 22:09:56,Jonathan,"Weil ich finde, dass 32k reichen :D"
+2015-02-10 22:10:16,Svenska,ich hab mir mein at29c020 mal angeschaut und werd das wohl als bootmedium nutzen
+2015-02-10 22:10:27,Jonathan,Kommt dann auch super mit der Registerbreite hin: 8 Bit von nem Latch (Register) und 7 Bit vom Adressbus = 15 Bit = 32k
+2015-02-10 22:10:52,Jonathan,"Somit verschwende ich weder Register, noch Registerbits, noch Platz im ROM"
+2015-02-10 22:11:20,Jonathan,Und meine Flashs halten erstaunlich wenige Schreibzyklen aus... :(
+2015-02-10 22:11:29,Jonathan,1000 Stück nur
+2015-02-10 22:11:45,Jonathan,Das EEPROM mindestens 100k
+2015-02-10 22:11:59,Jonathan,Insofern nehm ich doch lieber das EEPROM :D
+2015-02-10 22:12:08,Svenska,was fuer flash hast du denn probiert?
+2015-02-10 22:12:33,Jonathan,Hab ein paar 29F020
+2015-02-10 22:12:40,Jonathan,Alte BIOS-Flashs
+2015-02-10 22:12:46,Svenska,"ja, meins auch..."
+2015-02-10 22:12:49,Jonathan,*g*
+2015-02-10 22:12:59,Svenska,"also, ichh ab zwei davon ;)"
+2015-02-10 22:12:59,darklink,Programmiert n os auf nem gerät mit 128 kb ram
+2015-02-10 22:13:11,Jonathan,"darklink: Erledigt, und jetzt?"
+2015-02-10 22:13:25,Svenska,"ich bin noch am ueberlegen, ob ich das in der mitte teile und A17 umschaltbar mache"
+2015-02-10 22:13:26,darklink,Lol zeig ma
+2015-02-10 22:13:40,Svenska,"dann hab ich zwei 128 KB flashes, aber keinen bootloader mehr"
+2015-02-10 22:13:53,Jonathan,Hmmmm
+2015-02-10 22:14:10,Svenska,"aber wenn du sagst, die halten nix aus, dann lass ich das wohl"
+2015-02-10 22:14:12,Jonathan,darklink: https://www.dropbox.com/s/q8r0bu9ugqbpkw7/IMG_20140902_234532.jpg?dl=0
+2015-02-10 22:14:34,Svenska,schickes bild
+2015-02-10 22:14:37,Jonathan,"Svenska: Naja, ein bisschen überleben sie ja schon"
+2015-02-10 22:14:41,Jonathan,Danke :D
+2015-02-10 22:14:59,Svenska,"die monsterkarte erinnert mich an die 6 MB EMS-speichererweiterung, die ich mal hatte"
+2015-02-10 22:15:05,Jonathan,*g*
+2015-02-10 22:15:13,Svenska,(und die ich dank meiner eltern fuer 6 € bei ebay verschleudert hab :( )
+2015-02-10 22:15:17,Jonathan,"Nur, dass das in dem Fall ""Random Logic"" ist"
+2015-02-10 22:15:21,Jonathan,Oh schade :(
+2015-02-10 22:15:37,Jonathan,Den guten RAM hätte man brauchen können...
+2015-02-10 22:15:40,Svenska,"im 286er lief sie perfekt, im 486er ueberhaupt nicht. aber die hatte die länge ;)"
+2015-02-10 22:15:46,Jonathan,Joa ;)
+2015-02-10 22:15:46,Svenska,"naja, nicht wirklich"
+2015-02-10 22:15:54,Jonathan,Moderne Grafikkarten sind genau so lang
+2015-02-10 22:16:06,Svenska,"6 mb auf fullsize-isa, dann weißt du, was da fuer chips drauf waren"
+2015-02-10 22:16:07,Jonathan,"Nur um Faktor 100 Millionen leistungsfähiger, oder so *g"
+2015-02-10 22:16:12,Jonathan,Klar
+2015-02-10 22:16:22,Jonathan,Aber ich hätte sie trotzdem gern in meinem System verwurstet
+2015-02-10 22:16:26,Jonathan,Length doesn't matter
+2015-02-10 22:16:53,Jonathan,"Die Chips hätte ich dafür ja gleich in der Karte verschaltet lassen können, sind ja eh schon so, wie man sie braucht"
+2015-02-10 22:17:07,Jonathan,Waren das SRAMs oder DRAMs?
+2015-02-10 22:17:20,Svenska,lol 6 MB SRAM anno 1988 ;)
+2015-02-10 22:17:26,Jonathan,:D
+2015-02-10 22:17:31,Jonathan,Das wäre echt nice gewesen
+2015-02-10 22:17:45,Svenska,"ich werd jedenfalls 6 davon in mein system tun, und die anderen beiden bänke dann mit dem flash fuellen"
+2015-02-10 22:18:00,darklink,Ich habe ddr1 ram im pc verbaut
+2015-02-10 22:18:17,Jonathan,6 von was?
+2015-02-10 22:18:18,Svenska,"dann muss ich mir nur noch ueberlegen, wie ich das bootstrapping hinkriege, dann kann ich alles im ram testen, bis ich es ins flash schreibe"
+2015-02-10 22:18:26,Svenska,"6 drams, 256kx4"
+2015-02-10 22:18:33,Jonathan,Achso
+2015-02-10 22:18:35,Jonathan,Jo
+2015-02-10 22:18:39,Svenska,macht 768k ram und 256k flash
+2015-02-10 22:18:51,Jonathan,"Du kannst ja einen kleinen Bootloader ins Flash schreiben, der was von RS232 downloadet, oder so"
+2015-02-10 22:18:56,Svenska,"ich hab mir die pinouts mal angeschaut, das teil ist auch nur sram ;)"
+2015-02-10 22:18:57,Jonathan,Hatte ich bei meinem System ja ne Zeit lang auch
+2015-02-10 22:19:03,Jonathan,Ja ;)
+2015-02-10 22:19:12,Svenska,"jo, womit wir bei problem zwei wären: rs232wtf? ;)"
+2015-02-10 22:19:20,Jonathan,FRAMs sind übrigens auch super
+2015-02-10 22:19:23,Svenska,"nein, ich hab keinen 16550 rumliege"
+2015-02-10 22:19:24,Svenska,n
+2015-02-10 22:19:29,Jonathan,:(
+2015-02-10 22:19:34,Jonathan,10€ auf eBay
+2015-02-10 22:19:41,Jonathan,+ Versand... :(
+2015-02-10 22:19:48,Svenska,merkste selbst :)
+2015-02-10 22:19:52,Jonathan,Leider ja
+2015-02-10 22:19:57,Jonathan,Doof eigentlich
+2015-02-10 22:19:58,Svenska,oder 16 wochen wartezeit aus china
+2015-02-10 22:20:09,Jonathan,Ich müsste dir mal ein Care-Paket schnüren ;)
+2015-02-10 22:20:54,darklink,Und hält nur 2 tage
+2015-02-10 22:20:54,Svenska,ein nordpaket quasi
+2015-02-10 22:20:54,Jonathan,*g*
+2015-02-10 22:20:54,Svenska,darklink: ach so schlimm ist das nicht
+2015-02-10 22:21:13,Svenska,"wenn du garantieren kannst, dass dein chip ne fälschung ist, und der hersteller die nicht umbringt, dann ist alles prima"
+2015-02-10 22:21:14,Jonathan,CMOS-Z80 + dicken SRAM + EEPROM + anderen Kleinkram (74LS610?)
+2015-02-10 22:21:28,Svenska,das macht ja mein projekt kaputt :D
+2015-02-10 22:21:33,Jonathan,:D
+2015-02-10 22:21:34,Jonathan,Wieso
+2015-02-10 22:21:48,Jonathan,Du meintest: Das macht ja mein Projekt weniger kaputt? ;)
+2015-02-10 22:21:49,Svenska,NMOS-Z80 + NMOS-DRAM + (nicht-)NMOS-flash ;)
+2015-02-10 22:21:54,Jonathan,*g*
+2015-02-10 22:22:00,Svenska,und NMOS-TTL ueberall ;)
+2015-02-10 22:22:07,Jonathan,Pffff :P
+2015-02-10 22:22:22,Jonathan,Ich hab noch ein AS6C4008
+2015-02-10 22:22:42,Jonathan,"512k*8 SRAM 55ns, DIP"
+2015-02-10 22:23:04,Jonathan,Das ist eigentlich *der* RAM für Bastelsysteme
+2015-02-10 22:23:12,Svenska,32kx8 hab ich auch zwei stueck in 55ns und 8kx8 in 10ns oder so
+2015-02-10 22:23:16,Jonathan,Jo
+2015-02-10 22:23:51,Jonathan,Wobei der eine Chip halt genug für ein ganzes System ist... Wenn du nicht unbedingt DRAM verwenden wollen würdest
+2015-02-10 22:24:00,Svenska,*g*
+2015-02-10 22:24:07,Svenska,challenge und so
+2015-02-10 22:24:10,Jonathan,Apropos exotischer RAM
+2015-02-10 22:24:15,Svenska,"auch, wenn's nie fertig wird"
+2015-02-10 22:24:22,Jonathan,Ich hab ja zwei 1024*9-FIFOs
+2015-02-10 22:24:26,Svenska,"und ich vermute, solche chips waren auch auf dem ems-board drauf"
+2015-02-10 22:24:52,Jonathan,"Die könnte ich eigentlich auf ein Stück Lochraster werfen, mit dem Z80-Bus verdrahten und jeweils einen DAC an deren Ausgang hängen"
+2015-02-10 22:25:16,Svenska,"mono ist dir wohl zu simpel, was? :-D"
+2015-02-10 22:25:17,Jonathan,"Daten raustakten mit 44,1kHz... Und die ""Halb-Voll-Leitung"" an den IRQ klemmen"
+2015-02-10 22:25:20,Jonathan,:D
+2015-02-10 22:25:24,Jonathan,Du hast es schon erraten *g*
+2015-02-10 22:25:33,Svenska,44 khz wird bisschen heftig sein
+2015-02-10 22:25:39,Jonathan,Eigentlich nicht
+2015-02-10 22:25:54,Svenska,"nicht zum raustakten, aber eventuell zum erzeugen und aufbereiten"
+2015-02-10 22:25:56,Jonathan,Die Ints würden mit 86Hz feuern
+2015-02-10 22:25:59,Svenska,mach es wenigstens einstellbar...
+2015-02-10 22:26:03,Jonathan,Ja
+2015-02-10 22:26:09,Jonathan,Aber 86Hz Interrupts hält das System noch aus
+2015-02-10 22:26:13,Svenska,klar
+2015-02-10 22:26:30,Jonathan,"Jedes mal dann 1k rausschreiben, das geht in Assembler auch gut"
+2015-02-10 22:26:33,Svenska,aber kriegst du 86x pro sekunde auch 1k samples erzeugt?
+2015-02-10 22:26:45,Jonathan,cat derp.wav > /snd0
+2015-02-10 22:26:46,Jonathan,*g*
+2015-02-10 22:27:06,Jonathan,"""""""Audioplayer"""""""
+2015-02-10 22:27:07,Svenska,ordentlicher anspruch
+2015-02-10 22:27:19,Svenska,86 KB/s konstanter durchsatz
+2015-02-10 22:27:29,Jonathan,Joa
+2015-02-10 22:27:31,Svenska,wobei
+2015-02-10 22:27:40,Svenska,mal acht.
+2015-02-10 22:27:49,Jonathan,Mal acht?
+2015-02-10 22:27:53,Svenska,ach quatsch
+2015-02-10 22:28:03,Jonathan,512 Bytes pro Interrupt pro Kanal
+2015-02-10 22:28:04,Svenska,vergiss das ;)
+2015-02-10 22:28:08,Jonathan,1k Bytes pro Interrupt
+2015-02-10 22:28:11,Svenska,ja
+2015-02-10 22:28:17,Jonathan,:D
+2015-02-10 22:28:48,Jonathan,"86kB/s... Könnte man vielleicht erreichen, wenn man mit fread immer sowas wie 16k-Blöcke liest"
+2015-02-10 22:28:49,Svenska,"nebenan flucht jemand, weil er code auf ner cpu ausfuehren soll, der mal fuer fpgas gebaut wurde"
+2015-02-10 22:28:58,Jonathan,lol *g*
+2015-02-10 22:29:02,darklink,^^
+2015-02-10 22:29:07,Svenska,"d.h. da sind 18 und 21 bit integer drin, _auf die sich der code verlässt_"
+2015-02-10 22:29:18,Jonathan,Haha :D
+2015-02-10 22:29:25,Jonathan,Wobei
+2015-02-10 22:29:30,Jonathan,Ich sollte eigentlich nicht lachen
+2015-02-10 22:29:33,Jonathan,Mein Code ist nicht besser *g*
+2015-02-10 22:29:41,Svenska,*g*
+2015-02-10 22:29:48,Jonathan,Pointer auf uint16_t casten
+2015-02-10 22:29:52,Jonathan,Fuck portability :D
+2015-02-10 22:30:44,Jonathan,"Ach, apropos"
+2015-02-10 22:30:45,Jonathan,Svenska: https://www.dropbox.com/s/iywmaaf8w7m6neb/Shell2.png?dl=0
+2015-02-10 22:31:10,Svenska,"ja, das hattest du mir schonmal gezeigt, beeindruckend"
+2015-02-10 22:31:13,Jonathan,:D
+2015-02-10 22:31:30,Jonathan,Inzwischen hab ich auch mein chdir() nochmal ganz neu gemacht und ordentlich implementiert
+2015-02-10 22:31:55,Jonathan,"D.h. er stolpert auch über sowas wie ""cd ./../rom0/.././rom0"" nicht mehr"
+2015-02-10 22:32:08,Jonathan,"Und löst alle Referenzen zu . und .. korrekt auf, egal wo sie vorkommen"
+2015-02-10 22:32:14,Svenska,"klingt eher nach ""ich hab . und .. gefixt"" ;)"
+2015-02-10 22:32:17,Jonathan,*g*
+2015-02-10 22:32:23,Svenska,"moment, dein chdir() löst die auf?"
+2015-02-10 22:32:25,Jonathan,Ja
+2015-02-10 22:32:35,Jonathan,Genauso fopen und opendir
+2015-02-10 22:32:42,Svenska,"ich dachte, sowas löst das vfs auf"
+2015-02-10 22:32:45,Jonathan,(Falls es sich um relative Pfade handelt)
+2015-02-10 22:33:00,Jonathan,"Ja, das VFS löst sie auf, und chdir() ist Teil vom VFS"
+2015-02-10 22:33:02,Svenska,". = pointer auf current object, .. = pointer auf upper object"
+2015-02-10 22:33:12,Jonathan,Genauer gesagt löst vfs_path_compose . und .. auf
+2015-02-10 22:33:25,Svenska,hmm hab ich wohl zuwenig ahnung von
+2015-02-10 22:33:33,Jonathan,Und vfs_path_compose wird immer zum Auflösen von relativen Pfaden genutzt.
+2015-02-10 22:33:48,Jonathan,"Und das tun chdir, fopen und opendir eben, wenn man ihnen relative Pfade gibt."
+2015-02-10 22:33:55,Svenska,"aber in inode-basierten systemen sind das ganz normale ordner, die auch gespeichert werden (oder irre ich da?)"
+2015-02-10 22:34:04,Jonathan,Weiß ich nicht
+2015-02-10 22:34:10,Svenska,"wäre lustig, wenn man "".."" löscht ;)"
+2015-02-10 22:34:22,Jonathan,"Laut POSIX müssen keine Einträge für . und .. exitieren, können aber."
+2015-02-10 22:34:30,Jonathan,In meinem System existieren sie nicht.
+2015-02-10 22:34:38,Jonathan,"Ist ja ""within spec"". ;)"
+2015-02-10 22:34:44,darklink,lol
+2015-02-10 22:34:50,darklink,"2,65 MB/s"
+2015-02-10 22:35:15,Svenska,ich hab grad meinen alten unirecher hier stehen... boah ist urandom langsam :(
+2015-02-10 22:35:20,Svenska,11 MB/s
+2015-02-10 22:35:34,Jonathan,:D
+2015-02-10 22:35:57,darklink,Beim snes ist der DMA-zugriff (1 channel) langsam
+2015-02-10 22:35:59,Svenska,der läuft seit 65min und hat 43 gb geschafft :/
+2015-02-10 22:36:06,darklink,"2,65 MB/s"
+2015-02-10 22:36:12,Jonathan,Wieso brauchst du 43GB Zufall?
+2015-02-10 22:36:18,Svenska,platte töten
+2015-02-10 22:36:25,Jonathan,Achso
+2015-02-10 22:36:32,Svenska,"die sektoren sterben zwar, aber um das teil wieder zurueckzugeben mag ich mich darauf nich verlassen :D"
+2015-02-10 22:36:46,Svenska,"war aber lustig, bei jedem boot hat der smartd gemeint, ""heute wieder +5"""
+2015-02-10 22:36:48,Jonathan,*g*
+2015-02-10 22:36:48,darklink,Kannst auch n starken magneten drüber halte 
+2015-02-10 22:36:56,darklink,Hat den selben effekt
+2015-02-10 22:36:59,Svenska,nope
+2015-02-10 22:37:06,Jonathan,^this
+2015-02-10 22:37:08,Svenska,_so_ einen starken magneten kriegst du nicht
+2015-02-10 22:37:17,Jonathan,Jap
+2015-02-10 22:37:28,darklink,oh
+2015-02-10 22:37:28,Svenska,"drauftreten (auf die platte) wuerde helfen, aber das darf ich wohl nicht"
+2015-02-10 22:37:34,max,"Svenska, ich dachte, wir hätten von Linus alle gelernt, dass das nicht der Einsatzzweck von urandom ist"
+2015-02-10 22:37:35,Jonathan,"Und wenn doch, wird die ganze Platter in eine Richtung magnetisiert"
+2015-02-10 22:37:44,Jonathan,$nsamitarbeiter kann das wieder rausrechnen
+2015-02-10 22:37:55,Svenska,"ne gute platte kann das auch rausrechnen, weil codierung und so"
+2015-02-10 22:38:02,Jonathan,Jo
+2015-02-10 22:38:04,Svenska,max: ist aber das einfachste... was denn sonst? zero?
+2015-02-10 22:38:19,Jonathan,cat
+2015-02-10 22:38:19,max,"Svenska, weiß nicht, aber seine Randomdaten woanders herbekommen"
+2015-02-10 22:38:30,Svenska,muss nicht klinisch rein sein die platte
+2015-02-10 22:38:31,Jonathan,cat+keyboard
+2015-02-10 22:38:40,darklink,Oder /dev/one
+2015-02-10 22:38:47,Svenska,Jonathan: cat+mouse? ;)
+2015-02-10 22:38:51,max,"Svenska, es geht darum, dass irgendwer, ich glaube Linus, mal klargestellt hat, dass man aus urandom nicht gigabyteweise Daten saugen sollte"
+2015-02-10 22:39:07,max,"Als das mal bei jemandem gecrasht ist, war die Antwort „Ja, da sollte man höchstens mal ein paar Kilobyte rausholen“"
+2015-02-10 22:39:10,Svenska,tja
+2015-02-10 22:39:11,Jonathan,cat /dev/realcat /dev/kbd > /dev/hda
+2015-02-10 22:39:13,Jonathan,*g*
+2015-02-10 22:39:35,Svenska,ich hol die daten da auch nur kilobyteweise raus (immer 1024 kilobyte auf einmal)
+2015-02-10 22:39:40,darklink,gib ma tty ausgabe ein
+2015-02-10 22:39:53,Jonathan,"So, bin müde"
+2015-02-10 22:39:55,Jonathan,Gute Nacht ;)
+2015-02-10 22:39:59,Svenska,ich hab das vorhin im laufenden debian gemacht
+2015-02-10 22:40:07,Svenska,"ging so lange gut, bis die shell ständig segfaulte"
+2015-02-10 22:40:19,Svenska,"dann hab ich nen arch-isntaller netgebootet, der kann das besser ;)"
+2015-02-10 22:40:23,darklink,xa
+2015-02-10 22:40:48,Svenska,btw: https://www.youtube.com/watch?v=Yja2VmZOfdA das ist schön
+2015-02-10 22:40:52,darklink,cat /dev/urandom > /dev/Svenska/tty1
+2015-02-10 22:41:21,Svenska,path not found
+2015-02-10 22:41:47,Svenska,"ich bin mir sicher, der zugfuehrer sieht _nix_"
+2015-02-10 22:43:18,darklink,Svenska was steht denn bei dir wenn du tty eingibst (in der shell)
+2015-02-10 22:43:30,Svenska, /dev/pts/0
+2015-02-10 22:43:40,Jidder,der zugführer sollte mal die scheibenheizung anmachen
+2015-02-10 22:43:45,darklink,cat /dev/urandom > /dev/pts/0
+2015-02-10 22:43:47,Jidder,dann wird er den schnee los
+2015-02-10 22:44:23,darklink,happy schriftglitching
+2015-02-10 22:45:08,Svenska,"ich wusste garnicht, dass es richtige schneepflugzuege gibt..."
+2015-02-10 22:45:14,Svenska,sehen ziemlich awesome aus
+2015-02-10 22:45:25,Jidder,müsstest mal ein schneeflugzeug sehen
+2015-02-10 22:45:40,Svenska,"kenn ich. nennt sich ""schippe"""

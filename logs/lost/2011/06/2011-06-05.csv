@@ -1,0 +1,469 @@
+date/time,nick,message
+2011-06-05 00:04:31,Jidder,heute ist gestern
+2011-06-05 00:21:54,ChristianH1,"Kennt sich hier jemand mit Netzwerkbrücken unter Ubuntu aus? Hab nun ein SurfStick an meinem PC, welcher die Verbindung über LAN an meinen Router geben soll und von dort aus eben zu den anderen PCs"
+2011-06-05 00:22:10,Svenska,nein
+2011-06-05 00:22:18,Svenska,"höchstens routing, aber nur rudimentär"
+2011-06-05 00:23:25,Jidder,ich würde versuchen einfach den pc an den WAN-Port vom router zu stecken
+2011-06-05 00:24:06,Svenska,und dann musst du noch vom surfstick auf das LAN vom PC (an WAN im router) ein NAT aufbauen
+2011-06-05 00:30:42,ChristianH,"Nur bei den ganzen Tutorials nehmen die immer irgendwelche Adressen, ohne zu erklären, was was bedeutet, ich weiß nun gar nicht, wo ich welche Adressen herbekomme und worein mit denen"
+2011-06-05 00:31:33,ChristianH,"(das muss man Windows lassen, Brücken bauen war dort leichter, zwei Netzwerke auswählen und klick.)"
+2011-06-05 00:32:43,Svenska,"du willst keine brücke, du willst ein NAT :D"
+2011-06-05 00:34:18,ChristianH,:D Meine ich doch
+2011-06-05 00:34:25,Svenska,also
+2011-06-05 00:34:54,Svenska,"""sudo ifconfig eth0 192.168.1.200/24"" - setzt eth0's adresse ins LAN"
+2011-06-05 00:35:30,Svenska,"""echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward >/dev/null"" aktiviert ip forwarding = NAT"
+2011-06-05 00:35:55,Svenska,"einmalig für diesen boot, ansonsten musst du das irgendwie in /etc/sysctl* eintragen, je nach distribution"
+2011-06-05 00:36:37,Svenska,"""sudo iptables -A POSTROUTING -t nat -o xxxx -j MASQUERADE"" aktiviert NAT für alle pakete, die über das netzwerkinterface xxxx hinausgehen (da trägst du deinen surfstick ein)"
+2011-06-05 00:37:03,Svenska,"was dann noch fehlt, ist eine automatische ip-adressvergabe per DHCP, du musst dem router also die wan-ip direkt vorgeben"
+2011-06-05 00:39:15,ChristianH,"Ok, mal sehen, wie ich das hinbekomme, in Sachen Netzwerken bekomme ich meist die Krise"
+2011-06-05 00:39:19,ChristianH,Danke auf jeden Fall
+2011-06-05 00:43:03,ChristianH,"Also mit Surfstick eintragen, den Netznamen ( O2 Pay-by-MB 1) oder das Gerät (ttyUSB3) ?"
+2011-06-05 00:43:34,Svenska,das netzwerkdevice...
+2011-06-05 00:43:37,Svenska,...das ist also keins
+2011-06-05 00:43:57,Svenska,ich nutz so'n dreck nicht ;-)
+2011-06-05 00:44:03,Svenska,wie funktioniert der krempel denn?
+2011-06-05 00:44:22,Svenska,"serielle verbindung, über die dann ppp gefahren wird? -> könnte ppp0 sein"
+2011-06-05 00:44:27,Svenska,"mach mal ""ifconfig -a"""
+2011-06-05 00:44:57,ChristianH,Hab da ne ppp0
+2011-06-05 00:45:05,Svenska,"okay, dann benutz das statt xxxx"
+2011-06-05 00:45:06,ChristianH,Punkt-zu-Punkt-Verbindung
+2011-06-05 00:45:29,ChristianH,iptables v1.4.10: can't initialize iptables table `ppp0': Table does not exist (do you need to insmod?)
+2011-06-05 00:45:30,ChristianH,Perhaps iptables or your kernel needs to be upgraded.
+2011-06-05 00:45:56,Svenska,?
+2011-06-05 00:46:06,Svenska,"""sudo iptables -A POSTROUTING -t nat -o xxxx -j MASQUERADE"""
+2011-06-05 00:46:11,Svenska,"die tabelle heißt ""nat"""
+2011-06-05 00:46:54,ChristianH,"So, sorry, falsch abgeschrieben"
+2011-06-05 00:48:14,ChristianH,Und nun muss ich beim Router noch den Standardserver für NAT einstellen?
+2011-06-05 00:48:53,Svenska,beim router trägst du als WAN IP-Adresse 192.168.1.x ein (x != 200)
+2011-06-05 00:48:58,Svenska,als Standardgateway 192.168.1.200
+2011-06-05 00:49:04,Svenska,und als Netzwerkmaske 255.255.255.0
+2011-06-05 00:49:13,Svenska,als DNS-Server 8.8.8.8 (oder den von deinem provider)
+2011-06-05 00:52:18,ChristianH,"Ok, das wird nun schwieriger, denn beim Speedport 701 findet man solche Einstellungen eher nicht"
+2011-06-05 00:52:33,Svenska,"ich hab nichtmal ne idee, ob der das überhaupt kann"
+2011-06-05 00:53:24,ChristianH,"Zumindest steht beim Router beim LAN1 Anschluss, WAN daneben und ich ließ ihn bisher auch als WAN vom anderen Router aus laufen"
+2011-06-05 00:53:41,ChristianH,Nur da wurde alle dynamisch gemacht
+2011-06-05 00:54:04,Svenska,-.-
+2011-06-05 00:54:10,Svenska,"ich kenne weder deinen router, noch dein netzwerk"
+2011-06-05 00:56:42,ChristianH,"Was ich mich nun frage, beim Gateway soll ich die IP Adresse angeben, die ich dem LAN eth1 ja zugewiesen haben, aber über die IP Gateway will ich doch meinen Router ansprechen?"
+2011-06-05 00:57:43,Svenska,hä?
+2011-06-05 00:58:13,Svenska,SurfStick --ppp0-- Rechner --eth0-- Router -----viele PCs
+2011-06-05 00:59:18,ChristianH,"Also, ich kann meinem Router ja eine IP verpassen, über die ich dann dessen Menu erreiche? So, diese nennt sich dort im menu IP Gateway. Nun schreibst du oben, dass es die gleiche Adresse ist, die ich mit dem Befehl sudo ifconfig eth0 192.168.1.200/24 konfiguriert hab"
+2011-06-05 00:59:40,Svenska,"ich weiß nicht, was dein router damit meint"
+2011-06-05 00:59:58,Svenska,"also, der router hat 2 IPs"
+2011-06-05 01:00:04,Svenska,eine fürs LAN und eine fürs WAN
+2011-06-05 01:00:16,Svenska,über die LAN-IP des routers kommst du auf dessen konfigurationsoberfläche
+2011-06-05 01:00:45,ChristianH,"Achso, gut, dann hat sich meine Frage geklärt"
+2011-06-05 01:01:05,Svenska,die WAN-IP des routers muss aus dem gleichen netz sein wie die LAN-IP des PCs
+2011-06-05 01:01:22,Svenska,und sie muss _aus einem anderen_ netzwerk kommen als die LAN-IP des Routers
+2011-06-05 01:04:06,ChristianH,Ok
+2011-06-05 01:45:30,JidderSport,Jidder has left the building
+2011-06-05 02:05:07,DesL,gn8
+2011-06-05 03:03:45,JidderSport,JidderSport has left the building
+2011-06-05 10:40:47,Lutoma,hi
+2011-06-05 10:47:01,DesL,moin
+2011-06-05 10:55:18,DesL,next step: proxy versuchen
+2011-06-05 11:09:08,DesL,Svenska: DNS geht :D
+2011-06-05 11:14:37,PNoob,Moin
+2011-06-05 11:14:55,SHyx0rmZ,Moin
+2011-06-05 11:15:01,DesL,moin SHyx0rmZ
+2011-06-05 11:18:35,PNoob,Moin SHyx0rmZ 
+2011-06-05 12:09:15,Paddy,Hi
+2011-06-05 12:09:35,DesL,moin Paddy
+2011-06-05 12:09:48,SHyx0rmZ,Moin Paddy
+2011-06-05 12:17:13,MrX,hi
+2011-06-05 12:17:58,MrX,"Hat jemand von euch eine Erklärung, warum dieser Fehler auftritt? Er entsteht beim Versuch, GCC zu kompilieren: http://codepad.org/2Q6NCISP"
+2011-06-05 12:18:01,DesL,"""Testing apr sources... 0% [Connection to ftp.de.debian.org (141.76.2.4)]"" Ist dooch blöd"
+2011-06-05 12:18:12,DesL,*apt
+2011-06-05 12:46:55,terra,Huhu
+2011-06-05 12:47:06,Paddy,Moin
+2011-06-05 12:54:55,DesL,sieht so aus als müste ich das repo so saugen und brennen -.-
+2011-06-05 12:54:58,terra,"Hat hier jemand Erfahrungen mit ATA Treiber und Bochs gemacht? Ich überprüfe die Identity Command Set Liste und egal welchen Befehl ich auf Verfügbarkeit prüfe, sie wird nicht unterstützt"
+2011-06-05 12:57:28,terra,Hier vielleicht mal ein Bild vom Quellcode und der Emulation (Funktionsnamen ignorieren :D): http://www0.xup.in/exec/ximg.php?fid=23126596
+2011-06-05 12:59:59,Paddy,"Hm, tyndur tut unter bochs, glaube ich"
+2011-06-05 13:00:20,Paddy,Also der CDI-ATA-Treiber
+2011-06-05 13:01:35,Paddy,"Ah, aber der prüft vielleicht nichts..."
+2011-06-05 13:02:07,terra,"Ja, ich prüfe auch nur weil ich voher schon ein paar Befehle geprüft habe, aber kommt immer n Abort vom Gerät"
+2011-06-05 13:02:31,terra,"Ich werd mir gleich mal die Treiber von Tyndur anschauen, vielleicht finde ich ja was hilfreiches "
+2011-06-05 13:04:16,Paddy,Er prüft die LBA-Modi und ob DMA geht mit IDENTIFY
+2011-06-05 13:04:24,Paddy,"Oder tut zumindest so. Keine Ahnung, ob das gut getestet ist. ;-)"
+2011-06-05 13:05:13,terra,Unter VMWare gibts wenigstens den Support für nen DMA Modi ^^
+2011-06-05 13:07:22,terra,Tatsächlich. Qemu supported READ BUFFER
+2011-06-05 13:07:33,Lutoma,Qemu \o/
+2011-06-05 13:11:33,Paddy,"Jo, hab grad im bochs-Code nachgeschaut. Was du prüfst, ist alles absichtlich nicht gesetzt"
+2011-06-05 13:11:46,terra,absichtlich?
+2011-06-05 13:12:02,Paddy,Also das gehört halt so
+2011-06-05 13:12:34,terra,"und wieso? Ich meine, irgendwie muss man die Daten doch bekommen und sich voher die Infos holen, wie das überhaupt passiert"
+2011-06-05 13:13:03,Paddy,Welche Daten?
+2011-06-05 13:13:40,terra,"Naja, ich gehe mal davon aus das man u.a. die Festplatte auch benutzen will ^^"
+2011-06-05 13:13:51,Lutoma,"ach, wieso sollte man das wollen"
+2011-06-05 13:13:54,Lutoma,überbewertet!
+2011-06-05 13:13:55,terra,:D
+2011-06-05 13:14:03,Paddy,"Na komm, jetzt hol mal nicht die ganz exotischen Anwendungsfälle raus *g*"
+2011-06-05 13:14:13,Paddy,Wie wär's mit einem ganz normalen READ?
+2011-06-05 13:14:15,Lutoma,"es hatte ja jemand mal die luste idee, statt RAM SSDs zu benutzen"
+2011-06-05 13:14:20,Lutoma,stelle ich mir auch lustig vor *g*
+2011-06-05 13:15:25,Paddy,terra: Der Code auf deinem Screenshot passt übrigens nicht zur bochs-Ausgabe
+2011-06-05 13:15:43,terra,Ich weiß 
+2011-06-05 13:15:56,Paddy,Dann ist ja gut..
+2011-06-05 13:16:15,Paddy,War das nur eine zusätzliche Hürde für uns? ;-)
+2011-06-05 13:16:16,terra,Der Code an sich mit den Abfragen ist der gleiche
+2011-06-05 13:16:52,terra,und READ SECTORS schlug ja mit Abort fehl ;)
+2011-06-05 13:19:00,Paddy,Dann würde ich da mal ansetzen ;-)
+2011-06-05 13:19:20,Paddy,"READ SECTORS ist schon das ganz dumme alte Read ohne irgendwas besonderes, oder?"
+2011-06-05 13:20:30,Paddy,"Oder du lässt das weg und machst gleich READ DMA, das sollte meistens auch klappen, wenn man es richtig macht..."
+2011-06-05 13:23:34,terra,"Also Lesen kann man per READ BUFFER unter QEmu jedenfalls schonmal, das ist ein Anfang"
+2011-06-05 13:25:21,DesL,"HTTP kommt meist auf 45MB/s, selten über 80KB/s, nie über 130 KB/s - aber filezilla saugt mal eben mit bis zu 2550 KB/s"
+2011-06-05 13:25:56,DesL,*250
+2011-06-05 13:26:12,Paddy,"Wirklich READ BUFFER? Eigentlich ist das gar nicht implementiert, glaube ich ;-)"
+2011-06-05 13:28:04,terra,"Kommt kein Abrt, kein Err, nix "
+2011-06-05 13:28:18,Paddy,Und keine Daten? *g*
+2011-06-05 13:31:22,Paddy,"Und eigentlich sagt qemu in IDENTIFY DEVICE auch nicht, dass es READ BUFFER kann. Sicher, dass du das richtige ausliest?"
+2011-06-05 13:34:04,Lutoma,*kotz*
+2011-06-05 13:34:08,Lutoma,Nun paging implementieren
+2011-06-05 13:34:24,Paddy,"Hey, es ist nur x86. Es geht noch wesentlich schlimmer."
+2011-06-05 13:35:52,terra,"Ja Paddy, sicher ;)"
+2011-06-05 13:37:52,SHyx0rmZ,Breakpoints in Qemu gehen nur per GDB?
+2011-06-05 13:39:20,Paddy,Oder wenn du einen Client für das GDB-Protokoll schreibst ;-)
+2011-06-05 13:39:39,SHyx0rmZ,"nutzt mir eh nichts, merk ich gerade"
+2011-06-05 13:39:51,SHyx0rmZ,"ich müsste irgendwie verhindern, dass bei nem Triple Fault ein Reset kommt"
+2011-06-05 13:42:11,Paddy,"Hm, ein CPU-Dump reicht dir nicht?"
+2011-06-05 13:42:40,SHyx0rmZ,"genau, ich brauch nen Memory-Dump"
+2011-06-05 13:42:46,SHyx0rmZ,obwohl der sich ja nicht ändern dürfte
+2011-06-05 13:43:15,Paddy,"Ich meine, ich hätte das schonmal probiert und das ganze -no-reboot-Zeug oder wie das hieß hat nichts gebracht"
+2011-06-05 13:43:43,SHyx0rmZ,mein Paging schmiert halt weg
+2011-06-05 13:43:51,SHyx0rmZ,was extrem komisch ist
+2011-06-05 13:44:03,Paddy,"Du könntest natürlich irgendwo in target-i386/ in den Triple-Fault-Code ein vmstop(0) reinbauen und hoffen, dass das dort erlaubt ist ;-)"
+2011-06-05 13:45:35,SHyx0rmZ,"ich guck lieber nochma, ob alle Werte in CRx stimmen"
+2011-06-05 13:46:29,Lutoma,hm
+2011-06-05 13:46:32,Lutoma,higher half kernel
+2011-06-05 13:48:45,Paddy,"SHyx0rmZ: Breakpoint auf den BIOS-Einsprungspunkt könnte es doch tun, oder?"
+2011-06-05 13:50:01,SHyx0rmZ,m(
+2011-06-05 13:50:05,SHyx0rmZ,ich bin so dumm
+2011-06-05 13:50:32,SHyx0rmZ,qemu vs qemu-system-x86_64
+2011-06-05 13:50:49,SHyx0rmZ,"naja, das erklärt aber den plötzlichen Fault auf echter HW nicht"
+2011-06-05 13:51:53,Paddy,hehe
+2011-06-05 13:52:11,Paddy,Ich würde dann mal in deinen Kernel einen Check einbauen ;-)
+2011-06-05 13:53:02,SHyx0rmZ,qemu auf qemu-system-x86_64 zeigen lassen reicht mir erst einmal D:
+2011-06-05 13:55:46,Paddy,Damit es dich auf dem nächsten Rechner wieder erwischt? ;-)
+2011-06-05 13:55:59,SHyx0rmZ,hm...
+2011-06-05 13:56:09,SHyx0rmZ,ich will aber grad kein ASM schreiben :D
+2011-06-05 13:57:22,SHyx0rmZ,"meh, böser Paddy"
+2011-06-05 13:57:26,Lutoma,"*kopfkratz* ist es wirklich so viel sinnvoller, seinen kernel ans obere ende des rams zu stecken?"
+2011-06-05 13:58:08,DesL,ich denke nicht
+2011-06-05 13:58:46,DesL,du hast ja die adresse statisch in der binary
+2011-06-05 13:58:54,SHyx0rmZ,"oha, da fehlt ja glatt ein Highlight für TODO und FIXME in asm.vim D:"
+2011-06-05 13:58:57,DesL,"und nach ""oben"" zu linken wäre bei wenig ram doof"
+2011-06-05 13:59:09,Lutoma,"hm, in dem einen thread hier im osdev-forum schreiben sie, dass man das umbedingt!!1111!!!!!!11einself tun muss(!!)"
+2011-06-05 14:00:30,DesL,Oo
+2011-06-05 14:00:40,DesL,und was machst du wenn du nur wenig RAM hast?
+2011-06-05 14:03:51,SHyx0rmZ,welchen dazukaufen
+2011-06-05 14:04:09,Lutoma,keine ahnung 
+2011-06-05 14:04:13,Lutoma,ich bin ja nicht die ;)
+2011-06-05 14:40:21,DesL,"Adresse: 192.168.0.23, ""ping 192.168.0.37"" geht, ""ping www.google.de"" resolved (192.168.0.37 ist der DNS), dann kommt aber ""Network is unreachable (74.125.230.80)"""
+2011-06-05 14:51:56,Svenska,dann fehlt die route dorthin = standardgateway
+2011-06-05 14:52:39,DesL,verushce ich dem grade beizubringen
+2011-06-05 14:52:42,Svenska,"der DNS-Server liegt im lokalen Netzwerk, ist also mit der lokalen Route (192.168.0.x via ""direkt"") erreichbar"
+2011-06-05 14:52:59,Svenska,route add -net 0.0.0.0 gateway 192.168.0.1
+2011-06-05 14:53:12,Svenska,"statt 0.0.0.0 kannst du auch ""default"" schreiben"
+2011-06-05 14:54:33,DesL,"""route add -net 0.0.0.0 gateway 192.168.0.37"" -> ""SIOADDRT: network is unreachable"""
+2011-06-05 14:55:13,Svenska,oh
+2011-06-05 14:55:23,Svenska,"deine routingtabelle ist komplett kaputt, da fehlt die route zum gateway :)"
+2011-06-05 14:55:37,DesL,ARG
+2011-06-05 14:55:49,DesL,jetzt hat sich grade wieder die IP von eth0 verstellt
+2011-06-05 14:55:57,Svenska,im hintergrund läuft der dhcp-client
+2011-06-05 14:56:08,Svenska,der arbeitet
+2011-06-05 14:56:18,Svenska,"mach eine zweite shell mit ""tail -f /var/log/syslog"" auf"
+2011-06-05 14:56:21,Svenska,"und schaue, was dort passiert"
+2011-06-05 14:57:31,DesL,wären ich was mache?
+2011-06-05 14:57:56,Svenska,nichts
+2011-06-05 14:58:07,Svenska,"einfach so, um zu sehen, ob da irgendwas komische dinge tut"
+2011-06-05 14:58:13,Svenska,evtl laufen ZWEI dhcp-clients im hintergrund
+2011-06-05 14:58:30,Svenska,im zweifelsfall starte den rechner einfach neu (und habe eine startdiskette zur hand)
+2011-06-05 14:58:33,DesL,ich sehe im moment gar kein dhcp
+2011-06-05 14:58:40,Svenska,ps -e
+2011-06-05 14:58:41,DesL,habe ich ja grade
+2011-06-05 14:59:32,Lutoma,im zweifelsfall einfach killall -9 dhclient killall -9 dhcpd *hust*
+2011-06-05 15:00:22,Svenska,"und ""killall -9 dhcpcd"" und ""killall -9 pump"""
+2011-06-05 15:01:35,Lutoma,killall -9 init!
+2011-06-05 15:01:53,Svenska,nö
+2011-06-05 15:02:14,Lutoma,faszinierend
+2011-06-05 15:02:23,Lutoma,"wenn ich jetzt paging anschalte, freezet er das system einfach"
+2011-06-05 15:02:27,Lutoma,ohne kernel panic
+2011-06-05 15:02:45,Lutoma,"oder es gibt doch ne kernel panic, aber alles ist so kaputt, dass er das nicht mehr ausgeben kann *g*"
+2011-06-05 15:49:43,DesL,debian ping: 0.8ms - DOS ping: <10ms :D
+2011-06-05 15:58:00,Svenska,dos hat nur 18.2 ms/tick :D
+2011-06-05 16:08:34,DesL,wieso resetten sich bei mir nach einem neustart alle einstellungen?
+2011-06-05 16:08:45,Svenska,weil sie nicht rebootfest sind?
+2011-06-05 16:08:54,DesL,:/
+2011-06-05 16:08:55,Svenska,debian speichert die netzwerkkonfiguration in /etc/network/interfaces
+2011-06-05 16:09:44,PNoob,"kennt hier jemand ein Programm, womit man rtmp Streams wiedergeben kann?"
+2011-06-05 16:09:53,Svenska,rtmpdump | mplayer -
+2011-06-05 16:10:05,XanClic,mplayer selbst
+2011-06-05 16:10:13,Svenska,"ich glaub, der kann kein rtmp"
+2011-06-05 16:10:19,XanClic,"Wenn man es richtig konfiguriert, schon"
+2011-06-05 16:10:20,Svenska,garantiert kann er kein rtmps
+2011-06-05 16:10:22,Svenska,:)
+2011-06-05 16:10:35,XanClic,"Oder alternativ, wenn die Distribution einen richtig konfigurierten anbietet"
+2011-06-05 16:10:42,Svenska,hm
+2011-06-05 16:10:48,Svenska,okay :-)
+2011-06-05 16:10:51,Svenska,bin frühstücken.
+2011-06-05 16:11:15,DesL,D:
+2011-06-05 16:14:14,DesL,"ich habe die /etc/lilo.conf editiert, muss ich noch was machen damit die cfg übernommen wird?"
+2011-06-05 16:17:52,Paddy,lilo laufen lassen
+2011-06-05 16:18:01,Paddy,Aber wieso in aller Welt heutzutage noch Lilo?
+2011-06-05 16:18:19,DesL,weil Debian 3.0
+2011-06-05 16:19:09,Paddy,"Hm, okay. Damals war das ja noch Default."
+2011-06-05 16:19:18,Paddy,Ich hab damals aber schon GRUB benutzt.
+2011-06-05 16:19:28,DesL,Kommt vlt noch
+2011-06-05 16:19:38,Paddy,Hattest du nicht eh schon einen GRUB installiert?
+2011-06-05 16:19:54,Paddy,Dann lass doch beim Installer einfach keinen neuen Bootloader installieren und mach den neuen Eintrag selber
+2011-06-05 16:20:32,DesL,...
+2011-06-05 17:24:57,DerGewitterMut,Hello
+2011-06-05 17:25:22,DesL,"Hello, DerGewitterMut"
+2011-06-05 17:25:33,DerGewitterMut,PADDY
+2011-06-05 17:25:33,Paddy,Hi DerGewitterMut
+2011-06-05 17:31:33,PNoob,Moin DerGewitterMut 
+2011-06-05 17:31:44,PNoob,DerGewitterMut: bei euch ist das Gewitter also schon angekommen?
+2011-06-05 17:31:57,DerGewitterMut,Ja chon seit dieser Nacht
+2011-06-05 18:58:01,redeagle,hi
+2011-06-05 18:58:23,DerGewitterMut,RAGE QUIT
+2011-06-05 19:14:06,DoBi,"hallo. ich würde gerne eine dokumentation zu meinem projekt erstellen. so in der art wie mit doxygen. nur leider habe ich in meinem projekt php, html, css und javascript dateien. mit doxygen geht das nicht oder? kennt jemand eine alternative?"
+2011-06-05 19:15:58,DesL,http://de.wikipedia.org/wiki/Doxygen#Unterst.C3.BCtzte_Programmiersprachen
+2011-06-05 19:16:16,DesL,http://de.wikipedia.org/wiki/PhpDocumentor
+2011-06-05 19:16:43,DesL,"http://de.wikipedia.org/wiki/Natural_Docs << das kann alle deine, ausser CSS"
+2011-06-05 19:17:37,DoBi,sehr geil :D dankeschön werde ich mir erstmal angucken. css ist jetzt auch nicht soo wichtig
+2011-06-05 19:24:19,stultus,Muss man an nem css denn auch großartig dokumentieren?
+2011-06-05 19:24:34,stultus,"Imho sollte ne Zeile davor da stehen damit man weiß wofür die Definition verwendet wird, aber ansonsten?"
+2011-06-05 19:28:08,DoBi,stultus: nein css ist eig unwichtig. hauptsächlich geht es um php und html und javascript zusammen. hatte bis jetzt immer nur welche mit einem von denen gefunden. 
+2011-06-05 19:28:21,DoBi,bin dann wieder weg. nochmal danke. bis dann
+2011-06-05 20:25:44,ErikV,Guten Abend
+2011-06-05 20:25:55,Svenska,namd
+2011-06-05 20:27:47,ErikV,wisst Ihr was ich immer falsch mache?   euIRC hatte mich vorhin noch gebannt und aus osdev.org werde ich ignoriert   ich schätze mein Charma ist derzeit beschädigt  :(
+2011-06-05 20:28:50,DesL,könnte an deinem Karme liegen
+2011-06-05 20:28:50,PNoob,Moin ErikV 
+2011-06-05 20:29:22,ErikV,DesL: und wie behebe ich dieses Problem?
+2011-06-05 20:29:47,Svenska,"hmm, karma ist immer so ne sache"
+2011-06-05 20:29:56,Svenska,warum wurdest du gebannt?
+2011-06-05 20:30:08,Svenska,"und warum wirst du ignoriert? (oder ist einfach keiner da, der antworten will)"
+2011-06-05 20:31:50,ErikV,"das mit euIRC kann ich mir nicht erklären aber jetzt geht es ja wieder wie mal lesen kann,  das ich auf osdev.org ignoriert werde verstehe ich auch nicht so ganz, vielleicht war irgend einer meiner schlecht ins englische übersetzen Sätze unhöflich o.ä."
+2011-06-05 20:32:09,Svenska,hm
+2011-06-05 20:32:14,Svenska,ich bin bei denen nicht
+2011-06-05 20:32:24,Svenska,"aber wahrscheinlich ist es das beste, gras drüber wachsen zu lassen"
+2011-06-05 20:32:35,Svenska,"und darauf zu hoffen, dass kein esel vorbeikommt und es wieder abfrisst :-/"
+2011-06-05 20:32:35,ErikV,oder das Thema auf osdev.org ist zu emotional als das man da mit jemanden wie mir reden möchte
+2011-06-05 20:32:41,DesL,die original englischen sind meisten viel schlimmer :D
+2011-06-05 20:35:58,ErikV,"naja, eigentlich bin ich es ja gewohnt das man beim Thema Segmentierung erst mit inhaltsloser Ablehnung und dann (nachdem sich deren Argumente in Luft aufgelöst haben) eher mit Ignoranz reagiert,  so is der Mensch eben, wenn es etwas neues gibt bei dem man ja umdenken müsste dann kommt da ganz schnell der Mantel des Schweigens drüber  :("
+2011-06-05 20:36:17,Svenska,"ähm, würd ich nicht so sehen"
+2011-06-05 20:36:35,Svenska,"das ist aus _deiner_ sicht so, dass sich deren argumente in luft aufgelöst haben"
+2011-06-05 20:36:50,Svenska,von der anderen seite betrachtet klingt das vllt. wie arroganz
+2011-06-05 20:36:57,DesL,ErikV: vieleicht bist du einfach zu performant geworden....
+2011-06-05 20:38:03,ErikV,"ja, das kenn ich schon aus meiner Jugend, ich schaff es ab und an recht schnell die Leute vor den Kopf zu stoßen ohne das ich das überhaupt merke oder gar beabsichtige"
+2011-06-05 20:38:14,ErikV,"daran muss ich unbedingt mal arbeiten, nur wie??"
+2011-06-05 20:38:28,DesL,an weniger performance?
+2011-06-05 20:38:29,Svenska,"mh, ich halt mich meist eher zurück"
+2011-06-05 20:38:41,Svenska,"bringt zwar nix positives, aber weniger ärger"
+2011-06-05 20:39:21,ErikV,"ich bin da eher der leidenschaftlichere Typ, wenn ich hinter einer Sache stehe dann kämpfe ich auch dafür"
+2011-06-05 20:39:34,Svenska,und stößt die leute vor den kopf. prima :D
+2011-06-05 20:39:46,ErikV,das hat mir in meinem Leben schon so manches mal was gebracht aber eben nicht immer
+2011-06-05 20:40:01,Svenska,wie ist eigentlich der stand deiner cpu?
+2011-06-05 20:40:42,ErikV,wie weit kann die schon sein wenn ich gestern erst das Entwicklungsboard ausgepackt habe?  ;)
+2011-06-05 20:40:54,Svenska,hm. das ist natürlich ein argument.
+2011-06-05 20:41:19,ErikV,"ich werde auf dem Teil erst mal ein paar Basics in betrieb nehmen müssen, sowas wie den Memory-Controller für das SO-DIMM"
+2011-06-05 20:41:36,Svenska,"http://chaosradio.ccc.de/cre179.html << das kann ich definitiv empfehlen, wenn du mal 2-3h zeit hast für audio"
+2011-06-05 20:41:38,ErikV,damit ich überhaupt eine Basis hab auf der ich arbeiten kann
+2011-06-05 20:41:49,Svenska,wird dich wahrscheinlich interessieren ;)
+2011-06-05 20:42:59,ErikV,"klingt interessant aber momentan hab ich für solche Themen eher weniger Zeit, trotzdem Danke für den Hinweis"
+2011-06-05 20:43:52,Svenska,kannst dir ja mal die ersten 20sek anhören :D
+2011-06-05 20:44:45,ErikV,"aber bei meiner CPU fehlt noch ein wichtiger Konzeptioneller Teil, das dekodierte Befehlsformat, da muss ich auf jeden Fall noch ein paar Tage investieren bevor ich mich dann an den zugehörigen VHDL-Code mache"
+2011-06-05 21:05:56,Svenska,was meinst du mit dekodiertem befehlsformat?
+2011-06-05 21:06:09,Svenska,die assembler-mnemonics? ^^
+2011-06-05 21:16:48,stultus,Eher böses Bitpacking auseinandernehmen
+2011-06-05 21:16:59,stultus,mnemonics sind für vhdl etwas zu hoch *g*
+2011-06-05 21:17:03,stultus,(grausame sprache find ich)
+2011-06-05 21:22:21,Svenska,da stimme ich zu
+2011-06-05 21:30:13,Svenska,"wobei ich bezweifle, dass verilog besser ist."
+2011-06-05 21:35:55,PNoob,Man so macht das livestream gucken kein Spaß
+2011-06-05 21:36:23,PNoob,Ich muss alle 10 Minuten den Stream wechseln
+2011-06-05 21:36:35,Svenska,"""No Intel Outside"": http://ulihansen.kicks-ass.net/lblued.htm << vor jahren mal gefunden"
+2011-06-05 21:39:18,PNoob,"kennt jemand von euch einen Rock am Ring Livestream, der nicht ständig zusammenbricht"
+2011-06-05 21:41:55,bluecode_,"hm, ich glaube mein Warten auf einen gcc-Release bei dem die Zeit, die es braucht gcc selbst zu bauen, nicht mindestens verdoppelt wird, ist vergebens"
+2011-06-05 21:56:28,DerHartmut,Hey ho Pihpels of the Channel
+2011-06-05 21:59:17,DerHartmut,Was gehtn hia so abb??ß
+2011-06-05 22:03:01,bluecode_,da sickescht sheet
+2011-06-05 22:04:06,bluecode_,eva
+2011-06-05 22:24:01,cjuner,"Svenska, verilog ist soweit ich höre wesentlich einfacher und prägnanter als vhdl"
+2011-06-05 22:24:18,Svenska,"hm, ich hab nur mal vhdl gesehen"
+2011-06-05 22:24:25,Svenska,bzw. rumgespielt an der uni
+2011-06-05 22:26:08,PNoob,wtf?
+2011-06-05 22:26:30,PNoob,Firefox zieht grad 2GB RAM und 50% CPU Leistung
+2011-06-05 22:26:36,PNoob,mibbit ist fast unbenutzbar
+2011-06-05 22:26:44,DerHartmut,Ist doch nichts neues
+2011-06-05 22:26:58,DerHartmut,Und wieso kein lokaler Client?
+2011-06-05 22:28:02,PNoob,weil ich unter Windoof eigentlich keinen brauche
+2011-06-05 22:28:53,PNoob,mibbit ist aber nicht am Firefox amok lauf schuld
+2011-06-05 22:33:19,PNoob,so jetzt ist der Speicherverbrauch wieder auf 700MB gesunken und die CPU Auslastung von Firefox auf 8% gesunken
+2011-06-05 22:33:24,PNoob,das ist etwas normaler
+2011-06-05 22:33:41,PNoob,wobei ich nicht weiß wofür Firefox 700MB  Speicher braucht
+2011-06-05 22:34:28,Darkchaos,PNoob: Das ist bei mir auch nocrmal
+2011-06-05 22:34:31,taljeth,"Naja, der hat da halt ein switch (url) { case ""http://forum.lowlevel.eu"": return ""<html>...</html>""; ... }"
+2011-06-05 22:34:40,Darkchaos,ca 1GB Ram Firefox und 1GB plugin_container.exe
+2011-06-05 22:34:40,taljeth,Und das ganze Internet nimmt gut mal 700 MB Speicher weg
+2011-06-05 22:34:46,Darkchaos,;P
+2011-06-05 22:35:07,PNoo1,so prozesse killen geht zum Glück auch unter Windoof
+2011-06-05 22:35:26,PNoo1,Darkchaos: plugin container hatt ebei mir nichtmal 2MB Ram genommen
+2011-06-05 22:35:38,DerHartmut,*lol* taljeth 
+2011-06-05 22:36:18,PNoo1,taljeth: Du vergisst grad das Firefox nicht von mir programmiert wurde
+2011-06-05 22:36:53,PNoo1,"wenn ich Firefox programmiert hätte, wäre es heute der unbeliebteste Browser der welt und der Unsicherste"
+2011-06-05 22:37:24,taljeth,Unterschätz mir MS mal nicht
+2011-06-05 22:40:38,PNoo1,was hat MS jetzt damit zu tun?
+2011-06-05 22:41:08,PNoo1,"oder meinst du etwa das wenn ich einen Webbrowser programmiert hätte, dieser sicherer und beliebter sei als der IE?"
+2011-06-05 22:41:13,DerHartmut,Da hat aber wer wenig Selbstbewustsein
+2011-06-05 22:42:02,ErikV,"Svenska: sorry das ich vorhin einfach so verschwunden bin, hatte mal wieder einen NMI zu behandeln,    stultus hatte recht es geht um das zerlegen der gepackten OpCodes in einheitliche Strukturen die dann von den verschiedenen Verarbeitungsstufen verarbeitet werden"
+2011-06-05 22:43:58,PNoo1,Mist. ich bekomm den Livestream von swr3 nicht mit streamstransport angezeigt und bekomme deswegen auch nicht die rtmp adresse. wie soll ich den jetzt aufnehmen :/
+2011-06-05 22:44:07,Darkchaos,PNoo1: Unsicher? wenn nur dein Code ausgeführt wird :D
+2011-06-05 22:44:30,PNoo1,Darkchaos: js?
+2011-06-05 22:45:11,PNoo1,"achne wenn die Seiten hardcodet sind, kann sich da ja nichts schlimmes einschleichen"
+2011-06-05 22:58:34,DesL,PNoo1: magst du deinen nick nicht richtig schreiben? danke
+2011-06-05 23:00:05,taljeth,"ErikV: Was ist denn los, gar keine neue Posts im Segmentierungsthread auf osdev.org?"
+2011-06-05 23:00:33,taljeth,Hast du sie alle verscheucht? ;-)
+2011-06-05 23:01:26,ErikV,hab ich das?
+2011-06-05 23:01:36,ErikV,ist irgendwie traurig
+2011-06-05 23:02:04,ErikV,liegt das an mir?
+2011-06-05 23:02:23,DesL,"zu perfomant geworden, definitiv"
+2011-06-05 23:02:53,ErikV,DesL: kannst Du das Bitte etwas konkreter formulieren
+2011-06-05 23:03:04,taljeth,Segmentierung ist halt scary ;-)
+2011-06-05 23:03:19,ErikV,DesL: meinst Du meinen letzten Satz?
+2011-06-05 23:03:26,DesL,neee
+2011-06-05 23:03:35,DesL,ist auch wurscht
+2011-06-05 23:03:51,ErikV,"taljeth: ja, und es ist schwierig _dafür_ Partei zu ergreifen"
+2011-06-05 23:04:31,taljeth,"Ich frage mich ja, ob ich jemals noch dazu komme, ein OS mit Segmentierung zu bauen"
+2011-06-05 23:05:14,taljeth,"Also Paging + Segmentierung, aber das haben wir ja schon ein paarmal besprochen"
+2011-06-05 23:05:24,ErikV,auf welcher CPU denn?  es sind doch keine mehr verfügbar die das noch ordentlich können (deswegen muss ich ja selber eine bauen)
+2011-06-05 23:05:25,taljeth,Mit flachem Userspace
+2011-06-05 23:05:29,taljeth,i386 natürlich
+2011-06-05 23:05:54,ErikV,"achso Deine Kombie, hm naja ist ne Überlegung wert"
+2011-06-05 23:06:15,taljeth,"Ich frag mich halt, ob das für einen Mikrokernel nicht was bringt"
+2011-06-05 23:06:20,taljeth,Wäre auf jeden Fall interessant auszuprobieren
+2011-06-05 23:07:17,ErikV,falls Du die Threads zwischen FlashBurn und mir wegen dem IPC verfolgt hast solltest Du eigentlich wissen das das schon was bringen müsste
+2011-06-05 23:07:45,Lutoma,[x] neue domain
+2011-06-05 23:08:34,taljeth,Ich habe die Threads teilweise verfolgt
+2011-06-05 23:08:37,PNoo1,ErikV: kannst du mir mal den Link zu dem segmentierungsthread geben
+2011-06-05 23:08:41,taljeth,Für komplettes Lesen -ENOTIME ;-)
+2011-06-05 23:09:05,PNoo1,"DesL: Ich schreibe meinen Nick so wie ich es möchte bzw, wie ich es eben mal eben musste. und es lohnt sich jetzt nichtmehr denn noch zu ändern"
+2011-06-05 23:09:22,ErikV,PNoo1: Du meinst auf osdev.org  ?
+2011-06-05 23:09:37,PNoo1,jo
+2011-06-05 23:09:56,taljeth,"Ich frage mich ja immer, wie gut der Thread für Leser ohne Deutschkenntnisse verständlich ist ;-)"
+2011-06-05 23:10:27,ErikV,PNoo1:  http://forum.osdev.org/viewtopic.php?f=15&t=23645
+2011-06-05 23:10:49,DesL,m( ignore kann ja auch wildcards
+2011-06-05 23:10:58,ErikV,"taljeth: ja, das kommt bei mir als Problem noch hinzu"
+2011-06-05 23:13:21,PNoo1,Erik: dein Englisch sieht garnicht mal so kaputt aus. 
+2011-06-05 23:13:42,PNoo1,Du willst nicht mein Englsich sehen
+2011-06-05 23:13:48,taljeth,*lol*
+2011-06-05 23:14:55,taljeth,"ErikV: Also bei diesen Thread ist mir vor allem aufgefallen, dass man dich mal auf become != bekommen hinweisen sollte ;-)"
+2011-06-05 23:15:13,ErikV,"naja, is mit google-übersetzer usw zusammengebastelt, ich finde jemand der den ganzen Tag mit so viel englisch zu tun hat wie ich sollte das besser können"
+2011-06-05 23:15:21,DesL,"ich sage doch, erik ist zu performant"
+2011-06-05 23:16:05,taljeth,"Hm, den Kontext wusste ich auswendig nicht mehr ;-)"
+2011-06-05 23:16:10,ErikV,"DesL: präzisiere das doch Bitte mal etwas,  ich will mich doch mal weiter entwicheln"
+2011-06-05 23:16:16,taljeth,"DesL: ""you can switch off the paging and become a higher performance"" meinst du, oder?"
+2011-06-05 23:16:26,DesL,jo
+2011-06-05 23:16:38,taljeth,"ErikV: Auf deutsch heißt das ""Du kannst das Paging ausschalten und eine höhere Leistung werden"""
+2011-06-05 23:16:45,DesL,steht nochmal an zweiter stelle iwo
+2011-06-05 23:17:34,taljeth,Also s/become/get/
+2011-06-05 23:18:21,ErikV,"okay, versuch ich mir zu merken"
+2011-06-05 23:18:43,ErikV,noch was anderes außer meinem miesen englisch?
+2011-06-05 23:19:28,DerHartmut,"Die Frage, warum du so schlecht Englisch kannst ;-)"
+2011-06-05 23:19:41,XanClic,Ich kann auch schlecht Russisch :3
+2011-06-05 23:20:47,DesL,"hm, ich habe mal drei jahre russich gelernt, aber ich könnte heute wahrscheinlich nciht mal brötchen beim bäcker kaufen :D"
+2011-06-05 23:21:03,ErikV,"eine Sprache ist für mich nur ein Träger, ich hab mich immer für die eigentliche Information interessiert und dabei die Sprachen eher vernachlässigt,  ich vermute wenn ich jeden Tag in englisch kommunizieren müsste würde ich das auch besser können aber ich nur nur englisch lesen sonst fast nichts"
+2011-06-05 23:21:08,taljeth,"DesL: Gab es nicht ""Butterbrot"" als Fremdwort im Russischen?"
+2011-06-05 23:21:25,XanClic,Das ist aber kein Brötchen
+2011-06-05 23:21:31,CounterPillow,Es ist ein Sandwich
+2011-06-05 23:21:33,DerHartmut,Brötchen schmecken gut
+2011-06-05 23:21:42,CounterPillow,Buttabrot = Sandwich!
+2011-06-05 23:21:44,ErikV,mein Russisch ist noch schlechter als mein Englisch
+2011-06-05 23:22:03,DesL,:D
+2011-06-05 23:22:07,taljeth,"ErikV: Ja, ich versuche darüber hinwegzusehen, wo es geht. Aber sobald es halt anfängt, keinen Sinn mehr zu machen, wird es mit der Kommunikation schwierig"
+2011-06-05 23:22:10,XanClic,"Dann nehm ich halt Farsi, wenn ihr alle so ein bisschen Russisch könnt :-P"
+2011-06-05 23:22:42,XanClic,"Und jetzt sagt mir nicht, dass ihr euch die letzten vier Jahre darauf vorbereitet habt, in Teheran Brötchen zu kaufen"
+2011-06-05 23:22:54,DesL,"schade das ""leet"" kein sprache, sondern ein kodierung ist..."
+2011-06-05 23:23:02,DesL,aber etwas klingonisch kann ich aufbieten :D
+2011-06-05 23:23:22,ErikV,DesL: wo ist der Unterschied zwischen einer Sprache und einer Kodierung?
+2011-06-05 23:23:47,DesL,"sprache: andere syntax, andere semantik, kodierung: syntax & grammtik gleich, nur andere zeichen"
+2011-06-05 23:24:11,XanClic,Wieso andere Semantik? :3
+2011-06-05 23:24:22,DesL,grammatik?
+2011-06-05 23:24:28,DesL,äh
+2011-06-05 23:24:31,XanClic,"Ich glaube, ich kann „Ich habe hunger“ semantisch relativ äquivalent auf Englisch ausdrücken"
+2011-06-05 23:24:38,XanClic,"Hm, Hunger even"
+2011-06-05 23:24:40,DesL,aber nicht im tibetanischen
+2011-06-05 23:24:40,DerHartmut,I have hunger
+2011-06-05 23:24:51,XanClic,wimre war Englisch eine andere Sprache
+2011-06-05 23:24:57,XanClic,Sonst würden wir die Diskussion jetzt gar nicht führen :-P
+2011-06-05 23:25:02,DesL,"koreanisch z.b. kann z.t. durch chinesische schriftzeichen dargestellt werden, ist aber immer noch koreanisch, nicht chinesisch"
+2011-06-05 23:25:05,taljeth,"XanClic: Und wie sieht es mit ""Jein, ich habe ja eh keinen Hunger"" aus? *g*"
+2011-06-05 23:25:14,XanClic,"Doch, ich habe Hunger, taljeth"
+2011-06-05 23:25:25,taljeth,"""Doch"" ist auch ein guter Ansatz ;-)"
+2011-06-05 23:25:28,XanClic,eben ;-)
+2011-06-05 23:26:01,taljeth,Bei solchen Sachen fällt mir das mit der semantisch äquivalenten englischen Entsprechung schon schwer...
+2011-06-05 23:26:47,taljeth,Oder sei es sowas banales wie du gegenüber Sie
+2011-06-05 23:26:48,XanClic,"Na ja, aber Sprachen als unterschiedlich zu definieren, weil ich einige Sachen nur in der einen aussagen kann, finde ich nicht so richtig"
+2011-06-05 23:27:11,taljeth,Und fang jetzt nicht mit thou an *g*
+2011-06-05 23:27:15,DesL,:D
+2011-06-05 23:27:35,XanClic,"Keine Angst, ich hätte jetzt erstmal mit Französisch angefangen, damit du mir keine Beispiele liefern kannst *g*"
+2011-06-05 23:29:43,ErikV,taljeth: hab ich noch andere Fehler begangen außer meinem schlechten englisch?
+2011-06-05 23:30:08,DesL,"abgesehen davon, die diskusion solangsam nichtmal aufzugeben?"
+2011-06-05 23:30:49,DerHartmut,"Ja, osdev.org"
+2011-06-05 23:30:53,DerHartmut,Weil die sind alle arrogant
+2011-06-05 23:31:07,ErikV,DesL: welche Diskussion meinst Du?
+2011-06-05 23:34:03,taljeth,"ErikV: Inhaltlich ist mir nichts aufgefallen. Außer halt, dass man die Argumente langsam auswendig kennt. ;-)"
+2011-06-05 23:35:35,ErikV,wessen Argumente?   meine sollten auf osdev.org ja noch relativ neu sein
+2011-06-05 23:35:58,ErikV,das Du die kannst ist ja wohl klar
+2011-06-05 23:36:09,taljeth,Eben
+2011-06-05 23:37:48,ErikV,"also lass ich doch einfach Gras über die Sache wachsen und probiere es irgendwann noch einmal, jetzt wo ich endlich Hardware habe werde ich mich eh etwas mehr um die Umsetzung kümmern anstatt drüber zu diskutieren"
+2011-06-05 23:38:12,DerHartmut,Taten
+2011-06-05 23:38:20,DerHartmut,Auf Worte folgen Taten
+2011-06-05 23:38:51,ErikV,"und geschrieben hab ich die letzten 2 Jahre auf lowlevel wirklich genug, oder?"
+2011-06-05 23:38:59,Svenska,DerHartmut: und auf taten folgen worte...
+2011-06-05 23:39:18,taljeth,"ErikV: Das soll doch nicht heißen, dass du in Zukunft nichts mehr schreiben willst?"
+2011-06-05 23:39:26,DerHartmut,"Auf die wieder Taten folgen, welche wieder Worten folgen"
+2011-06-05 23:39:29,DerHartmut,WO SOLL DAS HINFÜHREN
+2011-06-05 23:39:34,Svenska,na in den kreis?
+2011-06-05 23:39:39,DerHartmut,NEIN Svenska 
+2011-06-05 23:39:58,DerHartmut,In einer unendlichen Linie
+2011-06-05 23:40:00,XanClic,Es ist eine Ellipse
+2011-06-05 23:40:02,XanClic,Eindeutig
+2011-06-05 23:40:07,DerHartmut,NEIN
+2011-06-05 23:40:09,DerHartmut,Es ist eine Eclipse
+2011-06-05 23:40:12,ErikV,taljeth: was würdest Du denn vorschlagen?
+2011-06-05 23:40:20,DesL,kreis < elipse
+2011-06-05 23:42:08,taljeth,"ErikV: Ach, ich finde, die elendslangen Thread zwischen dir, FlashBurn und Svenska gehören einfach mittlerweile dazu. Die können wir doch nicht einfach abschaffen. ;-)"
+2011-06-05 23:43:25,DerHartmut,Denn ErikV schafft sogar ein kleines Thema mit seinen Worten zu befüllen
+2011-06-05 23:43:54,DesL,respektive seiner performance
+2011-06-05 23:44:17,ErikV,"jaja, aber die drehen sich fast immer über die selben Themen, ich weiß schon gar nicht mehr wie oft ich mit FlashBurn über den SLAB-Allocator oder IPC diskutiert hab und einige dieser Diskussionen (die oft kein richtiges Ergebnis haben) füllen bereits die ""Top 10 Threads"", das gibt mir ein wenig zu denken"
+2011-06-05 23:45:09,DesL,^^
+2011-06-05 23:45:30,ErikV,"DerHartmut: ich beleuchte eine Sache eben aus möglichst vielen Blickwinkeln, das ist eine meiner besten (und meist gehassten) Eigenschaften"
+2011-06-05 23:45:56,ErikV,"DesL: bitte präzisiere ""Performance"""
+2011-06-05 23:46:12,DesL,"dein wortlaut, immernoch"
+2011-06-05 23:46:25,ErikV,hä
+2011-06-05 23:48:41,taljeth,Er ist vor einer halben Stunde hängen geblieben und macht sich immer noch über dein Englisch lustig
+2011-06-05 23:49:02,DesL,"öhm, jo, also nein"
+2011-06-05 23:49:13,DesL,"egal, afk, Hausaufgaben"
+2011-06-05 23:49:39,taljeth,Ich pack's auch
+2011-06-05 23:49:39,ErikV,"DesL: ne, also das erklärst Du mir jetzt Bitte schon noch"
+2011-06-05 23:49:40,taljeth,gn8
+2011-06-05 23:49:47,XanClic,"gn8, taljeth"
+2011-06-05 23:49:48,ErikV,by taljeth
+2011-06-05 23:49:55,DesL,ErikV: hat taljeth doch schon
+2011-06-05 23:49:57,DesL,b
+2011-06-05 23:49:59,XanClic,"ErikV: [23:16:52] <taljeth> ErikV: Auf deutsch heißt das ""Du kannst das Paging ausschalten und eine höhere Leistung werden"""
+2011-06-05 23:50:02,Svenska,gn8
+2011-06-05 23:50:24,ErikV,"aha, stimmt das DesL?"
+2011-06-05 23:50:33,ErikV,by Svenska
+2011-06-05 23:51:04,DesL,"nee, taljeth trollt nur"
+2011-06-05 23:51:21,ErikV,"na dann, bis irgendwann einmal"
+2011-06-05 23:53:03,Svenska,hm
+2011-06-05 23:53:10,Svenska,"kaum ist mein besuch weg, sind taljeth und erik auch weg."
+2011-06-05 23:53:21,Svenska,http://live.lmgtfy.com/ << auch sehr schön
+2011-06-05 23:53:35,DesL,teh sadSvenska is sad
+2011-06-05 23:54:49,Svenska,naja
+2011-06-05 23:54:53,Svenska,"bisschen, schon."
+2011-06-05 23:56:55,DerHartmut,bd

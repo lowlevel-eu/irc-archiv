@@ -1,0 +1,179 @@
+date/time,nick,message
+2010-04-03 00:20:02,JanDing,gn8
+2010-04-03 00:24:20,taljeth,gn8
+2010-04-03 00:46:38,taljeth,gn8
+2010-04-03 09:25:45,chris12,moin
+2010-04-03 10:06:20,taljeth,Moin
+2010-04-03 10:49:01,FreakyPenguin,Moin
+2010-04-03 10:49:07,XanClic,Moin
+2010-04-03 10:50:51,taljeth,"Moin FreakyPenguin, XanClic"
+2010-04-03 10:51:42,taljeth,"FreakyPenguin: Weißt du zufällig, warum stat mit LIOv2 kaputt ist, oder muss ich das debuggen?"
+2010-04-03 10:53:13,FreakyPenguin,Weisst du was in etwa kaputt ist? ;-)
+2010-04-03 10:54:22,taljeth,lio_stat gibt -1 zurück ;-)
+2010-04-03 10:54:59,taljeth,"Was, wenn ich es richtig sehe, eigentlich heißen müsste, dass die Datei nicht offen ist. Und das macht nicht so richtig Sinn. Es ergibt nichtmal welchen."
+2010-04-03 10:56:25,FreakyPenguin,Hm also das lio_stat ist kaputt oder das libc stat?
+2010-04-03 10:56:34,FreakyPenguin,Ersteres ist doch eigentlich relativ einfach
+2010-04-03 10:56:58,taljeth,"Das libc-stat, das aber indirekt das lio_stat aufruft"
+2010-04-03 10:57:37,taljeth,fseek mit SEEK_END braucht ja das Dateiende und macht dazu ein lio_stat
+2010-04-03 10:58:46,FreakyPenguin,Hm das würde man vielleicht eh besser sauber machen... ;-)
+2010-04-03 10:59:16,taljeth,Das sollte trotzdem kein -1 zurückgeben
+2010-04-03 10:59:20,FreakyPenguin,"Aber nein, da fällt mir nichts offensichtlich kaputtes ein, glaube ich"
+2010-04-03 10:59:45,taljeth,"Und mit ""sauber"" meinst du, dass stat direkt zu lio_stat geht?"
+2010-04-03 11:03:19,FreakyPenguin,Jo dann müsste man doch auch sowas wie lstat funktionierend bauen können
+2010-04-03 11:04:22,FreakyPenguin,"Und irgendwann auch fstat ohne den Pfad abzuspeichern, vielleicht. *g*"
+2010-04-03 11:12:20,taljeth,"Naja, das sind Detailprobleme, die man angehen kann, wenn es kein LIOv1 mehr gibt ;-)"
+2010-04-03 11:18:22,taljeth,"Hm, jetzt hab ich was kaputtgemacht. Mit einem kprintf :-/"
+2010-04-03 11:20:13,taljeth,Ah... Wir brauchen wirklich endlich die Formatstringwarnungen ;-)
+2010-04-03 11:20:22,FreakyPenguin,*g*
+2010-04-03 11:20:52,FreakyPenguin,Ohne -Werror müsste das doch eine sache von einer Zeile sein? ;-)
+2010-04-03 11:21:28,taljeth,Jo ;-)
+2010-04-03 11:22:03,taljeth,"Die Frage ist nur, welche. Und deswegen war ich bisher zu faul *g*"
+2010-04-03 11:23:39,FreakyPenguin,"Ich glaube sowas wie __attribute__((format(x, y)) oder so ;-)"
+2010-04-03 11:23:58,FreakyPenguin,"Oder format(printf, x, y) könnte auch sein ;-)"
+2010-04-03 11:24:33,FreakyPenguin,"Ich könnte jetzt natürlich bei meinem kprintf nachsehen, aber das wäre ja langweilig ;-)"
+2010-04-03 11:25:20,taljeth,"Stimmt, du könntest stattdessen lieber den Userspaace-Teil fixen ;-)"
+2010-04-03 11:27:05,taljeth,"Hm, der Userspace sagt ""Mach mal lio_stat für Ressource 8"" und der Kernel antwortet ""15003300a0? Kenn ich nicht."""
+2010-04-03 11:27:49,FreakyPenguin,Hat da der gcc mal wieder die Finger drin? *>*
+2010-04-03 11:28:07,taljeth,Also lio_stat scheint memory zu clobbern
+2010-04-03 11:29:06,taljeth,"Der Kernel ist auch doof, der hat da nämlich einen Formatstring, der nicht zu den Parametern passt *g*"
+2010-04-03 11:29:17,taljeth,Ich sollte heute nicht mehr programmieren
+2010-04-03 11:35:16,taljeth,"Ah, es wäre nützlich, wenn sich libc und Kernel über die Aufrufkonvention einig wären"
+2010-04-03 11:37:18,taljeth,"Yay, tutet!"
+2010-04-03 11:41:47,taljeth,"So, die alleroffensichtlichstes Kaputtheiten dürfte ich jetzt gefixt haben. Was steht als nächstes an?"
+2010-04-03 11:45:40,FreakyPenguin,Hm vielleicht mal ein vernünftiger Userspace-Server?
+2010-04-03 11:46:22,taljeth,Tut denn der testusp oder wie er heißt vernünfig?
+2010-04-03 11:46:31,taljeth,Ich habe bisher nur den tmp im Kernel gefixt
+2010-04-03 11:46:41,taljeth,Und halt clientseitig in der libc
+2010-04-03 11:48:24,taljeth,Mist... Dieses Formatstringzeug meckert jetzt unsere ganzen %x statt %p an...
+2010-04-03 11:49:07,FreakyPenguin,*g*
+2010-04-03 11:49:13,FreakyPenguin,Das meinte ich ;-)
+2010-04-03 11:51:17,taljeth,"Hm, sind gar nicht so viele"
+2010-04-03 11:53:11,taljeth,"Okay, gepusht. Jetzt erstmal frühstücken. Du kannst ja solange den Userspace fixen. ;-)"
+2010-04-03 11:55:25,FreakyPenguin,Guten Hunger
+2010-04-03 12:35:03,taljeth,"FreakyPenguin: Was machst du grad kaputt, damit wir nicht Konflikte produzieren?"
+2010-04-03 12:35:45,bluecode,moin
+2010-04-03 12:35:53,XanClic,"Moin, bluecode"
+2010-04-03 12:36:28,taljeth,Moin bluecode
+2010-04-03 12:36:39,JanDing,moin moin
+2010-04-03 12:36:44,taljeth,Moin JanDing
+2010-04-03 12:37:02,bluecode,"nett, jetzt führt FlashBurn fast exakt die gleiche Diskussion mit erik *g*"
+2010-04-03 12:41:30,taljeth,"FreakyPenguin: Gibt es irgendeinen Grund, dass usptest:/b nicht seekable ist?"
+2010-04-03 13:00:34,bluecode,Was ist denn mit POSIX die beste Art zu überprüfen ob eine Datei existiert? stat?
+2010-04-03 13:00:42,XanClic,"Hm, vielleicht access"
+2010-04-03 13:00:59,FreakyPenguin,taljeth: Ich musste erstmal meine nicht eingecheckten Änderungen durchsehen.
+2010-04-03 13:01:08,FreakyPenguin,Was soll ich denn machen? ;-)
+2010-04-03 13:01:39,XanClic,Also access mit F_OK
+2010-04-03 13:01:43,bluecode,"klingt gut XanClic, thx"
+2010-04-03 13:01:50,bluecode,jo
+2010-04-03 13:03:21,bluecode,"hm, bei F_OK ist natürlich vom Namen her sofort klar was es tut..."
+2010-04-03 13:04:14,FreakyPenguin,Sonst wärs ja kein Posix ;-)
+2010-04-03 13:04:57,bluecode,eben
+2010-04-03 13:06:33,taljeth,FreakyPenguin: LIOv2 in einen mergebaren Zustand bringen *g*
+2010-04-03 13:06:47,FreakyPenguin,Sonst noch was? ;-)
+2010-04-03 13:07:04,taljeth,"Äh, ja, wenn du grad dabei bist, wäre amd64 und SMP noch schön ;-)"
+2010-04-03 13:07:30,ehenkes,mal ne frage zu FPU: nutzt ihr fsave (mit fwait) oder fnsave (ohne fwait)?
+2010-04-03 13:07:44,taljeth,"Weder noch, unser Kernel kann nicht mit der FPU umgehen"
+2010-04-03 13:08:00,ehenkes,"taljeth: danke für die Unterstützung gestern, FPU läuft kalsse"
+2010-04-03 13:08:00,taljeth,"Was eigentlich eine Schande ist, nachdem wir jetzt bald ein Jahr lang eine libm ist..."
+2010-04-03 13:08:07,taljeth,-ist +haben
+2010-04-03 13:08:34,ehenkes,ich dachte tyndur macht FPU?
+2010-04-03 13:08:48,ehenkes,wer verwendet denn die FPU?
+2010-04-03 13:08:52,taljeth,"Hm, eigentlich braucht man die FPU nicht oft"
+2010-04-03 13:09:04,ehenkes,seltsam
+2010-04-03 13:09:14,taljeth,"Es gibt wahrscheinlich schon das eine oder andere Programm, dass sie benutzt, das geht halt kaputt, wenn ein zweites Programm gleichzeitig will"
+2010-04-03 13:09:15,bluecode,und im Kernel schon gleich garnicht :-)
+2010-04-03 13:09:26,ehenkes,"ja, aber die user"
+2010-04-03 13:09:33,bluecode,"jo, das schon"
+2010-04-03 13:09:38,taljeth,"Jo, im Kernel wird sowieso keine FPU benutzt"
+2010-04-03 13:10:07,ehenkes,bei robotern habe ich es nur für die messung der batteriespannung verwendet ;-)
+2010-04-03 13:10:25,ehenkes,das float
+2010-04-03 13:10:26,taljeth,"Ja, aber unsere Programme steuern momentan eher selten Roboter ;-)"
+2010-04-03 13:10:56,taljeth,"Klar gibt es Anwendungsfälle für die FPU, sonst würde sie ja nicht existieren. Aber sie sie momentan nicht wirklich relevant."
+2010-04-03 13:11:04,ehenkes,"ich suche nur jemand, mit dem ich mich über paraktisches handling der FPU austauschen kann"
+2010-04-03 13:11:19,ehenkes,XanClic hat das auch nicht
+2010-04-03 13:11:52,taljeth,"Unser ""FPU-Spezialist"" ist im Moment nicht da ;-)"
+2010-04-03 13:11:59,ehenkes,wer istd as?
+2010-04-03 13:12:16,taljeth,"Oder vermutlich eher ""FPU-Spezialist wider Willen"" *g*"
+2010-04-03 13:12:46,bluecode,ehenkes: du kannst dir mal http://repo.or.cz/w/lightOS.git/blob/HEAD:/kernel/x86_shared/processor.cpp#l266 anschauen
+2010-04-03 13:13:12,ehenkes,sogar mit fxsave
+2010-04-03 13:13:19,taljeth,"ehenkes: Zu was genau brauchst du denn Unterstützung? Das Multitasking sollte ja jetzt bei euch tun, oder?"
+2010-04-03 13:13:28,ehenkes,geht astrein
+2010-04-03 13:13:47,ehenkes,"ich wollte nur wissen, ob man sinnvoll fsave oder fnsave einsetzt"
+2010-04-03 13:13:57,ehenkes,letzteres wartet nicht
+2010-04-03 13:14:23,taljeth,"FreakyPenguin: Ich würde mal vorschlagen, als nächstes mal ein paar Operationen mehr im Userspace zu implementieren. So Sachen wie make_file."
+2010-04-03 13:14:41,ehenkes,bei dem Link von bluecode wird fsave eingesetzt
+2010-04-03 13:15:11,ehenkes,dann werden wir das auch machen
+2010-04-03 13:15:14,ehenkes,thx
+2010-04-03 13:22:59,FreakyPenguin,taljeth: Na dann... ;-)
+2010-04-03 13:24:11,taljeth,Wie habe ich das zu verstehen? ;-)
+2010-04-03 13:24:29,FreakyPenguin,Ich glaube das kriege ich hin ;-)
+2010-04-03 13:25:24,bluecode,make_file? Wer kam denn auf den Namen?
+2010-04-03 13:26:23,taljeth,"Ich glaube, FreakyPenguin"
+2010-04-03 13:26:34,taljeth,Aber sicher bin ich mir nicht mehr
+2010-04-03 13:26:50,bluecode,das soll aber schon eine Datei erstellen oder wie?
+2010-04-03 13:27:41,taljeth,Jo
+2010-04-03 13:29:20,FreakyPenguin,bluecode: Sagt doch der Name? *g*
+2010-04-03 14:39:27,Homix,"habt ihr bei tyndur schon irgendwelche tests bei syscalls drin, dass der übergebene speicherbereich auch existiert und kein pagefault daraus entsteht?"
+2010-04-03 14:39:55,XanClic,"Hm, soweit ich weiß, hat nichtmal Linux sowas"
+2010-04-03 14:40:08,FreakyPenguin,"Homix: Hatten wir bei kernel jo, bei kernel2 fehlt das noch"
+2010-04-03 14:40:29,FreakyPenguin,"XanClic: Linux handelt dafür die Pagefaults vernünftig, oder? ;-)"
+2010-04-03 14:40:34,XanClic,Jo ;-)
+2010-04-03 14:40:48,XanClic,Find ich persönlich einfacher *g*
+2010-04-03 14:40:53,FreakyPenguin,Ich glaube das ist die Aufwändigere Variante
+2010-04-03 14:41:01,FreakyPenguin,Also zum Umsetzen
+2010-04-03 14:41:09,taljeth2,"Linux hat dafür Funktionen, soweit ich weiß"
+2010-04-03 14:41:09,XanClic,Hm
+2010-04-03 14:41:12,Homix,"und wie macht das linux? bei mir ists so, dass pagefaults im kernel generell bluescreens werden und pagefaults im userspace halt ein programmabbruch provozieren"
+2010-04-03 14:41:14,taljeth2,copy_from_user oder sowas
+2010-04-03 14:41:24,Homix,hm ist dann aber wohl langsamer
+2010-04-03 14:41:31,XanClic,Linux killt glaub ich in jedem Fall das Programm
+2010-04-03 14:41:37,FreakyPenguin,Öhm sicher?
+2010-04-03 14:41:44,taljeth2,"Nein, das gibt einen EFAULT"
+2010-04-03 14:41:47,XanClic,"Wenn das Speicherbereich vom Programm kam, wird es einfach so per Segfault gekillt"
+2010-04-03 14:41:49,XanClic,"Hm, ok"
+2010-04-03 14:42:13,XanClic,"*der Speicherbereich, außerdem *g*"
+2010-04-03 14:42:43,taljeth2,Und copy_from_user scheint sogar der richtige Name zu sein
+2010-04-03 14:42:45,Homix,"im grunde will ich schon, dass ich merke, wenn ein pagefault vom kernel verursacht wird, aber ich will auch nicht alles rumkopieren"
+2010-04-03 14:43:40,taljeth2,"Naja, das merkt man dann, wenn es rot wird g*"
+2010-04-03 14:44:29,FreakyPenguin,"In meinem Kernel mache ich das ja anders, da gibts nur etwa ein syscall der einen PF verursachen könnte, und das ist IPC, da muss ich eh ein resolve machen zum kopieren vom Quellprozess ;-)"
+2010-04-03 14:44:30,Homix,ich will aber einen unterschied sehen wenn der kernel einen bug hat oder wenn das programm einen bug hat
+2010-04-03 14:45:05,taljeth2,"Jo, das ist das cs im CPU-Dump ;-)"
+2010-04-03 14:45:30,Homix,?
+2010-04-03 14:46:09,Homix,"ich meinte wenn man dem syscall eine ungültige virtuelle adresse gibt, dann geschieht der pagefault im kernel, wenn der syscall auf den speicher zugreifen will, da bringt mir das cs auch nix"
+2010-04-03 14:46:14,taljeth2,"Da siehst du, ob gerade der Kernel oder der Userspace abgeschmiert ist"
+2010-04-03 14:46:28,taljeth2,"Jo, klar"
+2010-04-03 14:46:47,XanClic,Wozu gibts denn objdump ;-)
+2010-04-03 14:46:48,taljeth2,Entweder du nimmst das copy_from_user von Linux oder das is_userspace von tyndur
+2010-04-03 14:46:56,taljeth2,"Letzteres ist anfälliger dafür, dass man es vergisst"
+2010-04-03 14:47:18,Homix,letzteres brauch ich eh in kombination mit einer BlockMemoryRegion Funktion
+2010-04-03 14:48:00,Homix,v.a. weil ich ja SMP unterstützen will
+2010-04-03 14:51:33,taljeth2,Was soll diese Funktion machen?
+2010-04-03 14:53:15,Homix,"folgendes szenario: ein Thread ruft readFile(buffer) auf und während im kernel der syscall den buffer füllt, ruft ein anderer thread FreeMem(Buffer) auf ... deshalb muss der Buffer-Speicherbereich kurze Zeit vor einem Freigeben blockiert werden"
+2010-04-03 14:56:00,taljeth2,"Normal würde ich ja vorschlagen, den Speicherbereich bei sowas einfach referenzzuzählen ;-)"
+2010-04-03 15:14:12,Homix,wie meinen?
+2010-04-03 15:14:57,Homix,für jede page einen referenzzähler? das find ich nicht so gut
+2010-04-03 16:18:17,taljeth2,FreakyPenguin: Wie soll eigentlich file:/ mit LIOv2 funktionieren? Weiterhin reine Textersetzung oder irgendein Konzept wie Mountpoints ordentlich integrieren (also auf Resourcenbasis)?
+2010-04-03 16:27:12,FreakyPenguin,Gute Frage ;-)
+2010-04-03 19:24:38,taljeth,rádýr
+2010-04-03 19:24:47,taljeth,FreakyPenguin: Eigentlich hatte ich eher eine gute Antwort erwartet ;-)
+2010-04-03 19:25:59,XanClic,krónhjörtur
+2010-04-03 19:26:23,taljeth,"Huch, hast du da auch ein Makro dafür? *g*"
+2010-04-03 19:26:32,XanClic,"Nein, aber ein Wiktionary *g*"
+2010-04-03 19:26:54,XanClic,"Hm, könnte man mit Konversation gleich mal machen..."
+2010-04-03 19:27:11,taljeth,"Hm, also soviel Isländisch kann ich noch ohne Hilfe von Konversation ;-)"
+2010-04-03 20:25:20,JanDing,ich kann nicht mal konversation auf nicht-isländisch
+2010-04-03 20:50:02,JanDing,"hm sobald ich sqlite am laufen habe, werde ich eine JSON-anbindung bauen"
+2010-04-03 20:50:35,JanDing,"aber da muss ich mir dann auch noch ausdenken, wofür ich das brauche"
+2010-04-03 21:22:02,bluecode,"yay, das internet ist wieder online"
+2010-04-03 21:22:09,FreakyPenguin,;-)
+2010-04-03 21:22:51,FreakyPenguin,Der JanDing hatte bestimmt den Stecker gezogen
+2010-04-03 21:23:10,chris12,moin
+2010-04-03 21:23:37,chris12,"ihr kennt doch bestimmt notepad++, oder?"
+2010-04-03 21:26:35,JanDing,"joar musste das regal verrücken, weil mir was dahinter gefallen ist"
+2010-04-03 21:26:44,JanDing,und dafür musste ich den stecker rausziehen
+2010-04-03 21:53:48,chris12,"könnt ihr mir sagen, warum bei diesem stück asm code -65532 rauskommt, obwohl eigentlich 4 rauskommen sollte? http://nopaste.info/af25b344d7.html"
+2010-04-03 21:58:41,JanDing,WRITEDEZ ist für 32 bit zahlen geschrieben?
+2010-04-03 21:58:56,JanDing,und in eax[31..16] oder dx ist 0xffff
+2010-04-03 22:02:28,chris12,"Writedez ist für 16, das ganze ist erstmal nur 16 bit code"
+2010-04-03 22:31:53,JanDing,hm ansonsten fällt mir nur fehlbedienung von imul ein
+2010-04-03 22:41:13,chris12,muss ich nochmal schauen

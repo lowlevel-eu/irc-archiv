@@ -1,0 +1,599 @@
+date/time,nick,message
+2017-06-14 12:21:22,MasterQ32,moin
+2017-06-14 12:30:08,kevin,Moin
+2017-06-14 12:30:23,MasterQ32,"ich glaub, ich muss dich gleich mal nerven :D"
+2017-06-14 12:30:30,MasterQ32,geht um lbuild
+2017-06-14 12:42:35,MasterQ32,"ich bau grade auf XanClics maumau auf, um nen eigenes paket zu basteln"
+2017-06-14 12:46:39,MasterQ32,"ich bin jetzt soweit, dass mein source durchbaut und ""lbuild build"" ist successfull"
+2017-06-14 12:47:05,MasterQ32,wie installier ich das jetzt nochmal in meinen root-local ordner?
+2017-06-14 12:47:15,XanClic,ich kopier ja immer die Binary rüber
+2017-06-14 12:49:25,kevin,Beim Entwickeln mach ich das auch so
+2017-06-14 12:50:16,MasterQ32,wohin muss ich die dann kopieren?
+2017-06-14 12:50:36,kevin,Nach build/root-local
+2017-06-14 12:50:36,MasterQ32,/apps/myfoo ?
+2017-06-14 12:51:11,kevin,"Ansonsten ""build/scripts/lpt_install.sh package.tar build/root/"" um das Paket sauber zu installieren"
+2017-06-14 12:51:46,kevin,"Aber dazu musst du halt erstmal das Paket fertigbauen, was ich beim Basteln nicht so gern mache (ich bastle ja innerhalb von lbuild.sh fix)"
+2017-06-14 12:52:22,kevin,"MasterQ32: file:/apps ist in $PATH, von daher kann build/root-local/apps natürlich auch sinnvoll sein"
+2017-06-14 12:52:39,kevin,"Aber am Anfang ist man ja eh in file:/, von daher werfe ich meistens einfach alles ins Rootverzeichnis"
+2017-06-14 12:55:23,MasterQ32,https://puu.sh/wjHFN/f3848a7e9c.png  sieht doch schon mal nach was aus!
+2017-06-14 12:57:53,MasterQ32,"kann ich irgendwie das image updaten, ohne jedes mal den kernel neu zu bauen?"
+2017-06-14 13:01:44,MasterQ32,$ ./build/scripts/image_hd_syslinux && ./run.sh
+2017-06-14 13:01:45,MasterQ32,bin ich damit versorgt?
+2017-06-14 13:26:01,kevin,"Jo, sollte reichen"
+2017-06-14 13:26:22,MasterQ32,ich bin mal dreist und begehe übelste lizenzverletzungen :D
+2017-06-14 13:26:33,XanClic,lokal ist das doch meist ok
+2017-06-14 13:26:34,kevin,"Ich habe immer build/scripts/updateroot && build/scripts/image_hd_syslinux, aber das brauchst du nur, wenn du Code in tyndur.git neu gebaut hast"
+2017-06-14 13:26:49,MasterQ32,"ja, hab ich ja erst mal nicht vor"
+2017-06-14 13:27:09,kevin,Welche Lizenz verletzt du denn? ;-)
+2017-06-14 13:27:18,kevin,*Lizenzbestimmung
+2017-06-14 13:27:39,MasterQ32,"naja, ich hab grade von ""pong"" die pong.c genommen"
+2017-06-14 13:27:45,MasterQ32,und einfach mal hart ausgeschlachtet :D
+2017-06-14 13:28:26,MasterQ32,"für den fall, dass ich das veröffentliche, würde zum beispiel die lizenzbestimmung oben fehlen"
+2017-06-14 13:29:22,MasterQ32,"warum ist in dem programm eine zeile ""stdout = 0;"" drin?"
+2017-06-14 13:30:42,kevin,"Die tyndur-libc benutzt einen Kernel-Syscall für printf, wenn stdout == NULL ist, der dann wiederum auch auf die serielle Konsole schreibt"
+2017-06-14 13:30:47,kevin,In anderen Worten: Debugging-Artefakt
+2017-06-14 13:30:53,MasterQ32,"ah, okay"
+2017-06-14 14:38:35,MasterQ32,"okay, ich habe jetzt ein ""bild"""
+2017-06-14 14:42:04,MasterQ32,"drei fragen: welche möglichkeiten für input maus(1) bzw. tastatur(2) habe ich? wie tut RPC, gibt es da ein kurzes beispiel? "
+2017-06-14 15:01:16,kevin,Tastatur geht entweder durch vterm (gibt dir UTF-8) oder direkt von keyboard (gibt dir Keycodes)
+2017-06-14 15:01:23,kevin,Maus holt man sich direkt vom Treiber
+2017-06-14 15:02:53,kevin,Für direkt vom Treiber holen kannst du bei der SDL-Implementierung abschreiben: http://git.tyndur.org/?p=lbuilds.git;a=blob;f=lbuilds/sdl/1.2.14/patches/tyndur-video.patch
+2017-06-14 15:06:34,MasterQ32,oder ich nehm gleich SDL
+2017-06-14 15:14:01,MasterQ32,hmm
+2017-06-14 15:14:05,MasterQ32,wie binde ich ne andere library ein? :D
+2017-06-14 15:15:47,kevin,"Schau dir andere lbuilds an, die eine Abhängigkeit haben"
+2017-06-14 15:15:57,kevin,"Das ist eine Variable, die in der .lbuild gesetzt wird"
+2017-06-14 15:16:17,kevin,Dann kriegst du das andere Paket in die Buildumgebung entpackt
+2017-06-14 15:16:30,MasterQ32,"BUILD_DEPEND=""=sdl-1.2.14"" ?"
+2017-06-14 15:16:36,kevin,"Sieht gut aus, ja"
+2017-06-14 15:17:52,MasterQ32,src_unpack() {
+2017-06-14 15:17:52,MasterQ32,	cp -r /home/felix/projects/tyn/qui/* .
+2017-06-14 15:17:52,MasterQ32,}
+2017-06-14 15:17:55,MasterQ32,ist das so irgendwie sinnvoll=
+2017-06-14 15:18:05,MasterQ32,*?
+2017-06-14 15:18:26,kevin,"Naja, für dich lokal tut das wohl. Beim Rest von uns eher nicht. ;-)"
+2017-06-14 15:18:31,MasterQ32,das is klar :D
+2017-06-14 15:18:44,MasterQ32,aber für die ersten schritte sollte das ja so laufen
+2017-06-14 15:18:48,kevin,Jo
+2017-06-14 15:19:08,kevin,Aber ich würde an deiner Stelle ja gleich ein git clone statt cp -r machen
+2017-06-14 15:19:22,MasterQ32,"ja, aber dann müsste ich ja nen commit vor build machen :D"
+2017-06-14 15:19:29,kevin,Stimmt auch wieder
+2017-06-14 15:19:37,MasterQ32,die git-clone-zeile ist drüber
+2017-06-14 15:19:40,MasterQ32,aber auskommentiert
+2017-06-14 15:24:35,kevin,:-)
+2017-06-14 15:28:02,MasterQ32,"hm, mist"
+2017-06-14 15:28:07,MasterQ32,Failed to initialize SDL: No available video device
+2017-06-14 15:35:08,kevin,Huch?
+2017-06-14 15:35:55,kevin,"Versuchst du einen komischen Videomodus zu bekommen, oder eine komische Grafikkarte zu benutzen?"
+2017-06-14 15:36:19,kevin,"(Letzteres könnte vor allem Cirrus in qemu sein, weil die nur 24-Bit-Modi kann)"
+2017-06-14 15:36:48,MasterQ32,SDL_Init(SDL_VIDEO) schlägt schon fehl
+2017-06-14 15:38:10,kevin,Läuft vesa?
+2017-06-14 15:38:15,MasterQ32,"""sdl-config"" schlägt auch mit ""befehl wurde nicht gefunden"" fehl"
+2017-06-14 15:38:20,MasterQ32,"ja, wenn ich libvideo nutze, gehts"
+2017-06-14 15:39:15,kevin,Also TYNDUR_VideoInit in SDL kann keinen Fehler zurückgeben
+2017-06-14 15:39:35,MasterQ32,"ich glaube, das wird grade nicht mal aufgerufen"
+2017-06-14 15:39:40,kevin,TYNDUR_CreateDevice() kann schiefgehen
+2017-06-14 15:40:37,kevin,"Aber nicht unter normal Umständen, wie ich das shee"
+2017-06-14 15:41:00,kevin,Tun denn andere SDL-Programme bei dir?
+2017-06-14 15:41:33,kevin,sdl-image hat z.B. showimage dabei
+2017-06-14 15:44:26,MasterQ32,"okay, zlib ist gebaut, libpng baut"
+2017-06-14 15:50:10,MasterQ32,nope das showimage hat den selben fehler
+2017-06-14 15:54:01,kevin,Ist das mit qemu?
+2017-06-14 15:54:29,MasterQ32,ja
+2017-06-14 15:54:35,kevin,Du kannst noch ein anderes -vga probieren vielleicht
+2017-06-14 15:54:40,kevin,Aber normal tut das alles :-/
+2017-06-14 15:55:06,kevin,"Erstmal afk, wird Zeit für Mittagessen"
+2017-06-14 15:55:08,MasterQ32,n guten!
+2017-06-14 16:14:49,kevin,Danke und re
+2017-06-14 16:16:33,MasterQ32,wb
+2017-06-14 16:39:40,kevin,"MasterQ32: Hast du mal versucht, Debugcode in SDL einzubauen, um das Problem zu finden?"
+2017-06-14 16:39:58,MasterQ32,"ne, bin ich grade zu faul :P"
+2017-06-14 16:45:51,kevin,Nimmst lieber direkt libvideo oder wie?
+2017-06-14 16:47:16,MasterQ32,ich probiers jetzt nochmal
+2017-06-14 16:50:41,MasterQ32,oh
+2017-06-14 16:50:44,MasterQ32,  if (TYNDUR_init_events() < 0) {
+2017-06-14 16:50:44,MasterQ32,        return NULL;
+2017-06-14 16:50:44,MasterQ32,    }
+2017-06-14 16:50:50,MasterQ32,hier kann das treiber-erstellen fehlschlagen
+2017-06-14 17:04:02,MasterQ32,"okay, das scheint tatsächlich das problem zu sein"
+2017-06-14 17:09:49,kevin,"Dann fehlt nur noch, welcher Check da drin schiefgeht"
+2017-06-14 17:10:09,MasterQ32,"ret = fread(keymap, sizeof(struct keymap_entry), 128, f);"
+2017-06-14 17:10:14,MasterQ32,das hier liefert nicht 128 zurück
+2017-06-14 17:10:21,kevin,Was liefert es denn?
+2017-06-14 17:10:44,MasterQ32,0
+2017-06-14 17:10:48,kevin,Das ist aber schade
+2017-06-14 17:10:59,MasterQ32,aha?
+2017-06-14 17:11:18,kevin,"0 heißt normal EOF, oder?"
+2017-06-14 17:11:26,kevin,vterm:/keymap sollte eigentlich nicht leer sein
+2017-06-14 17:12:01,MasterQ32,$ cat vterm:/keymap
+2017-06-14 17:12:01,MasterQ32,"sollte ja was ausgeben, oder?"
+2017-06-14 17:12:54,kevin,"Hm, vielleicht"
+2017-06-14 17:12:57,kevin,bincat ist besser
+2017-06-14 17:13:08,kevin,Weil könnte durchaus mit \0 anfangen
+2017-06-14 17:13:28,MasterQ32,https://puu.sh/wjSc5/a69de7dc09.png 
+2017-06-14 17:13:35,MasterQ32,i don't think this is supposed to look like this
+2017-06-14 17:21:29,MasterQ32,"hätte ich eventuell noch irgendwie files beilegen sollen, die die passenden keymaps haben?"
+2017-06-14 17:46:41,kevin,MasterQ32: Was sagt denn ls vterm:/ ?
+2017-06-14 17:47:06,MasterQ32,https://puu.sh/wjTOV/d088b33a50.png 
+2017-06-14 17:47:48,kevin,"Hm, 0 ist eher klein"
+2017-06-14 17:48:51,kevin,Muss wohl ein vterm-Bug sein
+2017-06-14 17:48:57,kevin,"Ich frage mich nur, warum SDL bei mir immer funktioniert hat"
+2017-06-14 17:49:34,MasterQ32,hmm
+2017-06-14 17:49:47,MasterQ32,kann ich in qemu inputgeräte abändern?
+2017-06-14 17:53:10,kevin,MasterQ32: Probier mal den für die keymap: https://pastebin.com/VNmvk4yz
+2017-06-14 17:53:25,kevin,Was meinst du mit Inputgeräte abändern?
+2017-06-14 17:53:28,MasterQ32,that seems reasonable
+2017-06-14 17:53:32,MasterQ32,"naja, andere maus + tastatur"
+2017-06-14 18:00:58,MasterQ32,tut
+2017-06-14 18:01:36,MasterQ32,habe bild
+2017-06-14 18:20:53,MasterQ32,kevin: https://puu.sh/wjVus/db6fbc9550.png  hau mich!
+2017-06-14 18:20:54,MasterQ32,:D
+2017-06-14 19:02:14,MasterQ32,"https://puu.sh/wjXEN/2b0a2f0f62.png  so, die grundlagen bezüglich input stehen :D"
+2017-06-14 19:03:29,kevin,Dann können wir ja morgen releasen ;-)
+2017-06-14 19:03:58,MasterQ32,klar! :D
+2017-06-14 19:04:05,MasterQ32,"wenn du mir noch erklärst, wie man RPC macht "
+2017-06-14 19:04:40,kevin,Mit den RPC-Funktionen
+2017-06-14 19:04:53,kevin,"Den Patch von vorhin sollte ich so committen, oder?"
+2017-06-14 19:05:15,MasterQ32,klingt sinnvoll
+2017-06-14 19:05:22,MasterQ32,"naja, soweit bin ich auch schon"
+2017-06-14 19:05:35,MasterQ32,aber wie funktionieren die so? wie bekomme ich die pid meines UI-Prozesses?
+2017-06-14 19:06:38,kevin,"Wenn du ihn als Service registrierst, kannst du init_service_get(""gui"") machen"
+2017-06-14 19:07:05,MasterQ32,"bin kurz mal einkaufen, brb"
+2017-06-14 19:08:04,kevin,"Und für den eigentlichen RPC, wenn du Tastatur so machst wie SDL, dann hast du das doch schon benutzt?"
+2017-06-14 19:30:40,MasterQ32,"ne, ich hab ja nur die libsdl reingelinkt"
+2017-06-14 19:30:40,MasterQ32,:D
+2017-06-14 19:37:09,MasterQ32,hey XanClic
+2017-06-14 19:37:24,XanClic,heywhhoooo
+2017-06-14 19:40:01,kevin,"MasterQ32: Ach so, stimmt, das tut ja jetzt :-)"
+2017-06-14 19:42:07,MasterQ32,"vom verständnis her: 1) init_service_register(""gui""),  init_messaging(), register_message_handler(""createWindow"", svcCreateWindow)"
+2017-06-14 19:43:04,MasterQ32,"2) init_service_get(""gui"") while == 0, rpc_get_dword(guipid, ""createWindow"", 0, NULL);"
+2017-06-14 19:46:14,kevin,init_messaging() macht die libc schon
+2017-06-14 19:46:38,MasterQ32,okay
+2017-06-14 19:46:38,MasterQ32,:D
+2017-06-14 19:46:39,kevin,Und RPC-Funktionsnamen sind genau 8 Zeichen
+2017-06-14 19:46:48,MasterQ32,immer? was wenn overflow?
+2017-06-14 19:47:32,kevin,"Wie Overflow? Die ersten acht Zeichen in der Nachricht sind der Funktionsname, was danach kommt ist Teil von was anderem."
+2017-06-14 19:47:50,tyndur,>> Commit in tyndur.git:refs/heads/master 'vterm: Größe für keymap-LIO-Ressource setzt' (Kevin Wolf)
+2017-06-14 19:47:51,tyndur,"! vterm: Wenn man die Größe einer LIO-Ressource nicht setzt, ist sie 0. Das ist eher ungeschickt, wenn jemand die Datei benutzen will (SDL versucht die Keymap auszulesen). Commit 88d24a90 hat bei der LIOv2-Konvertierung vergessen, die Größe zu setzen, das holen wir jetzt nach."
+2017-06-14 19:48:08,MasterQ32,"naja, was passiert jetzt aber, wenn ich ne funktion länger 8 registriere oder aufrufe?"
+2017-06-14 19:48:46,kevin,register_message_handler() schneidet es auf 8 ab
+2017-06-14 19:49:02,MasterQ32,okay
+2017-06-14 19:49:07,kevin,Und paddet mit Nullen wenn es weniger sind
+2017-06-14 19:49:27,MasterQ32,kann ich ne RPC-Call auch ohne feedback machen?
+2017-06-14 19:49:37,MasterQ32,also ohne send_response?
+2017-06-14 19:49:55,kevin,Du kannst direkt send_message aufrufen
+2017-06-14 19:50:03,MasterQ32,okay
+2017-06-14 20:07:02,MasterQ32,"okay, ich habe eine 42 zurückgegeben :)"
+2017-06-14 20:11:13,MasterQ32,"kann ich mitbekommen, dass ein prozess terminiert?"
+2017-06-14 20:12:21,kevin,Ein Kindprozess oder einfach irgendeiner?
+2017-06-14 20:12:28,MasterQ32,irgendeinen
+2017-06-14 20:12:41,MasterQ32,"ich sollte ja die fenster schließen, wenn der prozess  abschmiert :D"
+2017-06-14 20:13:08,kevin,"Ah, hm."
+2017-06-14 20:13:32,kevin,Ich glaube bisher nicht
+2017-06-14 20:13:39,MasterQ32,"weil atexit ist ja nicht garantiert, dass es ausgeführt wird, oder?"
+2017-06-14 20:14:23,kevin,"Ja, wenn der Prozess crasht, dann wird es nicht ausgeführt"
+2017-06-14 20:14:29,MasterQ32,genau
+2017-06-14 20:15:01,kevin,"Ich fürchte, außer Polling gibt es da noch keinen Mechanismus"
+2017-06-14 20:15:07,MasterQ32,:D
+2017-06-14 20:15:08,kevin,Könnte man aber natürlich bauen
+2017-06-14 20:15:23,MasterQ32,"naja, jetzt muss ich mir erst mal überlegen, wie ich das ganze organisiere"
+2017-06-14 20:15:56,MasterQ32,"irgendwelche wünsche, vorstellungen?"
+2017-06-14 20:16:16,kevin,"Funktionierend, nicht kaputt, schnell und schön *g*"
+2017-06-14 20:16:27,MasterQ32,die ersten drei: machbar
+2017-06-14 20:16:37,MasterQ32,letzteres: was heißt schön? API? Optik?
+2017-06-14 20:16:43,kevin,Alles ;-)
+2017-06-14 20:16:46,MasterQ32,damn :D
+2017-06-14 20:17:05,kevin,Wobei schöne API ja unter nicht kaputt schon erfasst ist
+2017-06-14 20:17:11,MasterQ32,:D
+2017-06-14 20:17:33,kevin,Ich habe schließlich funktionierend und nicht kaputt absichtlich als zwei Kategorien genannt
+2017-06-14 20:17:48,MasterQ32,:D
+2017-06-14 20:18:26,MasterQ32,"is halt aber schon die Frage, ob man das ganze eher wie X oder wie Windows macht"
+2017-06-14 20:19:46,kevin,"Ich hab doch schon längst wieder vergessen, wie die im Detail funktionieren ;-)"
+2017-06-14 20:21:31,MasterQ32,Windows: Die GUI übernimmt teilweise auch widget painting und logik
+2017-06-14 20:21:44,MasterQ32,X: Du bekommst nen Speicherbereich und darfst da reinmalen
+2017-06-14 20:25:38,kevin,"Ok, in der Hinsicht dachte ich immer eher an einen Speicherbereich, in den man einfach reinmalt"
+2017-06-14 20:26:04,MasterQ32,"hm, wie funktioniert SHM in tyndur?"
+2017-06-14 20:26:33,kevin,"Man alloziert ihn, kriegt eine ID und gibt die an einen anderen Prozess weiter"
+2017-06-14 20:26:36,kevin,Total sicher und so
+2017-06-14 20:28:09,MasterQ32,:D
+2017-06-14 20:28:29,MasterQ32,welches headerfile für die API?
+2017-06-14 20:31:14,kevin,"Ich glaube, direkt syscall.h"
+2017-06-14 20:31:45,MasterQ32,"create_shared_memory, open_shared_memory, close_shared_memory, shared_memory_size"
+2017-06-14 20:31:48,MasterQ32,sieht gut aus
+2017-06-14 20:32:09,einKomischerName,wie kann ich eine linux executable ausführen?
+2017-06-14 20:32:24,MasterQ32,chmod +x file
+2017-06-14 20:32:24,MasterQ32,./file
+2017-06-14 20:33:55,einKomischerName,geht nicht
+2017-06-14 20:34:03,MasterQ32,gibts eigentlich schon nen lbuild für lua?! :D
+2017-06-14 20:34:22,MasterQ32,einKomischerName: welches os?
+2017-06-14 20:34:25,MasterQ32,welche shell?
+2017-06-14 20:34:27,einKomischerName,linux
+2017-06-14 20:34:31,einKomischerName,normale shell
+2017-06-14 20:34:36,einKomischerName,da geht eigentlich alles normale so
+2017-06-14 20:35:15,MasterQ32,dann genau so wie ich es gesagt  habe
+2017-06-14 20:35:18,MasterQ32,ausführbar machen
+2017-06-14 20:35:19,MasterQ32,ausführen
+2017-06-14 20:35:44,einKomischerName,ist halt so eine linux binarie ohne dateiendung
+2017-06-14 20:35:46,einKomischerName,nur ein name
+2017-06-14 20:35:52,MasterQ32,ja
+2017-06-14 20:35:58,MasterQ32,dateiendungen sind scheißegal
+2017-06-14 20:36:00,einKomischerName,ich dachte ich kann die datei auführen wenn ich es einfach nur hinschreibe
+2017-06-14 20:36:08,einKomischerName,aber bei linux ist das wohl anders
+2017-06-14 20:36:11,MasterQ32,eigentlich nicht
+2017-06-14 20:36:17,MasterQ32,"du musst nur nen pfad zu der datei angeben, keinen alias"
+2017-06-14 20:36:25,MasterQ32,außer die datei liegt in deinem PATH
+2017-06-14 20:36:37,einKomischerName,"und ""chmod x+ dateiname"" geht nicht"
+2017-06-14 20:36:49,MasterQ32,"was heißt ""geht nicht""?"
+2017-06-14 20:36:51,einKomischerName,ich bin auf dem desktop. Und auf dem desktop ist die datei auch
+2017-06-14 20:36:55,einKomischerName,es macht nichts!
+2017-06-14 20:37:06,MasterQ32,woher weißt du das?
+2017-06-14 20:37:10,einKomischerName,obwohl das programm wenn ich es normal mit der PL ausführe etwas macht
+2017-06-14 20:37:14,einKomischerName,weil da nix steht..
+2017-06-14 20:37:19,MasterQ32,"das heißt nicht, dass es nix tut"
+2017-06-14 20:37:31,einKomischerName,"aber eigentlich müsste es ""Hallo!"" ausgeben"
+2017-06-14 20:37:33,MasterQ32,"das heißt, dass alles genau so passiert ist, wie du es gesagt hast"
+2017-06-14 20:37:36,MasterQ32,chmod +x führt auch nicht aus
+2017-06-14 20:38:01,einKomischerName,ja aber ich will doch die datei natürlich auführen!
+2017-06-14 20:38:08,MasterQ32,...
+2017-06-14 20:38:16,einKomischerName,so dass es etwas macht
+2017-06-14 20:38:20,MasterQ32,"hast du die beiden befehle, die ich oben geschrieben habe, ausgeführt"
+2017-06-14 20:38:22,MasterQ32,?
+2017-06-14 20:38:52,einKomischerName,"ich muss ""./file"" drunter schreiben?"
+2017-06-14 20:39:04,MasterQ32,ja
+2017-06-14 20:39:08,MasterQ32,das ist auch ein befehl
+2017-06-14 20:39:17,MasterQ32,und file ersetzt du durch deinen dateinamen
+2017-06-14 20:39:35,kevin,"MasterQ32: Ich glaube, Lua bleibt an dir oder Jonathan hängen ;-)"
+2017-06-14 20:39:37,einKomischerName,aber warum kann ich das ./file nicht sofort ausführen ohne chmod davor?
+2017-06-14 20:39:44,MasterQ32,naja
+2017-06-14 20:39:52,MasterQ32,"weißt du, was chmod tut?"
+2017-06-14 20:39:57,einKomischerName,was denn
+2017-06-14 20:40:03,MasterQ32,ja oder nein?
+2017-06-14 20:40:07,einKomischerName,ne
+2017-06-14 20:40:18,MasterQ32,"also, zwei sachen:"
+2017-06-14 20:40:26,MasterQ32,"du führst nicht einfach random befehle aus, die dir jemand sagt"
+2017-06-14 20:40:40,einKomischerName,"ääh aber jetzt sagt er dass er den ""Befehl"" nicht findet.. das klingt so als würde er denken er soll eine bash ausführen"
+2017-06-14 20:40:48,MasterQ32,"das ist einfach nur fahrlässig dämlich. sorry, wenn das so hart klingt, aber du hättest dir dein system schrotten können"
+2017-06-14 20:41:00,MasterQ32,"zweitens: chmod +x DATEI sorgt dafür, dass ""DATEI"" ausführbar wird"
+2017-06-14 20:41:07,MasterQ32,"und zwar EGAL, was für eine Datei das ist"
+2017-06-14 20:41:11,MasterQ32,du kannst auch bilder ausführbar machen
+2017-06-14 20:41:11,einKomischerName,also muss ich das nur einmal machen?
+2017-06-14 20:41:14,MasterQ32,dann zockt halt das OS
+2017-06-14 20:41:17,MasterQ32,*zickt
+2017-06-14 20:41:17,MasterQ32,ja
+2017-06-14 20:41:21,einKomischerName,asoo
+2017-06-14 20:41:30,MasterQ32,das zweite ist einfach eine relative pfadangabe zu deiner ausführbaren datei
+2017-06-14 20:41:43,einKomischerName,habe es nämlich jetzt mehrmals ausgeführt
+2017-06-14 20:41:46,MasterQ32,"damit sagst du deiner shell im normalfall, dass du die datei ausführen willst und nicht eine datei mit selbigem name aus dem PATH"
+2017-06-14 20:41:48,MasterQ32,ist wurst
+2017-06-14 20:41:50,einKomischerName,soll ich es lieber nochmal löschen und neu versuchen
+2017-06-14 20:41:57,einKomischerName,weil es geht ja nicht
+2017-06-14 20:42:03,MasterQ32,gleiche frage wie vorhin
+2017-06-14 20:42:07,MasterQ32,"was heißt: ""es geht nicht""?"
+2017-06-14 20:42:13,MasterQ32,ich kann die datei ./file auch nicht ausführen
+2017-06-14 20:42:29,MasterQ32,die gibt es bei mir nämlich gar nicht in meinem homeverzeichnis
+2017-06-14 20:42:32,einKomischerName,na er zeigt dass er den befehl nicht kennt
+2017-06-14 20:42:49,einKomischerName,ich hab doch bei ./file meinen dateinamen angegeben!
+2017-06-14 20:42:52,MasterQ32,paste mal deinen befehlsaufruf + alle ausgabe bis zur nächsten prompt
+2017-06-14 20:44:08,einKomischerName,wie kann ich dateien direkt mit der linux shell erstellen?
+2017-06-14 20:44:13,einKomischerName,und diese dann damit bearbeiten
+2017-06-14 20:45:00,MasterQ32,kommt auf das system an
+2017-06-14 20:45:08,einKomischerName,ist halt normale linux shell..
+2017-06-14 20:45:12,einKomischerName,da ist das eig überall gleich
+2017-06-14 20:45:19,MasterQ32,mit der shell kannst du gar keine dateien bearbeiten
+2017-06-14 20:45:26,kevin,Natürlich kannst du das
+2017-06-14 20:45:35,einKomischerName,natürlich kann man das
+2017-06-14 20:45:35,MasterQ32,"kevin: ja, ist aber pfriemelig imho"
+2017-06-14 20:45:45,kevin,Das habe ich nicht bestritten ;-)
+2017-06-14 20:45:47,MasterQ32,:D
+2017-06-14 20:45:56,kevin,"Wobei ich ""cat > file"" schon ab und zu mache"
+2017-06-14 20:46:03,MasterQ32,"ja, ich auch"
+2017-06-14 20:46:04,einKomischerName,also wie kann ich denn jetzt dateien über die shell erstellen ?
+2017-06-14 20:46:09,MasterQ32,touch foo
+2017-06-14 20:46:15,kevin,*lol*
+2017-06-14 20:46:18,MasterQ32,wait
+2017-06-14 20:46:21,kevin,ed
+2017-06-14 20:46:22,MasterQ32,touch my tralala
+2017-06-14 20:46:23,MasterQ32,:D
+2017-06-14 20:46:35,MasterQ32,damit erstellt man zwei dateien: 'my' und 'tralala'
+2017-06-14 20:46:43,einKomischerName,ed?
+2017-06-14 20:46:48,MasterQ32,ist ein editor
+2017-06-14 20:47:08,einKomischerName,"ich hab gerade ""ed"" in der shell ausgeführt und jetzt passiert nix mehr"
+2017-06-14 20:47:18,MasterQ32,da passiert garantiert noch was
+2017-06-14 20:47:20,einKomischerName,ich komme auch nicht mehr aus dem befehl mit STRG C raus
+2017-06-14 20:47:33,einKomischerName,da passiert nix! er zeigt nur fragezeichen an
+2017-06-14 20:47:44,MasterQ32,https://www.gnu.org/software/ed/manual/ed_manual.html
+2017-06-14 20:47:49,MasterQ32,hier haste ein handbuch
+2017-06-14 20:48:41,einKomischerName,ihr seit ja echt hilfreich.. es dauert 1 sekunde mir mal kurz den befehl fürs erstellen von ner datei zu zeigen
+2017-06-14 20:49:01,MasterQ32,"es dauert ebenfalls nur eine sekunde ""shell edit file"" bei google einzutipppen"
+2017-06-14 20:49:20,MasterQ32,"auch wenn es grade nicht im topic steht: wir sind keine hotline, sondern menschen, die das in ihrer freizeit machen"
+2017-06-14 20:49:25,einKomischerName,ja aber wozu ist denn dieses IRC dann da?
+2017-06-14 20:49:35,einKomischerName,aso
+2017-06-14 20:49:36,MasterQ32,"""Entwicklungs- und Testkanal für Betriebssysteme (im speziellen týndur)"""
+2017-06-14 20:49:55,einKomischerName,"""Testkanal für Betriebssysteme"""
+2017-06-14 20:50:19,einKomischerName,"also ein ""Test eines Betriebssystems""! und bei dem test könnte man ja helfen"
+2017-06-14 20:50:53,einKomischerName,und sagen wie das geht. Aber egal. Will ja jetzt keine schlechte laune verbreiten
+2017-06-14 20:51:28,MasterQ32,mal eine faustregel für dich: erst mal die frage bei google eingeben
+2017-06-14 20:51:45,MasterQ32,"wenn du dann keine sinnvolle antwort findest, kannst du gerne herkommen und fragen"
+2017-06-14 20:52:16,einKomischerName,"warte mal.. ""bei google eingeben""?! Ich nutze doch kein google! pf! duckduckgo brauch man heutzutage"
+2017-06-14 20:52:18,MasterQ32,"aber nicht völlig planlos herkommen, denn dann verschwendest du unsere und deine zeit, weil wir dir erst mal alle basics beibringen müssen, die man auch mit ner minute eigenständiger arbeit hätte lösen können"
+2017-06-14 20:52:35,einKomischerName,ja war dumm von mir
+2017-06-14 20:52:40,MasterQ32,"google liefert imho die besseren ergebnisse, wenn es um programmierfragen geht"
+2017-06-14 20:52:45,einKomischerName,tut mir wirklich leid
+2017-06-14 20:53:19,einKomischerName,Da muss ich dich aber mal richtig stellen: DuckDuckGo soll speziell im einsatz von programmierfragen überdurchschnittlich gut sein!
+2017-06-14 20:53:51,MasterQ32,wenn der erste eintrag nicht der link zum handbuch ist ^^
+2017-06-14 20:53:59,MasterQ32,"aber ist geschmackssache, welche suchmaschine man verwendet"
+2017-06-14 20:54:04,MasterQ32,genauso wie die shell
+2017-06-14 20:54:39,einKomischerName,ja das ist wohl so
+2017-06-14 20:55:00,MasterQ32,kevin: muss ich bei `rpc_get_response` die response freen oder darf ich die einfach danglen lassen?
+2017-06-14 20:55:07,einKomischerName,Mir kommt die Ente von DuckDuckGo jedenfalls ziemlich Sympathisch vor.
+2017-06-14 20:57:39,einKomischerName,ah es funktioniert! chmod ist ja wunderbar
+2017-06-14 20:59:25,MasterQ32,"ich weiß nicht, ob chmod nötig war"
+2017-06-14 20:59:33,MasterQ32,war nur zur sicherheit
+2017-06-14 20:59:41,einKomischerName,wie meinst du das?
+2017-06-14 21:00:01,einKomischerName,ich hätte chmod +x gar nicht betätigen müssen?
+2017-06-14 21:00:55,MasterQ32,kann sein
+2017-06-14 21:01:00,MasterQ32,ich kann es dir nciht sagen
+2017-06-14 21:04:43,einKomischerName,oke
+2017-06-14 21:04:50,einKomischerName,kann ja nächstes mal testen
+2017-06-14 21:12:59,einKomischerName,ist irgendwer online
+2017-06-14 21:13:17,MasterQ32,ich bin nicht verschwunden bisher
+2017-06-14 21:16:25,einKomischerName,ah ok
+2017-06-14 21:16:35,einKomischerName,kannst du mir bei etwas helfen
+2017-06-14 21:17:09,MasterQ32,"wenn du ordentlich fragst, klar ;)"
+2017-06-14 21:18:15,einKomischerName,Ich würde gerne ein Betriebssystem machen. Aber nicht mit Assembler und C sondern mit Assembler und Crystal
+2017-06-14 21:18:25,MasterQ32,das ist mir soweit klar
+2017-06-14 21:18:43,einKomischerName,Crystal ist eine kompilierte sprache also müsste es doch möglich sein
+2017-06-14 21:18:53,MasterQ32,"theoretisch ja, praktisch wird das ganz schön scheiße"
+2017-06-14 21:19:20,einKomischerName,aber warum wird es schön scheiße wenn ich es mit crystal mache? dann wird es doch auch schön scheiße wenn ich es mit C mache
+2017-06-14 21:19:36,einKomischerName,ich verstehe da den unterschied noch nicht so richtig..
+2017-06-14 21:19:52,einKomischerName,Könntest du mir den vielleicht erklären
+2017-06-14 21:19:54,MasterQ32,wie gut kannst du crystal?
+2017-06-14 21:20:14,einKomischerName,Ziemlich gut. Weil ich Ruby ziemlich gut kann
+2017-06-14 21:20:16,MasterQ32,"wie gut verstehst du, wie der compiler aus dem text, den du schreibst, assemblercode macht?"
+2017-06-14 21:20:36,MasterQ32,"weißt du, wie crystal variablen handlet? wie speicherallokation in der sprache funktioniert?"
+2017-06-14 21:20:48,MasterQ32,"wie du vermeiden kannst, dass kram auf dem heap landet sondern nur auf dem stack alloziert wird?"
+2017-06-14 21:21:26,einKomischerName,hmm
+2017-06-14 21:21:48,einKomischerName,würdest du mir die ganzen fragen auch stellen wenn ich es mit C programmieren wollen würde
+2017-06-14 21:22:00,MasterQ32,ja
+2017-06-14 21:22:33,MasterQ32,"der große unterschied ist: in C ist das alles ""relativ trivial"" zu beantworten im vergleich zu vielen anderen programmiersprachen"
+2017-06-14 21:22:35,einKomischerName,achso. Na dann gibt es ja wohl glaube ich irgendwie keinen wirklichen unterschied zwischen c und crystal (außer syntax)
+2017-06-14 21:22:43,MasterQ32,okay
+2017-06-14 21:22:46,MasterQ32,dann einfache aufgabe:
+2017-06-14 21:22:52,einKomischerName,oh manno
+2017-06-14 21:22:58,MasterQ32,bezieht sich auf crystal ;)
+2017-06-14 21:23:22,MasterQ32,"lege eine struktur an, welche zwei vorzeichenlose, 8 bit breite integer enthält"
+2017-06-14 21:23:24,einKomischerName,"du willst mir beweißen dass c und crystal trotzdem unterschiedlich sind, richtig?"
+2017-06-14 21:23:47,MasterQ32,"ich will dir zeigen, dass du an crystal + osdev verzweifeln wirst"
+2017-06-14 21:24:03,MasterQ32,"ich code jetzt seit fast 15 jahren jeden tag, viel C und ähnliches"
+2017-06-14 21:24:14,einKomischerName,aber warum werde ich nicht an c + osdev verzweifeln?
+2017-06-14 21:24:23,einKomischerName,das erschließt sich mir nicht
+2017-06-14 21:24:23,MasterQ32,du wirst wesentlich weniger daran verzweifeln
+2017-06-14 21:24:32,einKomischerName,warum? sag es mir bitte
+2017-06-14 21:24:39,MasterQ32,"und ich würde sagen: ""hey, ich probier mal aus, ob man mit crystal nen 'hello world'-kernel schreiben kann. das klingt nach einer hart schweren aufgabe'"
+2017-06-14 21:24:39,einKomischerName,"weil es da mehr beispielcodes, hilfe gibt?"
+2017-06-14 21:24:54,MasterQ32,"weil C eine Sprache ist, die für Lowlevel-Programmierung hervorragend geeignet ist"
+2017-06-14 21:25:13,MasterQ32,Crystal will genau das nicht sein
+2017-06-14 21:25:13,einKomischerName,nene also ich würd natürlich auch was mit assembler machen! den kernel und bootloader und alles wichtige mit assembler
+2017-06-14 21:25:33,MasterQ32,wie viel erfahrung hast du mit assembler?
+2017-06-14 21:25:50,einKomischerName,nicht viel aber da geht es anderen anfängern ja nicht anders
+2017-06-14 21:25:57,MasterQ32,ja
+2017-06-14 21:26:03,MasterQ32,darum vermeidet man assembler an allen stellen wo es geht
+2017-06-14 21:26:05,einKomischerName,und mit crystal wiederum hab ich halt mehr erfahrung
+2017-06-14 21:26:15,MasterQ32,"ja, aber die bringt dich nicht weiter"
+2017-06-14 21:26:27,MasterQ32,weil crystal den ganzen wichtigen kram vor dir versteckt
+2017-06-14 21:26:56,einKomischerName,das problem ist halt dass ich nie mein eigenes tolles  betriebssystem machen könnte wenn ich es mit C und assembler machen würde
+2017-06-14 21:27:34,MasterQ32,was möchtest du eigentlich machen? ;)
+2017-06-14 21:28:01,einKomischerName,ein betriebssystem mit crystal
+2017-06-14 21:28:03,MasterQ32,möchtest du:
+2017-06-14 21:28:03,MasterQ32,a) einen Kernel + ein OS schreiben
+2017-06-14 21:28:03,MasterQ32,"b) ein OS basteln, aber eigentlich keinen Kernel, weil lowlevel ist kacke"
+2017-06-14 21:28:03,MasterQ32,c) eine grafische Oberfläche
+2017-06-14 21:28:18,MasterQ32,ein betriebssystem schreibt man nicht mit einer einzigen programmiersprache ;)
+2017-06-14 21:28:21,einKomischerName,ein terminal-os! also halt nur text und so
+2017-06-14 21:28:25,einKomischerName,i know
+2017-06-14 21:28:32,MasterQ32,okay
+2017-06-14 21:28:56,MasterQ32,welche kernelarchitektur? mikrokernel? monolith?
+2017-06-14 21:29:06,einKomischerName,ich meine könnte man nicht eine linux distribtiun benutzen um dann wenn die distribtiun startet einfach eine crystal datei starten
+2017-06-14 21:29:09,MasterQ32,"oder überhaupt kein userspace, sondern alle funktionen im kernel"
+2017-06-14 21:29:17,MasterQ32,"also lieber ein programm, welches halt direkt auf der hardwäre läuft"
+2017-06-14 21:29:21,einKomischerName,ja
+2017-06-14 21:29:41,MasterQ32,>  ich meine könnte man nicht eine linux distribtiun benutzen um dann wenn die distribtiun startet einfach eine crystal datei starten
+2017-06-14 21:29:41,MasterQ32,"Dafür kannst du dir mal angucken, wie du ein LFS (Linux from scratch) baust "
+2017-06-14 21:29:49,MasterQ32,da hast du dann überhaupt keine distribution sondern nur den kernel
+2017-06-14 21:30:02,einKomischerName,ich könnte ja dann trotzdem als programm praktisch ein OS entwickeln weil crystal zugriff auf die dateien usw hat
+2017-06-14 21:30:08,MasterQ32,"worauf war das ""ja"" bezogen?"
+2017-06-14 21:30:29,einKomischerName,auf das was darüber ist
+2017-06-14 21:31:10,MasterQ32,"welchen teil davon? ich hab drei optionen genannnt, welche sich ausschließen"
+2017-06-14 21:31:16,MasterQ32,außer du willst drei kernel bauen :P
+2017-06-14 21:31:59,einKomischerName,ich will eig nur eine linux distribution die sofort am anfang ein programm startet
+2017-06-14 21:32:12,MasterQ32,dann sag das doch ;)
+2017-06-14 21:32:12,einKomischerName,so stell ich mir das vor
+2017-06-14 21:32:18,MasterQ32,http://www.linuxfromscratch.org/
+2017-06-14 21:32:22,MasterQ32,dann verwende das hier
+2017-06-14 21:32:26,einKomischerName,habe ich das nicht schon? naja egal
+2017-06-14 21:32:39,MasterQ32,"ne, das kam bisher überhaupt nicht so rüber"
+2017-06-14 21:32:44,einKomischerName,bei linuxfromstratch muss ich mich nicht mit assembler oder C und sowas rum schlagen oder?
+2017-06-14 21:32:57,MasterQ32,"doch, aber nur auf der metaebene"
+2017-06-14 21:33:06,MasterQ32,"das heißt, du musst programmie compilieren"
+2017-06-14 21:33:22,einKomischerName,oke
+2017-06-14 21:33:38,einKomischerName,leider ist es auf englisch aber das wird ja jetzt auch nicht sooo tragisch
+2017-06-14 21:33:43,MasterQ32,muss man lernen
+2017-06-14 21:33:49,MasterQ32,kram auf deutsch gibt es quasi nicht
+2017-06-14 21:34:46,einKomischerName,ach wäre das leben toll direkt in england geboren zu sein..
+2017-06-14 21:37:13,MasterQ32,:D
+2017-06-14 21:40:47,einKomischerName,wie kann ich auf linux testen ob ein bestimmtes package bereits installiert ist oder nicht
+2017-06-14 21:41:17,MasterQ32,kommt auf die distro an
+2017-06-14 21:41:57,einKomischerName,"oder muss ich ernsthaft durch diese kilometer lange ""apt list"" liste gucken ob ich das jetz schon hab oder nicht? :s"
+2017-06-14 21:42:56,MasterQ32,"es gibt ein tool, das nennt sich grep"
+2017-06-14 21:43:02,MasterQ32,foobar | grep -i keks
+2017-06-14 21:43:10,MasterQ32,damit kannst du einen filter auf die ausgabe von foobar anwenden
+2017-06-14 21:43:22,MasterQ32,"in dem fall werden dir alle zeilen angezeigt, in denen das wort ""keks"" vorkommt"
+2017-06-14 21:43:24,einKomischerName,wenn man die länge dieser liste mit dem mount everest vergleichen würde hätte man einen klaren sieger
+2017-06-14 21:43:39,MasterQ32,unabhängig von groß-/kleinschreibung
+2017-06-14 21:44:10,kevin,"MasterQ32: Zu deiner Frage oben... Mal eine faustregel für dich: Erst mal den source anschauen. Wenn du dann keine sinnvolle Antwort findest, kannst du gerne herkommen und fragen. :-P"
+2017-06-14 21:44:20,MasterQ32,verdammt
+2017-06-14 21:44:28,MasterQ32,Sourcecode ist keine Dokumentation! :D
+2017-06-14 21:44:32,kevin,"* @return Rückgabewert der RPC-Funktion als response_t*. Der Aufrufer ist  selbst dafür zuständig, den dadurch belegten Speicherplatz wieder  freizugeben (Dies ist neben der response_t-Datenstruktur vor allem das  data-Array)"
+2017-06-14 21:44:33,MasterQ32,inb4: dann schreib halt eine 
+2017-06-14 21:45:00,kevin,Das auch ;-)
+2017-06-14 21:45:48,einKomischerName,"""grep -i packagename"" geht irgendwie nich"
+2017-06-14 21:45:53,einKomischerName,der zeigt mir nix an
+2017-06-14 21:46:03,MasterQ32,filterst du auch eine datenausgabe damit?
+2017-06-14 21:46:13,einKomischerName,wie
+2017-06-14 21:46:15,MasterQ32,naja
+2017-06-14 21:46:19,MasterQ32,"grep braucht eine eingabe, die es filtert"
+2017-06-14 21:47:04,einKomischerName,egal ich suche jetzt einfach per STRG F
+2017-06-14 21:47:09,einKomischerName,über terminal
+2017-06-14 21:49:24,einKomischerName,ne geht gar nich
+2017-06-14 21:49:27,einKomischerName,geht aus dem bild raus
+2017-06-14 21:49:48,MasterQ32,schau dir eifnach nochmal die nachricht von mir oben an
+2017-06-14 21:49:58,einKomischerName,wie kann ich grep eine eingabe geben?
+2017-06-14 21:50:02,MasterQ32,über eine pipe
+2017-06-14 21:50:09,einKomischerName,foobar | grep -i keks geht nicht
+2017-06-14 21:50:17,einKomischerName,da zeigt er mir an er kennt den befehl nich
+2017-06-14 21:51:09,MasterQ32,welchen befehl?
+2017-06-14 21:51:35,einKomischerName,	foobar | grep -i keks
+2017-06-14 21:51:41,MasterQ32,welchen befehl kennt er nicht?
+2017-06-14 21:51:47,einKomischerName,"""foobar"""
+2017-06-14 21:51:55,MasterQ32,"jetzt überleg mal, warum"
+2017-06-14 21:52:06,einKomischerName,weil der befehl eigentlich mit grep anfangen muss
+2017-06-14 21:52:11,MasterQ32,nein
+2017-06-14 21:52:13,einKomischerName,aber du hast ja den gesagt
+2017-06-14 21:52:19,MasterQ32,"der befehl fängt ja mit ""grep"" an"
+2017-06-14 21:52:21,MasterQ32,und zwar der zweite
+2017-06-14 21:52:24,einKomischerName,ja mein ich ja
+2017-06-14 21:52:28,MasterQ32,foobar ist einfach ein platzhalter
+2017-06-14 21:52:38,MasterQ32,"da packst du etwas hin, was etwas ausgibt"
+2017-06-14 21:52:52,einKomischerName,also muss da apt list hin?
+2017-06-14 21:53:17,MasterQ32,zum beispiel
+2017-06-14 21:53:22,einKomischerName,ah es geht
+2017-06-14 21:53:23,einKomischerName,wunderbar
+2017-06-14 21:56:19,einKomischerName,ich installier mir jetzt gcc auf linux. Dauert das lange?
+2017-06-14 21:57:10,MasterQ32,kommt drauf an
+2017-06-14 21:57:20,MasterQ32,auf nem gentoo brauchts ne gute stunde
+2017-06-14 21:57:26,MasterQ32,auf nem arch vllt. 2 minuten oder so
+2017-06-14 21:57:29,einKomischerName,wuut
+2017-06-14 21:57:39,einKomischerName,die gentoos die tun mir leid
+2017-06-14 21:57:51,einKomischerName,joa bei mir wars ne minute
+2017-06-14 21:59:28,MasterQ32,"XanClic: weißt du, wo ich die dokumentierten Sources finde?"
+2017-06-14 22:02:18,XanClic,"MasterQ32, wovon?"
+2017-06-14 22:02:26,einKomischerName,"master, auf LFS steht ich brauche das Linux Kernel package.. aber wie kann ich das installieren"
+2017-06-14 22:02:27,MasterQ32,tyndur: 
+2017-06-14 22:02:36,MasterQ32,das dürfte schon installiert sein ^^
+2017-06-14 22:02:45,einKomischerName,uh ok
+2017-06-14 22:02:46,MasterQ32,"ohne kernel ist es schwer, ein OS auszuführen"
+2017-06-14 22:02:48,XanClic,Was sind denn dann dokumentierte Sources?
+2017-06-14 22:02:54,MasterQ32,naja
+2017-06-14 22:02:58,einKomischerName,ja war irgendwie komisch dass das da steht
+2017-06-14 22:03:02,MasterQ32,"kevin meinte ja, er hätte da fancy dokukommentare"
+2017-06-14 22:03:07,MasterQ32,die find ich aber nicht .P
+2017-06-14 22:03:36,XanClic,ag '@param'
+2017-06-14 22:03:38,einKomischerName,was bevorzugt ihr: .iso oder .img ?
+2017-06-14 22:04:34,MasterQ32,örm
+2017-06-14 22:04:38,XanClic,"Ob das Doxygenzeug als fertige HTML irgendwo rumschwirrt, weiß ich nicht"
+2017-06-14 22:04:45,MasterQ32,ich hab mir den kram grade gebaut
+2017-06-14 22:04:45,einKomischerName,"das müsste doch eine ganz schön hitzige diskussionen unter euch OS-spezialisten auslösen, wa?"
+2017-06-14 22:04:49,MasterQ32,finde das aber auch da nicht
+2017-06-14 22:04:53,MasterQ32,einKomischerName: beides
+2017-06-14 22:04:57,einKomischerName,ui ok
+2017-06-14 22:05:01,MasterQ32,eines ist ein live-image
+2017-06-14 22:05:10,MasterQ32,"das andere ist ein disk-image zum ""richtigen"" spielen"
+2017-06-14 22:05:54,MasterQ32,"ieh, dokukommentare im source"
+2017-06-14 22:05:55,XanClic,make documentation gibt mir Dinge in doc/doxygen/*
+2017-06-14 22:06:11,einKomischerName,ich dachte immer .iso und .img wären konkurrenten
+2017-06-14 22:06:27,einKomischerName,und es ginge darum wer am meisten genutzt wird
+2017-06-14 22:06:39,MasterQ32,"nö, wieso sollten sie?"
+2017-06-14 22:06:45,MasterQ32,sind zwei völlig andere anwendungszwecke
+2017-06-14 22:06:49,MasterQ32,.iso ist nen CD-Image
+2017-06-14 22:06:51,einKomischerName,keine ahnung. Vielleicht sind sie verfeindet
+2017-06-14 22:06:54,MasterQ32,.img ist nen Festplatten-Image
+2017-06-14 22:07:04,MasterQ32,das eine hat mit dem anderen nich so wirklich viel zu tun
+2017-06-14 22:08:44,einKomischerName,"""A minimal system requires a partition of around 6 gigabytes (GB)"" 6GB?!"
+2017-06-14 22:08:56,einKomischerName,für ein sone distribution
+2017-06-14 22:09:02,MasterQ32,für was für eine distro?
+2017-06-14 22:14:45,einKomischerName,"""naming the hard disk on which the new partition will be created"" was soll ich da machen?"
+2017-06-14 22:14:59,einKomischerName,ich soll eine festplatte nennen wo die partition drauf soll
+2017-06-14 22:15:29,MasterQ32,"ich hab keine ahnung, was du grade machst"
+2017-06-14 22:15:54,einKomischerName,wenn ich da C: angebe überschreibt der dann alle meine computer daten mit der partition?
+2017-06-14 22:16:01,einKomischerName,http://www.linuxfromscratch.org/lfs/view/stable/chapter02/creatingpartition.html
+2017-06-14 22:16:20,MasterQ32,wahrscheinlich schn
+2017-06-14 22:16:30,einKomischerName,schn?
+2017-06-14 22:16:44,MasterQ32,*schon
+2017-06-14 22:17:11,einKomischerName,wie? ich muss meine komplette festplatte überschreiben lassen?
+2017-06-14 22:17:21,einKomischerName,dann ist mein computer aber kaputt
+2017-06-14 22:17:31,MasterQ32,örm nein
+2017-06-14 22:17:42,MasterQ32,du kannst auch einfach nen plattenimage mounten und darauf arbeiten
+2017-06-14 22:18:25,einKomischerName,also soll ich das ganze auf einem linux pc machen oder so?
+2017-06-14 22:18:36,einKomischerName,kann ich irgendwie nicht glauben
+2017-06-14 22:18:48,einKomischerName,ich glaube ich muss da nur ein ordner erstellen und den dann angeben
+2017-06-14 22:19:30,MasterQ32,naja
+2017-06-14 22:19:36,MasterQ32,du brauchst halt auf jeden Fall nen GCC
+2017-06-14 22:19:49,MasterQ32,und wahrscheinlich nen berg an linux-tools
+2017-06-14 22:19:49,einKomischerName,Weißt du was? Ich gucke mir ein YouTube Video an. Das ist am einfachsten. Und zwar morgen.
+2017-06-14 22:19:53,MasterQ32,^^
+2017-06-14 22:20:00,einKomischerName,die hab ich doch schon installiert alle
+2017-06-14 22:20:11,einKomischerName,bin doch immerhin profi
+2017-06-14 22:20:16,einKomischerName,da hat man doch sowas
+2017-06-14 22:21:06,MasterQ32,...
+2017-06-14 22:43:05,MasterQ32,"ich glaub, ich hab tyndur schon wieder kaputt gemacht"
+2017-06-14 22:49:28,MasterQ32,gibts eigentlich irgenwie ein initscript für tyndur?
+2017-06-14 23:22:07,Paddy,MasterQ32: Was willst du denn mit einem Initskript machen?
+2017-06-14 23:22:18,MasterQ32,qui_server und demo starten
+2017-06-14 23:22:51,Paddy,"Es gibt das servmgr-Konfigurationverzeichnis, wo man das eintragen kann"
+2017-06-14 23:22:57,Paddy,Als Skript zählt das aber nicht
+2017-06-14 23:23:21,MasterQ32,hm
+2017-06-14 23:23:48,Paddy,"tyndur bootet, indem servmgr den default-Service startet (und damit alle seine Abhängigkeiten)"
+2017-06-14 23:28:58,MasterQ32,okay
+2017-06-14 23:29:17,MasterQ32,"ich glaub, ich sollte mich relativ zackig an nen terminalemulator setzen :D"
+2017-06-14 23:29:46,Paddy,"Wenn die GUI nützlich sein soll, wäre das der erste Schritt"
+2017-06-14 23:29:54,Paddy,Der zweite wäre ein SDL-Backend ;-)
+2017-06-14 23:30:35,MasterQ32,jap
+2017-06-14 23:30:40,MasterQ32,SDL in SDL hosten :D :D
+2017-06-14 23:30:49,MasterQ32,"aber hey, so what"
+2017-06-14 23:31:00,Paddy,*g*
+2017-06-14 23:31:12,MasterQ32,"bin eh am überlegen, ich ich die events nicht eh einfach nur an fensterkoordinaten anpasse und dann durchreiche"
+2017-06-14 23:31:20,MasterQ32,*ob ich
+2017-06-14 23:31:39,Paddy,Vermutlich am sinnvollsten
+2017-06-14 23:31:49,Paddy,Oder kannst du die Events schon in der GUI-Ebene sinnvoll verarbeiten?
+2017-06-14 23:32:09,MasterQ32,"naja, ich bastel grade sowas wie X nach"
+2017-06-14 23:32:18,MasterQ32,also du holst dir nen SHM-Memory und malst da rein
+2017-06-14 23:32:27,MasterQ32,"und dann sagst du: hab dreckig gemacht, mal mal neu!"
+2017-06-14 23:32:37,Paddy,Jo
+2017-06-14 23:32:57,Paddy,"Ach du meinst Events vom Programm an die GUI, nicht andersrum?"
+2017-06-14 23:33:05,MasterQ32,"ne, von GUI an das Programm"
+2017-06-14 23:33:37,Paddy,"Hm, ja, was wäre denn dann die andere Option als die Events durchzureichen?"
+2017-06-14 23:33:49,Paddy,"Die GUI hat doch keine Ahnung, was in den Speicherbereich reingemalt worden ist?"
+2017-06-14 23:33:55,MasterQ32,joar
+2017-06-14 23:34:10,MasterQ32,aber man könnte die events eben noch übersetzen in was SDL-unabhängiges
+2017-06-14 23:34:11,Paddy,"Außer vielleicht Fensterdekoration oder so, wenn du das nicht woanders hin auslagerst"
+2017-06-14 23:34:30,MasterQ32,aber das ist wahrscheinlich erst mal noch eh sinnfrei
+2017-06-14 23:34:50,Paddy,Ach du meinst Events speziell im Sinn von SDL-Events? Hm.
+2017-06-14 23:34:59,MasterQ32,genau :D
+2017-06-14 23:35:07,MasterQ32,einfach das SDL_Event via RPC verschicken
+2017-06-14 23:35:27,Paddy,"Solange das ein stabiles Binärinterface ist, könnte es okay sein, die einfach direkt zu verschicken"
+2017-06-14 23:35:48,Paddy,"Hat SDL_Event nur direkt ein paar Daten drin, keine Pointer oder so?"
+2017-06-14 23:36:14,MasterQ32,soweit ich weiß sind das nur daten
+2017-06-14 23:36:55,MasterQ32,"jop, sind nur daten"
+2017-06-14 23:37:09,Paddy,"Ich find's grenzwertig, aber solange es nur ein Prototyp ist..."
+2017-06-14 23:37:16,MasterQ32,ja klar
+2017-06-14 23:37:23,MasterQ32,"erst mal lernen, mit tyndur zu arbeiten"
+2017-06-14 23:38:47,MasterQ32,wie wird RPC eigentlich gemacht? thread spawning?
+2017-06-14 23:39:12,Paddy,Nicht fragen
+2017-06-14 23:39:16,Paddy,Du willst das nicht wissen
+2017-06-14 23:39:22,MasterQ32,erzähl !
+2017-06-14 23:39:35,Paddy,Im Prinzip so wie Signale
+2017-06-14 23:39:45,MasterQ32,"oaky, da weiß ich auch nicht, wie die ablaufen"""
+2017-06-14 23:39:52,Paddy,Der Prozess kriegt einfach was auf den Stack gepackt und wird in den Handler gesprungen
+2017-06-14 23:40:08,MasterQ32,haha okay :D
+2017-06-14 23:40:12,Paddy,Also der Code wird halt dort unterbrochen wo auch immer er gerade ist
+2017-06-14 23:40:21,MasterQ32,"find ich aber gut, das erspart mir erst mal locking"
+2017-06-14 23:40:46,Paddy,Nicht wirklich
+2017-06-14 23:41:02,Paddy,"""wo auch immer er ist"" ist ziemlich oft eine unpassende Stelle ;-)"
+2017-06-14 23:41:47,MasterQ32,wi mach ich dann dinge sinnvoll mit locks? :D
+2017-06-14 23:41:50,Paddy,"Zwischen p() und v() nimmt ein Prozess aber keine RPCs an (außer manche), das ist dann eine Art Locking"
+2017-06-14 23:42:03,MasterQ32,ich mag die klammer
+2017-06-14 23:42:11,MasterQ32,"und ich hab mich schon gefragt, wofür es p() und v() gibt"
+2017-06-14 23:45:51,MasterQ32,dann sollte ich die wohl mal einbauen
+2017-06-14 23:45:57,MasterQ32,darf ich die auch IN einem RPC verwenden?
+2017-06-14 23:56:35,MasterQ32,https://puu.sh/wkciV/aabb92eadb.png 
+2017-06-14 23:57:55,MasterQ32,damit kann man doch schon mal was anfagen

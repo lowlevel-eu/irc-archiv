@@ -1,0 +1,164 @@
+date/time,nick,message
+2013-06-14 11:05:37,mroman,http://codepad.org/kKBKCgyC
+2013-06-14 11:05:43,mroman,warum gibt das bei mir eine positive Zahl
+2013-06-14 11:06:07,mroman,-4096 >> 2 = 1073740800
+2013-06-14 11:06:14,mroman,das stimmt doch nicht.
+2013-06-14 11:08:08,mroman,das waere ein nicht arithmetischer shift
+2013-06-14 11:08:27,mroman,ok. dann ist ein Typ kaputt :D
+2013-06-14 11:08:29,mroman,done.
+2013-06-14 11:09:02,mgottschlag,"""right-shifting a negative value is undefined by the standard"""
+2013-06-14 11:09:18,mgottschlag,sagt zumindest das internet
+2013-06-14 11:10:53,mroman,was
+2013-06-14 11:10:54,mgottschlag,"okay, ist implementation defined, und nicht undefined"
+2013-06-14 11:11:26,kevin,"Der Right Shift ist schon definiert, aber die Darstellung der negativen Zahlen ist implementation defined"
+2013-06-14 11:11:50,mroman,du meinst 4 >> -2
+2013-06-14 11:11:52,mroman,das ist undefiniert
+2013-06-14 11:11:55,mroman,aber -4 >> 2 nicht
+2013-06-14 11:12:13,mroman,oder vielleciht acuh nicht undefiniert
+2013-06-14 11:12:24,kevin,"-4 >> 2 ist implementation defined, weil Zweierkomplement nicht die einzige erlaubte Darstellung für -4 ist"
+2013-06-14 11:12:51,mgottschlag,http://stackoverflow.com/questions/3784996/why-does-left-shift-operation-invoke-undefined-behaviour-when-the-left-side-oper
+2013-06-14 11:13:16,kevin,"Hm, und ob arithmetischer oder logischer Shift könnte auch noch implementation defined sein"
+2013-06-14 11:13:47,mroman,left shift kann overflowen
+2013-06-14 11:14:00,kevin,"Jo, wir haben hier ja aber shr"
+2013-06-14 11:14:27,mroman,es ist sicher implementatian defined
+2013-06-14 11:16:15,mroman,C ist halt nicht wirklich portabel :)
+2013-06-14 11:16:19,kevin,"Sogar ganz direkt in der Definition von >>: ""If E1 has a signed type and a negative value, the resulting value is implementation-defined."""
+2013-06-14 11:16:39,kevin,"Man kann mir C nicht-portablen Code schreiben, ja. Muss man aber nicht."
+2013-06-14 11:17:02,kevin,"Liegt irgendwie in der Natur der Sache, dass an einer Sprache, mit der man ein OS schreiben kann, nicht alles portabel sein wird ;-)"
+2013-06-14 11:17:38,mroman,Mein Emulator ist ziemlich unportabel
+2013-06-14 11:17:42,mroman,er setzt two's complement voraus
+2013-06-14 11:18:20,kevin,Sowas dummes aber auch
+2013-06-14 11:18:28,mroman,Ja :(
+2013-06-14 11:18:31,mroman,aber es geht nicht anders
+2013-06-14 11:18:33,mroman,ohne viel Aufwand
+2013-06-14 11:18:39,mgottschlag,"allerdings ist ""portabel"" jetzt auch wieder so ne Sache, in jedem Fall schreibt man ja Code für reale Maschinen, da kann man two's complement eigentlich schon vorraussetzen :)"
+2013-06-14 11:19:03,mgottschlag,"zumindest ist mir noch keine reale Maschine über den Weg gelaufen, die es anders macht"
+2013-06-14 11:19:24,mroman,sonst kann ich ins_sar nicht mit
+2013-06-14 11:19:27,mroman,a >> b implementieren
+2013-06-14 11:20:20,mgottschlag,also dieses Verhalten ist sogar auf two's complement-Maschinen implementation defined
+2013-06-14 11:20:23,mroman,und gewisse Makros brauchen little endian
+2013-06-14 11:20:40,mgottschlag,insofern solltest du bei a>>b durchaus manuell eine der beiden Möglichkeiten implementieren
+2013-06-14 11:20:54,mgottschlag,"und ich bin jetzt mal weg, Bachelorarbeit abgeben"
+2013-06-14 11:21:35,kevin,"Oh, nett. Bist du dann komplett durch oder kommen noch Prüfungen?"
+2013-06-14 11:22:11,kevin,mroman: Also LE vorauszusetzen könnte wirklich einen Unterschied machen
+2013-06-14 11:22:20,mroman,kevin: Naja
+2013-06-14 11:22:23,mroman,wie willst du
+2013-06-14 11:22:28,mroman,DWORD_FROM_BYTES implementieren in C
+2013-06-14 11:22:37,mroman,OHNE ein Endian vorauszusetzen?
+2013-06-14 11:22:38,mgottschlag,ich hab dieses Semester und auch nächsten Sommer noch Prüfungen -.-
+2013-06-14 11:22:51,mgottschlag,aber das ist schonmal wieder wesentlich entspannter
+2013-06-14 11:23:03,kevin,mroman: Mit #ifdef
+2013-06-14 11:23:09,mroman,Ich hab ja #ifdef
+2013-06-14 11:23:12,mroman,aber das ist nicht portabel
+2013-06-14 11:23:19,mroman,#ifdef HAVE_LE
+2013-06-14 11:23:20,mroman,#else
+2013-06-14 11:23:20,mgottschlag,"mroman: es gibt nen Unterschied, ob du endianness deiner virtuellen Maschine, oder endiannes des Hosts meinst"
+2013-06-14 11:23:37,mroman,Ich hab auch #ifdef __i398__
+2013-06-14 11:23:43,kevin,mroman: Dann brauchst du doch kein LE?
+2013-06-14 11:23:47,kevin,i398?
+2013-06-14 11:23:58,mgottschlag,:D
+2013-06-14 11:24:00,mgottschlag,"so, bbl"
+2013-06-14 11:24:05,mroman,386
+2013-06-14 11:24:14,mroman,kevin: Das ist an den Stellen mit inline assembly
+2013-06-14 11:24:34,kevin,Wieso brauchst du in einem Usermode-Programm Inlineassembler?
+2013-06-14 11:24:49,mroman,Weil der C Standard nichts ueber signed overflow sagt?
+2013-06-14 11:25:34,mroman,Ich muss ja bestimmtes Verhalten garantieren
+2013-06-14 11:25:39,kevin,Und wieso rechnest du mit signed? ;-)
+2013-06-14 11:25:42,mroman,C garantiert mir aber kein exaktes Verhalten bei signed overflow
+2013-06-14 11:25:55,kevin,"Ja, ich weiß, ist implementation defined"
+2013-06-14 11:26:04,mroman,Man kann vor der Addition gewisse Checks machen
+2013-06-14 11:26:20,mroman,oder so
+2013-06-14 11:26:26,mroman,aber das kostet halt
+2013-06-14 11:27:02,mroman,kevin: Fuer Addition benutze ich z.b inline assembly
+2013-06-14 11:27:09,mroman,damit ich das carry und overflow flag abgreifen kann
+2013-06-14 11:27:10,kevin,Du machst doch sowieso einen langsamen Emulator
+2013-06-14 11:27:22,mroman,"und idiv, imul z.b sind auch inline assembly"
+2013-06-14 11:28:42,mroman,https://bitbucket.org/mroman_/emulathor/src/6b52e48d391fedb4ef17329ab5b046a6db44de18/src/cpu.c?at=master#cl-689
+2013-06-14 11:28:46,mroman,^- siehe z.b da
+2013-06-14 11:29:38,mroman,Man koennte das sicher auch anders machen
+2013-06-14 11:29:45,mroman,aber ich emuliere ja twos complement
+2013-06-14 11:30:02,mroman,d.h das overflow verhalten soll auch so sein wie bei x86
+2013-06-14 11:30:43,mroman,kevin: Gewisse CPUs z.b haben saturated arithmetic
+2013-06-14 11:31:26,mroman,ich kann mit C zwar vor der Addition feststellen ob sie safe ist
+2013-06-14 11:31:28,mroman,aber wenn nicht
+2013-06-14 11:31:34,mroman,"muss ich ja two's complement overflow ""emulieren"""
+2013-06-14 11:32:08,mroman,und diesen Aufwand spare ich mir lieber auf Kosten der portibilitaet
+2013-06-14 11:33:01,mroman,"kevin: Wenn du einen Vorschlag hast, der effizient und vom Aufwand her ertragbar ist, hoere ich mir den gerne an :)"
+2013-06-14 11:33:40,kevin,"Wie, was? So mit konstruktiv und so, meinst du? Ne, lass mal, das ist nichts für mich."
+2013-06-14 11:34:10,mroman,kevin: Hm?
+2013-06-14 11:35:00,kevin,Deinen Ansatz einfach so zu kritisieren ist viel einfacher als sich selber Gedanken zu machen ;-)
+2013-06-14 11:35:05,mroman,Das ist wahr :)
+2013-06-14 11:38:38,mroman,zumal wohl niemand meinen Emulator auf einer nicht x86-64 kompatiblen Architektur ausfuehren
+2013-06-14 11:38:43,mroman,wird
+2013-06-14 11:39:01,kevin,s/auf einer nicht x86-64 kompatiblen Architektur//
+2013-06-14 11:39:07,kevin,Also dich selbst mal ausgenommen
+2013-06-14 11:41:11,mroman,Was
+2013-06-14 11:41:15,mroman,die Schule wird den schon benutzen
+2013-06-14 11:41:59,mroman,sonst haetten die ja kein Interesse daran
+2013-06-14 11:42:00,mroman,hoffentlich
+2013-06-14 11:42:07,mroman,wenn auch wohl nur ganz selten
+2013-06-14 11:44:09,mroman,abgesehen davon habe ich mich damit abgefunden dass ich nie etwas nuetzliches machen werde
+2013-06-14 11:46:08,mgottschlag,bullshit?
+2013-06-14 11:46:38,mroman,Ne.
+2013-06-14 11:46:38,mgottschlag,und das Betriebssysteme-Sekretariat hat heute früher Mittagspause -.-
+2013-06-14 11:46:40,mroman,Realität.
+2013-06-14 11:51:37,mroman,das beruht auf empirischen Fakten.
+2013-06-14 12:03:38,kevin,Was emulierst du denn überhaupt?
+2013-06-14 12:07:23,mgottschlag,"huh, ping?"
+2013-06-14 12:07:35,mgottschlag,seit wann überlebt IRC denn Standby >10s?
+2013-06-14 12:07:52,mgottschlag,"bzw, seit wann überlebt die WLAN-Verbindung das?"
+2013-06-14 12:08:29,kevin,pong
+2013-06-14 12:09:03,kevin,"IRC dürfte das doch nicht groß interessieren, wenn das Netzwerk mal ein paar Sekunden weg ist, aber IP usw. die gleiche bleiben?"
+2013-06-14 12:37:50,alexander,"""<mroman> abgesehen davon habe ich mich damit abgefunden dass ich nie etwas nuetzliches machen werde"" burnout syndrome incoming"
+2013-06-14 12:42:05,kevin,"Hmpf, wieso müssen Specs immer so unklar geschrieben sein?"
+2013-06-14 14:27:41,mroman,"kevin: Ein computer system mit Graphikkarte, Harddisk und RISC Prozessor"
+2013-06-14 14:28:14,mroman,alexander: Was burnout?
+2013-06-14 14:28:19,mroman,Meinten Sie: bore-out?
+2013-06-14 14:36:55,alexander,Immer wieder etwas machen ohne Bestätigung dafür zu bekommen -> Burn-Out
+2013-06-14 14:37:07,mroman,"Das nennt man ""arbeiten""?"
+2013-06-14 14:37:44,mroman,ausser Geld.
+2013-06-14 14:38:37,mroman,"und Burn-out impliziert doch ""machen muessen""?"
+2013-06-14 14:38:41,mroman,und viel Stress.
+2013-06-14 14:38:48,mroman,ich hab keinen Stress.
+2013-06-14 14:39:26,alexander,"Nein, nicht immer"
+2013-06-14 14:39:47,mroman,"Es ist nur so, dass das, was ich tue nie nuetzlich sein wird."
+2013-06-14 14:40:04,mroman,Das ist ein rationaler schluss.
+2013-06-14 14:40:09,mroman,"Also steckt dahinter kein Stress, kein nichts."
+2013-06-14 14:40:26,alexander,Trotzdem nicht gesund.
+2013-06-14 14:41:47,mroman,Kann ich ja auch nichts dafuer.
+2013-06-14 14:41:55,mroman,Muecken sind auch nicht gesund.
+2013-06-14 14:42:41,alexander,...
+2013-06-14 14:43:03,alexander,Du bist ein komischer Typ.
+2013-06-14 14:45:21,mroman,oh ja
+2013-06-14 14:49:03,mroman,"Die Welt ist halt so wie sie ist, und nicht so wie sie sein sollte :)"
+2013-06-14 14:51:17,mroman,und ich bin speziell
+2013-06-14 15:06:57,mroman,"Man kann schon so tun, als sei alles eine heile Welt. Aber das ist nur Selbstbetrug ;)"
+2013-06-14 15:07:29,mroman,"und es waere Selbstbetrug wenn ich sagen wuerde, dass irgendetwas dass ich bis jetzt programmiert habe, nuetzlich ist"
+2013-06-14 15:17:56,alexander,"Selbstreden, aber wenn man erkennt, dass man nichts Nützliches macht, sollte man das ändern, bevor es einen kaputt macht. Wenn es einen nicht kaputt macht, dann jut."
+2013-06-14 15:22:54,mroman,Ich kann die Welt ja auch nicht aendern.
+2013-06-14 15:27:21,mroman,zumal das ein Problem der Zeit ist
+2013-06-14 15:27:35,mroman,die Huerde etwas Nuetzliches zu machen wird mit der Zeit immer groesser.
+2013-06-14 15:31:11,mroman,sieh es mal so
+2013-06-14 15:31:30,mroman,"Das einzige was man aendern koennte, waere etwas anderes zu tun."
+2013-06-14 15:32:01,mroman,Worin man allerdings dann wohl keine grosse Erfahrung hat
+2013-06-14 15:32:07,mroman,also auch nichts Nuetzliches tun kann
+2013-06-14 16:54:54,kevin,"Oh, cool, hier fährt ja sogar eine NT-4-CD rum. Ich dachte immer, ich müsste das irgendwann mal aus irgendwelchen dubiosen Quellen runterladen, wenn ich damit was testen will."
+2013-06-14 21:29:27,Kluthi,Sers
+2013-06-14 21:31:44,Guest21897,sushi
+2013-06-14 21:36:41,Jidder,tuten rebooten
+2013-06-14 21:42:57,Jidder,"ich hab dieses notebook untertaktet, damit die 30-tage-trial-versionen länger funktionieren"
+2013-06-14 21:44:29,XanClic,"Und ich dachte, du fliegst immer über die Datumsgrenze"
+2013-06-14 22:15:02,mroman,janosch: wth?
+2013-06-14 22:15:23,mroman,Hu
+2013-06-14 22:15:26,mroman,nicht du
+2013-06-14 22:15:37,mroman,Tab completion fail
+2013-06-14 22:22:43,Jidder,die tag nacht linie fliegt über mich hinweg
+2013-06-14 22:22:59,Jidder,natürlich nicht jetzt in diesem moment
+2013-06-14 22:23:27,Jidder,hm die heißt auch terminator
+2013-06-14 22:23:36,Jidder,arnold!
+2013-06-14 22:24:17,XanClic,"Wenn du schnell deinen Namen zu Sarah änderst, könnte sie ja mal bei dir anhalten"
+2013-06-14 22:27:06,Jidder,"schlagzeile morgen: ""seit gestern abend permanenter sonnenuntergang auf grund namensänderung"""
+2013-06-14 22:27:19,XanClic,Morgen gibts dann ja nicht mehr
+2013-06-14 22:27:26,Jidder,stimmt natürlich
+2013-06-14 22:27:55,Jidder,also praktisch weltuntergang auf grund von sonnenuntergang
+2013-06-14 22:34:12,mroman,"Wenn's einen Weltuntergang gibt, gibt's wohl auch einen Weltaufgang irgendwo."

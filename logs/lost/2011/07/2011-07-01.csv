@@ -1,0 +1,275 @@
+date/time,nick,message
+2011-07-01 00:06:33,Svenska,wieviele syscalls hat tyndur eigentlich zur zeit (und wo gibts eine liste) ?
+2011-07-01 00:07:08,Paddy,wc -l src/include/syscallno.h oder so?
+2011-07-01 00:07:43,Svenska,kA ^^
+2011-07-01 00:08:27,Paddy,Also es sind Konstanten für 64 Syscalls definiert
+2011-07-01 00:08:32,Paddy,"Ob die alle existieren, weiß ich nicht"
+2011-07-01 00:08:48,Svenska,ich guck grad nach
+2011-07-01 00:09:04,Paddy,"Paddygree hat 18 Syscalls, falls es irgendjemanden interessiert"
+2011-07-01 00:09:11,Svenska,liste? ;)
+2011-07-01 00:09:15,Jidder,JidderOS bootet jetzt wieder
+2011-07-01 00:09:35,Paddy,Liste von diesen 18?
+2011-07-01 00:09:53,Svenska,ja - welche braucht man so? ^^
+2011-07-01 00:10:33,Paddy,"write, read, open, close, mem_alloc, exit, fork, waitpid, mount, exec, opendir, readdir, closedir, chdir, getcwd, mkdir, stat, lseek"
+2011-07-01 00:10:52,Paddy,"Das sind die ersten 18 für einen durchschnittlichen monolithischen Unixnachbau, behaupt ich ;-)"
+2011-07-01 00:11:15,Paddy,"Und nein, sbrk werde ich nicht implementieren *g*"
+2011-07-01 00:11:21,Svenska,würde ich auch behaupten. was tut mem_alloc - mappen und eintragen?
+2011-07-01 00:11:22,Jidder,"ich finde gut, dass free fehlt^^"
+2011-07-01 00:11:32,Paddy,Braucht kein Mensch ;-)
+2011-07-01 00:11:48,Paddy,"Svenska: Jo, virtuellen Speicher reservieren halt"
+2011-07-01 00:11:50,Svenska,wozu ist sbrk gut?
+2011-07-01 00:12:13,Paddy,"Um Speicher anzufordern, nur nicht so flexibel"
+2011-07-01 00:12:29,Paddy,"Keine Ahnung, warum die ganzen Unices das so toll finden"
+2011-07-01 00:12:35,Svenska,"die manpage sagt nur ""change data segment size"""
+2011-07-01 00:12:41,Svenska,was irgendwie irritierend ist ;)
+2011-07-01 00:12:48,Jidder,aber korrekt^^
+2011-07-01 00:13:07,Paddy,"Naja, unter einem Unix hast du ja irgendwie einen Heapbereich am Stück. Und der wird damit eben vergrößert oder verkleinert."
+2011-07-01 00:13:14,Svenska,"okay, andere frage (ich hab gestern nacht mir mal ein paar gedanken gemacht)"
+2011-07-01 00:13:28,Svenska,ich hatte mir folgenden speicheraufbau gedacht für tasks:
+2011-07-01 00:13:38,Svenska,(mal ascii art malen)
+2011-07-01 00:14:06,Paddy,"Oh, ASCII-Art, das muss gut sein!"
+2011-07-01 00:14:35,Jidder,was ist die resonanzfrequenz einer mücke?
+2011-07-01 00:14:55,Jidder,einer europäischen oder afrikanischen?
+2011-07-01 00:15:11,Paddy,Experimentell feststellen?
+2011-07-01 00:15:32,Svenska,0     4M              2G                     3.5G
+2011-07-01 00:15:32,Svenska,| LEER | CODE || HEAP || shared libs || STACK | KERN |
+2011-07-01 00:15:55,Svenska,"also der app-code liegt virtuell ab 4M, direkt dahinter folgt der heap bis zur 2G-marke"
+2011-07-01 00:16:24,Svenska,"dann liegen shared libraries, die an die adresse gelinkt werden, dahinter dann die stacks für die einzelnen threads"
+2011-07-01 00:16:40,Svenska,"direkt übereinander gestapelt und mit fixer größe, und ab 3.5G dann der kernel"
+2011-07-01 00:16:41,Svenska,meinung? ^^
+2011-07-01 00:16:55,Jidder,standard
+2011-07-01 00:17:04,Svenska,wie passt sbrk() dann da rein?
+2011-07-01 00:17:32,Svenska,"wenn ich 3 stacks habe, dann kann ich den mittleren ja nicht vergrößern"
+2011-07-01 00:17:34,Jidder,"zwischen genutztem teil des heaps und shared libs ist sicherlich eine lücke, oder? sbrk verkleinert diese lücke"
+2011-07-01 00:17:51,Svenska,hm achso
+2011-07-01 00:17:59,Svenska,"verdammt, data segment != stack segment -.-"
+2011-07-01 00:18:48,Svenska,kann man den heap splitten?
+2011-07-01 00:19:02,Jidder,klar. aber nicht mit sbrk
+2011-07-01 00:19:11,Svenska,"naja, was tut sbrk dann? ;)"
+2011-07-01 00:19:27,Jidder,"aber wenn du nicht in die vergangenheit reisen willst, und dein os dort verkaufen willst, ist das auch egal"
+2011-07-01 00:20:14,Svenska,also setzt sbrk die größe des heaps fest und malloc holt sich da dann krempel raus
+2011-07-01 00:20:28,Jidder,ja
+2011-07-01 00:20:28,Svenska,bzw. verwaltet den
+2011-07-01 00:20:39,Svenska,"bzw. die heaps, wenn der adressraum fragmentiert ist ;)"
+2011-07-01 00:21:10,Jidder,"ich glaube nicht, dass malloc sowas als fragmentierung bezeichnen würde"
+2011-07-01 00:21:56,Svenska,"hmm, naja wenn ich einen 1,5G-Heap habe und hinter den shared libraries nochmal so 800M frei habe, dann ist das für mich fragmentiert ;)"
+2011-07-01 00:22:22,Svenska,oder ist die denkweise blödsinn?
+2011-07-01 00:22:32,Jidder,naja gut kann man so sehen
+2011-07-01 00:22:42,Paddy,"Ja, ist strenggenommen fragementiert Und?"
+2011-07-01 00:22:46,Paddy,Stört das irgendjemanden?
+2011-07-01 00:23:05,Svenska,"das programm kann dann keinen speicherblock mit 2G alloziieren, obwohl 2,3G adressraum frei sind"
+2011-07-01 00:23:14,Svenska,(den ram mal vorausgesetzt)
+2011-07-01 00:23:24,Jidder,"ein programm, dass 2 GB anfordert muss damit umgehen können"
+2011-07-01 00:23:43,Svenska,wie machen windows oder linux das eigentlich?
+2011-07-01 00:23:54,Jidder,die kochen mit wasser
+2011-07-01 00:24:01,Svenska,"also ""dd"" kann bei mir mit 2G physischem ram durchaus 1,7G blöcke anfordern von /dev/zero nach /dev/null"
+2011-07-01 00:24:26,Svenska,"aber gut, das ginge bei mir auch :D"
+2011-07-01 00:24:51,Svenska,aber ok ;)
+2011-07-01 00:25:30,Paddy,"Ich finde, Tobiking hat recht"
+2011-07-01 00:25:34,Svenska,"sbrk braucht also kein mensch mehr, und wenn doch, dann reicht das in der libc aus"
+2011-07-01 00:25:48,Jidder,"du bist doch gerade erst aufgestanden, Paddy!"
+2011-07-01 00:25:54,Paddy,"Hm, wie willst du das in der libc emulieren, Svenska?"
+2011-07-01 00:26:21,Svenska,"durch ein NOP, wenn size<=heapgröße und ein ERROR wenn size>heapgröße ;)"
+2011-07-01 00:26:28,Svenska,bzw. größe des ersten heaps
+2011-07-01 00:26:48,Paddy,Des ersten zusammenhängenden Stücks des Heaps. Oder so.
+2011-07-01 00:26:56,Svenska,ja
+2011-07-01 00:27:57,Paddy,"Naja, gn8"
+2011-07-01 00:28:04,Svenska,gn8
+2011-07-01 00:28:07,Svenska,warst ja lange da
+2011-07-01 00:28:13,Jidder,gn8
+2011-07-01 00:48:41,Svenska,welchen prozess wählt der OOM-killer eigentlich aus?
+2011-07-01 01:56:35,DesL,gn8
+2011-07-01 07:52:37,kevin,Moin
+2011-07-01 08:46:41,DerHartmut,Morgen
+2011-07-01 09:26:32,DerHartmut,"Alltäglicher Freitagswahnsinn, heute: Warum wird der +1-Button nicht im Safari angezeigt?"
+2011-07-01 09:57:13,kevin,Moin DerHartmut
+2011-07-01 09:57:17,kevin,(Was für eine Reaktion!)
+2011-07-01 09:57:42,DerHartmut,:D
+2011-07-01 11:14:38,DerHartmut,http://i.imgur.com/iYnGb.png
+2011-07-01 11:15:23,kevin,"Hm, gibt's das auch für tyndur? ;-)"
+2011-07-01 11:34:07,DerHartmut,Ich glaube dann...DANN...wird's Zeit für den tyndur-Laden
+2011-07-01 12:11:13,kevin,"Nein, dann ist es zu spät"
+2011-07-01 12:48:53,terra,Hoi
+2011-07-01 12:54:14,stultus,moin
+2011-07-01 13:01:56,kevin,Moin
+2011-07-01 13:02:59,terra,Kann mir jemand bezüglich SMP und nem Startup IPI helfen?
+2011-07-01 13:06:39,DesL,moin
+2011-07-01 13:25:17,XanClic,Moin
+2011-07-01 13:34:05,kevin,Moin
+2011-07-01 13:40:29,sfan,moin
+2011-07-01 13:51:51,bluecode,terra: was ist denn die genaue Frage?
+2011-07-01 13:56:12,terra,"Naja. Ich sende den SIPI (Vec: 7, Assert, Alle Proz. -> 0xC4607) aber es tut sich nichts (QEmu Monitor per info cpus: Alle APs bei 0xff0a2 gehalten) und ich verstehe nicht wieso. Apic und Sp.-Vector-Register sind acuh auf enabled"
+2011-07-01 13:58:05,bluecode,"du weißt, dass du dafür einen init ipi (zuerst assert, dann deassert), dann warten und dann erst einen sipi senden solltest?"
+2011-07-01 13:58:16,bluecode,und eigentlich zwischendrin warten
+2011-07-01 13:58:20,bluecode,sagt zumindest mein code
+2011-07-01 13:59:00,bluecode,"was genau soll ""Alle Proz. -> 0xC4607"" heißen?"
+2011-07-01 13:59:03,terra,"Naja, Intel meint es ist kein Init De-Assert ab Pentium 4 mehr nötig und ich les auch öfter das Qemu wohl mit einem SIPI zufrieden ist"
+2011-07-01 14:00:06,terra,Das eine soll heißen das ich ALL_EXCEPT_SELF mitschicke und die Hex-Zahl ist das was ich dann auch 'sende'
+2011-07-01 14:01:39,bluecode,"hm, ich sende an jede andere apic einzeln"
+2011-07-01 14:02:03,terra,Ic habs geschafft
+2011-07-01 14:02:17,bluecode,und woran lags?
+2011-07-01 14:02:33,terra,Ich hätte voher mal Init mit Triggermode Level senden sollen glaube ich
+2011-07-01 14:03:18,terra,SIPI war also korrekt. Init IPI war nur fehlerhaft 
+2011-07-01 14:03:45,bluecode,ahso
+2011-07-01 14:03:52,bluecode,also braucht qemu doch einen Init IPI?
+2011-07-01 14:04:00,terra,Wie es scheint schon
+2011-07-01 14:05:12,terra,Ist es möglich mit Qemu nachzusehen was für Werte in den Registern von den APs steht?
+2011-07-01 14:07:41,kevin,"Jo, mit cpu X die aktuelle CPU wechseln und dann ganz normal info registers"
+2011-07-01 14:07:48,terra,"Ah, danke :)"
+2011-07-01 14:56:37,DoBi,moin
+2011-07-01 14:59:57,kevin,Moin
+2011-07-01 15:00:13,sfan,moin
+2011-07-01 15:01:21,Lutoma,hm
+2011-07-01 15:01:23,Lutoma,moin
+2011-07-01 15:06:00,kevin,"""hm"" war doch Toasters Text, nicht deiner"
+2011-07-01 15:14:41,Lutoma,hm
+2011-07-01 15:14:44,Lutoma,:p
+2011-07-01 15:15:02,Lutoma,Tyndur kann kein screen! *reklamier*
+2011-07-01 15:15:12,Lutoma,bzw: ich kann keine screen session aufmachen über ssh
+2011-07-01 15:19:28,kevin,ssh von tyndur auf Linux?
+2011-07-01 16:31:51,FreakyPenguin,Hm screen müsste doch gehen wenn man die Terminal-Definition auf Linux installiert oder?
+2011-07-01 16:34:49,kevin,"Noch nicht probiert, aber erwarten würde ich es"
+2011-07-01 16:34:55,PNoob,Moin
+2011-07-01 16:35:09,PNoob,Meine Katze hat grad meinen Server geschrottet
+2011-07-01 16:35:48,kevin,Dann kauf dir eine _richtige_ Maschine *g*
+2011-07-01 16:36:52,PNoob,ich weiß echt nicht wie die auf die dumme idee gekommen ist in den geöffneten Server reinzupinkeln
+2011-07-01 16:37:01,FreakyPenguin,kevin: Du meinst dann ist es dann umgekehrt? *g*
+2011-07-01 16:37:11,FreakyPenguin,*damit
+2011-07-01 16:37:39,kevin,"Hm, die offensichtliche Methode wäre ja, den Server nach der Katze zu werfen"
+2011-07-01 16:37:46,kevin,Das geht mit einer richtigen Maschine auch nicht mehr ;-)
+2011-07-01 16:38:07,stultus,"offensichtlichste lösung wär ja, die kiste nicht offen stehen zu lassen ;)"
+2011-07-01 16:38:34,PNoob,stultus: die kiste steht seit gestern geöffnet rum weil es dem Prozessor ein wenig warm ums Herz geworden ist
+2011-07-01 16:38:36,stultus,"aber gibt ja genügend leute die sagen ""Main Mainboard muss nen Staubfänger sein, das ist kuhl!"" ;)"
+2011-07-01 16:38:54,PNoob,stultus: ne ich hasse staub im PC
+2011-07-01 16:38:56,stultus,Dann hängt man nen Lüfter rein.
+2011-07-01 16:39:17,PNoob,"lüfter rein ist blöd, dann wird das teil so laut"
+2011-07-01 16:39:31,stultus, ?!
+2011-07-01 16:39:37,stultus,Dann kauf mal nen richtigen Lüfter.
+2011-07-01 16:39:42,stultus,120mm mit Steuerung.
+2011-07-01 16:39:44,stultus,Da is nix laut.
+2011-07-01 16:39:48,PNoob,"und auserdem soll das ganze ja nicht mehr lange laufen, am WE sollte der neue Server den jetzigen ersetzen"
+2011-07-01 16:39:55,stultus,Wenn der Rest auch gescheit regelt wird die Kiste eher leiser.
+2011-07-01 16:40:03,PNoob,120er passen nicht ins Gehäuse
+2011-07-01 16:40:15,PNoob,2*80 max
+2011-07-01 16:40:19,stultus,dann die.
+2011-07-01 16:40:23,stultus,Die gibts auch in silent *g*
+2011-07-01 16:40:32,PNoob,lohnt sich aber nicht mehr
+2011-07-01 16:40:54,PNoob,wie gesagt am WE soll der neue die Arbeit übernehmen und für 2 Tage kauf eich keine Lüfter
+2011-07-01 16:41:04,PNoob,dea nehme ich einfach de Seitenwand ab
+2011-07-01 16:41:30,stultus,und der neue wenigstens gescheit dimensioniert? ;)
+2011-07-01 16:41:42,PNoob,jo
+2011-07-01 16:42:00,PNoob,"533MHz CPU,  256MB Ram, 20GB Festplatte"
+2011-07-01 16:42:17,DoBi,süß ;)
+2011-07-01 16:42:20,PNoob,komplett passiv gekühlt
+2011-07-01 16:43:48,stultus,"süß, allerdings"
+2011-07-01 16:43:54,stultus,etwas wenig ram für meinen geschmack
+2011-07-01 16:44:00,stultus,aber ok ^^ leise wird er sein
+2011-07-01 16:44:01,stultus,ebay?
+2011-07-01 16:45:08,PNoob,ja der kommt von Ebay
+2011-07-01 16:45:33,PNoob,stultus: der soll ja nur Router spielen und nebenbei so ein bisschen Testserver für webprojekte sein
+2011-07-01 16:45:35,PNoob,mehr nicht
+2011-07-01 16:46:42,stultus,^^
+2011-07-01 16:46:49,stultus,"naja, bin weg, wochenende und so"
+2011-07-01 16:46:51,stultus,machts gut ^^
+2011-07-01 17:29:15,ehenkes,hi
+2011-07-01 18:16:21,Sebi2020,Hallloo
+2011-07-01 18:17:21,Sebi2020,"Hätte jemand vielleicht zeit mal über mein Algorithmus zu schauen den ich fürs allozieren von Speicher verwende? Das wäre super. Ich bin nicht gerade erfahren was sowas angeht, und vielleicht sieht ja jemand noch einen Fehler (oder einen Logikfehler) in dem Code. http://pastebin.com/zUbbQ18a"
+2011-07-01 18:17:54,kevin,Ist ein Logikfehler kein Fehler?
+2011-07-01 18:18:41,kevin,If(pageNumber == 1) // Compilerfehler
+2011-07-01 18:19:07,kevin,"Code, der offensichtlich nichtmal kompiliert wurde, schau ich nicht nach anderen Fehlern durch"
+2011-07-01 18:19:18,Sebi2020,wieso compilerfehler
+2011-07-01 18:19:24,Sebi2020,das check ich jetzt echt necht
+2011-07-01 18:19:26,Sebi2020,*nicht
+2011-07-01 18:19:30,Sebi2020,was is daran syntaktisch falsch?
+2011-07-01 18:20:28,kevin,Weil man if klein schreibt
+2011-07-01 18:20:45,Sebi2020,"ja mein gott. okay, aber mich intressiert ja gerade ob die logik richtig is, nich die syntax"
+2011-07-01 18:20:50,bluecode_,der hat bestimmt ein #define If if :-D
+2011-07-01 18:21:05,bluecode_,dann mach erstmal die syntax richtig
+2011-07-01 18:21:26,Sebi2020,"was bringt das? Nichts, ändert an der logik auch nich"
+2011-07-01 18:21:30,Sebi2020,*nichts
+2011-07-01 18:21:43,kevin,sebi2020: Die Arbeitszeit des Compilers ist weniger wert als meine
+2011-07-01 18:21:55,kevin,Und der kann schonmal ein paar dumme Fehler finden
+2011-07-01 18:25:47,Sebi2020,die ist fehlerfrei: http://pastebin.com/zU8p1R2i
+2011-07-01 18:26:06,Sebi2020,eben kompiliert
+2011-07-01 18:31:56,FreakyPenguin,"Uäh java-Code mit Umlauten in Variablennamen, das tut doch weh -.-"
+2011-07-01 18:32:54,kevin,"hg tut auch weh, alles schön konsistent"
+2011-07-01 18:33:14,Sebi2020,"@kevin, kannst du's dir jetzt nochmal anschauen?"
+2011-07-01 18:33:39,kevin,Ich schau grad schon genug anderen Code an
+2011-07-01 18:33:48,kevin,Nachher vielleicht
+2011-07-01 18:34:13,kevin,"Probier lieber erstmal aus, ob es überhaupt tut"
+2011-07-01 18:34:47,Sebi2020,"ja, es sieht oft aus, als würde ers tun, obwohl ers nicht tut. das is ja immer das tolle bei os-dev :D"
+2011-07-01 18:35:00,Sebi2020,"Naja, wenn ansonsten jemand mal schauen würde, wär sehr dankbar :)"
+2011-07-01 18:35:55,FreakyPenguin,Im Zweifelsfall halt mal testen und die offensichtlichen Bugs selbst fixen. ;-)
+2011-07-01 18:36:18,Sebi2020,"Die offensichlichen, da gibs immer so wenig von :D"
+2011-07-01 18:36:53,Sebi2020,"Die meisten finde ich immer, wenn ich grad bei was anderem bin und es das dann nich tut... Dann kann ich den alten Code wieder ausgraben und zack, da isses doch :Dx"
+2011-07-01 18:37:47,bluecode_,ich seh nicht wo du die Bits zu den allozierten Pages auf 0 setzt
+2011-07-01 18:39:33,Sebi2020,"Autsch, ja das sind diese peinlichen Fehler.... Die Frage ist die, wann ich das tun soll. Und wie ich das überhaupt abspeicher, um sie dann umzusetzen. Ich möchte an der mmap erst mal nichts verändern, solang nicht klar ist, das es passt. hm, vielleicht ne kopie von dem mapteil und die verändern, und wenns passt, dann einfach in die original map speichern?"
+2011-07-01 18:40:04,bluecode_,warum unterscheidest du eigentlich zwische <= und > 32 Pages?
+2011-07-01 18:40:24,bluecode_,"und warum ""pendingBits = pageNumber % 32;"" im ersten Fall? Das würde aus 32 0 machen..."
+2011-07-01 18:44:06,Sebi2020,"warte, ich schau mal kurz drüber"
+2011-07-01 18:45:03,Sebi2020,wieso würde das null machen? 25 % 32 = 0 Rest 25... oO
+2011-07-01 18:45:11,bluecode_,bei 32
+2011-07-01 18:45:21,bluecode_,32 % 32 = 0
+2011-07-01 18:45:25,bluecode_,das mein ich
+2011-07-01 18:46:24,bluecode_,"gut, ich versteh nichtmal warum da überhaupt ein mod steht, das macht in dem Fall nur für 32 was"
+2011-07-01 18:46:30,bluecode_,und das erscheint mir komplett falsch zu sein
+2011-07-01 18:46:42,Sebi2020,überflüssig wohl eher wie ich gerade sehe
+2011-07-01 18:46:55,bluecode_,"wie gesagt, für 32 ist das falsch..."
+2011-07-01 18:47:08,bluecode_,aber warum überhaupt eine Fallunterscheidung ob <= bzw. > 32?
+2011-07-01 18:47:57,Sebi2020,"ganz einfach. wenn ich 32 pages haben will, muss ich mich nicht um ganze felder kümmern, oder es ist nicht so wichtig. bin ich drüber kann ich nach ganzen Array-Feldern suchen"
+2011-07-01 18:48:24,Sebi2020,um die suche zu beschleunigen. weil > 32 zwingt mich dazu ein ganzes array-feld zu reservieren
+2011-07-01 18:49:02,bluecode_,"nö, tut es nicht"
+2011-07-01 18:49:33,kevin,Klingt für mich nach überflüssigem Optimierungsversuch
+2011-07-01 18:49:41,kevin,Der nur zu Fehlern führt
+2011-07-01 18:49:55,bluecode_,man könnte immernoch 16bit aus einem feld und 16bit aus dem nächsten bekommen
+2011-07-01 18:50:05,bluecode_,ist also kein ganzes feld aus der bitmap
+2011-07-01 18:50:06,Sebi2020,ach ne? also 32 mal ne bitverschiebung mit & verknüpfung und 32 schleifendurchläufe sind doch wohl fressender als ein vergleich 
+2011-07-01 18:50:54,Sebi2020,und bei pmm_bitmap[i] == 0xFFFFFFFF ist es nur einer statt. alle 32 bit durchzugehen
+2011-07-01 18:51:18,Sebi2020,das wäre den nämlich sonst pmm_bitmap[i] >> i2 > 0
+2011-07-01 18:52:12,Sebi2020,"ich verstehe nicht, warum das nicht einen performance gewinn geben soll."
+2011-07-01 18:52:29,bluecode_,"was kevin wohl meinte ist ""make it work, optimize it, in this order"""
+2011-07-01 18:52:42,Sebi2020,"Ich meine eher, das was du gesagt"
+2011-07-01 18:52:43,Sebi2020,hast
+2011-07-01 18:52:47,Sebi2020,"""nö, tut es nicht"""
+2011-07-01 18:52:55,Sebi2020,und wieso 16 Bit?
+2011-07-01 18:53:06,bluecode_,"das bezog sich auf ""weil > 32 zwingt mich dazu ein ganzes array-feld zu reservieren"""
+2011-07-01 18:54:18,Sebi2020,"Ja, und das geht doch wohl schneller wenn ich einfach überüfe arrayfeld == 0xFFFFFFFF"
+2011-07-01 18:54:20,Sebi2020,als es bitweise durchzugehen
+2011-07-01 18:54:25,Sebi2020,das wäre doch total überflüssig...
+2011-07-01 18:55:23,bluecode_,*sigh*
+2011-07-01 18:55:42,bluecode_,"was ich meinte ist: >32 heißt NICHT zwingend, dass es ein ganzes arrayfeld ist"
+2011-07-01 18:56:17,kevin,>62 wäre dafür wohl das richtige
+2011-07-01 18:56:42,Sebi2020,"rein von der größe gesehen schon :D ich sage nicht, es muss genau in ein feld passen. nur das es von der größe einem Feld entspricht oO"
+2011-07-01 18:56:54,Sebi2020,plus ein paar bits
+2011-07-01 18:57:23,Sebi2020,es ist auf jedenfall nicht kleiner als ein feld. und meine arrayfelder sind nunmal 4 Bytes groß
+2011-07-01 18:57:42,kevin,Warum machst du es dir so kompliziert?
+2011-07-01 18:58:36,Sebi2020,"Das hat was damit zu tun, was Svenska mir letztens im Channel hier gesagt hat. Das es total blöd ist, das alles Bitweise zu machen (oder wie er es genau ausgedrückt hat. Ich weis es nicht mehr)"
+2011-07-01 18:59:07,kevin,"Zwei Drittel von deinem Code gehen für den Fall mit > 32 drauf, der außerdem noch sehr wahrscheinlich falsch ist"
+2011-07-01 18:59:28,Sebi2020,"schön, das du einfach gleich mal sagst, er wäre falsch"
+2011-07-01 18:59:32,kevin,"Wie oft tritt dieser Fall ein, dass du > 32 Pages, also mehr als 128k am Stück haben willst? Praktisch nie."
+2011-07-01 18:59:48,kevin,Lohnt sich die Sonderbehandlung also? Nein.
+2011-07-01 19:00:54,Sebi2020,"Wenn du davon ausgehst. Kannst du auch sagen. Brauch ich eine Speicherverwaltung. Brauch ich kernel-Schutz. Tritt doch kaum ein, dass Programme versuchen den Kernel zu beschreiben usw usw."
+2011-07-01 19:00:54,bluecode_,"selbst wenn es sich lohne würde, würde ich erstmal eine unoptimierte funktionierende Funktion bauen"
+2011-07-01 19:01:12,kevin,sebi2020: Korrektheit != Geschwindigkeit
+2011-07-01 19:02:01,kevin,"Der ""dumme"" Code funktioniert schließlich auch für viele Pages korrekt"
+2011-07-01 19:03:06,Sebi2020,Natürlich... aber ich hab vielleicht nicht nur das ziel korrekten Code zu haben. Sondern auch schnellen. Und das eine schließt das andere nicht aus !(Korrektheit  != Geschwindigkeit)
+2011-07-01 19:04:21,kevin,Aber schneller kaputter Code ist schlechter als funktionierender langsamer.
+2011-07-01 19:04:54,Sebi2020,"Dann widersprech ich dir nicht, aber man hat mir letztens gesagt. Schreibs gleich richtig, bevor du später wieder alles umändern musst wegen neuer Schnittstelle usw."
+2011-07-01 19:05:03,Sebi2020,*Da
+2011-07-01 19:05:24,Sebi2020,"Und mit richtig war auch gemeint, so wie ichs am Ende haben will :D"
+2011-07-01 19:06:46,bluecode_,"das ist du von unserem Theoretiker gehört, oder? ;-P"
+2011-07-01 19:07:43,kevin,"erik war das, glaube ich"
+2011-07-01 19:07:51,Sebi2020,Ja genau
+2011-07-01 19:08:12,kevin,Der ist nur halb Theoretiker ;-)
+2011-07-01 19:08:51,Sebi2020,"Ja... Hm, weis auch nicht. Aber der Code funktioniert wirklich nicht, habs schon bemerkt. Wenn ich jetzt gern 34 Pages hätte, aber die freie stelle in einem feld zB. bei bit 28 liegt hab ich schon ein Problem :D Ich denke ich geh doch alles Bitweise durch. Sonst bekomm ich noch nen Knoten :D"
+2011-07-01 19:08:57,bluecode_,er hat die Erfahrung gleich zu schreiben was er eigentlich will
+2011-07-01 19:09:09,bluecode_,das hilft Anfängern halt nur bedingt
+2011-07-01 19:09:27,bluecode_,und auch das Durchhaltevermögen dafür
+2011-07-01 19:09:57,Sebi2020,"Naja, ich hab mir den Algorithmus erstmal so aufgeschrieben, aber manche sachen hab ich dabei einfach nicht berücksichtigt, wie mir jetzt erst aufällt."
+2011-07-01 19:10:36,Sebi2020,"ich bin z.B. davon ausgegangen, dass immer soviele Bits noch reserviert werden müssen, dass ich am ende eines arrayfeldes gelange und z.B. die pendingBits Variable davor nicht 0 wird."
+2011-07-01 19:11:00,Sebi2020,"aber das kann sie werden, wie ich jetzt sehe :)"
+2011-07-01 19:19:51,Sebi2020,"Naja, gut dann probiere ichs nochmal mit der leichteren Variante. Bin dann mal weg"
+2011-07-01 22:02:23,DesL,moin
+2011-07-01 23:27:27,JanDing,vorher
+2011-07-01 23:27:35,Jidder,nachher
+2011-07-01 23:30:52,DesL,it's magic

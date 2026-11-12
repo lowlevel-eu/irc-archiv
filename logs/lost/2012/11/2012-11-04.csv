@@ -1,0 +1,70 @@
+date/time,nick,message
+2012-11-04 14:59:10,iksnagreb,hi
+2012-11-04 16:09:34,DerHartm-,Tag zusammen
+2012-11-04 16:10:25,DerHartm-,"Hui, ehenkes ist ja auch wieder da"
+2012-11-04 18:45:14,iksnagreb,"hallo, wenn ich mein OS auf echter Hardware, oder in einer Virtuellen maschine teste, wir ein General Protection Fault ausgelöst, mit qemu funktioniert alles, ich weiß nicht, wo ich jetzt nach dem Fehler suchen soll"
+2012-11-04 18:52:11,MSN,k2
+2012-11-04 18:52:50,MSN,das war die ratte :D
+2012-11-04 19:33:09,JanDing,"woher weißt du, dass es ein general protection fault ist?"
+2012-11-04 19:34:58,iksnagreb,"es wir mir von meinem interrupt handler ausgegeben, soviel geht noch"
+2012-11-04 19:35:42,JanDing,"dann gibt der hoffentlich auch den wert von eip, esp und vom error code aus"
+2012-11-04 19:36:20,JanDing,"du kannst deinen kernel mit objdump -d disassemblieren und dann schauen, welcher befehl an der adresse eip steht"
+2012-11-04 19:36:55,iksnagreb,"werd ich mal machen, schonmal danke"
+2012-11-04 19:38:25,iksnagreb,"ich glaub, eip ist nicht im kernel, sondern im programm"
+2012-11-04 19:39:02,iksnagreb,und das ist dummerweise sone flache binary und damit geht objdump nicht
+2012-11-04 19:39:16,iksnagreb,also das ist jetzt blöd
+2012-11-04 19:39:51,JanDing,hast du nasm installiert?
+2012-11-04 19:40:09,iksnagreb,"ne, das lässt sich aber machen, wozu?"
+2012-11-04 19:40:17,JanDing,mit ndisasm könntest du die binary disassemblieren
+2012-11-04 19:40:35,XanClic,"objdump geht schon, wenn mans richtig macht"
+2012-11-04 19:41:12,iksnagreb,wie?
+2012-11-04 19:41:24,XanClic,objdump -b binary -m i386 -D
+2012-11-04 19:42:51,JanDing,da lern ich auch mal was hier
+2012-11-04 19:53:19,iksnagreb,"ich finds nicht, eip hat den wert 2004A8 , der größte wert aus dem objdump ist 240f"
+2012-11-04 19:54:14,JanDing,"da musst du 200000 draufrechnen, weil objdump ja nicht weiß wohin dein programm geladen wird"
+2012-11-04 19:54:27,JanDing,"das ist halt die sache mit binaries: keine informationen, nur code"
+2012-11-04 19:54:33,JanDing,*flachen binaries
+2012-11-04 19:54:43,JanDing,musst also nach 4A8 suchen
+2012-11-04 20:03:25,iksnagreb,"gefunden hab ichs, aber ich versteh es nicht richtig und vorallem weiß ich nicht genau, wo im programm es ist"
+2012-11-04 20:14:11,yayachiken,Hallihallo
+2012-11-04 20:14:22,yayachiken,Wollte mich mal für die Hilfe mit dem Stackkrempel bedanken
+2012-11-04 20:14:34,yayachiken,Hatte heute die möglichkeit zu testen und es lief alles quasi auf anhieb :D
+2012-11-04 20:20:37,JanDing,iksnagreb: hm dann ist das tricky. was für eine instruktion ist das denn?
+2012-11-04 20:26:42,iksnagreb,"     4a8:	c7 05 08 30 20 00 00 	movl   $0x0,0x203008"
+2012-11-04 20:27:39,Jidder,hm
+2012-11-04 20:27:44,Jidder,lässt du dir den error code ausgeben?
+2012-11-04 20:28:03,Jidder,mir fällt da nämlich eigentlich nur ein fehler ein: gdt limit zu klein
+2012-11-04 20:28:25,Jidder,oder ds segment nicht korrekt geladen
+2012-11-04 20:28:25,iksnagreb,"ja, der ist 0"
+2012-11-04 20:28:28,Jidder,also schon zwei fehler
+2012-11-04 20:28:37,Jidder,was steht in ds?
+2012-11-04 20:29:00,iksnagreb,ds lass ich nicht ausgeben
+2012-11-04 20:29:09,Jidder,hm und esp?
+2012-11-04 20:29:21,iksnagreb,5F90
+2012-11-04 20:29:58,Jidder,"hm damit fällt ""esp zeigt auf unbeschreibbaren speicher"" weg"
+2012-11-04 20:30:07,Jidder,das ist der user esp?
+2012-11-04 20:30:59,Jidder,"ah du lässt deine programme in ring3 laufen, oder?"
+2012-11-04 20:31:10,iksnagreb,ja
+2012-11-04 20:31:14,Jidder,ich les hier parallel deinen code von vor ein paar tagen
+2012-11-04 20:31:18,Jidder,vermutlich hat ds den wert 0x10
+2012-11-04 20:31:26,Jidder,im user space musst du den aber mit 0x23 laden
+2012-11-04 20:31:41,Jidder,in intr_common_handler lädst du ds aber mit 0x10
+2012-11-04 20:33:10,Jidder,"theoretisch solltest du am ende von intr_common_handler ds mit 0x10 laden, wenn der handler in den kernel zurück springt und mit 0x23, wenn er in einen user prozess zurückspringt"
+2012-11-04 20:33:34,Jidder,"du kannst natürlich interrupts im kernel deaktivieren, dann springt der irq-handler zumindest immer in den user prozess zurück"
+2012-11-04 20:34:00,Jidder,"alternativ könntest du auch ds (und die anderen segmentregister) so wie eax, ebx, ... auf dem stack sichern"
+2012-11-04 20:34:56,iksnagreb,"ich komm grad nicht ganz mit, was sollte ich wo machen?"
+2012-11-04 20:35:17,Jidder,"in intr_common_handler mov $0x23, %ax"
+2012-11-04 20:35:27,Jidder,nach dem aufruf von handle_interrupt
+2012-11-04 20:35:40,Jidder,"mov $0x23, %ax anstatt mov $0x10, %ax"
+2012-11-04 20:35:43,iksnagreb,"ja, so wie im tutorial"
+2012-11-04 20:35:57,iksnagreb,ich frag mich wieso ichs nicht s gemacht hab
+2012-11-04 20:36:23,Jidder,sowas überliest man halt leicht
+2012-11-04 20:41:13,iksnagreb,"ich wer dann mal testen, obs so geht, ich muss dann mal neustarten(keine lust das wieder auf nen cd zu machen, dann nehm ich jetzt diesn computer, geht schneller)"
+2012-11-04 20:41:31,Jidder,viel glück ^^
+2012-11-04 20:41:46,iksnagreb,danke
+2012-11-04 20:45:53,iksnagreb,hallo
+2012-11-04 20:46:15,iksnagreb,es hat funktioniert
+2012-11-04 20:49:09,Jidder,nett
+2012-11-04 20:49:24,iksnagreb,danke
+2012-11-04 22:06:53,DesL,moin
+2012-11-04 22:11:02,Jidder,moin

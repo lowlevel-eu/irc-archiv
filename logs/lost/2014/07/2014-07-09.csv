@@ -1,0 +1,289 @@
+date/time,nick,message
+2014-07-09 12:45:36,iksnagreb,moin
+2014-07-09 16:21:07,th3falc0n,woher weiß der kernel eig was er bei nem dateizugriff zu machen hat?
+2014-07-09 16:21:42,th3falc0n,"also woher weiß er, wie  er an die datei kommt?"
+2014-07-09 16:27:33,kevin,"Er befiehlt einfach das Dateisystemtreiber, die Datei zu holen"
+2014-07-09 16:27:36,kevin,Dann ist das dessen Problem
+2014-07-09 16:27:41,kevin,*dem
+2014-07-09 16:27:57,Svenska,und der dateisystemtreiber redet mit dem gerätetreiber
+2014-07-09 16:28:02,th3falc0n,"die  frage war eher woher er weiß, welcher prozess der dateisystemtreiber ist"
+2014-07-09 16:28:14,Svenska,klassisch unix: es gibt nur ein dateisystem ^^
+2014-07-09 16:28:38,Svenska,du könntest das aus dem dateinamen extrahieren
+2014-07-09 16:28:44,Svenska,weil dein dateisystem ja irgendwo gemountet ist.
+2014-07-09 16:28:55,kevin,"Wie definierst du ""Dateisystem"", Svenska?"
+2014-07-09 16:29:03,LittleFox,/
+2014-07-09 16:29:03,Svenska,"""dateisystemtreiber"""
+2014-07-09 16:29:07,kevin,"Je nachdem, unter welchem Mountpoint das ist, muss das schon an unterschiedliche Treiber"
+2014-07-09 16:29:49,kevin,"Ach so, ein Dateisystemtyp"
+2014-07-09 16:30:08,Svenska,"<th3falc0n> die  frage war eher woher er weiß, welcher prozess der dateisystemtreiber ist"
+2014-07-09 16:31:52,Svenska,"das hängt vom design des kernels ab. beim mounten verbindest du ja das gerät mit dem pfad, da kannst du auch gleich den treiber mit angeben, fürs root-dateisystem kann das ja statisch sein (linux: ""rootfstype"") oder automatisch erkennen versuchen"
+2014-07-09 16:35:48,th3falc0n,also mach ich mir im prinzip nen baum
+2014-07-09 16:36:01,th3falc0n,und mach für jedes subdirectory nen struct 
+2014-07-09 16:36:30,th3falc0n,"mit inhalt ""SUBDIR_TYPE=[mount, kernel, empty] und STRUCT_PTR"""
+2014-07-09 16:36:52,th3falc0n,bei mount zeigt struct_ptr auf nen struct task
+2014-07-09 16:37:00,th3falc0n,bei kernel auf nen neuen dir tree
+2014-07-09 16:37:02,Svenska,"kannst du machen. ich hab aber keine ahnung, ob das gut oder schlecht ist, weil mir für VFS bisher keine wirklich gute lösung eingefallen ist."
+2014-07-09 16:37:45,Svenska,"ich weiß nicht, ob es eine gute idee ist, einen mountpoint mit einem bestimmten prozess zu verknüpfen oder lieber mit einem dateisystemtreiber (und den dann mit einem prozess)"
+2014-07-09 16:38:07,Svenska,"dann könntest du - theoretisch - den dateisystemtreiber neu starten, wenn er abstürzt, ohne, dass die mounts kaputtgehen"
+2014-07-09 16:38:35,th3falc0n,hmm
+2014-07-09 16:38:46,Svenska,"(wenn er abstürzt, musst du aber das dateisystem prüfen. systeme mit journal sind dafür besser geeignet.)"
+2014-07-09 16:41:09,th3falc0n,wenn er abstürzt rufe ich die (leere) funktion pray(); auf und remounte ihn
+2014-07-09 16:41:22,Svenska,geht auch
+2014-07-09 16:54:28,th3falc0n,"angenommen ich bau jetzt für jeden prozess ne stdin und stdout in /proc/<pid>/stdin bzw /proc/<pid>/stdout, müssen dass endlose buffer sein?"
+2014-07-09 16:55:40,th3falc0n,"bzw hat mal jemand nen link für mich wie das ganze dateizeugs unter linux funktioniert, bevor  ich hier weiter rum rate"
+2014-07-09 17:07:36,Svenska,"hmm, definiere ""endlose buffer"" :-)"
+2014-07-09 17:07:45,Svenska,so viel speicher wirst du in deinem system nicht drin haben.
+2014-07-09 17:07:53,th3falc0n,endlos im sinne von wachsend
+2014-07-09 17:08:51,th3falc0n,"das heisst, solange per printf() sachen nach stdout geschrieben werden, vergrößert der den buffer für stdout unendlich"
+2014-07-09 17:09:31,th3falc0n,"struct fifo_element { size_t size, void* data, struct fifo_element* next }"
+2014-07-09 17:09:45,th3falc0n,"dann kann man allerdings in stdout nicht an beliebige stelle schreiben, sondern nur appenden"
+2014-07-09 17:10:12,Svenska,"also erzeuge ich eine pipe, die zwei prozesse verbindet. ein prozess liest nicht, der andere schreibt, und am ende stirbt dein system mit out-of-memory. ok?"
+2014-07-09 17:12:35,Svenska,"ich würde den puffer begrenzen, und wenn du mehr reinschreibst, dann blockt halt der schreibende prozess"
+2014-07-09 17:12:41,Svenska,"""voll ist voll""."
+2014-07-09 17:37:30,th3falc0n,printf() blockend?
+2014-07-09 17:37:32,th3falc0n,aua
+2014-07-09 17:37:41,Svenska,warum?
+2014-07-09 17:38:01,th3falc0n,das hört sich kaputt an
+2014-07-09 17:38:05,Svenska,warum? :-)
+2014-07-09 17:38:42,th3falc0n,weil... einfach so
+2014-07-09 17:38:54,Svenska,"while(1) printf(""abcdef"");"
+2014-07-09 17:39:05,Svenska,und die gegenstelle tut nichts.
+2014-07-09 17:39:11,Svenska,wie viele daten willst du da reinschreiben?
+2014-07-09 17:39:24,th3falc0n,solange bis speicher voll ist
+2014-07-09 17:39:43,Svenska,"also willst du, dass zwei böse userspace-prozesse alle anderen prozesse im system lahmlegen können?"
+2014-07-09 17:39:58,th3falc0n,wieso 2? es reicht doch einer *trollface*
+2014-07-09 17:40:05,Svenska,stimmt auch wieder.
+2014-07-09 17:40:15,Svenska,"jedenfalls wirds noch fieser, weil du ja im kernel bufferst"
+2014-07-09 17:40:42,th3falc0n,ok wir nehmen 4k buffer für stdio
+2014-07-09 17:40:43,XanClic,lol Sicherheitsbedenken in #lost
+2014-07-09 17:40:45,Svenska,auf ner 32-bit-maschine hast du da aber nur begrenzten adressraum :D
+2014-07-09 17:41:30,Svenska,"ich hätte jetzt zwar eher 1M oder so gesagt, aber ja, ist sinnvoll. wer mehr in die pipe kippt, wird blockiert. kann man ja abfragen."
+2014-07-09 17:55:41,Jonathan,Moin
+2014-07-09 17:55:43,Jonathan,Svenska! :D
+2014-07-09 17:55:47,Svenska,hi
+2014-07-09 17:55:58,Jonathan,Karte fertig! http://s8.postimg.org/4ea0ktqed/IMG_20140706_193439.jpg
+2014-07-09 17:56:07,Jonathan,Und Rückseite: http://s13.postimg.org/y1iy138fb/IMG_20140706_193534.jpg
+2014-07-09 17:56:24,Jonathan,Und Testbild: http://s13.postimg.org/8l3l8edmf/IMG_20140707_220735.jpg
+2014-07-09 17:56:52,Svenska,nice
+2014-07-09 17:57:01,Jonathan,:D
+2014-07-09 17:57:21,Jonathan,"Das Interface zur CPU geht auch wunderbar, trotz Zugriffs-Multiplexing"
+2014-07-09 17:57:32,Jonathan,Maximal kann man mit etwa 10MHz Bus-Takt in die Grafikkarte reindonnern
+2014-07-09 17:57:45,LittleFox,was ist das für ein zinnblob auf der rückseite?
+2014-07-09 17:57:56,Svenska,hält die beiden eurokarten zusammen? :)
+2014-07-09 17:58:05,Jonathan,Genau ;)
+2014-07-09 17:58:09,LittleFox,ah ok^^
+2014-07-09 17:58:15,Jonathan,"Eigentlich ist das eher weniger Zinn, und mehr Kupferblech"
+2014-07-09 17:58:20,LittleFox,"hatte den unteren nicht gesehen, das hatte mich verwundert^^"
+2014-07-09 17:58:23,Jonathan,^^
+2014-07-09 17:58:26,Svenska,du hast ja fleißig gesockelt :)
+2014-07-09 17:58:30,Jonathan,*g*
+2014-07-09 17:58:30,Svenska,also 2 chips zumindest
+2014-07-09 17:58:36,Svenska,"ne, 3 ^^"
+2014-07-09 17:58:47,Jonathan,Logikchips sockle ich generell fast nicht
+2014-07-09 17:59:00,Svenska,"ich hab übrigens in der heimat rausgefunden, was mein digitalmonitor kann"
+2014-07-09 17:59:11,Jonathan,"Die Sockel sind teurer, als die Chips selbst, und kaputt gehen sie auch nicht (Ausgänge kurzschlussfest)"
+2014-07-09 17:59:21,Svenska,"...und wenn man einen HGC-monitor an eine CGA-grafikkarte anschließt, fiept der komisch"
+2014-07-09 17:59:27,Jonathan,Okay
+2014-07-09 17:59:29,Svenska,andersrum machts fump
+2014-07-09 17:59:35,LittleFox,:D
+2014-07-09 17:59:55,Svenska,"(CGA: 15 kHz, HGC: 18 kHz, VGA: 31.5 kHz)"
+2014-07-09 18:00:48,Svenska,"wenigstens weiß ich jetzt, dass es ein MDA/HGC-bildschirm ist, weil das nicht draufsteht"
+2014-07-09 18:01:01,Svenska,ist bernstein
+2014-07-09 18:01:38,mgottschlag,"""<Jonathan> Logikchips sockle ich generell fast nicht"" - d.h. du sockelst bei jedem Chip so ca. ein Viertel der Pins? :)"
+2014-07-09 18:01:50,Svenska,LOL
+2014-07-09 18:01:52,Jonathan,Genau *g*
+2014-07-09 18:02:29,Jonathan,Svenska: Wie viele Chips hat dein System nochmal insgesamt?
+2014-07-09 18:02:35,Svenska,puh
+2014-07-09 18:03:05,Svenska,muss ichs bild suchen
+2014-07-09 18:03:45,Jonathan,"Irgendwie hab ich das dumpfe Gefühl, dass allein meine Grafikkarte mehr Chips hat, als dein gesamtes System xD"
+2014-07-09 18:04:27,Svenska,15 :D
+2014-07-09 18:04:40,Jonathan,xD
+2014-07-09 18:04:48,Jonathan,Karte: 26...
+2014-07-09 18:04:50,Jonathan,Ohje xD
+2014-07-09 18:05:09,Jonathan,Insgesamt habe ich jetzt 40 ICs verbastelt und schäme mich langsam ein bisschen
+2014-07-09 18:05:20,Svenska,"3x I2C, 2x CPU, 3x 8b-Treiber, 2x 4b-Treiber, 4x Logik, 1x RAM"
+2014-07-09 18:05:36,Svenska,"aber das ist relativ normal, dass vga so aufwändig ist"
+2014-07-09 18:05:42,Jonathan,Ja
+2014-07-09 18:05:45,Jonathan,Die doofen Timings
+2014-07-09 18:05:52,Svenska,das mycpu-system hat auch 2 karten system und 3 karten vga
+2014-07-09 18:05:54,Jonathan,Und dazu halt noch die Umsetzung von ASCII in Pixel
+2014-07-09 18:06:02,Jonathan,3 Karten?
+2014-07-09 18:06:10,Jonathan,"Als ich letztens nachgeschaut habe, waren das 5 oder so"
+2014-07-09 18:06:19,Svenska,N und N-1
+2014-07-09 18:06:21,LittleFox,waren es nicht 5 cpu und 7 vga?
+2014-07-09 18:06:23,Svenska,für N=vergessen :D
+2014-07-09 18:06:26,Jonathan,xD
+2014-07-09 18:06:34,Jonathan,7 kann auch sein
+2014-07-09 18:06:48,LittleFox,"oh, Svenska hat rect"
+2014-07-09 18:06:50,LittleFox,recht
+2014-07-09 18:06:52,LittleFox,n und n+1
+2014-07-09 18:07:00,LittleFox,5 cpu und 6 vga
+2014-07-09 18:07:12,Jonathan,Ja
+2014-07-09 18:07:14,Svenska,5 und 6
+2014-07-09 18:07:14,Svenska,ja
+2014-07-09 18:07:22,Jonathan,Aber sein N hat er falsch gewählt!
+2014-07-09 18:07:30,Jonathan,Gibt nur Teilpunkte für den Rechenweg
+2014-07-09 18:07:38,Svenska,reicht mri
+2014-07-09 18:07:57,Jonathan,Ein einzelner Tippfehler kann eine ganze Nachricht urinieren.
+2014-07-09 18:08:32,Svenska,"zeichensetzung kann leben retten: ""Wir essen Opa"""
+2014-07-09 18:08:41,Jonathan,Genau
+2014-07-09 18:08:57,Jonathan,"Groß- und Kleinschreibung kann auch viel ausmachen: ""helft den armen vögeln"""
+2014-07-09 18:09:05,livinskull,"da nehmt ein paar Zeichen, hab genug: ,.,.;:;:!!??"
+2014-07-09 18:09:11,Svenska,^^
+2014-07-09 18:09:26,LittleFox,livinskull macht satzzeichen zu herdentieren ...
+2014-07-09 18:09:54,Jonathan,https://www.dropbox.com/s/kq521cfxrwchfqa/IMG_20140708_185714.jpg <----- Hab auch schonmal ein bisschen am BIOS gebastelt
+2014-07-09 18:10:52,Jonathan,"Svenska: Planst du eigentlich auch eine Grafikkarte ein, oder willst du nur RS232 nutzen?"
+2014-07-09 18:16:39,Jonathan,Moin kevin
+2014-07-09 18:16:47,kevin,Moin
+2014-07-09 18:18:56,Svenska,ne grafikkarte ist geplant
+2014-07-09 18:20:49,Svenska,"Jonathan: lustig, mein start-screen sieht so ähnlich aus"
+2014-07-09 18:20:54,Jonathan,:D
+2014-07-09 18:20:58,Svenska,nur ohne die adressen (weil slot-nr)
+2014-07-09 18:21:05,Jonathan,Joa
+2014-07-09 18:21:10,Svenska,"der kommt aber vom avr, weil ich da ein printf habe :D"
+2014-07-09 18:21:23,Jonathan,"Ich hab einfach mal beides rein, der Screen soll ja schließlich nach was aussehen *g*"
+2014-07-09 18:21:30,Jonathan,"Auch das ""USAGE""-Feld ist reine Spielerei"
+2014-07-09 18:22:00,Svenska,"ich bin mir noch nicht sicher, wie ich das mit der konfiguration mache... ich brauche ja ein BIOS-Setup"
+2014-07-09 18:22:06,Jonathan,Stimmt
+2014-07-09 18:22:16,Jonathan,Wobei ich wahrscheinlich auch ein BIOS-Setup haben werde
+2014-07-09 18:22:23,Jonathan,(Welches aber aufm Z80 laufen wird)
+2014-07-09 18:22:46,Svenska,"das ist im augenblick komplett im AVR realisiert, weil ich darüber auch den RAM initialisiere fürs bootstrapping; wenn ich MMU+Massenspeicher habe, wird der bootstrap aber fixiert"
+2014-07-09 18:23:14,Jonathan,"Hm, ja"
+2014-07-09 18:23:34,Svenska,vermutlich kommt ein CP/M in die virtuelle floppy :-)
+2014-07-09 18:23:53,Svenska,mit BOOT.COM und SETUP.COM
+2014-07-09 18:23:56,Jonathan,Bei mir gibt's das Bootstrapping per ATMega162 - ich wollte unbedingt das XMEM-Interface mal ausprobieren *g*
+2014-07-09 18:24:07,Jonathan,"Und ich bin zu dem Ergebnis gekommen: Ja, XMEM ist was Feines"
+2014-07-09 18:24:12,Svenska,"jaa, hätte ich gewusst, dass das so einfach ist..."
+2014-07-09 18:24:15,Svenska,wie schnell ist es?
+2014-07-09 18:24:49,Jonathan,"Braucht nur Millisekunden, um 16k in den RAM zu schreiben, wieder auszulesen und mit dem ROM-Inhalt zu vergleichen"
+2014-07-09 18:24:55,Jonathan,"Also ja, ist schnell"
+2014-07-09 18:25:00,Svenska,*wein*
+2014-07-09 18:25:04,Svenska,"ich glaub, ich bau was neues :D"
+2014-07-09 18:25:06,Jonathan,xD
+2014-07-09 18:26:10,Svenska,ich hab mir ja mal einen '8515 zugelegt
+2014-07-09 18:26:23,Svenska,"hmm, heimaturlaub... ich bin mal essen ^^"
+2014-07-09 18:26:29,Jonathan,Guten Hunger ^^
+2014-07-09 18:26:41,Jonathan,Wobei der 8515 wahrscheinlich zu wenig ROM hat für die Aufgabe
+2014-07-09 18:26:58,Svenska,"hm, guter punkt"
+2014-07-09 18:27:04,Svenska,CP/M hat 24K
+2014-07-09 18:28:11,Jonathan,Man kann ja auch eine echte Floppy dranbasteln
+2014-07-09 18:28:23,Jonathan,Oder eine separater Floppy-Emulator-Karte
+2014-07-09 18:28:26,Jonathan,Mit EEPROM
+2014-07-09 18:28:31,Svenska,"nein, nein und nein :)"
+2014-07-09 18:28:41,Jonathan,Wieso nicht? D:
+2014-07-09 18:28:56,Jonathan,Du kannst ja auch ein I2C-EEPROM an den 8515 hängen
+2014-07-09 18:29:14,Jonathan,"Dann muss man sogar nicht jedes mal den AVR neu flashen, sondern nur den EEPROM"
+2014-07-09 18:29:28,Jonathan,"Und das ist nur ein kleiner 8-Beiner, also leicht auszuwechseln"
+2014-07-09 18:29:38,Svenska,"hast du dir mal angeschaut, wie floppys angesprochen werden?"
+2014-07-09 18:29:47,Jonathan,"Gruselig, ich weiß"
+2014-07-09 18:29:57,Jonathan,Deshalb wird mein System auch keine haben *g*
+2014-07-09 18:30:12,Jonathan,Oder ich besorg mir nen alten Intel-Floppy-Controller-IC
+2014-07-09 18:30:13,Svenska,verdammt
+2014-07-09 18:30:24,Svenska,CPM56.COM.gz hat 7478 Bytes. :-(
+2014-07-09 18:30:30,Svenska,die ICs sind auch nicht besser
+2014-07-09 18:30:40,Svenska,also doch nur n bios mit bootstrap ^^
+2014-07-09 18:30:44,Svenska,"-> essen, bis später"
+2014-07-09 18:30:51,Jonathan,"Jo, bis dann"
+2014-07-09 18:31:56,Jonathan,Aber was spricht denn gegen ein kleines read_eeprom() anstelle eines read_flash() im AVR-Code? o:
+2014-07-09 19:00:49,Svenska,"read_eeprom() ist schon da, aber der eeprom ist zu klein"
+2014-07-09 19:01:08,Svenska,zumindest der vom avr. *g*
+2014-07-09 19:02:59,Svenska,"hm, andere version, anderes glück: 5.6k fürs CP/M ohne BIOS"
+2014-07-09 19:03:06,Svenska,und mein derzeitiges BIOS hat nur ca. 400 byte.
+2014-07-09 19:03:26,Svenska,muss ich nur nen dekompressor einbinden. *grübel*
+2014-07-09 19:25:56,Svenska,"Jonathan: bei segor gabs nen TTL-FDC, aber leider nicht für HD-disketten"
+2014-07-09 19:26:29,Svenska,"so'n standardbaustein für 8"" und 5,25"" :-)"
+2014-07-09 19:26:40,Jonathan,Schade
+2014-07-09 19:26:59,Jonathan,Aber ich würde einfach ein 24C512 extern anbinden
+2014-07-09 19:27:04,Svenska,"und, naja, es gibt halt kein standardisiertes cp/m diskettenformat"
+2014-07-09 19:27:05,Jonathan,Dann hat man Ruhe ^^
+2014-07-09 19:27:12,Svenska,ich wollte ne CF-Karte per IDE anbinden
+2014-07-09 19:27:25,Jonathan,"Jo, das geht natürlich auch"
+2014-07-09 19:27:27,Jonathan,Ach ja!
+2014-07-09 19:27:39,Jonathan,"Wenn du sowas machen willst: Kauf dir ein sogenanntes ""Disk on Module"""
+2014-07-09 19:27:52,Svenska,oder alternativ eine SD-Karte
+2014-07-09 19:28:03,Svenska,"aber das beißt sich ein bisschen mit CP/M, leider"
+2014-07-09 19:28:04,Jonathan,"Quasi eine CF-Karte, hat aber Rastermaß 2,54mm und lässt sich auf einen normalen IDE-Steckplatz stecken"
+2014-07-09 19:28:20,Jonathan,"Kann man also auch mit ""Hausmitteln"" leicht auf Lochraster verarbeiten"
+2014-07-09 19:28:32,Jonathan,"Kostet so 5€ für 128MB, und mehr braucht man ja für ein CP/M-System nicht"
+2014-07-09 19:28:35,Svenska,"hm, ich hatte an einen CF-IDE-Adapter gedacht *g*"
+2014-07-09 19:28:38,Jonathan,*g*
+2014-07-09 19:28:58,Jonathan,"Ich würde ein DOM nehmen, die Viecher sind deutlich relaxter hinsichtlich der Ansteuerung"
+2014-07-09 19:29:11,Svenska,als CF-karten oder als festplatten? ^^
+2014-07-09 19:29:12,Jonathan,Verzeihen auch mal Timing- und Pegelfehler
+2014-07-09 19:29:19,Jonathan,Als Festplatten ^^
+2014-07-09 19:29:39,Svenska,hast du das jetzt gemacht?
+2014-07-09 19:29:43,Jonathan,?
+2014-07-09 19:29:52,Svenska,"naja, du hattest doch einen ide-controller angefangen"
+2014-07-09 19:29:56,Jonathan,Achso ja
+2014-07-09 19:30:06,Jonathan,"Ja, das funktioniert"
+2014-07-09 19:30:15,Jonathan,Hab auch ein 128MB Disk on Module
+2014-07-09 19:30:23,Jonathan,Kann aber auch genauso eine normale Festplatte anschließen
+2014-07-09 19:30:39,Jonathan,Wobei das DOM deutlich besser arbeitet (vorallem schneller)
+2014-07-09 19:30:42,Svenska,das wird bei mir nicht gehen
+2014-07-09 19:30:58,Jonathan,Wieso nicht?
+2014-07-09 19:31:11,Svenska,weil ich nur ein 8 bit interface bauen wollte
+2014-07-09 19:31:26,Jonathan,Achso
+2014-07-09 19:31:35,Jonathan,"Also, ein Latch bringt doch keinen um?"
+2014-07-09 19:31:36,Svenska,http://www.ebay.de/itm/Compact-Flash-CF-zu-IDE-auf-3-5-Buchse-40-Pin-Adapter-Converter-Karte-T5-/390641737671?pt=Gro%C3%9Fhandelsposten&hash=item5af40fdfc7
+2014-07-09 19:31:39,Svenska,ich dachte an sowas
+2014-07-09 19:31:56,Jonathan,"Shenzhen, China"
+2014-07-09 19:32:05,Jonathan,"Dauert aus Erfahrung etwa 3 Monate, bis das ankommt"
+2014-07-09 19:32:07,Svenska,ja nicht genau den :)
+2014-07-09 19:32:15,Svenska,"aber ja, reicht ja aus"
+2014-07-09 19:32:19,Jonathan,Und alle anderen sind teurer als ein DOM *g*
+2014-07-09 19:32:32,Jonathan,Das hier hab ich: http://www.ebay.de/itm/DOM-128-MB-Disk-on-Module-wie-SSD-fur-IDE-NAND-Flash-Speicher-/271501166137?pt=DE_Computing_Solid_State_Drives_SSD_&hash=item3f36bb0639
+2014-07-09 19:32:55,Svenska,"ich hab so einen adapter zwar, aber der ist dual-ide und dummerweise für 44pin notebooks"
+2014-07-09 19:33:10,Jonathan,Hmmmm
+2014-07-09 19:33:21,Svenska,und passt nicht auf lochraster
+2014-07-09 19:33:36,Svenska,"hmm, aber so ein DOM könnte ich für alte technik gut gebrauchen"
+2014-07-09 19:33:46,Svenska,hab die letzten tage mit einem älteren system verbracht :-D
+2014-07-09 19:33:57,Jonathan,Ja
+2014-07-09 19:34:06,Jonathan,Ich find die Teile echt nett :D
+2014-07-09 19:34:11,Svenska,http://www.ebay.de/itm/Bondwell-B310-Laptop-/261365377272?pt=US_Vintage_Computers_Mainframes&hash=item3cda9728f8 << so einem :D
+2014-07-09 19:34:21,Jonathan,Hab meins auch schon erfolgreich mit dem Z80 angesteuert
+2014-07-09 19:34:36,Jonathan,"Ui, wie schön :D"
+2014-07-09 19:34:49,Svenska,das display ist grausam
+2014-07-09 19:35:56,Svenska,und das netzteil scheint zu schwach zu sein
+2014-07-09 19:36:12,Svenska,"deswegen hatte ich versucht, den bildschirm anzuschließen - ohne display bootets immer, mit nur selten"
+2014-07-09 19:36:28,Svenska,"und das bios fragt zuerst nach (auf dem display), ob LCD oder CRT *g*"
+2014-07-09 19:36:45,Jonathan,*g*
+2014-07-09 19:36:59,Svenska,"also F2 (CRT) hämmern, warten bis die festplatte endlich auf nenndrehzahl ist und bootet, dann batchdatei für reset aufrufen, F1 (LCD), dann booten *g*"
+2014-07-09 19:37:08,Jonathan,Ohje
+2014-07-09 19:37:28,Svenska,"mag die platte auch nicht so besonders, hat schon 3 sektorfehler"
+2014-07-09 19:37:43,Svenska,und ne neue passt nicht wegen dem stromstecker
+2014-07-09 19:38:18,Jonathan,Adapter bauen?
+2014-07-09 19:38:40,Svenska,"ja, vermutlich das beste"
+2014-07-09 19:38:49,Svenska,"abschneiden, vernünftigen molex dran, fertig"
+2014-07-09 19:39:53,Svenska,oder halt ein DOM
+2014-07-09 19:40:04,Svenska,128 MB wäre schon ein fortschritt
+2014-07-09 19:40:22,Svenska,"(die originale 40M-platte ist extrem langsam, vermutlich ziemlich kaputt, und die 20er stirbt grad vor sich hin; andere passen nicht)"
+2014-07-09 19:40:54,Svenska,witzigerweise ist das bios y2k-tauglich.
+2014-07-09 19:41:17,Jonathan,Trollz :D
+2014-07-09 19:41:53,Jonathan,"Na wenn die Entwickler sowas schon implementiert haben, dann *wollen* sie, dass irgendjemand eine von den Kisten über die Jahrzehnte rettet"
+2014-07-09 19:42:10,Svenska,und windows 3.1 läuft auf cga beschissen (cga mit windows 3.0-treiber)
+2014-07-09 19:43:36,Jonathan,"Äh, yay?"
+2014-07-09 19:43:43,Svenska,:D
+2014-07-09 19:43:51,Jonathan,Windows 3.0 hatte ein laufendes Treibersystem? xD
+2014-07-09 19:43:56,Svenska,irgendwer hat mal windows 98 mit ner echten EGA betrieben
+2014-07-09 19:44:01,Jonathan,Was
+2014-07-09 19:44:04,Svenska,"naja, du konntest seit windows 1.0 schon treiber nachinstallieren"
+2014-07-09 19:44:09,Jonathan,Oha
+2014-07-09 19:44:17,Svenska,microsoft hat nicht alle treiber mitgeliefert. war halt dann bei der installation
+2014-07-09 19:44:41,Svenska,aber 3.1 kann 3.0-treiber benutzen und 95 kann 3.1-treiber benutzen
+2014-07-09 19:44:52,Jonathan,Meintest du: http://www.youtube.com/watch?v=-ZljVxwIzTM
+2014-07-09 19:45:12,Svenska,"joa, zB"
+2014-07-09 19:45:15,Jonathan,:D
+2014-07-09 19:45:30,Svenska,640x350 auf 64 farben
+2014-07-09 19:45:41,Jonathan,Hm
+2014-07-09 19:45:46,Jonathan,Meine Karte kann das unterbieten *g*
+2014-07-09 19:45:58,Svenska,das gerät hier kann 640x200 auf 2 farben
+2014-07-09 19:46:03,Jonathan,Okay
+2014-07-09 19:46:08,Jonathan,Da kann dann selbst meine Karte mehr xD
+2014-07-09 19:47:43,Svenska,"also theoretisch 80x25 mit 16 farben, 320x200 mit 4 farben oder eben high resolution :D"
+2014-07-09 19:48:21,Svenska,leider kann windows 95 keine windows 3.0-treiber benutzen :)
+2014-07-09 19:56:31,Svenska,ich schieß mal ein video mitm telefon :)
+2014-07-09 19:56:36,Svenska,wenn die kamera-app nicht mehr abstürzt
+2014-07-09 20:24:39,Svenska,"hmm, die kamera ist beschissen. :-("
+2014-07-09 20:25:07,Jonathan,:(
+2014-07-09 20:25:18,Svenska,"die rauscht so stark, dass man das rauschen auf dem bildschirm nicht sieht :-)"
+2014-07-09 20:44:57,Svenska,http://sraa.de/temp/B310.mpg (>50 MB)

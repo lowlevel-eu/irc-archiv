@@ -1,0 +1,188 @@
+date/time,nick,message
+2012-11-09 01:20:32,Jidder,ich hab bei mir auf dem desktop eine Reset Internet.cmd
+2012-11-09 01:20:50,Jidder,"jedes mal wenn ich die drücke, hört ihr für ein paar sekunden auf zu existieren"
+2012-11-09 01:21:04,Jidder,"wie ihr am log sehen könnt, hab ich es heute mehrmals verwendet"
+2012-11-09 01:21:40,Jidder,AMA Request
+2012-11-09 09:55:12,alexander,Guten Moregn
+2012-11-09 11:06:44,DesL,moin
+2012-11-09 16:23:56,Svenska,moin
+2012-11-09 16:24:35,Svenska,"blöde linkerfrage... um objects in bestimmten sections zu haben, kann man ja im linkerscript die object-files angeben"
+2012-11-09 16:24:47,Svenska,"kann man da auch sagen, ""alle objectfiles in diesem ordner""?"
+2012-11-09 16:28:07,Jidder,also wildcards gibt es
+2012-11-09 16:28:09,Jidder,ordner/*(.text) oder so
+2012-11-09 16:28:11,Jidder,aber ich habs nie ausprobiert
+2012-11-09 16:28:35,Svenska,"mal tun. wenn ich vor dem paging einschalten noch dinge tun will, dann mag ich die dateien nicht alle im linkerscript auflisten müssen"
+2012-11-09 16:28:38,Svenska,:-)
+2012-11-09 16:46:01,Svenska,"tut, danke"
+2012-11-09 16:46:15,Svenska,auch wenn es das syntax-highlighting im vim kaputtmacht =)
+2012-11-09 16:48:52,JanDing,lol
+2012-11-09 16:49:09,Svenska,src/arch/x86/init/*.o(*)
+2012-11-09 16:49:14,Svenska,und /* leitet einen kommentar ein
+2012-11-09 16:49:58,JanDing,hehe
+2012-11-09 17:30:37,Svenska,"öhm, ist das normal, dass preinit_start und preinit_end gleich sind, obwohl da einiges an code+daten zwischen ist?"
+2012-11-09 17:31:35,JanDing,nein
+2012-11-09 17:31:50,JanDing,womit schaust du dir die an?
+2012-11-09 17:31:57,Svenska,"readelf -a, und printf"
+2012-11-09 17:32:14,JanDing,und die symbole sind im linkerskript definiert?
+2012-11-09 17:32:19,Svenska,ja
+2012-11-09 17:33:11,JanDing,hm seltsam ^^
+2012-11-09 17:33:32,JanDing,ist denn wenigstens eine von beiden richtig?
+2012-11-09 17:33:41,Svenska,"ja, der start ist 1M"
+2012-11-09 17:33:56,Svenska,"(kernel_start und kernel_end sind beide 0, aber da ist auch noch kein code)"
+2012-11-09 17:35:55,JanDing,"also ich weiß nicht, ob die wirklich 0 sein dürfen, nur weil da kein code ist"
+2012-11-09 17:36:31,Svenska,"hm, stimmt auch nicht, die sind beide 0xe0100000 :D"
+2012-11-09 17:36:45,Svenska,was mein printf leider verhunzt..
+2012-11-09 17:36:54,JanDing,hm
+2012-11-09 17:37:12,JanDing,"du machst nicht so blödsinn wie extern int kernel_start; printf(""%x\n"", kernel_start); oder so?"
+2012-11-09 17:37:24,JanDing,also extern int und printf ohne & vor kernel_start wäre der blödsinn
+2012-11-09 17:37:38,Svenska,"ne, extern const void und mit &"
+2012-11-09 17:37:44,JanDing,okay
+2012-11-09 17:38:35,JanDing,"das einzige was ich noch hätte ist, dass du einen copy und paste fehler gemacht hast, und vor preinit_end = .; irgendwas doofes steht"
+2012-11-09 17:38:40,JanDing,ansonsten kann ich das auch nicht erklären
+2012-11-09 17:39:37,Svenska,höchstens der wildcard für die sections...
+2012-11-09 17:40:45,Svenska,preinit_start = .; --- .setup ALIGN(4096) : { src/arch/x86/preinit/*.o(*) } --- . = ALIGN(4096); .setupbss : { *(.setupbss) } --- . = ALIGN(4096); --- preinit_end = .;
+2012-11-09 17:42:37,JanDing,schaut unverdächtig aus
+2012-11-09 17:43:02,JanDing,vielleicht klappt das wirklich nicht mit der wildcard
+2012-11-09 17:43:17,Svenska,dann würde ich ein code-outside-rom-or-ram kriegen
+2012-11-09 17:44:06,JanDing,hm
+2012-11-09 17:44:10,JanDing,vermutlch ja
+2012-11-09 17:44:28,Svenska,"hab den wildcard rausgenommen und die drei dateien einzeln gelistet, gleicher fehler"
+2012-11-09 17:50:28,iksnagreb,Moin
+2012-11-09 17:50:31,Svenska,moin
+2012-11-09 17:50:41,Svenska,"hmm, dafür ist mein kernel stack jetzt nicht mehr aligned..."
+2012-11-09 17:52:49,Svenska,http://pastebin.com/iJG2yH8t << linkerscript
+2012-11-09 18:04:23,Svenska,"wenn ich "". += 1;"" direkt vor das zweite symbol schreibe, ist es 1M+1"
+2012-11-09 18:08:04,JanDing,also ich hab das linkerskript mal ausprobiert und realelf gibt unterschiedliche adressen aus
+2012-11-09 18:08:26,Svenska,sehr seltsam.
+2012-11-09 18:08:54,Svenska,GNU ld (GNU Binutils for Debian) 2.22
+2012-11-09 18:09:05,JanDing,hm wobei die sektionen auch irgendwie verhunzt sind
+2012-11-09 18:09:22,Svenska,erklär ma
+2012-11-09 18:09:25,JanDing,hab auch 2.22 allerdings crosscompiler
+2012-11-09 18:10:11,Svenska,"mich irritiert ja v.a., dass ich das gleiche linkerscript vorher schon benutzt hatte und es da ging..."
+2012-11-09 18:11:01,Svenska,...start.S hat sich nicht verändert
+2012-11-09 18:11:53,Svenska,was meintest du mit verhunzt?
+2012-11-09 18:12:08,JanDing,http://pastebin.com/HjMiEQcU
+2012-11-09 18:12:23,JanDing,aber das ist auch auf die schnelle zusammengehackt
+2012-11-09 18:12:28,JanDing,wer weiß was ich da wieder falsch gemacht habe
+2012-11-09 18:12:48,Svenska,hm
+2012-11-09 18:14:03,JanDing,wobei ich das so gemacht habe
+2012-11-09 18:14:04,JanDing,http://pastebin.com/2MW7DFgF
+2012-11-09 18:14:15,JanDing,nur mit den drei dateien auf dem preinit-verzeichnis
+2012-11-09 18:14:22,JanDing,oh und eine leere datei im x86-verzeichnis glaub ich
+2012-11-09 18:19:41,Svenska,"http://pastebin.com/Qp0tes9S << linkerscript, LD-aufruf, startup-code und preinit.c"
+2012-11-09 18:32:41,JanDing,hm also ich weiß nich
+2012-11-09 18:32:59,JanDing,ich krieg nicht mal start.S assembliert lol
+2012-11-09 18:33:01,Svenska,schade. ich bin jedenfalls out of ideas...
+2012-11-09 18:33:04,Svenska,wtf? ^^
+2012-11-09 18:33:35,Svenska,as --32 -c -o pfad/start.o pfad/start.S :D
+2012-11-09 18:33:56,JanDing,oh lol warum nimmt der denn den mingw cc
+2012-11-09 18:34:47,JanDing,so
+2012-11-09 18:34:56,JanDing,also ich hab jetzt sinnvollere readelf-ausgaben
+2012-11-09 18:35:05,JanDing,aber preinit_end ist ungleich preinit_start
+2012-11-09 18:35:14,Svenska,*baff*
+2012-11-09 18:37:11,JanDing,ich seh gerade
+2012-11-09 18:37:17,JanDing,zu übergibst kernel.ld zweimal an ld
+2012-11-09 18:37:26,JanDing,einmal im -T und einmal nach den objektdateien
+2012-11-09 18:37:32,JanDing,keine ahnung was für effekte das hat
+2012-11-09 18:37:53,Svenska,hmm... ups.
+2012-11-09 18:38:28,Svenska,"ich bin grad dabei, ein halbwegs sinnvolles buildsystem zu basteln, welches nicht mehr SRCS:=$(shell find *.[cS]) macht"
+2012-11-09 18:38:59,JanDing,hehe
+2012-11-09 18:39:26,Svenska,du wirst es kaum glauben
+2012-11-09 18:39:31,Svenska,jetzt gehts. -.-
+2012-11-09 18:39:56,JanDing,cool
+2012-11-09 18:39:58,Svenska,"jedenfalls hab ich den kernel abhängig vom linkerscript gemacht, damit make das neu baut, wenn ich daran rumbastle"
+2012-11-09 18:40:10,Svenska,*nerv* wie krieg ich das denn jetzt gefixt -.-
+2012-11-09 18:40:47,JanDing,$(OBJS) statt $+ beim linkeraufruf
+2012-11-09 18:41:15,Svenska,"oh, gute idee. ich wollte grad ein $(subst) draufschmeißen ^^"
+2012-11-09 18:41:33,Svenska,was unterscheidet $^ von $+ ?
+2012-11-09 18:43:59,Svenska,"""warning: the comparison will always evaluate as ‘false’ for the address of ‘kernel_start’ will never be NULL [-Waddress]"" << sprach's und zeigt im printf ne null an -.-"
+2012-11-09 18:47:19,Svenska,okay: zahl zu groß für int32_t. :-D
+2012-11-09 19:05:08,JanDing,"$^ entfernt wiederholungen, $+ behält sie drin"
+2012-11-09 19:05:25,Svenska,"okay, also ist $^ idR das, was man will"
+2012-11-09 19:05:26,Svenska,?
+2012-11-09 19:07:18,Jidder,argh dieses internet. folgende wichtige sachen hatte ich noch zu sagen
+2012-11-09 19:07:22,Jidder,19:05:47] <JanDing> jo
+2012-11-09 19:07:22,Jidder,[19:05:58] <JanDing> ich nehm trotzdem immer $+
+2012-11-09 19:07:24,Jidder,[19:06:01] <JanDing> ^^
+2012-11-09 19:07:27,Svenska,*grins*
+2012-11-09 19:07:41,Svenska,"gibt schönere fehlermeldungen, wenn das buildsystem bricht"
+2012-11-09 19:08:39,Jidder,"ich hab normalerweise keine dopplungen in meinen prerequisities. aber wenn dann, ist das glaub ich nur ein unterschied bei entweder LD oder AR"
+2012-11-09 19:08:53,Jidder,"ich weiß nicht mehr genau welches von beiden, aber eins von beiden ist filtert auch doppelte einträge raus"
+2012-11-09 19:08:55,Jidder,glaub ich
+2012-11-09 19:09:05,Svenska,"ich hätte jetzt erwartet, dass du dann doppelte symbole und errors kriegst :)"
+2012-11-09 19:09:10,Jidder,hm
+2012-11-09 19:09:19,Svenska,bei AR natürlich nicht.
+2012-11-09 19:09:22,Jidder,"stimmt könnte dann ja nur ar sein, der das rausfiltert"
+2012-11-09 19:09:25,Jidder,keine ahnung ^^
+2012-11-09 19:09:28,Jidder,ich nehms wieder zurück^^
+2012-11-09 19:15:41,Svenska,boah sind die autotools heavy...
+2012-11-09 19:15:45,Svenska,"ne, nutz ich nicht. :-)"
+2012-11-09 19:18:32,Jidder,hehe
+2012-11-09 19:52:22,DesL,moin
+2012-11-09 19:52:26,Svenska,moin
+2012-11-09 21:07:59,Siebenkeim,Hi
+2012-11-09 21:09:11,iksnagreb,hi
+2012-11-09 21:09:38,Svenska,schon wieder? :-)
+2012-11-09 21:09:56,iksnagreb,was schon wieder?
+2012-11-09 21:10:04,Svenska,begrüßen.
+2012-11-09 21:10:26,iksnagreb,ich hab Siebenkeim begrüßt
+2012-11-09 21:10:52,Svenska,:-)
+2012-11-09 21:10:58,Svenska,ich nerv nur so.
+2012-11-09 21:11:58,Svenska,nimm's mir nicht übel.
+2012-11-09 23:20:03,Siebenkeim,Mal eine Frage bin gerade dabei C zu lernen
+2012-11-09 23:20:16,Siebenkeim,struct element **lst
+2012-11-09 23:20:28,Siebenkeim,Ein Pointer zeigt auf einen Pointer? 
+2012-11-09 23:20:43,Siebenkeim,oder was bedeutet es? ^^
+2012-11-09 23:20:46,Svenska,ja
+2012-11-09 23:20:58,Siebenkeim,Ok Danke
+2012-11-09 23:20:59,Svenska,"ein pointer zeigt auf einen pointer, der auf ein element zeigt"
+2012-11-09 23:21:37,Siebenkeim,struct element **********lst würde das gehen?^^
+2012-11-09 23:21:44,Svenska,ja
+2012-11-09 23:21:54,Siebenkeim,:O
+2012-11-09 23:22:12,Svenska,"obs sinnvoll ist, ist ne andere frage... allein beim versuch, das zu verstehen, verknotet sich ein durchschnittshirn"
+2012-11-09 23:22:25,Svenska,:-)
+2012-11-09 23:22:32,Siebenkeim,Wüsste jetzt auch kein Anwendungsbereich dafür^^
+2012-11-09 23:22:52,Siebenkeim,wollte euch nochmal wegen Namenskonventionen fragen^^
+2012-11-09 23:23:11,XanClic,"Ob das der richtige Channel ist, wage ich zu bezweifeln"
+2012-11-09 23:23:21,JanDing,für anwendungsbereiche?
+2012-11-09 23:23:22,XanClic,Aber da seit einiger Zeit eh kaum Traffic ist…
+2012-11-09 23:23:24,Svenska,frag einfach ^^
+2012-11-09 23:23:27,JanDing,oh musste log nochmal refreshen
+2012-11-09 23:23:29,XanClic,Für Anwendungen
+2012-11-09 23:23:37,XanClic,Wer will denn Praxis
+2012-11-09 23:23:38,XanClic,Laaaaaangweilig
+2012-11-09 23:23:57,Siebenkeim,Also in C wird alles kleingeschrieben ist mir aufgefallen
+2012-11-09 23:24:21,XanClic,"Kann man machen, wie man will"
+2012-11-09 23:24:37,Svenska,du meinst den unterschied zwischen divide_by_underscore und DivideByCamelCase ?
+2012-11-09 23:24:54,Siebenkeim,Habe bis jetzt immer nur das 2. genutzt
+2012-11-09 23:25:02,Siebenkeim,was denkt ihr was das Beste für C ist
+2012-11-09 23:25:04,Svenska,ist geschmackssache.
+2012-11-09 23:25:05,JanDing,kleine unicode kamele zwischen den einzelnen wörtern
+2012-11-09 23:25:14,JanDing,das beste ist beckers bester
+2012-11-09 23:25:16,JanDing,heißt ja auch so
+2012-11-09 23:25:17,Svenska,"linux nutzt underscores, x11 nutzt CamelCase"
+2012-11-09 23:25:25,JanDing,die echten sind werthers echte
+2012-11-09 23:25:35,Svenska,um mal zwei große beispiele zu nennen. ergo: jeder macht seins. ^^
+2012-11-09 23:25:51,Svenska,"semi-wichtig ist nur: bleib konsistent. also entweder das eine, oder das andere - nicht mischen."
+2012-11-09 23:26:00,XanClic,"Wenn Projekte CamelCase benutzen, haben sie bei mir direkt einen Minuspunkt"
+2012-11-09 23:26:04,XanClic,Meist zurecht
+2012-11-09 23:26:17,JanDing,"ich darf eine schnittstelle zwischen zwei projekte schreiben, die unterschiedliche konventionen verwenden"
+2012-11-09 23:26:23,JanDing,bzw. die eine camelcase und die andere randomcase
+2012-11-09 23:26:23,XanClic,"Aber andererseits hat jedes Projekt einen Minuspunkt verdient, insofern ist das eine Aussage ohne viel Inhalt"
+2012-11-09 23:26:25,Svenska,"ich mag es auch nicht, erwische mich aber manchmal dabei, sowas hinzuschreiben"
+2012-11-09 23:26:45,Svenska,meist im zusammenhang mit objektartigen strukturen (und bei grafischen IDEs)
+2012-11-09 23:28:06,Siebenkeim,Wenn ich das Tut durchhabe werde ich mich dann erstmal mit Ncurses auseinandersetzen^^ Als ich das letzte Mal probiert habe ein OS zu programmieren bin ich sowas von auf die Schnauze gefallen :D
+2012-11-09 23:28:23,Svenska,"bis dein os ncurses kann, dauert's aber noch ne weile :D"
+2012-11-09 23:28:40,Siebenkeim,Will Ncurses für Linux nutzen^^
+2012-11-09 23:28:44,JanDing,ich glaub es geht darum flüche zu lernen
+2012-11-09 23:28:45,Siebenkeim,einfach so fand ich interessant
+2012-11-09 23:28:54,Svenska,hrhr
+2012-11-09 23:29:39,Svenska,"ncurses... das teil, was (heutzutage) irgendwo zwischen einer ansi-anwendung und einem ansi-terminal sitzt"
+2012-11-09 23:30:08,Svenska,oder gibt es außer vt100 und ansi noch was mit realer bedeutung?
+2012-11-09 23:30:17,JanDing,cmd.exe
+2012-11-09 23:30:25,Svenska,"ist ansi-kompatibel, größtenteils"
+2012-11-09 23:30:32,JanDing,meh
+2012-11-09 23:31:08,JanDing,csrss.exe
+2012-11-09 23:31:13,Svenska,"xterm kann neben vt52/vt100/vt220/ansi übrigens auch tek4014, das ist lustig :D"
+2012-11-09 23:31:28,Svenska,kann man gnuplot mit benutzen
+2012-11-09 23:33:27,Svenska,"""set terminal xterm"" ""plot sin(x)"""

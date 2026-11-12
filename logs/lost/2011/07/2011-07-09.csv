@@ -1,0 +1,457 @@
+date/time,nick,message
+2011-07-09 00:34:31,Pretty17836,hi
+2011-07-09 00:35:04,Pretty17836,Pretty ist hier ^^
+2011-07-09 09:24:12,ehenkes,hallo
+2011-07-09 09:33:17,bluecode,moin
+2011-07-09 10:44:47,taljeth,Moin
+2011-07-09 10:47:26,DerMuedeMut,Moin
+2011-07-09 10:48:36,taljeth,Moijn DerMuedeMut
+2011-07-09 10:48:42,taljeth,-j
+2011-07-09 11:05:43,DerMuedeMut,Nix loss hier
+2011-07-09 11:05:43,DerMuedeMut,Man man man
+2011-07-09 11:05:48,DerMuedeMut,Da geh ich doch wieder schlafen
+2011-07-09 11:33:48,ehenkes,"taljeth: in freenode #osdev hat mir jemand erzählt, dass redir veraltet ist"
+2011-07-09 11:34:18,ehenkes,"das würde man nun so machen: -net user,hostfwd=tcp::5023-:23"
+2011-07-09 11:34:59,ehenkes,"hilft mir aber auch nicht weiter bei prettyOS als telnet server. da kommt das syn, aber unser syn,ack landet nicht beim telnet client"
+2011-07-09 11:35:39,ehenkes,bei -net user kann man doch auch direkt einen host angeben?
+2011-07-09 11:36:16,ehenkes,"welche IP nimmt man da? die echte im LAN klappt nicht, nimmt man da die vom TAP?"
+2011-07-09 11:36:31,ehenkes,"hab ich probiert, geht aber auch nicht"
+2011-07-09 11:37:05,ehenkes,"kontakt zum internet geht, liegt also daran, dass wir den host nicht erwischen"
+2011-07-09 11:46:36,DesL,moin
+2011-07-09 12:08:50,taljeth,"ehenkes: -hda ist so gesehen auch veraltet, aber immer noch das bequemste ;-)"
+2011-07-09 12:09:32,taljeth,Was meinst du mit direkt einen Host angeben?
+2011-07-09 12:34:59,taljeth,"Meh, doofe Heisenbugs"
+2011-07-09 12:35:49,DesL,"Heisenbugs? du durchläuft den speicher so schnell, das du den inhalt nicht mehr genau auslesen kannst?"
+2011-07-09 12:36:24,taljeth,Wer weiß ;-)
+2011-07-09 12:37:24,DesL,error: '0' was not declared in this scope|
+2011-07-09 12:37:26,DesL,WTF?
+2011-07-09 12:37:38,taljeth,Hm?
+2011-07-09 12:37:42,taljeth,Was für ein Code ist das?
+2011-07-09 12:37:55,DesL,"da steht eine null, kein O"
+2011-07-09 12:39:43,taljeth,"Ja, ich will trotzdem den Code sehen"
+2011-07-09 12:39:52,DesL,    this->posY = 0;
+2011-07-09 12:41:15,taljeth,"Hm, klingt lustig"
+2011-07-09 12:49:23,DesL,naja
+2011-07-09 13:00:00,ehenkes,kennt sich jemand mit qemu plus TAP aus?
+2011-07-09 13:00:18,ehenkes,also wie auf windows notwendig
+2011-07-09 13:01:03,ehenkes,soll ich einfach mal loslegen?
+2011-07-09 13:02:00,ehenkes,prettyOS: 10.0.2.15 qemu: 10.0.2.2 gateway TAP: 10.0.2.16 Host: 192.168.1.23 Router: 192.168.1.1
+2011-07-09 13:03:12,ehenkes,als qemu hack verwenden wir:
+2011-07-09 13:03:15,ehenkes,"uint8_t gatewayMAC[6] = {GW_MAC_1, GW_MAC_2, GW_MAC_3, GW_MAC_4, GW_MAC_5, GW_MAC_6}; // HACK for TCP with qemu"
+2011-07-09 13:03:15,ehenkes,"EthernetSend(adapter, packet, length+sizeof(ipv4Packet_t), gatewayMAC, 0x0800);"
+2011-07-09 13:03:26,taljeth,Was soll qemu: 10.0.2.2 heißen?
+2011-07-09 13:03:37,DesL,"das ist der qemu router, oder="
+2011-07-09 13:03:37,DesL,?
+2011-07-09 13:03:39,ehenkes,wir schicken also alles über 10.0.2.2 und hoffen auf dessen weisheit
+2011-07-09 13:03:43,ehenkes,ja
+2011-07-09 13:03:50,taljeth,"Das ist der qemu-Router für den Userspace-Netzwerkstack, aber der wird mit TAP nicht benutzt"
+2011-07-09 13:04:05,taljeth,"Weil die VM dann direkt im ""richtigen"" Netz hängt"
+2011-07-09 13:04:06,ehenkes,also mit internet funktioniert dies
+2011-07-09 13:04:26,ehenkes,folgende sgeht nicht:
+2011-07-09 13:04:39,ehenkes,telnet client auf HOST open 10.0.2.15
+2011-07-09 13:04:53,ehenkes,"das SYN kommt bei PrettyOS an, ein SYN:ACK wird geschickt"
+2011-07-09 13:05:00,ehenkes,kommt aber nicht bei telnet client an
+2011-07-09 13:05:24,taljeth,Ich verstehe dein Netzwerksetup nicht
+2011-07-09 13:05:28,ehenkes,"10.0.2.2 empfängt das SYN,ACK macht aber nix sinnvolles damit"
+2011-07-09 13:05:36,taljeth,Du scheinst TAP und Usermodestack zu mischen
+2011-07-09 13:05:42,ehenkes,"wem müsste ichd as SYN,ACK schicken"
+2011-07-09 13:05:45,taljeth,"Was mich wundert, dass da überhaupt was funktioniert"
+2011-07-09 13:05:52,ehenkes,mich auch langsam
+2011-07-09 13:06:00,ehenkes,"ok, erklärt mir mal dieses qemu"
+2011-07-09 13:06:19,ehenkes,also: prettyOS: 10.0.2.15 qemu: 10.0.2.2 gateway TAP: 10.0.2.16 Host: 192.168.1.23 Router: 192.168.1.1
+2011-07-09 13:06:31,taljeth,"-net user gibt dir ein rein virtuelles Netzwerk, mit 10.0.2.2 als qemu-Router, der NAT ins Hostnetz macht"
+2011-07-09 13:06:37,ehenkes,"qemu.exe  -fda G:\OSDev\PrettyOS\trunk\Source\FloppyImage.img -soundhw pcspk -net nic,model=pcnet,addr=1A,macaddr=00:13:d4:12:12:12 -net tap,ifname=TAP2 -localtime -net user,hostfwd=tcp::5023-:23 -net dump,file=netdump.pcap"
+2011-07-09 13:07:02,taljeth,"-net tap bindet die virtuelle Netzwerkkarte an ein Netzwerkinterface im Host, ohne irgendwelche virtuellen Hosts zu emulieren"
+2011-07-09 13:07:09,ehenkes,"ok, also telnet client sendet an 10.0.2.15 ein SYN"
+2011-07-09 13:07:24,taljeth,wtf?
+2011-07-09 13:07:30,taljeth,Du hast -net user _und_ -net tap?
+2011-07-09 13:07:31,ehenkes,was istd enn jetzt?
+2011-07-09 13:07:35,ehenkes,ja
+2011-07-09 13:07:45,Tobiking,Sendet man bei tap nicht einfach an die Tap ip? Die dann idealerweise im Subnetz des Host ist?
+2011-07-09 13:07:52,taljeth,"Das heißt, deine Pakete werden zweimal rausgeschickt"
+2011-07-09 13:07:58,ehenkes,oh wie nett
+2011-07-09 13:08:08,taljeth,Einmal über den Userstack und einmal ans TAP-Device
+2011-07-09 13:08:26,ehenkes,"dann helft mir bitte mal ordnung zu schaffen, bei uns blickt keiner qemu"
+2011-07-09 13:08:51,taljeth,"Naja, entweder nur -net user und das mit dem hostfwd, oder eben nur TAP"
+2011-07-09 13:09:12,ehenkes,das geht ohne TAP?
+2011-07-09 13:09:24,taljeth,"Ich weiß nicht, ob das unter Windows tut"
+2011-07-09 13:09:29,ehenkes,ich dachte man benötugt imme rTAP für wqemu auf win?
+2011-07-09 13:09:37,ehenkes,also nur TAP
+2011-07-09 13:09:39,taljeth,"Kann sein, dass -net user dann auf Windows einfach kaputt ist"
+2011-07-09 13:09:44,ehenkes,oh mann
+2011-07-09 13:09:55,taljeth,"Aber ich weiß es nicht, vielleicht tut es auch. Lang nicht probiert."
+2011-07-09 13:10:13,taljeth,Würde das natürlich erklären
+2011-07-09 13:10:32,taljeth,"Dann nimmt telnet die Verbindung über das hostfwd auf, aber die andere Richtung klappt nicht so richitg, oder so"
+2011-07-09 13:10:48,ehenkes,genau
+2011-07-09 13:11:00,ehenkes,"ich habs auch schon direkt an das TAP geschickt, klappt aber auzch nicht"
+2011-07-09 13:11:12,ehenkes,"wem muss ich denn das paket syn,ack schicken"
+2011-07-09 13:11:18,ehenkes,das syn kommt via TAP
+2011-07-09 13:11:28,ehenkes,schick ich dorthin zurück macht TAP nix!
+2011-07-09 13:12:15,ehenkes,zu welchem subnet sollte TAP eigentlich gehören?
+2011-07-09 13:12:25,ehenkes,Host LAN oder qemu LAN
+2011-07-09 13:12:31,ehenkes,was ist TAP genau?
+2011-07-09 13:12:51,taljeth,TAP ist ein virtuelles Netzwerkgerät im Host
+2011-07-09 13:12:59,ehenkes,was füpr eins?
+2011-07-09 13:13:08,ehenkes,router sicher nicht
+2011-07-09 13:13:17,taljeth,"Typischerweise packt man das in eine Bridge mit der richtigen Netzwerkkarte, damit es Zugriff aufs Internet bekommt"
+2011-07-09 13:13:36,ehenkes,"das hab ich schon hinter mir, danke"
+2011-07-09 13:13:45,ehenkes,war der tipp von svenska
+2011-07-09 13:13:51,taljeth,Okay
+2011-07-09 13:13:54,ehenkes,ganz übel
+2011-07-09 13:13:59,DesL,ein TAP ist eine virtuelle netzwerkkarte 
+2011-07-09 13:14:09,taljeth,"Und damit der Host mitspielt, sollte die VM natürlich im gleichen Subnetz wie der Host sein"
+2011-07-09 13:14:45,ehenkes,prettyOS: 10.0.2.15 qemu: 10.0.2.2 gateway TAP: 10.0.2.16 Host: 192.168.1.23 Router: 192.168.1.1 <--- was soll geändertw erden?
+2011-07-09 13:14:50,ehenkes,TAP IP?
+2011-07-09 13:15:01,taljeth,Stell dir die VM einfach als weiteren Rechner in deinem physischen Netz vor
+2011-07-09 13:15:12,ehenkes,VM == qemu?
+2011-07-09 13:15:22,taljeth,"prettyOS: 192.168.1.24, Host: 192.168.1.23, Router: 192.168.1.1"
+2011-07-09 13:15:49,ehenkes,dann ist PrettyOS und qemu aber nicht im gleichen subnet
+2011-07-09 13:15:58,taljeth,"Ob das TAP-Device eine IP braucht, weiß ich nicht mehr sicher. Ich glaube nicht."
+2011-07-09 13:16:01,ehenkes,qemu hat 10.0.2.2
+2011-07-09 13:16:04,taljeth,qemu hat keine IP
+2011-07-09 13:16:12,taljeth,"qemu ist ein Programm, kein Host"
+2011-07-09 13:16:17,ehenkes,dann halt das gateway dort
+2011-07-09 13:16:25,Tobiking,"Da ist kein Gateway, nur das TAP"
+2011-07-09 13:16:27,taljeth,"Es gibt kein Gateway, außer dein physisches"
+2011-07-09 13:16:43,taljeth,Das gibt es nur mit -net user
+2011-07-09 13:17:11,DesL,"qemu leitet die packete direkt an das TAP weiter, als würde die qemu netzwerkkarte mit einem cross-kabel direkt am TAP hängen."
+2011-07-09 13:18:03,ehenkes,also: prettyOS: 192.168.1.50 qemu_??: 10.0.2.2 TAP: 192.168.1.60 Host: 192.168.1.23 Router: 192.168.1.1
+2011-07-09 13:18:12,ehenkes,wäre das so richtiger?
+2011-07-09 13:18:39,DesL,...
+2011-07-09 13:18:42,ehenkes,und ohne net user
+2011-07-09 13:18:46,ehenkes,was?
+2011-07-09 13:18:52,Tobiking,Du hast außer TAP nix
+2011-07-09 13:18:55,DesL,<taljeth>	qemu hat keine IP
+2011-07-09 13:19:25,ehenkes,ok
+2011-07-09 13:19:30,Tobiking,TAP ist die Netzwerkkarte die du in prettyOS dann erkennst
+2011-07-09 13:19:31,ehenkes,also oben ok?
+2011-07-09 13:19:52,ehenkes,ich habe in qemu aber noch ein -net nic mit iegener mac
+2011-07-09 13:20:36,ehenkes,"qemu.exe  -fda FloppyImage.img -soundhw pcspk -net nic,model=pcnet,addr=1A,macaddr=00:13:d4:12:12:12 -net tap,ifname=TAP2 -localtime -net dump,file=netdump.pcap"
+2011-07-09 13:20:37,ehenkes,hab mal user raus
+2011-07-09 13:20:48,ehenkes,was ist mit der MAC bei -net nic
+2011-07-09 13:21:16,ehenkes,sidn diese MAC und die TAP MAC per crosscab le verbunden?
+2011-07-09 13:21:22,Tobiking,Ich würde grad drauf tippen das die Einstellung dann auf das TAP zutrifft
+2011-07-09 13:21:51,DesL,ehenkes: wie verbindest du MACs?
+2011-07-09 13:21:52,ehenkes,"alle tippen nur, keiner verwendet so was außer wir"
+2011-07-09 13:21:58,ehenkes,per kabel
+2011-07-09 13:22:06,ehenkes,oder ethernet
+2011-07-09 13:22:06,Tobiking,TAP ist eine Netzwerkkarte
+2011-07-09 13:22:09,ehenkes,ja
+2011-07-09 13:22:15,Tobiking,TAP -> Host per crosskabel
+2011-07-09 13:22:54,ehenkes,das ist also eine weiteer netzwerkkarte des Hosts?
+2011-07-09 13:22:57,ehenkes,ok
+2011-07-09 13:23:00,Tobiking,Und ich denke das die Einstellung dann fürs TAP gelten. Also dein TAP device ist eine pcnet Karte mit der Mac Adresse
+2011-07-09 13:23:16,ehenkes,dann sollte ich die dort aber auch einstellen
+2011-07-09 13:23:21,ehenkes,ich hab zwei MACs
+2011-07-09 13:23:30,ehenkes,was ist -net nic ?
+2011-07-09 13:23:39,DesL,"""ich"" == der echte PC?"
+2011-07-09 13:24:57,ehenkes,"dieses -net nic ist die netzwerkkarte von prettyOS, das auf qemu läuft"
+2011-07-09 13:25:21,Tobiking,"Genau, und entspricht dem TAP Device"
+2011-07-09 13:25:31,ehenkes,"ok, ich versuchs mal ohne user und stell TAP auf host subnet um"
+2011-07-09 13:25:57,ehenkes,"Tobiking: ich denke nicht, dass TAP und qemu nic die gleiche MAC haben sollten"
+2011-07-09 13:26:07,Tobiking,Du musst dir die Netzwerkkarte in prettyOS und das TAP Device im Host als ein und das selbe Gerät vorstellen
+2011-07-09 13:26:08,ehenkes,denn TAP gehört zum HOST
+2011-07-09 13:26:19,DesL,Tobiking: nein
+2011-07-09 13:26:25,ehenkes,never
+2011-07-09 13:26:35,Tobiking,Wieso nicht? Das ist doch der Sinn der Sache
+2011-07-09 13:26:39,ehenkes,nein
+2011-07-09 13:27:11,DesL,[Qemu Karte]<----(Virtuelles LAN Kabel)---->[TAP Karte]
+2011-07-09 13:27:24,ehenkes,ja
+2011-07-09 13:27:38,ehenkes,ich versuchs mal
+2011-07-09 13:30:36,Tobiking,Dann wär aber das TAP Device im Prinzip doch nur nen Router bzw. Gateway
+2011-07-09 13:31:30,ehenkes,"was TAP genau ist, weiß ich nicht"
+2011-07-09 13:31:49,DesL,"Tobiking:  nein, eine netzwerkkarte"
+2011-07-09 13:32:48,ehenkes,ich hab jetzt eingestellt: prettyOS: 192.168.1.50 TAP: 192.168.1.60 Host: 192.168.1.23 Router: 192.168.1.1
+2011-07-09 13:33:23,taljeth,Und tut oder nicht?
+2011-07-09 13:34:09,ehenkes,nicht
+2011-07-09 13:34:14,ehenkes,kann aber auch an Pretty liegen
+2011-07-09 13:35:06,ehenkes,SYN wird an 82.100.220.68 (FF-FF-FF-FF-FF-FF) geschickt
+2011-07-09 13:36:32,taljeth,"Probier es halt mit einem OS, von dem du weißt, dass Netzwerk dort tut"
+2011-07-09 13:38:06,ehenkes,tyndur?
+2011-07-09 13:38:12,ehenkes,^^
+2011-07-09 13:39:03,ehenkes,"ok, ich schaff das schon"
+2011-07-09 13:39:19,ehenkes,"wichtig ist, dass ich verstehe, was TAP ist"
+2011-07-09 13:40:24,ehenkes,bei telnet kommt jetzt nicht mehr mal das SYN an
+2011-07-09 13:40:43,ehenkes,"also irgendwas stimmt nicht, was ihr da erzählt"
+2011-07-09 13:41:22,ehenkes,trotzdem danke
+2011-07-09 13:41:47,ehenkes,bei freenet osdev raten sie auch nur zu qemu auf ubuntu
+2011-07-09 13:42:01,ehenkes,wir leiden wieder mal unter windows
+2011-07-09 13:42:46,ehenkes,"ich hab auch noch kein bild gefunden, das die zusammenhänge erklärt"
+2011-07-09 13:43:03,ehenkes,beschreibungen sind quesi immer für Linux
+2011-07-09 13:43:13,taljeth,Wir raten ja generell zu (Linux & ~Ubuntu)
+2011-07-09 13:43:19,ehenkes,kann ich verstehen
+2011-07-09 13:43:46,Naoe-Kanno,Moin
+2011-07-09 13:43:53,taljeth,Moin
+2011-07-09 13:44:31,ehenkes,"Wenn meine Firma von Win XP nach Linux umstiegt, werde ich folgen, vorher nicht."
+2011-07-09 13:45:03,taljeth,"Du machst dir damit dein eigenes Leben schwer, mir ist es also egal"
+2011-07-09 13:45:30,ehenkes,ja mir auch
+2011-07-09 13:45:56,ehenkes,"wir haben von anfang an zwei dogmen: no GRUB, no Linux"
+2011-07-09 13:46:24,ehenkes,"ersteres halten wir noch durch, aber auf Linux kann man prettyOS entwicklen, genaui wie auf MacOSA"
+2011-07-09 13:46:38,ehenkes,durch makefile
+2011-07-09 13:47:40,taljeth,Na sowas
+2011-07-09 13:48:04,taljeth,Wahrscheinlich sogar wesentlich leichter als unter Windows
+2011-07-09 13:48:36,taljeth,"Im übrigen bin ich mir auch nicht so sicher ist, sich darüber zu definieren, was man _nicht_ ist"
+2011-07-09 13:48:48,taljeth,*wie sinnvoll es ist
+2011-07-09 13:50:33,ehenkes,wir werden die dogmen und die zukunft mal diskutieren
+2011-07-09 13:50:51,ehenkes,"vieleicht sehen das inzwischen einige anders, möchte da nicht mehr dominieren"
+2011-07-09 13:51:27,ehenkes,besonders erfolgreich war ich nicht bisher
+2011-07-09 13:51:53,taljeth,"Ich glaube, mittlerweile seid ihr auch in eingen Punkten bei dem angekommen, was dir damals an tyndur nicht gefallen hat"
+2011-07-09 13:52:15,taljeth,"Zu groß und unübersichtlich, um ohne großartige Einarbeitung durchzublicken usw."
+2011-07-09 13:52:21,cjuner,"weiß jemand von euch was es bedeutet ""MT_HOT"" zu sein. z.B. this function is not MT_SAFE (multithread safe) and not MT_HOT"
+2011-07-09 13:54:09,taljeth,"Google sagt: ""Multithread-hot or MT-hot-A class, library, or application that creates additional threads to accomplish its task. Labeling something as MT-hot is a warning that inclusion of a such a class or library into a product can require that the class or library-user use multi-thread protection or synchronization within other portions of the product. The Threading package creates no threads of its own and is therefore not considered an "
+2011-07-09 13:54:10,taljeth,"MT-hot product."""
+2011-07-09 13:54:44,taljeth,"Also wohl, dass die Funktion keine neuen Thread anlegt"
+2011-07-09 14:27:59,cjuner,danke
+2011-07-09 14:29:01,Homix,hi
+2011-07-09 14:30:21,ehenkes,"taljeth: Zu groß und unübersichtlich, um ohne großartige Einarbeitung durchzublicken usw. <--- das ist bei prettyOS inzwischen genauso"
+2011-07-09 14:31:45,Homix,kennt sich jemand mit LaTeX ein wenig aus?
+2011-07-09 14:31:45,ehenkes,vor allem fehlen uns fähige developer und an vielen stellen fehlt die erfahrung. Wissen kann man sich anlesen
+2011-07-09 14:34:45,ehenkes,"am schlimmsten ist allerdings, dass es keinen guten strukturierten chat gibt"
+2011-07-09 14:35:21,ehenkes,überall geht alles kreuz und quer
+2011-07-09 14:36:30,ehenkes,gibt eigentlich noch mehr so lustige telnet server wie 94.142.241.111 ?
+2011-07-09 14:36:53,DesL,ist das der star wars server?
+2011-07-09 14:37:31,DesL,"ah, jaaa XD"
+2011-07-09 14:37:54,ehenkes,"ich hätte gerne mehr davon, damit wir auswählen können im user-programm"
+2011-07-09 14:39:03,DesL,mach welche :D
+2011-07-09 14:39:36,ehenkes,"ja, sonst noch was?"
+2011-07-09 14:40:27,bluecode,Homix: kommt wahrscheinlich auf die Frage an
+2011-07-09 14:53:42,taljeth,"ehenkes: Du kannst ja in deinem Channel versuchen, alles schön strukturiert zu halten. Könnte nur passieren, dass dir dann die Leute abhanden kommen. ;-)"
+2011-07-09 14:55:03,ehenkes,"wir sind <10, da brauchts keine struktur"
+2011-07-09 14:55:09,Homix,bluecode: in einem zweispaltigen Dokument ein Bild über beide spalten hinweg darzustellen und nicht nur innerhalb einer spalte ;)
+2011-07-09 14:58:00,ehenkes,"Homix: hier gibt es ein Latex Forum,: http://www.mrunix.de/forums/forumdisplay.php?f=38"
+2011-07-09 15:09:24,XanClic,Moin
+2011-07-09 15:10:26,DesL,moin XanClic 
+2011-07-09 15:27:21,ehenkes,XanClic: hi
+2011-07-09 15:46:36,ehenkes,   sagt mal was zu clang
+2011-07-09 15:48:05,DesL,was zu clang
+2011-07-09 15:51:11,ehenkes,"oh, danke"
+2011-07-09 15:52:48,DesL,np
+2011-07-09 15:54:24,taljeth,hehe
+2011-07-09 15:54:34,taljeth,"War ja fast klar, dass so eine Antwort auf eine so unspezifische Frage kommen würde"
+2011-07-09 15:54:36,Lutoma,hm
+2011-07-09 15:55:02,taljeth,PCI-Interruptzeug?
+2011-07-09 15:55:12,Lutoma,"naja, interruptpin, interruptline und so weiter"
+2011-07-09 15:55:55,ehenkes,Interrupt ist einfach ein event mit informationen
+2011-07-09 15:56:12,Lutoma,"ja, klar"
+2011-07-09 15:56:16,ehenkes,"identifizieren, ananlysieren, handeln"
+2011-07-09 15:56:22,taljeth,"Dich interessiert nur die Interrupt Line, glaube ich"
+2011-07-09 15:56:28,Lutoma,hm
+2011-07-09 15:56:34,taljeth,Setzt das BIOS richtig und gut ist ;-)
+2011-07-09 15:56:44,ehenkes,er hat keine frage gestellt
+2011-07-09 15:56:45,Lutoma,"soweit ich das verstanden habe sollte unter x86 doch einfach eine interruptnummer da rausfallen, oder?"
+2011-07-09 15:56:52,taljeth,Genau
+2011-07-09 15:57:00,ehenkes,siehe intel handbuch
+2011-07-09 15:57:00,Lutoma,"hm, dann ist wohl was am pci-zeugs futsch"
+2011-07-09 15:57:14,Lutoma,zumindest bekomme ich da immer 11
+2011-07-09 15:57:14,taljeth,"Wie das mit den Interruptpins genau ist und wie die Zuordnung passiert, ist mir selbst nicht ganz klar"
+2011-07-09 15:57:18,taljeth,11 klingt doch gut
+2011-07-09 15:57:29,taljeth,Was für ein Gerät suchst du denn?
+2011-07-09 15:57:39,Lutoma,netzwerkkarte 
+2011-07-09 15:57:52,ehenkes,"ah, ein netzwerker"
+2011-07-09 15:58:14,ehenkes,wie können wir helfen?
+2011-07-09 15:58:34,Naoe-Kanno,du kannst die Netzwerkkarte unterm Tisch suchen :D
+2011-07-09 15:58:43,Lutoma,:p
+2011-07-09 15:58:51,ehenkes,da ist sie meist
+2011-07-09 15:58:59,ehenkes,bei tower
+2011-07-09 15:59:02,Naoe-Kanno,"tja, aber nur meist"
+2011-07-09 15:59:07,Naoe-Kanno,bei mir z.B. nicht
+2011-07-09 15:59:23,Naoe-Kanno,PC passt nicht drunter *g*
+2011-07-09 15:59:34,ehenkes,Lutoma: zeig mal deinen pci-code
+2011-07-09 15:59:50,XanClic,11 ist doch wie gesagt gut…
+2011-07-09 16:00:12,taljeth,"Lutoma: Wieso meinst du, dass das falsch ist?"
+2011-07-09 16:00:43,Naoe-Kanno,"Moment mal, wir reden über IRQs?"
+2011-07-09 16:00:55,ehenkes,offenbar
+2011-07-09 16:01:51,Naoe-Kanno,"gut, wenn der Vektor gemeint wär käme mir das auch komisch vor *g*"
+2011-07-09 16:01:54,Lutoma,"ehenkes: Den habe zwar nicht ich geschrieben, sondern jemand anderes, aber http://git.ohai.su/xelix.git/tree/src/hw/pci.c"
+2011-07-09 16:02:53,Lutoma,"(Ja, das sollte man mal weniger speicherverschwendend machen, ich weoiß)"
+2011-07-09 16:07:06,ehenkes,Lutoma: sieht nicht schlecht aus
+2011-07-09 16:07:27,ehenkes,habt ihr eure pci_configRead schon ausführlich gestestet? Stimmen die Ergebnisse
+2011-07-09 16:08:04,taljeth,"Ich glaube, letzteres ist genau seine Frage..+"
+2011-07-09 16:08:16,ehenkes,er stellt keine frage bisher
+2011-07-09 16:08:25,taljeth,Seine implizierte Frage
+2011-07-09 16:09:00,Lutoma,"meine frage war ursprünglich, wie ich an den interrupt von einem pci-gerät komme. die ist geklärt, jetzt muss ich nurnoch schauen, ob der interrupt auch stimmt :)"
+2011-07-09 16:10:10,ehenkes,"offset ist 0x3C, Länge ist 1"
+2011-07-09 16:10:46,ehenkes,wie macht ihr das bei eurem pci_configRead mit der Länge?
+2011-07-09 16:11:16,ehenkes,kommt da immer ein DWORD zurück?
+2011-07-09 16:11:40,Lutoma,offensichtlich :)
+2011-07-09 16:11:46,SHyx0rmZ,Moin
+2011-07-09 16:13:49,ehenkes,vergleicht mal mit folgender funktion von uns: http://codepad.org/GJlJak9H  #define PCI_IRQLINE 0x013C
+2011-07-09 16:14:01,ehenkes,"Länge 1, offset 0x3c"
+2011-07-09 16:14:26,ehenkes,"anwendung: PCIdev->irq                = pci_config_read(bus, device, func, PCI_IRQLINE);"
+2011-07-09 16:14:41,XanClic,"Da das alles Little Endian ist, ist es vollkommen ok, einen 32-Bit-Wert von 0x3C zu lesen und den auf 8 Bit zurechtzustutzen"
+2011-07-09 16:14:43,ehenkes,ob da auch 11 raus kommt
+2011-07-09 16:15:27,ehenkes,"XanClic: ich sehs aber nicht, wie sie das machen"
+2011-07-09 16:15:32,ehenkes,ich sehe nur die funktion
+2011-07-09 16:15:36,XanClic,11 ist doch kleiner als 256?
+2011-07-09 16:15:43,SHyx0rmZ,"tja, Rekursion ist böse :D"
+2011-07-09 16:15:45,ehenkes,ja
+2011-07-09 16:15:45,XanClic,"Also wird es nichts ändern, wenn man nur ein Byte liest"
+2011-07-09 16:16:05,ehenkes,Lutoma: einfach einsetzen und vergleichen
+2011-07-09 16:16:10,Lutoma,*test*
+2011-07-09 16:18:44,ehenkes,XanClic: du hast übrigens völlig recht
+2011-07-09 16:21:41,Lutoma,so.
+2011-07-09 16:22:17,ehenkes,und?
+2011-07-09 16:22:29,Lutoma,http://share.ohai.su/~lutoma/pics/Bildschirmfoto-3.png
+2011-07-09 16:22:33,Lutoma,:)
+2011-07-09 16:23:17,ehenkes,also alles bestens
+2011-07-09 16:23:24,Lutoma,jop
+2011-07-09 16:23:50,ehenkes,mit der 11 musst du nun leben
+2011-07-09 16:23:58,ehenkes,^^
+2011-07-09 16:24:00,Lutoma,verdammt!
+2011-07-09 16:24:02,Lutoma,:D
+2011-07-09 16:24:11,ehenkes,wo ist nun dein echtes Problem?
+2011-07-09 16:24:12,taljeth,"Theoretisch müsste man doch Remappen können, oder? ;-)"
+2011-07-09 16:24:17,taljeth,-R+r
+2011-07-09 16:24:27,Lutoma,hehe
+2011-07-09 16:24:34,taljeth,"Weiß aber vermutlich keiner hier, wie das geht?"
+2011-07-09 16:24:40,Lutoma,"""Ich remappe diesen interrupt"" - ""wieso?"" - ""Ich mag die 11 nicht"""
+2011-07-09 16:24:44,ehenkes,apic
+2011-07-09 16:25:10,taljeth,Mit dem PIC geht das nicht?
+2011-07-09 16:25:20,ehenkes,nö
+2011-07-09 16:26:29,ehenkes,Lutoma: mittels qemu kann man umlegen durchd ie adreess wahl
+2011-07-09 16:26:54,ehenkes,"bei hardware, umstecken, BIOS, ..."
+2011-07-09 16:26:57,Lutoma,"okay, nun also zur nächstmöglichen fehlerquelle: die karte sendet einfach keine interrupts"
+2011-07-09 16:27:07,Lutoma,*frickel*
+2011-07-09 16:27:14,ehenkes,typ?
+2011-07-09 16:27:18,Lutoma,rtl8139
+2011-07-09 16:27:29,ehenkes,wir haben dafür einen treiber
+2011-07-09 16:27:38,Lutoma,"""wir?"""
+2011-07-09 16:27:39,ehenkes,willst du ihn sehen?
+2011-07-09 16:27:46,ehenkes,das prettyOS team
+2011-07-09 16:27:49,Lutoma,ah
+2011-07-09 16:27:56,Lutoma,schaden kanns nicht :)
+2011-07-09 16:28:18,taljeth,CDI hat auch einenn ;-)
+2011-07-09 16:28:36,taljeth,Und schlimmer als der von PrettyOS wird er auch nicht sein
+2011-07-09 16:28:45,Lutoma,joa
+2011-07-09 16:28:59,Lutoma,den CDI-treiber habe ich schon begutachtet
+2011-07-09 16:29:21,ehenkes,http://codepad.org/sfHxZbcH <---
+2011-07-09 16:31:15,ehenkes,den kann man im MMIO betreiben
+2011-07-09 16:31:59,ehenkes,"Lutoma: zeig mal, wo ihr euren handler einhängt bei euch während der pci-scan-phase"
+2011-07-09 16:32:18,Lutoma,?
+2011-07-09 16:33:04,Lutoma,http://git.ohai.su/xelix.git/tree/src/hw/rtl8139.c <- le code
+2011-07-09 16:33:16,ehenkes,"irgendwo müsst ihr festlegen, dass die gefundene 11 zu eurer netzwerkkarte gehört"
+2011-07-09 16:33:42,Lutoma,achso
+2011-07-09 16:33:49,Lutoma,zeile 128
+2011-07-09 16:34:13,ehenkes,"interrupts_registerHandler(card->device->interruptLine, rtl8139_intHandler);"
+2011-07-09 16:34:26,ehenkes,ok
+2011-07-09 16:34:48,ehenkes,und wo wird das aufgerufen: rtl8139_enableCard
+2011-07-09 16:34:58,Lutoma,in der funktion eins drunter ;)
+2011-07-09 16:35:05,Lutoma,void rtl8139_init()
+2011-07-09 16:35:06,ehenkes,habt ihr da schon eure richtige 11?
+2011-07-09 16:35:25,Lutoma,"in der rtl8139_init nicht, in der rtl8139_enable joa"
+2011-07-09 16:35:42,Lutoma,"also, theoretisch haben wir sie auch in der _init-fuktion"
+2011-07-09 16:35:57,ehenkes,was gibt der log denn aus?
+2011-07-09 16:36:10,ehenkes,kommt da die korrekte mac?
+2011-07-09 16:36:49,XanClic,„[16:23:05] <Lutoma> http://share.ohai.su/~lutoma/pics/Bildschirmfoto-3.png“ ← sieht nicht falsch aus
+2011-07-09 16:37:49,ehenkes,Lutoma: testet ihr mit qemu oder real?
+2011-07-09 16:38:05,Lutoma,qemu momentan
+2011-07-09 16:38:15,ehenkes,zeig mal die batchdatei zum aufruf
+2011-07-09 16:38:33,taljeth,-ENOENT?
+2011-07-09 16:39:04,ehenkes,TNEONE
+2011-07-09 16:39:33,Lutoma,http://paste.pocoo.org/show/434349/
+2011-07-09 16:39:41,Lutoma,das ist zwar nicht die batchfile
+2011-07-09 16:39:45,Lutoma,aber man sieht die qemu-optionen
+2011-07-09 16:40:14,ehenkes,pci: 0:3.0: Unknown Device [10ec:8139] (rev 20 class 20000 iobase c100 type 0 int 11 pin 1)
+2011-07-09 16:40:20,ehenkes,da hast du deine 11 nochmal
+2011-07-09 16:40:41,Lutoma,joa
+2011-07-09 16:41:30,ehenkes,-net nic -net user
+2011-07-09 16:41:36,ehenkes,nicht allzuviel
+2011-07-09 16:41:41,XanClic,Aber genug
+2011-07-09 16:42:40,ehenkes,"-net nic,model=rtl8139,addr=1A,macaddr=00:13:d4:12:12:12"
+2011-07-09 16:42:46,ehenkes,Lutoma: nimm mal sowas
+2011-07-09 16:42:53,XanClic,Es ist definitiv genug
+2011-07-09 16:42:53,ehenkes,mindestens das rtl8139
+2011-07-09 16:42:57,taljeth,ehenkes: Wozu?
+2011-07-09 16:42:58,XanClic,Er findet doch eine rtl8139
+2011-07-09 16:43:04,ehenkes,ja
+2011-07-09 16:43:07,XanClic,"Also zeigt das, dass qemu bereits eine emuliert"
+2011-07-09 16:43:18,taljeth,"Also benutzt Lutoma in Wirklichkeit keinen qemu, sondern qemu-kvm"
+2011-07-09 16:43:24,ehenkes,ja
+2011-07-09 16:43:28,taljeth,rtl8139 war nämlich in qemu nie Default
+2011-07-09 16:43:47,SHyx0rmZ,könnt ihr jetzt bitte aufhören?
+2011-07-09 16:43:54,SHyx0rmZ,sonst will ich PCI und Netzwerk machen
+2011-07-09 16:43:55,Lutoma,hm
+2011-07-09 16:43:55,ehenkes,er hat da -no-kvm
+2011-07-09 16:43:56,Lutoma,*kopfkratz*
+2011-07-09 16:44:04,SHyx0rmZ,dabei sollte ich gleich erstma das Threading reparieren
+2011-07-09 16:44:12,Lutoma,mit diesem optionen bekomme ich eine etwas *hüstel* kaputte macadresse
+2011-07-09 16:44:13,Lutoma,rtl8139: 0:26.0: MAC Address 0:13::12:12:12
+2011-07-09 16:45:11,ehenkes,dein OS hat ja auch eine mac meinung
+2011-07-09 16:45:31,ehenkes,addr=1A <--- damit kannst due IRQ steuern
+2011-07-09 16:45:39,ehenkes,probier mal addr=1 F usw.
+2011-07-09 16:45:47,ehenkes,addr=1F
+2011-07-09 16:45:59,ehenkes,wenn dir die 11 nicht passt
+2011-07-09 16:46:08,Lutoma,hm
+2011-07-09 16:46:12,Lutoma,1A -> interrupt 10
+2011-07-09 16:46:15,Lutoma,1F -> interrupt 11
+2011-07-09 16:46:19,Lutoma,*kopfkratz*
+2011-07-09 16:46:19,ehenkes,wer sagts denn
+2011-07-09 16:46:28,ehenkes,hey lass deinen kopf dran ^^
+2011-07-09 16:46:46,ehenkes,den brauchst du noch
+2011-07-09 16:47:06,Lutoma,"och, geht auch ganz gut ohne :)"
+2011-07-09 16:47:10,ehenkes,so was ist jetzt mit dem interrupt?
+2011-07-09 16:47:15,taljeth,SHyx0rmZ: Willst du nicht. Netzwerk zieht sich endlos hin und wird nach der ersten Begeisterung stinklangweilig. ;-)
+2011-07-09 16:47:32,Lutoma,offensichtlich ist irgendwas im pci-zeug futsch .
+2011-07-09 16:47:35,ehenkes,taljeth: wieso verrätst du das?
+2011-07-09 16:48:03,taljeth,"Andererseits muss ich zugeben, dass meine Begeisterung für VFS inzwischen auch nachgelassen hat *g*"
+2011-07-09 16:48:03,SHyx0rmZ,"taljeth, ich brauch auch vorerst nur Ethernet ;-)"
+2011-07-09 16:48:08,taljeth,"Jo, das geht noch ;-)"
+2011-07-09 16:48:10,SHyx0rmZ,*g*
+2011-07-09 16:48:22,SHyx0rmZ,"hm, danach muss ich dann mal mein eigenes FS testen"
+2011-07-09 16:48:31,SHyx0rmZ,"was zugleich mein VFS sein wird, nehme ich an"
+2011-07-09 16:48:35,ehenkes,ethernet? nur MAC-Ebene?
+2011-07-09 16:48:36,taljeth,Irgendwann will ich mal ordentliches MM machen
+2011-07-09 16:49:04,Lutoma,ehenkes: na klar
+2011-07-09 16:49:05,taljeth,SHyx0rmZ: Hä? Wie soll ein Dateisystem das VFS sein? Willst du nur ein einziges Dateisystem unterstützen?
+2011-07-09 16:49:18,SHyx0rmZ,nein
+2011-07-09 16:49:23,XanClic,Bei MyXomycota hat das gut funktioniert :3
+2011-07-09 16:49:23,ehenkes,Lutoma: was ist klar?
+2011-07-09 16:49:25,Lutoma,"denkt ihr, ich benutze ip oder tcp-stacks? nene, ich gebe die ip-pakete von hand ein :)"
+2011-07-09 16:49:34,SHyx0rmZ,aber das soll alles tagbasiert sein :/
+2011-07-09 16:49:45,Lutoma,"uh, tagbasiert"
+2011-07-09 16:49:51,ehenkes,nachts arbeitet das OS nicht am tag
+2011-07-09 16:49:52,SHyx0rmZ,"ja, ich finde meine Dateien nie wieder xD"
+2011-07-09 16:49:58,taljeth,"XanClic: PrettyOS hat auch noch einen Syscall, der festverdrahtet irgendwas mit FAT auf einer Floppy macht. Kann man schon machen. Will man aber nicht. ;-)"
+2011-07-09 16:50:29,ehenkes,taljeth: welchen meinst du?
+2011-07-09 16:50:33,SHyx0rmZ,"also, für das VFS gibt's da noch ne kleine Modifikation dran"
+2011-07-09 16:50:37,XanClic,"Na ja, ob ich jetzt ein VFS mit Pointern für alle Mountpunkte oder ein echtes FS im Speicher hab, das die Pointer halt als Dateiattribute hat, ist nicht so unterschiedlich"
+2011-07-09 16:50:42,SHyx0rmZ,weil das auch nicht getaggte Dateien unterstützen kann
+2011-07-09 16:50:45,taljeth,"ehenkes: Keine Ahnung, ich bin nur letztens drübergestolpert"
+2011-07-09 16:50:46,XanClic,"Außer, dass letzteres schwieriger zu verwalten und wohl unflexibler ist"
+2011-07-09 16:51:07,DesL,"while(!end){.... end = inp == ""EXIT""; } XD"
+2011-07-09 16:51:07,ehenkes,  // COMPATIBILITY (90-91); should be removed
+2011-07-09 16:51:07,ehenkes,"     &flpydsk_read_directory,"
+2011-07-09 16:51:10,SHyx0rmZ,ich lass es einfach mal auf mich zu kommen ;-)
+2011-07-09 16:51:12,ehenkes,ja stimmt
+2011-07-09 16:51:31,DesL,"mew, falsches fenster -.-"
+2011-07-09 16:51:45,SHyx0rmZ,"jetzt weiß ich endlich, wie ich Tasks verwalten will, jetzt gefällt mir der Code nicht"
+2011-07-09 16:51:56,ehenkes,taljeth: wir sidn da aber schon besser geworden in der abstraktion und schichtung
+2011-07-09 16:52:04,SHyx0rmZ,"ich muss nur noch rausfinden, ob man das sinnvoll lösen kann, oder, ob ich da noch mehr Makros brauche *g*"
+2011-07-09 16:52:22,taljeth,"ehenkes: Ich habe gesehen, dass es parallel Interfaces gibt, die einigermaßen sinnvoll aussehen"
+2011-07-09 16:52:32,SHyx0rmZ,"was mich direkt mal daran erinnert, dass die aktuellen Makros nicht mal kompilieren *duck*"
+2011-07-09 16:52:53,taljeth,Willst du nicht einfach einen Kernelgenerator schreiben? ;-)
+2011-07-09 16:53:24,ehenkes,taljeth: dafür hat prettyOS funktionierendes DHCP
+2011-07-09 16:53:54,SHyx0rmZ,"taljeth, den gibt's erst, wenn Tyndur 4 released wird"
+2011-07-09 16:53:57,taljeth,"Hm... Ich glaube, es wäre gar nicht so doof, ein fsync() an den Dateisystemtreiber weiterzugeben."
+2011-07-09 16:55:48,taljeth,SHyx0rmZ: Dazu musst du erstmal amd64- und SMP-Pätsches liefern ;-)
+2011-07-09 16:57:05,SHyx0rmZ,oh gott :D
+2011-07-09 16:57:35,SHyx0rmZ,"meh, ich muss mal die Zwischenergebnisse der Objektdateien mitgenerieren lassen..."
+2011-07-09 16:57:52,taljeth,"""Zwischenergebnisse der Objektdateien""?"
+2011-07-09 16:58:33,SHyx0rmZ,genauer: -E
+2011-07-09 16:59:26,taljeth,Also nur cpp laufen lassen?
+2011-07-09 17:02:18,SHyx0rmZ,"argh, was zur Hölle kann an __typeof__ so schwer sein, dass der das verkackt?"
+2011-07-09 17:03:56,SHyx0rmZ,"oh, da war einfach nur ein * zuviel :D"
+2011-07-09 17:05:09,SHyx0rmZ,"merke, wenn typeof() schon nen Pointer abfragt, braucht man hinterher kein * mehr *g*"
+2011-07-09 17:06:35,SHyx0rmZ,so eine schwerwiegende Erkenntnis zwingt mich jetzt erst einmal zum Frühstücken ;-)
+2011-07-09 17:33:21,DesL,bb
+2011-07-09 18:39:34,ehenkes,http://www.c-plusplus.de/forum/p2090694#2090694
+2011-07-09 18:39:53,ehenkes,"sorry, falsche sforum"
+2011-07-09 18:54:51,XanClic,"Da ist wieder Rindfleisch im Forum, btw"
+2011-07-09 18:55:21,XanClic,"Oh, Schweinefleisch ist das ja"
+2011-07-09 18:55:30,taljeth,Seh ich nicht
+2011-07-09 18:55:43,XanClic,Da hab ich mich dann wohl doppelt getäuscht
+2011-07-09 18:55:59,taljeth,"Oder willst du etwa behaupten, FlashBurn spamme? ;-)"
+2011-07-09 18:56:04,XanClic,Niemals!
+2011-07-09 19:38:03,Jidder,moin moin
+2011-07-09 23:21:12,SHyx0rmZ,バンザイ　＼（´°う°`）／
+2011-07-09 23:28:31,ehenkes,^^

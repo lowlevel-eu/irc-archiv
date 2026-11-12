@@ -1,0 +1,210 @@
+date/time,nick,message
+2012-09-16 10:02:40,bluecode,"guten Morgen, #lost !"
+2012-09-16 10:02:51,Siebenkeim,Hi
+2012-09-16 10:03:41,Siebenkeim,Kannst du mir vll. helfen?
+2012-09-16 10:03:42,Siebenkeim,http://ideone.com/s431d
+2012-09-16 10:03:50,Siebenkeim,Wollte ein Schleife machen
+2012-09-16 10:03:56,Siebenkeim,als 1. gibt man eine Zahl ein
+2012-09-16 10:04:13,Siebenkeim,aber dann geht es nicht weiter
+2012-09-16 10:05:43,bluecode,soll das ein linuxprogramm sein?
+2012-09-16 10:05:52,Siebenkeim,Ja
+2012-09-16 10:07:42,mgottschlag,"also das ""xor %eax, %eax"" wirkt schonmal überflüssig"
+2012-09-16 10:07:55,mgottschlag,wobei das natürlich nichts mit deinem Problem zu tun hat
+2012-09-16 10:08:09,bluecode,gibts irgendwo ne int80 referenz?
+2012-09-16 10:08:33,Siebenkeim,also er soll bei jedem Durchgang die Schleife durchgehen
+2012-09-16 10:08:45,bluecode,"ah, gefunden"
+2012-09-16 10:10:42,bluecode,mir scheint du setzt ecx falsch
+2012-09-16 10:10:58,bluecode,oder gibt das wirklich den Zeiger auf amount?
+2012-09-16 10:11:08,bluecode,(warum auch immer der buffer amount heißt ;-) )
+2012-09-16 10:11:18,mgottschlag,afaik schon? auf jeden Fall steht in amount nie das richtige Ergebnis drin
+2012-09-16 10:11:25,mgottschlag,"weil da ein string drin steht, keine Zahl"
+2012-09-16 10:11:45,Siebenkeim,Hmm gestern ging es noch das habe ich aus einem Tutorial
+2012-09-16 10:11:45,mgottschlag,"aber das sollte kein Problem sein, dann ist nur die Anzahl der Schleifendurchläufe falsch"
+2012-09-16 10:12:40,mgottschlag,"Siebenkeim: read() liest einen string, den müsstest du erst in eine Zahl umwandeln"
+2012-09-16 10:12:58,bluecode,was soll denn der loop eigentlich tun?
+2012-09-16 10:12:58,mgottschlag,"insofern wär mal interessant, zu wissen, was dein Programm jetzt genau macht (crashen, endlosschleife, etc)"
+2012-09-16 10:13:07,bluecode,ich versteh schon die abbruchbedingung nicht
+2012-09-16 10:13:21,Siebenkeim,Also ich gebe eine Zahl ein
+2012-09-16 10:13:25,mgottschlag,"ich bin jetzt auf jeden Fall mal weg, bbl"
+2012-09-16 10:13:40,Siebenkeim,und die Schleife soll solange durchgegangen werden bis amount == counter ist
+2012-09-16 10:14:09,Siebenkeim,So war das im Tutorial
+2012-09-16 10:14:12,bluecode,"in amount steht ein String (keine Zahl) ASCII-codiert, dass ist dir bewusst?"
+2012-09-16 10:14:30,Siebenkeim,http://ideone.com/kDYpy
+2012-09-16 10:14:39,Siebenkeim,Ahh
+2012-09-16 10:14:42,Siebenkeim,0x0 muss noch rein
+2012-09-16 10:14:47,Siebenkeim,oder?
+2012-09-16 10:21:02,bluecode,wie compilierst du denn das zu ner binary (damit ich das mal testen kann)?
+2012-09-16 10:21:21,Siebenkeim,as test.asm -o test.o
+2012-09-16 10:21:25,Siebenkeim,ld test.o -o test
+2012-09-16 10:24:07,bluecode,das write funktioniert aus irgendeinem Grund nicht
+2012-09-16 10:24:24,bluecode,(also auch wenn man die eingabe und die schleife wegnimmt)
+2012-09-16 10:25:29,Siebenkeim,Bei mir funktioniert es jetzt
+2012-09-16 10:25:48,Siebenkeim,ich habe bei amount und counter noch den Wert 0x0 hinzugefügt
+2012-09-16 10:26:03,bluecode,"ah, du hattest zweimal ecx geschrieben bei dem write und edx vergessen"
+2012-09-16 10:26:58,bluecode,bei dem letzten Paste
+2012-09-16 10:27:20,Siebenkeim,Ohh das ist vom Tutorial^^
+2012-09-16 10:27:23,bluecode,aber wenn man das und die Syntaxfehler behebt tut es bei mir auch
+2012-09-16 10:27:31,Siebenkeim,das 1. war von mir
+2012-09-16 10:28:51,Siebenkeim,Okay Danke dir
+2012-09-16 11:48:48,micha,hi
+2012-09-16 11:48:59,Siebenkeim,Hi
+2012-09-16 12:15:44,Siebenkeim,Mal eine Frage ist das richtig so?
+2012-09-16 12:15:53,Siebenkeim,"movl (buf_number), %eax"
+2012-09-16 12:15:57,Siebenkeim,"movl $2, %ecx "
+2012-09-16 12:15:57,Siebenkeim,divl %ecx
+2012-09-16 12:20:25,Siebenkeim,bekomme immer ein Floating Point Exception
+2012-09-16 12:23:27,bluecode,du musst edx vorher auf 0 setzen
+2012-09-16 12:23:37,Siebenkeim,Achso
+2012-09-16 12:23:38,Siebenkeim,und wieso?
+2012-09-16 12:23:41,bluecode,"zumindest nehme ich an dass das Problem ist, dass das Ergebnis nicht reinpasst"
+2012-09-16 12:24:07,bluecode,weil edx:eax durch ecx geteilt wird
+2012-09-16 12:24:39,Siebenkeim,Dachte das Ergebnis wird in ecx gespeichert
+2012-09-16 12:25:24,bluecode,""" The idiv instruction divides the contents of the 64 bit integer EDX:EAX (constructed by viewing EDX as the most significant four bytes and EAX as the least significant four bytes) by the specified operand value. The quotient result of the division is stored into EAX, while the remainder is placed in EDX. """
+2012-09-16 12:26:48,Siebenkeim,Okay Danke
+2012-09-16 12:29:52,bluecode,du kannst natürlich auch durch cx teilen
+2012-09-16 12:29:59,bluecode,dürfte eher das sein was du willst
+2012-09-16 12:31:23,Siebenkeim,Funktioniert schon :)
+2012-09-16 12:34:45,Siebenkeim,der Stack wird für Parameter von Funktionen genutzt oder?
+2012-09-16 12:35:00,Siebenkeim,mit dem Stackpointer (%esp) kann ich den untersten Stack bekommen
+2012-09-16 12:35:15,Siebenkeim,das unterste Element*
+2012-09-16 12:35:34,bluecode,das oberste
+2012-09-16 12:35:48,bluecode,wobei das oberste Element an der niedrigsten Adresse ist
+2012-09-16 12:36:10,bluecode,aka. der Stack wächst nach unten
+2012-09-16 12:36:22,Siebenkeim,Achso
+2012-09-16 12:36:33,Siebenkeim,Eine Sache verstehe ich jetzt nicht beim Beispielcode
+2012-09-16 12:37:01,Siebenkeim,http://ideone.com/6M41M
+2012-09-16 12:37:03,Siebenkeim,Verstehe alles
+2012-09-16 12:37:11,Siebenkeim,"außer das addl $4, %esp"
+2012-09-16 12:37:43,bluecode,"""entfernt"" das letzte element auf dem Stack"
+2012-09-16 12:38:08,Siebenkeim,%esp zeigt auf das oberste mit der niedrigsten Adresse
+2012-09-16 12:38:26,Siebenkeim,und dort werden 4 Bytes dazu addiert oder?
+2012-09-16 12:38:55,bluecode,esp (der zeiger) wird um 4 nach oben verschoben
+2012-09-16 12:39:13,Siebenkeim,Ok und das hat mich verwirrt
+2012-09-16 12:39:19,Siebenkeim,wieso gerade 4 ?
+2012-09-16 12:39:27,Siebenkeim,woher will man wissen wo es liegt?
+2012-09-16 12:39:47,bluecode,weil das pushl vor dem call gerade 4 byte auf den stack pushst
+2012-09-16 12:40:10,bluecode,nach dem call räumt man halt wieder auf was man für den call auf den stack tut
+2012-09-16 12:41:20,Siebenkeim,Also der Stack ist anfangs leer?
+2012-09-16 12:41:28,Siebenkeim,Dachte das System packt da noch paar Sachen rauf o.O
+2012-09-16 12:41:38,bluecode,kommt halt auf das system an
+2012-09-16 12:41:47,bluecode,aber ich seh nicht wie du zu der frage kommst
+2012-09-16 12:42:04,bluecode,ich rede von Zeile 1 und 3 deines pastes
+2012-09-16 12:42:35,bluecode,die erste Zeile packt was auf den stack und die 3te räumt das wieder auf
+2012-09-16 12:42:52,Siebenkeim,"Habe nur addl $4, %esp nicht verstanden (also ich weiß das es aufräumt) aber es gibt doch noch pop"
+2012-09-16 12:43:15,bluecode,"jo, aber damit musst du ein Register mit dem Wert zumüllen"
+2012-09-16 12:43:19,bluecode,und das will man nicht immer
+2012-09-16 12:43:33,bluecode,"möglicherweise ist es auch langsamer oder schlechter für die Pipeline, kA"
+2012-09-16 12:43:41,Siebenkeim,Achso^^
+2012-09-16 12:44:09,bluecode,"wobie, es ist ganz sicher schlechter für die Pipeline, man hat ne zusätzliche Registerabhängigkeit"
+2012-09-16 12:46:26,Siebenkeim,also wenn ich 2 Elemente raufpacke
+2012-09-16 12:46:34,Siebenkeim,"muss ich 2x addl $4, %esp ausführen"
+2012-09-16 12:46:43,Siebenkeim,um es aufzuräumen
+2012-09-16 12:46:55,bluecode,einmal 8 addieren reicht wohl ;-)
+2012-09-16 12:47:01,SHyx0rmZ,*g*
+2012-09-16 12:47:02,Siebenkeim,Achso^^
+2012-09-16 12:47:32,Siebenkeim,und wenn ich nur ein byte raufpacke
+2012-09-16 12:47:35,Siebenkeim,dann nur $1
+2012-09-16 12:48:10,bluecode,"ich glaube ein pushb erhöht auch um 4 byte, bin mir aber nicht sicher"
+2012-09-16 12:48:30,bluecode,aber man kann natürlich irgendwas an esp-1 schreiben und esp um eins dekrementieren
+2012-09-16 12:48:31,SHyx0rmZ,"afaik nicht, mom"
+2012-09-16 12:48:35,bluecode,dann muss man natürlich nur 1 dazuzählen
+2012-09-16 12:49:18,Siebenkeim,"""Es können mit push immer nur 4 Bytes (ein double word) auf den Stack gelegt werden, nicht mehr und nicht weniger."""
+2012-09-16 12:49:33,SHyx0rmZ,stimmt so nicht
+2012-09-16 12:50:44,SHyx0rmZ,"aber ja, bluecode, bei einem Byte hängt es vom Modus ab, also minimal 2 Byte"
+2012-09-16 12:51:37,SHyx0rmZ,"so deute ich zumindest grad das Manual, der Pseudocode widerspricht da leider dem Text"
+2012-09-16 12:51:38,Siebenkeim,Okay danke euch beiden :)
+2012-09-16 12:52:19,Siebenkeim,wollte jetzt mit dem OS Tutorial weitermachen
+2012-09-16 12:53:05,Siebenkeim,habe im C Code
+2012-09-16 12:53:07,Siebenkeim,void init(void)
+2012-09-16 12:53:23,Siebenkeim,und in ASM wird das ausgeführt
+2012-09-16 12:53:25,Siebenkeim,"mov $kernel_stack, %esp"
+2012-09-16 12:53:35,Siebenkeim,das habe ich nicht ganz verstanden
+2012-09-16 12:53:39,Siebenkeim,http://www.lowlevel.eu/wiki/Teil_4_-_Hello_World
+2012-09-16 12:53:44,bluecode,esp wird initialisiert
+2012-09-16 12:54:09,bluecode,bevor man nicht irgendwo einen speicherbereich als stack ausgewiesen hat sollte man den stack auch nicht benutzen ;-)
+2012-09-16 12:54:21,bluecode,und hier fängt halt der kernelstack bei $kernel_stack an
+2012-09-16 12:54:45,Siebenkeim,also
+2012-09-16 12:54:51,Siebenkeim,ich erstelle einen Stack sozusagen
+2012-09-16 12:54:55,Siebenkeim,der 8KB groß ist
+2012-09-16 12:55:00,bluecode,und wächst in den 8192 byte großen freien bereich im BSS-Segment rein
+2012-09-16 12:55:28,bluecode,steht doch da eigentlich alles kommentiert ;-P
+2012-09-16 12:55:45,Siebenkeim,Ich weiß^^
+2012-09-16 12:55:51,Siebenkeim,Bin nur zu blöd um es zu verstehen :/
+2012-09-16 12:56:15,bluecode,"naja, zumindest lesen solltest du es ;-)"
+2012-09-16 12:56:29,Siebenkeim,also ich habe dann einen 8KB großen Stack für meine Parameter?
+2012-09-16 12:56:50,Siebenkeim,Habe alles verstanden nur das nicht^^ Sowas wurde im Tutorial nicht erklärt
+2012-09-16 12:57:28,bluecode,"der Stack würde schon weiter als die 8kB wachsen, nur dann werden halt andere Sachen überschrieben, was tolle undebugbare Effekte hat ;-)"
+2012-09-16 12:57:42,Siebenkeim,Achso
+2012-09-16 12:57:52,Siebenkeim,Ok danke dir nochmal jetzt kann ich weitermachen :)
+2012-09-16 13:28:35,micha,kann man eig %cr0 und so pushen?
+2012-09-16 13:30:42,livinskull,ich glaub  nicht
+2012-09-16 13:30:54,livinskull,moin
+2012-09-16 13:31:07,micha,"also müsste ich mov %cr0, %eax"
+2012-09-16 13:31:14,micha,und dann push %eax
+2012-09-16 13:31:28,livinskull,du kannst die cr register auch nicht direkt in speicher schieben
+2012-09-16 13:31:41,livinskull,jo^^
+2012-09-16 16:09:52,Siebenkeim,Wollte gerade eine Object File erstellen mit
+2012-09-16 16:09:59,Siebenkeim,gcc -m32 -c hello01.c
+2012-09-16 16:10:18,Siebenkeim,"In file included from /usr/include/stdio.h:28:0,                  from hello01.c:1: /usr/include/features.h:323:26: fatal error: bits/predefs.h: No such file or directory compilation terminated."
+2012-09-16 16:10:23,Siebenkeim,das kommt dann immer
+2012-09-16 16:18:48,livinskull,wtf
+2012-09-16 16:19:32,Siebenkeim,Code sieht so aus
+2012-09-16 16:19:32,Siebenkeim,http://ideone.com/Fpga8
+2012-09-16 16:19:49,livinskull,der Code is wohl nicht von belang
+2012-09-16 16:20:04,livinskull,gehts denn ohne -m32?
+2012-09-16 16:20:10,Siebenkeim,Ja damit geht es
+2012-09-16 16:20:48,livinskull,dann fehlt dir wohl das 32bit zeugs
+2012-09-16 16:20:59,Siebenkeim,Wo krieg ich das her?
+2012-09-16 16:21:13,livinskull,kp :P
+2012-09-16 16:21:22,livinskull,distro?
+2012-09-16 16:21:57,Siebenkeim,Habe mal bei der Paketverwaltung gcc eingeben werde dort mal alles runterladen was mit 32bit zutun hat^^
+2012-09-16 16:22:02,livinskull,bzw
+2012-09-16 16:22:18,livinskull,haste /usr/lib32 ?
+2012-09-16 16:22:42,livinskull,joa^^
+2012-09-16 16:22:43,livinskull,tud as
+2012-09-16 16:22:44,livinskull,xD
+2012-09-16 16:22:57,livinskull,bei mri hiess das multilib
+2012-09-16 16:23:47,Siebenkeim,Ahh hier
+2012-09-16 16:23:52,Siebenkeim,gcc 4.6 multilib
+2012-09-16 16:23:56,livinskull,ma ganz davon abgesehen das ich bits/predef.h auch nicht hab
+2012-09-16 16:23:58,livinskull,:P
+2012-09-16 16:26:16,Siebenkeim,Funktioniert danke dir :)
+2012-09-16 16:27:19,livinskull,büdde büdde
+2012-09-16 16:29:35,DesL,moin
+2012-09-16 16:29:44,Siebenkeim,Hi
+2012-09-16 16:32:41,DesL,"Antoine, wo belibt der SPAM-Filter? :D"
+2012-09-16 16:36:49,DesL,http://www.lowlevel.eu/wiki/Benutzer_Diskussion:BeanMe blarg
+2012-09-16 16:36:53,Siebenkeim,int $0x80 bedeutet Interrupt aufrufen o.O
+2012-09-16 16:37:03,DesL,was sonst?
+2012-09-16 16:37:15,Siebenkeim,"Ich damit ist irgendwie der Datentyp ""Integer"" gemeint^^"
+2012-09-16 16:38:06,livinskull,lol
+2012-09-16 16:39:10,bluecode,öhm....
+2012-09-16 16:39:48,bluecode,und aus irgendeinem Grund liest/schreibt dieser integer Datein?
+2012-09-16 16:40:02,Siebenkeim,Hat mich auch immer gewundert
+2012-09-16 16:40:09,Siebenkeim,aber dachte immer irgendwann kommt die Wahrheit raus
+2012-09-16 16:40:09,livinskull,:D
+2012-09-16 16:40:14,Siebenkeim,wollte euch damit nicht nerven^^
+2012-09-16 16:41:41,bluecode,"ach wo, genervt hätte es nur, wenn ich erst angesetzt hätte zum Kaffeetrinken und dann prustend das gelesen hätte"
+2012-09-16 16:41:46,bluecode,aber so war das gottseidank alles andersrum
+2012-09-16 16:42:03,PatrickBic,kaffee.. gute idee
+2012-09-16 16:42:04,PatrickBic, =)
+2012-09-16 16:42:13,bluecode,aber sonst hättest du natürlich eine rechnung über einen Monitor bekommen ;-P
+2012-09-16 16:49:39,Siebenkeim,So nun bin bei der Aufgabe wo ich für mein OS eine printf Funktion schreiben soll :)
+2012-09-16 16:49:51,Siebenkeim,Ich nehme mal ich kann dort keine Syscalls von Linux aufrufen hehe ^^
+2012-09-16 16:51:30,bluecode,hast du denn schon den gdt/idt krimskrams?
+2012-09-16 16:51:56,Siebenkeim,Ähm keine Ahnung folge dem Tutorial kam glaube ich noch nicht dran
+2012-09-16 16:52:06,bluecode,"achso, stimmt, printf ist schon in Tut4"
+2012-09-16 16:58:16,livinskull,printf im sinne von puts oder? :P
+2012-09-16 16:59:30,Siebenkeim,Wurde ihn Trockenübungen Teil 3 angesprochen
+2012-09-16 16:59:48,micha,hi
+2012-09-16 17:00:04,bluecode,"livinskull: Teil 4 hat das doch als Übungsaufgabe, also so richtig printf"
+2012-09-16 17:00:37,Siebenkeim,"Wollte jetzt dafür ASM Code machen für die Ausgabe und in C aufrufen, ist es von der Idee her richtig?"
+2012-09-16 17:00:47,bluecode,nein
+2012-09-16 17:00:51,bluecode,du willst kein asm
+2012-09-16 17:01:39,livinskull,erst recht nicht für printf :D
+2012-09-16 17:01:55,Siebenkeim,Ok^^
+2012-09-16 17:02:31,Siebenkeim,Werde mir einfach mal das anschauen http://www.lowlevel.eu/wiki/Textausgabe
+2012-09-16 17:33:53,Siebenkeim,Wie könnte ich anfangen ich habe kein Plan :/
+2012-09-16 17:52:29,Siebenkeim,also wegen printf
+2012-09-16 17:53:47,DesL,du könntest dir erstmal ein makro/eine funktion schreiben die dir ein zeichen (und attribut) auf den schirm an eine bestimmte stelle schreibt
+2012-09-16 17:54:28,Siebenkeim,Ahh Ok das steht ja alles in dem wiki Link Textaugabe

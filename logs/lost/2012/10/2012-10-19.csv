@@ -1,0 +1,133 @@
+date/time,nick,message
+2012-10-19 10:17:17,DesL,moion
+2012-10-19 10:22:45,DesL,"""Kann Spuren von Nüssen enthalten"" oookay, auch nur ne Definitionssachen von ""Spur"", aber ich hatte alleine in dieser Schale  Haselnüsse XD"
+2012-10-19 13:19:11,Th3Falc0n,moin
+2012-10-19 13:19:14,Th3Falc0n,da bin ich wieder
+2012-10-19 13:19:44,Th3Falc0n,"hi kevin , lang nicht gesehen :)"
+2012-10-19 13:20:36,kevin,Hi
+2012-10-19 13:21:26,Th3Falc0n,da Jidder gerade nicht da ist kannst du mir doch bestimmt beim paging helfen oder?
+2012-10-19 13:22:25,kevin,Vielleicht
+2012-10-19 13:23:54,Th3Falc0n,ok ich meld mich dann sobald der triple fault beseitigt ist...
+2012-10-19 13:27:11,Th3Falc0n,"also scheinbar mappt er den kernel nicht richtig da der erste versuch auf eine variable zuzugreifen, nachdem das paging aktiviert ist so endet:"
+2012-10-19 13:27:22,Th3Falc0n,v=0e e=0000 i=0 cpl=0 IP=0008:00100de6 pc=00100de6 SP=0010:001063bc CR2=00100de6
+2012-10-19 13:30:12,kevin,Dann schau dir den PT-Eintrag für 0x100de6 an
+2012-10-19 13:30:18,Th3Falc0n,ja
+2012-10-19 13:30:36,Th3Falc0n,wo finde ich den? (außer im programmcode)
+2012-10-19 13:31:14,kevin,"Mach eine Endlosschleife rein bevor es schiefgeht (also vermutlich beim cr0-Update, oder?)"
+2012-10-19 13:31:27,kevin,"Dann schaust du an, wo cr3 hinzeigt"
+2012-10-19 13:31:55,kevin,Also mit info registers im qemu-Monitor
+2012-10-19 13:32:07,Th3Falc0n,ok
+2012-10-19 13:32:33,Th3Falc0n,ist übrigens der erste variablenzugriff nach dem cr0 update
+2012-10-19 13:36:09,Th3Falc0n,kevin: mal ne frage: wie genau soll ich den monitor einrichten?
+2012-10-19 13:37:27,kevin,Wie meinst du einrichten?
+2012-10-19 13:38:12,Th3Falc0n,also ob einfach -monitor stdio reicht oder ob ich irgendwas beachten muss
+2012-10-19 13:40:27,kevin,"Nö, musst du nicht"
+2012-10-19 13:40:46,kevin,"Du brauchst auch -monitor stdio nicht, sondern kannst im laufenden qemu mit Strg-Alt-2 umschalten"
+2012-10-19 13:41:22,Th3Falc0n,ok
+2012-10-19 13:41:27,Th3Falc0n,aber ich komm eh nicht soweit
+2012-10-19 13:41:40,Th3Falc0n,v=0e e=0000 i=0 cpl=0 IP=0008:00100de6 pc=00100de6 SP=0010:001063bc CR2=00100de6
+2012-10-19 13:42:00,Th3Falc0n,100de6 ist der jmp der while schleife
+2012-10-19 13:42:53,kevin,Dann kommt die while-Schleife zu spät
+2012-10-19 13:43:12,kevin,"Die sollte vor dem cr0-Update kommen, sonst klappt natürlich nichts"
+2012-10-19 13:43:22,Th3Falc0n,dmm
+2012-10-19 13:43:28,Th3Falc0n,*hm
+2012-10-19 13:44:25,Th3Falc0n,CR3=00001000
+2012-10-19 13:45:28,Th3Falc0n,"ich hab irgendwie das gefühl das mein vorheriger fehler war, dass meine vmm_map_page nur mit physikalischen adressen gearbeitet hat"
+2012-10-19 13:45:54,Th3Falc0n,"und mein derzeitiger fehler ist, dass sie nurnoch mit virtuellen adressen arbeitet"
+2012-10-19 13:50:38,Th3Falc0n,"hmm soll ich jetzt juchu sagen, dass der triple fault erst im scheduler auftritt kevin ?"
+2012-10-19 13:51:19,kevin,"Öhm, eher nicht"
+2012-10-19 13:51:49,kevin,"Aber ich weiß auch nicht, was du jetzt umgebaut hast anstatt einfach nur zu debuggen wie ich sagte..."
+2012-10-19 13:52:19,kevin,xp 0x1000 zeigt dir die Adresse der PT für die ersten 4 MB
+2012-10-19 13:54:06,Th3Falc0n,ich habs zurück gebaut
+2012-10-19 13:54:16,Th3Falc0n,00001000: 0x00003003
+2012-10-19 13:58:17,Th3Falc0n,"kevin: mir wurde gestern erklärt dass ich die adresse für die page_table mit (0xFFC00000 + pt_index * 4096) berechne, was ich jetzt auch mache in vmm_map_page"
+2012-10-19 13:58:55,kevin,Th3Falc0n: Dann zeigt xp 0x3100 den PTE für 0x100de6
+2012-10-19 14:03:43,Th3Falc0n,kevin: 00003100: 0x00000000
+2012-10-19 14:05:26,Th3Falc0n,ich lass mir von vmm_map_page übrigens auch die page table addressen ausgeben
+2012-10-19 14:05:56,Th3Falc0n,mapped 12e000 to 12e000 PT:ffd2e000
+2012-10-19 14:06:33,Th3Falc0n,aber FFD2E000 ist auch leer...
+2012-10-19 14:07:01,Th3Falc0n,und ich versteh gerade garnichts mehr...
+2012-10-19 14:08:36,alexander,Willkommen in #lost
+2012-10-19 14:08:47,Th3Falc0n,lol
+2012-10-19 14:14:02,Th3Falc0n,und jetzt?
+2012-10-19 14:16:03,livinskull,noch ein paging geschädigter
+2012-10-19 14:16:07,livinskull,:P
+2012-10-19 14:16:30,Th3Falc0n,:(
+2012-10-19 14:17:51,Th3Falc0n,rm -f vmm.* 
+2012-10-19 14:17:55,Th3Falc0n,und nochmal neu anfangen
+2012-10-19 14:18:15,Th3Falc0n,oder wasß
+2012-10-19 14:18:18,Th3Falc0n,*?
+2012-10-19 14:21:06,Th3Falc0n,ich les erstmal nochmal den artikel zum paging
+2012-10-19 14:27:30,Th3Falc0n,i think i got it
+2012-10-19 14:32:20,kevin,"Th3Falc0n: 0 ist halt ein bisschen wenig für eine gemappte Page, da finde ich den Page Fault durchaus nachvollziehbar ;-)"
+2012-10-19 14:32:38,Th3Falc0n,-.-
+2012-10-19 14:34:00,Th3Falc0n,also ich bin wieder beim double (oder triple?) fault im scheduler
+2012-10-19 14:35:32,Th3Falc0n,CR3 zeigt auf 0x100
+2012-10-19 14:35:38,Th3Falc0n,*0x1000
+2012-10-19 14:35:48,Th3Falc0n,0x1000 hat den inhalt 0x3003
+2012-10-19 14:36:31,kevin,Ist das immer noch das hier?
+2012-10-19 14:36:32,kevin,[13:41] <Th3Falc0n> v=0e e=0000 i=0 cpl=0 IP=0008:00100de6 pc=00100de6 SP=0010:001063bc CR2=00100de6
+2012-10-19 14:37:47,Th3Falc0n,mom
+2012-10-19 14:40:51,Th3Falc0n,1: v=20 e=0000 i=0 cpl=0 IP=0008:0010117c pc=0010117c SP=0010:00106300 EAX=00000000
+2012-10-19 14:40:58,Th3Falc0n,2: v=0e e=0000 i=0 cpl=0 IP=0008:00100e67 pc=00100e67 SP=0010:001063bc CR2=00100e67
+2012-10-19 14:41:09,Th3Falc0n,3: v=08 e=0000 i=0 cpl=0 IP=0008:00100e67 pc=00100e67 SP=0010:001063bc EAX=80000011
+2012-10-19 14:42:09,Th3Falc0n,"100e67 ist ""return kernel_context"";"
+2012-10-19 14:44:10,Th3Falc0n,am timer interrupt liegts wohl nicht...
+2012-10-19 14:44:24,kevin,"Ok, dann ist 0x3100 immer noch der Page-Table-Eintrag für die Page, die fehlt"
+2012-10-19 14:46:01,Th3Falc0n,ich hab mir gerade nochmal ausgeben lassen welche page_table einträge der beschreibt
+2012-10-19 14:46:23,Th3Falc0n,"mapeed 12e000 to 12e000 macht er bei 34bb, und da steht auch alles drin"
+2012-10-19 14:46:47,Th3Falc0n,also wird er es wahrscheinlich einfach verpennen die richtige page zu mappen an der stelle
+2012-10-19 14:47:45,Th3Falc0n,"(also bei xp 0x34bb sagt er mir ""12e003"" was ja auch stimmen dürfte als page_table eintrag oder kevin ?"
+2012-10-19 14:48:09,kevin,Was willst du denn mit 12e000?
+2012-10-19 14:48:12,kevin,Dein PF ist bei 100e67?
+2012-10-19 14:48:48,Th3Falc0n,"er gibt mir alles aus, was er mappt und ich hab einfach das letzte was da stand genommen um zu gucken ob die einträge überhaupt in der page_table landen"
+2012-10-19 14:49:06,kevin,"Naja, wenn das Problem ist, dass du nichtmal versuchst, den Kernel zu mappen, dann solltest du das vielleicht fixen"
+2012-10-19 14:49:34,Th3Falc0n,ich versuche ja den kernel zu mappen zwischen &kernel_start und &kernel_end....
+2012-10-19 14:50:01,Th3Falc0n,die übrigens in kernel.ld stehen...
+2012-10-19 14:51:09,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS/blob/master/kernel/kernel.ld
+2012-10-19 14:51:31,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS/blob/master/kernel/os/vmm.c#L96
+2012-10-19 14:52:31,Th3Falc0n,das einzige was ich noch mappen sollte kevin sind die module...
+2012-10-19 14:52:49,Th3Falc0n,achne das tut er ja in vmm_init
+2012-10-19 14:53:09,kevin,Ja aber offensichtlich ist es ja nicht gemappt
+2012-10-19 14:53:38,Th3Falc0n,genau das ist doch mein problem...
+2012-10-19 14:55:50,kevin,"Dann find raus, warum"
+2012-10-19 14:55:56,Th3Falc0n,:(
+2012-10-19 14:55:57,kevin,"Du sagst, die Meldung kommt gar nicht"
+2012-10-19 14:56:02,kevin,Also wird es wohl nicht aufgerufen?
+2012-10-19 14:56:31,Th3Falc0n,"ich kann die meldung nicht sehen, weil es das erste ist was er mappt, und das ist schon längst oben ausm bildschirm"
+2012-10-19 14:56:57,Th3Falc0n,"ich muss jetzt erstmal ne netzwerkkarte einbaun gehn, dann guck ich nochmal"
+2012-10-19 14:58:34,kevin,-serial stdio
+2012-10-19 14:58:42,kevin,"Und ein kprintf, das auf seriell ausgibt natürlich"
+2012-10-19 16:13:44,Th3Falc0n,so kevin 
+2012-10-19 16:29:29,Th3Falc0n,also kevin
+2012-10-19 16:29:35,Th3Falc0n,er mappt den kernel richtig
+2012-10-19 16:29:41,Th3Falc0n,laut ausgabe
+2012-10-19 16:32:56,kevin,"Ja, aber offenbar tut er es halt doch nicht"
+2012-10-19 16:38:02,Th3Falc0n,ich raff aber nicht wo kevin 
+2012-10-19 16:46:35,Th3Falc0n,"kevin: könnte es auch daran liegen, dass er einfach nicht dahin schreiben darf wo er will?"
+2012-10-19 16:52:22,Th3Falc0n,ich gebs auf für jetzt
+2012-10-19 16:52:30,Th3Falc0n,um 18:00 meld ich mich nochmal
+2012-10-19 17:57:34,Th3Falc0n,so wieder da
+2012-10-19 17:57:38,Th3Falc0n,hi Jidder 
+2012-10-19 17:59:57,Jidder,moin
+2012-10-19 20:04:31,bluecode_,abönd
+2012-10-19 20:04:51,Th3Falc0n,hi
+2012-10-19 20:05:24,XanClic,Moin
+2012-10-19 20:06:33,Th3Falc0n,und der nächte anlauf ...
+2012-10-19 20:06:36,Th3Falc0n,ich HASSE paging
+2012-10-19 20:07:26,MSN,warum?:P
+2012-10-19 20:07:39,Th3Falc0n,weils so einfach und leicht relisierbar ist
+2012-10-19 20:15:39,Th3Falc0n,JAH JAH JAH JAH JAH
+2012-10-19 20:16:03,Th3Falc0n,paging ohne excetion :D
+2012-10-19 20:16:07,Th3Falc0n,naja
+2012-10-19 20:16:15,Th3Falc0n,ein kleines bisschen paging 
+2012-10-19 20:39:54,Th3Falc0n,wäre irgendwer bereit mir mein paging fertig zu machen?
+2012-10-19 20:47:27,bluecode_,wieviel zahlst du?
+2012-10-19 20:47:51,Th3Falc0n,lol
+2012-10-19 20:48:09,Th3Falc0n,"ich bin 15, ich hab kein geld -.-"
+2012-10-19 20:50:58,bluecode_,und ich bin 25 und brauch das Geld
+2012-10-19 20:53:15,Th3Falc0n,tja dann haben wir wohl beide ein problem
+2012-10-19 20:55:06,Th3Falc0n,also ich könnte dir nen virtuellen keks anbieten...
+2012-10-19 21:04:01,bluecode_,und dann abhauen bevor man den keks zu fassen bekommt?
+2012-10-19 21:50:44,DesL,ist das eigentlich normal das dd ne weile braucht um zu merken das es fertig ist? 
+2012-10-19 21:51:18,DesL,"sprich: es sind z.B. 1.9G kopiert, aber die kontrolle springt noch nicht wieder zurücl zu bash (und die statusmeldung am ende fehlt natürlich auch noch)"

@@ -1,0 +1,152 @@
+date/time,nick,message
+2015-06-16 10:42:09,Jonathan,Moin
+2015-06-16 10:44:42,kevin,Moin
+2015-06-16 16:32:52,darklink, 
+2015-06-16 16:33:07,Svenska, 
+2015-06-16 16:35:50,darklink,Ich glaube leere zeilen mag pisg nicht.
+2015-06-16 16:36:17,Svenska,inwiefern?
+2015-06-16 16:36:38,Svenska,der statbot hat damit jedenfalls keine probleme.
+2015-06-16 16:38:00,arbu,"hi. Jemand von euch nen Plan von UEFI? Würde gerne debugmeldungen über die serielle Schnittstelle ausgeben. Wenn ich über LocateProtocol(&SerialIoProtocol,0,(void**)&rs) versuche mir den Protocolhandle zu holen klappt dass in qemu mit omvf, aber nicht auf realer Hardware."
+2015-06-16 16:38:39,Svenska,"bist du dir sicher, dass die reale hardware das auch implementiert?"
+2015-06-16 16:39:29,arbu,"auf der ""realen"" hardware hab ich parallel ein Linux drauf. Damit funktiniert COM1 (onboard). d.h. Verkabelung und generelle Unterstüzung sollte ok sein"
+2015-06-16 16:40:02,arbu,"oder meinst du, dass dass die firmware das nicht unterstützt?"
+2015-06-16 16:40:02,Svenska,ich meinte das UEFI auf der realen hardware
+2015-06-16 16:40:10,Svenska,genau das.
+2015-06-16 16:40:43,arbu,hm. Öhm da bin ich einfach mal von ausgegangen. Kann natürlich daran liegen. Aber wie finde ich das raus?
+2015-06-16 16:40:52,Svenska,kA ich kenne mich mit UEFI nicht aus
+2015-06-16 16:41:11,Svenska,"aber was ich bisher so drueber gelesen habe, lief eher unter dem motto ""windows bootet, let's ship"""
+2015-06-16 16:41:21,arbu,"hatte auch versucht direkt auf den Port zu schreiben, was auch schief lief. Allerdings vor ExitBootServices. k.A. ob dass dann gesperrt ist"
+2015-06-16 16:44:13,Svenska,kannst ja mal danach probieren
+2015-06-16 16:44:27,Svenska,eventuell musst du den baustein neu initialisieren
+2015-06-16 17:09:30,arbu,so. mal testen
+2015-06-16 17:11:16,arbu,*hüpf|spring|freu
+2015-06-16 17:11:23,arbu,es geht :)
+2015-06-16 17:11:33,Svenska,nach ExitBootServices() den port befeuern?
+2015-06-16 17:12:29,arbu,"aber ExitBootServices blockiert es nicht. Hatte mich nur strikt an den Standard gehalten, wo stand, dass die Schnittstelle immer automatisch auf eine bestimmte Art bereits initialisiert wurde, und direkt die Ausgabe gestartet. Nach händischer Initialisierung geht es"
+2015-06-16 17:12:42,Svenska,:-D
+2015-06-16 17:12:54,arbu,"aber wenn das Feature gar nicht in der Firmware drinnen ist, wird wohl auch nix automatisch initialisiert"
+2015-06-16 17:13:18,Svenska,also benutzt du die funktion der firmware nicht
+2015-06-16 17:13:19,Svenska,?
+2015-06-16 17:13:22,arbu,ne
+2015-06-16 17:13:27,Svenska,verstehe
+2015-06-16 17:13:49,arbu,"ich wüsste jetzt nicht wie. Fände es zwar sauberer, aber nützt ja nix, wenns nicht geht"
+2015-06-16 17:14:13,Svenska,"kannst du die firmware wenigstens fragen, ob es COM1 ueberhaupt gibt?"
+2015-06-16 17:15:56,arbu,"das das was mich total irritiert. In der Spec wird nie die Schnittstelle genau spezifiziert, also spricht z.B. der Port. Es ist quasi immer nur die rede von einem einzigen seriellem Port, so als könnte ein Rechner gar nicht mehr wie einen haben. Auch die Setupfunktionen erwartet nur Baudrateneinstellungen, aber nirgends ist die Rede von einem Port, einer logischen Adresse oder sonst was was eine identifikation ermöglichen würde"
+2015-06-16 17:16:34,Svenska,"das ist auch logisch, wenn du nicht von einer pc-architektur mit 16550 auf 0x3F8 ausgehst"
+2015-06-16 17:16:59,arbu,"das ja, aber irgendeine Form der enumeration wäre jetzt ja nicht so absurd"
+2015-06-16 17:18:02,Svenska,die hilft dir aber nicht. der SAM3X vor meiner nase hat ein SAM-UART @ 0x400E0800
+2015-06-16 17:18:35,Svenska,"da ist es schon sinnvoll, wenn die firmware sagt ""ich sage dir nicht, was ich hier habe, aber ich habe EINEN uart, mit funktionierenden funktionen"""
+2015-06-16 17:18:45,arbu,"ja, aber wäre es nicht Aufgabe der Firmware eben jene Unterschiede zu abstrahieren?"
+2015-06-16 17:19:01,Svenska,"tut sie doch: es gibt einen uart, du kannst die baudrate einstellen, fertig"
+2015-06-16 17:19:15,Svenska,"das ist doch ein debug-output, der sollte immer gleich funktionieren"
+2015-06-16 17:19:34,Svenska,"wenn das OS später läuft, kannst du einen richtigen treiber dafuer laden, der dann mehr als nur putc() kann"
+2015-06-16 17:19:59,Svenska,die schnittstelle selbst taucht doch im ACPI-baum irgendwo auf
+2015-06-16 17:20:20,arbu,"mir reichts ja auch. Brauche den zugriff nur für das nötigste, und mein kernel wird als erstes eh die kontrolle darüber übernehmen. Find es nur in der Spec nicht schön"
+2015-06-16 17:21:18,Svenska,"ja, aber in der spec ist das gerade volle absicht. der debug-output soll ueberall gleich funktionieren, und der uefi-loader soll keinerlei informationen ueber die hardware haben, damit er auch auf jedem uefi läuft"
+2015-06-16 17:22:11,arbu,"dann macht es aber euch keinen Sinnm, dass ich über das GOP z.B. die Auflösung einstellen kann"
+2015-06-16 17:22:29,Svenska,"sonst wuerde dir (BIOS-style) deine firmware sagen: ich hab einen 8250-kompatiblen auf 0x3F8, einen 8250-kompatiblen auf 0x2F8, und einen SAM-UART auf 0x400E0800. und dann muss dein loader schon ziemlich viel ueber die hardware wissen"
+2015-06-16 17:22:53,Svenska,und vor allem fuer jede mögliche plattform einen treiber mitbringen -> doof
+2015-06-16 17:23:05,Svenska,die auflösung ist quasi wie die baudrate :-)
+2015-06-16 17:23:18,Svenska,"gibt's bei jeder grafikkarte, baudrate gibt's bei jeder (echten) seriellen"
+2015-06-16 17:23:47,arbu,"nö, die firmware soll mir keine details dazu verraten. das ist nicht seine Aufagbe. Er könnte mir aber sagen. Du hast 4 serielle Schnittstellen. Sag mir auf welcher du was ausgeben willst, und wenn meine zählweise mit deiner zufällig übereinstimmt kommts auch auf dem richtigen Port raus"
+2015-06-16 17:23:49,Svenska,"aber deine firmware sagt dir ja auch nicht, ""gucke mal, hier eine nvidia, da eine amd und dort eine matrox-grafikkarte"""
+2015-06-16 17:24:20,Svenska,"die sagt nur ""schau, hier ist EIN framebuffer"" :-)"
+2015-06-16 17:24:32,arbu,hm. na gut. Ich geb mich mal geschlagen :)
+2015-06-16 17:24:45,Svenska,"hm, das mit dem ""du hast 4 serielle schnittstellen"" hat das BIOS mit festplatten gemacht"
+2015-06-16 17:25:05,arbu,"ne, das BIOS hat gesagt, es gibt maximal 4 Schnittstellen"
+2015-06-16 17:25:18,Svenska,und am ende mussten die betriebssysteme aufwändig zwischen BIOS-nummer und eigener adresse mappen
+2015-06-16 17:25:23,Svenska,teilweise mit absurden heuristiken
+2015-06-16 17:25:48,arbu,"werd den bootloader so klein wie möglich halten, dann wird mich das auch nich tangieren"
+2015-06-16 17:25:56,Svenska,genau das ist das ziel :-)
+2015-06-16 17:26:06,Svenska,die gefahr ist folgende:
+2015-06-16 17:26:15,Svenska,"stell dir mal vor, du hast ein SoC mit 8 seriellen schnittstellen."
+2015-06-16 17:26:32,Svenska,"4 davon sind irgendwelches RS485-geraffel, wo du spezielle initialisierung mit halbduplex brauchst"
+2015-06-16 17:26:40,Svenska,2 davon sind irgendwelche GPS- oder sonstwas-empfänger
+2015-06-16 17:26:57,Svenska,"wenn dein UEFI die einfach initialisiert und da was hinschickst, machst du evtl irgendwas kaputt"
+2015-06-16 17:27:36,Svenska,"und wenn dein loader sagt ""schick mal an UART 1"" (weil auf der developer-maschine dort was dran hing), dann kommt auf einer anderen maschine der debug-output auf der falschen seriellen raus"
+2015-06-16 17:27:52,arbu,ich bin ja schon ruhig :)
+2015-06-16 17:28:21,Svenska,"zumindest in den ganzen SoCs hast du meist eine serielle, die als debug-output definiert ist (tlws in hardware, tlws nichtmal eine echte rs232), und um die herum designst du dann die hardware"
+2015-06-16 19:04:15,Jonathan,"Was? UEFI? Bootloader? Was ist denn das für ein modernes Zeugs? Kernel-Image in den RAM kopieren und resetten, so geht das! *g*"
+2015-06-16 19:05:03,Svenska,"wie, resetten? da schreibt man schlicht den program counter gleich mit, fertig! *g*"
+2015-06-16 19:05:33,Jonathan,*g*
+2015-06-16 19:05:38,Svenska,"hmm, addr2line starten und ausgabe parsen dauert ungefähr 40ms"
+2015-06-16 19:06:06,Svenska,16x/iteration ... macht ~650ms pro iteration
+2015-06-16 19:06:41,Jonathan,Und wie viele Iterationen gibt es?
+2015-06-16 19:06:46,Svenska,inf
+2015-06-16 19:06:50,Jonathan,Autsch
+2015-06-16 19:06:52,Svenska,ich hab einen taskmanager programmiert
+2015-06-16 19:07:00,Jonathan,"Ah, achso :P"
+2015-06-16 19:07:11,Svenska,"1x/sekunde reicht eigentlich auch, aber da man nur schnappschuesse kriegt, sieht man dann kaum was"
+2015-06-16 19:07:32,Svenska,...das könnte man in den Z80 integrieren
+2015-06-16 19:07:48,Svenska,weil /M1 | /RD ist ja ein instruktion-fetch... *g*
+2015-06-16 19:08:00,Jonathan,Hmmm
+2015-06-16 19:08:18,Jonathan,"Ich dachte jetzt erst, es geht um dein 16-Core-System :D"
+2015-06-16 19:08:23,Svenska,tuts auch.
+2015-06-16 19:08:31,Jonathan,Wieso dann Z80?
+2015-06-16 19:08:43,Svenska,weil man da auch von außen an den program counter rankommt :)
+2015-06-16 19:08:56,Svenska,"wäre doch lustig, so ein externes display mit der anzeige, welche funktion gerade ausgefuehrt wird... *g*"
+2015-06-16 19:09:01,Jonathan,*g*
+2015-06-16 19:09:10,Jonathan,"LOL, beste Idee ever!"
+2015-06-16 19:09:24,Jonathan,Fütter den Program Counter in einen DAC
+2015-06-16 19:09:27,Svenska,weil genau das hab ich grad gebaut
+2015-06-16 19:09:33,Svenska,in einen DAC?
+2015-06-16 19:09:42,Jonathan,Und häng dann da ein analoges Messgerät dran
+2015-06-16 19:09:47,Svenska,das ist wie kernspeicher mit nem thermometer versehen :-D
+2015-06-16 19:09:51,Jonathan,"Mit Skala: ""Kernel - Drivers - Usermode"""
+2015-06-16 19:09:54,Jonathan,*g*
+2015-06-16 19:10:02,Svenska,die idee gefällt mir
+2015-06-16 19:10:06,Jonathan,:D
+2015-06-16 19:10:15,Svenska,aber analoge messgeräte sind zu träge
+2015-06-16 19:10:18,Jonathan,Leider ja
+2015-06-16 19:10:31,Svenska,"da wuerd ich lieber 3 komparatoren anbauen, und jeweils mit ner LED verbinden"
+2015-06-16 19:10:43,Jonathan,"(Sind sie zu langsam, ist dein System zu schnell)"
+2015-06-16 19:10:44,Svenska,dann kann man die helligkeit der LED nehmen
+2015-06-16 19:10:54,Jonathan,Oder analoge Messgeräte dran hängen? :P
+2015-06-16 19:11:13,Svenska,"die brauchen locker ne halbe sekunde, bis der zeiger von links nach rechts gewandert ist"
+2015-06-16 19:11:18,Jonathan,Klar
+2015-06-16 19:11:27,Svenska,und ich glaube 10 Hz ist ein bisschen langsam
+2015-06-16 19:11:28,Jonathan,Aber die Zeit im Kernelmode etc sollte ja nicht soooo sehr schwanken :D
+2015-06-16 19:11:52,Svenska,"achso, fuer 2 zustände ginge das natuerlich"
+2015-06-16 19:12:01,Svenska,kernel/user und der zeiger wird irgendwo in der mitte bleiben
+2015-06-16 19:12:09,Jonathan,Ginge auch
+2015-06-16 19:12:13,Jonathan,Oder man macht 3 Messgeräte dran
+2015-06-16 19:12:34,Svenska,"hm, weiß nicht."
+2015-06-16 19:12:47,Svenska,das dumme: es gibt kein ordentliches ELF fuer Z80 :-D
+2015-06-16 19:12:50,Jonathan,"Ich kann bei mir bestimmt auch ein Extra-Messgerät ""modsys_invoke"" dranhängen, dann haben die anderen den Zeiger nicht so weit rechts *g*"
+2015-06-16 19:12:55,Jonathan,Leider ja
+2015-06-16 19:13:28,Svenska,was bräuchte man ... 16 bit latch und 1 OR
+2015-06-16 19:13:28,Jonathan,"Oh, und ich sollte meinem Kernel mal bessere critical sections beibringen"
+2015-06-16 19:13:51,Jonathan,Naja... ;)
+2015-06-16 19:14:04,Svenska,dann einen uC zum auswerten *g*
+2015-06-16 19:14:37,Jonathan,"Wenn du das OR direkt an die Pins vom Z80 hängst und danach ein D-FF mit /M1 or /RD als Takt fütterst, brauchst du nur 1 Bit anstatt 16"
+2015-06-16 19:15:02,Jonathan,Der Ausgang von dem Flipflop kann dann direkt als PWM-Signal für ein analoges Messgerät genommen werden :P
+2015-06-16 19:35:17,Svenska,(?
+2015-06-16 19:35:35,Svenska,damit kriege ich das verhältnis zwischen FETCH und LOAD
+2015-06-16 19:35:48,Svenska,bzw. zwischen FETCH und <alles andere>
+2015-06-16 22:34:37,Jonathan,"Svenska: War etwas länger afk, sorry *g*"
+2015-06-16 22:34:52,Svenska,ist ja bei dir ziemlich normal :-)
+2015-06-16 22:35:00,Jonathan,"Ich meine: Du latchst den Status ""Instruction aus Kernelmode"" (oder eben nicht) bei jedem Instruction Fetch"
+2015-06-16 22:35:07,Jonathan,In einem D-Flipflop
+2015-06-16 22:35:16,Svenska,achso
+2015-06-16 22:35:24,Jonathan,"Dann bekommst du hinten ein PWM-Signal raus, das die Zeit im Kernelmode repräsentiert :D"
+2015-06-16 22:35:32,Svenska,"das ist insofern doof, als dass du dann ""instruktion in kernelmode"" in hardware codierst"
+2015-06-16 22:35:40,Jonathan,Klar *g*
+2015-06-16 22:35:45,Jonathan,Aber bei mir ist das ja einfach:
+2015-06-16 22:36:00,Jonathan,"Der Kernel liegt garantiert in den unteren 16kB, der Kernel-Page."
+2015-06-16 22:36:05,Jonathan,Das ist in Hardware gegossen. *g*
+2015-06-16 22:36:17,Svenska,"das gilt aber nicht fuer treiber (die ich zu ""kernel"" zählen wuerde)"
+2015-06-16 22:36:31,Jonathan,Stimmt auch wieder
+2015-06-16 22:36:48,Svenska,"wobei man bei dir auch das einfach x4 nehmen könnte, und hätte dann pro page"
+2015-06-16 22:36:58,Jonathan,Stimmt
+2015-06-16 22:37:01,Jonathan,:D
+2015-06-16 22:37:07,Svenska,das wird bei 4k pagesize doof.
+2015-06-16 22:37:10,Svenska,:-)
+2015-06-16 22:37:13,Jonathan,*g*
+2015-06-16 22:37:29,Jonathan,"Mach doch eine Anzeige, die man je nach Interesse an eine Page schalten kann. ;)"
+2015-06-16 22:37:30,Jonathan,*duck*
+2015-06-16 22:39:14,Svenska,naja. eher nicht.
+2015-06-16 22:39:25,Svenska,"bin mal ein paar minuten afk, essen kaufen..."
+2015-06-16 22:39:35,Jonathan,"Jo, bis gleich"
+2015-06-16 22:52:45,Svenska,"hm, mir ist eben ein fast vergessenes wort ueber den weg gelaufen"
+2015-06-16 22:52:47,Svenska,broiler.
+2015-06-16 22:52:58,Svenska,scheint urspruenglich finnisch zu sein...

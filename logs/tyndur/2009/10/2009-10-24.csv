@@ -1,0 +1,55 @@
+date/time,nick,message
+2009-10-24 12:34:25,taljeth,pcmattman1: I have committed a make doc target earlier this week that produces both an English and a German version of doxygen output
+2009-10-24 12:34:38,taljeth,"But before we start translating the existing comments, I'd like to get some things right"
+2009-10-24 12:36:33,taljeth,The first one is that I think that #ifdef CDI_STANDALONE and pedigree.cc should die
+2009-10-24 12:37:13,taljeth,Another thing that I think we're not really prepared for is hotplugging
+2009-10-24 13:46:36,pcmattman1,"taljeth: ""The first one is that I think that #ifdef CDI_STANDALONE and pedigree.cc should die"" <-- That may make working with CDI in Pedigree significantly more complicated"
+2009-10-24 13:52:12,taljeth,pcmattman: It was meant to make things easier
+2009-10-24 13:52:31,taljeth,What problems do you see with it?
+2009-10-24 13:53:06,pcmattman,The pedigree.cc's role is basically just to provide a wrapper around the entry point for our module interface
+2009-10-24 13:53:33,pcmattman,"Without that file, we'd have to introduce Pedigree-specific lines into each driver's main.c, which I'd rather not do"
+2009-10-24 13:53:39,taljeth,Right. I'd prefer to move that to the regular interface
+2009-10-24 13:54:12,taljeth,"Hm, do you need C++ in there or is C enough?"
+2009-10-24 13:54:21,pcmattman,C is enough
+2009-10-24 13:54:27,pcmattman,They are merely macros
+2009-10-24 13:54:34,taljeth,"Well then, where is the problem?"
+2009-10-24 13:55:06,pcmattman,The macros are #define'd as variable definitions
+2009-10-24 13:55:13,taljeth,Instead of your MODULE_* macros we would define a CDI_MODULE macro and in cdi.h you map it your own macros
+2009-10-24 13:55:21,pcmattman,"Right, I was about to say something similar"
+2009-10-24 13:55:32,pcmattman,In which case I agree
+2009-10-24 13:55:48,taljeth,The intention was to have this CDI_MODULE macro everywhere instead of making it a special case for Pedigree
+2009-10-24 13:56:42,pcmattman,Makes sense.
+2009-10-24 13:57:42,taljeth,"I was thinking of linking multiple drivers into one binary even for tyndur, so we could profit from it, too"
+2009-10-24 13:58:00,pcmattman,A win for all :)
+2009-10-24 13:58:48,taljeth,That basically the requirement I set for CDI changes ;-)
+2009-10-24 13:58:52,taljeth,*That's
+2009-10-24 14:00:05,taljeth,"And the CDI_STANDALONE really aligns well with it. Once we have the CDI_MODULE macro, we can move main() into the library, so we wouldn't need standalone modules any more"
+2009-10-24 14:02:48,pcmattman,Right
+2009-10-24 14:03:39,taljeth,"Ok, I think this was the easy part ;-)"
+2009-10-24 14:04:51,taljeth,You are still using this additional field in cdi_device?
+2009-10-24 14:05:06,pcmattman,I believe so
+2009-10-24 14:05:25,taljeth,"We need to find a generic way for this, too"
+2009-10-24 14:05:27,pcmattman,"The ""pDev"" field, much like your ""backdev"" field"
+2009-10-24 14:05:48,pcmattman,"Well, seeing as though ""backdev"" and ""pDev"" are both void*, would it not be possible to have something like ""void *opaque""?"
+2009-10-24 14:06:18,pcmattman,That can be used by the CDI implementation to handle OS-specific device information
+2009-10-24 14:07:26,taljeth,"Well, I think a opaque field would make a lot of sense, but being able to access the pci_device is a useful thing not only for Pedigree"
+2009-10-24 14:07:45,taljeth,"It's jsut that not every cdi_device is a PCI device, so we need to find the right abstraction here"
+2009-10-24 14:08:09,taljeth,"Maybe some pointer to a generic bus thing, or something like that"
+2009-10-24 14:08:30,pcmattman,"In Pedigree's case, an opaque pointer becomes a ""Device"", which can be anything from a PCI device to an ISA device to a virtual device node"
+2009-10-24 14:08:49,pcmattman,"That's just how we've done it though, it doesn't work so well outside of our project"
+2009-10-24 14:09:23,taljeth,"Right, we don't have such a Device thing. We directly use the structures of CDI "
+2009-10-24 14:09:43,taljeth,Which could mean that CDI needs somehting like your Device
+2009-10-24 14:11:24,taljeth,"Actually, what we are missing in C is multiple inheritance. If you could cast a e1000 to a PCI device and not only to a netword card, this problem wouldn't exist"
+2009-10-24 14:12:06,pcmattman,"Yup, which is basically what we do in Pedigree"
+2009-10-24 14:12:36,taljeth,"But as long as you don't have a solution for this in C, we need to use a has-a instead of is-a for the association with a bus"
+2009-10-24 14:13:45,pcmattman,Right
+2009-10-24 14:14:21,pcmattman,"I would say your best bet is to implement it in such a way that it works for tyndur, and then I'll determine the best way to make it work for Pedigree"
+2009-10-24 14:15:15,taljeth,"Ok, and XanClic will have to live with the results ;-)"
+2009-10-24 14:15:22,pcmattman,:)
+2009-10-24 14:15:27,pcmattman,I'll be back in an hour or so
+2009-10-24 14:15:36,taljeth,Ok
+2009-10-24 14:51:27,pcmattman,Back
+2009-10-24 16:12:18,taljeth,"Back, too. Bit too late, it seems"
+2009-10-24 16:12:27,XanClic,I'm on! *g*
+2009-10-24 16:13:45,taljeth,"Oh, you mean v2 of the sound interface is ready for discussion? ;-)"
+2009-10-24 16:14:14,XanClic,Errr...

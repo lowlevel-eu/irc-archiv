@@ -1,0 +1,329 @@
+date/time,nick,message
+2007-11-25 00:05:17,Yarcanox,hi M0wl^^
+2007-11-25 00:36:11,VerrueckterPinguin,"So, ich gehe für heute."
+2007-11-25 00:36:22,VerrueckterPinguin,Gute Nacht
+2007-11-25 10:55:56,Guest206210,Moin taljeth
+2007-11-25 10:58:23,taljeth,Moin VerrueckterPinguin 
+2007-11-25 10:58:27,M0wl,na taljeth
+2007-11-25 11:02:35,taljeth,Gibt es unter Win sowas wie Fenster verschieben per Alt+Maus?
+2007-11-25 11:03:07,taljeth,"Toasters Ding scheint nicht auf 800x600 ausgelegt zu sein, aber so ist meine VM nunmal eingestellt, damit sie schön in ein Fenster paßt... ;-)"
+2007-11-25 11:05:41,VerrueckterPinguin,Du musst das Ding ja auch nicht in junction mit einer VM benutzen. ;-)
+2007-11-25 11:06:15,taljeth,Ich muß das Ding gar nicht benutzen. ;-)
+2007-11-25 11:06:31,VerrueckterPinguin,*g*
+2007-11-25 11:06:43,taljeth,"Aber Toaster hat das doch garantiert so programmiert, daß es nicht auf Wine läuft"
+2007-11-25 11:06:59,taljeth,Oder daß es unter Wine als Malware funktioniert. ;-)
+2007-11-25 11:07:14,VerrueckterPinguin,Weiss der was wine ist? ;-)
+2007-11-25 11:08:28,taljeth,Gute Frage. ;-)
+2007-11-25 11:09:28,taljeth,"*lol* Ich sehe grad, daß in der VM noch ein XML-Spy läuft, dessen Testversion-Lizenz vor zwei Monaten oder so abgelaufen ist. VMs haben schon so ihre Vorteile. *g*"
+2007-11-25 11:09:55,VerrueckterPinguin,*g*
+2007-11-25 11:16:13,VerrueckterPinguin,"taljeth: Ich habe mir gestern mal angeschaut, wie das VFS in Linux aufgebaut ist. Da wird in jedem Inode eine Struktur mit Funktionspointern verlinkt, einer davon dient dazu, einen Untereintrag mit bestimmtem Namen zu suchen und dessen Inode-Nummer zurück zu geben. Wäre sowas vielleicht auch eine Überlegung wert für LostIO?"
+2007-11-25 11:18:09,taljeth,"Struktur mit Funktionspointern klingt irgendwie nach OO in C. Vielleicht sollten wir das dann nicht auf C-Ebene, sondern mehr auf OO-Ebene betrachten. ;-)"
+2007-11-25 11:19:06,VerrueckterPinguin,"Denn damit könnte man die Baumstruktur generell abschaffen, und sie nur noch als zusätzliches Feature in der Lib zu behalten. Falls ein Treiber den Baum dann trotzdem benutzen möchte, kann er eine Instanz des Baumes anlegen, und einfach an der gewünschten stelle den Root-Inode  des Baumes übergeben. Von da an könnte der Baum dann die Arbeit übernehmen."
+2007-11-25 11:19:23,taljeth,"Also sozusagen ein dir.getChildNode(""..""), meinst du sowas?"
+2007-11-25 11:19:47,VerrueckterPinguin,Genau
+2007-11-25 11:19:51,taljeth,Da steckt doch aber implizit immer ein Baum dahinter.
+2007-11-25 11:20:20,VerrueckterPinguin,Nur dass der nicht unbedingt so fix im Speicher sein muss
+2007-11-25 11:20:34,taljeth,"So eine Anfrage kann ich am effizientesten beantworten, wenn ich den VFS-Baum im Speicher habe, oder?"
+2007-11-25 11:21:16,VerrueckterPinguin,"Klar, aber bei realen Dateisystemen wird das ziemlich schnell eng."
+2007-11-25 11:21:36,taljeth,"Man sollte halt nicht vergessen, alte Einträge auch mal wieder rauszuwerfen..."
+2007-11-25 11:22:01,VerrueckterPinguin,In Linux existiert dafür dann ein Cache wo die häufigsten Anfragen mit resultat gespeichert werden-
+2007-11-25 11:23:15,VerrueckterPinguin,"Jo, aber wenn du was in einem Verzeichnis mit mehreren 1000 untereinträgen suchst, macht es ja nicht Sinn, die alle im Speicher zu halten."
+2007-11-25 11:23:47,taljeth,"Das heißt, wenn ich ein ls mache, muß ich für jede einzelne Datei noch einen Plattenzugriff machen?"
+2007-11-25 11:23:57,VerrueckterPinguin,"Wenn der Treiber das selbst regeln _kann_, ist es ihm auch möglich einen Teil schon wieder zu verwerfen"
+2007-11-25 11:24:03,taljeth,Anstatt das komplette Verzeichnis auf einmal einzulesen wie bisher
+2007-11-25 11:24:53,VerrueckterPinguin,"Im schlimmsten fall schon, ja"
+2007-11-25 11:25:08,taljeth,Ist das nicht d00f?
+2007-11-25 11:25:27,taljeth,Im Gegensatz zu Linux sind das bei uns immerhin ein paar RPCs.
+2007-11-25 11:27:07,VerrueckterPinguin,"Jo aber was machst du, wenn du ein Verzeichnis mit 10'000 Einträgen hast, und dann noch ein Unterverzeichnis, dass nochmals viele hat?"
+2007-11-25 11:27:27,VerrueckterPinguin,Der Treiber kann ja da auch so cachen wie er es für vernünftig hält
+2007-11-25 11:28:25,taljeth,"Ist das etwas, was jeder Treiber für sich machen sollte?"
+2007-11-25 11:28:41,taljeth,"Am Ende haben wir dann doch lauter ungecachte Treiber, wenn man es nicht zentral macht..."
+2007-11-25 11:29:06,VerrueckterPinguin,Hm stimmt auch wieder
+2007-11-25 11:29:59,taljeth,"Und wenn ich 10k Dateien in einem Verzeichnis habe und damit arbeiten will, muß ich so oder so in den sauren Apfel beißen. Besser in den Speicher laden als hundertmal hintereinander von der Platte lesen, wenn mal wieder eine neue Datei gelesen werden soll."
+2007-11-25 11:32:36,VerrueckterPinguin,"Wo würdest du denn den Baum ansiedeln? Im Userspace, wie bisher?"
+2007-11-25 11:33:52,taljeth,"Hm, wahrscheinlich ja, aber mit fest definiertem Format, so daß der Kernel darauf arbeiten kann."
+2007-11-25 11:36:25,VerrueckterPinguin,Und ein Pfad dann schon auf Kernelebene auflösen?
+2007-11-25 11:37:01,taljeth,"Wenn der Kernel Anfragen beantworten kann, ohne den Treiber überhaupt aufzurufen, ist das ideal. Also wird er auch Pfad auflösen müssen."
+2007-11-25 11:37:29,VerrueckterPinguin,"Solange der Baum komplett im Speicher ist, wäre das warscheinlich die beste Variante, aber sobald halt ein Teil nicht geladen ist, wird es langsam."
+2007-11-25 11:37:47,taljeth,Ungefähr so langsam wie bisher? ;-)
+2007-11-25 11:38:18,VerrueckterPinguin,So schlimm doch nicht gerade *g*
+2007-11-25 11:38:40,taljeth,"Naja, was willst du mir dann damit sagen?"
+2007-11-25 11:38:50,taljeth,Daß du den FS-Treiber auch noch in den Kernel packen möchtest? ;-)
+2007-11-25 11:39:32,VerrueckterPinguin,"Nein, dass ich nicht sicher bin, wo das geschickter ist. ;-)"
+2007-11-25 11:40:50,VerrueckterPinguin,"Wenn das im Kernel gemacht wird müssten wir wohl am Besten etwas mkpath ähnliches haben, damit sicher nur ein Aufruf notwendig ist, um das ganze zu laden."
+2007-11-25 11:41:54,taljeth,"Ja, klingt vernünftig"
+2007-11-25 11:43:14,VerrueckterPinguin,"So, ich bin jetzt mal für ne weile weg"
+2007-11-25 11:45:28,taljeth,bd
+2007-11-25 13:06:05,bluecode,bonjour
+2007-11-25 13:11:36,Coffee,hi!
+2007-11-25 13:11:48,bluecode,moin Coffee
+2007-11-25 13:13:11,Coffee,gibt es eine art doku um PDA's zu programmieren (also OSDEV auf pdas)? weil es gibt ja auch linux etc für PDAs und die müssen ja auch spezifikationen oder so iwo herhaben ;)
+2007-11-25 13:13:58,bluecode,Der erste Schritt wäre sicherlich dich über die CPU zu informieren. Da sind keine x86er verbaut imho.
+2007-11-25 13:14:09,Coffee,ne das denke ich auch ;)
+2007-11-25 13:14:27,Coffee,wäre aber cool^^ dann müsste ich mein os nur wenig umschreiben...
+2007-11-25 13:14:43,bluecode,dann würde es aber 2sec drauf laufen und der akku wäre leer ;-)
+2007-11-25 13:14:47,Coffee,"google hat mir noch nicht geholfen, ich guck gleich mal noch auf anderen seiten speziller richtung osdev"
+2007-11-25 13:14:54,Coffee,wieso das denn?
+2007-11-25 13:15:12,bluecode,weil x86 viel Strom verbraucht im Ggs zu embedded cpus?
+2007-11-25 13:15:19,bluecode,welche cpu haste denn in deinem PDA?
+2007-11-25 13:15:22,Coffee,aso...
+2007-11-25 13:15:31,Coffee,iwie logisch
+2007-11-25 13:46:24,Coffee,mkay
+2007-11-25 13:46:33,Coffee,d8ie gewünshte architektur ist arm
+2007-11-25 13:54:27,bluecode,Coffee: Wenn du mir deine email gibts schick ich dir 2 Dokumente bzgl. ARM
+2007-11-25 13:57:33,Coffee,coffee@kaffeeschluerfer.com
+2007-11-25 13:57:36,Coffee,;)
+2007-11-25 13:57:44,Coffee,"Ich überlege auch grade , wie man dann testen kann"
+2007-11-25 13:57:52,Coffee,ich weiß ja net ob das ding von SD_karte bootet
+2007-11-25 13:58:08,Coffee,naja ma sehn alles zum testen ;)
+2007-11-25 14:04:22,bluecode,ich muss es auf 2 emails aufteilen. Du hast ein Limit von 28Mb ;-)
+2007-11-25 14:06:09,Coffee,aso?
+2007-11-25 14:06:12,Coffee,wussti net
+2007-11-25 14:06:12,Coffee,scheiss GMX
+2007-11-25 14:06:13,Coffee,^^
+2007-11-25 14:07:05,bluecode,hmm... ich bin auch bei gmx.... dann hab ich wohl auch so ein limit. böses gmx
+2007-11-25 14:07:30,bluecode,ich hätte es aber auch nicht gewusst... mein mailprogramm hat nur gemeckert beim senden.
+2007-11-25 14:41:18,taljeth,Reh
+2007-11-25 14:53:06,schnippi,huhu
+2007-11-25 14:53:11,M0wl,what's up schnippi
+2007-11-25 15:08:10,bluecode,tach taljeth schnippi M0wl
+2007-11-25 15:29:55,VerrueckterPinguin,Auch Reh
+2007-11-25 15:31:04,taljeth,Krónhjörtur
+2007-11-25 15:33:13,VerrueckterPinguin,"Hm habt ihr schon rausgefunden, was uns Toaster mit seinem Quellcode sagen will im Forum? *g*"
+2007-11-25 15:33:22,bluecode,nein
+2007-11-25 15:33:36,Coffee,re
+2007-11-25 15:33:41,bluecode,wb Coffee
+2007-11-25 15:33:41,Coffee,(netzteil war durchgebrannt)
+2007-11-25 15:33:48,bluecode,ist die email angekommen?
+2007-11-25 15:33:48,Coffee,ich werd mir die files gleich angucklen
+2007-11-25 15:33:51,Coffee,jo
+2007-11-25 15:33:53,Coffee,2^^
+2007-11-25 15:33:54,bluecode,*autsch*
+2007-11-25 15:33:59,Coffee,wieso autsch
+2007-11-25 15:34:16,bluecode,wegen dem Netzteil ;-)
+2007-11-25 15:34:25,Coffee,aso
+2007-11-25 15:34:29,Coffee,"war nurmein kleines, 500W"
+2007-11-25 15:34:35,Coffee,jetz kommt n richtiges powerteil rein
+2007-11-25 15:34:39,VerrueckterPinguin,Coffee: Du sollst doch nicht immer Stifte in die Lüftungsschlitze stecken. *g*
+2007-11-25 15:35:31,Coffee,lol
+2007-11-25 15:35:35,VerrueckterPinguin,"Was hat denn das netzteil für ne Effizienz, wenn da 500 Watt nicht reichen? 20%? *g*"
+2007-11-25 15:36:10,Coffee,kA
+2007-11-25 15:36:21,Coffee,jetz kommt n 1000Wteil von silverstone rein
+2007-11-25 15:36:27,bluecode,wtf...
+2007-11-25 15:36:29,VerrueckterPinguin,lol
+2007-11-25 15:36:37,bluecode,was hast du für ne Höllenmaschine?
+2007-11-25 15:36:48,Coffee,lol ;)
+2007-11-25 15:36:53,Coffee,ich hab keine höllenmaschine
+2007-11-25 15:36:59,VerrueckterPinguin,bluecode: Das wirkt vermutlich auch noch als Penisverlängerung. ;-)
+2007-11-25 15:37:00,Coffee,ichhabe einen verkackt langsamen PC
+2007-11-25 15:37:01,Coffee,;)
+2007-11-25 15:37:14,Coffee,"nein, da kann ich dich beruhigen, nein"
+2007-11-25 15:39:07,Coffee,neja ma sehn
+2007-11-25 15:39:14,Coffee,hat ja auch immerhinne menge geld gekostet
+2007-11-25 15:39:58,stultus,Moin
+2007-11-25 15:40:10,Coffee,tach
+2007-11-25 15:40:13,VerrueckterPinguin,Moin stultus
+2007-11-25 15:40:15,taljeth,"Hm, ja, ich kenne Maschinen, die so viel ziehen. Die haben dann aber meistens auch noch gleich ein paar Netzteile mehr, wenn man schon dabei ist. ;-)"
+2007-11-25 15:40:19,taljeth,Moin stultus 
+2007-11-25 15:41:13,Coffee,neja ma sehn
+2007-11-25 15:41:18,Coffee,ich denke das hält ne weile
+2007-11-25 15:41:43,Coffee,ok bin kurz weg neuen Proxy installieren
+2007-11-25 15:41:51,taljeth,Wohin verbrätst du das alles?
+2007-11-25 15:42:07,VerrueckterPinguin,Coffee|AFK: Du verwechselst da etwas: Die Zahl mit dem W dahinter gibt nicht die Garantielaufzeit an.
+2007-11-25 15:44:33,taljeth,*g*
+2007-11-25 15:45:35,taljeth,"Hm, Toaster schafft es tatsächlich, Pascalcode so zu schreiben, daß er auch nicht wartbarer als Assembler ist. ;-)"
+2007-11-25 15:45:44,VerrueckterPinguin,*lrl*
+2007-11-25 15:45:47,bluecode,*g*
+2007-11-25 15:45:55,stultus,Unerwartet. *g*
+2007-11-25 15:46:00,bluecode,die frage ist warum postet er das überhaupt?
+2007-11-25 15:46:19,taljeth,Keine Ahnung...
+2007-11-25 15:46:28,taljeth,Vermutlich will er unser Lob
+2007-11-25 15:46:34,stultus,Hm. Material für die Zitatseite?
+2007-11-25 15:47:05,bluecode,hm
+2007-11-25 15:47:10,VerrueckterPinguin,"Das ist doch sehr böse, da Code zu zeigen, schon fast wie Opensource... ;-)"
+2007-11-25 15:47:37,stultus,das is ne falle um uns zu verklagen. *g*
+2007-11-25 15:48:28,taljeth,"Wir müssen mal was Kleingedrucken einfügen, daß im Forum geposteter Code automatisch unter eine MIT-Lizenz gestellt wird. ;-)"
+2007-11-25 15:48:40,Coffee|AFK,"so,re, Proxy läuft"
+2007-11-25 15:49:58,Coffee,"öhöm das netzteil brauch bei mir soviel leistung, weil ich damit in meim zimmer alles mögliche steuere (über windows, naja, muss mir das für linux erst noh angucken wie das geht)"
+2007-11-25 15:51:49,VerrueckterPinguin,"Ok wenn die Elektroheizung noch Leistung zieht davon, klingt das schon etwas vernünftiger. *g*"
+2007-11-25 15:53:37,Coffee,ne
+2007-11-25 15:53:39,Coffee,das nich
+2007-11-25 15:53:54,Coffee,"aber licht, temperatur werden indirket gesteuert"
+2007-11-25 15:54:33,Coffee,"man kann alles auch noch ""normal"" steuern (lichtschalter etc) aber auch am PC ist es möglich, lüftung im zimmer anzuschalten, licht an/ausmachen, ..."
+2007-11-25 15:54:43,Coffee,das genialste is aber noch mein überwachungsmonitor
+2007-11-25 15:55:11,Coffee,"der verhidnert, dass mich meien eltern (zB nachts) am PC erwischen, wenn ich eigl nicht ran soll"
+2007-11-25 15:55:22,schnippi,lool
+2007-11-25 15:55:25,VerrueckterPinguin,Wofür braucht man denn Licht oder eine Lüftung? *g*
+2007-11-25 15:55:32,Coffee,2 selbstgebaute lichtschranken und 2 kameras sorgen dafür ;)
+2007-11-25 15:55:34,Coffee,öhöm
+2007-11-25 15:55:58,Coffee,meine monitore sind nicht soo hell^^
+2007-11-25 15:55:59,VerrueckterPinguin,Wenn mans etwas heller möchte im Zimmer dreht man doch die Helligkeit am Monitor etwas auf *g*
+2007-11-25 15:56:04,Coffee,die leuchten nicht alles aus^^
+2007-11-25 15:56:23,Coffee,und vor allem macht der monitor kein schwarzlicht.
+2007-11-25 15:56:40,VerrueckterPinguin,Du musst deine Wichsflecken ja auch nicht überall sehen können. ;-)
+2007-11-25 15:56:43,Coffee,"was aber ziemlich geil ist, vor allem wenn man tapeten etc entsprechend bestrichen hat ;)"
+2007-11-25 15:56:47,Coffee,nein
+2007-11-25 15:56:52,Coffee,das sowieso ^^
+2007-11-25 15:56:58,Coffee,aber zB auf lanpartys etc ist das geil
+2007-11-25 15:57:11,Coffee,"bzw fluoreszierende (schreibt man so, oder) getränke"
+2007-11-25 15:57:17,schnippi,LOL VerrueckterPinguin
+2007-11-25 15:58:18,Coffee,obwohl *lampezumbettrüberschwenk*
+2007-11-25 15:58:24,Coffee,;)
+2007-11-25 15:59:08,VerrueckterPinguin,"Nein, wir wollen es nicht so genau wissen. *g*"
+2007-11-25 15:59:19,Coffee,^^
+2007-11-25 15:59:22,Coffee,"keine angst, alles sauber^^"
+2007-11-25 15:59:24,Coffee,öhm
+2007-11-25 15:59:27,Coffee,mhh
+2007-11-25 15:59:30,Coffee,stromversorgung
+2007-11-25 15:59:31,Coffee,damn
+2007-11-25 15:59:35,Coffee,jetz muss ich ersma gucken
+2007-11-25 15:59:40,Coffee,ob das für die lanheute abend reicht
+2007-11-25 16:00:22,Coffee,"nungut, kurz afk *messen*"
+2007-11-25 16:04:49,taljeth,re
+2007-11-25 16:07:01,VerrueckterPinguin,"taljeth: Hm mit dem Baum im Speicher und Pfaden, die vom Kernel automatisch aufgelöst werden, stehen wir wieder vor dem Problem mit mehreren Unterstrukturen falls die Struktur vom Quell-Pfad abhängt."
+2007-11-25 16:07:31,taljeth,Stazione
+2007-11-25 16:08:05,VerrueckterPinguin,Halt das was im Moment für die hässlichen Hacks in FAT und ext2 sorgt
+2007-11-25 16:08:19,taljeth,Kenn ich FAT oder ext2?
+2007-11-25 16:08:34,taljeth,"Ich benutz es halt und merke, daß es nicht tut, aber sonst..."
+2007-11-25 16:08:55,VerrueckterPinguin,"Die Pfade die in dem not_found und pre_open handler umgebogen werden, damit verschiedene Quellen benutzt werden können."
+2007-11-25 16:09:23,taljeth,Du meinst wegen Pipes?
+2007-11-25 16:10:16,taljeth,Im Gegensatz zu den jetzigen Treibern kennt der Kernel dann ja den kompletten Pfad mit Quelle
+2007-11-25 16:11:01,Coffee,"so, wieder da"
+2007-11-25 16:11:06,Coffee,"bluecode, danke für die docs"
+2007-11-25 16:11:12,bluecode,np Coffee
+2007-11-25 16:11:20,bluecode,Ich hoffe es hilft dir weiter
+2007-11-25 16:11:36,VerrueckterPinguin,"taljeth: Aber wie soll der kernel wissen ob er nun aufteilen muss, oder nicht?"
+2007-11-25 16:11:57,taljeth,Aufteilen?
+2007-11-25 16:13:10,VerrueckterPinguin,"Es ist ja nicht bei allen Treibern so, dass sie eine andere Struktur zur Verfügug stellen, wenn eine andere Quelle angegeben ist, im Pfad"
+2007-11-25 16:13:37,taljeth,"Sollte eigentlich schon so sein, daß andere Quelle bedeutet, daß ein anderer Baum benutzt wird, oder?"
+2007-11-25 16:13:44,taljeth,Alles andere wäre nicht logisch
+2007-11-25 16:15:51,VerrueckterPinguin,"Aber rot13:/ hat doch immer den selben, nicht vorandenen Baum *g*"
+2007-11-25 16:16:29,taljeth,Gerade bei rot13:/ macht die Quelle einen Unterschied
+2007-11-25 16:16:45,taljeth,Der Baum besteht halt jeweils nur aus der Wurzel
+2007-11-25 16:17:16,taljeth,"Interessanter wird es bei ramdisk:/, weil man da für jede Quelle eine eigene Ramdisk bekommen würde, aber was soll's..."
+2007-11-25 16:18:10,VerrueckterPinguin,"Aber das macht ja in jedem fall einfach ein read, rechnet ein bisschen damit rum und gibt das ergebnis zurück. Aber ok, da spielt es auch keine Rolle wenn das aufgeteilt wird."
+2007-11-25 16:18:54,VerrueckterPinguin,"taljeth: Beim Initialisieren könnte man ja festlegen, ob die Quelle eine rolle spielt, oder sogar ob eine quelle erlaubt ist..."
+2007-11-25 16:19:10,taljeth,Könnte man.
+2007-11-25 16:20:15,taljeth,"Also eine Angabe, ob Quelle angegeben werden muß, darf oder nicht darf."
+2007-11-25 16:20:33,VerrueckterPinguin,"Weil bei den Gerätetreibern hat man ja überall das selbe Problem, dass das da keine Quelle angegeben werden muss"
+2007-11-25 16:20:40,VerrueckterPinguin,"Ja, das meine ich."
+2007-11-25 16:23:32,VerrueckterPinguin,"Weiter wäre es vielleicht auch keine schlechte Idee, wenn es irgend eine möglichkeit gäbe, beim ""mounten"" irgendwelche Parameter zu übergeben, für sonderwünsche wie readonly und sowas."
+2007-11-25 16:25:31,Coffee,omg
+2007-11-25 16:25:36,taljeth,"Das Problem ist, daß wir kein richtiges Mounten haben..."
+2007-11-25 16:25:43,Coffee,"eine Spammail mit dem title ""Waltraud stinkt und popelt"""
+2007-11-25 16:26:05,VerrueckterPinguin,"taljeth: Ja, genau das ist es. ;-)"
+2007-11-25 16:26:37,VerrueckterPinguin,"Das andere Problem mit dem ""Unmounten"" kommt dann später auch noch dazu ;-)"
+2007-11-25 16:29:52,taljeth,"Naja, wir mounten nicht, also müssen wir auch nicht unmounten. ;-)"
+2007-11-25 16:30:10,VerrueckterPinguin,Aber irgendwann müssen die Informationen wieder weggeworfen werden. ;-)
+2007-11-25 16:30:49,VerrueckterPinguin,Bei Wechselmedien wirds erst recht lustig. ;-)
+2007-11-25 16:33:42,taljeth,"Flushen müssen wir trotzdem, ich habe nie was anderes behauptet. ;-)"
+2007-11-25 16:47:27,VerrueckterPinguin,"Hier eine Angabe ob ein Baum verworfen werden darf, und wenn ja nach welcher Zeit, vermutlich keine schlechte Idee."
+2007-11-25 16:49:07,taljeth,Jo.
+2007-11-25 16:49:41,taljeth,"Und floppy muß auch sagen können, daß alles verworfen werden _muß_, was floppy als Quelle hat."
+2007-11-25 16:50:49,VerrueckterPinguin,"Das heisst, der Kernel muss wissen, welche Treiber welche anderen als Quelle haben, um sie benachrichtigen zu können."
+2007-11-25 16:51:24,VerrueckterPinguin,"Von daher wäre es nicht schlecht, wenn derK"
+2007-11-25 16:51:47,taljeth,Der Kernel verwaltet doch eh alle Bäume?
+2007-11-25 16:52:14,VerrueckterPinguin,"-k Eintrag in floppy irgendwie so markiert wäre, dass der kernel weiss, dass es nur benutzt werden kann, falls der Baum danach auch wieder verworfen werden kann..."
+2007-11-25 16:54:42,VerrueckterPinguin,"Stimmt. Aber hier wären vielleicht zusätzliche Informationen noch prakisch, damit nicht alle Bäume in jedem Prozess geprüft werden müssen."
+2007-11-25 16:57:17,Coffee,mhh
+2007-11-25 16:57:26,Coffee,aus wieviel seiten besteht das LL forum?
+2007-11-25 16:57:38,Coffee,"ich wollte grade eine drucken, jetz steht hier was von Seite 1 von 17tausendirgendwas"
+2007-11-25 16:58:07,taljeth,Klingt nach Browserbug...
+2007-11-25 17:00:14,Coffee,;)
+2007-11-25 17:00:17,Coffee,opera -.-
+2007-11-25 17:07:56,Coffee,hi nicolas
+2007-11-25 17:08:09,nicolas,huhu coffee
+2007-11-25 17:14:27,nicolas,was haltet ihr von einem Hybridkernel?
+2007-11-25 17:17:10,taljeth,Hybrid kann im Prinzip alles heißen
+2007-11-25 17:41:41,janosch,"nicolas, nach das was ich grad über den Hybridkernel gelesen haben, ist ein Hybridkernel nicht umbedingt so stabil"
+2007-11-25 17:42:37,bluecode,janosch: es kommt doch sehr drauf an was wie nah man an microkernel ist und wie weit man von monolith entfernt ist
+2007-11-25 17:43:50,janosch,"bluecode, natürlich aber der hybridkernel wird nicht stabiler als ein monolithischer sein und die frage ist jetzt als wie stabil man einen monolithischen kernel ansieht"
+2007-11-25 17:44:34,bluecode,"doch ein hybridkernel wird stabiler (im Sinne von bugfreier) aus dem einfachen Grund, dass weniger Code in Ring0 läuft beim Hybridkernel."
+2007-11-25 17:44:38,taljeth,janosch: Wieso sollte er nicht?
+2007-11-25 17:45:05,taljeth,bluecode: Nicht bugfreier. Die Auswirkungen der Bugs sind potentiell weniger groß.
+2007-11-25 17:45:29,bluecode,der kernel hat sehr wohl weniger bugs.
+2007-11-25 17:45:30,janosch,dann hab ich den hybridkernel falsch verstanden
+2007-11-25 17:45:38,janosch,ich dachte da läuft mehr in ring0
+2007-11-25 17:45:46,bluecode,mehr als beim microkernel jo
+2007-11-25 17:45:49,taljeth,"bluecode: Der Kernel, ja. Aber das ist kein fairer Vergleich..."
+2007-11-25 17:45:51,bluecode,aber weniger als beim monolith
+2007-11-25 17:46:11,bluecode,taljeth: es ging ja nur um den kernel momentan
+2007-11-25 17:46:22,taljeth,"Ja, aber der Mono setzt halt auch mehr Funktioanlität um."
+2007-11-25 17:46:33,bluecode,das einem ein microkernel mit abgekackten vfs nichts nutzt ist klar
+2007-11-25 17:46:40,taljeth,Für einen sinnvollen Vergelich müßte man dann beim Micro auch die Module mitrechnen
+2007-11-25 17:59:29,Coffee,mhh
+2007-11-25 17:59:38,Coffee,in welhem format wird von der systemclock zurückgegeben?
+2007-11-25 17:59:47,Coffee,"mov al, Speicherstelle"
+2007-11-25 17:59:48,Coffee,"out 70h, al"
+2007-11-25 17:59:48,Coffee,"in al, 71h"
+2007-11-25 17:59:48,Coffee,Print al
+2007-11-25 17:59:50,Coffee,mach nicht viel
+2007-11-25 17:59:56,Coffee,(sorry für codepasting^^)
+2007-11-25 18:00:04,Coffee,also
+2007-11-25 18:00:25,Coffee,gibt nur irgendwelchen code/kot aus
+2007-11-25 18:12:55,T2k3_schleppi,Coffee: 70h = 70 high? 
+2007-11-25 18:13:04,T2k3_schleppi,al = a low
+2007-11-25 18:14:33,VerrueckterPinguin,"Coffee: Du denkst schon daran, dass beim CMOS in den meisten fällen BCD-Werte zurück kommen?"
+2007-11-25 18:15:34,bluecode,hängt aber auch von irgendeinem Bit in irgendeinem der Register des CMOS ab ob BCD oder normal kodiert.
+2007-11-25 18:15:56,VerrueckterPinguin,"Jo, desswegen ja ""in den meisten fällen"" ;-)"
+2007-11-25 18:16:37,bluecode,ich wollts doch nur ergänzen freaky ;-) Hab das schon gelesen und verstanden ;-)
+2007-11-25 18:16:59,bluecode,"hm... unglaublich wie künstlerisch begabt ich sein kann, wenn es um das zeichnen von Ebenen in |R^3 geht :-)"
+2007-11-25 18:18:09,VerrueckterPinguin,*g*
+2007-11-25 19:48:16,bluecode,"Kann jemand folgende Implikation beweisen: a + Wuzel(2) * b + Wurzel(3) * c = 0 => a, b, c = 0 mit a,b,c € Q (rationale Zahlen)?"
+2007-11-25 19:49:49,bluecode,Danke fürs drüber Nachdenken :-)
+2007-11-25 19:51:02,janosch,mmh schwierig zu erklären...
+2007-11-25 19:51:44,janosch,"a,b,c muss 0 sein, da wenn a>0 b<0 und b eine reelle zahl sein müsste, oder ka"
+2007-11-25 19:51:59,janosch,aber ich weiß eh nix in mathe
+2007-11-25 20:14:54,Jidder,moin moin
+2007-11-25 20:15:01,M0wl,na alles klaa Jidder
+2007-11-25 20:15:06,bluecode,tach Jiddi
+2007-11-25 20:15:46,Jidder,"yeah ich wusste gar nicht, dass mein pc hot plug fähig ist"
+2007-11-25 20:16:06,Jidder,meine tv karte ist nicht festgeschraubt und ich hab die eben beim kabel ranfummeln aus versehen aus dem slotgezogen
+2007-11-25 20:16:15,Jidder,dann war das bild natürlich weg
+2007-11-25 20:16:22,Jidder,ich also karte wieder reingesteckt: bild wieder da ^^
+2007-11-25 20:16:22,bluecode,Du meinst also PCI-Hotplug ;-)
+2007-11-25 20:16:26,Jidder,jep
+2007-11-25 21:02:12,Coffee,re
+2007-11-25 21:02:18,M0wl,wb Coffee
+2007-11-25 21:09:25,Coffee,"mh, ist es nun BCD oder nicht (rtc)? das gibbet zeichen aus, die kann ich im irc garnit schreiben oO"
+2007-11-25 21:10:15,VerrueckterPinguin,Coffee: Also ASCII-Kodiert ist es sicher nicht *g*
+2007-11-25 21:10:34,VerrueckterPinguin,"Coffee: Und wie gesagt, es ist nicht überall gleich"
+2007-11-25 21:10:38,taljeth,Das ist Doppel-ROT13-kodiert!!11elf
+2007-11-25 21:11:01,VerrueckterPinguin,*g*
+2007-11-25 21:32:43,Coffee,OMG
+2007-11-25 21:32:46,Coffee,"ROT13, das wär was"
+2007-11-25 21:33:16,taljeth,"Doppel-ROT13 muß es schon sein, das ist sicherer."
+2007-11-25 21:33:40,Coffee,lolz
+2007-11-25 21:50:49,taljeth,"janosch: Wenn du im Wiki neue Artikel erstellst, trag am besten auch gleich eine Kategorie ein, sonst findet man den Artikel höchstens mal durch Zufall."
+2007-11-25 21:51:37,janosch,"taljeth, ja mache ich gleich. Ich gehe immer davon aus, dass wenn jemand was sucht, er es dann mit der Such-Funktion sucht."
+2007-11-25 21:54:26,taljeth,"Hm, wäre in der Tat eine gute Frage, wie der durchschnittliche Benutzer das Wiki benutzt."
+2007-11-25 21:55:57,janosch,passt Grub in die Kategory Software?
+2007-11-25 21:56:02,janosch,eigentlich schon...
+2007-11-25 21:56:07,taljeth,Auf jeden Fall
+2007-11-25 21:57:09,VerrueckterPinguin,Aber Kategorie mit y am Schluss (oder natürlich category mit K am Anfang) tut ja schon weh. *g*
+2007-11-25 21:57:50,taljeth,kategorý sieht doch schön osteuropäisch aus. *g*
+2007-11-25 21:57:57,VerrueckterPinguin,*g*
+2007-11-25 21:58:23,taljeth,"Und nein, ich meine damit nicht Sächsisch. ;-)"
+2007-11-25 21:58:47,janosch,ups sry
+2007-11-25 21:59:39,janosch,"in welche Categorie ;) soll ""BIOS Data Area"" und ""Speicherbereiche""? Und müssen alle Artikel in die Kategorie Glossar?"
+2007-11-25 22:00:39,bluecode,"nicht alle artikel müssen in glossar, aber bei denen zwei ist es imho sinnvoll"
+2007-11-25 22:01:46,janosch,dann mach ich grub auch noch in den glossar
+2007-11-25 22:02:22,bluecode,naja...
+2007-11-25 22:02:38,janosch,zu spät
+2007-11-25 22:02:48,taljeth,"*g* Falsch ist es aber auch nicht, denke ich"
+2007-11-25 22:03:01,janosch,"naja jeder kann es ändern, von daher"
+2007-11-25 22:03:11,taljeth,Besser einmal zuviel verlinkt als einmal zu wenig. Meine Meinung.
+2007-11-25 22:03:44,janosch,"nur wo soll jetzt noch ""BIOS Data Area"" und ""Speicherbereiche"" hin, außer in den Glossar?"
+2007-11-25 22:04:09,taljeth,"Speicherbereiche paßt definitiv nicht in Glossar, oder ist es eine Worterklärung?"
+2007-11-25 22:04:26,taljeth,"BDA kommt dann eben nur ins Glossar, das ist in Ordnung."
+2007-11-25 22:05:19,janosch,k
+2007-11-25 22:06:47,VerrueckterPinguin,Muss der sich schon wieder mit 8-Bit Mikroprozessoren rumschlagen? *g*
+2007-11-25 22:09:24,taljeth,"Nö, er hat nur gerade gemerkt, daß er keinen Alkohol verträgt. ;-)"
+2007-11-25 22:10:46,VerrueckterPinguin,*g*
+2007-11-25 22:32:01,VerrueckterPinguin,taljeth: Hast du heute noch was für die Mailingliste?
+2007-11-25 22:32:19,taljeth,Erwartest du denn etwas?
+2007-11-25 22:32:49,taljeth,"Von letzter Woche wäre noch DNS da, falls du dir das mal anschauen willst. ;-)"
+2007-11-25 22:33:12,VerrueckterPinguin,"Nein, aber wenn nichts mehr kommt, fahre ich die Kiste jetzt runter, da muss ich endlich mal memtest86 laufen lassen, um kaputten RAM ausschliessen zu können."
+2007-11-25 22:33:27,VerrueckterPinguin,Und das könnte bei den 4Gb etwas dauern *g*
+2007-11-25 22:33:51,taljeth,*g*
+2007-11-25 22:33:55,taljeth,Angeber. ;-)

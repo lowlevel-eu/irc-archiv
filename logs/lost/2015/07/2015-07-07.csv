@@ -1,0 +1,127 @@
+date/time,nick,message
+2015-07-07 12:47:10,moritz_,scheiß paging xD
+2015-07-07 13:04:35,moritz_,hat hier jemand vielleicht gerade etwas zeit um mir mal unter die arme zu greifen?
+2015-07-07 13:37:25,kevin,moritz: Wo hängst du denn?
+2015-07-07 13:40:40,moritz,naja ich bin noch ziemlich am anfang und versuch gerade über mein physisches speichermanagment allen belegten speicher in virtuellen zu mappen
+2015-07-07 13:41:48,moritz,hab dazu ne ähnliche schleife wie in meiner alloc funktion gebaut die durch die bitmap geht und dann über jedes einzelne bit und guckt ob des gesetzt ist oder nicht und wenn es nicht gesetzt ist dann wird die adresse in ne virtuelle gemappt 
+2015-07-07 13:42:22,moritz,aber ihrgendwie ist die bedingung get_bitmap(i) & (0 << j) nie true also er findet angeblich nie ne null obwohl nullen aufjedenfall da sind :/
+2015-07-07 13:45:09,kevin,Okay...
+2015-07-07 13:45:21,kevin,Spiel einfach mal ein Beispiel auf Papier durch
+2015-07-07 13:45:31,kevin,Dann siehst du das Problem gleich
+2015-07-07 13:45:40,moritz,liegt es an meinem shift ?
+2015-07-07 13:45:53,kevin,"Es liegt daran, dass der Ausdruck nicht das tut, was du willst"
+2015-07-07 13:46:04,kevin,Hint: 0 << j == 0
+2015-07-07 13:46:38,moritz,ohh fuu ja der vergleich immer mit 0 *facepalm
+2015-07-07 13:47:05,moritz,des heißt ich muss 1 << j machen und das dann negieren ?
+2015-07-07 13:47:29,kevin,"Wenn du das negieren an der richtigen Stelle machst, ja ;-)"
+2015-07-07 13:47:58,kevin,Ein 0 mit & verknüpfen um es zu prüfen wäre eh auch Blödsinn
+2015-07-07 13:48:06,moritz,~(1 << j) so oder ?
+2015-07-07 13:48:23,kevin,[13:45] <kevin> Spiel einfach mal ein Beispiel auf Papier durch
+2015-07-07 13:48:43,moritz,okay 
+2015-07-07 13:50:27,moritz,ich muss den gesamten ausdruck negeieren :D
+2015-07-07 13:52:08,moritz,yeay immerhin der kernel kann schonmal virtuell allociert werden :D bekomm zwar noch den pagefault nachdem mein erster user taks ausgeführt wird aber darum werd ich mich jetzt kümmern :) 
+2015-07-07 13:58:46,kevin,"Erstmal nur 1:1-Mapping, oder?"
+2015-07-07 14:02:29,moritz,joa xD
+2015-07-07 14:02:34,moritz,bin schon froh wenn des geht
+2015-07-07 14:06:21,moritz,also hab mir das jetzt so überlegt das ich eigntlich bei jedem neuen user_task erstmal die page directory erstelle und dann muss da ja der kernel teil mit reingebracht  werden oder ?
+2015-07-07 14:07:33,kevin,Jo
+2015-07-07 14:07:45,kevin,Wie teilst du denn deinen Speicher zwischen Kernel und User auf?
+2015-07-07 14:08:38,moritz,momentan noch gar net später soll es 1:3 werden
+2015-07-07 14:08:58,kevin,"Wäre es nicht einfacher, das gleich zu machen?"
+2015-07-07 14:09:29,kevin,Weil dann könntest du einfach die PDEs für das erste GB rüberkopieren und hättest nie Userpages dabei
+2015-07-07 14:09:37,moritz,ja ich bin mir noch nicht so sicher über die realisierung 
+2015-07-07 14:10:25,moritz,1:3 bezieht sich ja auf den virtuellen ram oder ? also die aufteilung hab ich das so richtig verstanden ?
+2015-07-07 14:11:00,kevin,Ja
+2015-07-07 14:12:08,moritz,naja des heißt ja eigentlich einfach nur das ich dann die user task erst ab ner bestimmten page_directory eintrag mappen darf und davor für user prozesse gar net gucken muss oder ? 
+2015-07-07 14:12:12,kevin,"Das würde heißen, dass du von 0 bis 0x3fffffff Kernelspeicher hättest und von 0x40000000 bis 0xffffffff Userspace"
+2015-07-07 14:12:20,kevin,moritz: Genau
+2015-07-07 14:12:43,kevin,"Und Kernelspeicher natürlich nicht nach diesem bestimmten Eintrag mappen, sondern nur davor"
+2015-07-07 14:13:07,moritz,ahhhh das macht das ganze einfach :D und dann müsste ich einfach beim erstellen einer neuen PD einfach neue page_directory = kernel_directory machen und schon hätte die neue auch den kernel teil
+2015-07-07 14:22:59,moritz,kevin: brauch ich die funktionen eigentlich sowohl für kernel als für userspace sprich context erstellen speicher alloc speicher free usw
+2015-07-07 14:24:25,kevin,"Naja, Kontext erstellen betrifft automatisch immer beides. Den Kernelteil willst du kopieren und den Userteil ausnullen"
+2015-07-07 14:24:58,kevin,"Und Speicher allozieren/freigeben - also ich persönlich halte es ja für praktisch, sowohl im Kernel auch auch im Userspace Speicher benutzen zu können ;-)"
+2015-07-07 14:25:27,moritz,also funktionen doppeln quasi einmal für kernel und einmal für usersapce
+2015-07-07 14:25:37,kevin,"Wobei die Grundfunktion im VMM nicht allozieren/freigeben, sondern mappen/Mapping entfernen ist"
+2015-07-07 14:26:11,kevin,"Funktionen doppeln ist bäh. Übergib lieber ein Flag, das sagt, ob Userspace oder Kernel"
+2015-07-07 14:26:12,moritz,jo scohn klar alloc ist dann mm
+2015-07-07 14:26:17,moritz,okay :)
+2015-07-07 14:26:37,kevin,"vmm_alloc() zu haben ist trotzdem praktisch, aber das ist dann nur ein kleiner Wrapper um pmm_alloc() und vmm_map()"
+2015-07-07 14:40:00,moritz,joa soweit is mir das schon klar :) finde nur vmm_alloc() sinnvoller als alloc und dann map aufzurufen ^^ 
+2015-07-07 14:46:17,moritz,kevin: ich müsste vmm_alloc() doch aber die aktuelle page directory mitgeben oder ?
+2015-07-07 14:46:38,kevin,Kannst du so machen
+2015-07-07 14:47:34,kevin,"Oder du speicherst irgendwo, welcher PD gerade aktiv ist, und lässt es immer auf dem aktiven PD arbeiten (das schränkt es ein bisschen ein, aber ist bequemer zu benutzen)"
+2015-07-07 14:55:22,moritz,joa so is gut :D
+2015-07-07 15:01:55,moritz,kevin: wie geht man am schlausten vor um ne leere page zu finden auf die gemappt werden kann mit 2 schleifen durch directory und page table loopen ?
+2015-07-07 15:06:01,kevin,Zum Beispiel
+2015-07-07 15:06:40,kevin,Wobei im PD nur die physischen Adressen der PTs stehen
+2015-07-07 15:07:18,kevin,Soll ich dich jetzt gleich mit rekursiven PDs verwirren oder erst später? Praktisch wäre es hier schon.
+2015-07-07 15:07:21,moritz,ajo des müsste ich dann umrechnen
+2015-07-07 15:07:28,moritz,whut ?
+2015-07-07 15:07:40,moritz,rekursive PD ? pd in pd ?
+2015-07-07 15:08:00,kevin,"Jo, überleg dir mal, was passiert, wenn du in einen PD-Eintrag die Adresse des PDs selbst reinschreibst"
+2015-07-07 15:08:26,moritz,dann hab ich in einem pd noch ein pd XD
+2015-07-07 15:08:39,kevin,Außer dass es als PT interpretiert wird
+2015-07-07 15:08:44,moritz,jo
+2015-07-07 15:08:56,kevin,Was wird dann also in diesem 4 MB gemappt?
+2015-07-07 15:09:26,moritz,öhhhhm 
+2015-07-07 15:09:46,moritz,theoretisch einfach ne page table
+2015-07-07 15:09:53,moritz,die aber eigentlich en page directory is
+2015-07-07 15:10:42,kevin,"Ich meine, worauf greifst du zu, wenn du etwas mit diesem Speicher machst? Was steht da drin?"
+2015-07-07 15:11:15,moritz,naja wieder ne page directory
+2015-07-07 15:11:32,moritz,die wiederrum auf einzelne pages tables verweißt
+2015-07-07 15:11:33,kevin,"Ein PD sind 4k, aber der gemappte Bereich sind 4 MB"
+2015-07-07 15:12:32,moritz,naja wenn ich da ne pd reinschreib is ja eigenltich nur der erste eintrag gefüllt und der rest is leer oder ?
+2015-07-07 15:13:08,kevin,Nö
+2015-07-07 15:13:25,kevin,Eventuell willst du auch hier wieder Papier und Bleistift hernehmen ;-)
+2015-07-07 15:15:23,moritz,also ich schreib in ein PDE die adresse der selben PD wieder rein ?
+2015-07-07 15:16:43,kevin,Jo
+2015-07-07 15:16:53,kevin,Und die anderen PDEs mappen ganz normal den Kernel usw.
+2015-07-07 15:17:23,moritz,naja dann hab ich doch eingentlich die ersten 4MB der PD dadrin oder ?
+2015-07-07 15:19:03,kevin,Nein
+2015-07-07 15:19:32,moritz,ich raff es nicht mein kopf brummt
+2015-07-07 15:20:05,kevin,"Wenn du etwas im Abstrakten nicht kapierst, nimm ein Beispiel her. Das hilft fast immer."
+2015-07-07 15:20:34,kevin,Sagen wir also mal pd[0] = pd
+2015-07-07 15:20:51,kevin,"Und pd[1] = 0x1000, was irgendeine PT ist, die den Kernel mappt"
+2015-07-07 15:20:59,moritz,jo
+2015-07-07 15:21:18,kevin,Sagen wir einfach mal pd = 0x2000
+2015-07-07 15:21:37,moritz,dann steht im pd[0] = 0x2000
+2015-07-07 15:21:38,kevin,"Wenn ich jetzt ein dword an virtuell 0x0 lese, was bekomme ich?"
+2015-07-07 15:22:00,moritz,naja 0x2000
+2015-07-07 15:22:08,kevin,Genau. Und an 0x4?
+2015-07-07 15:22:42,moritz,öhhhhmmmmmm 0x1000?
+2015-07-07 15:22:54,kevin,Jo. In den ersten 4k hast du einfach wieder das PD selbst.
+2015-07-07 15:23:01,kevin,Interessant wird es in der nächsten Page
+2015-07-07 15:23:11,kevin,Was bekommst du bei virtuell 0x1000?
+2015-07-07 15:23:40,moritz,0x2000+pageoffset
+2015-07-07 15:24:14,kevin,Wieso 0x2000? Und was ist pageoffset?
+2015-07-07 15:24:48,moritz,ach kevin ich glaub so wichtig ist das jetzt erstmal nicht oder ? ich bin froh wenn ich hier ihrgendwie meine mem_alloc funktion hinbekomme
+2015-07-07 15:25:11,kevin,"moritz: Doch, das ist sehr praktisch"
+2015-07-07 15:25:32,moritz,mhhhh okay ? 
+2015-07-07 15:25:41,moritz,naja ich greif in der pd auf 0x2000 zu ?
+2015-07-07 15:26:45,moritz,öhhm ich mein 0x1000
+2015-07-07 15:27:01,kevin,"Ja, und da ist deine erste PT gemappt"
+2015-07-07 15:27:10,kevin,Und and 0x2000 ist deine zweite PT gemappt
+2015-07-07 15:27:21,kevin,Du mappst alle deine PTs schön hintereinander in den virtuellen Speicher
+2015-07-07 15:28:07,moritz,naja 0x1000 is ja dann immer noch en verweis auf das selbe pd oder ?
+2015-07-07 15:28:49,kevin,"Okay, machen wir es Schritt für Schritt"
+2015-07-07 15:29:15,kevin,Virtuell 0x1000 ist pde_index = 0 und pte_index = 1. Einverstanden?
+2015-07-07 15:29:28,moritz,achso xD
+2015-07-07 15:29:40,moritz,kacke des is ja hexadezimal -.- ja okay ^^
+2015-07-07 15:30:28,kevin,"Erst im PD nachschauen, wo die passende PT liegt: pd[0] = pd"
+2015-07-07 15:30:56,kevin,"Dann in der PT nachschauen, wo die passende Page liegt: pd[1] = 0x1000"
+2015-07-07 15:31:13,kevin,Also greifst du auf physisch 0x1000 zu
+2015-07-07 15:31:30,moritz,des heißt eignetlich is des rekursive wie en zusätzliches inhaltsverzeichnis ?
+2015-07-07 15:31:33,kevin,"Und da liegt deine PT, die den Bereich von 4 bis 8 MB beschreibt"
+2015-07-07 15:32:07,kevin,"moritz: Ich weiß nicht, ob du dir das richtige drunter vorstellst, aber könnte man so formulieren, ja"
+2015-07-07 15:32:52,moritz,naja die nächste page müsste doch jetzt der nächste pde entry sein oder ?
+2015-07-07 15:37:58,kevin,"Der Inhalt der PT, auf die der PDE zeigt, ja"
+2015-07-07 15:38:41,moritz,aber was bringt mir das jetzt ?
+2015-07-07 15:41:16,kevin,"Dass du weißt, wo deine PT liegen"
+2015-07-07 15:41:58,moritz_,okay mhhhh
+2015-07-07 15:42:17,kevin,"Solange du 1:1-Mapping hast, weißt du das durch die physische Adresse eh, aber das ist ja nicht von Dauer"
+2015-07-07 15:43:11,moritz_,ja aber ich muss jetzt erstmal das virtuelle managment zum laufen bekommen xD
+2015-07-07 15:47:04,kevin,"Ignorier es einfach, wenn du es im Moment nicht brauchen kannst ;-)"
+2015-07-07 15:47:25,kevin,Aber früher oder später wirst du es haben wollen
+2015-07-07 15:48:25,moritz_,nein momentan bin ich schon froh wenn ich so mit den ganzen zahlen klar komm aber ich behalte es mir mal im hinterkopf ;) kann mir vorstellen das es gerade bei higher half praktisch ist
+2015-07-07 15:55:56,iksnagreb,moin
+2015-07-07 16:01:06,moritz_,moin moin

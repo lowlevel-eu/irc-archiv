@@ -1,0 +1,211 @@
+date/time,nick,message
+2017-05-01 13:03:55,Jonathan,Moin
+2017-05-01 13:57:46,Svenska,moin
+2017-05-01 14:03:24,Svenska,meine frage von gestern ist noch offen... ;-)
+2017-05-01 14:03:44,Svenska,"weiß jemand spontan, wie ich in einem uint8_t array einen widestring als literal in den initializer tun kann? ;)"
+2017-05-01 14:04:23,Svenska,"also uint8_t ar[] = { 4, 3, L""Hallo, Welt"" }"
+2017-05-01 14:15:18,Paddy,Vermutlich gar nicht so direkt
+2017-05-01 14:16:26,Paddy,"Vielleicht als Union mit einer struct, die zwei Integer und ein wchar_t-Array enthält, oder so..."
+2017-05-01 14:16:47,Svenska,hm
+2017-05-01 14:17:25,Svenska,"geht um usb string descriptoren, die bestehen aus nem uint8_t size, uint8_t == 3, unicode-string"
+2017-05-01 14:18:21,Paddy,"Ja, dann ist eine struct sowieso die natürliche Darstellung"
+2017-05-01 14:18:57,Svenska,"ist nur ziemlich nerviges herumgecaste, weil ich keinen uint8_t habe, sondern einen const static __flash uint8_t ;)"
+2017-05-01 14:20:19,Svenska,"(weil die struct dann nämlich nicht kompatibel zu den restlichen descriptoren ist, die tatsächlich nur flache bytearrays sind)"
+2017-05-01 14:20:38,Svenska,"aber danke, dann muss ich das so machen"
+2017-05-01 14:25:56,Svenska,"https://www.mikrocontroller.net/topic/130359#1179160 << das ginge, aber genau das wollte ich vermeiden ^^"
+2017-05-01 14:27:23,Paddy,"Sehe ich ein, dass das hässlich wird ;-)"
+2017-05-01 14:28:06,Svenska,"ich wüsste auch gerne, wer auf den blöden gedanken gekommen ist, die strings bei usb sprachabhängig zu machen"
+2017-05-01 14:28:08,Svenska,aber nungut...
+2017-05-01 16:26:31,Svenska,"...ist aber der einzige weg, der ohne hacks funktioniert"
+2017-05-01 16:26:47,Svenska,irgendwas mach ich falsch. seufz.
+2017-05-01 16:27:43,MasterQ32,klingt echt nervig
+2017-05-01 16:28:27,Svenska,"hat vermutlich mit der constness (und __flashness) von pointer vs ""dem worauf er zeigt"" zu tun"
+2017-05-01 16:28:33,Svenska,und das ganze indirekt durch mehrere ebenen
+2017-05-01 16:28:50,Svenska,"der ganze beispielcode nutzt immer PROGMEM, was ich vermeiden wollte (weil die API hässlich ist)"
+2017-05-01 16:32:10,Svenska,"wenn ich mich daran orientiere, dann bekomme ich als strings immer ein kyrillisches zeichen zurück (U+0409, wobei 0x0409 für Englisch steht)"
+2017-05-01 16:44:29,darklink,warum nimmst du überhaupt wchar_t und kein UTF-8 mit decoder?
+2017-05-01 16:44:44,Svenska,weil usb utf16 vorschreibt
+2017-05-01 16:44:59,darklink,…huh
+2017-05-01 16:45:09,Svenska,außerdem will ich den string-descriptor (der ist ja konstant) als feste bytefolge im flash ablegen
+2017-05-01 16:45:20,Svenska,d.h. zur laufzeit geht da nix.
+2017-05-01 16:46:04,Svenska,"aber hey, mein gerät enumeriert korrekt und braucht dafür ~1.2 KB code"
+2017-05-01 16:46:16,MasterQ32,:)
+2017-05-01 16:46:45,Svenska,und 1 byte ram :D
+2017-05-01 16:46:52,darklink,"uint8_t ar[] = {4, 3, 0, 'H', 0, 'a', 0, 'l', 0, 'l', 0, 'o', 0, ',', 0, ' ', 0, 'W', 0, 'e', 0, 'l', 0, 't', 0, 0};"
+2017-05-01 16:47:10,Svenska,darklink: genau das hab ich jetzt auch so genommen
+2017-05-01 16:47:14,darklink,oh
+2017-05-01 16:47:25,Svenska,"wobei die ""4"" am anfang die länge des gesamten arrays in bytes ist"
+2017-05-01 16:47:58,Svenska,"ich hätte nur gern ein #define STR_VENDOR L""Meine Wenigkeit"" gehabt, was mir den descriptor passend zusammenbastelt"
+2017-05-01 16:48:06,darklink,oh
+2017-05-01 16:48:24,darklink,kannst du das nicht zur runtime machen?
+2017-05-01 16:48:31,Svenska,dann brauche ich ram
+2017-05-01 16:48:35,darklink,kein ram?
+2017-05-01 16:48:37,Svenska,davon hab ich relativ wenig
+2017-05-01 16:48:41,darklink,oh
+2017-05-01 16:48:46,MasterQ32,wie viel haste denn?
+2017-05-01 16:48:47,Svenska,das ist ein atmega32u4
+2017-05-01 16:48:50,MasterQ32,ah!
+2017-05-01 16:49:23,darklink,aua
+2017-05-01 16:50:04,Svenska,"der soll ein composite-device werden, mit einem ACM (= seriell, für debug) und einem MSC"
+2017-05-01 16:50:19,MasterQ32,"ACM, MSC?"
+2017-05-01 16:50:33,Svenska,ACM = Abstract Communication $dingens
+2017-05-01 16:50:37,Svenska,MSC = Mass Storage Class
+2017-05-01 16:50:40,MasterQ32,ah
+2017-05-01 16:51:02,Svenska,das teil soll ein QIC-02 mit USB verbinden ;)
+2017-05-01 16:51:16,MasterQ32,oha
+2017-05-01 16:51:57,Svenska,= ein längeres projekt
+2017-05-01 16:52:16,MasterQ32,"ja, klingt so"
+2017-05-01 16:52:30,MasterQ32,ich hab gestern den ersten Teil einer SNES-Controller/C64-Bridge gebastelt
+2017-05-01 16:52:38,Svenska,"ich muss QIC-02 per bitbanging implementieren, brauche dafür alle pins (deswegen keine debug-uart *seufz*), muss dann den QIC-02-befehlssatz auf SCSI mappen und das dann über USB anbinden"
+2017-05-01 16:52:42,Svenska,auch nett
+2017-05-01 16:52:51,MasterQ32,"joar, der Code tut"
+2017-05-01 16:53:01,MasterQ32,jetzt warte ich auf ein päckchen mit einer kaputten SNES
+2017-05-01 16:53:16,Svenska,^^
+2017-05-01 16:53:20,darklink,MasterQ32: was machst du?
+2017-05-01 16:53:44,MasterQ32,grade? nen gamejam-beitrag publishen
+2017-05-01 16:53:54,MasterQ32,ansonsten: auß dem gehäuse ein teil rausschneiden
+2017-05-01 16:53:55,MasterQ32, :D
+2017-05-01 16:54:02,MasterQ32,ich brauch die controller-buchse :D
+2017-05-01 16:54:19,darklink,oh
+2017-05-01 16:54:36,MasterQ32,joar
+2017-05-01 16:56:12,MasterQ32,ich möchte die Tage auch endlich mal einen LCD-Controller erfolgreich ansteuern
+2017-05-01 16:56:27,Svenska,was für einen?
+2017-05-01 17:00:34,MasterQ32,klassisches 4x20 Zeichen-LCD
+2017-05-01 17:00:38,MasterQ32,muss das ding mal rauskramen
+2017-05-01 17:00:41,Svenska,44780 also
+2017-05-01 17:00:47,MasterQ32,wahrscheinlich
+2017-05-01 17:00:51,Svenska,"jo, davon hab ich auch noch ein paar rumfliegen ;)"
+2017-05-01 17:01:02,MasterQ32,joar
+2017-05-01 17:01:10,MasterQ32,ich will grade mal mit wieder mit Elektronik anfangen
+2017-05-01 17:01:15,MasterQ32,und mach grade kleine Schritte
+2017-05-01 17:01:21,Svenska,"hmm, hab noch ne platine gefunden, die ich mal gemacht hab... für einen 256k x 4 dram-baustein und einen avr ;)"
+2017-05-01 17:01:29,MasterQ32,wofür?
+2017-05-01 17:01:30,MasterQ32,:D
+2017-05-01 17:01:49,Svenska,"bei uc.net gab es mal einen länglichen thread zu ""CP/M auf AVR"""
+2017-05-01 17:01:59,MasterQ32,"haha, what?"
+2017-05-01 17:02:13,Svenska,"ein avr @ 20 MHz ist in der lage, einen Z80 zu simulieren"
+2017-05-01 17:02:20,Svenska,und je nach RAM-Interface mit effektiv um die 2 MHz
+2017-05-01 17:02:22,MasterQ32,"okay, nice"
+2017-05-01 17:02:23,Svenska,:)
+2017-05-01 17:02:26,MasterQ32,das is dick
+2017-05-01 17:02:48,Svenska,"braucht halt nur zusätzlichen ram, weil übliche cp/m-maschinen meist 64 KB und mehr hatten"
+2017-05-01 17:03:10,MasterQ32,"joar, da machen die 2kB von so nem AVR halt nicht ganz mit"
+2017-05-01 17:03:44,Svenska,also kann man einen dram bitbangen ;)
+2017-05-01 17:03:54,MasterQ32,"joar, klar"
+2017-05-01 17:04:12,MasterQ32,ich hab hier 256K SRAM rumliegen
+2017-05-01 17:04:20,Svenska,"nein, sram ist ja billig *g*"
+2017-05-01 17:04:25,MasterQ32,aber bequem? :D
+2017-05-01 17:04:25,Svenska,außerdem gibt's avrs mit sram-interface
+2017-05-01 17:04:33,MasterQ32,echt?
+2017-05-01 17:04:41,Svenska,"ja, atmega8515"
+2017-05-01 17:04:43,Svenska,so als beispiel
+2017-05-01 17:04:55,MasterQ32,"oh, dann muss ich mir den nochmal angucken :P"
+2017-05-01 17:04:57,Svenska,"die haben ein parallelinterface, kannst du ein sram (oder ein 44780) direkt ranhängen"
+2017-05-01 17:05:29,Svenska,"bis 32 KB ist das ganz angenehm, darüber wirds eklig, weil nicht genug adressbits und so"
+2017-05-01 17:05:36,MasterQ32,"jop, wollt grade sagen"
+2017-05-01 17:05:47,Jonathan,"Es geht um AVRs und Z80 und Hardwarebastelei, da muss ich ja glatt mal mitreden ;)"
+2017-05-01 17:05:52,Svenska,:D
+2017-05-01 17:05:56,Svenska,dummerweise muss ich gleich weg
+2017-05-01 17:06:02,Jonathan,Aw schade D:
+2017-05-01 17:06:16,Jonathan,"Jedenfalls, auf nem ATMega8515 wollte ich auch mal einen Z80 simulieren"
+2017-05-01 17:06:20,MasterQ32,:)
+2017-05-01 17:06:28,Jonathan,"Wurde dann aber nichts, weil ich echte Z80 bekommen habe *g*"
+2017-05-01 17:06:34,MasterQ32,"habt ihr mir Ideen, was ich mal ausprobieren könnte?"
+2017-05-01 17:06:45,Svenska,"meine platine ist für nen 1284 ausgelegt, und mit dem 4 bit interface"
+2017-05-01 17:06:52,Svenska,"MasterQ32: naja, was willst du denn machen?"
+2017-05-01 17:07:04,Jonathan,"Svenska: Oh ja, der 1284 ist ein netter Controller"
+2017-05-01 17:07:04,MasterQ32,wieder mal nen einstieg in µC-Welt haben
+2017-05-01 17:07:07,Jonathan,Hmm
+2017-05-01 17:07:18,Svenska,"unser labsystem in der uni für die studenten hat nen grafikdisplay (epson-controller), das hab ich per bitbanging mit text- und grafik-plane so hingebogen, dass snake läuft"
+2017-05-01 17:07:32,Jonathan,*g*
+2017-05-01 17:08:31,MasterQ32,:D
+2017-05-01 17:08:45,MasterQ32,n Kumpel von mir träumt von einem Basic-Interpreter auf einem AVR :D
+2017-05-01 17:08:49,Jonathan,Ich bastel momentan noch an meinem Sonnenlicht-Wecker
+2017-05-01 17:08:51,Jonathan,Oooohje
+2017-05-01 17:08:56,Jonathan,Das hab ich mal gemacht *g*
+2017-05-01 17:08:59,Jonathan,War nicht so toll :P
+2017-05-01 17:09:04,MasterQ32,why not?
+2017-05-01 17:09:06,Svenska,hrhr ich wollt grad was sagen
+2017-05-01 17:09:08,Svenska,;)
+2017-05-01 17:09:17,Jonathan,"Hatte keine Tastatur, nur 4x4 Taster (blärgs)"
+2017-05-01 17:09:19,Svenska,für ordentliches basic auf nem avr willst du auch ram nachstecken
+2017-05-01 17:09:21,Jonathan,Der Code war schrecklich
+2017-05-01 17:09:25,Jonathan,Speicher war super knapp
+2017-05-01 17:09:32,MasterQ32,"ja, er wollte irgendwie den basic-code in den flash schreiben"
+2017-05-01 17:09:36,MasterQ32,ich halt das für ne grausame idee
+2017-05-01 17:09:45,Jonathan,Man kann das schon vernünftig machen
+2017-05-01 17:09:49,Jonathan,Aber das ist dann halt schwierig
+2017-05-01 17:09:52,MasterQ32,jop
+2017-05-01 17:09:54,Svenska,"naja, basic-code ins flash tun ist eher sinnfrei (widerspricht dem sinn von basic)"
+2017-05-01 17:10:01,Jonathan,Es gab da doch mal so ein Basic-System auf nem Mega644
+2017-05-01 17:10:04,Jonathan,Mit VGA
+2017-05-01 17:10:08,Svenska,"den interpreter, hardwaretreiber usw ins flash, ein ram dazu und dann klassisch... das ginge gut"
+2017-05-01 17:10:14,Jonathan,Klar
+2017-05-01 17:10:19,MasterQ32,"Svenska: so im sinne von, du schreibst das basic auf dem AVR und der speiuchert den code eben in seinem flash"
+2017-05-01 17:10:28,Jonathan,"Ja, das macht auch Sinn"
+2017-05-01 17:10:35,Jonathan,Schreibzyklen gibt's ja genug
+2017-05-01 17:10:36,Svenska,"das geht, ist aber technisch blöd"
+2017-05-01 17:10:47,Svenska,"weil du dann basic-interpreter, editor usw als bootloader implementieren musst"
+2017-05-01 17:10:54,Jonathan,Muss man?
+2017-05-01 17:11:01,Jonathan,"Eigentlich nicht, soweit ich weiß"
+2017-05-01 17:11:03,Svenska,"ja, weil bootloader kann chip-erase außer bootloader"
+2017-05-01 17:11:14,Jonathan,Muss ja kein Chip-Erase sein
+2017-05-01 17:11:19,Svenska,m.W. kann der normale code das nicht (weil er sich sonst löschen würde)
+2017-05-01 17:11:21,Jonathan,SPM erased doch Sektorweise?
+2017-05-01 17:11:33,Svenska,*schulterzuck* hab mich damit nie tief befasst
+2017-05-01 17:11:39,Svenska,aber die diskussion gabs mal auf uc.net
+2017-05-01 17:13:21,Svenska,ich bin dann mal weg - cya ;)
+2017-05-01 17:13:42,MasterQ32,Jonathan: du bringst mich auf eine Idee
+2017-05-01 17:13:49,MasterQ32,ich hab da noch dieses 4x4-Tastenfeld rumliegen
+2017-05-01 17:13:55,Jonathan,Auweia *g*
+2017-05-01 17:14:10,MasterQ32,hm?
+2017-05-01 17:14:16,Jonathan,"Aber ja, AVRs können ihren eigenen Flash programmieren, auch wenn sie nicht von der Bootloader-Section Code ausführen"
+2017-05-01 17:14:17,MasterQ32,ich möchte ja nur mal nen Treiber dafür basteln
+2017-05-01 17:14:23,Jonathan,Erase geht immer Page-weise
+2017-05-01 17:14:53,Jonathan,"Während dem Programmierzyklus wird die CPU angehalten, falls der Code gerade nicht von der Bootloader-Section ausgeführt wird"
+2017-05-01 17:15:17,MasterQ32,"joar, wird halt sacklahm :D"
+2017-05-01 17:15:23,Jonathan,Nicht wirklich :D
+2017-05-01 17:15:38,MasterQ32,"ich muss ja auch kram von flash in ram kopieren, um die daten zu laden"
+2017-05-01 17:15:42,MasterQ32,*zu verwenden
+2017-05-01 17:15:44,MasterQ32,soweit ich weiß
+2017-05-01 17:16:30,Jonathan,Das ist aber extrem schnell
+2017-05-01 17:16:35,Jonathan,"2 Zyklen pro Byte, soweit ich weiß"
+2017-05-01 17:16:39,MasterQ32,"okay, nich schlecht"
+2017-05-01 17:16:43,Jonathan,"Ich mein, dein Code wird ja sowieso aus dem Flash ausgeführt"
+2017-05-01 17:16:47,Jonathan,Der Flash *muss* schnell sein
+2017-05-01 17:17:08,Jonathan,"40MByte/s, glaube ich (weil AVR-Instruktionen ja 16 Bit breit sind afaik)"
+2017-05-01 17:17:18,MasterQ32,hmm
+2017-05-01 17:17:21,Jonathan,Und man kann 1 pro Takt ausführen
+2017-05-01 17:17:33,MasterQ32,"ja, der code wird aus Flash ausgeführt, aber Daten müssen ja im RAM liegen"
+2017-05-01 17:17:40,Jonathan,Klar :D
+2017-05-01 17:17:43,MasterQ32,"so ein system wird halt hauptsächlich nervig, weil speicherverwaltung"
+2017-05-01 17:17:49,Jonathan,Richtig
+2017-05-01 17:17:56,Jonathan,Aber von der Geschwindigkeit her ist das absolut kein Problem
+2017-05-01 17:18:02,MasterQ32,vorallem will man ja auch mehr oder weniger viel kram im ram haben während der bearbeitung
+2017-05-01 17:18:18,Jonathan,"Du müsstest halt immer die angezeigten Zeilen laden, und was nicht mehr angezeigt wird, wegspeichern"
+2017-05-01 17:18:28,MasterQ32,jop
+2017-05-01 17:18:39,Jonathan,"Falls es geändert wurde aber nur, du willst ja nicht den Flash töten :D"
+2017-05-01 17:18:46,MasterQ32,joop
+2017-05-01 17:19:00,Jonathan,Oder du nimmst nen ATMega8515 und klemmst 64kB SRAM dran ;)
+2017-05-01 17:19:05,MasterQ32,:D
+2017-05-01 17:19:06,Jonathan,Kannst ja ein battery backup machen
+2017-05-01 17:19:11,MasterQ32,aber ich werd das Projekt eh nich anfassen
+2017-05-01 17:22:59,MasterQ32,"was wäre denn ein einfaches Projekt, was ich machen könnte?"
+2017-05-01 17:23:15,MasterQ32,und vorallem nicht allzulange braucht
+2017-05-01 17:23:18,Jonathan,Power-LEDs steuern? :D
+2017-05-01 17:23:24,MasterQ32,also ne taschenlampe? :P
+2017-05-01 17:23:37,Jonathan,Zimmerbeleuchtung? :P
+2017-05-01 17:23:49,MasterQ32,die ist aber ganz hübsch grade :P
+2017-05-01 17:23:57,MasterQ32,"ne, wüsste ich grade gar nicht, wie ich das angehen sollte"
+2017-05-01 17:24:10,Jonathan,"Ich bastel momentan nen Wecker, der mit roten, gelben, warmweißen und kaltweißen LEDs nen Sonnenaufgang simuliert :P"
+2017-05-01 17:24:14,Jonathan,"Naja, PWM? :D"
+2017-05-01 17:24:22,MasterQ32,"ja gut, aber wie schalte ich die LEDs?"
+2017-05-01 17:24:29,Jonathan,KSQ-Stepdown
+2017-05-01 17:24:35,MasterQ32,KSQ? Stepdown?
+2017-05-01 17:24:48,Jonathan,"Ein Schaltwandler, der einen konstanten Strom als Ausgang hat :D"
+2017-05-01 17:25:06,Jonathan,"Alternativ Vorwiderstände, aber dann verbrätst du viel Leistung *g*"
+2017-05-01 21:18:20,dietzi,Guten Abend Gemeinde
+2017-05-01 21:19:04,dietzi,"Habe den Fehler gefunden..... Bitte erschlagt mich nicht.... ;) Ich habe den Index im Ringbuffer nicht zurück gesetzt nachdem er beim ""Ende"" war"
+2017-05-01 21:19:28,dietzi,if(next_tx >= 10) next_tx = 0;
+2017-05-01 21:19:28,dietzi,Problem gelöst.....
+2017-05-01 21:38:30,Svenska,re. und keiner mehr da. :/

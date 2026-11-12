@@ -1,0 +1,987 @@
+date/time,nick,message
+2009-08-04 00:04:37,SHyx0rmZ,"So, jetzt noch eben schnell nen paar Adressen fixen und mein Kernel ist auf GRUB umgestellt xD"
+2009-08-04 00:09:18,seaforce,funktioniert in tyndur die kommunikation der software mit dem treiber über interrupts?
+2009-08-04 00:11:39,seaforce,???
+2009-08-04 00:12:59,mgottschlag,ja.
+2009-08-04 00:13:00,mgottschlag,RPC halt
+2009-08-04 00:13:33,seaforce,"ah ok :) also kann ich sozusagen das treiber software interface über das ac97_interrupt_handle coden, wenn ich die cdi benutze?"
+2009-08-04 00:13:47,stultus,hm?
+2009-08-04 00:14:00,stultus,Das Treiber-Interface wird ja CDI-Bestandteil.
+2009-08-04 00:14:30,stultus,Und da wirds erst tyndur-spezifisch
+2009-08-04 00:14:36,seaforce,und das ist dann z.b. bei rtl8139:  static void rtl8139_handle_interrupt(struct cdi_device* device)
+2009-08-04 00:14:37,seaforce,?
+2009-08-04 00:14:42,stultus,Nö.
+2009-08-04 00:14:46,seaforce,schade
+2009-08-04 00:14:49,seaforce,was dasnn?
+2009-08-04 00:14:54,stultus,"Das ist ne Funktion die als Interrupthandler funktioniert, der bei CDI registriert wird."
+2009-08-04 00:15:30,stultus,"Kernel kriegt nen Interrupt rein, sieht das sich da was in CDI ne Funk dafür registriert hat, die Funk wird aufgerufen. Im Falle von rtl8139 ist das die."
+2009-08-04 00:15:41,stultus,Also da gehts wirklich mehr um hardware-Interrupts
+2009-08-04 00:16:10,seaforce,ah ok
+2009-08-04 00:16:34,seaforce,bei rtl ist mir da nicht klar wo das steht
+2009-08-04 00:20:04,seaforce,"stultus: ok, und wenn ich also nun meine ac97_interrupt_handle funktion bei cdi registriere, kann die nun auch von einem anwendungsprogramm aufgerufen werden?"
+2009-08-04 00:20:22,stultus,"theoretisch, ja"
+2009-08-04 00:20:30,stultus,"Praktisch, bitte bitte nicht machen. Dafür sind die Dinger nicht da"
+2009-08-04 00:20:40,seaforce,praktisch: wie sonnst?
+2009-08-04 00:21:51,stultus,Der Treiber ist soweit fertig dasser was spielt?
+2009-08-04 00:23:21,seaforce,"stultus: Nö, ich komm ehrlich gesagt gar nicht weiter. Ich hab alles so gemacht wie in der wiki (meine es zumindest), aber ich bemerke nichts, außer dass er den lautsprecher anschaltet"
+2009-08-04 00:23:29,seaforce,was sich in einem puh äußert
+2009-08-04 00:24:09,stultus,"Njo, dann bring ihn erstmal soweit was zu spielen ;)"
+2009-08-04 00:24:20,stultus,"fopen(""test.wav"",""r""); , und raus damit."
+2009-08-04 00:25:51,seaforce,"stultus: naja bisher hau ich das in die treiber init rein :), also keine wavedateien abspielen sondern ein buffer_text[i]=0x0222*(i%60);"
+2009-08-04 00:25:56,seaforce,in ner schleifer um die buffer zu füllen
+2009-08-04 00:26:15,seaforce,aber er macht nichts und mir ist nicht klar was schief läuft
+2009-08-04 00:26:27,stultus,"Njo, mit echten wav-daten sollte er auch klarkommen, das ist ja das übliche ;)"
+2009-08-04 00:26:41,stultus,An nem Interface basteln solange das nicht tut ist jedenfalls sinnlos
+2009-08-04 00:26:51,seaforce,mach ich auch noch: bis ich weiß: aha der kann sogar geräusche machen
+2009-08-04 00:27:10,seaforce,also wenn du lust hast schick ich dir nen tarball mit meinem code bisher und du kannst ja auch mal schauen wo was schiefläuft
+2009-08-04 00:28:06,stultus,"Ich hab von Sound auch KA, sry"
+2009-08-04 00:28:13,seaforce,:-/
+2009-08-04 00:28:23,stultus,"Am besten erfahrenere Entwickler fragen, und die, die es lauffähig haben ;)"
+2009-08-04 00:28:31,DerHartmut,"Ich glaub', ich schreib' nen Firewire-Treiber in Brainfuck."
+2009-08-04 00:28:33,DerHartmut,So nebenbei.
+2009-08-04 00:28:55,seaforce,mein braindump hat gerade ergeben: 0x00
+2009-08-04 00:32:21,stultus,Hm
+2009-08-04 00:32:31,stultus,"Dann würde ich mir doch sorgen machen, da sollte eigentlich mehr bei rauskommen ;)"
+2009-08-04 00:32:46,DickHuuhn,"stultus, mehrere TB 0x00?"
+2009-08-04 00:32:56,stultus,genau ;)
+2009-08-04 00:38:30,seaforce,"ich wollte damit ausdrücken, dass ich keine ahnung habe warum mein lautsprecher mich nur mit puh anredet :-("
+2009-08-04 00:51:59,stultus,Lädst du evtl. nur ein Sample?
+2009-08-04 00:52:13,stultus,"Falls ja, ist die Wiedergabe natürlich wirklich kurz ;)"
+2009-08-04 00:54:54,seaforce,Wie du meinen? ich allokiere speicher für den buffer momentan 0x10000 bytes weil ich 0x20000 bytes nicht bekomme und das 32 mal und physisch zusammenhängend pro buffer dann schreib ich die physikalischen adressen in die buffer descriptor list und übergebe die buffer descriptor list
+2009-08-04 01:00:38,stultus,0x10000 bytes -> sind das dann 64 kb?
+2009-08-04 01:00:51,seaforce,ja
+2009-08-04 01:01:01,seaforce,128kb solltens eigentlich pro buffer sein
+2009-08-04 01:01:22,seaforce,"dann hat man bei einem durchlauf aller buffer auf 44,1 kHz  23,8 sekunden spielzeit"
+2009-08-04 01:01:33,seaforce,und das macht bei 32 buffer 4mb speicher die benötigt werden
+2009-08-04 01:01:52,stultus,"Die Länge des Buffers ist aber auch richtig angegeben, oder?"
+2009-08-04 01:02:09,DickHuuhn,gn8
+2009-08-04 01:02:15,stultus,gn8 DickHuuhn
+2009-08-04 01:03:51,seaforce,in samples mit 0x7fff; weil 0x10000/2
+2009-08-04 01:04:15,seaforce,aber ich seh gerade die müsste gerade sein
+2009-08-04 01:04:19,stultus,jaaaa
+2009-08-04 01:04:21,stultus,;)
+2009-08-04 01:05:52,seaforce,nope das ist nicht der grund für s!lence
+2009-08-04 01:06:23,stultus,Andere Werte im Buffer?
+2009-08-04 01:06:30,seaforce,wie meinen?
+2009-08-04 01:06:44,seaforce,du meinst überall 0x00?
+2009-08-04 01:06:50,stultus,"Ne, eher mehr."
+2009-08-04 01:07:05,stultus,"Ich weiß nicht wie die Samples kodiert sind, aber das ist schon ne Art Frequenz, oder?"
+2009-08-04 01:07:24,stultus,Nicht das das was du ihm da an Daten lieferst schlichtergreifend zu tief ist und deswegen rausfällt...
+2009-08-04 01:07:59,stultus,"Hm, du testest normal mit qemu, oder?"
+2009-08-04 01:08:01,seaforce,ne die samples geben AFAIK nur die aktuelle elongation der der lautsprecher aus.
+2009-08-04 01:08:05,seaforce,qemu
+2009-08-04 01:08:19,stultus,Da die Optionen passen auch alle?
+2009-08-04 01:08:27,stultus,Hostsystem nicht ausversehen gemuted oder zu leise? ;)
+2009-08-04 01:08:41,seaforce,"jo die passen, mit denen hab ich myx...os zum laufen gebracht und das hatte sound"
+2009-08-04 01:08:43,seaforce,und der war auch laut
+2009-08-04 01:10:06,seaforce,so jetzt hab ich in kmix wirklich alle regler oben
+2009-08-04 01:11:16,seaforce,nö gemutet war nix
+2009-08-04 01:16:52,stultus,Njo
+2009-08-04 01:17:07,stultus,Morgen mal jemand drübersehen lassen ^^
+2009-08-04 01:17:14,stultus,Ich werd auch jetzt gleich
+2009-08-04 01:21:05,SHyx0rmZ,"Jemand ne Idee, warum in grub: device (fd0) /floppy nit klappt?"
+2009-08-04 01:21:20,stultus,"Hm, so, inner grub-shell?"
+2009-08-04 01:21:24,SHyx0rmZ,jo
+2009-08-04 01:21:28,stultus,was ist /floppy?
+2009-08-04 01:21:36,stultus,"Mit Sicherheit kein Image, oder? ;)"
+2009-08-04 01:21:43,SHyx0rmZ,ah
+2009-08-04 01:21:46,SHyx0rmZ,*facepalm*
+2009-08-04 01:22:20,SHyx0rmZ,Ich wollte device (fd0) /dev/sdd machen
+2009-08-04 01:22:23,SHyx0rmZ,Danke sehr ;-)
+2009-08-04 01:22:28,stultus,wtf?
+2009-08-04 01:22:30,stultus,Was hast du vor?
+2009-08-04 01:22:41,stultus,fd0 mit sdd sieht gefährlich aus
+2009-08-04 01:22:48,SHyx0rmZ,Quatsch
+2009-08-04 01:22:53,SHyx0rmZ,Ist ein USB-Laufwerk ;-)
+2009-08-04 01:23:04,stultus,Trotzdem ^^
+2009-08-04 01:23:11,SHyx0rmZ,Hat aber geklappt
+2009-08-04 01:24:57,stultus,"rofl, das is mal geil"
+2009-08-04 01:24:57,stultus,http://www.technobase.fm/news/10765-aus-14-mach-74-14-jaehrige-versucht-in-disco-zu-gelangen
+2009-08-04 01:25:37,SHyx0rmZ,rolf
+2009-08-04 01:27:45,stultus,"Naja, ich hau mich aufs Ohr"
+2009-08-04 01:27:48,stultus,Gute nacht ^^
+2009-08-04 01:28:18,mgottschlag,die meisten comments da finde ich btw noch ärmer *g*
+2009-08-04 01:28:27,mgottschlag,"ich auch, gn8"
+2009-08-04 01:28:33,DerHartmut,gn8
+2009-08-04 01:30:13,SHyx0rmZ,Hat hier schonma jemand GRUB ohne ELF benutzt?
+2009-08-04 01:31:13,SHyx0rmZ,"Ich wunder mich die ganze Zeit, welcher Wert wohl der richtige für load_addr sein könnte"
+2009-08-04 01:55:33,DerHartmut,"Jut, begebe mich dann mal ins Bett"
+2009-08-04 01:55:39,DerHartmut,°/ 
+2009-08-04 02:12:23,JanDing,JD to da rescue
+2009-08-04 02:30:22,SHyx0rmZ,"So, ich bin denn au ma pennen"
+2009-08-04 02:30:25,SHyx0rmZ,gn8
+2009-08-04 02:33:22,JanDing,gn8
+2009-08-04 10:02:25,_seeker_,hey
+2009-08-04 10:02:46,Homix,hi
+2009-08-04 10:10:37,XanClic,"moin, _seeker_"
+2009-08-04 10:13:45,SHyx0rmZ,Moin
+2009-08-04 10:14:04,XanClic,"moin, SHyx0rmZ"
+2009-08-04 10:22:43,taljeth,Góðan daginn
+2009-08-04 10:22:58,FreakyPenguin,So langsam fallen sie alles aus dem Bett ;-)
+2009-08-04 10:22:58,XanClic,"moin, taljeth"
+2009-08-04 10:23:00,JanDing,moinsen
+2009-08-04 10:23:06,FreakyPenguin,"Moin taljeth, JanDing "
+2009-08-04 10:23:08,XanClic,"moin, JanDing"
+2009-08-04 10:23:12,SHyx0rmZ,"moin taljeth, JanDing"
+2009-08-04 10:23:21,JanDing,ja ich hab mal bei allen durchgeklingelt
+2009-08-04 10:23:22,taljeth,FreakyPenguin: Das ist JanDing
+2009-08-04 10:23:28,JanDing,"kann ja nich sein, dass ihr länger schlaft als ich"
+2009-08-04 11:28:50,SHyx0rmZ,"Kann es sein, dass bochs und qemu VGA nicht vollständig emulieren?"
+2009-08-04 11:28:56,XanClic,Inwiefern?
+2009-08-04 11:29:07,SHyx0rmZ,Ich versuche den Cursor zu ändern
+2009-08-04 11:29:13,SHyx0rmZ,Aber da ändert sich nix
+2009-08-04 11:29:14,XanClic,Das können sie
+2009-08-04 11:29:25,SHyx0rmZ,Auch über die Ports?
+2009-08-04 11:29:28,XanClic,"Der Cursor hat die Vordergrundfarbe, denk dran"
+2009-08-04 11:29:42,SHyx0rmZ,Ich will den Cursor unsichtbar machen ><
+2009-08-04 11:29:49,XanClic,Ach so
+2009-08-04 11:30:02,XanClic,"Ich dachte, du meinst die Position ;-)"
+2009-08-04 11:30:12,SHyx0rmZ,Nope ;-)
+2009-08-04 11:31:26,SHyx0rmZ,"Hm, da muss wohl mein Code falsch sein, auf der Hardware gehts auch nicht"
+2009-08-04 11:32:05,SHyx0rmZ,http://nopaste.euirc.net/index.php?id=62c2140df5
+2009-08-04 11:32:21,taljeth,Aber immer erst den Emulator verdächtigen...
+2009-08-04 11:32:28,SHyx0rmZ,taljeth: Natürlich :D
+2009-08-04 11:33:13,XanClic,"Ist das korrekt, dass du bei al&1 0x3CC+0x3D4 als Port nimmst?"
+2009-08-04 11:33:22,XanClic,"sry, bei !(al&1)"
+2009-08-04 11:33:51,SHyx0rmZ,Uppala
+2009-08-04 11:33:54,SHyx0rmZ,"Nein, danke"
+2009-08-04 11:34:01,SHyx0rmZ,und das 3d4 muss ein 3b4 sein
+2009-08-04 11:34:47,SHyx0rmZ,"Hrm, geht immer noch nit..."
+2009-08-04 11:34:57,SHyx0rmZ,Dann bin ich wohl zu blöd für VGA ><
+2009-08-04 11:35:16,FreakyPenguin,Kann man nichts machen
+2009-08-04 11:35:51,JanDing,wasn des fürn assembler stil o_O
+2009-08-04 11:36:29,SHyx0rmZ,Ich muss doch den Index an CRCT-Index senden?
+2009-08-04 11:38:53,SHyx0rmZ,"So früh am Morgen, und schon so ein Mist T_T"
+2009-08-04 11:40:41,SHyx0rmZ,"Ok, dann muss der Cursor wohl bleiben ><"
+2009-08-04 11:41:08,JanDing,du kannst den cursor einfach aus dem bildschirm rausschieben
+2009-08-04 11:41:29,SHyx0rmZ,Das wäre natürlich auch ne Idee...
+2009-08-04 11:43:44,SHyx0rmZ,"Ah, schon gut"
+2009-08-04 11:43:56,SHyx0rmZ,Auf dem Laptop funktioniert es jetzt
+2009-08-04 11:44:05,SHyx0rmZ,Dann unterstützen bochs und qemu das wohl nicht
+2009-08-04 12:53:27,taljeth,Jidder: Was tut denn an den Debugregistern in qemu nicht? Theoretisch sind die unterstützt
+2009-08-04 13:07:52,Jidder,die breakpoints lösen nicht aus
+2009-08-04 13:09:21,taljeth,"Hm, mal den Patch anschauen. Eigentlich ist das im November reingekommen, sollte also in der 0.10 drin sein"
+2009-08-04 13:10:00,Jidder,ups ich hab 0.9.1 ...
+2009-08-04 13:10:19,taljeth,"Ah, das erklärt's"
+2009-08-04 13:10:25,taljeth,Kannst du mal mit was aktuellerem versuchen?
+2009-08-04 13:10:31,Jidder,jo
+2009-08-04 13:12:42,Jidder,"hm ich frage mich, was ich dann getan habe, als ich versucht habe qemu zu updaten ..."
+2009-08-04 13:13:54,FreakyPenguin,*g*
+2009-08-04 13:20:47,seaforce,Hallo alle zusammen
+2009-08-04 13:20:57,XanClic,"Moin moin, seaforce"
+2009-08-04 13:21:42,seaforce,"XanClic: Ich mach mal nen tarball aus dem ac97 code, du kannst wohl mit am besten sagen, wo ich den shice gebaut habe"
+2009-08-04 13:21:53,XanClic,Wenn du meinst
+2009-08-04 13:23:57,seaforce,taljeth: reicht das wenn ich den Tarball an die mailingliste schicke?
+2009-08-04 13:24:13,taljeth,"Wenn er nicht zu groß wird, okay"
+2009-08-04 13:25:00,taljeth,"Aber ansonsten, das normale Mittel zur Kommunikation auf der ML sind Patches"
+2009-08-04 13:25:59,ch100,hi
+2009-08-04 13:26:04,XanClic,"moin, ch100"
+2009-08-04 13:26:08,ch100,wie gehts?
+2009-08-04 13:28:02,ch100,"wisst was?, mein neuer ""((neben)(job))"" macht spass, im i-cafe musste heute nen pc namen ändern und ein netzwerkkabel tauschen, gestern gabs bisschen mehr ^^"
+2009-08-04 13:29:12,seaforce,naja ich möcht euch meinen code lieber nicht als patch vorstellen
+2009-08-04 13:29:24,seaforce,ch100: lol
+2009-08-04 13:29:33,seaforce,ch100: klingt sehr anspruchsvoll für nen osdever
+2009-08-04 13:29:41,ch100,"naja, ich weiss"
+2009-08-04 13:29:52,ch100,man(n) tut was man(n) kann
+2009-08-04 13:30:10,ch100,oder besser gesagt mann tut was frau nicht kann xD
+2009-08-04 13:30:27,XanClic,*g*
+2009-08-04 13:31:51,SHyx0rmZ,Funktioniert das Vesa-Modul oder ist das kaputt?
+2009-08-04 13:38:12,seaforce,"taljeth: 4,6kb .tar.gz? zu groß*"
+2009-08-04 13:38:13,seaforce,???
+2009-08-04 13:39:02,taljeth,"Nein, das ist schon okay"
+2009-08-04 13:40:11,Jidder,also ich krieg qemu 0.10.5 bloß dazu abzustürzen -.-
+2009-08-04 13:40:32,Jidder,aber immerhin sind in den registerdumps korrekte werde für die debug register angegeben
+2009-08-04 13:41:05,taljeth,Das ist natürlich schade *g*
+2009-08-04 13:41:21,Jidder,"wenn man interrupts loggt bedeutet ""     0: v=21 ..."" <-- dass da der interrupt 21h ausgelöst wurde?"
+2009-08-04 13:41:29,taljeth,Jo
+2009-08-04 13:41:37,Jidder,das is irgendwie noch ungünstiger
+2009-08-04 13:41:42,taljeth,Weil?
+2009-08-04 13:42:39,Jidder,"naja wenn ich nicht auf tasten drücke, sind 10 irqs vom keyboard schon viel"
+2009-08-04 13:42:53,taljeth,"Hm, das stimmt allerdings"
+2009-08-04 13:42:59,Jidder,jetzt wirds noch lustiger. jetzt mag mich nicht mal grub mehr
+2009-08-04 13:43:08,ch100,rofl
+2009-08-04 13:47:42,Jidder,"hm joar sowohl selbstkompiliert, als auch der qemu aus dem wiki werden irgendwie durch meinen testkernel zerlegt"
+2009-08-04 13:48:00,seaforce,lol meine .tar.gz wurde genau um 13:37 (ungeplant) erstellt
+2009-08-04 13:48:37,seaforce,so email an mailing liste geschickt
+2009-08-04 13:49:34,seaforce,XanClic [~arsch@euirc-dc539928.dip.t-dialin.net]  LOOOOL
+2009-08-04 13:51:34,ch100,"und wisst was, meine anwesenheit im i-cafe nervt mich tierisch, buchstäblich sogar, jedes mal kommen die selben 2 fliegen zu mir, und ich will/kann die nicht erschlagen, weil ich sonst ein radau veranstalten würde; lol hr. arsch von switch reloaded xD"
+2009-08-04 13:52:48,seaforce,"ch100: genozid, äh ich meine insektizid"
+2009-08-04 13:55:30,ch100,zu genozid: fliegen zählen für mich nicht als volk ^^
+2009-08-04 13:55:42,ch100,wikipedia hilft
+2009-08-04 14:10:00,seaforce,und hat schon jemand was kaputtes gefunden?
+2009-08-04 14:10:29,XanClic,"seaforce: So nebenbei, wenn ""cdi_inw(codec->nambar+NAM_EXT_AUDIO_ID)&0x01"", dann kann man die Samplerate einstellen - ist das nicht der Fall, dann liegt sie fix bei 48 kHz"
+2009-08-04 14:10:48,seaforce,ah ok thx
+2009-08-04 14:10:58,seaforce,ich hab mich gewundert
+2009-08-04 14:13:20,XanClic,"'DEBUG_MSG(""Buffer fuettern."");/*Zuviele Debugausgaben*/' <- find ich ja sehr schön *g*"
+2009-08-04 14:13:58,XanClic,"Und die maximale Länge eines Buffers ist nicht 0x7FFE, sondern 0xFFFE"
+2009-08-04 14:14:51,XanClic,"Ah, du kannst ja nur 0x10000 allokieren/allozieren, dann OK."
+2009-08-04 14:17:29,XanClic,"Jo, ich glaub, ich hab was gefunden..."
+2009-08-04 14:17:55,XanClic,"Hier: ""cdi_alloc_phys_mem(32*sizeof(buf),(void **)&codec->buffer_list,&paddr_buf_lst)"" trägst du die physische Adresse der Bufferliste in paddr_buf_lst ein"
+2009-08-04 14:18:20,XanClic,"Aber hier: ""cdi_outl(codec->nabmbar+NABM_POBDBAR,(uint32_t)codec->paddr_buf_list);"" liest du sie aus codec->paddr_buf_list"
+2009-08-04 14:18:49,XanClic,"Und ich habe (bis jetzt) noch nicht die Stelle gefunden, an der du codec->paddr_buf_list auf paddr_buf_lst setzt"
+2009-08-04 14:20:51,seaforce,ah ok ich werds mal probieren
+2009-08-04 14:25:03,DerHartmut,Moin moin zusammen
+2009-08-04 14:25:09,seaforce,DerHartmut: moin
+2009-08-04 14:25:19,seaforce,"XanClic: berechtigte Anmerkung, aber ich höre immer noch nix"
+2009-08-04 14:25:53,seaforce,Aber ich bekomme von qemu solche nachrichten wie: audio: Failed to create voice `ac97.po' 
+2009-08-04 14:26:13,seaforce,oder: oss: Could not initialize DAC
+2009-08-04 14:27:06,seaforce,wobei diese qemu nachrichten wirklich nicht gut klingen
+2009-08-04 14:27:20,XanClic,Das hat nix mit týndur zu tun
+2009-08-04 14:27:29,seaforce,jo aber es ist komisch
+2009-08-04 14:27:31,XanClic,Das ist eher ein Problem von Linux bzw. ALSA etc.
+2009-08-04 14:27:40,XanClic,"Mach mal ""alsaconf"" als root"
+2009-08-04 14:27:58,seaforce,alsaconf not found
+2009-08-04 14:28:09,XanClic,Als root
+2009-08-04 14:28:10,XanClic,nicht sudo
+2009-08-04 14:28:22,seaforce,ich bin unter ubuntu ich hab keinen root
+2009-08-04 14:28:23,XanClic,"Sondern richtig ""su"" und dann ""alsaconf"""
+2009-08-04 14:28:33,XanClic,"Dann mach ""sudo bash"""
+2009-08-04 14:28:54,seaforce,"es gibt kein alsaconf :), höchstens alsactl"
+2009-08-04 14:29:11,XanClic,"Hm, hab hier nur openSUSE ;-)"
+2009-08-04 14:29:37,XanClic,"Versuch mal ""alsactl init"", das klingt gut *g*"
+2009-08-04 14:29:39,DerHartmut,sudo apt-get install alsaconf
+2009-08-04 14:29:52,seaforce,DerHartmut: auch schon probiert :) gibts auch nich
+2009-08-04 14:30:24,seaforce,"ausgabe: Unknown hardware: ""ICH4"" ""SigmaTel STAC9750,51"" ""AC97a:83847650"" Hardware is initialized using a guess method"
+2009-08-04 14:30:33,seaforce,aba mal schauen obs hilft :)
+2009-08-04 14:30:51,FreakyPenguin,Also unter gentoo ist alsoconf in alsa-utils oder so
+2009-08-04 14:31:27,seaforce,FreakyPenguin: hab ich aber laut aptitude schon installiert
+2009-08-04 14:32:12,seaforce,XanClic: juhu ES GIBT TÖNE AUS
+2009-08-04 14:32:21,seaforce,XanClic: und das ist kein FAKE :)
+2009-08-04 14:32:24,XanClic,Freut mich ^^
+2009-08-04 14:32:30,seaforce,was für ein mieser kleiner fehler :)
+2009-08-04 14:32:40,mgottschlag,echte HW? *g*
+2009-08-04 14:33:10,mgottschlag,"aso, qemu"
+2009-08-04 14:36:27,seaforce,aba iwie kann ich die lautstärke noch nicht einstellen; das scheint mir iwie fast auf voller zu sein :)
+2009-08-04 14:41:35,DerHartmut,Mein Kernel wirft keine Exceptions.
+2009-08-04 14:41:38,DerHartmut,"Ich weiß, was ganz neues."
+2009-08-04 14:41:53,XanClic,"Mein Kernel macht nur Mist. Ich weiß, auch was ganz neues. *g*"
+2009-08-04 14:44:41,DerHartmut,"Ach, ich erfind einfach ne neue Kernel-Art: ""NoE-Kernel"", ein Kernel, der keine Exceptions auslöst. Ich glaub', ich schreib da mal nen WIki-Artikel zu..."
+2009-08-04 14:44:42,DerHartmut,*g*
+2009-08-04 14:44:53,XanClic,*G* klingt gut
+2009-08-04 14:46:52,DerHartmut,"Ach, mal an die Macher von tyndur: Wenn kernel2 zum Standardkernel bei der 0.3.0 wird, wird kernel1 noch enthalten sein oder in der Versenkung verschwinden?"
+2009-08-04 15:01:59,DerHartmut,Stille
+2009-08-04 15:11:30,PopUp,brb
+2009-08-04 15:15:34,SHyx0rmZ,"Gibts hier irgendwen (== Linuxuser), bei dem das hier nichts ausgibt?:      cat /etc/fstab | egrep "".*1$"""
+2009-08-04 15:16:04,XanClic,Mich meinst du damit nicht
+2009-08-04 15:16:45,seaforce,Also bei mir gibt das was aus
+2009-08-04 15:17:27,SHyx0rmZ,Dann scheint es ja einigermaßen zu funktionieren :)
+2009-08-04 15:17:54,Jidder,bei mir gibts nix aus
+2009-08-04 15:18:53,SHyx0rmZ,"Hm, welche Distro benutzt du, Jidder?"
+2009-08-04 15:18:59,Jidder,allerdings ein vserver
+2009-08-04 15:19:00,Jidder,debian
+2009-08-04 15:19:23,SHyx0rmZ,"Hm, ich nehme an das ist akzeptabel"
+2009-08-04 15:19:31,SHyx0rmZ,Ist eh nur für Ubuntu gedacht ><
+2009-08-04 15:19:42,XanClic,Ich hab btw openSUSE
+2009-08-04 15:19:44,Jidder,was soll das denn anzeigen
+2009-08-04 15:20:37,SHyx0rmZ,"Jidder: Sobald man da noch n | head -n 1 dranhängt, die Bootpartition"
+2009-08-04 15:20:49,Jidder,achso
+2009-08-04 15:20:50,SHyx0rmZ,Zwecks Bestimmung der uuid ><
+2009-08-04 15:21:00,Jidder,hm weiß nicht ob mein server sowas wie eine bootpartition hat^^
+2009-08-04 15:21:12,SHyx0rmZ,"Sollte eigentlich, weil sonst kann er ja nicht booten, oder? xD"
+2009-08-04 15:21:27,Jidder,wer weiß wie dieser virtuozzo mist funktioniert
+2009-08-04 15:26:53,SHyx0rmZ,"Oh Mensch, wenn ich mir so ansehe, was ich in den letzten paar Tagen für bash-Zeilen geschrieben habe, bekomme ich fast das Gefühl, dass man damit sogar ein OS schreiben könnte"
+2009-08-04 15:28:28,SHyx0rmZ,http://pastebin.org/6432
+2009-08-04 15:28:29,SHyx0rmZ,><
+2009-08-04 15:39:22,Homix2nd,"hm POSIX funktionen wie ""unlink"" oder ""setmode"" sind für Windows in anderen headers als für z.B. unix???"
+2009-08-04 15:44:05,XanClic,"Hm, wie stelle ich bei QEMU um, dass strg+alt+X so ein Zeug wie den Monitor aufruft? Ich fände es nämlich toll, wenn mein OS das auswerten dürfte..."
+2009-08-04 15:47:49,DerHartmut,Homix: Windows ist glaub ich zum Teil POSIX-kompatibel
+2009-08-04 15:47:56,DerHartmut,Wimre.
+2009-08-04 15:48:50,mgottschlag,nur mit interix oder wie das ding ma hieß (heißt jetzt iwie anders)
+2009-08-04 15:48:59,mgottschlag,oder halt cygwin
+2009-08-04 15:49:14,mgottschlag,abre man braucht grundsätzlich ein zusätzliches subsystem oder halt n Layer auf der WinAPI.
+2009-08-04 15:51:10,Homix,mich hats nur gewundert wieso so funktionen wie setmode oder unlink nicht in der unistd.h sondern in einer io.h sind ;)
+2009-08-04 16:15:02,SHyx0rmZ,Ich versuche gerade qultics auf nem 64-Bit System zu bauen
+2009-08-04 16:15:26,SHyx0rmZ,"Aber mein ld meckert rum, auch wenn ich ins linker-script OUTPUT_FORMAT(elf32-i386) schreibe"
+2009-08-04 16:15:35,SHyx0rmZ,Jemand ne Ahnung woran das liegen könnte?
+2009-08-04 16:15:40,FreakyPenguin,Dann mach halt ein -m32 in die CFLAGS
+2009-08-04 16:16:14,DerHartmut,SChon dabei
+2009-08-04 16:16:28,SHyx0rmZ,Ist
+2009-08-04 16:16:32,SHyx0rmZ,ABer ich hab die Lösung
+2009-08-04 16:16:36,SHyx0rmZ,Glaub ich zumindest
+2009-08-04 16:17:37,taljeth,Reh
+2009-08-04 16:17:46,XanClic,Wehbeh
+2009-08-04 16:18:07,taljeth,"XanClic: Im Monitor sendkey ctrl-alt-2, wenn du das an dein OS senden willst"
+2009-08-04 16:18:15,XanClic,"Ah, thx"
+2009-08-04 16:18:37,taljeth,DerHartmut: kernel1 ist dann eher nicht mehr dabei
+2009-08-04 16:19:09,XanClic,"taljeth: Hm, bringt nur nix, wird strg+alt+1 gesendet, wenn ich das drücke, um mein OS anzuzeigen?"
+2009-08-04 16:19:55,taljeth,Das geht immer an qemu
+2009-08-04 16:20:09,taljeth,"Wenn es an dein OS soll, machst du halt sendkey im Monitor"
+2009-08-04 16:20:11,XanClic,"Ah, ich hab das sendkey überlesen"
+2009-08-04 16:20:27,XanClic,"geht doch, danke nochmal"
+2009-08-04 16:26:45,DerHartmut,"taljeth: Geht der dann in die Versenkung, wird eine Doku-Reihe im Fernsehen gebracht oder einfach in die Archive getan?"
+2009-08-04 16:27:03,XanClic,"Au ja, Dokuathon"
+2009-08-04 16:27:23,DerHartmut,"Dafür sind wir nicht zuständg XanClic, das machen die öfftenlicht-rechtlichen."
+2009-08-04 16:27:28,DerHartmut,-t
+2009-08-04 16:27:35,XanClic,+i
+2009-08-04 16:28:01,DerHartmut,"Dafür sind wir nicht zuständig XanClic, das machen die Öffentlich-Rechtlichen-Fernsehsender"
+2009-08-04 16:28:05,DerHartmut,So ist's richtig :D
+2009-08-04 16:28:22,DerHartmut,"d.h. nein, der Terminus ""Öffentlich-Rechtlichen-Fernsehsender"" ist falsch"
+2009-08-04 16:28:23,XanClic,"""Öffentlich-Rechtlichen-Fernsehsender"" sieht IMO nicht so richtig aus ;-)"
+2009-08-04 16:28:35,DerHartmut,öffentlich-rechtliche Fernsehsender
+2009-08-04 16:47:32,naeg,howdy
+2009-08-04 16:47:41,DerHartmut,Jiha
+2009-08-04 16:47:44,DerHartmut,und moin naeg 
+2009-08-04 16:47:46,XanClic,Yahoo!
+2009-08-04 16:47:53,DerHartmut,Google!
+2009-08-04 16:50:30,SHyx0rmZ,moin naeg
+2009-08-04 17:16:55,DerHartmut,RE
+2009-08-04 17:17:07,XanClic,"WB, DERHARTMUT</caps>"
+2009-08-04 17:17:24,DerHartmut,"Captain Capslock, die alte Wurst ey"
+2009-08-04 17:18:02,XanClic,"Ist der so dick (""Wurst""), weil er hier so faul ist? Evtl. sollten wir ihm ja mal ein bisschen was zu tun geben *g*"
+2009-08-04 17:19:12,DerHartmut,"Aiai, Herr Capitän"
+2009-08-04 17:20:40,|seaforce|,1. Putz den gang mit deiner Zahnbürste.
+2009-08-04 17:20:47,|seaforce|,2. Putz dir die Zähne.
+2009-08-04 17:20:52,|seaforce|,3. Gehe zu 1.
+2009-08-04 17:21:04,|seaforce|,was geschieht nur ständig mit meinem nick ...
+2009-08-04 17:21:09,XanClic,*g*
+2009-08-04 17:21:23,DerHartmut,?
+2009-08-04 17:21:27,XanClic,"Du meinst, dein böser Bruder hat deinen Nick übernommen?"
+2009-08-04 17:21:50,seaforce,"Ich meine mein böser bruder den ich iwo verbuddelt hat, hat seltsamste kräfte"
+2009-08-04 17:22:43,DerHartmut,"Jut, ich bin dann mal paar stündchen wieder weg man sieht sich heute Abend"
+2009-08-04 17:22:50,DerHartmut,Und dann wird Stimmung gemacht!
+2009-08-04 17:23:01,DerHartmut,o/ 
+2009-08-04 17:23:02,seaforce,antifussball
+2009-08-04 17:23:09,seaforce,kurz: antifu
+2009-08-04 17:23:15,DerHartmut,"Fussball ist mir egal, nur die Fortuna nicht ;)"
+2009-08-04 17:23:19,DerHartmut,"SO, bis denen"
+2009-08-04 17:23:25,seaforce,dann halt antifo
+2009-08-04 17:59:15,naeg,"neeeein, und wieder glibc kompilieren -.-"
+2009-08-04 18:00:26,taljeth,Hauptsache es macht Spaß :-)
+2009-08-04 18:00:48,SHyx0rmZ,*g*
+2009-08-04 18:01:46,naeg,"naja 2 stunden lang laggt mein pc zimlich, so spaß macht das nicht"
+2009-08-04 18:02:22,taljeth,"Na, wenn's keinen Spaß machen würdest, würdest du die glibc doch nicht selbst kompilieren"
+2009-08-04 18:02:22,XanClic,"Wann wird die glibc eigentlich endlich auf týndur portiert, wo wir schon dabei sind? *g*"
+2009-08-04 18:02:35,taljeth,Sobald du es machst *g*
+2009-08-04 18:02:45,XanClic,Also nie. Schade. xD
+2009-08-04 18:04:43,taljeth,"seaforce: Das mit der Mail hat sich jetzt erledigt, oder? ;-)"
+2009-08-04 18:04:48,naeg,"taljeth, ich mach es nur weil ich kleine änderungen gemacht habe, und niemand anders da ist der das jetzt kompilieren könnte"
+2009-08-04 18:05:06,taljeth,"Oh, du patchst deine glibc?"
+2009-08-04 18:05:12,taljeth,FreakyPenguin: Von dem kannst du dir noch was abschauen *g*
+2009-08-04 18:05:19,seaforce,taljeth: du kannst gerne mal drüber schauen und mal gucken ob du rausfindest warum ich die lautstärke nicht variieren kann :)
+2009-08-04 18:05:19,naeg,"""meine"" ist für den archlinux arm port"
+2009-08-04 18:05:55,taljeth,"seaforce: Ich hab doch keine Ahnung von der Hardware, aber anschauen kann ich's schon mal"
+2009-08-04 18:06:31,seaforce,"joa wenn du dich fragst warum ich paddr_buf_lst nicht in paddr_buf_list schreibe, dann war dass der grund warum ich 0 zu hören bekam :)"
+2009-08-04 18:07:04,Homix,"dafür war doch ""int volume;"" im code vom wiki?"
+2009-08-04 18:07:56,Homix,"in meinem treiber tut das prima, aber ich wage mich zu erinnern, dass die lautstärke da auch nicht stufenlos ging (vom emulator), aber zwischen 0 und 63 war doch ein gehöriger unterschied :D"
+2009-08-04 18:08:49,seaforce,Homix: Achso? hmm naja ich hab jetzt von 0x05 bix 0x35 geregelt und keine nunterschied bemerkt
+2009-08-04 18:09:04,seaforce,Homix: ich probiers mal aus
+2009-08-04 18:09:19,taljeth,"seaforce: Heh, ungefähr das hatte ich gestern auch. Die ganze PCI-Strukturen vorbereitet, aber vergessen in die Liste einzutragen."
+2009-08-04 18:11:04,taljeth,Also einen Schönheitswettbewerb gewinnst du mit diesem Code nicht *g*
+2009-08-04 18:12:30,Homix,"die main.c hat einen kommentar, und der ist dann auch noch so wichtig :) ""/* EOF */"" :)"
+2009-08-04 18:12:48,taljeth,*hehe*
+2009-08-04 18:12:51,Homix,"ah ne, da steht noch irgendwo ""// Initialisierung"" ;)"
+2009-08-04 18:13:08,taljeth,"Daß die Datei dort zu Ende ist, hätte ich ohne Kommentar sicher nicht gemerkt :-)"
+2009-08-04 18:13:49,seaforce,taljeth: deswegen wollt ich euch keinen patch schicken :)
+2009-08-04 18:14:02,seaforce,aber EOF schreib ich eig immer drunter wenns fertig wird :)
+2009-08-04 18:15:52,seaforce,ach btw: ich hab ja in ac97.c die warheit verkündet: /*BTW: This Code sucks ass!*/
+2009-08-04 18:17:53,seaforce,Homix: also mit volume von 0x00 bis 0xff hatte ich jetzt keinen unterschied bemerkt
+2009-08-04 18:17:55,taljeth,"Ah, stimmt, noch gar nicht gesehen *g*"
+2009-08-04 18:18:05,taljeth,Geht doch gar nicht bis 0xff?
+2009-08-04 18:18:16,seaforce,joa aber 63 hat ich auch ausprobiert
+2009-08-04 18:19:49,seaforce,"ich hab das gefühl, dass es einfach nicht übernommen/emuliert wird?"
+2009-08-04 18:20:06,seaforce,ich meine wenn ich myxomycota (oder so) teste ist es auch normal schon extrem laut
+2009-08-04 18:20:24,seaforce,aber da sagt er mir ja auch vol. auf 100%
+2009-08-04 18:20:25,XanClic,"Na ja, das benutzt einfach die volle Lautstärke"
+2009-08-04 18:20:37,taljeth,Ich schau nachher mal genauer
+2009-08-04 18:20:40,taljeth,Erstmal essen ;-)
+2009-08-04 18:20:50,seaforce,guten appetit
+2009-08-04 18:20:54,taljeth,Also genauer = auch im qemu-Code
+2009-08-04 18:24:54,XanClic,"Hm, im qemu-Code steht ""#define VOL_MASK 0x1f"", also geht das Volume anscheinend nur bis 0x1F..."
+2009-08-04 18:28:22,XanClic,"Und - so, wie es für mich aussieht - wird eine Lautstärkenänderung dann unterstützt, wenn USE_MIXER definiert ist"
+2009-08-04 18:30:11,XanClic,"Diese Konstante tritt offenbar aber nur in ac97.c auf, daher wird sie nicht definiert sein"
+2009-08-04 18:30:52,XanClic,"Und ac97.c ist von VirtualBox entnommen (""This file is part of VirtualBox Open Source Edition""), daher könnte ich mir vorstellen, dass es evtl. dort funktioniert"
+2009-08-04 18:33:39,Homix,"jap dann war das in VirtualBox, irgendwo wurde die lautstärke emuliert"
+2009-08-04 18:49:53,bluecode,moin
+2009-08-04 18:54:37,seaforce,XanClic: kannst du mich einweihen was im qemu Code steht? Meint ihr die qemu source?
+2009-08-04 18:54:47,XanClic,Jo
+2009-08-04 18:54:59,XanClic,Also ich zumindest ;-)
+2009-08-04 18:55:03,XanClic,"moin, bluecode"
+2009-08-04 18:55:22,seaforce,"Das heißt, wenn ich es mit virtual box teste kann es funktionieren?"
+2009-08-04 18:55:30,XanClic,"Könnte, ja"
+2009-08-04 19:33:05,taljeth,XanClic: Das klingt aber nach qemu-Bug
+2009-08-04 19:33:15,XanClic,Warum?
+2009-08-04 19:33:40,XanClic,"Es gibt keinen Mixer, also ist USE_MIXER nicht definiert - also werden die Mixerfunktionen nicht benutzt"
+2009-08-04 19:33:53,FreakyPenguin,"Weil taljeth den eingeführt hat, deshalb weiss er das ;-)"
+2009-08-04 19:34:08,XanClic,Da fehlt dann aber sein //FIXME *g*
+2009-08-04 19:34:13,taljeth,Wart mal...
+2009-08-04 19:34:24,taljeth,"Das kann ich mir kaum vorstellen, daß das gar nicht geht"
+2009-08-04 19:34:33,taljeth,Was ich meinte ist die Behandlung von Werten > 0x1f
+2009-08-04 19:34:41,XanClic,Ach so
+2009-08-04 19:34:48,XanClic,Na die werden rausgeANDet
+2009-08-04 19:35:17,taljeth,Und das ist nicht erlaubt
+2009-08-04 19:35:40,XanClic,"Ich dachte, du kennst dich mit der Hardware nicht aus? ;-)"
+2009-08-04 19:36:00,taljeth,Aber ich kann lesen ;-)
+2009-08-04 19:37:30,SHyx0rmZ,"Juhu, so langsam läuft Nuke endlich nach dem Wechsel auf Multiboot (Wenn man mal davon absieht, dass es immer noch Triple-faultet)"
+2009-08-04 19:38:27,taljeth,"Hm, aber stimmt, der Code mit USE_MIXER sieht sehr tot aus"
+2009-08-04 19:47:08,XanClic,"32-bit-Code wird nicht auf 32-bit-Grenzen ausgerichtet, oder?"
+2009-08-04 19:47:27,XanClic,"Code wird gar nicht ausgerichtet, oder?"
+2009-08-04 19:47:36,XanClic,"Der Beginn schon, klar, aber ich meine den Rest..."
+2009-08-04 19:48:51,Homix,ne wird nicht ausgerichtet
+2009-08-04 19:48:56,XanClic,Jo
+2009-08-04 19:49:02,Homix,bringt ja auch ned viel ;)
+2009-08-04 19:49:23,XanClic,Und wer hat sich überhaupt diese Scheiße ausgedacht in der OSDev-Wiki mit dem Ausführen des VBE-Codes im ProtectedMode?
+2009-08-04 19:49:34,XanClic,Korrektur: IMO Scheiße
+2009-08-04 19:56:13,bluecode,Homix: kommt sehr drauf an
+2009-08-04 19:57:37,Homix,"ich denke schon, das das meistens so ist ;)"
+2009-08-04 19:57:38,bluecode,zumindest bei loops und funktionen wird es gemacht
+2009-08-04 19:58:01,XanClic,"Aber wenn dann mit nop und nicht mit 0x00, oder?"
+2009-08-04 19:58:21,bluecode,beim funktionsbeginn wäre es egal
+2009-08-04 19:58:25,XanClic,"Denn Zitat osdev.org: ""If the problem is that the code may be in 16bit, with 16 bit alignment, then it can be easily solved by simply copying two bytes at a time, and inserting 2 NULL bytes after each two code bytes."""
+2009-08-04 19:58:28,bluecode,aber wird auch mit nops gemacht
+2009-08-04 19:58:29,Homix,"entweder nop oder ein jmp +2 oder sowas in der art, wenn es sich um eine schleife handelt"
+2009-08-04 19:58:52,XanClic,Und das (Zitat) klingt für mich nach Unsinn
+2009-08-04 19:58:59,stultus,moin
+2009-08-04 19:59:03,XanClic,"moin, stultus"
+2009-08-04 19:59:08,bluecode,"ich würde schätzen die meinen bei adressen, einfach 16bit 0ler anhängen"
+2009-08-04 19:59:21,XanClic,OK
+2009-08-04 19:59:27,bluecode,trotzdem: virtual-8086-mode fdS
+2009-08-04 19:59:43,XanClic,"Aber man kann trotzdem keinen 16-Bit-Code im PM ausführen (ohne VM86), nä?"
+2009-08-04 20:00:01,bluecode,jein
+2009-08-04 20:00:11,Homix,dafür ist der vm86 mode ja da ;)
+2009-08-04 20:00:22,XanClic,"bluecode: Was heißt ""jein""?"
+2009-08-04 20:00:39,bluecode,"ein mov ax, bx würde als ein mov eax, ebx interpretiert werden"
+2009-08-04 20:00:40,Homix,16-bit pmode code oder 16-bit realmode code? :D
+2009-08-04 20:01:03,XanClic,"bluecode: Eben, aber ein ""mov eax,42"" als ein ""mov ax,42; mov [eax],al"""
+2009-08-04 20:01:22,bluecode,aber bei anderen sachen gehts natürlich ertstmal kaputt
+2009-08-04 20:01:27,XanClic,"bluecode: Und ein ""cli"" wird latürnich auch so interpretiert ;-)"
+2009-08-04 20:01:36,XanClic,Homix: Ist das nicht wurscht?
+2009-08-04 20:01:52,Homix,"nö, v.a. in bezug auf segmentregister"
+2009-08-04 20:01:53,bluecode,nein
+2009-08-04 20:01:59,XanClic,"Ah, ok"
+2009-08-04 20:02:19,Homix,und 16 und 32-Bit code ist einfach inkompatibel ;)
+2009-08-04 20:02:27,XanClic,Das reicht mir ;-)
+2009-08-04 20:02:46,XanClic,Dann war meine Antwort bei osdev.org also nicht kompletter Blödsinn ^^
+2009-08-04 20:05:42,taljeth,Moin stultus
+2009-08-04 20:06:09,SHyx0rmZ,moin stultus
+2009-08-04 20:06:54,SHyx0rmZ,"bluecode: Warum soll den mov ax, bx als mov eax, ebx interpretiert werden?"
+2009-08-04 20:07:40,XanClic,"Weil im 16-Bit-Modus normalerweise 16-Bit-Befehle (""mov ax,bx"") und im 32-Bit-Modus normalerweise 32-Bit-Befehle (""mov eax,ebx"") ausgeführt werden"
+2009-08-04 20:07:48,XanClic,"Es sei denn, man überschreibt das mit dem 0x66-Präfix"
+2009-08-04 20:07:55,SHyx0rmZ,"Ja, aber sollte der Compiler da nicht nen Operand Size Prefix setzen?"
+2009-08-04 20:08:01,XanClic,Nö
+2009-08-04 20:08:10,SHyx0rmZ,Komische Compiler benutzt ihr...
+2009-08-04 20:08:32,XanClic,"Wenn man bei use16 ""mov ax,bx"" schreibt, dann schreibt der latürnich kein Präfix rein?"
+2009-08-04 20:08:45,SHyx0rmZ,"Joa, stimmt wohl"
+2009-08-04 20:08:53,XanClic,"Denn wenn der das machen würde, dann würde die CPU im 16-Bit-Modus ja denken, man wolle ""mov eax,ebx"""
+2009-08-04 20:09:00,SHyx0rmZ,Wobei ich mich mit use* nciht auskenne ^^
+2009-08-04 20:09:15,XanClic,Bin eben FASM gewöhnt ;-)
+2009-08-04 20:09:21,XanClic,Für dich eben [BITS 16]
+2009-08-04 20:09:43,SHyx0rmZ,Ah! :D
+2009-08-04 20:10:00,SHyx0rmZ,Ich hab ja jetzt meinen Kernel auf Multiboot umgestellt
+2009-08-04 20:10:15,SHyx0rmZ,Hab die Files die ich brauche aus dem altem Kernel kopiert...
+2009-08-04 20:10:27,SHyx0rmZ,...aber jetzt stürzt er auf einmal bei nem IRQ0 ab
+2009-08-04 20:11:51,SHyx0rmZ,"Das scheint doch eher merkwürdig, oder?"
+2009-08-04 20:12:26,taljeth,"Ich glaube, du machst was falsch"
+2009-08-04 20:12:53,SHyx0rmZ,"Es kann ja eig nicht, ich hab nur das funktionierende rüberkopiert"
+2009-08-04 20:13:03,SHyx0rmZ,Aber irgendwie scheint er was mit der IDT nicht zu machen ><
+2009-08-04 20:16:02,stultus,"CDI-Design, die nächste - Callbacks ok?"
+2009-08-04 20:16:13,taljeth,Gründsätzlich ja
+2009-08-04 20:16:18,taljeth,-ü+u *g*
+2009-08-04 20:27:31,bluecode,"SHyx0rmZ: eh ja... also mich würde es wundern wenn alles funktionieren würde, wenn man den Bootloader wechselt..."
+2009-08-04 20:27:55,SHyx0rmZ,bluecode: Warum? ^^
+2009-08-04 20:27:58,SHyx0rmZ,Hab den Fehler
+2009-08-04 20:28:16,SHyx0rmZ,In der IDT sind die Einträge genau 1 MiB zu tief ><
+2009-08-04 20:42:31,taljeth,FreakyPenguin: Nicht da?
+2009-08-04 20:43:00,FreakyPenguin,Nö
+2009-08-04 20:43:54,FreakyPenguin,"taljeth: Schliesst du das aus der Tatsache, dass ich nicht away bin? *g*"
+2009-08-04 20:46:58,taljeth,"Eigentlich eher aus der Tatsache, daß du nicht joinst ;-)"
+2009-08-04 20:48:54,FreakyPenguin,Hm?
+2009-08-04 20:49:09,FreakyPenguin,Muss ich logs lesen? ;-)
+2009-08-04 20:49:16,bluecode,nope
+2009-08-04 20:49:22,stultus,nur invites ;)
+2009-08-04 21:14:47,SHyx0rmZ,http://files.asxsoft.de/public/nuke/
+2009-08-04 21:14:59,SHyx0rmZ,Der neue Kernel ist aber mal wesentlich kleiner :D
+2009-08-04 21:17:23,Jidder,moinsen
+2009-08-04 21:17:32,XanClic,Abend(es)sen
+2009-08-04 21:17:48,Jidder,hm ehenkes unser search and replace experdde
+2009-08-04 21:17:56,Jidder,oder wars conquer and replace
+2009-08-04 21:18:13,seaforce,hmm lol zockt ihr gerade?
+2009-08-04 21:18:42,Jidder,jo schere stein papier
+2009-08-04 21:18:46,Jidder,ich liege mit 34% siegen knapp vorne
+2009-08-04 21:18:50,taljeth,Brunnen!
+2009-08-04 21:19:48,Jidder,kaufmannsladen
+2009-08-04 21:21:00,bluecode,"hm, ist es normal dass $can_build_shared nur in diesen ( http://pastebin.com/d321e7fd9 ) zeilen der configure von binutils gelesen wird?"
+2009-08-04 21:21:32,XanClic,@taljeth und Jidder: OBI-Hörnchen!
+2009-08-04 21:23:10,taljeth,"bluecode: Ich würde mich ja eher fragen, ob es nicht irgendwo gesetzt wird?"
+2009-08-04 21:23:45,bluecode,nope
+2009-08-04 21:24:19,bluecode,wart mal
+2009-08-04 21:24:24,XanClic,"SHyx0rmZ: Was soll ""cp: reguläre Datei „/boot/nuke.nke“ kann nicht angelegt werden: Keine Berechtigung"" Bitte?"
+2009-08-04 21:24:37,XanClic,Was suchst du in meinem /boot-Ordner?
+2009-08-04 21:25:12,taljeth,Wahrscheinlich trägt er die Systeme glecih in den GRUB ein? ;-)
+2009-08-04 21:25:23,XanClic,Dann teste ich das latürnich nicht ;-)
+2009-08-04 21:25:59,XanClic,"Da steht aber nur ""cp nuke.nke /boot"" in der build.sh"
+2009-08-04 21:26:14,XanClic,"Und was bitte soll eine Datei ""nuke.nke"" in meinem /boot außer Speicherplatz verbrauchen?"
+2009-08-04 21:26:56,taljeth,Dich mit einer Fehlermeldung ärgern
+2009-08-04 21:27:07,XanClic,?
+2009-08-04 21:27:24,SHyx0rmZ,Richtig 
+2009-08-04 21:27:39,XanClic,Ach so
+2009-08-04 21:27:40,SHyx0rmZ,"Ja, ich muss da mal irgendwas kluges machen, dass das nicht bei jedem kommt"
+2009-08-04 21:27:48,XanClic,So
+2009-08-04 21:27:55,XanClic,"Und was soll ich jetzt mit ""system uptime""? *g*"
+2009-08-04 21:28:00,SHyx0rmZ,Nix :D
+2009-08-04 21:28:11,SHyx0rmZ,Als nächstes kommt jetzt Paging2 dran
+2009-08-04 21:28:24,XanClic,Lustige Farben - so sollte wahrscheinlich mal mathegurus FTP-Client aussehen...
+2009-08-04 21:28:26,SHyx0rmZ,Dann ists nur noch ein Steinwurf bis zum Multitasking
+2009-08-04 21:28:31,SHyx0rmZ,XanClic: *g*
+2009-08-04 21:29:00,SHyx0rmZ,Grün: Alles in Ordnung Rot: Ach du Scheiße Blau: Ich bin eine Information Gelb: Hier ist irgendwas wichtiges passiert
+2009-08-04 21:29:16,XanClic,Ah.
+2009-08-04 21:29:33,XanClic,"Ich sage immer: ""Bei Linux ist sogar ein 'Segmentation Fault.' grau."""
+2009-08-04 21:29:41,SHyx0rmZ,"Naja, das blau am Drehbalken ist natürlich nicht ganz so informativ"
+2009-08-04 21:29:48,SHyx0rmZ,XanClic: *g*
+2009-08-04 21:30:42,XanClic,"Ich könnte dir jetzt sagen, dass Nuke schön lief, aber das ist ja nur QEMU und du solltest bereits wissen, dass das funzt ;-)"
+2009-08-04 21:31:37,SHyx0rmZ,"XanClic: Jo, soweit war ich ja schonma, nur nit mit Multiboot. Auf realer Hardware läufts ja auch wunderbar"
+2009-08-04 21:31:55,XanClic,Auf DEINER realen Hardware ;-)
+2009-08-04 21:32:38,SHyx0rmZ,"XanClic: Das ist alles, was mir wichtig ist :D"
+2009-08-04 21:32:56,SHyx0rmZ,"Hardware, die sich nicht an Standards halten kann, hat halt Pech :D"
+2009-08-04 21:33:17,XanClic,"Ich kanns ja gleich noch mal bei mir testen... Und deine Hardware ist bestimmt diejenige, die nicht standardkonform ist ^^"
+2009-08-04 21:33:31,SHyx0rmZ,XanClic: Ach quatsch :D
+2009-08-04 21:33:40,SHyx0rmZ,Ich probiers nochmal auf nem 3ten Rechner...
+2009-08-04 21:36:24,SHyx0rmZ,"Cool: a) Da ist ja wirklich nen 64 Bit Prozessor drin b) Wenn man das Laufwerk abzieht, kommt ein IRQ27 :D"
+2009-08-04 21:37:35,SHyx0rmZ,"Wer Jaunty und GRUB nutzt, und mal DerHartmuts Kernel auf seiner Hardware testen will: wget http://repos.asxsoft.de/pool/os/q/qultics-binary/qultics-binary_0.0.0_all.deb && sudo dpkg -i qultics-binary_0.0.0_all.deb"
+2009-08-04 21:37:51,XanClic,"Irgendwie ist mein Paging hier total kaputt... Da führen Prozesse manchmal plötzlich nicht gemappten Code mitten in einer Page aus, manchmal (!) ist plötzlich irgendwas nicht gemappt, was zehn Zeilen drüber (sic!) gemappt wurde..."
+2009-08-04 21:38:12,XanClic,"SHyx0rmZ: Wär ja schön, wenn ich Ubuntu hätte ;-)"
+2009-08-04 21:38:15,Jidder,der übliche wahnsinn
+2009-08-04 21:38:16,SHyx0rmZ,XanClic: Flush?
+2009-08-04 21:38:18,XanClic,Oder Debian
+2009-08-04 21:38:43,XanClic,"Jidder: Aber erst, seit ich fork() benutze, um neue Prozesse zu erstellen ;-)"
+2009-08-04 21:38:48,SHyx0rmZ,XanClic: Ich kann mit ein wenig gebastel auch andere Repos anbieten
+2009-08-04 21:39:14,XanClic,"Lieber nicht , ich hab nix gegen DenHartmut, aber gegen seinen Kernel auf meinem Computer dann doch *g*"
+2009-08-04 21:39:59,SHyx0rmZ,:D
+2009-08-04 21:40:08,SHyx0rmZ,"Btw, für alle apt-User: apt-get moo"
+2009-08-04 21:41:45,XanClic,WTF?
+2009-08-04 21:41:51,XanClic,Was soll die Scheiße? (sry)
+2009-08-04 21:41:53,XanClic,http://nopaste.info/680423602a.html
+2009-08-04 21:42:01,XanClic,Ich bekomme einen Pagefault beim Kopieren...
+2009-08-04 21:42:07,XanClic,(Hin und wieder jedenfalls)
+2009-08-04 21:42:09,taljeth,SHyx0rmZ: Kennst du auch aptitude moo?
+2009-08-04 21:42:23,SHyx0rmZ,taljeth: Wird warscheinlich das gleiche sein ^^
+2009-08-04 21:42:28,taljeth,Nope
+2009-08-04 21:42:35,SHyx0rmZ,"Ah, lol, auch nicht schlecht :D"
+2009-08-04 21:42:42,taljeth,Jetzt mit -v
+2009-08-04 21:42:47,taljeth,Und dann mit -vv und so weiter
+2009-08-04 21:42:53,Jidder,XanClic: du flushst den tlb?
+2009-08-04 21:43:03,XanClic,Idee
+2009-08-04 21:43:12,XanClic,Ich machs normalerweise mit invlpg
+2009-08-04 21:44:17,Jidder,sind die sektionen deiner module auf 4kb grenzen ausgerichtet?
+2009-08-04 21:44:22,Jidder,*programme
+2009-08-04 21:44:30,XanClic,"Nö, aber das map() macht das schon"
+2009-08-04 21:44:46,XanClic,"Und wie gesagt, meistens gibt es keinen Fehler - nur manchmal eben..."
+2009-08-04 21:45:05,Jidder,wird das in reinem kernel kontext ausgeführt?
+2009-08-04 21:45:12,XanClic,Jo
+2009-08-04 21:45:24,XanClic,"Und es läuft nur der Kernel, kein anderer Task"
+2009-08-04 21:45:31,Jidder,also ich mein ist zu dem zeitpunkt ein programm im user space gemappt?
+2009-08-04 21:45:46,XanClic,Das wird ja grad reinkopiert
+2009-08-04 21:46:34,XanClic,Wenn ich cr3 neu setze (um den TLB zu flushen) passiert der Fehler btw trotzdem
+2009-08-04 21:47:13,Jidder,hm ... mapped allokiert physischen speicher und mappt den an die gegebene virtuelle adresse?
+2009-08-04 21:47:27,XanClic,"Nö, mapped() überprüft nur, ob der gemappt ist"
+2009-08-04 21:47:45,XanClic,bzw. wohin
+2009-08-04 21:48:12,XanClic,"Und wenn die angegebene virtuelle Adresse nicht gemappt ist (entweder PT not present oder page not present), dann wird 0 zurückgegeben"
+2009-08-04 21:48:24,Jidder,und wer mappt den speicher?
+2009-08-04 21:48:46,XanClic,"mom, ich geb mal mehr Code"
+2009-08-04 21:49:26,XanClic,http://nopaste.info/90d2867615.html
+2009-08-04 21:49:39,Jidder,"und das problem tritt auf, wenn du fork benutzt? du weißt, dass das einer der komplizierteren syscalls ist? ^^"
+2009-08-04 21:49:50,XanClic,In dem Fall nicht bei fork
+2009-08-04 21:50:06,Jidder,okay ich meditiere mal über den code^^
+2009-08-04 21:50:11,XanClic,*g*
+2009-08-04 21:50:20,XanClic,"Sondern bei einer Funktion namens run_elf(), die einen neuen Task erstellt und die ELF-Datei reinlädt"
+2009-08-04 21:54:32,XanClic,"Super. Der sagt mir, dass überprüft wird, ob 0x0001C000 gemappt ist, sagt ja, und dann bekomme ich einen Pagefault bei 0x0001C000"
+2009-08-04 21:56:02,taljeth,Was sagt info tlb?
+2009-08-04 21:56:08,XanClic,Mal sehen
+2009-08-04 21:56:23,XanClic,"viel, auf jeden Fall"
+2009-08-04 21:56:41,taljeth,Das ist normal
+2009-08-04 21:57:09,XanClic,Und wie kann ich da was rausfiltern?
+2009-08-04 21:57:23,XanClic,"Oder es zumindest in eine Datei speichern? Per ""info tlb > Datei""?"
+2009-08-04 21:57:39,taljeth,qemu mit -monitor stdio starten
+2009-08-04 21:58:08,XanClic,Ah
+2009-08-04 21:59:28,XanClic,"Hm, das zeigt erst Adressen ab 0x08000000 an"
+2009-08-04 21:59:50,XanClic,Aber da hab ich überhaupt nix gemappt
+2009-08-04 21:59:59,taljeth,Denkst du *g*
+2009-08-04 22:00:25,XanClic,?
+2009-08-04 22:00:53,taljeth,qemu hat meistens recht
+2009-08-04 22:01:06,XanClic,Das ist ehrlich gesagt quatsch...
+2009-08-04 22:01:21,XanClic,Obwohl ich QEMU ganz bestimmt nicht in Frage stellen möchte
+2009-08-04 22:01:58,XanClic,"Hm. Mein Heap ist korrekt gemappt, auch die PCI-Geräte und der Kernel... Aber das Zeug unterhalb von 0x80000000..."
+2009-08-04 22:02:12,XanClic,Aber das kann einfach nicht sein
+2009-08-04 22:02:19,taljeth,Vielleicht irgendwo mal versehentlich was überschrieben?
+2009-08-04 22:02:20,SHyx0rmZ,XanClic: Warum nicht? Einen Bug habe ich schließlich heute auch schon gefunden ^^
+2009-08-04 22:02:54,XanClic,"Ich lösche kurz vorher die untere Hälfte von cr3, da kann gar nix sein, außer dem, was ich gerade gemappt hab"
+2009-08-04 22:03:36,XanClic,Ich habe vor allem nicht die unteren 512 MB direkt gemappt
+2009-08-04 22:05:58,XanClic,"""info mem"" sagt ""08000000-20000000 18000000 -rw"" (384 MB gemappt? Ganz bestimmt nicht) - ""80000000-88000000 08000000 -rw"" (Genau, 128 MB direkt gemappt) - ""c0000000-c0a5e000 00a5e000 -rw"" (Der Heap, OK) - ""efffe000-f2001000 02003000 -rw"" (PCI-Geräte)"
+2009-08-04 22:06:25,taljeth,info mem != info tlb
+2009-08-04 22:06:38,XanClic,"Aber info mem fasst das zusammen, oder?"
+2009-08-04 22:06:49,taljeth,info mem dürfte der physische Speciher sein
+2009-08-04 22:06:50,XanClic,"Und außerdem sagt info tlb das gleiche, soweit ich das sehe"
+2009-08-04 22:06:59,XanClic,0xC0000000 bei -m 128?
+2009-08-04 22:07:13,XanClic,"""info mem  -- show the active virtual memory mappings"""
+2009-08-04 22:07:21,taljeth,Hm okay
+2009-08-04 22:07:27,taljeth,Kannte ich noch nicht ;-)
+2009-08-04 22:07:56,XanClic,Hmmmm...
+2009-08-04 22:07:58,taljeth,Gab es nicht auch einen für physisch?
+2009-08-04 22:08:02,taljeth,"Naja, egal"
+2009-08-04 22:08:59,taljeth,Jetzt frage ich mich aber... Wo siehst du 0x1c000 gemappt?
+2009-08-04 22:09:08,XanClic,In meinem OS
+2009-08-04 22:09:24,XanClic,"Ich zeig dir mal vergleichend die Ausgabe von Paloxena und QEMU, mom..."
+2009-08-04 22:09:58,taljeth,"Die Ausgabe von Paloxena hat nur dann Aussagekraft, wenn du den Code mit dazugibst"
+2009-08-04 22:09:59,seaforce,"Wenn in Tyndur die argumentenliste Ausgewertet wird, wird bleibt dann ein '--volume' argument '--volume' oder fallen die -- weg?"
+2009-08-04 22:10:09,XanClic,"taljeth: Kann ich, nP"
+2009-08-04 22:10:28,stultus,"seaforce: sowas wie --, - bleibt immer."
+2009-08-04 22:10:31,taljeth,seaforce: Im Sinn von argv? Bleibt da
+2009-08-04 22:10:41,seaforce,thx
+2009-08-04 22:10:51,taljeth,"getopt verbastelt das natürlich alles, macht sich aber in einem Treiber nicht so gut ;-)"
+2009-08-04 22:11:00,stultus,*g*
+2009-08-04 22:11:09,stultus,getopt_long ist für Anwendungen aber ne feine Sache
+2009-08-04 22:11:16,stultus,ohne wäre cp mit sicherheit 100 Zeilen länger ;)
+2009-08-04 22:11:36,taljeth,"Wobei wir das bei der CDI-Diskussion auch in Frage stellen könnte, ob der Entrypoint wirklich im Modul und nicht eher in der Lib liegen sollte."
+2009-08-04 22:11:45,taljeth,"Ja, ich weiß, ich habe das selbst abgelehnt..."
+2009-08-04 22:11:54,Jidder,ja schäm dich^^
+2009-08-04 22:12:09,seaforce,"ach kann es sein, dass ihr keine portierte math.h habt?"
+2009-08-04 22:12:17,taljeth,Richtig
+2009-08-04 22:12:23,seaforce,:D soll ich das ändern?
+2009-08-04 22:12:27,taljeth,Da wollte ich auch noch ein paar Patches sunmitten...
+2009-08-04 22:12:36,XanClic,"taljeth: Also, hier die Mappings: http://nopaste.info/1ec79a2dc5.html"
+2009-08-04 22:12:46,taljeth,seaforce: Brauchst du die Funktionen?
+2009-08-04 22:12:46,stultus,Imho ist die aber im Treiber besser aufgehoben. Machen jedenfalls alle so ;)
+2009-08-04 22:12:57,seaforce,taljeth: nö ich hab nur spass an mathe ;)
+2009-08-04 22:13:14,seaforce,"taljeth: und wenn es nach dem treiber noch was zu tun gibt, mach ich das, wenn mir jemand hinweise zum portieren gibt"
+2009-08-04 22:13:16,taljeth,"Naja, letztendlich geht es nur drum, das an die FPU durchzureichen"
+2009-08-04 22:13:43,stultus,seaforce: es gibt immer was zu tun ;)
+2009-08-04 22:13:44,taljeth,"Plus den Kernelteil, damit der FPU-Zustand nicht kaputtgeht, wenn mehrere Tasks wollen"
+2009-08-04 22:13:48,seaforce,taljeth: also hat man da mit inline assembler zu tun?
+2009-08-04 22:14:03,taljeth,"Ist die Frage, ob überhaupt inline, oder nicht gleich als reine Assemblerdatei"
+2009-08-04 22:14:04,seaforce,taljeth: ql dann kann ich mich ja später mal damit beschäftigen
+2009-08-04 22:14:26,seaforce,taljeth: ql mit nasm komm ich besser zurecht als mit at&t
+2009-08-04 22:14:33,XanClic,"taljeth: Und der Code, der das gemappte ausgibt (sowie die mapped()-Funktion) hier: http://nopaste.info/d70c79bdd3.html"
+2009-08-04 22:14:41,seaforce,taljeth: naja das hat noch zukunft... erstmal audiotreiber
+2009-08-04 22:15:20,taljeth,"seaforce: Richtig, das wäre schön. Woran bastelst du denn im Moment noch? Ist das Ansprechen der Hardware halbwegs funktionsfähig?"
+2009-08-04 22:15:21,Jidder,"der code gibt nicht das real gemappte aus, falls einer der funktionen nicht funktioniert"
+2009-08-04 22:15:41,seaforce,taljeth: wenn man mal von Volume absieht denke ich ja
+2009-08-04 22:15:41,XanClic,Der Code hat bisher immer funktioniert...
+2009-08-04 22:16:20,SHyx0rmZ,XanClic: Irgendwann ist immer das erste Mal ;-)
+2009-08-04 22:16:34,taljeth,Inline-Assembler mit Falschrumsyntax? :-/
+2009-08-04 22:16:35,XanClic,SHyx0rmZ: Dann find du doch den Fehler in mapped() ;-)
+2009-08-04 22:16:39,Jidder,"naja wenn du einen prozess erstellst hast du es mit mehreren page directorys zu tun. das aktuell geladene (cr3), das vom zu erstellenden prozess und eventuell noch das, von dem prozess, dass das programm startet"
+2009-08-04 22:16:39,taljeth,Das ist ja absolut grausam
+2009-08-04 22:16:42,XanClic,"taljeth: -masm, genau"
+2009-08-04 22:16:50,XanClic,taljeth: So viel ist es doch nicht
+2009-08-04 22:17:19,XanClic,"Jidder: Es gibt in dem Fall nur zwei: Das vom Kernel und das neue, wobei das neue ab 0x80000000 mit dem Kernel-CR3 übereinstimmt"
+2009-08-04 22:17:22,SHyx0rmZ,"XanClic: Würde ich, wenn ich C könnte :D"
+2009-08-04 22:17:24,seaforce,grausam? ich bin dabei :D
+2009-08-04 22:18:11,taljeth,"Nicht in tyndur, sorry"
+2009-08-04 22:18:17,XanClic,*g*
+2009-08-04 22:18:37,XanClic,"Kann er nicht ""-masm=intel"" in seine makefile reinschreiben? ;-)"
+2009-08-04 22:18:50,taljeth,"XanClic: Es ist nicht viel, aber es ist verwirrend, weil man es an dieser Stelle überhaupt nicht erwartet"
+2009-08-04 22:19:00,Jidder,XanClic: du übergibst mapped die physische adresse des page directorys. soll das so sein?
+2009-08-04 22:19:05,XanClic,Jidder: Ja
+2009-08-04 22:19:07,taljeth,"XanClic: Solange er nicht will, daß jemand den Patch committet, schon ;-)"
+2009-08-04 22:19:17,Jidder,und mapped sucht sich dann die virtuelle adresse raus?
+2009-08-04 22:19:22,XanClic,Ja
+2009-08-04 22:19:40,XanClic,Bei mir ist virtuelle Adresse == phyische Adresse | KBASE
+2009-08-04 22:19:45,Jidder,kompliziert^^
+2009-08-04 22:19:46,XanClic,und KBASE == 0x80000000
+2009-08-04 22:20:33,Jidder,yay man kann in firefox tabs zwischen den fenstern hin- und herziehen^^
+2009-08-04 22:20:35,Jidder,<3 firefox
+2009-08-04 22:20:41,XanClic,<3 Opera
+2009-08-04 22:21:03,Jidder,naja jeder mann braucht 2 browser
+2009-08-04 22:21:07,SHyx0rmZ,Jidder: Hast du mehrere FF geöffnet?
+2009-08-04 22:21:09,XanClic,*G*
+2009-08-04 22:21:27,Jidder,"SHyx0rmZ: das passiert schon mal im wahn, ja"
+2009-08-04 22:22:38,seaforce,taljeth: ist sowas wie strcmp schon da?
+2009-08-04 22:23:28,XanClic,"Jetzt ratet mal, ob 0x10000000 gemappt ist, so wie QEMU das sagt..."
+2009-08-04 22:24:45,Jidder,is gemappt
+2009-08-04 22:24:56,XanClic,"Ich sehe, du hast Humor"
+2009-08-04 22:25:11,Jidder,und eine kamera hinter dir positioniert
+2009-08-04 22:25:26,XanClic,Noch so ein Schäuble-Klon
+2009-08-04 22:25:37,Jidder,ich darf doch bitten
+2009-08-04 22:25:39,Jidder,das original!
+2009-08-04 22:25:46,XanClic,*G*
+2009-08-04 22:25:47,SHyx0rmZ,"XanClic: Mach dir nix draus, ein Emulator, der noch nicht mal den Cursor richtig emulieren kann.... *g*"
+2009-08-04 22:27:38,seaforce,XanClic: oder volume
+2009-08-04 22:27:45,SHyx0rmZ,Siehste
+2009-08-04 22:28:33,Jidder,und kleine törtchen
+2009-08-04 22:28:41,XanClic,"So, jetzt kopiere ich das direkt in den physischen Speicher. Jetzt gibts keinen PSOD mehr, dafür aber eine ganze Seite, die mich mit Exceptions von Programmen zumüllt"
+2009-08-04 22:28:57,SHyx0rmZ,Jidder: Die hatte ich schon total vergessen ><
+2009-08-04 22:32:08,seaforce,SHyx0rmZ: was ist mit törtchen?
+2009-08-04 22:32:36,SHyx0rmZ,"seaforce: Ich hatte vergessen, das qemu die nicht emulieren kann"
+2009-08-04 22:32:52,SHyx0rmZ,seaforce: Weil ich mich schon dran gewöhnt hab und mir immer selber welche mitbring ;-)
+2009-08-04 22:33:17,seaforce,"SHyx0rmZ: natürlich kann qemu keine Törtchen Emulieren? :confused: Törtchen sind für mich was rundes, was lecker schmeckt!"
+2009-08-04 22:34:36,SHyx0rmZ,seaforce: ?
+2009-08-04 22:34:53,seaforce,SHyx0rmZ: Törtchen -> Torte weißt du?
+2009-08-04 22:35:03,SHyx0rmZ,seaforce: Ja
+2009-08-04 22:35:16,seaforce,SHyx0rmZ: und was haben Backwaren mit qemu zu tun?
+2009-08-04 22:35:36,Jidder,"ihr wisst doch alle, dass das erstellen eines stack frames keine atomare operation ist, udn erst recht nicht gleichzeitig mit einem call passiert. das heißt wenn bei der sequenz ""call foo; push %ebp; mov %esp, %ebp"" ein debugger sich dazwischen wirft, ist der doch total verwirrt"
+2009-08-04 22:35:42,Jidder,warum gibts da nix von ratiopharm?
+2009-08-04 22:36:12,SHyx0rmZ,Weil Ratiopharm nur Intel Syntax kann?
+2009-08-04 22:36:21,Jidder,das war intel syntax
+2009-08-04 22:36:32,XanClic,"Jidder: Aha, Prozente?"
+2009-08-04 22:36:34,Jidder,sobald ich intel gekauft habe
+2009-08-04 22:36:40,XanClic,*LOL*
+2009-08-04 22:36:41,seaforce,SHyx0rmZ: ich hab dasmit den Törtchen ehrlich gesagt nicht kapiert
+2009-08-04 22:36:54,SHyx0rmZ,seaforce: Ich merks
+2009-08-04 22:36:56,Jidder,ich hab doch törtchen gesagt
+2009-08-04 22:37:00,SHyx0rmZ,seaforce: Das war ein Hauch von Humor
+2009-08-04 22:37:01,Jidder,nu frag mal mich
+2009-08-04 22:37:18,SHyx0rmZ,Jidder: Alle ignorieren dich T_T *tröst*
+2009-08-04 22:37:20,seaforce,"SHyx0rmZ: ich habe keinen :), da kann ich dich beruhigen :)"
+2009-08-04 22:37:31,Jidder,:/
+2009-08-04 22:37:40,SHyx0rmZ,:3
+2009-08-04 22:38:31,SHyx0rmZ,"Najo, ich glaube ich entfern nochmal eben lieber nen Bug vor Paging2"
+2009-08-04 22:38:52,SHyx0rmZ,Manchmal ist die Start-Uptime schon mit irgendwas andrem initialisiert Oo
+2009-08-04 22:38:58,Jidder,solange die bugs vor wien stehen
+2009-08-04 22:39:12,Jidder,freudscher verschreiber
+2009-08-04 22:39:28,Jidder,solange die bugs NICHT vor wien stehen
+2009-08-04 22:39:28,Jidder,ich mag österreicher
+2009-08-04 22:39:33,seaforce,wanzus wanzus ante porte!
+2009-08-04 22:39:34,Jidder,vor allem das essen da ist gut
+2009-08-04 22:39:39,seaforce,-e+a
+2009-08-04 22:39:49,Jidder,"es muss zumindest gut genug sein, dass die da nicht aussterben"
+2009-08-04 22:39:57,SHyx0rmZ,:D
+2009-08-04 22:40:21,SHyx0rmZ,"Hast du schonmal darüber nachgedacht, dass die eventuell all ihre Lebensmittel importieren? xD"
+2009-08-04 22:40:43,Jidder,ich glaub nicht. das heißt ja dass die ihr geld exportieren und das will ja keiner haben
+2009-08-04 22:42:35,SHyx0rmZ,lol!
+2009-08-04 22:42:37,Jidder,übrigens wollt ihr wissen wie ich auf törtchen komme?
+2009-08-04 22:42:42,SHyx0rmZ,aber sicher
+2009-08-04 22:42:50,SHyx0rmZ,isst du grad?
+2009-08-04 22:43:13,Jidder,"also druck = fläche mal kraft. das heißt man muss nur genug törtchen nehmen, ein brett rüberlegen und schon kann man sich da rauf stellen"
+2009-08-04 22:43:21,SHyx0rmZ,:D
+2009-08-04 22:43:40,SHyx0rmZ,ähm
+2009-08-04 22:43:42,Jidder,geht natürlich auch anders
+2009-08-04 22:43:47,SHyx0rmZ,aber druck = fläche / kraft?
+2009-08-04 22:44:03,Jidder,wenn man schuhgröße 872 * m * g hat
+2009-08-04 22:44:18,SHyx0rmZ,Jidder: *g*
+2009-08-04 22:44:19,Jidder,da würd ich aber noch mal auf mein barometer gucken wie spät das ist
+2009-08-04 22:44:37,Jidder,es ist halbzeit
+2009-08-04 22:44:38,seaforce,"ahm mal ne frage zu C, ich habe da eine sache: struct options={ .mode=0x00}; und naja ich kann keine weitern felder über . initialisieren, weil er denn rummeckert, dass ich nach der init des ersten elements kein ; setzen dürfte"
+2009-08-04 22:44:54,Jidder,koooooooma
+2009-08-04 22:44:56,seaforce,seaforce: Druck ist Kraft/Fläche!
+2009-08-04 22:45:09,Jidder,Jidder: ja
+2009-08-04 22:45:22,SHyx0rmZ,seaforce: Das hört sich sinnvoll an
+2009-08-04 22:45:23,seaforce,ups LOL natürlich wollt ich SHyx0rmZ tabben ;)
+2009-08-04 22:45:31,SHyx0rmZ,seaforce: lol
+2009-08-04 22:45:55,mgottschlag,"wenns flach genug ist, passt fläche/kraft."
+2009-08-04 22:45:58,Jidder,hab druck und fläche vertauscht. das kann mal passieren
+2009-08-04 22:45:58,stultus,"Wer kennt sich mit vesa/vbe aus, kann ich generell davon ausgehen das der framebuffer sich an 0 im speicher vom pci-dev befindet?"
+2009-08-04 22:46:19,mgottschlag,"ähm, pci und vesa?"
+2009-08-04 22:46:23,mgottschlag,was hast du grad geraucht? *g*
+2009-08-04 22:46:31,mgottschlag,"nein, kannst du afaik nicht, VESA sagt dir die Addresse"
+2009-08-04 22:46:37,seaforce,"ahm mal ne frage zu C, ich habe da eine sache: struct options={ .mode=0x00}; und naja ich kann keine weitern felder über . initialisieren, weil er denn rummeckert, dass ich nach der init des ersten elements kein ; setzen dürfte"
+2009-08-04 22:46:44,stultus,"Njo, dachte ich auch."
+2009-08-04 22:46:49,stultus,Aber die sind allesamt 0 ;)
+2009-08-04 22:46:55,mgottschlag,man kann bei den meisten Grakas den Framebuffer beliebig verschieben
+2009-08-04 22:46:59,mgottschlag,"naja, hast du LFB-Modi?"
+2009-08-04 22:47:40,stultus,"Wenigstens einer den qemu rauswirft sollte, prüfen tu ichs atm. nicht ;)"
+2009-08-04 22:47:42,mgottschlag,"also ich kann bestätigen, dass man alle notwendige Infos von VESA bekommt, aber halt je nachdem erst mit VBE 2 und LFB, VBE1 hat oft nur Modi mit Windowing"
+2009-08-04 22:47:57,mgottschlag,"öhm, durchsuch ma die Liste"
+2009-08-04 22:47:57,stultus,Ist größtenteils noch dein Code ;)
+2009-08-04 22:48:05,mgottschlag,dann is klar
+2009-08-04 22:48:08,mgottschlag,dann ist das einfach kaputt.
+2009-08-04 22:48:24,mgottschlag,"aber ich hatte lokal ma nen halben funzenden VESA-Treiber, hab ich nur inzwischen gelöscht ^^"
+2009-08-04 22:48:30,stultus,awww
+2009-08-04 22:48:34,Jidder,"seaforce: koooooooma = ""komma statt semikolon?"""
+2009-08-04 22:49:09,taljeth,"seaforce: Ja, strcmp existiert. Hast du aber mittlerweile sicher rausgefunden ;-)"
+2009-08-04 22:49:22,mgottschlag,"stultus, benutzt du/benutz ich VBE 2 oder 1?"
+2009-08-04 22:49:25,Jidder,also zurück zum kuchen
+2009-08-04 22:49:34,Jidder,ich fummel an position independent executables rum
+2009-08-04 22:49:37,stultus,2.
+2009-08-04 22:49:42,Jidder,das hättet ihr doch auch selbst erraten können
+2009-08-04 22:50:00,seaforce,"Jidder: erst sagst du halbzeit und dann koooooooooooooooooma, da dacht ich mir: ""entweder ist jemand ins koma gefallen aufm rasen oder du willst fks machen (fast koma saufen machen) um dir nicht mit ansehen zu müssen wie dein club verliert"""
+2009-08-04 22:50:04,stultus,"die Header sind vollständig für 2, die Infostruktur wird auch mit VBE2 initialisiert."
+2009-08-04 22:50:22,mgottschlag,"gut, dann sollte da ganz hinten ein Feld für die Addresse sein o.O"
+2009-08-04 22:50:24,seaforce,taljeth: und strtoul auch?
+2009-08-04 22:50:30,mgottschlag,"geh mal alle Modi durch und guck, ob da irgendwo was ist ^^"
+2009-08-04 22:50:34,Jidder,seaforce: nene ich kodiere immer wichtige informationen in meinen aussagen
+2009-08-04 22:50:34,stultus,"Jo, und genau das ist immer 0 ;)"
+2009-08-04 22:50:54,Jidder,meistens steganografisch oder steganosaurisch
+2009-08-04 22:50:56,SHyx0rmZ,"Jidder: Sowas Wichtiges wie ""Törtchen""? xD"
+2009-08-04 22:51:19,seaforce,"taljeth: also ich benutz es einfach mal, wär aber net zu wissen ob das nicht nur stubs sind^^"
+2009-08-04 22:51:20,taljeth,seaforce: Sollte
+2009-08-04 22:51:37,Jidder,SHyx0rmZ: ja törtchen und aufwärts
+2009-08-04 22:51:50,SHyx0rmZ,"Ich mag die MMap von GRUB nicht, jetzt muss ich meinen Memory-Manager umbasteln ><"
+2009-08-04 22:51:51,taljeth,"Wenn du nichts geändert hast, werden Stubs gar nicht erst kompiliert ;-)"
+2009-08-04 22:52:05,Jidder,strtoul ist möglicherweise nicht vollständig
+2009-08-04 22:52:14,Jidder,da hab ich glaub ich letztens reingeschat
+2009-08-04 22:52:28,mgottschlag,http://www.ctyme.com/intr/rb-0274.htm
+2009-08-04 22:52:36,mgottschlag,bit 14 gesetzt?
+2009-08-04 22:52:59,mgottschlag,"(bei der cirrus hab ich das nicht gebraucht, da wusste ich ja, wo der FB ist)"
+2009-08-04 22:53:17,mgottschlag,"wenn da 0 steht, ist btw der Framebuffer bei 0xa0000, mit windowing, afaik"
+2009-08-04 22:54:48,taljeth,Jidder: Was fehlt denn noch
+2009-08-04 22:54:49,taljeth,?
+2009-08-04 22:55:19,Jidder,das erkennen von präfixen für basis 16 und das automatische erkennen der basis
+2009-08-04 22:55:28,Jidder,außerdem korrekte behandlung von overflows nach posix
+2009-08-04 22:55:29,taljeth,"Öh, nein"
+2009-08-04 22:55:35,taljeth,Letzteres mag sein
+2009-08-04 22:55:41,seaforce,"taljeth: soooo, ac97.mod hat jetzt die zwei parameter --volume und --sample-rate"
+2009-08-04 22:57:23,seaforce,"ach btw, gibt es schon funktionen wie fopen?"
+2009-08-04 22:57:37,seaforce,fclose()?
+2009-08-04 22:57:41,taljeth,Ja...
+2009-08-04 22:57:49,Jidder,nur fclose()
+2009-08-04 22:57:49,Jidder,fopen() nich^^
+2009-08-04 22:58:04,taljeth,"Du solltest dir vergegenwärtigen, daß tyndur kein Hello-World-OS ist, sondern Sachen wie gcc drauf laufen ;-)"
+2009-08-04 22:58:13,seaforce,"ok, wusst ich nicht, die darf ich auch von meinem treiber aus verwenden^^"
+2009-08-04 22:58:36,seaforce,"taljeth: ""Hello World"", das sollte ich bei meinem Treiber einbauen:)"
+2009-08-04 22:58:49,XanClic,hello_world()
+2009-08-04 22:58:54,taljeth,"Ein gesprochenes ""Hello World""? ;-)"
+2009-08-04 22:58:54,XanClic,Das erinnert mich an HQ9+
+2009-08-04 22:59:01,seaforce,taljeth: jo das wärs doch
+2009-08-04 22:59:09,seaforce,taljeth: als erste wav samples
+2009-08-04 22:59:50,XanClic,"Ich höre es schon vor mir... týndur startet und ich höre die Stephen-Hawkings-Computer-Stimme ""Hellooo Wooorrrrld..."" sagen"
+2009-08-04 22:59:59,seaforce,taljeth: dann hätte ich in meinen ac97 das netzwerkinterface von rtl8139 reinkopieren müssen
+2009-08-04 23:01:01,taljeth,Besser nicht ;-)
+2009-08-04 23:01:21,taljeth,"Lieber einen richtigen Treiber draus machen, wenn es funktioniert"
+2009-08-04 23:01:27,taljeth,Dann kann man immer noch tolle Anwendungen bauen
+2009-08-04 23:05:43,Jidder,startsound aus dem internet streamen
+2009-08-04 23:05:55,SHyx0rmZ,"Ok, vielleicht sollte man auch mal die Funktion zum Initialisieren des Memory Managers aufrufen, bevor man sich stundenlang nach Bugs umschaut ><"
+2009-08-04 23:06:02,seaforce,Jidder: wir sind hier nicht bei m$
+2009-08-04 23:06:03,taljeth,FreakyPenguin: Wolltest du nicht pushen?
+2009-08-04 23:06:27,taljeth,SHyx0rmZ: Wird völlig überbewertet
+2009-08-04 23:06:49,SHyx0rmZ,"taljeth: Finde ich auch, macht nämlich gar keinen Unterschied"
+2009-08-04 23:08:01,FreakyPenguin,taljeth: Stimmt... ;-)
+2009-08-04 23:08:25,FreakyPenguin,"Das geht morgen auch noch, wenn das Notebook wieder Saft hat ;-)"
+2009-08-04 23:09:46,Jidder,lol ich seh gerade die query history zwischen mir und Jidder2
+2009-08-04 23:09:52,Jidder,das is ja ein verrückter
+2009-08-04 23:09:55,stultus,"mgottschlag: wenn ich mit ner gesetzten VBE2-Signatur abfrage, sollte doch auch die zurückkommen, oder?"
+2009-08-04 23:09:55,Jidder,und die schrift ist verzerrt
+2009-08-04 23:10:23,Jidder,"hat der mir nen link zu nem c compiler, der in java geschrieben ist, geschickt"
+2009-08-04 23:10:33,taljeth,FreakyPenguin: 
+2009-08-04 23:10:44,mgottschlag,das bit da meine ich.
+2009-08-04 23:10:47,taljeth,"Ups, da war Enter mal wieder im Weg *g*"
+2009-08-04 23:10:49,mgottschlag,VBE2 kann beides
+2009-08-04 23:11:25,FreakyPenguin,"taljeth: Jo, weg damit ;-)"
+2009-08-04 23:11:42,taljeth,Das geht morgen auch noch ;-)
+2009-08-04 23:11:57,stultus,"Jo, das Bit ist auch nirgendwo gesetzt"
+2009-08-04 23:12:10,stultus,Kann aber irgendwo nicht sein :/
+2009-08-04 23:12:32,mgottschlag,hm?
+2009-08-04 23:12:37,mgottschlag,was kann irgendwo nich sein? ^^
+2009-08-04 23:13:00,stultus,das das standard-vgabios keine modi mit linearfb hat :/
+2009-08-04 23:13:17,SHyx0rmZ,"Das ist echt faszinierend, ich hab nen call zu dem Label drin, aber der ruft das nicht auf oO"
+2009-08-04 23:13:19,mgottschlag,"ähm, hast du das bit denn jetzt mal gesetzt?"
+2009-08-04 23:13:27,mgottschlag,bei der Anfrage meine ich
+2009-08-04 23:14:14,mgottschlag,"aso, ähm"
+2009-08-04 23:14:16,mgottschlag,vergiss es
+2009-08-04 23:14:25,mgottschlag,also eigentlich hat der LFB-Modi
+2009-08-04 23:14:43,mgottschlag,"hm, doch"
+2009-08-04 23:15:22,mgottschlag,du kannst das bit selbst setzen
+2009-08-04 23:15:33,mgottschlag,http://www.ctyme.com/intr/rb-0274.htm
+2009-08-04 23:15:38,mgottschlag,bit 15 setzt du ja auch immer selbst
+2009-08-04 23:16:25,Jidder,14 oder 15?
+2009-08-04 23:16:47,mgottschlag,14 soll er setzen :D
+2009-08-04 23:16:49,Jidder,"http://jidder.de/stuff/strtol.c für die, die das nicht selbst reparieren wollen"
+2009-08-04 23:17:01,Jidder,"neee, ich mach da jetzt keinen patch draus"
+2009-08-04 23:17:17,Jidder,is ja nicht mal getestet
+2009-08-04 23:17:43,SHyx0rmZ,"Gibt es irgendwelche guten Gründe dafür, dass der Prozessor das call funktion überspringt?"
+2009-08-04 23:18:10,Jidder,naja ihn gefällt dein gesicht nicht
+2009-08-04 23:18:44,SHyx0rmZ,Hm
+2009-08-04 23:18:47,SHyx0rmZ,Verdammt
+2009-08-04 23:19:56,SHyx0rmZ,Ich komm da echt nicht drauf klar oO
+2009-08-04 23:20:05,SHyx0rmZ,Das steht sogar in der binary -.-
+2009-08-04 23:20:25,Jidder,dann überspringt er das nicht
+2009-08-04 23:20:49,SHyx0rmZ,Doch
+2009-08-04 23:20:56,stultus,Hm. nix
+2009-08-04 23:21:08,SHyx0rmZ,Ich hab gerade einen Bereich von 20(!) Bytes darum als BP definiert
+2009-08-04 23:21:09,SHyx0rmZ,Nix
+2009-08-04 23:21:28,Jidder,SHyx0rmZ: hast du in bochs da mal durchgesteppt?
+2009-08-04 23:22:03,SHyx0rmZ,Bin ich doch dabei
+2009-08-04 23:22:10,SHyx0rmZ,Ich hab grad nur 1 Idee noch
+2009-08-04 23:22:25,Jidder,"ich such nen film, den ich mal vor langer zeit geschaut habe. das ist so eine art vater-sohn-geschichte. der sohn ist auftragskiller, und der vater vermittelt ihm die aufträge. ich weiß aber nicht mehr wie der film heißt"
+2009-08-04 23:22:43,taljeth,"Jidder: Der einzige Unterschied sind doch die drei Zeilen für den Overflow, oder?"
+2009-08-04 23:23:13,Jidder,zu http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/lib/stdlibc/strtol.c;h=7175251976cc95ad3eb9ff1838ceeda8142fc0de;hb=HEAD ist der unterschied größer
+2009-08-04 23:23:42,SHyx0rmZ,Ich... DEPP
+2009-08-04 23:23:53,taljeth,"Oh, die gibt es auch noch. Ich war bei strtoul"
+2009-08-04 23:24:04,Jidder,achso
+2009-08-04 23:24:12,taljeth,Danach hatte er nämlich ursprünglich gefragt
+2009-08-04 23:24:13,Jidder,die hab ich gar nicht gefunden
+2009-08-04 23:24:18,taljeth,Die ist in string.c mit drin
+2009-08-04 23:24:21,Jidder,achso ...
+2009-08-04 23:24:31,XanClic,SHyx0rmZ: Wir warten ;-) - zumindest ich *g*
+2009-08-04 23:24:41,Jidder,da hab ich ja ne wurst verbrochen
+2009-08-04 23:24:53,SHyx0rmZ,Ich hatte vom Image noch nit die menu.lst angepasst
+2009-08-04 23:24:55,Jidder,wobei aus lightos kopiert^^
+2009-08-04 23:25:04,SHyx0rmZ,Da stand der Kernel noch mit .bin statt .nke drin
+2009-08-04 23:25:04,Jidder,zu der filmfrage: ich weiß nicht mehr wer die darsteller waren. ich hab den vater irgendwie so als mischung aus jon voight oder christopher walken in erinnerung
+2009-08-04 23:25:19,Jidder,und der sohn is irgendwie so der matt damon typ gewesen
+2009-08-04 23:25:25,Jidder,ihr habt den doch sicherlich geguckt
+2009-08-04 23:25:27,Jidder,sacht doch mal
+2009-08-04 23:25:31,XanClic,Nö
+2009-08-04 23:25:37,XanClic,"Nicht, dass ich wüsste"
+2009-08-04 23:26:04,taljeth,"Jidder: Nein, die ist nicht aus lightOS kopiert. Von dort sind nur die kaputten Funktionen, die dadurch ersetzt worden sind ;-)"
+2009-08-04 23:26:05,XanClic,"Ich weiß nicht mal, wer Jon Voight ist, noch Christopher Walken... Nur ""Matt Damon"" hab ich mal gehööört..."
+2009-08-04 23:26:07,SHyx0rmZ,Road to Perdition?
+2009-08-04 23:26:41,SHyx0rmZ,"Ah, nein der ist es nicht"
+2009-08-04 23:27:01,taljeth,"Hm, super. git diff macht - alte Datei + neue Datei"
+2009-08-04 23:27:12,taljeth,So genau wollte ich es gar nicht wissen
+2009-08-04 23:27:27,SHyx0rmZ,Jidder: Road to Perdition?
+2009-08-04 23:27:40,Jidder,SHyx0rmZ: ne leider nich
+2009-08-04 23:27:55,Jidder,das spielt schon eher in der neuzeit. ich will mich da auf nix festlegen. vielleicht 70er+
+2009-08-04 23:28:14,Jidder,neuzeit ist auch schön gesagt^^
+2009-08-04 23:29:31,SHyx0rmZ,Jidder: Wanted wars auch nit?
+2009-08-04 23:30:01,Jidder,nee der film ist sicherlich etwas älter. 5 jahre oder so
+2009-08-04 23:30:27,Jidder,hab ich nämlich auf zdf im montagskino gesehen glaub ich^^
+2009-08-04 23:30:32,Jidder,aber schon einige jahre her
+2009-08-04 23:30:52,Jidder,also vielleicht auch älter als 5 jahre
+2009-08-04 23:31:10,Jidder,aber wanted ist auch mal ziemlich unrealistisch find ich
+2009-08-04 23:31:18,Jidder,^^
+2009-08-04 23:31:25,SHyx0rmZ,Jidder: Die zwei Leben meines Vaters :D
+2009-08-04 23:32:00,SHyx0rmZ,Ah ich habs
+2009-08-04 23:32:03,SHyx0rmZ,Jidder: Panic
+2009-08-04 23:33:00,SHyx0rmZ,Jidder: http://www.gidf.de/film+vater+sohn+auftragskiller+zdf :D
+2009-08-04 23:33:28,taljeth,"Jidder: Dein Code ist buggy, behaupte ich mal"
+2009-08-04 23:33:37,Jidder,SHyx0rmZ: lol
+2009-08-04 23:33:47,taljeth,Beim prüfen auf 0x willst du str[1] statt *str nehme ich an
+2009-08-04 23:34:08,taljeth,Warum warnt gcc da eigentlich nicht?
+2009-08-04 23:34:19,Jidder,stimmt
+2009-08-04 23:34:33,Jidder,weil ich den code nicht kompiliert habe^^
+2009-08-04 23:34:36,XanClic,SHyx0rmZ: Sehr schön *g*
+2009-08-04 23:34:42,taljeth,Jidder: Aber ich ;-)
+2009-08-04 23:35:31,Jidder,SHyx0rmZ: also panic kann es sein. donald sutherland kann man ja leicht mit walken oder voight verwechseln ^^
+2009-08-04 23:35:55,SHyx0rmZ,"Jidder: Kein Plan, aber das war das erste was Google zusammen mit zdf ausgeschmissen hata :D"
+2009-08-04 23:35:57,SHyx0rmZ,-a
+2009-08-04 23:36:00,Jidder,jo ^^
+2009-08-04 23:36:01,Jidder,schummler
+2009-08-04 23:36:08,Jidder,naja ich lad den mal runter und berichte dann^
+2009-08-04 23:36:09,Jidder,^^
+2009-08-04 23:36:17,SHyx0rmZ,"Was denn, ich guck halt kein Fernsehen, da muss ich mir halt anders helfen :D"
+2009-08-04 23:36:20,stultus,*hust*
+2009-08-04 23:36:22,Jidder,will jetzt nicht den kompletten wikipedia artikel downloaden
+2009-08-04 23:36:25,Jidder,äh lesen
+2009-08-04 23:36:25,taljeth,"Und Overflow von signed ist undefiniert, oder?"
+2009-08-04 23:36:31,SHyx0rmZ,*g*
+2009-08-04 23:36:32,seaforce,wie gemain: http://www.gidf.de/film+vater+sohn+auftragskiller+zdf
+2009-08-04 23:36:35,stultus,"s/lad den mal runter/leih den mal aus/ , oder? :)"
+2009-08-04 23:36:45,SHyx0rmZ,Paging2 ich kommmmmmöööööööö!!!!!!
+2009-08-04 23:36:58,Jidder,taljeth: wie meinst du das?
+2009-08-04 23:37:14,Jidder,stultus: ja da hab ich mich wohl vertippt
+2009-08-04 23:38:17,seaforce,SHyx0rmZ: wie oft kommst du eig. vor deinem paging zwei?
+2009-08-04 23:38:19,taljeth,Jidder: Daß deine Prüfung maximal zufällig funktioniert
+2009-08-04 23:38:30,taljeth,"Weil C nicht definiert, was bei einem Overflow passiert"
+2009-08-04 23:38:35,SHyx0rmZ,seaforce: Ziemlich oft
+2009-08-04 23:38:44,seaforce,SHyx0rmZ: merkt man
+2009-08-04 23:38:51,SHyx0rmZ,"Na, ich hab die ganze Woche (-heute) ja nicht an Nuke weitergearbeitet"
+2009-08-04 23:38:56,Jidder,achso ... hm naja ungetestet halt. 
+2009-08-04 23:38:56,SHyx0rmZ,Wollte nur immer :D
+2009-08-04 23:39:11,taljeth,Jidder: In der Praxis funktioniert es vermutlich manchmal
+2009-08-04 23:39:18,SHyx0rmZ,Jetzt muss ich nur den Zettel mit dem Konzept finden -.-
+2009-08-04 23:39:41,SHyx0rmZ,"Mir ist vorhin sogar eingefallen, wie ich meinen Funktionen nen sauberen Stack geben kann"
+2009-08-04 23:39:46,taljeth,"Aber gcc tendiert dazu, alles, was undefiniert ist, großzügig zum Optimieren auszunutzen"
+2009-08-04 23:39:53,SHyx0rmZ,s/Funktionen/Interrupts/
+2009-08-04 23:40:47,taljeth,"bluecode: Mr C-Standard, habe ich das überhaupt richtig in Erinnerung mit Signed-Overflow undefiniert?"
+2009-08-04 23:41:16,Jidder,"hm ich frage mich, warum da ein leerzeichen zwischen if und ( ist "
+2009-08-04 23:41:23,Jidder,das kann ja gar nicht von mir sein
+2009-08-04 23:41:30,Jidder,ich halte mich doch strikt an den code stil^^
+2009-08-04 23:41:34,taljeth,*g*+
+2009-08-04 23:42:23,bluecode,natürlich ist ein Overflow nicht definiert
+2009-08-04 23:42:52,taljeth,unsigned schon
+2009-08-04 23:46:01,Jidder,und wen findet man als erstes suchergebnis wenn man nach einer lösung googelt? http://www.fefe.de/intof.html <--- -.-
+2009-08-04 23:46:13,Jidder,den chef-schnacker
+2009-08-04 23:48:01,taljeth,Sieht kompliziert aus
+2009-08-04 23:48:10,taljeth,Tut es (retval > (LONG_MAX - digit) / base) nicht?
+2009-08-04 23:48:24,Jidder,könnt man machen
+2009-08-04 23:48:29,Jidder,ich wollte gerade inline assembler vorschlagen
+2009-08-04 23:48:33,taljeth,*g*
+2009-08-04 23:49:33,bluecode,"hast wahrscheinlich Recht, taljeth"
+2009-08-04 23:49:45,Jidder,hm ich überleg gerade ob das mit dem runden passt
+2009-08-04 23:49:51,taljeth,Ich auch ;-)
+2009-08-04 23:55:53,taljeth,"Hm, ich glaube, ich habe durch Beispiel bewiesen, daß es funktioniert ;-)"
+2009-08-04 23:56:16,Jidder,"joar es rundet auch immer ab, was im grenzfall digit = base - 1 auch passen sollte"
+2009-08-04 23:56:57,taljeth,Dann schieb ich das mal rin
+2009-08-04 23:57:43,Jidder,mach dit
+2009-08-04 23:58:08,Jidder,hm ich wage mich nicht auf pirate bay wegen dem film
+2009-08-04 23:58:58,Jidder,aber die anderen mir bekannten portale haben den auch nich :/
+2009-08-04 23:59:11,taljeth,"Ich darf dein Signed-off-by reinmachen, nehme ich an?"

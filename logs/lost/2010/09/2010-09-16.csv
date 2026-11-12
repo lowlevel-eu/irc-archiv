@@ -1,0 +1,1229 @@
+date/time,nick,message
+2010-09-16 01:11:49,DesL,moin
+2010-09-16 01:19:42,JanDing,wochenende!
+2010-09-16 01:20:05,DesL,Oo
+2010-09-16 01:20:08,DesL,wieso dass?
+2010-09-16 01:23:26,JanDing,hab ich gerade bock drauf
+2010-09-16 01:43:02,DesL,merke: das verschieben im speicher eines elements eines baumes ist SCHEISSE
+2010-09-16 01:57:16,JanDing,was machst du auch für einen unfug
+2010-09-16 01:57:29,DesL,initrd
+2010-09-16 01:57:54,JanDing,da musst du doch nichts verschieben. ist die nicht statisch?
+2010-09-16 01:58:08,DesL,erzeugen will ich die
+2010-09-16 01:58:32,JanDing,"haben bäume nicht gerade den vorteil, dass man da nichts verschieben muss?"
+2010-09-16 01:58:41,JanDing,im gegensatz zu einem sortierten array
+2010-09-16 01:58:45,JanDing,oder einer sortierten liste
+2010-09-16 01:59:23,DesL,"ich erzeuge das ganze gedöns das in die initrd soll erst wie ein normales vfs, alloziere dann genug speicher, schieb da den kram hinein, und speicher es dann in einer datei"
+2010-09-16 02:00:35,JanDing,"meinste nicht, dass das etwas kompliziert ist?"
+2010-09-16 02:00:41,DesL,wie sonst?
+2010-09-16 02:01:18,JanDing,warum vfs? speicher allozieren?
+2010-09-16 02:01:33,JanDing,malloc(anzahl dateien * sizeof(struct datei_information))
+2010-09-16 02:01:56,DesL,"jo, ich habe bei der initrd aber auch noch den datei inhalt + ordner"
+2010-09-16 02:02:22,JanDing,den inhalt brauchst du aber nicht zur erstellung der verwaltungsinformationen
+2010-09-16 02:02:35,DesL,nö
+2010-09-16 02:03:04,JanDing,"und warum du elemente eines baums verschieben musst, verstehe ich auch nicht"
+2010-09-16 02:03:26,DesL,weil die erst sonst wo im speicher stehen
+2010-09-16 02:03:33,JanDing,ist das nicht egal?
+2010-09-16 02:03:57,JanDing,die repräsentation im speicher muss ja nichts mit der repräsentation in der datei zutun haben
+2010-09-16 02:04:02,DesL,"ich kann auch den gesamten ram in die init.rd schreiben, das wäre, öhm, 4 GB?"
+2010-09-16 02:04:29,JanDing,du musst das image nicht im ram konstruieren
+2010-09-16 02:05:05,DesL,"hm, geht so aber recht einfach (bis aufs verschieben :P )"
+2010-09-16 02:05:42,JanDing,mit elemente meinst du knoten?
+2010-09-16 02:05:50,DesL,jup
+2010-09-16 02:06:20,JanDing,"die schreibst du einfach in die datei? struct tree_node *foo; fwrite(..., foo, sizeof(struct tree_node), ...); ?"
+2010-09-16 02:06:35,DesL,hm
+2010-09-16 02:06:58,JanDing,oder den ganzen baum mit den knoten drin? die verweisen doch aufeinander mit pointern oder nicht?
+2010-09-16 02:07:17,DesL,"die pointer sind ja dass, was mir das genick bricht"
+2010-09-16 02:07:27,JanDing,pointer nicht in eine datei schreiben
+2010-09-16 02:07:35,DesL,ich verheddere mich da iwo beid den childs
+2010-09-16 02:07:50,DesL,"ich bräuchte ""relative pointer"""
+2010-09-16 02:07:59,DesL,"ui, da ist die putzfrau am gange"
+2010-09-16 02:08:01,JanDing,nennen sich offsets
+2010-09-16 02:08:08,DesL,jo
+2010-09-16 02:08:34,JanDing,wobei indizes noch einfacher wären
+2010-09-16 02:08:42,DesL,?
+2010-09-16 02:09:06,JanDing,was stellt der baum dar? die verzeichnishierarchie?
+2010-09-16 02:09:13,DesL,jo
+2010-09-16 02:09:18,JanDing,jeder knoten ist ein verzeichnis?
+2010-09-16 02:09:25,DesL,oder eine datei
+2010-09-16 02:09:30,JanDing,jo
+2010-09-16 02:09:49,JanDing,"wenn es ein verzeichnis ist, dann ist der inhalt doch nur ein array von weiteren knoten(verwaltungsstrukturen)"
+2010-09-16 02:10:08,DesL,"hm, ne verkettete liste"
+2010-09-16 02:10:17,JanDing,wtf? o_O
+2010-09-16 02:10:27,JanDing,in einer datei?
+2010-09-16 02:10:33,DesL,was?
+2010-09-16 02:10:44,JanDing,du speicherst eine verkettete liste in einer datei?
+2010-09-16 02:10:45,DesL,die childs bilden eine verkettet liste
+2010-09-16 02:10:47,DesL,also ja
+2010-09-16 02:11:04,JanDing,ich weiß nicht
+2010-09-16 02:11:09,DesL,was sonst? so ist die größe konstant
+2010-09-16 02:11:14,JanDing,also ich würds als array speichern
+2010-09-16 02:11:25,DesL,wie?
+2010-09-16 02:11:32,JanDing,alle elemente hintereinander
+2010-09-16 02:11:38,JanDing,ich weiß nicht wie ich dir das beschreiben soll
+2010-09-16 02:11:42,JanDing,es ist irgendwie ganz logisch für mich
+2010-09-16 02:11:50,DesL,hm
+2010-09-16 02:13:50,DesL,ich wollte halt die initrd möglichst einfach (nach dem laden) ins vfs integrieren
+2010-09-16 02:15:51,JanDing,"das willst du, indem du bei beiden die selben datenstrukturen verwendest?"
+2010-09-16 02:16:11,DesL,jup
+2010-09-16 02:16:59,DesL,"dann nur noch vfs.mount(vfs.root->findChild(""initrd""), (Node*)initrd);"
+2010-09-16 02:17:02,DesL,und fertig
+2010-09-16 02:17:56,DesL,kritik an dem konzept?
+2010-09-16 02:18:01,JanDing,"ich finde ja, dass das konzept ""initrd"" überbewertet wird"
+2010-09-16 02:18:07,JanDing,du hast doch GRUB oder nicht?
+2010-09-16 02:18:26,DesL,"im moment, ja"
+2010-09-16 02:18:41,JanDing,"der lädt dir alles, und du hast schlanken code"
+2010-09-16 02:18:50,JanDing,was will man mehr
+2010-09-16 02:19:17,DesL,meine shell auf ein VFS anwenden BEVOR ich floppy oder hdd am laufen habe...
+2010-09-16 02:19:36,JanDing,wird alles überbewertet
+2010-09-16 02:19:41,JanDing,braucht keine sau
+2010-09-16 02:19:47,DesL,Oo
+2010-09-16 02:19:54,JanDing,meine großmutter würde das nicht beeindrucken
+2010-09-16 02:19:54,DesL,brauchen != wollen
+2010-09-16 02:20:12,DesL,die versteht das eh nicht
+2010-09-16 02:20:33,JanDing,es würde mich nicht beeindrucken
+2010-09-16 02:21:13,JanDing,"das was hier in letzter zeit immer wieder als VFS durch unsere chats geistert, sind ein paar triviale datenstrukturen und funktionszeiger"
+2010-09-16 02:21:38,DesL,mehr ist es doch auch im prinzip nicht
+2010-09-16 02:21:42,JanDing,du kannst jeden beliebigen mist in sowas überführen
+2010-09-16 02:21:59,JanDing,versuch mal tar (oder zip oder lzma) als initrd-format zu nehmen
+2010-09-16 02:22:05,DesL,geht das bei dir? : http://irc.tyndur.org/stats.php
+2010-09-16 02:22:20,JanDing,nein. wieso?
+2010-09-16 02:22:21,DesL,Error 503 Service Unavailable - Service Unavailable - Guru Meditation: XID: 1488239671
+2010-09-16 02:22:29,DesL,das soll FreakyPenguin mal fixen
+2010-09-16 02:22:49,JanDing,oder den dienst abschalten
+2010-09-16 02:22:49,DesL,hast du gehört? ^^
+2010-09-16 02:22:55,JanDing,genau
+2010-09-16 02:23:50,JanDing,hier erhard hat eine einfache initrd gemacht: https://prettyos.svn.sourceforge.net/svnroot/prettyos/trunk/Source/tools/src/make_initrd.c
+2010-09-16 02:24:10,JanDing,"wenn du unterverzeichnisse haben willst, musst du einfach ein verzeichnis als datei betrachten, die eine initrd ist"
+2010-09-16 02:24:11,JanDing,fertig
+2010-09-16 02:24:21,JanDing,vielleicht noch die dateianzahl dynamisch machen
+2010-09-16 02:24:23,DesL,Oo
+2010-09-16 02:24:47,JanDing,"ich finde das ist ein konzept, dass sich sehr natürlich ergibt"
+2010-09-16 02:24:56,DesL,"rekursive initrds? kp, aber für mich klingt das schräg"
+2010-09-16 02:25:05,JanDing,so funktionieren dateisysteme
+2010-09-16 02:25:18,JanDing,außer dass die verwaltungsstrukturen und nutzdaten tretten
+2010-09-16 02:25:20,JanDing,trennen
+2010-09-16 02:25:29,DesL,das meine ich ja
+2010-09-16 02:25:32,JanDing,"aber das ist bei einer initrd nicht nötig, da die ja nur einmal erstellt wird"
+2010-09-16 02:26:08,DesL,"mein konzept steht, ist implementiert, ich muss nur noch bugfixen :P"
+2010-09-16 02:26:32,JanDing,haha
+2010-09-16 02:26:34,JanDing,viel spaß
+2010-09-16 02:26:40,JanDing,gn8
+2010-09-16 02:26:50,DesL,bb
+2010-09-16 03:25:56,DesL,bb
+2010-09-16 09:03:24,pgahlen_,moin
+2010-09-16 09:25:57,XanClic,Moin
+2010-09-16 09:27:37,kwolf,Moin
+2010-09-16 10:10:12,Healther,moin
+2010-09-16 10:46:13,XanClic,"Hm, Delphi ist cool, gibt ja sogar Funktionspointer, damit macht das Spaß"
+2010-09-16 12:09:57,JanDing,moin moin
+2010-09-16 12:10:09,kwolf,Moin
+2010-09-16 12:19:53,DerHartmut,"Servus, Grüezi und Hallo"
+2010-09-16 12:23:05,JanDing,moin
+2010-09-16 12:26:26,kwolf,Moin DerHartmut
+2010-09-16 12:45:12,kwolf,"Hm, Clici nimmt's heute wohl genau mit API gegenüber ABI"
+2010-09-16 13:11:33,bluecode,moin
+2010-09-16 13:12:18,MrX,hi
+2010-09-16 13:12:21,kwolf,Hi
+2010-09-16 13:13:33,MrX,"Bin ich zu doof, das runterzuladen, oder sind die Downloadlinks bei euch auch tot? http://labs.adobe.com/downloads/flashplayer10.html"
+2010-09-16 13:14:07,DerHartmut,"Nö, funktionieren"
+2010-09-16 13:14:47,kwolf,Bei mir auch
+2010-09-16 13:17:08,MrX,Bei mir leitet der mich auf diese Seite weiter: http://download.macromedia.com/pub/labs/flashplayer10/flashplayer_square_p1_64bit_activex_091510.exe und der Link scheint tot zu sein.
+2010-09-16 13:17:39,MrX,Andere Versionen des Previews gehen übrigens auch nicht.
+2010-09-16 13:19:58,kwolf,"Dann würde ich mal sagen, hast du einen Haufen Zeit gespart, in der du keine Flashspielereien benutzt, sondern produktiv sein kannst ;-)"
+2010-09-16 13:20:45,bluecode,produktiv ist aber total langweilig
+2010-09-16 13:20:57,MrX,Ich habs jetzt über einen Proxyserver versucht - ging.
+2010-09-16 13:21:45,kwolf,bluecode: Außer in der Prüfungszeit!
+2010-09-16 13:36:13,pgahlen_,moin
+2010-09-16 13:36:35,DerHartmut,Hello pgahlen_
+2010-09-16 13:38:02,JanDing,moin
+2010-09-16 13:38:09,JanDing,yay 13:37
+2010-09-16 13:38:20,JanDing,es sind die kleinigkeiten im leben^^
+2010-09-16 13:38:31,pgahlen_,"hm, ich glaub ich lass den Grafikmodus von GRUB initialisieren"
+2010-09-16 13:38:46,JanDing,dann musst du aber grub patchen
+2010-09-16 13:38:56,JanDing,es gibt eine dritte möglichkeit: keine grafik
+2010-09-16 13:39:03,pgahlen_,wollte GRUB 2 nehmen
+2010-09-16 13:39:12,pgahlen_,"weiss nur noch nicht, wie das geht"
+2010-09-16 13:40:49,pgahlen_,"keine Grafik??? ich wollte es so machen, das alle Ausgaben auf n Port geleitet werden, deswegen ist es ja eig egal, ob Grafik oder Textmodus"
+2010-09-16 13:42:37,pgahlen_,"wie mache ich dass denn, einfach video=640x480x32?"
+2010-09-16 13:42:50,pgahlen_,"ich google schon, find aber nix dazu"
+2010-09-16 13:45:31,pgahlen_,"ok, habs gefunden"
+2010-09-16 13:50:25,pgahlen_,moin markus111
+2010-09-16 13:51:03,pgahlen_,"wäre es eig ok, wenn hier n Lehrer reinkommt?"
+2010-09-16 14:01:04,JanDing,das einzige kriterium um hier reinzukommen ist einen pc anschalten zu können
+2010-09-16 14:01:47,MrX,JanDing: Mh... Einen IRC-Client benutzen können wird auch nötig sein.
+2010-09-16 14:01:48,DerHartmut,Und die Tastatur zu benuthzen
+2010-09-16 14:02:10,pgahlen_,"wow, also der ist Infolehrer"
+2010-09-16 14:02:17,pgahlen_,der wird sowas wissen
+2010-09-16 14:02:28,markus111,moinmoin
+2010-09-16 14:02:31,JanDing,moin
+2010-09-16 14:02:45,JanDing,"wenn du meinst, dass deine note dadurch gefährdet wird^^"
+2010-09-16 14:02:54,MrX,"Und wieso will der plötzlich hier rein, bzw. fragt erstmal, ob er darf?"
+2010-09-16 14:03:23,markus111,hier darf doch jeder rein der sich an gewisse regeln hält?
+2010-09-16 14:03:25,JanDing,das hier ist praktisch ein baumhaus
+2010-09-16 14:03:28,JanDing,erwachsene sind verboten
+2010-09-16 14:03:41,JanDing,jeder der nicht reinpasst darf auch nicht rein
+2010-09-16 14:03:43,JanDing,oder ging das
+2010-09-16 14:03:53,pgahlen_,:)
+2010-09-16 14:04:02,JanDing,ich accidentally ein paar wörter
+2010-09-16 14:04:09,MrX,"Ich hoffe, der will nicht mit ""Guuteen Mooorgeen Herr XYZ"" begrüßt werden^^"
+2010-09-16 14:04:25,pgahlen_,"ne, er meinte er wolle sich auch mal mit dem Thema befassen, ich weiss nicht, aber wahrscheinlich will er an meinem mitarbeiten"
+2010-09-16 14:04:37,pgahlen_,nö ich sag auch du
+2010-09-16 14:04:58,markus111,Wenn meine info-lehrer das mächsen würden würden sie alles in Delphi 4 machen...
+2010-09-16 14:05:04,markus111,*machen
+2010-09-16 14:05:41,pgahlen_,XD ne wir sind in der Schule so fortschrittlich wir haben 5
+2010-09-16 14:05:52,pgahlen_,er will das auch in C und ASM machen
+2010-09-16 14:05:54,markus111,wir hätten sogar 7
+2010-09-16 14:06:08,markus111,Aber die Lehrer wollen nur Delphi 4 nutzen
+2010-09-16 14:07:01,pgahlen_,"XD bei uns das selbe, wir haben auch 7 drauf"
+2010-09-16 14:07:20,markus111,8 wollen sie alle nich
+2010-09-16 14:07:52,pgahlen_,"yuhu, das heisst nacher GRUB patchen, die Konsole ändern und Grafikfunktionen bauen ..."
+2010-09-16 14:08:29,pgahlen_,"hab in 5 Minuten wieder ne Doppelstunde Latein, und bin dann zu hause"
+2010-09-16 14:08:48,markus111,Latein *kotz*
+2010-09-16 14:09:02,pgahlen_,jo find ich auch
+2010-09-16 14:09:30,markus111,"In letzer Zeit macht mir die Schule wieder mehr spass, nur Latein versaut alles"
+2010-09-16 14:09:46,pgahlen_,"mal sehen ob er das checkt, wenn ich ihm IDT und GDT etc. genauer erkläre"
+2010-09-16 14:10:14,pgahlen_,ich hab nur noch exakt 64 Stunden Latein und nach heute 62
+2010-09-16 14:10:20,pgahlen_,juhuuuuu
+2010-09-16 14:10:35,pgahlen_,danach werd ich nie wieder n lateinisches Buch anrühren
+2010-09-16 14:11:01,pgahlen_,"naja muss dann ma wieder, bis nacher"
+2010-09-16 14:11:35,markus111,"Wenn ich den APIC verwende, brauch ich den PIC dann noch?"
+2010-09-16 14:12:52,DesL,moin
+2010-09-16 14:13:16,markus111,mooin
+2010-09-16 14:13:24,markus111,"DesL: Wenn ich den APIC verwende, brauch ich den PIC dann noch?"
+2010-09-16 14:13:44,DesL,kp
+2010-09-16 14:13:52,DesL,wen fragen der apic hat^^
+2010-09-16 14:14:12,markus111,Hat hier jemand APIC?
+2010-09-16 14:14:24,kwolf,Mein Rechner hat einen
+2010-09-16 14:14:44,kwolf,"Wahrscheinlich sogar mehrere, je nach Zählweise"
+2010-09-16 14:14:50,DesL,apic haben = im betriebssystem unterstützt
+2010-09-16 14:14:58,kwolf,Linux benutzt den auch :-)
+2010-09-16 14:15:26,DesL,-.-
+2010-09-16 14:15:46,markus111,"Der letze Satz, muss es nicht ausgeschaltet heißen? http://www.lowlevel.eu/wiki/ACPI"
+2010-09-16 14:15:54,kwolf,"Ich glaube, der Blaue hatte mal eine Implementierung. Und FreakyPenguin könnte auch was dazu wissen."
+2010-09-16 14:16:33,kwolf,"Also APIC, nicht ACPI"
+2010-09-16 14:16:43,markus111,"ich weiß, ja"
+2010-09-16 14:17:10,markus111,Soft-Off-Modus klingt mehr wie auschalten als einschalten
+2010-09-16 14:17:36,kwolf,"Vielleicht geht es darum, wie man ihn hinterher wieder einschaltet?"
+2010-09-16 14:17:46,kwolf,"Normal schaltet man ihn ja nicht ein, wenn schon an ist"
+2010-09-16 14:18:08,markus111,wenn man aber beim PC draufdrückt fährt er runter
+2010-09-16 14:18:23,DesL,"diese irren von der c't: haben prozessoren mittels flüssigen stickstoff als kühlung von 3,6 auf 5,8 ghz getaktet"
+2010-09-16 14:18:37,markus111,DesL: hab ich gelesen
+2010-09-16 14:19:05,DesL,epic
+2010-09-16 14:19:57,kwolf,apic
+2010-09-16 14:27:21,kwolf,"Hm, warum releast hier eigentlich in letzter Zeit keiner mehr ein OS? Ich hab schon ewig nichts mehr getestet."
+2010-09-16 14:27:47,DesL,bei mir war ferien flaute
+2010-09-16 14:27:48,MrX,Brauchst Du zum Testen Releases?
+2010-09-16 14:27:49,kwolf,Früher gab es viel öfter was
+2010-09-16 14:28:03,kwolf,MrX: Sonst muss ich mich ja selber mit dem Buildsystem des jeweiligen OS rumschlagen
+2010-09-16 14:28:18,MrX,PrettyOS hat ein fertiges Floppyimage dabei.
+2010-09-16 14:28:51,kwolf,"Hm, muss ich vielleicht auch mal ausprobieren"
+2010-09-16 14:28:55,kwolf,*mal wieder
+2010-09-16 14:29:42,kwolf,"Kann man damit anständig rumspielen oder ist es immer noch mehr ein bootbarer Testcase, der halt das macht, was gerade gedebuggt wird?"
+2010-09-16 14:30:00,MrX,"Was ist für dich ""anständig"" rumspielen?"
+2010-09-16 14:30:25,kwolf,"Hat eine Shell, die mehr als echo, help, version und reboot kann ;-)"
+2010-09-16 14:30:35,DesL,^^
+2010-09-16 14:30:59,MrX,"Die Shell kann Programme laden, sowie die Befehle help/?, hi, hello, fformat, fdir und reboot"
+2010-09-16 14:31:24,kwolf,Sind auch ein paar Programme dabei?
+2010-09-16 14:31:27,MrX,"Aber es gibt noch ein paar Tastenkombinationen. Strg+s macht einen Screenshot auf die Floppy, Strg+u auf USB-Stick"
+2010-09-16 14:31:28,DerHartmut,Nennt mir mal bitte ein Linux für einen Server (welcher als Desktop-PC benutzt werden soll) mit 2x833 Pentium 3 und 256 MB (!) RAM und 36 GB SCSI-Platte
+2010-09-16 14:31:48,kwolf,Linux 0.01
+2010-09-16 14:31:56,DesL,Oo
+2010-09-16 14:31:59,DesL,kann ads scsi
+2010-09-16 14:32:02,DesL,*das
+2010-09-16 14:32:03,kwolf,Oh.
+2010-09-16 14:32:18,kwolf,"Das habe ich nicht bedacht, ich wollte die Auswahl auf den RAM optimieren. ;-)"
+2010-09-16 14:32:22,DerHartmut,*g*
+2010-09-16 14:32:34,DerHartmut,"Also es lassen sich auch mehr RAM installieren, wenn ich hier noch ein bisschen SDRAM finde"
+2010-09-16 14:32:39,MrX,"8 Programme. Allerdings sind davon nicht alle fertig und keines ist eine ""Anwendung"", eher Spielereien."
+2010-09-16 14:32:40,DerHartmut,So bis zu 512 MB geht das schon
+2010-09-16 14:33:43,MrX,"Dann haben wir VBE (8,15, 16, 24 und 32-bit Grafikmodi in diversen Auflösungen (sollten) funktionieren)"
+2010-09-16 14:34:19,kwolf,DerHartmut: Also KDE 3.5 läuft auf dem Ding.
+2010-09-16 14:34:30,MrX,"PrettyOS beantwortet (soweit ich weiß, habs selbst nicht getestet) Pings (Nur RTL8139) und kann mit EHCI umgehen."
+2010-09-16 14:34:50,MrX,Genug Werbung? ;-)
+2010-09-16 14:35:15,kwolf,"Ja, wenn auch keine so überzeugende, dass ich mir PrettyOS auf eine freie Partition packen würde ;-)"
+2010-09-16 14:35:38,DesL,*g*
+2010-09-16 14:35:40,kwolf,"Halt ein Haufen technisch netter Spielereien, die aber nicht so benutzt werden, dass sie einen Nutzwert hätten"
+2010-09-16 14:35:40,MrX,"Vor allem, weil es nicht allzu erfreulich von einer HDD laufen dürfte."
+2010-09-16 14:35:50,kwolf,"Hm, richtig. ;-)"
+2010-09-16 14:36:16,MrX,Aber Emulatoren sind was feines zum testen.
+2010-09-16 14:36:20,kwolf,"Wenn ihr daraus mal was ganzes macht, wird es sicher nett"
+2010-09-16 14:36:49,kwolf,"Aber eine Netzwerkkarte benutze ich nicht in erster Linie, um Pings zu beantworten, und USB nicht in erster Linie für Screenshots"
+2010-09-16 14:36:59,kwolf,"Insofern habt ihr viel Funktionalität, die gar nicht richtig ausgenutzt wird"
+2010-09-16 14:37:06,MrX,Du kannst ja auch Programme vom USB-Stick laden...
+2010-09-16 14:37:54,kwolf,Was für Annahmen macht ihr über den USB-Stick?
+2010-09-16 14:37:55,DerHartmut,"Hm, toll, die ganzen Links auf openSuse.org zeigen auf die 11.2 o.O"
+2010-09-16 14:38:05,kwolf,"Also, Dateisystem und Partitionierung und so?"
+2010-09-16 14:38:14,DesL,lol @ DerHartmut
+2010-09-16 14:38:27,kwolf,FAT nehme ich mal an. Auch FAT32?
+2010-09-16 14:38:42,MrX,"USB 2.0, FAT12-32, Ggf. funktionierts mit mehreren Partitionen."
+2010-09-16 14:38:54,kwolf,Ggf. klingt überzeugt *g*
+2010-09-16 14:39:05,MrX,Ich weiß es halt nicht.
+2010-09-16 14:39:11,MrX,"Es ist möglich, das es funktioniert."
+2010-09-16 14:39:11,DerHartmut,DesL: Der Fix: aus 112 mach 113
+2010-09-16 14:39:41,DesL,"das ist, öhm, doof"
+2010-09-16 14:40:39,kwolf,"MrX: Das heißt, du testest mit Sticks mit nur einer Partition oder mit unparitionierten Sticks (""Superfloppies"")?"
+2010-09-16 14:41:48,MrX,"Ich hab keine Sticks mit mehreren Partitionen (und auch keine Verwendung dafür^^). Es ist möglich, das ehenkes das ausprobiert hat oder zumindest der FAT-Treiber die nötigen Voraussetzungen bietet."
+2010-09-16 14:42:14,MrX,"Die wahrscheinlich größte Frage ist, erkennt er mehrere Partitionen. Wenn ja, dürfte das Laden davon funktionieren."
+2010-09-16 14:42:40,kwolf,Partitioniert sein kann er auch mit nur einer Partition
+2010-09-16 14:43:02,MrX,Solche Sticks funktionieren.
+2010-09-16 14:43:16,kwolf,"Okay, und welche ganz ohne Partitionstabelle auch"
+2010-09-16 14:43:29,MrX,"äh, ich glaub schon."
+2010-09-16 14:45:01,kwolf,In welche Richtung willst du PrettyOS denn in nächster Zeit weiterentwickeln?
+2010-09-16 14:45:27,kwolf,Weiter mehr technisch interessante Sachen oder auch was benutzbares draus machen?
+2010-09-16 14:48:36,MrX,Ich programmiere eher am Kern als an der Schale und programme por
+2010-09-16 14:48:36,MrX,huch....
+2010-09-16 14:48:45,MrX,Enter wollte ich noch nicht drücken ;-)
+2010-09-16 14:48:51,MrX,"Naja, Fortsetzung zu dem Satz folgt..."
+2010-09-16 14:49:07,MrX,...portieren tu ich eher nicht.
+2010-09-16 14:49:55,MrX,"Und letztlich weiß ich selbst nicht, was ich als nächstes tun werde, hängt alles von Zeit&Laune ab."
+2010-09-16 14:50:48,kwolf,Also ersteres ;-)
+2010-09-16 14:51:24,MrX,"ja, eher ersteres. Wobei auch technisch interessante Spielereien zur Benutzbarkeit beitragen können."
+2010-09-16 14:51:52,kwolf,"Ohne Technik keine Benutzerbarkeit, das ist klar"
+2010-09-16 14:52:48,kwolf,"Aber Technik führt halt nicht automatisch zu Benutzbarkeit, da habe ich ja vorhin ein paar Beispiele erwähnt"
+2010-09-16 14:53:06,MrX,"Beispielsweise arbeite ich seit längerem an einem System zur Kommunikation zwischen Kernel und User ohne tausende von Syscalls. Das würde die Benutzbarkeit insofern verbessern, als das die Shell viel mehr ausgeben könnte und PrettyOS viel mehr Infos an den Benutzer liefern könnte."
+2010-09-16 14:53:16,kwolf,"Aber solange das kein Ziel ist, ist es ja auch nicht verkehrt, Dinge nicht benutzbar zu machen"
+2010-09-16 14:54:18,kwolf,"MrX: Wahrscheinlich müsste ich eure Syscallschnittstelle kennen, um das Problem zu verstehen"
+2010-09-16 14:54:56,DesL,"für treiber als einzelne programme wäre IPC nicht schlecht, oder?"
+2010-09-16 14:56:17,MrX,"kwolf: Mh, egal wie die Syscalls implementiert sind, aber einen Syscall um z.B. den Typ der Netzwerkkarte auszulesen ist wohl nie sinnvoll."
+2010-09-16 14:56:34,redeagle,hi
+2010-09-16 14:56:44,DesL,moin redeagle
+2010-09-16 14:57:50,kwolf,"MrX: Ein spezieller Syscalls dafür klingt irgendwie falsch, ja. Aber ein Problem im Sinne von Leistungsfähigkeit ist es nicht. Das fragt ein Programm maximal einmal ab."
+2010-09-16 14:57:55,kwolf,Moin redeagle
+2010-09-16 14:58:33,MrX,"ich mein auch den ersten Grund... Es ist nicht sinnvoll tausende Syscalls zu implementieren, die fast nichts tun und sich nur geringfügig unterscheiden."
+2010-09-16 15:00:26,kwolf,"Okay, jetzt ist mir klar was du meinst."
+2010-09-16 15:00:39,kwolf,"Ich dachte tausende von Syscalls, die ausgeführt werden müssen, um etwas zu erreichen"
+2010-09-16 15:01:22,kwolf,Unix handelt das mit open/read/write/close ab. ioctl meinetwegen noch.
+2010-09-16 15:01:32,MrX,Dateien.+
+2010-09-16 15:01:35,MrX,-+
+2010-09-16 15:03:22,DesL,"öhm, kann c++ referenzen auf pointer?"
+2010-09-16 15:03:32,MrX,"Ich vermute, ja."
+2010-09-16 15:03:38,kwolf,"Ich sehe keinen Grund, warum nicht"
+2010-09-16 15:03:46,kwolf,Aber ich kann kein C++
+2010-09-16 15:03:56,DesL,"hm, wie sähge das denn dann aus?"
+2010-09-16 15:04:08,MrX,int*& x
+2010-09-16 15:04:11,MrX,denke ich.
+2010-09-16 15:04:42,MrX,"Obwohl, könnte auch int&* x sein..."
+2010-09-16 15:05:02,MrX,"eines müsste zu einem Pointer auf eine Referenz werden, das andere zu einer Referenz auf den Pointer."
+2010-09-16 15:05:20,DesL,google sagt int*&
+2010-09-16 15:05:54,MrX,"Das wäre auch das, was ich intuitiv versucht hätte."
+2010-09-16 15:06:00,kwolf,"Pointer auf Referenz ergibt nicht viel Sinn, oder?"
+2010-09-16 15:06:41,MrX,Ich kann mir keinen Sinn vorstellen.
+2010-09-16 15:07:04,MrX,Referenz auf Pointer ist nützlicher.
+2010-09-16 15:07:04,DesL,neinm es macht keinen sinn
+2010-09-16 15:07:38,DesL,"hm, ein bug gefixt, ein neuer aufgetreten"
+2010-09-16 15:09:27,kwolf,So wie es sein soll
+2010-09-16 15:09:58,DesL,wäre ja langweilig wenn es auf anhieb klappen würde^^
+2010-09-16 15:10:29,kwolf,"Richtig, und was passiert, wenn der Jugend langweilig ist, liest man ja jeden Tag in der Zeitung"
+2010-09-16 15:11:02,DesL,Oo
+2010-09-16 15:11:56,DesL,"yay, das verschieben eines Nodes, hängt das node bei sich selber ein^^"
+2010-09-16 15:12:42,MrX,"Rekursion, die; Siehe ""die Rekursion"""
+2010-09-16 15:13:01,DesL,Oo steht wo?
+2010-09-16 15:25:57,DesL,re
+2010-09-16 15:26:26,DesL,"dieses verf****e windows startet automatisch neu, nach dem es updates gezogen hat -.-"
+2010-09-16 15:26:45,XanClic,Moin
+2010-09-16 15:26:59,DesL,moin XanClic
+2010-09-16 15:27:34,redeagle,hi XanClic
+2010-09-16 15:27:51,markus111,moin XanClic
+2010-09-16 15:27:52,kwolf,Moin XanClic
+2010-09-16 15:29:24,markus111,meine RTC will einfach nicht...
+2010-09-16 15:29:40,markus111,kann man die zeit nur lesen wenn interrupts aktiviert sind?
+2010-09-16 15:30:31,markus111,auch nicht...
+2010-09-16 15:33:38,Jidder,was heißt denn will nicht?
+2010-09-16 15:34:25,markus111,es kommen nur 0en raus
+2010-09-16 15:34:41,Jidder,dann zeig mal den code
+2010-09-16 15:34:56,markus111,uint8_t rtc_get_second(void) { 	return cmos_read(0x00); }
+2010-09-16 15:35:09,markus111,zB
+2010-09-16 15:35:11,Jidder,und cmos_read?
+2010-09-16 15:35:41,markus111,http://pastebin.com/PtxzRug7
+2010-09-16 15:35:46,markus111,Hi Tederian
+2010-09-16 15:36:18,Tederian,Hallo
+2010-09-16 15:37:12,DerHartmut,markus111: Nettes Syntax-Hightling ;)
+2010-09-16 15:37:19,DerHartmut,Highlighted halt nur die wichtigsten sachen
+2010-09-16 15:38:12,JanDing,markus111: temp & 80 ist falsch
+2010-09-16 15:39:43,markus111,so stehts da http://www.lowlevel.eu/wiki/CMOS auch
+2010-09-16 15:40:06,JanDing,80 vs 0x80
+2010-09-16 15:40:24,markus111,"outb(CMOS_PORT_ADDRESS, (tmp & 0x80) | (offset & 0x7F));"
+2010-09-16 15:40:49,markus111,uups
+2010-09-16 15:40:54,markus111,hast ja recht
+2010-09-16 15:43:29,markus111,nun geht sie nurnoch total falsch
+2010-09-16 15:44:35,DesL,"kennt jemand eine Opensource/freeware software, mit der man Videos und bilder archivieren und taggen kann?"
+2010-09-16 15:48:03,markus111,"oO, Trojaner auf pastebin.org"
+2010-09-16 15:48:11,DesL,?
+2010-09-16 15:48:15,Tederian,ja markus111 
+2010-09-16 15:48:18,Tederian,Pastebin.org ist ein fake
+2010-09-16 15:48:26,Tederian,Zum hundertsten mal ey >:o benutzt .com
+2010-09-16 15:48:33,markus111,http://pastebin.com/CS5x5npK
+2010-09-16 15:48:43,markus111,da sagt mein virenscanner was
+2010-09-16 15:48:53,markus111,obwohls nur code is
+2010-09-16 15:49:11,markus111,"ja, nich .org, ups^^"
+2010-09-16 15:49:11,DesL,fake != plagiat
+2010-09-16 15:50:56,markus111,Hi Programm_Noob
+2010-09-16 15:51:10,redeagle,hi Programm_Noob
+2010-09-16 15:52:07,Tederian,Hi PN
+2010-09-16 15:52:33,Tederian,DesL: pastebin.org hat(te) einen Trojaner drauf
+2010-09-16 15:52:43,Tederian,Jedenfalls stand das früher auf dem Blog des pastebin.com Gründers
+2010-09-16 15:53:42,JanDing,na dass der sowas bloggt is klar
+2010-09-16 15:54:08,Tederian,JanDing: pastebin.org nutzte damals extra die gleiche Software wie pastebin.com
+2010-09-16 15:54:29,DesL|CuC,oder nur das gleiche layout
+2010-09-16 15:54:33,Tederian,"Und baute extra noch die verlinkung zum Blog ein, dies standardmässig nicht in der Software gibt"
+2010-09-16 15:55:14,DesL|CuC,die werden ja wohl kaum den server kopiert haben
+2010-09-16 15:55:51,Tederian,Die Software ist OpenSource
+2010-09-16 15:56:39,Tederian,bzw war es bevor .com übernommen wurde und jetzt unnötige sachen wie twittershizzle hat
+2010-09-16 15:58:01,Programm_Noob,Moin
+2010-09-16 16:03:54,DerHartmut,"err, eth0: ARPOP_REPLY received from blablabla"
+2010-09-16 16:03:57,DerHartmut,How to fix it?
+2010-09-16 16:06:47,DickHuuhn,wenn arp antwort gibt ist doch gut?
+2010-09-16 16:07:19,Programm_Noob,unser DSL Router hat grad eigenständig beschlossen einne kleine Pause zu machen
+2010-09-16 16:08:20,Programm_Noob,Moin AGGROStar1991
+2010-09-16 16:08:31,AGGROStar1991,servus
+2010-09-16 16:10:57,markus111,moin
+2010-09-16 16:11:04,markus111,"boah, meine Uhr funktioniert :)"
+2010-09-16 16:11:24,markus111,der wollte die änderung des datentypen nicht übernehmen
+2010-09-16 16:14:08,pocky,hi
+2010-09-16 16:14:19,XanClic,"moin, pocky und AGGROStar1991"
+2010-09-16 16:17:35,Programm_Noob,Moin pocky
+2010-09-16 16:18:56,Programm_Noob,"gibt es irgendwo eine übersicht, übder die Error Codes beim GPF?"
+2010-09-16 16:19:15,XanClic,http://wiki.osdev.org/Exceptions#Selector_Error_Code
+2010-09-16 16:19:42,kwolf,Intel Manual
+2010-09-16 16:19:43,kwolf,+-
+2010-09-16 16:24:14,Programm_Noob,kwolf: Vom intel Manual hab ich letzte Nacht geträumt.
+2010-09-16 16:24:23,Programm_Noob,Und du kannst mir glauben es war Schrecklich
+2010-09-16 16:24:42,kwolf,"Der Traum sollte dir sagen, dass du auch mal reinschauen sollst."
+2010-09-16 16:25:23,kwolf,"Du findest so schnell keine andere Hardware, die so gut dokumentiert ist wie die CPU"
+2010-09-16 16:25:54,Programm_Noob,ICh finde die RTL8139 sind sehr schön dokumentiert
+2010-09-16 16:26:32,Programm_Noob,"kwolf: Das Intel Manual konnte Sprechen und hat mich immer Ausgelacht, weil ich das was da stand nicht verstand."
+2010-09-16 16:27:02,DickHuuhn,LOL
+2010-09-16 16:27:09,kwolf,Hast du einen funktionierenden rtl8139-Treiber?
+2010-09-16 16:27:11,DickHuuhn,Wenn Siegmund Freud noch leben würde ^^
+2010-09-16 16:27:20,Programm_Noob,kwolf: nein?
+2010-09-16 16:27:23,XanClic,"Der Schlomo, der gute"
+2010-09-16 16:27:26,Programm_Noob,-? +.
+2010-09-16 16:27:39,kwolf,"Programm_Noob: Dann kannst du wohl nicht sagen, wie gut die Doku ist"
+2010-09-16 16:27:51,Programm_Noob,Sie sieht aber gut dokumentiert aus.
+2010-09-16 16:28:02,Programm_Noob,und vor allem sehr leicht zu verstehendes Englich
+2010-09-16 16:28:41,XanClic,"Ah, stimmt, wir haben uns im Wiki ja drauf geeinigt, dass man kein Englisch braucht"
+2010-09-16 16:29:02,markus111,muss man für so gut wie jede netzwerkkarte nen eigenen treiber schreiben?
+2010-09-16 16:29:07,kwolf,Ja
+2010-09-16 16:29:08,Programm_Noob,ja
+2010-09-16 16:29:18,kwolf,Bzw. einmal CDI implementieren ;-)
+2010-09-16 16:29:20,XanClic,"Nein, einen eigenen nicht unbedingt"
+2010-09-16 16:29:21,markus111,na super
+2010-09-16 16:29:22,Programm_Noob,bzw: für alles muss du nen Treiber schreiben
+2010-09-16 16:29:37,Programm_Noob,markus111: CDI bringt nicht soviel.
+2010-09-16 16:29:54,DerHartmut,Programm_Noob: Wieso?
+2010-09-16 16:29:54,XanClic,"Gut, dann muss man natürlich für jede einen eigenen schreiben"
+2010-09-16 16:30:08,markus111,also wenn ich nur nen trl treiber hab wirds auf ner intel nicht gehen
+2010-09-16 16:30:18,markus111,musste selber nen treiber schreiben?
+2010-09-16 16:30:33,Programm_Noob,an wehn geht die Frage?
+2010-09-16 16:30:47,Programm_Noob,DerHartmut: weil dort finde ich sehr wenig aktivität ist.
+2010-09-16 16:30:49,markus111,euch alle
+2010-09-16 16:31:06,DickHuuhn,"Programm_Noob, das läuft hier ja auch so: CDI kann im moment grade alles"
+2010-09-16 16:31:11,Programm_Noob,du musst für jeden netzwerkchip nen eigenen Treiber schreiben
+2010-09-16 16:31:17,DickHuuhn,Wenn einer nen Treiber schreibt bei dem CDI nicht alles kann dann erweitert der CDI
+2010-09-16 16:31:25,DickHuuhn,Den Fall hatten wir schon länge rnich mehr
+2010-09-16 16:31:32,markus111,ich kann mir vorstellen die von intel sind nicht so gut dokumentiert?
+2010-09-16 16:31:34,XanClic,"Doch, aber ich bin nur zu doof für neue Interfaces"
+2010-09-16 16:31:39,XanClic,Siehe CDI.audio und CDI.usb
+2010-09-16 16:32:08,Programm_Noob,"XanClic: du bist nicht zu dumm. Du setllst dich nur dumm, damit andere das für dich machen."
+2010-09-16 16:32:12,DerHartmut,"Programm_Noob: Wie DickHuuhn bereits sagte: Es funktioniert, noch werden keine neuen Treiber entwickelt, weil diese im Moment nicht gebraucht werden"
+2010-09-16 16:32:22,XanClic,"Programm_Noob: Ne, ich möchte eigentlich nicht, dass du das machst"
+2010-09-16 16:32:34,Programm_Noob,XanCLic: warum denn nicht?
+2010-09-16 16:32:43,kwolf,"Hm, aber ich glaube, der Noob hat nicht so ganz unrecht, XanClic ;-)"
+2010-09-16 16:32:48,XanClic,"Da müsstest du ja was machen, was dir nicht gefällt, Programm_Noob"
+2010-09-16 16:32:50,DerHartmut,XanClic: Wieso? Dann hebt sich doch seine originale Dummheit mit deiner Pseudo-Doofheit auf
+2010-09-16 16:32:52,XanClic,Und das wollen wir ja alle nicht
+2010-09-16 16:33:09,DickHuuhn,"DerHartmut, Doof + Doof = 2*Doof"
+2010-09-16 16:33:11,DickHuuhn,:3
+2010-09-16 16:33:24,DickHuuhn,Außer ein Doof ist von DerHartmut 
+2010-09-16 16:33:29,Programm_Noob,Dickhuuhn das geht anders
+2010-09-16 16:33:33,DickHuuhn,Dann ist Doof + Doof = Stan + Ollie
+2010-09-16 16:33:36,XanClic,Wir sollten die Kirche mal im Doof lassen
+2010-09-16 16:33:51,Programm_Noob,Doof*Doof = Doof^Doof
+2010-09-16 16:34:04,DickHuuhn,Doof^Doof = 0 :/
+2010-09-16 16:34:05,Programm_Noob,Und das ergibt Doof
+2010-09-16 16:37:54,kwolf,"""[16:31] <Programm_Noob> DerHartmut: weil dort finde ich sehr wenig aktivität ist."" -- Mach doch ein bisschen Aktivität, wenn dich das stört."
+2010-09-16 16:38:06,DerHartmut,Man
+2010-09-16 16:38:21,DerHartmut,Programm_Noob: Portiere doch dein Interface für alle Treiber auf CDI
+2010-09-16 16:38:30,DerHartmut,Dann haben wir ein Interface auf einem Interface
+2010-09-16 16:38:30,DerHartmut,Im Interface
+2010-09-16 16:40:11,DesL|CuC,Oo
+2010-09-16 16:40:44,DickHuuhn,das ist so wie ein python-interpreter in perl
+2010-09-16 16:40:51,DickHuuhn,nur kaputter
+2010-09-16 16:41:31,kwolf,"Yay, Pythoninterpreter in einer Regex!"
+2010-09-16 16:42:20,DickHuuhn,:D
+2010-09-16 16:45:42,DickHuuhn,Moin Christian 
+2010-09-16 16:45:54,christian,Hallo
+2010-09-16 16:46:05,XanClic,"moin, Christian"
+2010-09-16 16:47:24,DerHartmut,Hallo Christian
+2010-09-16 16:48:14,DickHuuhn,"Programm_Noob, ich glaueb die vernünftigste Idee, wenn du CDI nicht nutzen willst, ist es, ein anderes common driver interface zu entwerfen und zu implementieren"
+2010-09-16 16:48:35,kwolf,Da wird aber noch weniger Aktivität sein
+2010-09-16 16:49:10,DickHuuhn,Macht ja nix
+2010-09-16 16:49:21,kwolf,Ist halt ein Huuhn-Ei-Problem
+2010-09-16 16:54:55,DickHuuhn,Immer dieser Peer
+2010-09-16 16:57:04,markus111,"mein keyboard-treiber funktioniert, aber irgendwie stimmen die zeichen nicht..."
+2010-09-16 16:57:18,DesL,also funzt er nicht richtig
+2010-09-16 16:57:27,markus111,Pfeil-Nach-Oben ist zb ein g
+2010-09-16 16:57:30,DickHuuhn,Musst du schauen wie du die Keycodes dekodierst
+2010-09-16 16:57:59,DickHuuhn,Ist irgendwo im linux oder x sourcecode kp
+2010-09-16 16:58:01,markus111,ich hab das translate aus tyndur verwendet
+2010-09-16 17:00:02,mastamind,hi
+2010-09-16 17:00:31,markus111,hi mastamind
+2010-09-16 17:05:16,AGGROStar1991,hi
+2010-09-16 17:16:38,Tederian,Hi PN
+2010-09-16 17:17:11,Programm_Noob,Ich hau unseren DSL Router gleich ausm Fenster
+2010-09-16 17:17:25,Tederian,"""DSL Router"" lolwut"
+2010-09-16 17:17:31,Tederian,Modem integriert?
+2010-09-16 17:17:43,DickHuuhn,ja ted
+2010-09-16 17:18:01,DickHuuhn,das ist nicht so wie in der schweiz wo man noch per alphorn kommuniziert
+2010-09-16 17:18:09,Tederian,Ich habe hier 50mbit/s :)
+2010-09-16 17:19:45,Programm_Noob,Tederian: ja mit Modem drin
+2010-09-16 17:22:06,DerHartmut,Ich habe hier Schokolade
+2010-09-16 17:22:38,Tederian,Ist doch total doof Programm_Noob
+2010-09-16 17:23:09,Programm_Noob,warum DSL ist doch eigentlich schnell genug
+2010-09-16 17:23:23,Tederian,"Ja das schon, aber du hast keine so grosse Auswahl"
+2010-09-16 17:23:46,Programm_Noob,und man bekommt nicht das was man will
+2010-09-16 17:24:06,Programm_Noob,laut Telekom haben wir ne 6000er und laut speedtest nur ne 2000er 
+2010-09-16 17:25:16,DickHuuhn,ich habe laut unitymedia 16000 und speedtest sagt 17000 x)
+2010-09-16 17:25:21,DickHuuhn,fand ich auch sehr cool
+2010-09-16 17:25:54,Programm_Noob,und download speed hab ich momentan so um die 95kb/s
+2010-09-16 17:26:12,Tederian,Kann am Server liegen
+2010-09-16 17:26:48,Programm_Noob,"bei einem Server, wo mein Cousin zur gleichen Zeit mit 250kb/s zieht???"
+2010-09-16 17:27:03,Programm_Noob,und bein Cousin wont sehr sehr weit abgelegen auf dem Land.
+2010-09-16 17:28:13,Tederian,Dann sag deinem Bruder er soll die pr0n-Torrents ausmachen
+2010-09-16 17:28:45,Programm_Noob,Ich bin momentan alleine im netz
+2010-09-16 17:29:22,Tederian,Darfst du denn das schon? :o
+2010-09-16 17:29:30,Programm_Noob,Ja
+2010-09-16 17:30:39,DerHartmut,ZENSUR
+2010-09-16 17:34:27,Programm_Noob,DerHartmut: Wir sind hier nicht im Kindergarten.
+2010-09-16 17:34:33,Programm_Noob,die Zensur kannst du lassen
+2010-09-16 17:36:27,DerHartmut,Programm_Noob: Hamse dich vergessen abzuholen oder warum quatscht du mich so unqualifiziert von der Seite an?
+2010-09-16 17:36:53,Tederian,:o Kinder beruhigt euch
+2010-09-16 17:37:09,DerHartmut,Tederian: Hamse dich vergessen abzuholen [REST FOLGT]
+2010-09-16 17:37:09,DerHartmut,:-O
+2010-09-16 17:37:12,DerHartmut,*:-P
+2010-09-16 17:37:58,Tederian,Schon besser mit dem FriedeFreudeEierkuchen-Filter \o/
+2010-09-16 17:39:18,DerHartmut,Eierkuchen
+2010-09-16 17:39:18,DerHartmut,Schmeckt
+2010-09-16 17:39:21,DerHartmut,Gibt Kraft
+2010-09-16 17:39:23,DerHartmut,Hat Erfahrung
+2010-09-16 17:39:25,DerHartmut,Eierkuchen
+2010-09-16 17:39:27,DerHartmut,Eierkuchen.
+2010-09-16 17:39:43,Tederian,"Ja Hartmut ich hab ""Eier"" bemerkt, darfst dich wieder setzen"
+2010-09-16 17:39:49,DerHartmut,"Ihr müsst doch manchmal auch denken, ich habe etwas von Jidder geraucht oder?"
+2010-09-16 17:40:21,Programm_Noob,nö
+2010-09-16 17:40:28,Tederian,Jidder nimmt Drogen?
+2010-09-16 17:40:45,DerHartmut,Das habe ich nicht gesagt
+2010-09-16 17:40:57,Programm_Noob,Tederian: Der Hartmut meinte er hätte etwas von Jidder geraucht.
+2010-09-16 17:41:06,Tederian,* DerHartmut hat einen IQ von 140 <-- Da du das gesagt hast: Du brauchst kein Zeuch um so zu sein
+2010-09-16 17:41:27,Tederian,"Programm_Noob, danke, habs gelesen, wollte nur fragen ey :o"
+2010-09-16 17:41:33,DerHartmut,Yay \o/
+2010-09-16 17:42:03,Programm_Noob,Ich glaube DerHartmut raucht kein Jidder. Ich vermute eher eine andere Droge oder irgendwelche Tabletten
+2010-09-16 17:42:53,Tederian,"Jidder ist keine Droge, Jidder ist eine Supermarktkette"
+2010-09-16 17:43:30,DerHartmut,"Programm_Noob: Nein, das ist einfach die pure Freude am Leben :-D"
+2010-09-16 17:43:36,DerHartmut,afk
+2010-09-16 17:44:03,JanDing,wasn hier los?
+2010-09-16 17:44:21,Programm_Noob,Ich kenne genug Leute die Drogen nehmen. die verhalten sich sehr ähnlich wie du Hartmut
+2010-09-16 17:44:22,Tederian,Hi Jidder
+2010-09-16 17:44:30,Programm_Noob,Moin JanDing
+2010-09-16 17:44:35,Tederian,"Programm_Noob, aber du bist doch erst 16 :("
+2010-09-16 17:44:48,Programm_Noob,Tederian: und???
+2010-09-16 17:45:04,Programm_Noob,Ich sagte ich kenne genug leute.
+2010-09-16 17:45:08,Programm_Noob,Ich nehme selber keine.
+2010-09-16 17:45:13,Tederian,Wie viel ist genug?
+2010-09-16 17:45:28,Tederian,"Ich weiss, aber du bewegst dich in den total falschen Kreisen!"
+2010-09-16 17:46:15,Programm_Noob,Ich kenne genau 5 Personen die regelmäsig unter drogen stehen.
+2010-09-16 17:46:32,Programm_Noob,nein ich bin nicht mit solchen drogen nehmern befreundet.
+2010-09-16 17:46:49,Programm_Noob,Moin mgottschlag
+2010-09-16 17:46:55,Tederian,Hallo mgottschlag 
+2010-09-16 17:46:58,mgottschlag,moin
+2010-09-16 17:54:42,pgahlen_,moin
+2010-09-16 17:54:50,redeagle,hi pgahlen_
+2010-09-16 17:54:54,Programm_Noob,Moin pgahlen
+2010-09-16 17:55:17,pgahlen_,wie patcht man GRUB? 
+2010-09-16 17:55:49,Tederian,Source code saugen und Patch drauf patchen?
+2010-09-16 17:55:55,Tederian,Siehe man patch
+2010-09-16 17:56:15,Tederian,(In den Manpages unter Linux)
+2010-09-16 17:56:22,pgahlen_,"hm ok, hab gedacht man muss was beachten"
+2010-09-16 18:07:11,markus111,sollte man beim systemstart prüfen ob die Tastaur funktioniert?
+2010-09-16 18:07:38,Papierkorb,omoin
+2010-09-16 18:07:40,markus111,Moin Papierkorb
+2010-09-16 18:07:43,Papierkorb,*moin
+2010-09-16 18:07:47,Tederian,"markus111, unnötige Gimmicks :o"
+2010-09-16 18:08:09,Programm_Noob,Moin Papierkorb
+2010-09-16 18:08:21,Programm_Noob,markus111: wi ekann man das den prüfen?
+2010-09-16 18:08:42,Tederian,"Programm_Noob, gibt Selftest I/O Befehle für die Legacy Tastatur"
+2010-09-16 18:08:45,markus111,0xEE hinsenden
+2010-09-16 18:08:46,Tederian,Oder wie das hiess
+2010-09-16 18:09:25,markus111,ich prüfe die verbindung und ob sie funktioniert
+2010-09-16 18:09:33,pgahlen_,"hm, ich find schon, dann kann man wenigstens ne Warnung ausgeben ""Kauf dir ne neue Tastatur"""
+2010-09-16 18:10:34,Tederian,Aber nicht beim Systemstart
+2010-09-16 18:10:40,Tederian,Der Treiber soll das tun
+2010-09-16 18:11:00,markus111,"ja, beim systemstart wenn der treiber initialisiert"
+2010-09-16 18:12:18,pgahlen_,"ähm, mein configure sagt, das GRUB objcopy braucht und ich meine binutils updaten soll ... was soll ich jetzt machen, die sind auf dem neusten Stand"
+2010-09-16 18:14:19,pgahlen_,objcopy ist doch kein extra Programm oder?
+2010-09-16 18:19:09,JanDing,"ja, müsste bei den binutils dabei sein"
+2010-09-16 18:19:21,JanDing,wie alt ist das configure denn?
+2010-09-16 18:19:48,pgahlen_,"tja, er ruft ja das Programm auf, was in der TAR von GRUB drinne war"
+2010-09-16 18:20:03,JanDing,"grub? aber nicht unter windows, oder?"
+2010-09-16 18:20:36,pgahlen_,nope
+2010-09-16 18:21:09,JanDing,okay. programm in einer tar ist aber auch komisch für nicht-windows
+2010-09-16 18:21:36,pgahlen_,ja also das script configure
+2010-09-16 18:21:46,pgahlen_,ich ruf die dann mit ./cnfigure auf
+2010-09-16 18:22:18,XanClic,Also ich fix dann ja immer das configure
+2010-09-16 18:22:27,XanClic,"Und kommentier den Teil aus, der objcopy überprüft"
+2010-09-16 18:22:46,XanClic,(Wobei immer nun auch schon wieder einige Zeit her ist)
+2010-09-16 18:23:20,pgahlen_,hm ok
+2010-09-16 18:23:23,Programm_Noob1,Ich will mir grad den aktuellen Flashlayer installieren. Linux. Wie bekomme ich das hin.
+2010-09-16 18:24:09,XanClic,"Auf die Flashplayerseite gehen, wo auch immer die jetzt war, Distribution auswählen, Paket runterladen, dementsprechend installieren, Browser neustarten"
+2010-09-16 18:24:58,pocky,"wenn ich das mit dem multiboot zeug so mache: http://nopaste.info/e394bb062b.html , dann müsste ich doch mit blabla[i] an des normale zeug kommen, und mit blabla[i-1] an die size?"
+2010-09-16 18:25:20,Programm_Noob1,"ich kann dort das Paket ""APT für Ubuntu 9.04+"" donloaden"
+2010-09-16 18:25:45,Programm_Noob1,"wenn ich das wähle, möchte Firefox von mir eine Anwendung wissen, mit der ich apturl's öffnen kann."
+2010-09-16 18:26:38,Papierkorb,lol
+2010-09-16 18:26:42,Papierkorb,das ist kein paket
+2010-09-16 18:27:12,Papierkorb,"das ist eine ""url"" für APT, unter welchem paket die software die gewünschte software im repo finden kann"
+2010-09-16 18:27:18,Papierkorb,"nicht, dass es das finden *muss*"
+2010-09-16 18:27:53,Papierkorb,sudo apt-get install <dein_paket>
+2010-09-16 18:31:11,Programm_Noob,Was muss ich denn dann nehmen?
+2010-09-16 18:31:22,markus111,Guten Abend robotx
+2010-09-16 18:31:30,Programm_Noob,Moin robotx
+2010-09-16 18:31:33,robotx,hi
+2010-09-16 18:31:49,XanClic,"moin, robotx"
+2010-09-16 18:35:06,pgahlen_,"hm, der patch ist aber auch Mies vo  GRUB"
+2010-09-16 18:35:21,Tederian,Was für ein Patch?
+2010-09-16 18:35:23,pgahlen_,er sagt mir die ganze zeit iergendwas mit hunk failed in der boot.c
+2010-09-16 18:35:27,pgahlen_,vbe
+2010-09-16 18:35:31,Tederian,vbe?
+2010-09-16 18:35:37,pgahlen_,kann ich das ignorieren?
+2010-09-16 18:35:52,XanClic,"Nein, weil das heißt, dass der Patch nicht passt"
+2010-09-16 18:35:55,pgahlen_,"wenn ich das nochmal mache sagt er mir, er hat einen patch gefunden"
+2010-09-16 18:36:15,Tederian,"Was meinst du mit vbe, und welche GRUB-Version/Welcher Patch?"
+2010-09-16 18:36:18,pgahlen_,"hm, aber ich hab GRUB 0.97 und der Patch ist für 0.97"
+2010-09-16 18:36:31,Tederian,Und wie hast du gepatcht?
+2010-09-16 18:36:55,Tederian,GRUB 0.97 oder die verpatchte Ubuntu-Version?
+2010-09-16 18:37:06,pgahlen_,patch -i ../vbe_patch.patch
+2010-09-16 18:37:32,pgahlen_,von alpha.gnu.org runtergeladener Sourcecode in einen Ordner auf dem Desktop
+2010-09-16 18:37:49,Tederian,Was für ein patch ist es?
+2010-09-16 18:38:04,pgahlen_,der VBE-Patch aus dem wiki.osdev.org
+2010-09-16 18:39:06,pgahlen_,gibts da n besseren?
+2010-09-16 18:40:05,Tederian,Für was brauchst du den?
+2010-09-16 18:40:45,pgahlen_,für n Grafikmodus
+2010-09-16 18:41:09,pgahlen_,GRUB 2 soll ja nur noch multiboot2 haben
+2010-09-16 18:42:26,pgahlen_,"ich meine ich würde mich auch mit nur vga zufriedengeben, aber kann das den GRUB ohne patch?"
+2010-09-16 18:42:47,pocky,selber machen
+2010-09-16 18:43:05,pgahlen_,??? per VM86 oder was?
+2010-09-16 18:43:23,pocky,gibts da net tolle vga ports (kenn mich net aus)
+2010-09-16 18:43:32,pgahlen_,oder den patch reinhauen??
+2010-09-16 18:44:06,pgahlen_,"wow, aber da ist di Uaflösung seeeeeeehr niedrig oder?"
+2010-09-16 18:44:27,pocky,du sagtest du würdest dich damit zufrieden geben
+2010-09-16 18:45:30,XanClic,Also bei mir passt der Patch perfekt
+2010-09-16 18:45:51,pgahlen_,"hm, wo hast du denn den Sourcecode her und wo den Patch?"
+2010-09-16 18:46:08,pgahlen_,u d noch mehr wie patcht du und in welchem Ordner liegt dass alles bei dir?
+2010-09-16 18:46:14,XanClic,"Code von ftp://alpha.gnu.org/gnu/grub/ (ftp://alpha.gnu.org/gnu/grub/grub-0.97.tar.gz), Patch von http://www.student.cs.uwaterloo.ca/~cs452/grub/ (http://www.student.cs.uwaterloo.ca/~cs452/grub/grub-0.97.cs452.patch)"
+2010-09-16 18:47:09,pgahlen_,bei mir hies der Patch schon anders
+2010-09-16 18:47:09,XanClic,"Na ja, ich bin ins GRUB-Verzeichnis gegangen und hab patch -p0 < ../patch/grub-0.97.cs452.patch ausgeführt"
+2010-09-16 18:47:24,XanClic,Einen anderen Patch hab ich nicht gefunden
+2010-09-16 18:48:03,XanClic,"Im OS-Dev-Wiki war ein Link zu http://forum.osdev.org/viewtopic.php?t=17441, von dort zu http://www.smk.co.za/software/vbe-grub/ und http://www.student.cs.uwaterloo.ca/~cs452/grub/, wobei der erste der beiden Links bei mir tot war"
+2010-09-16 18:48:22,pgahlen_,"jo, so bi  ich auch gegangen"
+2010-09-16 18:51:31,pocky,"spricht eigntlich etwas dagegen, wenn ich den lower-mem mit benutze?"
+2010-09-16 18:51:58,XanClic,An sich nicht
+2010-09-16 18:52:13,pocky,"gibt es nachteile, die sich daraus ergeben?"
+2010-09-16 18:52:35,XanClic,Sollte eigentlich keine geben
+2010-09-16 18:57:10,pgahlen_,"hm, geht immer noch ncht"
+2010-09-16 18:57:18,pgahlen_,also ich patche immer noch mit patch -i ../grub-0.97...
+2010-09-16 18:58:44,pgahlen_,aber du konfigurierst erst nach dem Patch oder?
+2010-09-16 18:58:59,XanClic,http://grub.pastebin.com/KiUb46tx
+2010-09-16 18:59:00,XanClic,Ja
+2010-09-16 19:00:07,pgahlen_,"hm, ok aber eig ist es doch egal, ob ich mit wegt oder per Motilla mir die Sachen hole oder?"
+2010-09-16 19:00:23,pgahlen_,iergendwie alles etwas verwirrend
+2010-09-16 19:00:24,pocky,jo
+2010-09-16 19:06:32,pgahlen_,"yeah, kennt jemand von euch Bresenham?"
+2010-09-16 19:06:38,Papierkorb,nein
+2010-09-16 19:07:02,MrX,Nicht persönlich.
+2010-09-16 19:07:06,XanClic,+1
+2010-09-16 19:07:20,pgahlen_,"hm, der hat Regeln aufgestellt, wie man eine Linie zeichnet, wenn man njr ein Raster sprich Bildschirm hat"
+2010-09-16 19:07:25,MrX,ja
+2010-09-16 19:07:30,Papierkorb,achso
+2010-09-16 19:07:30,Papierkorb,der algo
+2010-09-16 19:07:36,Papierkorb,brauchte ich mal fürn DS
+2010-09-16 19:07:36,pgahlen_,jo
+2010-09-16 19:07:43,pgahlen_,DS??
+2010-09-16 19:07:48,Papierkorb,"NDS, ja"
+2010-09-16 19:08:08,pgahlen_,"aso lol, hast n eigenes Spiel gemacht oder was?"
+2010-09-16 19:08:18,Papierkorb,nö
+2010-09-16 19:08:22,Papierkorb,dazu wurd mir das zu blöd
+2010-09-16 19:08:32,pgahlen_,was denn?
+2010-09-16 19:08:33,Papierkorb,hatte dafür auch zu wenig erfahrung (damals eigtl. gar keine ;) )
+2010-09-16 19:08:42,Papierkorb,die Hardware allgemein
+2010-09-16 19:08:51,pgahlen_,aso
+2010-09-16 19:08:58,MrX,pgahlen_: Aber worauf möchstest Du denn hinaus?
+2010-09-16 19:09:03,Papierkorb,das man sich zB mit nem anderen Prozessor unterhalten muss ist einfach bescheuert
+2010-09-16 19:09:03,pgahlen_,was fürn Prozessor ist da eig drin?
+2010-09-16 19:09:09,Papierkorb,ARM7 + ARM9
+2010-09-16 19:09:24,Papierkorb,"ARM9 @ 67MHz, ARM 7 @ 33MHz"
+2010-09-16 19:09:25,pgahlen_,"find ich gut, ich mag ARM"
+2010-09-16 19:09:32,Papierkorb,nicht in der kombo
+2010-09-16 19:09:35,XanClic,+1
+2010-09-16 19:09:43,Papierkorb,dazu ist der ARM9 noch untertaktet
+2010-09-16 19:09:51,pgahlen_,hat mal jemand dafür n OS geschrieben?
+2010-09-16 19:09:55,XanClic,Und laut einer Seite irgendwie alles komplett verbuggt
+2010-09-16 19:09:57,Papierkorb,Frag XanClic :D
+2010-09-16 19:10:10,Papierkorb,"ist ein großer fail das ding, ja"
+2010-09-16 19:10:13,XanClic,Er hat nicht gesagt „plant irgendwie in nicht absehbarer Zeit“
+2010-09-16 19:10:32,Papierkorb,"ansonsten gibts noch LinuxDS, und wenn du die ganzen menüs der fglashkarten dazu zählst ... ;)"
+2010-09-16 19:10:36,pgahlen_,plant iergendwer das in absehbarer Zeit?
+2010-09-16 19:10:49,Papierkorb,was soll auf dem ding schon laufen? nüx
+2010-09-16 19:11:04,XanClic,"Du darfst dir gern http://gitorious.org/niwohlos/niwohlods/trees/master ansehen, aber ein OS ist das halt nicht"
+2010-09-16 19:11:08,pgahlen_,wie macht man denn mit dem Übertragen der Daten?
+2010-09-16 19:11:18,Papierkorb,"flashkarte, ist gewöhnlich ne SD Karte drin"
+2010-09-16 19:11:21,XanClic,"Mir egal, ich hab ja nicht mal einen DS, das kommt ja noch dazu *g*"
+2010-09-16 19:11:28,Papierkorb,aber der DS ist outdatet
+2010-09-16 19:11:37,Papierkorb,hab ja son ding ;)
+2010-09-16 19:11:50,pgahlen_,XD ich hab nur son ganz alten der schluckt die Teile noch ncint mit SD
+2010-09-16 19:12:39,pgahlen_,aber der obere Bildschirm hat n Riss
+2010-09-16 19:13:06,Papierkorb,"läuft eigentlich auf nem Android auch was anderes als Java, d.h. richtige binäre programme mit ""echtem"" opcodes und so?"
+2010-09-16 19:14:53,pgahlen_,"glaub nicht, kannst ja mal Android auf den PC ziehen :)"
+2010-09-16 19:15:16,Papierkorb,mh?
+2010-09-16 19:15:19,Papierkorb,wie geht das?
+2010-09-16 19:15:38,pgahlen_,"kp, iergendson Freak hat das geschafft, ich such noch mal den Artikel"
+2010-09-16 19:15:48,Papierkorb,"okay, hört sich interessant an ^^"
+2010-09-16 19:16:57,pgahlen_,http://www.android-hilfe.de/android-allgemein/1632-android-auf-pc-notebook-installieren.html hier sogar ne livCD von Google selber XD find ich gut
+2010-09-16 19:16:59,taljeth,"""Irgend so'n Freak"" - wie sich das anhört. Genau solche Leute tummeln sich hier in diesem Channel. ;-)"
+2010-09-16 19:17:26,pgahlen_,"ja gut, der muss noch freakiger gewesen sein als alle hier zu sammen"
+2010-09-16 19:18:22,taljeth,Inwiefern?
+2010-09-16 19:19:00,pgahlen_,"hm, wie krank muss man sein, um ein OS was für Handys mit minidisplay ist auf einen Intel Prozessor zu portn"
+2010-09-16 19:19:21,Healther,moin
+2010-09-16 19:19:24,XanClic,"moin, Healther"
+2010-09-16 19:19:26,taljeth,Moin
+2010-09-16 19:19:29,Tederian,"pgahlen_, Android sollte auch mal als Smartphone und Netbook OS gedacht sein"
+2010-09-16 19:19:41,Tederian,"pgahlen_, die Displaygrösse ist doch scheiss egal bei einem OS"
+2010-09-16 19:20:25,Tederian,Eine Äusserung wie die von einem angeblichen OS-Programmierer wie dir schockiert mich nun etwas
+2010-09-16 19:20:33,XanClic,xD
+2010-09-16 19:21:00,Tederian,"Und ein x86 Port ist auch nichts abartiges, Smartphones haben sehr unterschiedliche Prozessoren"
+2010-09-16 19:22:15,pgahlen_,argh ich glaube ichr versteht das alles etwas falsch
+2010-09-16 19:22:52,pgahlen_,"ich meine man muss erst mal auf die Idee kommen, und dann noch umsetzen, und dann es noch so machen, dass es überall läuft"
+2010-09-16 19:23:07,XanClic,"Es so machen, dass es überall läuft, müssen wir auch"
+2010-09-16 19:23:16,XanClic,Und auf die Idee kommen ist ja eher nicht abartig
+2010-09-16 19:23:35,XanClic,"Tjo, und zur Umsetzung hat Tederian ja was gesagt"
+2010-09-16 19:23:45,pgahlen_,"ok, wenn wir dann soweit sind, das es nicht abartig ist, wer macht mit und portet das iOS für x86"
+2010-09-16 19:24:18,Tederian,"Kann man nicht, sehr viel davon ist closed source "
+2010-09-16 19:24:26,XanClic,"Wenn, dann portiert es einer; und ich hab jetzt kein Interesse daran"
+2010-09-16 19:24:42,Tederian,Nur der GCC und den Webcore den sie von openandroid gemopst haben sind opensource afair
+2010-09-16 19:24:44,pgahlen_,naja dissassemblen
+2010-09-16 19:24:58,Tederian,Bringt dir was genau?
+2010-09-16 19:25:11,XanClic,"Das ist jetzt ein bisschen was anderes, als sich den Code von Android nehmen und den portieren"
+2010-09-16 19:25:16,Tederian,Disassembled code ist fürchterlich
+2010-09-16 19:25:31,pgahlen_,tja aber läuft
+2010-09-16 19:26:22,Tederian,"Es nur in x86-Assembler umzuwandeln wird dir nichts bringen, pgahlen"
+2010-09-16 19:26:25,pgahlen_,"hm, aber wie sähe es denn mit einem Emulator aus, kann man nicht Qemu oder Bochs so hinbiegen, das es läuft?"
+2010-09-16 19:26:51,Tederian,Ausserdem wünsche ich dir viel Glück beim finden einer iOS Binary
+2010-09-16 19:26:57,Tederian,Wird ja alles durch iTunes gedingselt
+2010-09-16 19:26:59,XanClic,"Nein, weil ein Apple-Gerät nicht ist, was qemu emuliert"
+2010-09-16 19:27:10,pgahlen_,XD das ist ja ma seeeeehr einfach ne ybinary zu finden
+2010-09-16 19:27:23,Tederian,"Gut, gib mir ein Link zu einer iOS binary"
+2010-09-16 19:27:34,XanClic,Und ein ARM-Prozessor _sehr_ stark von der eingesetzten Umgebung abhängt
+2010-09-16 19:27:39,pgahlen_,"ipsw sind zips, und die Sache  die da drin sind sind decoded, und recodebar mit nem einfachen Tool"
+2010-09-16 19:27:45,XanClic,Also I/O-Räume und so ein Spaß
+2010-09-16 19:27:54,Tederian,"pgahlen_, link"
+2010-09-16 19:28:18,pgahlen_,"hm, das dauert aber, wenn ich mich jetzt dran setzen würde hätte ich morgen ne binary"
+2010-09-16 19:28:30,Tederian,iOS als binary zu porten ist so schwer und bringt so etwas von nichts dass man es lieber lässt
+2010-09-16 19:28:34,Tederian,Gratulation
+2010-09-16 19:29:24,Tederian,"Aber hey, wenn du ein proprietäres OS auf x86 portieren willst - viel spass"
+2010-09-16 19:29:36,Tederian,nur Leider wird niemand etwas davon haben wenn du es wirklich schaffen würdest
+2010-09-16 19:29:53,pgahlen_,"hm, man kann es eh nicht hochladen"
+2010-09-16 19:30:28,pgahlen_,"hm, aber die Leistung wäre gigantisch"
+2010-09-16 19:30:42,pgahlen_,bei 4 GB RAM das iPad hat 256 MB
+2010-09-16 19:30:52,Tederian,Nein wäre sie nicht
+2010-09-16 19:30:57,pgahlen_,bei 3.6 GHz das iPad hat 1
+2010-09-16 19:30:57,Tederian,Weil es billig portiert ist
+2010-09-16 19:31:03,Tederian,Und auch nicht auf die Hardware zugeschnitten
+2010-09-16 19:31:06,pgahlen_,das mag sein
+2010-09-16 19:31:11,Tederian,CPU Zyklen sagen bei verschiedenen Architekturen nichts aus
+2010-09-16 19:32:10,pgahlen_,"naja, aber im iOS ist auch viel Schrott, im Grunde genommen ist es auch alles Open Source, weil alles von verschiedenen Herstellern zusammengegrabbelt ist, man siehe Lizenz, und wenn man gejailbreakd hat man siehe Verzeichnisse"
+2010-09-16 19:32:54,pgahlen_,"nur der Kernel weiss ich nciht, das Terminal läuft darauf nicht, und so kann ich boot nicht mounten"
+2010-09-16 19:32:57,Tederian,Der Kernel wird wohl proprietär sein
+2010-09-16 19:34:25,pgahlen_,ohhhhhh wie Schade
+2010-09-16 19:36:42,Papierkorb,vermtl. ein Darwin like kernel
+2010-09-16 19:36:48,Papierkorb,oder direkt Darwin
+2010-09-16 19:37:11,Papierkorb,mh
+2010-09-16 19:37:41,Papierkorb,"ich werd mich mal über android schlau machen fürs netbook – wird zwar ncihts für produktiv einsatz sein, aber interessant ist es schon"
+2010-09-16 19:37:45,Tederian,Darwin riecht nach FreeBSD. Woher das wohl kommt?
+2010-09-16 19:38:35,Papierkorb,da hab ich mich noch nie schlau gemacht ;)
+2010-09-16 19:38:52,pgahlen_,"hm, man sollte mal selber n Mac OS X zusammenstellen, allso alles was davon Open Source ist"
+2010-09-16 19:39:09,XanClic,Und da bekommst du schnell Probleme
+2010-09-16 19:39:16,Tederian,"Gibt etwas, das heisst Hackintosh, ist aber ziemlich scheisse"
+2010-09-16 19:39:20,XanClic,"Will sagen, ab dem Kernel ist bis zu den Anwendungen Schluss"
+2010-09-16 19:39:33,pgahlen_,das ist nicht nur Scheisse sondern auch illegal
+2010-09-16 19:40:10,Tederian,Nö
+2010-09-16 19:40:18,Papierkorb,"lol, androidx86 ist nur 51 MB groß :D"
+2010-09-16 19:40:22,pgahlen_,"habs mal in sonem Forum gelesen, das steht in den AGBs"
+2010-09-16 19:40:31,pgahlen_,"yeah, das wird ddann ja super sein"
+2010-09-16 19:40:34,Tederian,Forum ? halbwisser
+2010-09-16 19:40:42,Tederian,Voll von Halbwissern >:o
+2010-09-16 19:40:55,Papierkorb,bei interesse: http://www.androidx86.org/downloads.html - bin nun essen
+2010-09-16 19:46:06,JanDing,ich brauch mal nen hübschen font für meine console
+2010-09-16 19:46:12,JanDing,bitmap font
+2010-09-16 19:46:27,pgahlen_,"so, ich werd jetzt mich mal an GRUB machen"
+2010-09-16 19:59:52,tev,moin
+2010-09-16 20:00:18,XanClic,"moin, tev"
+2010-09-16 20:03:06,Tederian,hi tev
+2010-09-16 20:05:36,pocky,nabend tev
+2010-09-16 20:06:05,tev,ich komme jetzt endlich dazu an meinem OS weiter zu coden ;)
+2010-09-16 20:06:11,tev,scheiß Schule^^
+2010-09-16 20:06:15,DesL,wie weit bist du?
+2010-09-16 20:06:21,DesL,(das kenne ich)
+2010-09-16 20:06:43,tev,jetzt 11.Klasse FOS
+2010-09-16 20:06:54,DesL,ich meinte OS..
+2010-09-16 20:07:02,tev,moin pgahlen_
+2010-09-16 20:07:07,tev,achso DesL
+2010-09-16 20:07:37,pgahlen_,"hm, es war keine gute Idee bei GRUB alles mit objcopy auszukommentieren"
+2010-09-16 20:07:39,pgahlen_,0 command not found
+2010-09-16 20:07:39,tev,gestern habe ich den Timer IRQ abgefangen
+2010-09-16 20:07:41,pgahlen_,und durch die Makefiles blickt kein Schwein durch
+2010-09-16 20:08:08,pgahlen_,kann mal jemand iergendwo sein gepatchtes GRUB als Build hochladen?
+2010-09-16 20:10:08,pgahlen_,"?? pls, ich krieg das nicht hin, bin zu dumm dafür"
+2010-09-16 20:11:13,Papierkorb,"So, ich will nun das Image von Android auf nem USB Stick kopieren. wie stell ich das an? dd if=image.xyz of=/dev/sdc ?"
+2010-09-16 20:12:00,pgahlen_,"hm, starte es doch mit GRUB einfach, hau dir das ISO entpackt drauf, und starte die Binary oder das Filesystem"
+2010-09-16 20:12:47,Papierkorb,im image ist ja schon alles drin
+2010-09-16 20:12:52,Papierkorb,und aufm usb stick hab ich kein grub
+2010-09-16 20:13:00,Papierkorb,und CD ist schlecht bei nem netbook...
+2010-09-16 20:13:04,pgahlen_,installiers doch drauf
+2010-09-16 20:13:13,Papierkorb,das würd ich damit ja tun... ;)
+2010-09-16 20:13:15,pgahlen_,"ja, sollte wohl nicht das beste sein"
+2010-09-16 20:13:37,pgahlen_,"hm, dann mach das mit dd in der Hoffnung das es geht"
+2010-09-16 20:13:42,XanClic,http://xanclic.bplaced.net/grub.tar.bz2
+2010-09-16 20:13:48,Papierkorb,es ist ja ein usb stick image
+2010-09-16 20:14:05,pgahlen_,XanClic: ist das n Build?
+2010-09-16 20:14:10,XanClic,Jup
+2010-09-16 20:14:14,pgahlen_,thx
+2010-09-16 20:14:17,XanClic,"Also, für x64"
+2010-09-16 20:14:23,pgahlen_,aber auch gepatcht oder?
+2010-09-16 20:14:25,XanClic,Wobei du ja nötigenfalls make clean && make versuchen kannst
+2010-09-16 20:14:27,XanClic,Jop
+2010-09-16 20:14:33,pgahlen_,aaargh warum 64
+2010-09-16 20:14:40,XanClic,Weil du nix gesagt hast
+2010-09-16 20:14:43,pgahlen_,icke brauch x86
+2010-09-16 20:14:51,XanClic,Und wie gesagt erstmal make clean && make versuchen sollst
+2010-09-16 20:14:54,pgahlen_,kannst dus bidde crosscompilen
+2010-09-16 20:15:00,tev,wenn eine Taste auf der Tastatur gedrückt wurde wird ein IRQ ausgelöst oder?
+2010-09-16 20:15:03,pgahlen_,hab ich
+2010-09-16 20:15:15,pgahlen_,jo
+2010-09-16 20:15:33,XanClic,"Mach erstmal make clean, ansonsten kannst du immer noch deinen ungepatchten grub legacy benutzen und die gepatchte stage2 übergeben"
+2010-09-16 20:16:20,XanClic,Oder zwischendurch auch vielleicht noch ein ./configure einstreuen
+2010-09-16 20:16:50,Papierkorb,android bootet @QEMU ^^ dauert nur *ewig*
+2010-09-16 20:17:26,pgahlen_,make clean hab ich
+2010-09-16 20:17:51,XanClic,Dann halt ./configure und dann make
+2010-09-16 20:18:03,pgahlen_,"das Problem ist, stage 2 ist ja das Problem ..."
+2010-09-16 20:18:14,XanClic,"Na, die stage2 ist eh auf allen die gleiche"
+2010-09-16 20:18:26,XanClic,"Weil GRUB es so an sich hat, nicht in den LM zu schalten"
+2010-09-16 20:18:28,pgahlen_,alle Archs?
+2010-09-16 20:18:42,XanClic,"Auf ARM wohl dann doch nicht, aber da glaub ich auch nicht, dass es da GRUB gibt"
+2010-09-16 20:19:48,pgahlen_,dann nehm ich ma deine stage 2 in der Hoffnung das es geht
+2010-09-16 20:20:06,XanClic,"Nicht, dass ich es bei mir ausprobiert hätte *g*"
+2010-09-16 20:21:41,Papierkorb,bootet schnell :]
+2010-09-16 20:22:35,JanDing,tut JanDingOS auch
+2010-09-16 20:23:06,Papierkorb,Mokri auch :]
+2010-09-16 20:27:54,Programm_Noob,und NandOS erst
+2010-09-16 20:28:12,pocky,Tomodachi erst
+2010-09-16 20:28:59,Tederian,Tamagotchi auch
+2010-09-16 20:30:50,AGGROStar1991,nabend
+2010-09-16 20:31:09,Tederian,hi
+2010-09-16 20:31:38,Papierkorb,"weiß jemand, wie man android herunter fahren kann?"
+2010-09-16 20:31:58,pgahlen_,hey XanClic ist esrichtig das stage2 256 MB gross ist?
+2010-09-16 20:32:00,pgahlen_,XD nur per an ais Knop soweit ich weiss
+2010-09-16 20:32:35,pgahlen_,"es gibt sogar son richtig coolen standby Modus, wo die applications weiterlaufen"
+2010-09-16 20:33:16,Tederian,Papierkorb: Auf der Gespräch-Beenden-Taste bleiben :D
+2010-09-16 20:33:27,pgahlen_,lol
+2010-09-16 20:33:27,Papierkorb,aufm netbook gibts kein auflegen :D
+2010-09-16 20:33:39,Tederian,:o
+2010-09-16 20:33:42,XanClic,"Tjo, wohl eher nicht, pgahlen_"
+2010-09-16 20:33:44,pgahlen_,"iyeayh, überleg dir was ..."
+2010-09-16 20:33:54,pgahlen_,also Papierkorb 
+2010-09-16 20:33:58,pocky,wie checkt printf eigentlich obs nen int32_t oder int64_t kriegt?
+2010-09-16 20:34:12,XanClic,1. Wieso ich? 2. Schonmal selbst gebaut?
+2010-09-16 20:34:13,Papierkorb,du sagst es ihm
+2010-09-16 20:34:17,pgahlen_,"hm, er sagt auch das das ganze Verzeichnis knappe 2.3 Gib gross ist"
+2010-09-16 20:34:29,XanClic,"Hab mich schon gewundert, warum tar -cjf so lang gebraucht hat"
+2010-09-16 20:34:43,Papierkorb,"ah ... der aus knopp gibt sogarn menü, hat grad nicht funktioniert :D"
+2010-09-16 20:34:51,pgahlen_,lol
+2010-09-16 20:35:00,pgahlen_,und wie ists Papierkorb ?
+2010-09-16 20:35:03,Papierkorb,... wozu ist IRQ18 gut?
+2010-09-16 20:35:09,Papierkorb,android 1.6?
+2010-09-16 20:35:14,XanClic,"Dafür, wofür ihn das OS bestimmt hat"
+2010-09-16 20:35:14,pgahlen_,ja
+2010-09-16 20:35:21,XanClic,Für irgendein PCI-Gerät also wohl
+2010-09-16 20:35:23,Papierkorb,also wlan hat schonmal funktiniert
+2010-09-16 20:35:34,Papierkorb,"hab aber keine ahnung, wie ich im browser ne url eingeben kann ^^"
+2010-09-16 20:35:45,pgahlen_,"cool, XanClic kannst du das nochmal so packen, das es kleiner ist?"
+2010-09-16 20:36:03,Tederian,Papierkorb: Mit dem Touchscreen! :p
+2010-09-16 20:36:17,pgahlen_,nein noch besser Sprachsteuerung
+2010-09-16 20:36:21,Papierkorb,also die äpps nehmen die maus als touchscreen an
+2010-09-16 20:36:27,XanClic,"pgahlen_: Öhm, nö? Das sind halt 256 MB, ich weiß nicht warum, also kann ichs wohl nicht"
+2010-09-16 20:36:30,Papierkorb,kann auch so scrollen ^^
+2010-09-16 20:36:39,pgahlen_,hm shit
+2010-09-16 20:36:43,pgahlen_,mega shit
+2010-09-16 20:37:01,XanClic,Du hast meine Fragen 1 und 2 übrigens noch nicht beantwortet
+2010-09-16 20:37:33,pgahlen_,1. weil du mir das gegeben hast 2. slebst schon versucht und gescheitert
+2010-09-16 20:37:42,DesL,re
+2010-09-16 20:37:53,Papierkorb,wb
+2010-09-16 20:38:24,XanClic,"Mit selbst bauen meine ich übrigens, dass du meine configure nimmst und damit komplett neu anfängst"
+2010-09-16 20:38:32,Tederian,Hihi Xanclic hat es ihm gegeben :>
+2010-09-16 20:38:47,pgahlen_,"ah ok, wäre ne Idee"
+2010-09-16 20:38:58,pgahlen_,thx
+2010-09-16 20:39:09,pgahlen_,ja so richtig hart wenn dus wissen willst Tederian :)
+2010-09-16 20:39:16,pgahlen_,kurz afk
+2010-09-16 20:39:21,DesL,Oo
+2010-09-16 20:41:14,Tederian,Igitt
+2010-09-16 20:42:57,XanClic,"Oh, noch eine Frau"
+2010-09-16 20:43:00,DesL,wer ist sie?
+2010-09-16 20:43:02,pocky,wollt grad fragen
+2010-09-16 20:43:27,Programm_Noob,eigentlich sollte das heißen Programmnoob hasst sein Internet.
+2010-09-16 20:43:39,Programm_Noob,ich glaube meine Englische übersetzung ist Falsch
+2010-09-16 20:43:39,pgahlen_,dann bitte his
+2010-09-16 20:43:39,DesL,tut es auch
+2010-09-16 20:43:45,XanClic,"Tut es nicht, DesL?"
+2010-09-16 20:43:58,XanClic,"Verdammt, ich vergess es immer wieder, Englisch war ja verzichtbar"
+2010-09-16 20:44:06,DesL,wer sagt denn da Programm_Noob männlich ist?
+2010-09-16 20:44:07,XanClic,"Ich darf einfach nicht erwarten, dass man zwischen his und her unterscheiden kann"
+2010-09-16 20:44:18,DesL,"XanClic, so ist das leben :P"
+2010-09-16 20:44:37,XanClic,"DesL: Du, indem du sagst „hasst sein Internet“ – „tut es auch“"
+2010-09-16 20:44:41,DesL,dann war es falsch auf dem niveau eines 5. klässlers
+2010-09-16 20:44:42,XanClic,Aber es heißt „hasst ihr Internet“
+2010-09-16 20:45:01,XanClic,Note teh difference
+2010-09-16 20:45:09,DesL,XanClic: ich wollt doch nur anspielen das Programm_Noob nicht männlich sein KÖNNTE
+2010-09-16 20:45:21,chris12,moin
+2010-09-16 20:45:29,DesL,moin chris12
+2010-09-16 20:45:30,XanClic,"DesL: Das hab ich ja schon mit „Oh, noch eine Frau“"
+2010-09-16 20:45:31,XanClic,"moin, chris12"
+2010-09-16 20:45:34,AGGROStar1991,moin
+2010-09-16 20:45:47,DesL,egal
+2010-09-16 20:45:49,AGGROStar1991,englischunterricht hier? Herr Lehrer XanClic^^
+2010-09-16 20:45:55,Tederian,Haha Programm_Noob ist eine sie :D
+2010-09-16 20:45:56,DesL,"ach, AGGROStar1991, auch mal wieder daß"
+2010-09-16 20:46:21,AGGROStar1991,moin DesL^^
+2010-09-16 20:46:27,AGGROStar1991,joa son bisschen :D
+2010-09-16 20:47:13,Papierkorb,"So, teste gleich mal HD Material (von YT, müsste also vom codec her passen)"
+2010-09-16 20:48:18,Programm_Noob,Tederian: ich bin männlich oder soll ich dir erst Bilder schicken???
+2010-09-16 20:48:30,DesL,ürgs
+2010-09-16 20:49:06,Tederian,"Ui ja, schick Bilder :)"
+2010-09-16 20:49:53,AGGROStar1991,lad dann mal die bilder bei youporn hoch mit verweis auf Programm_Noobs email adresse :D
+2010-09-16 20:50:23,Tederian,"Nein, ich bin doch nicht so ein Mensch :o"
+2010-09-16 20:50:48,Programm_Noob,Solche bilder meinte ich nicht
+2010-09-16 20:50:48,DesL,"stimmt, er schickt sie nur an deine eltern"
+2010-09-16 20:51:18,Programm_Noob,nein
+2010-09-16 20:51:19,AGGROStar1991,^^
+2010-09-16 20:51:39,Programm_Noob,"DesL um das zu machen, müsste ich absolut dicht sein."
+2010-09-16 20:51:52,Tederian,Gute Güte Jungs >:o
+2010-09-16 20:52:00,DesL,XD
+2010-09-16 20:52:01,AGGROStar1991,xD
+2010-09-16 20:53:00,Programm_Noob,Moin Dickhuuhn
+2010-09-16 20:53:06,AGGROStar1991,moin
+2010-09-16 20:53:24,Tederian,Hi chiken :)
+2010-09-16 20:58:35,DickHuuhn,http://stackoverflow.com/questions/184618/what-is-the-best-comment-in-source-code-you-have-ever-encountered/482129#482129 fefe ftw
+2010-09-16 20:59:19,Tederian,DickHuuhn: was hat fefe damit zu tun?
+2010-09-16 20:59:40,DickHuuhn,fefe hat das gepostet
+2010-09-16 21:00:45,Programm_Noob,XanClic: ich versuche gerade deinen GRUB zu bauen.
+2010-09-16 21:00:53,Programm_Noob,die binarys snd alee riesen groß
+2010-09-16 21:01:02,Programm_Noob,was kann man dagegen tun?
+2010-09-16 21:01:58,XanClic,Vermutlich ein paar CFLAGS einstreuen
+2010-09-16 21:02:04,XanClic,"Die Tobiking kennen könnte, nur ist er grade away"
+2010-09-16 21:02:12,DesL,dd if=gros of=klien base=400 count 1
+2010-09-16 21:02:12,DesL,del gros
+2010-09-16 21:02:24,DesL,*klein
+2010-09-16 21:04:55,Tederian,afk brb
+2010-09-16 21:05:09,Tobiking,Ich such die auch jedes mal nur im low level Forum ^^
+2010-09-16 21:05:28,Tobiking,"CFLAGS=""-fno-stack-protector -Wl,--build-id=none"" ./configure "
+2010-09-16 21:06:02,AGGROStar1991,sind hier eig gute makefileschreiber anwesend?^^
+2010-09-16 21:06:45,DesL,"sudo make me a sandwich, weiter reichen meine kentnisse nicht"
+2010-09-16 21:07:00,AGGROStar1991,schade^^
+2010-09-16 21:07:18,Programm_Noob,AGGROStar1991: was willst du denn Wissen?
+2010-09-16 21:07:54,AGGROStar1991,wie sag ich meinem makefile das im aktuellen ordner liegt das es unterordner von dem auch durchsuchen soll?
+2010-09-16 21:08:09,bluecode,nach was durchsuchen?
+2010-09-16 21:08:24,Programm_Noob,benutzt du shell find?
+2010-09-16 21:08:50,AGGROStar1991,naja doof ausgedrückt^^
+2010-09-16 21:09:05,AGGROStar1991,es sokll halt sachen im unterorner auch mit nehmen wenns alles bauen soll^^
+2010-09-16 21:09:14,bluecode,das was Programm_Noob sagt
+2010-09-16 21:09:18,Programm_Noob,source dateien?
+2010-09-16 21:09:27,AGGROStar1991,jop
+2010-09-16 21:09:30,Programm_Noob,oder soll er makefiles aufrufen?
+2010-09-16 21:09:36,Programm_Noob,dann das was ich gesagt habe
+2010-09-16 21:09:42,DesL,"FreakyPenguin, bist du da?"
+2010-09-16 21:09:44,AGGROStar1991,ne nur sourcedateien usw
+2010-09-16 21:10:12,Programm_Noob,Tobiking: wo muss ich die CFLAGS eintragen?
+2010-09-16 21:10:34,AGGROStar1991,wtf wo hast du was gesagt Programm_noob? ich hab schon wieder die betriebsblindheit xD
+2010-09-16 21:10:43,Programm_Noob,shell find
+2010-09-16 21:11:06,bluecode,sowas in Richtung $(shell find <irgendwas>)
+2010-09-16 21:11:07,AGGROStar1991,aso^^
+2010-09-16 21:11:26,Tobiking,Programm_Noob: Guck dir mal die Zeile die ich geschrieben habe genau an. Das ist das configure
+2010-09-16 21:11:32,bluecode,"ich glaub die Makefiles von pdlibc machen das ganz gut, falls du da nachschauen willst"
+2010-09-16 21:11:32,AGGROStar1991,also nich VPATH?
+2010-09-16 21:11:58,AGGROStar1991,"weil bei shell find müsste ich ja jede datei einzeln angeben, oder?"
+2010-09-16 21:12:09,Programm_Noob,nein
+2010-09-16 21:12:45,Programm_Noob,"Tobiking: ich habe in der Shell das so eingegeben, wie du es geschrieben hast, gleiches Ergebniss wie voher."
+2010-09-16 21:13:07,AGGROStar1991,dann also $(shell find *.c) oder wie um alle C-dateien mitzunehmen=
+2010-09-16 21:13:10,AGGROStar1991,?
+2010-09-16 21:13:12,Tobiking,Also bei mir lief es mit ubuntu 9.10
+2010-09-16 21:13:15,AGGROStar1991,hi Der Hartmut
+2010-09-16 21:13:19,Programm_Noob,bzw. cinfigure läuft nicht mehr durch
+2010-09-16 21:13:28,Tobiking,danach hab ich es noch nicht probiert
+2010-09-16 21:13:44,Programm_Noob,muss ich das so in eine Zeile eingeben oder getrennt?
+2010-09-16 21:13:58,Programm_Noob,oder kann ich die zusätlichen CFLAGS auch im makefile eintragen?
+2010-09-16 21:16:21,Programm_Noob,hat einer von euch nen gepatchten Grub als image?
+2010-09-16 21:17:06,pgahlen_,"so, GRUB ging zu builden etc"
+2010-09-16 21:17:14,pgahlen_,aber immer noch über 200 MB
+2010-09-16 21:17:24,Programm_Noob,Das Problem habe ich auch.
+2010-09-16 21:18:14,markus111,moinmoin
+2010-09-16 21:18:33,DesL,moinmoinmoin
+2010-09-16 21:19:02,AGGROStar1991,moin
+2010-09-16 21:19:19,Guest313144,"ehm, wie änder ich mein nick?"
+2010-09-16 21:19:37,Guest313144,bin nich so der irc pro
+2010-09-16 21:19:42,DesL,"hm, /nick poo"
+2010-09-16 21:21:09,markus111,"blödes irc mag mich nicht :D , geht doch"
+2010-09-16 21:23:21,Tederian,Eher der beschissene Client den du benutzt
+2010-09-16 21:23:54,pgahlen_,"oh Mist, wenn ich jetzt den PC runterfshre ist er im Arsch, mein GRUB hat n Knacks"
+2010-09-16 21:24:08,markus111,gibt Live-CDs ;)
+2010-09-16 21:24:21,Programm_Noob,warum hast du auch dein Grub auf deiner Platte geänder.
+2010-09-16 21:24:33,Programm_Noob,Ich teste sowas grundsätlich woanders
+2010-09-16 21:26:57,pgahlen_,"hm ok, geh ma pennen bm"
+2010-09-16 21:28:45,markus111,nabend DerHartmut
+2010-09-16 21:28:56,AGGROStar1991,nabend
+2010-09-16 21:28:56,DerHartmut,GNUabed
+2010-09-16 21:28:59,DerHartmut,+n
+2010-09-16 21:30:41,markus111,"Was sollte man (oder ich^^) zuerst implementieren, Festplattenzugriff oder Netzwerk?"
+2010-09-16 21:30:51,Programm_Noob,Festplatte
+2010-09-16 21:31:02,markus111,okay.
+2010-09-16 21:31:03,Programm_Noob,Netrzwerk brauchst du gar nicht dran denken
+2010-09-16 21:31:12,bluecode,hm? Netzwerk ist nicht schwer
+2010-09-16 21:31:40,markus111,"ich kenn mich in netzwerk schon aus (also IP, TCP, DHCP etc....)"
+2010-09-16 21:31:54,DerHartmut,Netzwerk ist nicht schwer
+2010-09-16 21:32:00,Programm_Noob,einrichten oder den Aufbau der pakete und so
+2010-09-16 21:32:10,XanClic,"Nur unschön, wenn man es schön implementieren will"
+2010-09-16 21:32:21,markus111,Festplatte wär auch ne tolle sache
+2010-09-16 21:32:35,markus111,glaube vorher mach ich Paging
+2010-09-16 21:32:50,Tederian,http://www.kuro5hin.org/story/2004/2/15/71552/7795 <- ROFL
+2010-09-16 21:32:51,Programm_Noob,markus111: mach ma Festplatte voher
+2010-09-16 21:33:07,markus111,vor Paging?
+2010-09-16 21:33:12,Programm_Noob,jo
+2010-09-16 21:33:35,bluecode,ich würde paging zuerst machen
+2010-09-16 21:35:27,markus111,Paging ist doch hauptsächlich für Prozesse sinnvoll?
+2010-09-16 21:36:21,markus111,vor alle dem implemetier ich ne shell
+2010-09-16 21:37:24,bluecode,ne shell ist doch auch nur ein Prozess...
+2010-09-16 21:38:35,markus111,also erstmal paging
+2010-09-16 21:39:25,pocky,ich kann speicher alloziieren :DDDD
+2010-09-16 21:39:30,pocky,und es funktioniert!
+2010-09-16 21:39:39,tev,gn8
+2010-09-16 21:39:43,bluecode,"glückwunsch, pocky"
+2010-09-16 21:39:54,pocky,danke
+2010-09-16 21:40:11,markus111,n8 tev
+2010-09-16 21:41:01,pocky,"und mein pmm is schlau, des merkt sich wo der erste leere platz ist, so dauerts net lang bis er was findet :D"
+2010-09-16 21:42:27,AGGROStar1991,naja werd dann mal off^^
+2010-09-16 21:42:32,AGGROStar1991,bis morgen oder so
+2010-09-16 21:47:49,pocky,warum bin ich extrem produktiv wenn ich mit meiner freundin telefoniere?
+2010-09-16 21:48:05,mgottschlag,fail.
+2010-09-16 21:48:31,DickHuuhn,"pocky, du bist so ein elendiger prokrastiniator"
+2010-09-16 21:48:43,DickHuuhn,Du arbeitest sogar damit du dich nicht auf deine Freundin konzentrieren musst :3
+2010-09-16 21:48:50,DerHartmut,Fail.
+2010-09-16 21:49:00,pocky,:'(
+2010-09-16 21:49:13,DickHuuhn,"Win, aber nu sei nicht mehr traurig :D"
+2010-09-16 21:49:20,pocky,lol
+2010-09-16 21:49:21,DerHartmut,:P
+2010-09-16 21:56:56,markus111,http://www.lowlevel.eu/wiki/Teil_8_-_Ein_erstes_Programm Darf ich den Tippfehler bei Boote_m_ direkt über der überschrift von Syscall berichtigen? *grins*
+2010-09-16 21:57:32,DickHuuhn,This is a wiki
+2010-09-16 21:57:36,DickHuuhn,Use it accordingly :D
+2010-09-16 21:57:39,DickHuuhn,Also ja
+2010-09-16 21:58:36,markus111,"bei Zusammenfassung kommt eine zusammenfassung der änderungen hin, nech?"
+2010-09-16 21:58:54,DickHuuhn,"da kannste einfach die Checkbox ""Kleine Änderung"" benutzen und das Feld leerlassen"
+2010-09-16 21:59:05,XanClic,Kann man nicht :O
+2010-09-16 21:59:09,DickHuuhn,Kann man wohl
+2010-09-16 21:59:15,XanClic,"Man stellt im Benutzerprofil natürlich die Warnung ein, wenn man das Feld leerlässt"
+2010-09-16 21:59:24,DickHuuhn,NO U
+2010-09-16 21:59:35,XanClic,"Und natürlich auch, dass „Kleine Änderung“ standardmäßig ausgewählt ist :3"
+2010-09-16 21:59:45,DickHuuhn,Nein das macht man definitiv nicht
+2010-09-16 22:00:40,markus111,"bei einem Buchstaben ist es wohl nicht so sehr dringend erforderlich, grad da man sich den unterschied anzeigen lassen kann"
+2010-09-16 22:00:51,DickHuuhn,schrieb halt -typo ^^
+2010-09-16 22:01:08,DickHuuhn,oder -tippo weil das ist deutschland hier
+2010-09-16 22:02:46,markus111,"lol, man lönnte ja die profile anderer editeren?"
+2010-09-16 22:02:53,markus111,*könnte
+2010-09-16 22:03:03,XanClic,Benutzerseiten zumindest
+2010-09-16 22:03:14,XanClic,"Sowas lässt man aber bleiben, wenn man sich nicht unbeliebt machen möchte, imho"
+2010-09-16 22:04:27,DerHartmut,ACK
+2010-09-16 22:04:43,markus111,"das sollte man lassen, ja"
+2010-09-16 22:08:45,taljeth,Reh
+2010-09-16 22:11:28,pocky,Hirsch
+2010-09-16 22:11:46,XanClic,krónhjörtur
+2010-09-16 22:12:04,pocky,?
+2010-09-16 22:12:38,XanClic,http://translate.google.de/#is|de|kr%C3%B3nhj%C3%B6rtur
+2010-09-16 22:17:00,DerHartmut,Freunde der Nacht
+2010-09-16 22:17:02,DerHartmut,Ich schlafe
+2010-09-16 22:17:09,DerHartmut,Wehbe taljeth 
+2010-09-16 22:17:12,DerHartmut,Hade Leute
+2010-09-16 22:17:16,DickHuuhn,nachty hardi
+2010-09-16 22:17:40,DickHuuhn,"XanClic, kohlmeisen"
+2010-09-16 22:18:10,DickHuuhn,"markus111, außerdem ärgerst du damit die leute eh nur, man kann schließlich über die history alles reverten"
+2010-09-16 22:18:38,markus111,Qemu will mein Modul nich annehmen...
+2010-09-16 22:18:51,JanDing,vermutlich nicht modular genug
+2010-09-16 22:20:02,markus111,mods_count bleibt 0...
+2010-09-16 22:21:45,taljeth,Dann solltest du das Modul vielleicht laden lassen
+2010-09-16 22:22:03,markus111,-initrd bin/test.bin 
+2010-09-16 22:22:47,markus111,"insgesammt: qemu -d int -gdb tcp::1234 -rtc base=localtime,clock=host -initrd bin/test.bin -kernel bin/kernel.bin"
+2010-09-16 22:23:14,JanDing,muss initrd nicht nach -kernel kommen?
+2010-09-16 22:23:27,taljeth,"Das sollte eigentlich ziemlich egal sein, glaube ich"
+2010-09-16 22:24:45,markus111,das ist egal
+2010-09-16 22:25:37,JanDing,menno
+2010-09-16 22:26:55,markus111,"hm, ich geh mal"
+2010-09-16 22:27:04,markus111,bism orgn
+2010-09-16 22:28:56,JanDing,tschö
+2010-09-16 22:33:59,XanClic,gn8
+2010-09-16 22:42:00,pocky,"wie mach ich eigentlich das der leerlaufprozess keine cpu-zeit kriegt, wenn was zu tun is, weil sonst is der halt da, macht nix und behindert alles andere"
+2010-09-16 22:43:18,DickHuuhn,"indem du deinem scheduler sagst, der soll nur dahin schedulen wenn der keine andere möglichkeit hat"
+2010-09-16 22:43:44,taljeth,if (was_zu_tun && current_process == idle_task) current_process = anderer_task;
+2010-09-16 22:44:14,DickHuuhn,wie macht das eigentlich der leerlaufprozess auf windows
+2010-09-16 22:44:39,DickHuuhn,"Macht der busy waiting (eher nicht, soviel strom braucht win auch nicht), oder vergeudet der einfach eine timeslice auf jeden fall"
+2010-09-16 22:44:44,DickHuuhn,oder macht der was ganz was anderes
+2010-09-16 22:45:00,DesL,hm
+2010-09-16 22:45:41,mastamind,"DickHuuhn: das wird wahrscheinlich damit zusammenhängen, wie neue arbeit auftaucht."
+2010-09-16 22:45:55,mastamind,und die kann wohl nur durch einen interrupt auftauchen.
+2010-09-16 22:46:09,DesL,"wäre doch mal cool, wenn man nen prozess als leerlaufprozess einbauen könnte"
+2010-09-16 22:46:21,DickHuuhn,"Hmm, stimmt schon irgendwie"
+2010-09-16 22:46:31,DickHuuhn,"DesL, kannste doch"
+2010-09-16 22:46:36,DesL,?
+2010-09-16 22:46:54,DickHuuhn,Nix ist unmööööglich
+2010-09-16 22:48:03,DesL,ich meinte unter win
+2010-09-16 22:48:14,DickHuuhn,Ah okay
+2010-09-16 22:48:30,DickHuuhn,"Du hast doch schon einen, und was für Verbesserungen hast du am nichts tu vorzunehmen :D"
+2010-09-16 22:48:31,taljeth,"Ist die typische Implementierung für einen Leerlaufprozess nicht while(1) { asm(""hlt""); } oder sowas?"
+2010-09-16 22:48:52,DickHuuhn,"taljeth, ich glaube bei win war da irgendwie wirklich ein bisschen scheduling hin ausgelagert"
+2010-09-16 22:49:03,Healther,"Für alle, die sich ernsthaft mit dem schedulern auseinander setzen wollen: http://www.ibm.com/developerworks/linux/library/l-scheduler/"
+2010-09-16 22:49:18,Healther,;)
+2010-09-16 22:49:20,taljeth,Ich finde Round Robin toll ;-)
+2010-09-16 22:49:27,Healther,lol
+2010-09-16 22:49:55,DickHuuhn,"Denke immer daran taljeth, gehe nie ohne Zweitschlüssel aus dem Haus"
+2010-09-16 22:49:59,DickHuuhn,"Ne, falscher Robin :/"
+2010-09-16 22:51:42,DesL,hm?
+2010-09-16 22:51:45,taljeth,"Healther: Mal ehrlich, bei dem typischen Nutzungsmuster eines unserer Systeme hat man doch eh was falsch gemacht, wenn zwei Prozesse gleichzeitig laufen wollen ;-)"
+2010-09-16 22:52:08,mastamind,"wieso überlegt ihr euch nicht mal sachen selbst und schaut dann nach, wie andere es machen?"
+2010-09-16 22:53:02,Healther,"hehe, taljeth das schon. Ich wollte nur auf den Artikel verweisen, da er wirklich gute Informationen beinhaltet. Und sei es nur als Input für weitere google-Bemühungen. Klasse Sache das. "
+2010-09-16 22:53:28,taljeth,"mastamind: Been there, done that, didn't work ;-)"
+2010-09-16 22:53:50,DickHuuhn,"mastamind, wir haben angst dass ast weiß wo wir schlafen :("
+2010-09-16 22:54:26,taljeth,"Wirklich Angst gemacht hat mir ja der Kommentar auf osdev.org, dass der an CDI interessiert sein könnte ;-)"
+2010-09-16 22:54:37,Healther,"taljeth: Theoretisch wäre ein wget ... auf kernel.org die einzige Doku, die nötig ist, um _alle_ Features eines modernen Systems funktional gut darzulegen (inkl. Dokumentation). "
+2010-09-16 22:55:00,DickHuuhn,Dann kommt aber ast echt und bringt uns um D:
+2010-09-16 22:55:21,taljeth,"Healther: git clone bitte, um auch noch vernünftige Softwareentwicklungstools mit reinzubringen ;-)"
+2010-09-16 22:55:22,mastamind,"ich mein das allgemein... irgendwie haben viele heutige programmierer keinen spaß mehr, sich mal was selbst zu überlegen..."
+2010-09-16 22:56:02,Healther,taljeth: Sowas ist Grundvoraussetzung ;)
+2010-09-16 22:56:04,DickHuuhn,"mastamind, nimm einen jungen programmierer der keine ahnung hat vom sortieren und frag ihn, wie er das machen würde :)"
+2010-09-16 22:56:06,taljeth,"Healther: Hm, der verlinkte Artikel ist aber nicht mehr der aktuelle Scheduler, wenn man nach dem Datum geht, oder?"
+2010-09-16 22:56:14,DickHuuhn,ich glaube der kommt auch nach ner Weile nicht auf Quicksort
+2010-09-16 22:56:24,DickHuuhn,Oder nen anderen schnellen algo
+2010-09-16 22:56:27,Healther,taljeth: Aktuell ist der cfs
+2010-09-16 22:56:40,DerHartmut,Rehe
+2010-09-16 22:56:41,DickHuuhn,Und ein normaler OSDever kriegt auch nicht direkt nen O(1) scheduler hin
+2010-09-16 22:56:43,Healther,seit 2.6.23 glaub ich
+2010-09-16 22:56:43,mastamind,"DickHuuhn: ich sag ja nicht, dass er dann heapsort erfinden soll, aber ich denke schon, dass es was bringt, sich zuerst mal selbst gedanken zu machen."
+2010-09-16 22:56:47,Healther,oder 24
+2010-09-16 22:57:10,taljeth,"Jo, aber der Artikel beschreibt den Vorgänger, glaube ich"
+2010-09-16 22:57:19,taljeth,"DickHuuhn: Doch, Round Robin ist sehr wohl O(1) *g*"
+2010-09-16 22:57:22,mastamind,DickHuuhn: reicht O(M)?
+2010-09-16 22:57:35,DickHuuhn,"taljeth, jo stimmt ^^"
+2010-09-16 22:57:57,taljeth,"Ich würde mal behaupten, die Mehrzahl der Hobby-OS benutzt damit einen O(1)-Scheduler"
+2010-09-16 22:57:58,DickHuuhn,"mastamind, ganz ehrlich: Kp, wie die aussehen, ging mir nur so ums prinzip :3"
+2010-09-16 22:58:08,mastamind,DickHuuhn: :-)
+2010-09-16 22:58:15,Healther,taljeth: Der cfs ist nicht unbedingt der beste scheduler ;)
+2010-09-16 22:58:37,Healther,Stark ausgelastete Server würde ich damit nicht betreiben wollen......
+2010-09-16 22:58:48,Healther,Betonung auf _Stark_ 
+2010-09-16 22:59:05,Healther,Auf nem Desktop kommst du an die 95% evtl. für deine Programme
+2010-09-16 22:59:08,Healther,^
+2010-09-16 22:59:46,Healther,"Es gab einen Bericht eines großen Serverparks, in dem bis auf 70% gedrückt wurde.."
+2010-09-16 23:00:54,DerHartmut,Was ist im Moment das Thema? SCheduler?
+2010-09-16 23:01:10,Healther,jo
+2010-09-16 23:02:32,mastamind,"bis ich beim scheduler bin, vergeht noch ein jahr. *g*"
+2010-09-16 23:05:15,taljeth,"Solange nur zwei, drei Prozesse wirklich laufen wollen, tut es Round Robin noch wunderbar"
+2010-09-16 23:05:27,taljeth,Das kompliziertere Zeug spare ich mir auf
+2010-09-16 23:05:59,Healther,Round Robin reicht noch viel länger
+2010-09-16 23:06:06,Healther,Interessant wird es bei Multiuser Systemen
+2010-09-16 23:06:20,pocky,gn8
+2010-09-16 23:06:47,Healther,"Nimm an ein Benutzer hat 7 Threads + Prozesse am Laufen, der andere nur einen. Mit Round Robin bekommt der erste 7/8 der Zeit zugeteilt, der zweite nur 1/8"
+2010-09-16 23:07:15,taljeth,"Jo, schon klar"
+2010-09-16 23:07:15,DickHuuhn,"Öhm, das muss doch nicht zwingend so sein"
+2010-09-16 23:07:48,taljeth,"Wenn es nicht so ist, ist es nicht mehr einfaches Round Robin"
+2010-09-16 23:07:51,DesL,bb
+2010-09-16 23:08:02,DickHuuhn,öha
+2010-09-16 23:08:25,DickHuuhn,"Wenn ich meinem round robin einfach sage, der soll durch die prozessliste durchgehen und gar nicht auf user achten ist das imo doch einfacher als wenn ich auf user achte"
+2010-09-16 23:08:33,DickHuuhn,Oh
+2010-09-16 23:08:35,DickHuuhn,I failed
+2010-09-16 23:08:37,DesL,ich sagte: BB!!
+2010-09-16 23:08:38,DickHuuhn,nvm plz ^^
+2010-09-16 23:08:40,DickHuuhn,Nachti
+2010-09-16 23:08:46,DesL,yay
+2010-09-16 23:08:47,DesL,^^
+2010-09-16 23:08:49,DickHuuhn,*groschen*
+2010-09-16 23:08:53,taljeth,DesL: Böblingen?
+2010-09-16 23:08:53,Tederian,n8 desl
+2010-09-16 23:08:53,Healther,lol DickHuuhn
+2010-09-16 23:09:00,DesL,böb-was?
+2010-09-16 23:09:13,Healther,Böblingen/Sindelfingen/Stuttgart
+2010-09-16 23:09:16,taljeth,BB
+2010-09-16 23:09:24,DickHuuhn,Blitzbasic igitt
+2010-09-16 23:09:24,DerHartmut,D
+2010-09-16 23:09:28,DickHuuhn,ME
+2010-09-16 23:09:35,DesL,blitzbasic rules!
+2010-09-16 23:09:57,Tederian,wtf?
+2010-09-16 23:09:59,Tederian,Tut es nicht
+2010-09-16 23:10:00,DickHuuhn,"Los, alle posten KFZ Prefix!"
+2010-09-16 23:10:16,DickHuuhn,"ich fand die leute im blitzforum geil, die meinten c++ wäre ne miese sprache"
+2010-09-16 23:10:20,DickHuuhn,"Okay, das ist ne berechtigte Meinung"
+2010-09-16 23:10:24,DerHartmut,Hamse ja auch recht
+2010-09-16 23:10:25,Tederian,Ist es auch
+2010-09-16 23:10:33,taljeth,Ist es auch
+2010-09-16 23:10:43,DickHuuhn,"Aber nicht, wenn sie damit berechtigt ist, dass die Klassen in C++ nicht immer einfach verlinkt sind wie die Types in BB m("
+2010-09-16 23:10:44,Healther,^^
+2010-09-16 23:10:55,DickHuuhn,*Klasseninstanzen
+2010-09-16 23:10:57,Tederian,Chiken: Sagte auch niemand
+2010-09-16 23:11:07,Tederian,Ist in BlitzMax auch nicht mehr so
+2010-09-16 23:11:08,DickHuuhn,"Tederian, bin zu faul den forenpost zu suchen"
+2010-09-16 23:11:11,DickHuuhn,Aber das gabs :3
+2010-09-16 23:11:12,taljeth,"Was soll ""einfach verlinkt"" heißen?"
+2010-09-16 23:11:30,Tederian,"taljeth, in BlitzBasic werden alle Instanzen automatisch einer Liste hinzugefügt"
+2010-09-16 23:11:34,DickHuuhn,"taljeth, du instanzierst deine Objekte von der klasse, und BB hat dann direkt ne möglichkeit in der syntax, alle Instanzen einer Klasse durchzugehen"
+2010-09-16 23:11:38,taljeth,wtf?
+2010-09-16 23:11:48,taljeth,Krank...
+2010-09-16 23:12:04,Tederian,"Ist für Noobs toll, aber darum macht auch niemand etwas cooles in BlitzBasic"
+2010-09-16 23:12:10,DickHuuhn,Jedenfalls: Genau DARUM ist C++ ne miese Sprache ^^
+2010-09-16 23:12:11,Tederian,Weil es total hässlich und scheisse ist :(
+2010-09-16 23:12:23,Tederian,"DickHuuhn, das ist die Meinung eines User"
+2010-09-16 23:12:25,Tederian,+s
+2010-09-16 23:12:28,DickHuuhn,jo
+2010-09-16 23:12:50,DickHuuhn,"ich hab alle meine argumente gegen c++ auch nur von fefe, darum bin ich auch nicht besser :3"
+2010-09-16 23:13:36,taljeth,Aber die sind auch nicht schlecht
+2010-09-16 23:23:17,DerHartmut,"Meh FreakyPenguin, das Wiki spinnt schon wieder"
+2010-09-16 23:23:45,DickHuuhn,Irgendwie macht es das immer sporadisch zwischen 23 und 02 Uhr
+2010-09-16 23:24:08,DickHuuhn,vllt ist in der zeit serverwartung mit nanoausfällen :D
+2010-09-16 23:25:22,Tederian,"Oder eure Mutter will euch vom Computer wegbringen damit ihr euch endlich einen Job, eine Freundin und eine eigene Wohnung sucht weil sie den Keller braucht um Wäsche zu trocknen"
+2010-09-16 23:25:47,DickHuuhn,Immer dieses sexistische Frauenbild dass ausgerechnet die Mutter Wäsche trocknet
+2010-09-16 23:25:58,DickHuuhn,das solltest du als Frau doch ernst nehmen
+2010-09-16 23:26:10,Tederian,Bei mir ist das aber so :(
+2010-09-16 23:26:24,DickHuuhn,"Alice Schwarzer würde sich für diese systemangepassten, modernen, speichelleckenden Frauen schämen"
+2010-09-16 23:26:25,DerHartmut,"Tederian: Wie gut, dass ich alles habe"
+2010-09-16 23:27:30,Healther,hm.........ich nicht?! *grübel*
+2010-09-16 23:27:35,Tederian,"Chiken, sollte ich ab jetzt für dich immer Mutter/Vater oder ""Elternteil"" sagen? :)"
+2010-09-16 23:27:56,DickHuuhn,"""Elternteil"""
+2010-09-16 23:28:03,DerHartmut,Elter dann auch bitte
+2010-09-16 23:28:07,DickHuuhn,NU HAST DU ES AUCH NOCH MIT DEN PATCHWORKFAMILIEN ODER WAS :O
+2010-09-16 23:28:16,DickHuuhn,:D
+2010-09-16 23:28:37,Tederian,Oh verdammt :( In der heutigen Welt ist es so schwer politisch korrekt zu sein.
+2010-09-16 23:28:48,DickHuuhn,"Außerdem, um eine der besten Piratinnen zu zitieren die es gibt"
+2010-09-16 23:29:03,DickHuuhn,"""Übrigens, es gibt nicht nur mann und Frau. *kotz*"""
+2010-09-16 23:29:22,Tederian,Biologisch gesehen schon :/
+2010-09-16 23:29:33,DickHuuhn,"Tederian, viel lernen du musst"
+2010-09-16 23:29:35,Tederian,Und ja ich weiss was eine shemale ist ;)
+2010-09-16 23:29:55,DickHuuhn,"Es gibt auch Zwittergeburten die jedoch nach der Geburt direkt chirurgisch ""korrigiert"" werden"
+2010-09-16 23:30:02,DerHartmut,"DAs ist dch SCheiße, immer wenn ich die Seite speichern will, kommt ne Guru Mediation Blabla-Kacke"
+2010-09-16 23:30:33,DickHuuhn,Guru Meditation hieß früher bei Amiga dass ma sich als Entwickler auf ne Matte legt und da ne halbe Stunde chillt
+2010-09-16 23:30:33,DickHuuhn,DO IT FAGGOT
+2010-09-16 23:30:38,Tederian,"DickHuuhn, ja das weiss ich, aber da ist es ja immer so eine Sache mit den Chromosonen"
+2010-09-16 23:30:54,DickHuuhn,Und dann gibts ja auch noch andere Leute
+2010-09-16 23:31:04,DickHuuhn,zB Männer denen es gefällt sich als Frau auszugeben
+2010-09-16 23:31:27,DickHuuhn,transvestit und so :3
+2010-09-16 23:31:29,Tederian,Das sind doch total die kranken Typen :o
+2010-09-16 23:32:04,DickHuuhn,http://www.youtube.com/watch?v=kpcxfsjIIbM << ich mag eddie izzard aber :(
+2010-09-16 23:52:10,DesL,re
+2010-09-16 23:53:56,DerHartmut,wb

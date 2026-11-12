@@ -1,0 +1,46 @@
+date/time,nick,message
+2014-11-09 11:43:10,Jonathan,Moin
+2014-11-09 15:18:53,iksnagreb,moin
+2014-11-09 16:04:26,Tectu,nein!
+2014-11-09 18:24:43,Tufel,Huhu
+2014-11-09 18:27:19,Tufel,Nun was passiert wenn man einen Sdram mit einem falschem Timing ansteuere? Geht er dadurch kaputt?
+2014-11-09 18:29:48,Jonathan,"Vermutlich wird er das überleben, aber korrekte Daten wirst du niemals übertragen bekommen."
+2014-11-09 18:33:57,Tufel,Mhh ok. Naja das ein Sdram korrekte Daten überträgt wenn man ihn falsch ansteuert würde mich wundern :D
+2014-11-09 18:34:24,Jonathan,^^
+2014-11-09 18:34:38,Jonathan,"Solange du ihn nicht mit viel zu viel Takt betreibst, wird ihm physisch nix passieren."
+2014-11-09 18:34:47,Jonathan,"Wenn du den Refresh vergisst, wird er seine Daten halt vergessen."
+2014-11-09 18:35:18,Jonathan,"Wenn du ihn mit falscher Setup-/Hold-Zeit ansprichst, ist es eben Lotto, was für Daten er einliest."
+2014-11-09 18:36:04,Jonathan,Um was für einen SDRAM handelt es sich denn? ^^
+2014-11-09 18:37:44,Jonathan,Ach ja - die Setup-/Hold-Zeiten zu *überschreiten* ist nicht schlimm. Das sind nur Mindest-Zeitdauern.
+2014-11-09 18:38:01,Tufel,"Naja um einen 8MB -chip der auf ein FPGA-board sitzt.(Man kann daher ihn schlecht austauschen, wenn er kaputt geht. :D)"
+2014-11-09 18:38:11,Jonathan,kk :P
+2014-11-09 18:38:26,Jonathan,"Besorg dir einfach mal das Datenblatt dazu und implementiere eine State Machine, die den SDRAM entsprechend befeuert."
+2014-11-09 18:38:39,Jonathan,Kannst ja die Waveforms vom Datenblatt 1:1 nachbauen :P
+2014-11-09 18:39:35,Jonathan,Tufel: Es gibt da aber eine kleine Falle: Die Verzögerungs-Zeit zwischen deiner Logik im FPGA und den FPGA-Pins. Die beträgt manchmal schon ihre 7ns und kann ein schnelles Timing dann ganz schön durcheinander bringen.
+2014-11-09 18:39:58,Jonathan,"Z.B. musst du dann bedenken, dass der RAM deine angelegte Adresse erst 7ns später bekommt."
+2014-11-09 18:40:22,Jonathan,"Und dass die Daten vom RAM auch noch ihre Zeit brauchen, bis sie beim FPGA angekommen sind, durch Leiterbahnen und I/O-Pads."
+2014-11-09 18:41:39,Tufel,"MMh oje, gibts nen tick diese Verzögerung zu den pins zu minimieren?"
+2014-11-09 18:41:41,Jonathan,"Wenn du z.B. einen RAM mit 10ns Zugriffszeit ansteuern willst, und du im FPGA dafür 20ns einplanst, klappt das nicht: Wenn das ""Lese""-Signal vom FPGA zum RAM 7ns braucht, und die Daten vom RAM zum FPGA auch nochmal 7ns unterwegs sind, muss der RAM deine Anforderung plötzlich in 20ns-7ns-7ns = 6ns verarbeiten."
+2014-11-09 18:41:45,Jonathan,Und das klappt nicht.
+2014-11-09 18:42:14,Jonathan,"Du kannst deinem VHDL-Compiler per Constraint sagen, dass er darauf achten soll, dass die Verzögerung nicht größer als X ns sein soll"
+2014-11-09 18:42:31,Jonathan,Aber kleiner als eine bestimmte Verzögerung geht es eben nie. ^^
+2014-11-09 18:42:46,Jonathan,Deshalb musst du in deinem RAM-Ansteuerungs-Code diese Verzögerungen dann berücksichtigen.
+2014-11-09 18:43:52,_sivizius,"hmm, sdram als zufallsgenerator..."
+2014-11-09 18:44:23,Tufel,"Joar, der Sdram-controller muss halt die Signale 7ns schneller generieren."
+2014-11-09 18:44:53,Jonathan,Und 7ns später einlesen. ;)
+2014-11-09 18:45:13,Jonathan,"Also brauchst du für einen Lese-Zugriff 14ns länger, wenn du eine Verzögerung von 7ns hast."
+2014-11-09 18:45:43,Jonathan,"Man kann dann natürlich auch tricksen und z.B. schon eine neue Adresse anlegen, bevor man die alten Daten ausliest... ;)"
+2014-11-09 18:46:12,Jonathan,Die alten Daten bleiben ja noch mindestens 7ns + Mindest-Zugriffszeit vom RAM erhalten.
+2014-11-09 18:46:19,Jonathan,*g*
+2014-11-09 18:46:20,Tufel,mmh das wird dann aber ziemlich kompliziert
+2014-11-09 18:46:23,Jonathan,Jo.
+2014-11-09 18:46:31,Jonathan,"Aber wenn man noch Bandbreite braucht, kann man das so machen. :P"
+2014-11-09 18:46:44,Jonathan,Macht z.B. der DDR3-Controller von neueren CPUs so.
+2014-11-09 18:46:57,Jonathan,Man will ja keine teure Bandbreite verschenken.
+2014-11-09 18:47:27,Jonathan,TIMESPEC TS_SRAM_ADR = FROM : FFS : TO : SRAM_ADR : 5 ;    <--- So sieht ein Timing-Constraint für die Verzögerung von einem I/O-Pin zur FPGA-Logik aus
+2014-11-09 18:47:36,Jonathan,(Die Maximal erlaubbare Verzögerung
+2014-11-09 18:47:41,Jonathan,wäre in dem Fall 5ns)
+2014-11-09 18:48:28,Jonathan,"Das ist aber ein Xilinx-Constraint... Musst mal schauen, ob es bei Altera genauso funktioniert ^^"
+2014-11-09 18:49:14,Tufel,"Mhh joar, ich google das mal :D"
+2014-11-09 19:03:12,Tufel,Nun was für ein FPGA-board hast du eigentlich?
+2014-11-09 19:44:35,Tufel,Ich geh mal of bb

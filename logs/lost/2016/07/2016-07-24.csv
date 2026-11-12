@@ -1,0 +1,667 @@
+date/time,nick,message
+2016-07-24 00:04:59,MasterQ32,"okay, ich verschiebe TinyGL erst mal noch eine Weile..."
+2016-07-24 00:05:03,MasterQ32,hat zu viele dependencies
+2016-07-24 00:15:56,MasterQ32,"darklink, ist nur das hier: https://github.com/Mtgxyz/MTGos/blob/master/kernel/hal/x86/blk/ide.cpp nötig, um Platten mit ATA anzusprechen?"
+2016-07-24 00:42:22,MasterQ32,"so, ich geh mal pennen"
+2016-07-24 00:42:23,MasterQ32,bis morgen
+2016-07-24 00:42:52,Svenska,gn8
+2016-07-24 09:26:35,darklink,MasterQ32: ja
+2016-07-24 09:26:56,darklink,allerdings brauchst du noch die portbasisnummern
+2016-07-24 09:27:58,darklink,und heute werde ich noch einen ATA-PIO Schreibtreiber reinhauen
+2016-07-24 10:42:49,MasterQ32,morgen
+2016-07-24 10:47:11,darklink,hi
+2016-07-24 10:47:23,darklink,so schreibtreiber fertig
+2016-07-24 10:47:35,MasterQ32, nic4e
+2016-07-24 10:47:46,darklink,und jetzt habe kann mein ATA treiber auch mehrere sektoren auf einmal lesen
+2016-07-24 10:48:46,darklink,so gepusht
+2016-07-24 10:49:16,darklink,hast du meinen HL von vor ~1h gesehen?
+2016-07-24 10:49:25,MasterQ32,HL?
+2016-07-24 10:49:36,MasterQ32,ich bin erst n paar minuten wach :D
+2016-07-24 10:49:55,darklink,du hast einen BNC
+2016-07-24 10:49:58,darklink,keinen backlog?
+2016-07-24 10:50:19,MasterQ32,"doch, ich hab kram von 7:27, danach stille"
+2016-07-24 10:50:39,MasterQ32,und was ist HL und BNC?
+2016-07-24 10:51:27,darklink,HL = HighLight
+2016-07-24 10:51:34,darklink,BNC = BouNCer
+2016-07-24 10:53:13,MasterQ32,ah
+2016-07-24 10:53:19,MasterQ32,tippfaule sau
+2016-07-24 10:54:05,darklink,Real Men™ don't define acronyms
+2016-07-24 10:54:12,darklink,they understand them genetically
+2016-07-24 11:00:52,darklink,bah. ich habe 3 verschiedene tabulatorweiten
+2016-07-24 11:01:02,darklink,"4 spaces, 2 spaces, 4 tabs"
+2016-07-24 11:03:12,MasterQ32,4 tabs? wtf?
+2016-07-24 11:06:35,darklink,also tabs die 4 breit sind
+2016-07-24 11:07:00,darklink,so schon mal die tabs in 4 spaces umgewandelt
+2016-07-24 11:13:34,MasterQ32,hast du eigentlich schon was richtung file system?
+2016-07-24 11:17:33,darklink,ne
+2016-07-24 11:17:37,MasterQ32,kk
+2016-07-24 11:20:15,darklink,ähh
+2016-07-24 11:20:19,darklink,8 spaces auch noch?
+2016-07-24 11:20:22,darklink,damn
+2016-07-24 11:20:28,MasterQ32,meeensch
+2016-07-24 11:20:30,MasterQ32,ich hab nur tabs
+2016-07-24 11:20:36,MasterQ32,und paddings mit leerzeichen
+2016-07-24 11:21:11,darklink,find . -name '*.[chS] -o -name '*.cpp' -o -name '*.py' -exec convert -t 4 {} \;
+2016-07-24 11:21:23,darklink,expand*
+2016-07-24 11:32:07,darklink,    idt[i]=(uint16_t)((uint64_t)offset);
+2016-07-24 11:32:07,darklink,		idt[i]|=(unsigned __int128)(((uint64_t)offset)>>16)<<48;
+2016-07-24 11:32:26,darklink,das erste mit 2 spaces
+2016-07-24 11:32:32,darklink,das zweite mit tabs
+2016-07-24 11:32:33,darklink,aua
+2016-07-24 11:57:20,MasterQ32,so
+2016-07-24 11:57:29,MasterQ32,erst mal den userspace umsortieren :D
+2016-07-24 11:58:07,darklink,und jetzt habe ich noch 3-space tabs?
+2016-07-24 11:58:10,darklink,WTF
+2016-07-24 11:58:22,MasterQ32,.P
+2016-07-24 12:06:56,darklink,Hey
+2016-07-24 12:07:16,darklink,endlich mal ne datei die ich nicht verändern musste
+2016-07-24 12:10:11,MasterQ32,:P
+2016-07-24 12:23:03,darklink," 40 files changed, 2448 insertions(+), 2451 deletions(-)"
+2016-07-24 12:32:21,darklink,so. jetzt schreibe ich ein paar partitionstabellenlayouttreiber
+2016-07-24 13:00:46,MasterQ32,"ich fühle mich immer noch etwas verloren, was file system angeht..."
+2016-07-24 13:02:18,MasterQ32,vorallem ist dein code irgendwie weird
+2016-07-24 13:02:23,MasterQ32,"  auto IDE::writeSector(int32_t drive, uint64_t sectorNum, uint32_t num, uint8_t *buf) -> void {"
+2016-07-24 13:02:27,MasterQ32,was machen die einzelnen parameter?
+2016-07-24 13:23:23,darklink,drive ist das laufwerk
+2016-07-24 13:23:30,darklink,bit eins ist das slavebit
+2016-07-24 13:23:43,darklink,die nächsten zwei die ATA nummer
+2016-07-24 13:24:33,darklink,sectorNum ist eine 48-bit sektorennummer (LBA48) für das laufwerk
+2016-07-24 13:24:39,darklink,num ist die anzahl der sektoren
+2016-07-24 13:24:59,darklink,buf ist der buffer aus dem num*512 bytes gelesen werden
+2016-07-24 13:37:55,darklink,"bei dem asm ist das ""aad"" nur für ein delay da"
+2016-07-24 13:38:06,darklink,"könnte auch funktionieren, wenn du es rausnimmst"
+2016-07-24 13:38:28,darklink,könnte auch funktionieren fenn du es rausnimmst und dein compiler die schleife unrollt.
+2016-07-24 13:38:43,MasterQ32,:D
+2016-07-24 13:40:19,darklink,"könnte auch funktioneren, wenn du den letzten teil durch einen asm volatile(""rep outsw"" : : ""S""(buf), ""d""(baseport), ""c""(256*num)); ersetzt"
+2016-07-24 13:40:23,darklink,solltest du aber nicht
+2016-07-24 13:40:30,MasterQ32,^^
+2016-07-24 13:43:19,darklink,num kann maximal 65536 sektoren betragen
+2016-07-24 13:44:16,darklink,131175
+2016-07-24 14:02:54,MasterQ32,moin XanClic
+2016-07-24 14:04:50,XanClic,moin
+2016-07-24 15:03:25,MasterQ32,http://hastebin.com/unejixeyaj.hs
+2016-07-24 15:03:28,MasterQ32,sieht doch schon mal gut aus
+2016-07-24 15:05:15,darklink,ASCII art? es ist 2016!
+2016-07-24 15:05:35,darklink,was ist 46 für ne exception?
+2016-07-24 15:06:00,XanClic,"Was ich mich frage, ist, was ein Badeaffe ist"
+2016-07-24 15:06:22,darklink,BAD E_AFFE
+2016-07-24 15:06:28,XanClic,Sowas wie ein Quietscheente?
+2016-07-24 15:06:31,XanClic,Nur halt als Affe?
+2016-07-24 15:06:50,darklink,nein es ist ein e fehlermeldung
+2016-07-24 15:06:52,darklink,BAD E_AFFE
+2016-07-24 15:07:14,XanClic,Es ist eindeutig ein Bade-Affe
+2016-07-24 15:07:23,MasterQ32,"das ist sowas wie eine badeente, richtig :)"
+2016-07-24 15:07:24,XanClic,Oder vielleicht auch ein Bad-E-Affe
+2016-07-24 15:07:28,XanClic,Also ein Elektroaffe fürs Bad
+2016-07-24 15:07:37,MasterQ32,https://s3.amazonaws.com/gs-geo-images/b775a318-da44-4bcc-b67a-aa519060ad72_l.jpg
+2016-07-24 15:08:04,MasterQ32,"@darlink: lese einfach mal unten rechts, was das für interrupt ist ;)"
+2016-07-24 15:08:27,darklink,aber das ist keine exception :D
+2016-07-24 15:08:31,darklink,das ist ein IRQ
+2016-07-24 15:08:39,MasterQ32,stimmt
+2016-07-24 15:08:44,MasterQ32,ist halt unhandled interrupt :D
+2016-07-24 15:08:48,darklink,:D
+2016-07-24 15:08:54,MasterQ32,(siehst du ja auch an der msg ;) =
+2016-07-24 15:18:11,darklink,mal ne frage: was sieht besser aus: (bla :) oder (bla :))
+2016-07-24 15:22:19,MasterQ32,örm
+2016-07-24 15:22:25,MasterQ32,bla smiley oder bla smiley ?: D
+2016-07-24 15:22:38,darklink,in klammern
+2016-07-24 15:23:13,darklink,"klammer auf, zeugs dann smiley oder klammer auf, zeugs, smiley dann klammer zu"
+2016-07-24 15:24:10,MasterQ32,(bla :) (bla :))
+2016-07-24 15:24:15,MasterQ32,definitiv v2
+2016-07-24 15:24:27,MasterQ32,aber vielleicht eher v3: (bla :) )
+2016-07-24 15:24:46,darklink,vielleicht sollten wir emoji benutzen statt text smileys
+2016-07-24 15:25:10,darklink,(bla 
+2016-07-24 15:25:12,MasterQ32,bin ich eh dafür
+2016-07-24 15:25:19,MasterQ32,ich hab nur keinen sinnvollen input dafür :/
+2016-07-24 15:25:35,MasterQ32,einfach nen replacement für :D in 
+2016-07-24 15:27:11,darklink,mein OS unterstützt viele emoji nicht
+2016-07-24 15:27:20,darklink,da sie sich nicht in der BMP befinden
+2016-07-24 15:38:43,MasterQ32,"so, ATA0 wird erkannt, jetzt mal anfangen, daten auszulesen"
+2016-07-24 15:38:50,MasterQ32,"dabei stoße ich auf folgenden kommentar: ""Send a NULL byte to port 0x1F1, if you like (it is ignored and wastes lots of CPU time): outb(0x1F1, 0x00)"
+2016-07-24 15:38:50,MasterQ32,""""
+2016-07-24 15:39:05,darklink,was ist 0x1F1?
+2016-07-24 15:39:35,MasterQ32,ata_er
+2016-07-24 15:39:39,MasterQ32,*error register
+2016-07-24 15:39:55,darklink,komisch
+2016-07-24 15:40:00,darklink,bei mir heißt der ATAPI_RESV
+2016-07-24 15:42:04,darklink,argh
+2016-07-24 15:42:15,darklink,gerade die main() routine meines kernels gelöscht
+2016-07-24 15:42:26,darklink,wie kann man einzelne dateien mit git auschecken?
+2016-07-24 15:43:34,darklink,ah egal
+2016-07-24 16:01:59,darklink,hey svenska
+2016-07-24 16:02:09,darklink,MBR funktioniert
+2016-07-24 16:02:20,Svenska,moin
+2016-07-24 16:02:26,Svenska,MBR?
+2016-07-24 16:02:29,darklink,jetzt bau ich FAT12/16/32 ein
+2016-07-24 16:02:33,darklink,Master Boot Record
+2016-07-24 16:02:47,Svenska,kein multiboot?
+2016-07-24 16:03:28,darklink,doch
+2016-07-24 16:03:46,darklink,also das auslesen der MBR
+2016-07-24 16:09:18,Svenska,"ich frag mich gerade, warum"
+2016-07-24 16:10:50,MasterQ32,"morgen svenska, morgen quantenmagier"
+2016-07-24 16:10:58,MasterQ32,mein block dev treiber tut langsam
+2016-07-24 16:11:04,MasterQ32,und das verständnis der ganzen geschichte auch: D
+2016-07-24 16:11:15,MasterQ32,"und ich denke, darklink basteln immer noch am partitionstreiber"
+2016-07-24 16:11:24,Svenska,achso
+2016-07-24 16:13:05,darklink,warte
+2016-07-24 16:13:31,darklink,die grub partition ist ext2
+2016-07-24 16:14:00,darklink,Hat wer von euch schon mal nen ext2-lesetreiber implementiert?
+2016-07-24 16:14:10,Svenska,tyndur hat einen
+2016-07-24 16:14:18,darklink,K
+2016-07-24 16:14:23,darklink,afk
+2016-07-24 16:15:49,Quantenmagier,moin moin
+2016-07-24 16:16:09,Quantenmagier,grad vom zeltwochenende mit dem kanu zurück ^^
+2016-07-24 16:16:22,Svenska,nett ^^
+2016-07-24 16:17:40,Quantenmagier,"jep, war vorher nur mal auf ner Freizeit in Südfrankreich Kanadier gefahren also Zweisitzer und jetzt die Einsitzer Kajaks waren schon cool. ^^"
+2016-07-24 16:17:59,Svenska,wir hatten damals WWFL - WasserWanderFerienLager - mit faltbooten
+2016-07-24 16:19:09,Quantenmagier,ahh auch cool ^^
+2016-07-24 16:19:41,Svenska,"7 doppelsitzige faltboote, damit kriegt man das ganze lager transportiert"
+2016-07-24 16:22:01,MasterQ32,klingt cool
+2016-07-24 16:22:09,Svenska,jo
+2016-07-24 16:22:12,Svenska,war's auch *g*
+2016-07-24 16:22:30,Svenska,allerdings gibts die einrichtung schon lange nicht mehr
+2016-07-24 16:31:30,MasterQ32,hmm
+2016-07-24 16:31:38,MasterQ32,theoretisch kann ich jetzt nen FAT treiber schreiben
+2016-07-24 16:35:02,Quantenmagier,für welches OS? gibts nicht shcon nen cdi treiber für faT?
+2016-07-24 16:35:18,Svenska,"ja, cdi-treiber gibt's fuer fat und ext2 afaik"
+2016-07-24 16:42:45,MasterQ32,für DasOS natürlich ;)
+2016-07-24 16:45:29,MasterQ32,aber CDI muss ich mir mal angucken
+2016-07-24 16:59:49,darklink,ext2 unterstützt fast 8ZiB bei einer blockgröße von 2TiB
+2016-07-24 16:59:59,MasterQ32,wat? :D
+2016-07-24 17:00:13,Svenska,sicher
+2016-07-24 17:00:31,Svenska,ext2 unterstuetzt sogar +inf bytes bei einer blockgröße von +inf
+2016-07-24 17:00:36,Svenska,"nur, was bringt das?"
+2016-07-24 17:01:16,darklink,"Das ist aber das maximum, was das dateisystem vom superblock her unterstützt"
+2016-07-24 18:37:27,darklink,so
+2016-07-24 18:37:35,darklink,jetzt auch einen UTF-8 encoder gebastelt
+2016-07-24 18:37:46,Svenska,utf16 -> utf8?
+2016-07-24 18:37:57,Svenska,bzw utf32->utf8?
+2016-07-24 18:48:41,darklink,ja
+2016-07-24 18:59:16,MasterQ32,"wie läuft das eigentlich mit partitionstabellen, partitionen und  file systems"
+2016-07-24 18:59:39,MasterQ32,"ich hab hier ein image, welches nen MBR mit kaputter partitionstabelle hat, einem FAT und ich kann davon booten"
+2016-07-24 19:00:00,Svenska,definiere kaputte partitionstabelle
+2016-07-24 19:00:22,MasterQ32,es ist kein sinnvoller inhalt drin
+2016-07-24 19:00:42,MasterQ32,/dev/random > partitionstabelle
+2016-07-24 19:00:44,Svenska,dann kommt die zweite frage: wer bootet?
+2016-07-24 19:00:49,MasterQ32,QEMU
+2016-07-24 19:01:22,Svenska,das BIOS bootet von einer festplatte grundsätzlich wie von einer diskette
+2016-07-24 19:01:24,MasterQ32,habe im MBR einen Syslinux bootloader installiert
+2016-07-24 19:01:26,Svenska,"lade MBR, springe ihn an"
+2016-07-24 19:01:34,MasterQ32,"genau, soweit hab ich das verständnis"
+2016-07-24 19:01:44,Svenska,wenn der MBR die partitionstabelle ignoriert... ;-)
+2016-07-24 19:01:52,MasterQ32,"ich guck grade ""batman v superman"", er lädt von /dev/LEECH_0"
+2016-07-24 19:02:24,Svenska,historisch duerfen partitionen nur an zylindergrenzen anfangen und enden (wegen CHS-adressierung)
+2016-07-24 19:02:37,Svenska,und damit ist der erste zylinder bis auf den ersten sektor unbenutzt
+2016-07-24 19:02:40,MasterQ32,"okay, syslinux ignoriert also meine partitionstabelle "
+2016-07-24 19:02:49,Svenska,je nach geometrie sind das knapp 8 MB
+2016-07-24 19:03:09,Svenska,bootet nur syslinux selbst oder kann es auch einen kernel laden?
+2016-07-24 19:03:21,MasterQ32,es lädt auch meinen kernel und sogar die multiboot module
+2016-07-24 19:03:36,Svenska,"weil syslinux installiert sich nach ld-linux.sys oder so, und trägt dessen sektoren in den MBR ein"
+2016-07-24 19:03:47,Svenska,sonst muesste der MBR nämlich ein dateisystem lesen können
+2016-07-24 19:04:00,Svenska,GRUB und viele andere bootmanager installieren sich in den ersten zyliner
+2016-07-24 19:04:28,MasterQ32,https://github.com/MasterQ32/DasOS/blob/master/Makefile#L10
+2016-07-24 19:04:30,Svenska,d.h. syslinux kann sich selbst ohne partitionstabelle laden
+2016-07-24 19:04:34,MasterQ32,um mal noch fragen zu beantworten :P
+2016-07-24 19:05:07,Svenska,"das ist ne floppy, keine festplatte"
+2016-07-24 19:05:12,Svenska,disketten haben keinen MBR und keine partitionstabelle
+2016-07-24 19:05:14,MasterQ32,genau
+2016-07-24 19:05:19,MasterQ32,soviel hab ich auch verstanden
+2016-07-24 19:05:21,MasterQ32,der punkt ist
+2016-07-24 19:05:35,MasterQ32,"QEMU bootet das auch richtig, wenn ich das als HDD angebe"
+2016-07-24 19:05:50,Svenska,"ja, weil disketten und festplatten fuer das BIOS erstmal identisch sind"
+2016-07-24 19:05:54,Svenska,"""springe ersten sektor an"""
+2016-07-24 19:06:11,Svenska,"das BIOS sagt dir sogar, welches laufwerk das war"
+2016-07-24 19:06:18,MasterQ32,und der erste sektor hat einen MBR-magic
+2016-07-24 19:06:23,Svenska,0x00 (floppy 0) oder 0x80 (hdd 0)
+2016-07-24 19:06:30,Svenska,es gibt keinen MBR-magic ;-)
+2016-07-24 19:06:42,Svenska,"das 0x55 am ende sagt dem BIOS nur, dass das bootfähig ist"
+2016-07-24 19:06:54,Svenska,"...das sagt aber nichts darueber aus, ob das BIOS sich darum kuemmert *g*"
+2016-07-24 19:06:59,darklink,bei manchen alten BIOSsen sind auch USB-sticks floppys
+2016-07-24 19:07:08,Svenska,"ich hab alte xenix-disketten, die hatten die magic-nummer auch nicht"
+2016-07-24 19:07:12,Svenska,ab werk nicht
+2016-07-24 19:07:32,Svenska,"bei USB-Sticks hängt es davon ab, wie sie partitioniert sind. die gibt es mit und ohne partitionstabelle"
+2016-07-24 19:07:47,Svenska,"...und was das BIOS draus macht, kann eine floppy sein oder eine festplatte"
+2016-07-24 19:07:48,darklink,KA was mein 128 GB USB hatte
+2016-07-24 19:07:57,darklink,hab da einfach eine neue raufgehauen
+2016-07-24 19:08:11,Svenska,wahrscheinlich eine partitionstabelle. aber es gibt auch partitionierte disketten... nämlich die mit 120 MB und so
+2016-07-24 19:08:23,darklink,also gpart create -s MBR /dev/da0
+2016-07-24 19:09:27,MasterQ32,"okay, ich werde langsam entwirrt"
+2016-07-24 19:10:51,Svenska,"ZIP-Floppies enthalten einen MBR, aber es wird nur eine Partition davon genutzt"
+2016-07-24 19:11:13,Svenska,"also kann man von disketten grundsätzlich mit und ohne MBR booten, wobei die klassischen disketten nie einen haben"
+2016-07-24 19:11:49,MasterQ32,"okay, danke :)"
+2016-07-24 19:11:58,MasterQ32,"wie finde ich raus, ob ich einen mbr habe?"
+2016-07-24 19:12:16,Svenska,"Syslinux selbst setzt also erstmal keinen MBR voraus, weil es von Disketten läuft. Der Loader selbst (ld-linux.sys) wird per Blockliste vom Bootsektor geladen und wenn Syslinux selbst sich dann einfach den FAT-Superblock anschaut, dann braucht es auch fuer den Rest keinen MBR."
+2016-07-24 19:12:31,Svenska,Und zwar auch von Festplatte nicht. *g*
+2016-07-24 19:12:41,Svenska,du kannst fdisk drauf anwenden?
+2016-07-24 19:12:50,MasterQ32,ja
+2016-07-24 19:13:32,MasterQ32,http://hastebin.com/xuzawiwaxa.avrasm
+2016-07-24 19:16:47,MasterQ32,"darklink, was kannst du dazu sagen? :D"
+2016-07-24 19:16:59,Svenska,das ist keiner.
+2016-07-24 19:17:19,darklink,NTFS?
+2016-07-24 19:17:36,MasterQ32,"svenska, woran seh ich das?"
+2016-07-24 19:17:58,darklink,"außerdem, 1TB auf ner floppy? :D"
+2016-07-24 19:18:04,Svenska,^-- daran.
+2016-07-24 19:18:09,MasterQ32,"ja gut, das ist mir auch klar"
+2016-07-24 19:18:25,MasterQ32,"aber wie finde ich raus, ob auf einem device ein MBR drauf ist oder nicht?"
+2016-07-24 19:18:57,darklink,KA
+2016-07-24 19:19:06,Svenska,es geht nicht
+2016-07-24 19:19:09,Svenska,der MBR hat keine signatur
+2016-07-24 19:19:17,Svenska,"du kannst nur gucken, ob sinnvolle werte drinstehen"
+2016-07-24 19:19:19,darklink,es sei denn man hat ein MBR mit signatur
+2016-07-24 19:19:30,Svenska,wie ist denn die signatur?
+2016-07-24 19:19:30,darklink,also sowas wie nen DiskManager MBR
+2016-07-24 19:19:58,darklink,0x55AA an position +0xFC
+2016-07-24 19:20:07,Svenska,die hast du auch bei einem bootsektor ohne MBR
+2016-07-24 19:20:16,Svenska,"das ist nur der hinweis ""dieser sektor kann booten"""
+2016-07-24 19:20:23,darklink,an position +0xFC
+2016-07-24 19:20:36,Svenska,ja...?
+2016-07-24 19:20:49,darklink,und denau andersrum als bei dem an position +0x1FE
+2016-07-24 19:20:49,Svenska,"0x55AA ist der universalmarker aus antiken tagen ""hier ist code"""
+2016-07-24 19:20:56,Svenska,hm
+2016-07-24 19:21:04,Svenska,davon hab ich noch nie gelesen
+2016-07-24 19:21:08,Svenska,ist der standard?
+2016-07-24 19:21:19,darklink,https://en.wikipedia.org/wiki/Master_boot_record#Sector_layout
+2016-07-24 19:21:23,darklink,nein
+2016-07-24 19:21:28,Svenska,also gibt's den nicht
+2016-07-24 19:21:32,darklink,es sei denn man benutzt Disk Manager
+2016-07-24 19:21:37,darklink,hat 16 partitionen
+2016-07-24 19:21:47,Svenska,moment: _diesen_einen_ diskmanager
+2016-07-24 19:21:49,Svenska,andere sind anders drauf
+2016-07-24 19:22:02,darklink,ja
+2016-07-24 19:25:48,MasterQ32,"also die einzig sinnvolle variante, die ich habe, ist, dass ich die partitionstabelle auf validitiät prüfe und 0x01BC (wikipedia) auf 0"
+2016-07-24 19:26:01,Svenska,letzteres wuerde ich ebenfalls ignorieren
+2016-07-24 19:26:08,MasterQ32,hmm
+2016-07-24 19:26:09,MasterQ32,okay :D
+2016-07-24 19:26:24,Svenska,"partitionstabelle auf validität pruefen musst du sowieso, weil du damit z.B. diskmanager oder GPT-tabellen erkennst"
+2016-07-24 19:28:08,MasterQ32,"ohje, die gibts ja auch noch"
+2016-07-24 19:28:48,Svenska,gibt noch weitere varianten *g*
+2016-07-24 19:29:02,MasterQ32,ich bleib bei den guten alten MBR/BIOS Tabellen
+2016-07-24 19:29:05,MasterQ32,die tun jedenfalls
+2016-07-24 19:29:07,Svenska,"am elegantesten ist dann noch die, wo man die tabelle per command line uebergibt (ist bei flash öfter mal ueblich)"
+2016-07-24 19:29:12,MasterQ32,"hatte schon einige geräte, wo GPT halt nicht ging"
+2016-07-24 19:29:13,Svenska,die tun nur bis 2 TB garantiert
+2016-07-24 19:32:07,Svenska,"außerdem musst du sie ja nicht erzeugen können, es reicht ja, wenn du sie lesen kannst *g*"
+2016-07-24 19:32:27,MasterQ32,:D
+2016-07-24 19:32:39,MasterQ32,vielleicht auch einfach ignorieren :D
+2016-07-24 19:32:58,MasterQ32,windows 7 (ich glaube auch 8) konnte auch noch keine gpt :P 
+2016-07-24 19:33:07,Svenska,win8 kann es definitiv
+2016-07-24 19:33:10,Svenska,win7 kann es nicht?
+2016-07-24 19:33:14,Svenska,ich denke schon...
+2016-07-24 19:33:19,MasterQ32,ich hatte probleme damit
+2016-07-24 19:33:23,MasterQ32,wurde nicht erkannt
+2016-07-24 19:33:34,MasterQ32,bzw wurde erkannt und gesagt: können wir nüsch 
+2016-07-24 19:33:37,Svenska,"hmm, läuft auf die frage hinaus: kann windows 7 festplatten >2 TB"
+2016-07-24 19:36:40,Svenska,"das ist ja der grund, warum XP es nicht kann"
+2016-07-24 19:36:51,MasterQ32,soviel ist klar#
+2016-07-24 19:36:52,Svenska,"da hatte jemand einen GPT-treiber fuer geschrieben (sysinternals oder so), und damit ging's dann"
+2016-07-24 19:37:33,MasterQ32,:D
+2016-07-24 19:37:40,MasterQ32,sysinternals hat nen haufen geschrieben
+2016-07-24 19:45:09,darklink,mtgos braucht nur eine 7MB disk
+2016-07-24 19:45:42,darklink,"Svenska, windows 7 kann gpt"
+2016-07-24 19:45:49,darklink,kann über uefi installiert werden
+2016-07-24 19:45:55,Svenska,darklink: sag masterq32 das ;)
+2016-07-24 19:46:01,darklink,"MasterQ32, windows 7 kann gpt"
+2016-07-24 19:46:03,MasterQ32,schon angekommen
+2016-07-24 19:46:04,MasterQ32,:D
+2016-07-24 19:46:06,Svenska,:D
+2016-07-24 19:46:10,MasterQ32,ich höre mit :P
+2016-07-24 19:46:19,Svenska,"iih, der schummelt *g*"
+2016-07-24 19:52:16,darklink,oh
+2016-07-24 19:52:24,darklink,gestrippt passt fast alles rauf
+2016-07-24 19:52:31,darklink,auf ne 6MB disk
+2016-07-24 19:53:26,darklink,Support automatic decompression :)
+2016-07-24 20:33:19,darklink,und jetzt 5MB
+2016-07-24 20:33:36,Svenska,"es gab mal einen patch fuer ext2 zur kompression, nannte sich ext2compr"
+2016-07-24 20:33:43,Svenska,war aber wohl nie verbreitet :(
+2016-07-24 20:33:47,darklink,^^
+2016-07-24 20:42:04,darklink,BSD machte gerade einen ragequit
+2016-07-24 20:46:45,darklink,Noch einen...
+2016-07-24 20:48:23,darklink,also das system passt auf 1 2MB floppy
+2016-07-24 20:48:45,darklink,mal gucken ob ich das auf ne 1.44MB floppy kriege
+2016-07-24 20:55:43,darklink,ja. Und es lädt sogar
+2016-07-24 21:00:00,darklink,und da passen sogar noch 200KB drauf :D
+2016-07-24 21:00:51,Svenska,"hmm schade, dem modpack wurde der autopackager entzogen"
+2016-07-24 21:08:02,darklink,ich habe einfach alles .xz komprimiert und dann xzio als modul installiert
+2016-07-24 21:08:34,Svenska,".tar.xz duerfte kleiner sein, weil kein 512-byte-overhead *g*"
+2016-07-24 21:09:11,darklink,äh
+2016-07-24 21:09:26,Svenska,"wenn du nur eine datei hast, ists allerdings egal"
+2016-07-24 21:09:31,darklink,ich habe 3
+2016-07-24 21:09:41,Svenska,"hey, fast 1 KB weniger *g*"
+2016-07-24 21:09:47,darklink,eine davon 1.3MB groß
+2016-07-24 21:13:45,darklink,"ich meine, die datei könnte ich ohne kompression bestimmt ein wenig kleiner machen"
+2016-07-24 21:26:10,MasterQ32,"okay, ich hab jetzt also erst mal ein floppy-formatiertes ding an meinem ATA-Port hängen und kann darauf schreiben"
+2016-07-24 21:26:20,MasterQ32,erst mal auf partitionstabellen scheißen und weiter machen :D
+2016-07-24 21:29:46,darklink,:D
+2016-07-24 21:30:07,darklink,eine sache: mein floppy image hat ne MBR
+2016-07-24 21:32:16,MasterQ32,moin
+2016-07-24 21:33:29,darklink,es wird ziemlich schwül im raum. Ich glaube ich sollte mal das seit stunden geöffnete fenster schließen
+2016-07-24 21:35:12,MasterQ32,es ist warm hier :D
+2016-07-24 21:35:22,darklink,ist es auch hier
+2016-07-24 21:35:50,darklink,kaum mache ich das fenster zu fange ich an zu schwitzen
+2016-07-24 21:36:08,MasterQ32,es ist offen und ich schwitze :D
+2016-07-24 21:36:18,Svenska,hier gehts
+2016-07-24 21:37:05,darklink,am vormittag gehts überhaupt nicht
+2016-07-24 21:37:33,darklink,habe dann entweder extrem schlechte luft oder 30°C und sonne drauf
+2016-07-24 21:48:04,Quantenmagier,hm ich hab grad überlegt ob ich die implementation von cdi vorziehe.. benötigt das ne ordentliche speicher und dateiverwaltung?
+2016-07-24 21:51:27,Svenska,m.W. brauchst du listen
+2016-07-24 21:51:37,Svenska,d.h. speicherverwaltung (muss nicht ordentlich sein)
+2016-07-24 21:51:47,MasterQ32, PMM__alloc() :D
+2016-07-24 21:54:50,darklink,mein malloc ist nicht ordentlich
+2016-07-24 21:54:54,Quantenmagier,aso pmm_alloc reicht?
+2016-07-24 21:54:57,darklink,aber es funktioniert... irgendwie
+2016-07-24 21:55:51,MasterQ32,ich hab im userspace jetzt auch ein malloc
+2016-07-24 21:56:05,Svenska,naja du solltest den speicher schon irgendwie mappen
+2016-07-24 21:56:08,Svenska,"ansonsten geht's aber, ja"
+2016-07-24 21:56:57,Quantenmagier,"aso ich hätte nen flat mapping, reicht das oder müssen die seiten fortlaufend gemapped sein?"
+2016-07-24 21:57:15,Svenska,malloc() gibt dir einen pointer auf einen speicherblock zurueck
+2016-07-24 21:57:20,Svenska,"wo der liegt, ist egal"
+2016-07-24 21:57:25,Svenska,"hauptsache, er ist groß genug *g*"
+2016-07-24 21:58:47,Quantenmagier,"naja ich hab nen malloc das gibt nen segment und offset wieder, aber cdi ist vermutlich in c geschrieben, dann müßte ich das in ne flat adresse umrechnen, oder ich implementier doch erst das mapping für meinen pasging treiber"
+2016-07-24 21:59:05,Quantenmagier,*paging treiber
+2016-07-24 21:59:10,Svenska,segment und offset?
+2016-07-24 21:59:22,Svenska,oha.
+2016-07-24 21:59:52,darklink,lol
+2016-07-24 22:00:18,Quantenmagier,naja ich benutz halt segmente außer bei der speicher-verwaltung macht das bei meiner c-bibliothek aber kaum nen unterschied..
+2016-07-24 22:00:57,Svenska,"naja, segmente nutzt sonst niemand"
+2016-07-24 22:01:08,Svenska,"bin mir nicht sicher, ob gcc das ueberhaupt vernuenftig unterstuetzt"
+2016-07-24 22:01:17,MasterQ32,"nope, tut er gar nicht"
+2016-07-24 22:01:18,MasterQ32,:D
+2016-07-24 22:01:24,MasterQ32,jedenfalls meines wissens nach
+2016-07-24 22:01:35,Quantenmagier,"nee gcc unterstützt das nicht vernünftig, ich push und pop die segmente einfach in den syscalls"
+2016-07-24 22:01:51,Svenska,"nein, ob er wenigstens im codegenerator immer die korrekten segmente anspricht"
+2016-07-24 22:02:06,Svenska,"wenn er versucht, einen datenblock per codesegment anzurufen, hast du ein problem"
+2016-07-24 22:02:24,Svenska,"es sei denn, alle segmente sind gleich groß und beginnen an der gleichen stelle, aber dann kannst du dir segmentierung auch gleich sparen"
+2016-07-24 22:03:07,Quantenmagier,nee hab die segmente glaubich in meiner elf fortlaufend
+2016-07-24 22:04:00,Quantenmagier,[ 1] .text             PROGBITS        00000000 0000c0 005d0d 00 WAX  0   0 16
+2016-07-24 22:04:00,Quantenmagier,  [ 2] .rodata           PROGBITS        00005d0d 005dcd 0001cf 01 AMS  0   0  1
+2016-07-24 22:04:00,Quantenmagier,  [ 3] .eh_frame_hdr     PROGBITS        00005edc 005f9c 000014 00   A  0   0  4
+2016-07-24 22:04:00,Quantenmagier,  [ 4] .eh_frame         PROGBITS        00005ef0 005fb0 00002c 00   A  0   0  4
+2016-07-24 22:04:00,Quantenmagier,  [ 5] .data             PROGBITS        00005f40 006000 000215 00  WA  0   0 64
+2016-07-24 22:04:01,Svenska,ELF-segmente und segmentierung haben nix miteinander zu tun
+2016-07-24 22:04:01,Quantenmagier,  [ 6] .bss              NOBITS          00006180 006215 0006a0 00  WA  0   0 64
+2016-07-24 22:04:10,Quantenmagier,doch haben sie
+2016-07-24 22:04:27,Svenska,"nur, wenn du sie miteinander verknuepfst"
+2016-07-24 22:04:32,Quantenmagier,"mein elfloader erzegt für data, bss und stack ein segment und für code ein weiteres"
+2016-07-24 22:05:07,Svenska,hmm
+2016-07-24 22:05:55,Quantenmagier,zusätzlich zu elf hab ich aber deswegen auch ein weiteres binärformat entwickelt was den stack noch separieren kann um overflows zu verhindern ^^
+2016-07-24 22:06:35,Quantenmagier,aber das eigene format kann ich bisher nur für meine assembler programme benutzen und nicht für die in c compilierten
+2016-07-24 22:06:51,Svenska,"ist ja schön, aber  ... warum?"
+2016-07-24 22:06:55,Svenska,*g*
+2016-07-24 22:07:01,Quantenmagier,sicherheit
+2016-07-24 22:07:23,Svenska,mit NX-bit hast du die per paging auch
+2016-07-24 22:09:56,Svenska,"so, genug gezockt. *g*"
+2016-07-24 22:10:00,Quantenmagier,joa mein paging treiber ist ja noch nicht fertig und nx bit geht ja auch erst ab pentium 4
+2016-07-24 22:10:03,darklink,es gibt stackfaults wenn der stack zu groß wird und aus dem segment raus geht
+2016-07-24 22:10:36,darklink,segmentierung gibts nicht mehr ab AMD64 (Also P4)
+2016-07-24 22:10:52,MasterQ32,also würde es mit NX auf meinem testrechner auch nicht laufen? :D
+2016-07-24 22:11:10,Svenska,P4 != AMD64
+2016-07-24 22:11:18,Svenska,aber sonst hat darklink recht
+2016-07-24 22:11:31,Svenska,"wenn du segmentierung wirklich sinnvoll benutzt, bist du auf x86 beschränkt"
+2016-07-24 22:11:40,Svenska,denn niemand sonst unterstuetzt das in dem maße
+2016-07-24 22:11:47,darklink,p4 ist einer der ersten intel prozessoren mit AMD64
+2016-07-24 22:12:19,Svenska,die ersten 4 jahre konnte er kein amd64
+2016-07-24 22:12:39,MasterQ32,wb XanClic
+2016-07-24 22:12:45,darklink,stimmt
+2016-07-24 22:12:49,Quantenmagier,jop hab hier auch nen p4 ohne amd64 rumstehen. ^^
+2016-07-24 22:12:52,darklink,erst ab prescott
+2016-07-24 22:13:23,Svenska,"andererseits kann man das natuerlich erkennen und NX nur da nutzen, wo es auch existiert *g*"
+2016-07-24 22:13:24,darklink,Hatte den vor meinem haswell i7
+2016-07-24 22:13:48,Svenska,"ich hab nen core2 duo, hatte vorher nen athlon 1700+ ;-)"
+2016-07-24 22:13:57,Svenska,und auf arbeit nen i5
+2016-07-24 22:15:18,Quantenmagier,"und mein eigentlicher testrechner auf dem ich Suro damals nativ laufen lassen wollte hängt hier noch unter meinem schreibtisch, das is nen 486, aber mein os braucht leider inzwischen ein paar pentiumbefehle, deswegen läuft das da nicht mehr drauf, vllt schreib ich irgendwann man nen präprozessor-wrapper für die pentiumbefehle, damit das wieder auf dem 486er läuft oder ich häng mir einfach nen pentium dahin und sc"
+2016-07-24 22:15:19,Quantenmagier,hmeiß das 486er board weg
+2016-07-24 22:15:38,Svenska,was hast du denn fuer pentium-befehle?
+2016-07-24 22:16:02,Quantenmagier,hm weiß grad nicht mehr ist rdtsc ein pentium befehl?
+2016-07-24 22:16:10,Svenska,jaein
+2016-07-24 22:16:32,Svenska,"doch, rdtsc ist pentium... cpuid ist 486dx4 und pentium+"
+2016-07-24 22:17:09,Quantenmagier,"jo cpuid benutz ich auch, das unterstützen nur manche 486er?"
+2016-07-24 22:17:23,Svenska,"die allerletzten, also dx4"
+2016-07-24 22:17:39,Quantenmagier,"ah ok, mom ich guck mal war auf meinem steht wenn kein kühlkörper drüber ist..."
+2016-07-24 22:17:42,Svenska,"wobei du das sicherlich nur einmal machst, dann tut auch eine funktion"
+2016-07-24 22:17:48,Svenska,wie schnell isser denn? *g*
+2016-07-24 22:17:57,Svenska,"wenn er unter 75 MHz hat, isses kein dx4 *g*"
+2016-07-24 22:18:14,Svenska,(ich tippe ja auch DX/33 oder DX2/66
+2016-07-24 22:18:15,Quantenmagier,486 dx2
+2016-07-24 22:18:20,Svenska,:D
+2016-07-24 22:18:29,Svenska,die brot-und-butter-variante
+2016-07-24 22:18:48,Quantenmagier,joa standard eben damals^^
+2016-07-24 22:19:01,Svenska,ich hab noch ein mini-at board
+2016-07-24 22:19:05,Svenska,mit nem Cx486SLC
+2016-07-24 22:19:06,Quantenmagier,nice
+2016-07-24 22:19:19,Svenska,also der mit semi-broken cache *g*
+2016-07-24 22:19:50,Svenska,"aber ich habs nie hingekriegt, dafuer einen 2.6er kernel zu bauen, der tat"
+2016-07-24 22:19:52,Quantenmagier,benutzt man rdtsc eigentlich für nanosleep oder gibts da was besseres?
+2016-07-24 22:20:20,darklink,Also derzeitig könnte mein kernel auf nem 386 mit FPU laufen
+2016-07-24 22:20:22,Svenska,"in qemu lief es zwar, aber der hat dann trotzdem irgendwelche magie gemacht"
+2016-07-24 22:20:40,Svenska,"ich glaube, fuer nanosleep benutzt man schlicht busy waiting"
+2016-07-24 22:20:47,darklink,Praktisch wird dann einen 486 brauchen
+2016-07-24 22:21:02,Svenska,"linux macht ja beim boot einen check, wie lange eine millisekunde ist (das sind die BogoMIPS)"
+2016-07-24 22:21:49,darklink,Die aber jedes mal anders sind
+2016-07-24 22:21:50,Svenska,"der kernel hat da ja auch einige checks drin, wie zuverlässig rdtsc ist (nicht unbedingt besonders)"
+2016-07-24 22:22:09,Svenska,"wie ""anders""? plusminus 5% sind nichts"
+2016-07-24 22:22:17,Svenska,moderne CPUs sind nicht deterministisch
+2016-07-24 22:22:25,MasterQ32,"Mit FAT12 sind somit nur 2¹² Cluster adressierbar, mit FAT16 2^¹⁶ und mit FAT32 2^²⁸"
+2016-07-24 22:22:33,MasterQ32,"irgendwie hätte ich da erwartet, das hinten eine 32 und keine 28 steht :D"
+2016-07-24 22:22:43,Quantenmagier,"hmm hab nanosleep die tage über rdtsc gemacht, aber vllt mach ich dann mal ne verzweigung, daß er erst checkt wie lange erwarten soll un dwenn das unter nem bestimmtem wert ist macht er busy waiting"
+2016-07-24 22:22:49,darklink,das wäre dann exfat
+2016-07-24 22:22:58,darklink,ohne die m$ extensions
+2016-07-24 22:23:00,Svenska,Quantenmagier: das sowieso
+2016-07-24 22:23:16,Svenska,"wie soll das sonst gehen, also mit rdtsc? ist doch auch nur busy waiting?"
+2016-07-24 22:23:41,Quantenmagier,wie kommst du jetzt auf fat?
+2016-07-24 22:23:50,Svenska,er implementiert doch fat
+2016-07-24 22:23:55,Quantenmagier,aso
+2016-07-24 22:24:09,MasterQ32,"okay, versteh ich das richtig, dass bei FAT quasi auch nochmal der erste sektor einen bootloader enthält/enthalten kann?"
+2016-07-24 22:24:17,Svenska,ja
+2016-07-24 22:24:19,darklink,Ja
+2016-07-24 22:24:25,Svenska,denn sonst könnte man nicht von unpartitionierten medien booten
+2016-07-24 22:24:34,MasterQ32,"ja, jetzt macht auch meine boot.img sinn :D"
+2016-07-24 22:24:37,Svenska,-> auf einer diskette fängt FAT bei sektor 0 an
+2016-07-24 22:24:43,Quantenmagier,"ich hatte damals nen fat16 treiber und hab den dann zum fat32 treiber umgeschrieben, jetzt hab ich keinen fat16 treiber mehr, hätte den mal getrennt speichern sollen XD"
+2016-07-24 22:24:47,Svenska,"das ist ja einer der hauptgruende fuer ""kacke"""
+2016-07-24 22:24:51,MasterQ32,"okay, dann arbeite ich jetzt erst mal mit diskettenlaufwerke :D"
+2016-07-24 22:25:09,MasterQ32,oder unpartitionierten festplatten
+2016-07-24 22:25:11,Svenska,"weil dadurch, dass disketten nicht partitioniert sind, enthält das dateisystem die geometrie des mediums"
+2016-07-24 22:25:34,Svenska,"und dadurch, dass festplatten partitioniert sind, enthält das dateisystem eine zusätzliche information ueber die geometrie des mediums bzw. der partition"
+2016-07-24 22:25:44,Svenska,"die natuerlich nicht mit dem uebereinstimmen muessen, was in der partitionstabelle steht"
+2016-07-24 22:25:50,MasterQ32,:P
+2016-07-24 22:25:54,Svenska,...und je nach betriebssystem sind inkongruenzen echt böse.
+2016-07-24 22:25:56,Quantenmagier,Svenska: er checkt beim taskswitch ob nen task in der wait-schlage ist und wenn ja macht er rdtsc und vergleicht ob er den laden sollen oder den nächsten aus der aktiven schlange ^^
+2016-07-24 22:26:14,Svenska,"Quantenmagier: das ist eher ungeschickt, weil rdtsc nicht stabil ist"
+2016-07-24 22:26:24,Svenska,"so ""falsche partition beschreiben""-falsch"
+2016-07-24 22:26:38,MasterQ32,ouh lecker!
+2016-07-24 22:26:45,Quantenmagier,"Svenska, ja aber immernoch irgendwie besser als polling"
+2016-07-24 22:27:06,Svenska,"Quantenmagier: dafuer hat man einen timer-treiber, also PIT oder HPET"
+2016-07-24 22:27:17,Svenska,"den PIT muss man ja auch nicht ständig neu programmieren, wimre"
+2016-07-24 22:27:18,darklink,So dd-macht-flash-kaputt falsch
+2016-07-24 22:28:23,Quantenmagier,"hm joa ich könnte natürlich statt tsc die anzahl der taskswitches zählen, dann müßte ich nur irgednwie rausfinden können ob der taskswitch präemptiv ost oder tatsächlich vom PIT kommt"
+2016-07-24 22:29:05,Svenska,"kannst du nicht einen frei laufenden zähler machen, den du ausliest?"
+2016-07-24 22:29:38,Quantenmagier,du meinst zum zählen der task switches?
+2016-07-24 22:29:57,Svenska,"nein, zum zählen der uhrzeit *g*"
+2016-07-24 22:30:45,MasterQ32,"1 uhrzeit, 2 uhrzeiten, 3 uhrzeiten, viele uhrzeiten!"
+2016-07-24 22:30:53,Quantenmagier,xD
+2016-07-24 22:30:56,Svenska,:-D
+2016-07-24 22:31:19,Quantenmagier,-pi urzeiten ^^
+2016-07-24 22:31:51,Quantenmagier,nee wie soll ich denn die uhrzeit zählen? jedes mal den bios auszulesen wäre extrem langsam
+2016-07-24 22:31:58,MasterQ32,"nutzt ihr eigentlich einen hexeditor und wenn ja, welchen?"
+2016-07-24 22:32:04,Svenska,Quantenmagier: ich hab eben nachgeguckt
+2016-07-24 22:32:08,Quantenmagier,htedit
+2016-07-24 22:32:09,MasterQ32,deine RTC im Computer ist unpräziser als dein timer afaik
+2016-07-24 22:32:24,Svenska,"vermutlich ist es am besten, den PIT einfach alle 10ms oder so feuern zu lassen"
+2016-07-24 22:32:30,Svenska,und dann im IRQ-Handler das timing zu machen
+2016-07-24 22:32:47,Svenska,"damit kriegst du ein ziemlich genaues, aber grobes zeitraster"
+2016-07-24 22:33:07,darklink, MasterQ32 hxd und hexedit
+2016-07-24 22:33:19,Svenska,"und das benutzt du fuer alle längeren wartezeiten, fuer kuerzeres dann busy waiting"
+2016-07-24 22:33:55,Svenska,"die RTC ist tatsächlich ungenauer, daher lesen moderne systeme die nur beim start aus und schreiben beim shutdown den korrigierten wert zurueck"
+2016-07-24 22:33:55,Quantenmagier,"joa das problem ist halt pit 0 brauch ich für taskswitch und da der preemptiv ist kann ich den nicht zählen weil der auch manchmal von programmen und nicht vom pit kommt, pit 1 soll man nicht benutzen, weil keine garantie ist daß die hardware den nicht shcon für was wichtiges benutzt und pit 2 brauch ich für den systemlautsprecher.. :-/"
+2016-07-24 22:34:08,Svenska,dann baue um
+2016-07-24 22:34:23,Svenska,der IRQ-Handler macht timing
+2016-07-24 22:34:33,Svenska,"wenn da ein taskswitch hingehört, dann macht er einen taskswitch"
+2016-07-24 22:34:49,Svenska,"wenn keiner hingehört, dann macht er keinen"
+2016-07-24 22:34:53,Svenska,aber zählen tut er immer *g*
+2016-07-24 22:36:14,Quantenmagier,hm ich würd ungern so viele interrupts machen wenn kein task in der warteschlange ist
+2016-07-24 22:36:34,Quantenmagier,aber den timer jedes mal umzuprogrammieren dauert auch lange oder geht das schnell?
+2016-07-24 22:36:38,Svenska,da wirst du nicht sinnvoll drueber rumkommen
+2016-07-24 22:36:49,MasterQ32,"is ne normale diskette mit 2880 sektoren eine ""0xF0: Double sided, 80 Spuren, 18/36 Sektoren pro Spur""-diskette?"
+2016-07-24 22:36:57,Svenska,MasterQ32: ja
+2016-07-24 22:37:11,MasterQ32,"top, dann komme ich einem sinnvollen ergebnis nahe"
+2016-07-24 22:37:26,Svenska,"HD = 18 sektoren (1,44 MB), ED = 36 sektoren (2,88 MB)"
+2016-07-24 22:37:36,Svenska,single-sided war beim PC nie wirklich ueblich
+2016-07-24 22:37:51,Svenska,Quantenmagier: den PIT umzuprogrammieren ist nicht wirklich sinnvoll
+2016-07-24 22:37:54,Svenska,weil langsam
+2016-07-24 22:38:01,Quantenmagier,"ed kenn ich garnicht, 1,44 war doch standard?"
+2016-07-24 22:38:13,MasterQ32,sind 9 Sektoren in einem (sehr kleinen) FAT-Filesystem realistisch?
+2016-07-24 22:38:16,Svenska,"ED = Extended Density, gabs von IBM, hat sich nie durchgesetzt"
+2016-07-24 22:38:25,Quantenmagier,ah ok
+2016-07-24 22:38:32,Svenska,die sektoren hängen von der formatierung ab
+2016-07-24 22:38:44,Svenska,"das wird physisch in die scheibe reingedrueckt, wieviele es sind *g*"
+2016-07-24 22:39:01,Svenska,"Quantenmagier: wenn du aber weißt, dass in den nächsten X zeitscheiben nichts passieren wird, dann kannst du den PIT auch ausmachen"
+2016-07-24 22:39:07,MasterQ32,"ja, ich guck grade nur mein bootimage mit dhex an :D"
+2016-07-24 22:39:27,Svenska,"willst du 1,44 MB (und eventuell 2,88 MB) als format unterstuetzen?"
+2016-07-24 22:39:40,Svenska,dann nimm einfach die standardwerte *g*
+2016-07-24 22:40:00,MasterQ32,"geht grade nicht ums supporten, erst mal nur ums verständnis"
+2016-07-24 22:40:27,MasterQ32,habe 18 sektoren pro spur was sich mit dem typ der diskette deckt
+2016-07-24 22:40:32,Quantenmagier,MasterQ32 meinte vorhin hteditor den benutz ich als hexeditor: http://hte.sourceforge.net/
+2016-07-24 22:40:38,Svenska,"die PC-Standardformate sind 360 KB, 720 KB, 1,2 MB, 1,44 MB und 2,88 MB"
+2016-07-24 22:40:51,Quantenmagier,aber in SurO hab ich einen eigenen hexeditor geschrieben
+2016-07-24 22:41:18,Svenska,die haben 40 Tracks (360 KB) oder 80 Tracks (alles andere)
+2016-07-24 22:41:41,Quantenmagier,benutzt tyndur eigentlich ANSI escape codes?
+2016-07-24 22:41:53,Svenska,"und 9 (360 KB, 720 KB), 15 (1,2 MB), 18 (1,44 MB) oder 36 (2,88 MB) Sektoren/Track"
+2016-07-24 22:42:04,MasterQ32,http://puu.sh/qd3vL/5a86c75e25.png
+2016-07-24 22:42:08,MasterQ32,das hier ist mein hexedit
+2016-07-24 22:42:12,MasterQ32,kann sogar nen kleinen editor aufmachen :)
+2016-07-24 22:42:36,Svenska,MasterQ32: alle anderen formate wirst du auf realen medien selbst in normalen museen nicht finden *g*
+2016-07-24 22:42:58,MasterQ32,Oh! Laufzeitspeicher! :P
+2016-07-24 22:43:09,Svenska,"und ""wirklich seltsame formate"" gibt es beim PC sowieso nicht, weil der controller die nicht lesen kann"
+2016-07-24 22:43:27,MasterQ32,was sagt die anzahl der schreib/leseköpfe aus? :D
+2016-07-24 22:43:29,Svenska,ein paar interessante formate gibt's noch durch ueberformatieren
+2016-07-24 22:43:38,Svenska,auf disketten ist das 1 (einseitig) oder 2 (zweiseitig)
+2016-07-24 22:43:42,Quantenmagier,"joa voll nervig, der disketten controller vom amiga war noch frei programmierbar, daran haben die beim pc leider gesparrt"
+2016-07-24 22:43:47,Svenska,der PC hat immer zweiseitig benutzt
+2016-07-24 22:44:05,Svenska,hast du dir das interface mal angeschaut?
+2016-07-24 22:44:20,MasterQ32,welches interface?
+2016-07-24 22:44:20,Svenska,"also sowohl das zwischen diskettenlaufwerk und controller, und zwischen controller und cpu?"
+2016-07-24 22:44:31,MasterQ32,"nope, not yet"
+2016-07-24 22:44:49,Svenska,"es gibt nur sehr kleine unterschiede zwischen 3,5"" und 5,25"""
+2016-07-24 22:44:54,MasterQ32,"""Anzahl an Sektoren vor dem Bootsektor (z.B. wenn das FAT auf einer Partition liegt)"" den wert muss ich bei jedem lese/schreibzugriff addieren, wenn ich damit arbeiten möchte, korrekt?"
+2016-07-24 22:45:01,Svenska,"und es gibt /keine/ unterschiede zwischen 5,25"" und 8"""
+2016-07-24 22:45:16,Svenska,weiß ich nicht
+2016-07-24 22:45:18,Quantenmagier,"meine eltern haben mein 5,25"" laufwerk weggeschmissen.. -.- jetzt kann ich die disketten nicht mehr lesen :-/"
+2016-07-24 22:45:27,Svenska,schieß dir bei ebay ein neues
+2016-07-24 22:45:52,Svenska,und beachte unbedingt den unterschied zwischen DD und HD ;-)
+2016-07-24 22:46:09,Svenska,"ein HD-Laufwerk (1,2 MB) kann DD-Disketten (360 KB) weder zuverlässig lesen noch schreiben"
+2016-07-24 22:46:17,Quantenmagier,echt?
+2016-07-24 22:46:27,Quantenmagier,is ja krank dachte das sie abwärtskopatibel
+2016-07-24 22:46:31,Svenska,"der kopf ist duenner, dementsprechend sind die spuren duenner"
+2016-07-24 22:46:42,Svenska,stell dir ne straße vor ;-)
+2016-07-24 22:46:57,Svenska,"das neue laufwerk schreibt den mittelstreifen, das alte laufwerk liest die ganze straße *g*"
+2016-07-24 22:46:57,MasterQ32,und auf einer fährt man mit fahrrädern und auf anderen mit panzern?
+2016-07-24 22:47:11,Quantenmagier,xD
+2016-07-24 22:47:13,Svenska,d.h. lesen geht meistens
+2016-07-24 22:47:16,Svenska,schreiben geht auch
+2016-07-24 22:47:24,Svenska,aber das alte laufwerk kann das geschriebene nicht lesen
+2016-07-24 22:48:00,Quantenmagier,"aso joa nen altes laufwerk hab ich ja nicht (mehr), wollte auch nur lesen, dann dürfte HD sinnvoller sein, lesen müßte ja gehen"
+2016-07-24 22:48:23,Svenska,"naja, hängt davon ab, was auf den disketten drauf ist *g*"
+2016-07-24 22:48:35,Svenska,bzw aus was fuer nem rechner das monster stammte ;-)
+2016-07-24 22:49:15,Quantenmagier,"sind größtenteils alsdisketten aus meiner schule und uni, dachte ich guck mal was da so drauf ist, wer weiß vllt find ich ja nen zeugnis meiner mutter.. xD"
+2016-07-24 22:49:22,Quantenmagier,*Altdisketen
+2016-07-24 22:49:35,Quantenmagier,*Altdisketten boah schweres wort xD
+2016-07-24 22:50:46,MasterQ32,"so, ich geh mal duschen und danach greife ich mal FAT12/16 (wie groß ist da eigentlich der unterschied?) an"
+2016-07-24 22:51:40,Svenska,die unterschiede sind gering
+2016-07-24 22:51:58,MasterQ32,kann man also in einen treiber packen?
+2016-07-24 22:52:09,Svenska,machen doch alle modernen systeme so?
+2016-07-24 22:52:36,Svenska,lange dateinamen werden ein bisschen tricky
+2016-07-24 22:52:52,MasterQ32,who needs that shit anyways :P
+2016-07-24 22:53:10,MasterQ32,"jedenfalls, brb"
+2016-07-24 22:53:18,Svenska,hf
+2016-07-24 22:53:59,Svenska,"Quantenmagier: wenn du irgendwann auch halbwegs moderne systeme unterstuetzen willst, dann kannst du den PIT auch immer feuern und timing machen lassen (legacy) und auf moderneren systemen den HPET nehmen"
+2016-07-24 22:54:52,Svenska,den kannst du zuegig umprogrammieren
+2016-07-24 22:55:24,Quantenmagier,ahh ok thx
+2016-07-24 22:55:36,Quantenmagier,dann guck ich mir den hpet mal die tage an
+2016-07-24 22:55:45,Svenska,brauchst du vermutlich minimales ACPI fuer
+2016-07-24 22:56:03,Svenska,die erste spec ist von 2004...
+2016-07-24 22:56:08,Quantenmagier,"aso, acpi hab ich garnicht, nur nen kaputtes apm :D"
+2016-07-24 22:56:30,Svenska,"deswegen wäre meine empfehlung: nimm den PIT, lass ständig interrupts feuern"
+2016-07-24 22:56:32,Svenska,und gut is
+2016-07-24 22:56:39,Quantenmagier,ok
+2016-07-24 22:57:10,Svenska,interrupts tun nur auf SMP-systemen weh
+2016-07-24 22:57:16,Svenska,und da hast du einen HPET
+2016-07-24 22:57:29,Quantenmagier,aber smp unterstützt mein os ja ^^
+2016-07-24 22:57:45,Svenska,"ja, aber wie schlimm ist das jetzt fuer deine hardware? ^^"
+2016-07-24 22:58:11,Quantenmagier,kp?
+2016-07-24 22:58:19,Svenska,"nimm es als ""irrelevant"" an"
+2016-07-24 22:58:27,Quantenmagier,ok
+2016-07-24 22:58:42,Svenska,ich hab letztens einen beitrag von linus t. auf ner ML gesehen
+2016-07-24 22:58:59,Svenska,"wo es um memory barriers ging, die ziemlich weh tun können"
+2016-07-24 22:59:13,Svenska,"und wo viel rumoptimiert wird, auch in der theorie, weil man sie irgendwo immer braucht"
+2016-07-24 22:59:22,Quantenmagier,ML?
+2016-07-24 22:59:24,Svenska,"...und er meinte: ja, also im kernel nehmen wir immer eine volle barrier, und die tut auch nicht weh"
+2016-07-24 22:59:27,Svenska,ML = Mailingliste
+2016-07-24 22:59:56,Svenska,"...weil wenn wir da ankommen, nehmen wir meistens sowieso einen cache miss mit und der tut viel doller weh als die barrier, von daher ""egal"" ;)"
+2016-07-24 23:01:36,Quantenmagier,"was heißt denn volle barrier, gibts auch ne halbe?"
+2016-07-24 23:01:42,Svenska,ja
+2016-07-24 23:01:53,Quantenmagier,dann nur auf einem kern oder wie?
+2016-07-24 23:01:54,Svenska,aber da muesstest du dich ziemlich tief mit beschäftigen
+2016-07-24 23:01:56,Svenska,nei
+2016-07-24 23:01:57,Svenska,n
+2016-07-24 23:02:09,Svenska,"das hat mit dem memory model zu tun, und welche konsistenzanforderungen du wie weit erfuellen musst"
+2016-07-24 23:02:17,Svenska,"also ""in welche richtung darfst du re-ordern"""
+2016-07-24 23:02:55,Svenska,"und eine volle barrier sagt ""was davor steht, darf nicht dahinter geordnet werden, und was dahinter steht, darf nicht davor geordnet werden"""
+2016-07-24 23:03:45,Quantenmagier,"aso aber das ist doch sache des kompilers, also zur laufzeit spielt das doch höchstens bei multitasking/-threading ne rolle?"
+2016-07-24 23:03:46,Svenska,"fuer lockfree-zeugs muss das zeug funktionieren, fuer locking ist es hilfreich"
+2016-07-24 23:03:55,Svenska,eben: multithreading
+2016-07-24 23:04:03,Quantenmagier,ok
+2016-07-24 23:04:07,Svenska,der compiler sieht aber immer nur eine compile-unit und einen thread
+2016-07-24 23:04:16,Svenska,"der weiß nicht, was andere threads mit deinem speicher machen"
+2016-07-24 23:04:24,Quantenmagier,ich hab einfach mutexe dafür
+2016-07-24 23:04:25,Svenska,außerdem reordert die cpu ziemlich massiv hinter deinem ruecken
+2016-07-24 23:04:44,Svenska,auch die sind naiv ziemlich doof
+2016-07-24 23:05:13,Quantenmagier,"hm wieso das?, die geben doch ne klare struktur vor?!"
+2016-07-24 23:05:15,Svenska,"weil wenn die cpu reordert, dann landet dein lesezugriff auf die datenstruktur VOR dem schreibzugriff aufs lock"
+2016-07-24 23:05:25,Quantenmagier,aso
+2016-07-24 23:05:26,Svenska,obwohl die instructions andersrum stehen
+2016-07-24 23:06:00,Svenska,der klassische weg wäre ja ein LOCK
+2016-07-24 23:06:20,Svenska,"aber damit verbietest du anderen busteilnehmern den zugriff komplett, auch wenn die ganz was anderes tun"
+2016-07-24 23:06:46,Quantenmagier,aso joa die mutexe sind über xchg oder lock bts implementiert und xchg is nen implizites lock ^^
+2016-07-24 23:06:59,Svenska,eben
+2016-07-24 23:07:13,Svenska,auf x86 ist das alles nicht so böse
+2016-07-24 23:07:17,Quantenmagier,und mit diesen memory barriers kann man dann locks einsparen?
+2016-07-24 23:07:24,Svenska,aber auf anderen architekturen sind die garantien dann geringer
+2016-07-24 23:07:34,Svenska,hängt vom algorithmus ab
+2016-07-24 23:08:01,Quantenmagier,ok also muß ich mir darüber erst wirklich gedanken machen wenn ich mein os auf arm portiere?
+2016-07-24 23:08:16,Svenska,"wenn du langeweile hast, gibt es einen guten vortrag von herb sutter"
+2016-07-24 23:08:27,Svenska,"nennt sich ""atomic<> weapons in c++11"" oder so"
+2016-07-24 23:08:35,Quantenmagier,"ah ok google ich mal, thx"
+2016-07-24 23:08:38,Svenska,da erklärt er das mal komplett durch
+2016-07-24 23:10:43,MasterQ32,re
+2016-07-24 23:23:40,Quantenmagier,"boah ich muß mir mal nen tutorial zu git reinziehen, ich find das irgendwie viel komplizierter als svn"
+2016-07-24 23:23:51,MasterQ32,hm
+2016-07-24 23:23:58,MasterQ32,ich kjanns nicht mehr objektiv bewerten :P
+2016-07-24 23:24:03,Svenska,svn ist simpel
+2016-07-24 23:24:21,Svenska,aber alle wollen git ;)
+2016-07-24 23:24:24,Svenska,also will ich das auch
+2016-07-24 23:24:27,Svenska,*g*
+2016-07-24 23:24:43,Quantenmagier,joa ich brauch das demnächst auch um kompatibel zu sein
+2016-07-24 23:24:54,Svenska,inwiefern?
+2016-07-24 23:25:06,Svenska,es gibt wrapper
+2016-07-24 23:25:22,Quantenmagier,naja ich will nen gentoo overlay machen und die hosten das nur auf git
+2016-07-24 23:25:23,Svenska,damit kann git auf svn-repos zugreifen und umgekehrt
+2016-07-24 23:25:25,Svenska,*g*
+2016-07-24 23:26:02,Quantenmagier,damit ich meine selbstgeschriebenen pakete für die gentoo paketverwaltung nicht mehr bloß lokal hab
+2016-07-24 23:33:27,MasterQ32,OEM Name: SYSLINUX Sector Size:      512 Cluster Size:     1 Reserved Sectors: 1 Num FATs:         2 Max(ROOT):        224
+2016-07-24 23:33:27,MasterQ32,Num Sectors:  2880   Media Type:       0xF0    FAT Size:         9 Track Size:       18 Num Heads:        2 Sector offset:    0 Num Sectors(L):   0
+2016-07-24 23:33:34,MasterQ32,ich glaube das auslesen klappt schon mal :D
+2016-07-24 23:34:07,Svenska,jap
+2016-07-24 23:34:27,Svenska,m(
+2016-07-24 23:34:35,MasterQ32,hm?
+2016-07-24 23:34:56,Svenska,"um einen epiphany core zu starten, wird einfach in den entsprechenden core in das interrupt-latch-register ein ""mach mal SYNC interrupt an"" bit geschrieben"
+2016-07-24 23:36:19,MasterQ32,^^
+2016-07-24 23:36:22,MasterQ32,klingt trivial
+2016-07-24 23:36:33,Svenska,ich suche gerade den startup-code
+2016-07-24 23:37:27,Svenska,"aah gefunden, im newlib-repository *g*"
+2016-07-24 23:58:20,MasterQ32,mal so ne ganz blöde frage
+2016-07-24 23:58:37,MasterQ32,"aber beim booten laden sich doch mindestens mal 3 bis 4 bootloader fröhlich durch die gegend, oder?"
+2016-07-24 23:59:01,Svenska,"ja, historisch bedingt"
+2016-07-24 23:59:15,Svenska,MBR -> Partition -> 2nd stage
+2016-07-24 23:59:25,MasterQ32,irgendwie lustig
+2016-07-24 23:59:28,Svenska,wobei man auf fast allen systemen eine trennung zwischen 1st stage und 2nd stage loader hat
+2016-07-24 23:59:40,Svenska,z.B. ist der 1st-stage-loader oft in ein ROM gebrannt

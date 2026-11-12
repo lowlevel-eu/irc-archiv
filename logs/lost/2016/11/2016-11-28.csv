@@ -1,0 +1,203 @@
+date/time,nick,message
+2016-11-28 11:37:31,moritz31,Moin Moin :D
+2016-11-28 11:57:08,kevin,Moin moritz31
+2016-11-28 11:57:16,moritz31,Alles fit :D 
+2016-11-28 11:59:13,moritz31,ich schlag mich mal wieder mit Pagefaults rum :D mal gucken wann ich das Problem in den Griff bekomme :-P
+2016-11-28 12:07:24,kevin,Immer noch direkt beim Aktivieren von Paging?
+2016-11-28 12:08:44,moritz31,"nope das geht jetzt alles, hab jetzt den letzten Eintrag des PD auf sich selbst gemappt und versuch jetzt neue PT zu allokieren :p dabei fliegt es mir dann allerdings um die Ohren haha"
+2016-11-28 12:15:15,kevin,Ah
+2016-11-28 12:15:29,kevin,Das zu debuggen sollte ja relativ überschaubar sein
+2016-11-28 12:17:06,moritz31,"ja bin mir noch etwas unsicher mit dem rekursiven, deswegen ist es mehr ein Try und Error versuch :D"
+2016-11-28 12:24:42,kevin,Das klingt nicht ganz optimal ;-)
+2016-11-28 12:25:14,kevin,Wann kriegst du denn den PF? Wenn du das erste Mal auf die PT schreiben (also vermutlich ausnullen) willst?
+2016-11-28 12:27:03,moritz31,jap genau dann entweder in der ersten oder zweiten Iteration 
+2016-11-28 12:27:39,moritz31,das Problem besteht ja vermutlich wegen der physikalischen allokierung denk ich zumindest 
+2016-11-28 12:27:56,moritz31,oder muss ich die zuerst mappen und dann 0en ?
+2016-11-28 12:29:38,moritz31,hab gestern erstmal ein ärgerlichen Bug in meiner Physikalischen Allocierung gefixt :D die ist auch Amok gelaufen
+2016-11-28 12:31:00,kevin,Wie sieht denn dein Code im Moment aus?
+2016-11-28 12:31:38,kevin,"Beim rekursiven Mapping wird eine PT dadurch gemappt, dass du sie ins PD einträgst"
+2016-11-28 12:34:16,moritz31,http://pastebin.com/UzCF6drE
+2016-11-28 12:39:58,kevin,"Ok. Was denkst du, dass die Variable page_table enthält?"
+2016-11-28 12:42:22,moritz31,achso du meinst da ist ja die Addresse drin ? wenn ich die 0 ist keine Addresse mehr drin ? 
+2016-11-28 12:44:10,moritz31,wobei ne ich erzähl mist der zeiger ist ja nur die addresse der inhalt ist ja was anderes 
+2016-11-28 12:44:33,kevin,"Ich meine vor allem, was für eine Adresse"
+2016-11-28 12:45:31,moritz31,also beim ersten mal 0x2000 und beim 2. mal 0x402000
+2016-11-28 12:45:54,moritz31,und dann kommt der Pagefault 
+2016-11-28 12:46:20,kevin,"Ich glaube, ich muss konkreter werden. ;-) Ist das eine physische oder eine virtuelle Adresse?"
+2016-11-28 12:46:41,moritz31,das ist die physische Addresse ich muss noch irgendwie ne virtuelle drauß machen
+2016-11-28 12:46:58,kevin,"Genau, weil pd[0] behandelt sie als virtuelle Adresse, obwohl es eine physische ist"
+2016-11-28 12:47:42,kevin,Du brauchst also erstmal die passende virtuelle Adresse dazu
+2016-11-28 12:48:21,kevin,"Jetzt änderst du mal deine Reihenfolge: Erst ins PD eintragen und dann versuchen, die Page zu nullen"
+2016-11-28 12:48:31,kevin,Dann kannst du nämlich das rekursive Mapping ausnutzen
+2016-11-28 12:49:11,kevin,"Und wenn du kapiert hast, wie das rekursive Mapping eigentlich funktioniert, müsstest du dir auch überlegen können, an welcher virtuellen Adresse die neue PT dann gemappt ist"
+2016-11-28 12:49:15,moritz31,das müsste ja dann aber pd[1023] sein oder und da dann eintragen oder ?
+2016-11-28 12:49:56,kevin,pd[1023] setzt du ein einziges mal auf phys_pd | 0x3 und lässt es danach immer so
+2016-11-28 12:50:13,kevin,Sonst machst du dir ja dein schönes rekursives Mapping kaputt
+2016-11-28 12:50:15,moritz31,naja des PD wird ja mit dem rekursiven mapping zur PT und die PT werden zu einzelnen pages
+2016-11-28 12:50:23,kevin,Genau
+2016-11-28 12:50:47,kevin,Und auf diese einzelne Page willst du jetzt lauter Nullen schreiben
+2016-11-28 12:50:53,kevin,"Du musst nur noch rausfinden, wo sie liegt"
+2016-11-28 12:50:55,moritz31,context->page_directory[1023] = (uint32_t) context->page_directory | PTE_VALID | PTE_WRITE;
+2016-11-28 12:51:02,moritz31,so mach ich das gerade mit dem PD 
+2016-11-28 12:51:05,kevin,"Jo, das ist gut"
+2016-11-28 12:51:35,kevin,"Zumindest solange Paging aus ist, d.h. context->page_directory die physische Adresse sein darf"
+2016-11-28 12:51:58,moritz31,müsste des dann nicht eigentlich beim mappen anstatt PD_index PT_index nehmen ?
+2016-11-28 12:52:22,kevin,"Ich glaube, du bist auf der richtigen Spur"
+2016-11-28 12:52:47,moritz31,aber noch nicht ganz richtig ? :D
+2016-11-28 12:54:35,kevin,"Die Aussage ist schwammig genug, dass ich das nicht beurteilen kann ;-)"
+2016-11-28 12:55:32,kevin,"Wenn du mir die Formel für die virtuelle Adresse der PT hinschreibst, kann ich wahrscheinlich sagen, ob das stimmt oder nicht"
+2016-11-28 12:55:49,moritz31,"naja meine PageTable ist im rekursiven mapping ja nur noch eine ""Page"" heißt anstatt ins page_directory an den PD_index schreib ich sie an PT_index "
+2016-11-28 12:56:20,moritz31,PT_index = page_num % 1024 oder ?
+2016-11-28 12:57:16,kevin,"Die Frage ist ja aber, was page_num überhaupt ist"
+2016-11-28 12:57:59,kevin,Du musst quasi rückwärts arbeiten. Du kennst pd_index und pt_index und musst die passende virtuelle Adresse rausfinden.
+2016-11-28 12:58:30,moritz31,mhhh aktuell die Addresse die ich vorher allokiert habe aber Pagenum müsste in dem fall ja dann die Addresse der Pagetable sein
+2016-11-28 12:58:54,kevin,"Hm, ja, stimmt, die Terminologie wird blöd, weil wir gerade mit zwei Mappings auf einmal arbeiten"
+2016-11-28 12:59:56,moritz31,:'D 
+2016-11-28 13:00:26,kevin,"Du kennst trotzdem die Indizes, die die PT beschreiben, und kannst damit die virtuelle Adresse ausrechnen ;-)"
+2016-11-28 13:01:07,moritz31,naja page_num müsste sein pn = TableAddr / 4096 
+2016-11-28 13:01:34,kevin,TableAddr ist jetzt die virtuelle Adresse der PT oder wie?
+2016-11-28 13:01:54,moritz31,genau
+2016-11-28 13:02:03,moritz31,ne die physische 
+2016-11-28 13:02:22,moritz31,ne doch die virtuelle :'D 
+2016-11-28 13:02:26,kevin,*g*
+2016-11-28 13:02:29,moritz31,ich sollte nicht so viele Sachen auf einemal machen
+2016-11-28 13:02:42,kevin,"Wenn in deiner Rechnung was physisches vorkommt, machst du was falsch"
+2016-11-28 13:03:02,moritz31,ne die virtuelle Adresse ist schon richtig hab gerade nachgeschaut :D
+2016-11-28 13:03:17,kevin,"Okay, also ist TableAddr das was wir rausbekommen wollen"
+2016-11-28 13:03:32,kevin,Umgeformt also TableAddr = pn * 4096
+2016-11-28 13:03:37,kevin,Weiter?
+2016-11-28 13:04:20,moritz31,mhhhhh PD_index = pn / 1024 und PT_index = pn % 1024 
+2016-11-28 13:05:02,moritz31,des heißt ja aber auch ich komm ziemlich einfach an die virtuelle adresse 
+2016-11-28 13:06:54,kevin,"Wenn du PD_index und PT_index richtig setzt, dann ja"
+2016-11-28 13:07:23,moritz31,ja dadrüber bin ich gerade am grübeln xD
+2016-11-28 13:07:58,kevin,"PD_index ist einfach, der ist nämlich für alle gemappten PTs gleich"
+2016-11-28 13:08:11,moritz31,1023 in meinem Fall ? 
+2016-11-28 13:08:23,moritz31,!
+2016-11-28 13:08:25,moritz31,: D
+2016-11-28 13:08:34,moritz31,bbisschen mehr selbstvertrauen an den Tag legen
+2016-11-28 13:08:37,kevin,Genau
+2016-11-28 13:08:54,kevin,"Und PT_index ist das, was du oben eigentlich auch schonmal gesagt hast"
+2016-11-28 13:09:22,moritz31,pn % 1024 
+2016-11-28 13:09:35,kevin,"Das bringt dir nichts, um pn auszurechnen ;-)"
+2016-11-28 13:10:16,kevin,Den hier meine ich:
+2016-11-28 13:10:18,kevin,[12:51] <moritz31> müsste des dann nicht eigentlich beim mappen anstatt PD_index PT_index nehmen ?
+2016-11-28 13:11:01,moritz31,jaaa mhhhh
+2016-11-28 13:11:04,kevin,"Das, was für die virtuellen Adressen, die von der PT abgedeckt werden, der PD-Index ist, ist für das Mapping der PT selber der PT-Index"
+2016-11-28 13:11:22,moritz31,also der der Adresse quasi 
+2016-11-28 13:12:09,kevin,"Das PD_index aus deinem vorhin geposteten Stück Code (also von der ""äußeren"" Mappingfunktion)"
+2016-11-28 13:12:35,moritz31,ja genau das mein ich gerade 
+2016-11-28 13:12:45,kevin,"Wenn du das jetzt alles zusammenbaust, hast du eine Formel für die virtuelle Adresse der neuen PT"
+2016-11-28 13:12:47,moritz31,aber für was brauch ich dann noch das TableAddr = pn * 4096 ? 
+2016-11-28 13:13:13,kevin,"Weil TableAddr der Pointer ist, den du brauchst, um drauf schreiben zu können?"
+2016-11-28 13:14:48,moritz31,aber über pd[1023] und dann pt[PT_index] sein ?
+2016-11-28 13:16:28,kevin,Nochmal auf deutsch? ;-)
+2016-11-28 13:17:20,moritz31,ich glaub ich hol mir nach der VL erstmal ein Kaffe zum wach werden
+2016-11-28 13:18:20,moritz31,http://pastebin.com/fM6eLCdF
+2016-11-28 13:18:53,kevin,"page_table ist immer noch eine physische Adresse, die kannst du nicht dereferenzieren"
+2016-11-28 13:19:20,kevin,"Dir fehlt die Umrechnung zur virtuellen Adresse, die wir gerade im Detail ausgebrütet haben"
+2016-11-28 13:20:05,kevin,"Ach, und die Zeile, die ins PD schreibst, ist auch Quark"
+2016-11-28 13:20:09,kevin,Die war vorhin noch richtig
+2016-11-28 13:20:54,kevin,"Dein pd ist jetzt nämlich auch eine physische Adresse, dazu noch mit ein paar Flags drin"
+2016-11-28 13:22:37,moritz31,so also ich errechne mir die addresse mit pn * 4096 richtig  ? 
+2016-11-28 13:23:23,kevin,"Wenn du das richtige pn meinst, ja"
+2016-11-28 13:24:37,moritz31,die Pagenumber der virtuellen Adresse die der Funktion übergeben wird 
+2016-11-28 13:25:38,kevin,"Dann bekommst du mit dieser Rechnung wieder die virtuelle Adresse raus, mit der du angefangen hast (allerdings gerundet auf den Pageanfang)"
+2016-11-28 13:26:43,moritz31,und da will ich jetzt die Pagetable hinpacken
+2016-11-28 13:26:49,moritz31,?
+2016-11-28 13:27:31,kevin,"Nicht wirklich, oder? Du wolltest da doch schon was ganz anderes hinmappen."
+2016-11-28 13:27:53,moritz31,ja eigentlich schon ^^ aber wir hatten oben so schön das TableAddr = pn * 4096 xD
+2016-11-28 13:28:09,kevin,"Ich glaube, du bist gerade komplett verwirrt zwischen den beiden Mappings, die du machst"
+2016-11-28 13:28:31,moritz31,ja warte mal bist du in 15 min noch da ?
+2016-11-28 13:28:51,kevin,"Nimm dir mal ein Blatt Papier, zeichne dir den Adressraum auf, und spiel mit Bleistift eine Allokation durch, die eine neue PT braucht"
+2016-11-28 13:29:04,moritz31,jap mach ich aber erstmal kaffee und frische luft :D
+2016-11-28 13:29:06,kevin,Dann macht es hoffentlich ein bisschen mehr Sinn
+2016-11-28 13:49:28,moritz31,@kevin ist der PT_index meine pn in der Rechnung ? 
+2016-11-28 13:52:57,moritz31,Die virtuelle Adresse der Pagetable muss ja irgendwo in den 4kb des PD liegen
+2016-11-28 13:53:05,moritz31,also zwischen 0x1000 und 0x2000 aktuell bei mir 
+2016-11-28 14:09:46,kevin,"Da liegt die physische Adresse des PDE, der auf die PT zeigt"
+2016-11-28 14:09:56,kevin,"Die PT passt da nicht rein, die ist selber 4k groß"
+2016-11-28 14:13:04,moritz31,ja aber da muss der Eintrag mein ich rein 
+2016-11-28 14:13:08,moritz31,oder ? 
+2016-11-28 14:13:38,moritz31,ist die virtuelle Adresse nicht egal solange sie im PD richtig steht ? 
+2016-11-28 14:20:03,kevin,"Wenn Paging an ist und du irgendwohin schreiben willst, dann brauchst du eine virtuelle Adresse"
+2016-11-28 14:20:16,kevin,Pagetable ausnullen ist irgendwohin schreiben
+2016-11-28 14:22:08,moritz31,naja das ist mir klar
+2016-11-28 14:22:19,moritz31,mir gehts immer noch um die virtuelle Adresse der Pagetable 
+2016-11-28 14:23:47,kevin,Mir auch
+2016-11-28 14:23:56,moritz31,und die bekomme ich doch über tableAddr  = pn * 4096 unsere PT ist ja quasi eine Page dank rekursivem Mapping also müsste doch der PT_index = page_num sein oder ?
+2016-11-28 14:27:09,kevin,"Wenn pn die Pagenummer ist, an der die Page Table selber liegt, ja"
+2016-11-28 14:27:19,kevin,"Wenn es die Pagenummer der Page ist, die du eigentlich mappen wolltest, dann nein"
+2016-11-28 14:28:18,moritz31,nein mir geht es ja jetzt erstmal die Pagetable an die richtige Adresse zu schreiben
+2016-11-28 14:31:42,kevin,PT_index ist dann halt die die Pagetable-Nummer
+2016-11-28 14:31:45,moritz31,mhhhh ich glaub ich hab gerade komplett den Faden verloren ich lass das für heute erstmal glaub ich ist besser 
+2016-11-28 14:32:00,moritz31,ja genau und die vAddr ist dann PT_index * 4096
+2016-11-28 14:32:08,kevin,Ja
+2016-11-28 14:32:43,moritz31,und an die Adresse muss ich die 0en schreiben 
+2016-11-28 14:33:09,kevin,"Fast, dir fehlt noch das Offset vom PD_index"
+2016-11-28 14:33:54,moritz31,also quasi PD[1023] + PT_index * 4096 
+2016-11-28 14:34:01,kevin,Nein
+2016-11-28 14:34:31,kevin,"Wart mal, jetzt komm ich selber durcheinander *g*"
+2016-11-28 14:34:35,moritz31,:'D
+2016-11-28 14:34:46,moritz31,ich hab echt ein Talent :D
+2016-11-28 14:35:46,kevin,pt_vaddr = ((1023 * 1024) + pt_pt_index) * 4096; /* Wobei pt_pt_index = pd_index der äußeren Allokation */
+2016-11-28 14:35:53,kevin,Glaub ich *g*
+2016-11-28 14:37:10,kevin,"Oder anders geschrieben, 4 GB - 4 MB + (pt_pt_index * 4k)"
+2016-11-28 14:37:30,moritz31,ahhhh jetzt kapier ich was da passiert :'D
+2016-11-28 14:37:56,moritz31,und die Adresse muss ich jetzt ins PD eintragen oder ?
+2016-11-28 14:38:23,kevin,Nein *seufz*
+2016-11-28 14:38:29,kevin,Ins PD kommen physische Adressen
+2016-11-28 14:38:35,moritz31,okay ich kapier glaub nix mehr :'D 
+2016-11-28 14:38:38,kevin,Die virtuelle Adresse brauchst du fürs memset()
+2016-11-28 14:38:53,kevin,"Bzw. deine for-Schleife, du benutzt ja kein memset()"
+2016-11-28 14:39:26,moritz31,okay aber die vAddr muss ja auch noch wo eingetragen werden doer ?
+2016-11-28 14:39:29,kevin,Nö
+2016-11-28 14:39:45,kevin,Der Prozessor übersetzt immer nur von virtuell nach physisch und dafür hat er die Tabellen
+2016-11-28 14:39:49,kevin,Andersrum braucht er nicht
+2016-11-28 14:40:55,moritz31,http://pastebin.com/DaAVyPw7
+2016-11-28 14:40:57,moritz31,quasi so
+2016-11-28 14:41:42,moritz31,ehhm anstatt PT_index muss da 1024 hin ^^
+2016-11-28 14:47:22,kevin,Ja
+2016-11-28 14:47:35,moritz31,mhhhhh okay :'D fehlt da nochwas ?
+2016-11-28 14:47:41,kevin,Ist context->page_directory jetzt die virtuelle Adresse des PD?
+2016-11-28 14:48:06,moritz31,ich glaub mein PD hat keine virtuelle Adresse ö.Ö
+2016-11-28 14:48:31,moritz31,öhhm bzw doch hat es xD  werden ja die ersten 4MB gemappt
+2016-11-28 14:48:40,moritz31,aber das ist glaub die physikalische
+2016-11-28 14:48:41,kevin,"Das wäre dann eventuell auch noch geschickt, wenn du drauf zugreifst nachdem Paging an ist"
+2016-11-28 14:48:54,kevin,"Und ja, das aktive PD ist bei dir immer gemappt"
+2016-11-28 14:49:12,kevin,"Soll ich dir direkt sagen wo, oder findest du es selber raus? ;-)"
+2016-11-28 14:49:34,moritz31,ist doch identity gemappt oder also 0x1000 virtuell = 0x1000 physisch
+2016-11-28 14:49:35,moritz31,oder ?
+2016-11-28 14:49:45,kevin,"Ah, dann hast du's sogar zweimal gemappt"
+2016-11-28 14:50:02,moritz31,o.O hab ich das ?
+2016-11-28 14:50:07,moritz31,:'D
+2016-11-28 14:50:25,kevin,"Ja, hast du"
+2016-11-28 14:50:49,kevin,Das zweite liegt an 0xfffff000
+2016-11-28 14:51:24,moritz31,achso weil ich es ja nochmal an pd[1023] hab oder ?
+2016-11-28 14:52:13,kevin,"Genau, und wenn du es dann rekursiv als PT benutzt, zeigt es im letzten Eintrag wieder auf sich selber, mappt sich also als normale Page"
+2016-11-28 14:53:01,moritz31,mhhhh okay
+2016-11-28 14:53:07,moritz31,aber strimmt der aufruf denn dann jetzt ?
+2016-11-28 14:54:35,kevin,"Hm, jein"
+2016-11-28 14:54:50,kevin,Mit dem Identity Mapping sollte das so dann schon tun
+2016-11-28 14:55:25,moritz31,okay mhhhh
+2016-11-28 14:55:27,kevin,"Aber physische und virtuelle Adresse durcheinanderzuwürfeln und nicht zu definieren welches davon context->page_directory eigentlich ist, ist schon irgendwie kaputt"
+2016-11-28 14:55:41,moritz31,ich gebs für heute erstmal auf mein kopf brummt :'D
+2016-11-28 14:56:03,kevin,"Wenn du irgendwann ein zweites PD anlegst (z.B. für einen anderen Prozess), dann hast du dafür wahrscheinlich kein Identitfy Mapping"
+2016-11-28 14:56:15,kevin,Und dann fällt dir das halt wieder auf die Füße
+2016-11-28 14:57:16,moritz31,ja kann ich mir denken
+2016-11-28 14:57:56,moritz31,aber context->page_directory ist physisch 
+2016-11-28 14:58:31,moritz31,ich mappe des zwar aber speicher nirgendswo die gemappte virtuelle adresse
+2016-11-28 15:10:10,kevin,"Dann wär das gut, wenn du das machen würdest"
+2016-11-28 15:11:11,moritz31,muss ich die physische überhaupt speichern ?
+2016-11-28 15:11:26,moritz31,eigentlich nur bis Paging aktiviert ist oder ?
+2016-11-28 15:35:09,kevin,"Ja, musst du"
+2016-11-28 15:35:19,kevin,Nach cr3 musst du ja die physische Adresse schreiben
+2016-11-28 16:41:07,Jonathan,Moin
+2016-11-28 16:42:04,Jonathan,"Wenn es schneller geht, ein Programm zu schreiben, welches eine Aufgabe löst (mit allen Zwischenschritten), als die Aufgabe selbst zu lösen, dann ist irgendetwas falsch"
+2016-11-28 16:43:24,MasterQ32,jap
+2016-11-28 16:43:35,Jonathan,*g*
+2016-11-28 16:43:46,Jonathan,"Bei mir war das gestern in ""Logischer Entwurf"" der Fall"
+2016-11-28 16:44:11,Jonathan,Vereinfachung einer Schaltung mit viel zu vielen Variablen mittels Quine-McCluskey
+2016-11-28 19:41:30,Jonathan,"Was haltet ihr von der Idee, anstelle eines ""DSL-Routers"" einfach einen PC mit DSL-Modem-Karte hinzustellen? (Wenn die Telekomiker endlich mal VDSL schalten)"
+2016-11-28 19:41:41,Jonathan,DrayTek hat da ein paar nette Karten
+2016-11-28 21:30:18,ehenkes,Fritzbox 7490
+2016-11-28 21:31:26,ehenkes,damit fahre ich bestens

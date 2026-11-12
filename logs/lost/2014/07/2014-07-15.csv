@@ -1,0 +1,493 @@
+date/time,nick,message
+2014-07-15 00:00:16,Darkchaos,"okay, ich probiers mal. bei meiner programmlogik und exzessiven COM-Output dauert das aufrufen wesentlich länger"
+2014-07-15 00:14:49,Darkchaos,"soo. Wenn ein EBP+4 auf ein ""leave"" zeigt. ist das normal?"
+2014-07-15 00:15:51,Darkchaos,"ach ich sehe gerade, das ist weil ich methode1 { return methode2(); } hab"
+2014-07-15 00:15:59,Darkchaos,mit EBP+8 gehts zum nächsten Level?
+2014-07-15 00:22:33,Darkchaos,"hmm, ich kann nicht direkt eine variable für den inline-asm nutzen?"
+2014-07-15 00:35:24,Jidder,beim gcc läuft alles über die constraints außer bei globalen variablen
+2014-07-15 00:42:33,Darkchaos,Wie meinst du das? ich meine zB for (int i ...) um von 4*i(%%ebp) zu haben. 
+2014-07-15 00:43:20,Darkchaos,aber ich hab es mal manuell gemacht und muss jetzt rausfinden was an der physischen adresse liegt :/
+2014-07-15 00:43:36,Darkchaos,ich versuche einfach mal irgendwie den memory dump zu disassemblen
+2014-07-15 00:47:37,Jidder,ich hab keine ahnung was du vor hast
+2014-07-15 00:48:12,Jidder,aber es klingt kompliziert
+2014-07-15 00:48:46,Darkchaos,einen einfachen stack trace 
+2014-07-15 00:49:02,Darkchaos,aber inline asm kann keine variablen verkraften nehme ich an
+2014-07-15 00:50:10,Jidder,stack trace oder stack dump?
+2014-07-15 00:50:30,Jidder,4*i)(%esp) sieht ja aus wie stack dump
+2014-07-15 00:50:40,Jidder,"d.h. alles ausgeben, während ein stacktrace die einzelnen frames abläuft"
+2014-07-15 00:50:48,Jidder,(mein verständnis der begriffe)
+2014-07-15 00:51:23,Darkchaos,"und nun das zweite Problem. Irgendwas wird irgendwohin gemappt. es ist nicht teil des kernels. jetzt versuche ich einfach die bytes in ein hexfile zu speichern und objdump zu nutzen. kann man objdump anweisen, dass das file kinen header hat?"
+2014-07-15 00:51:30,Darkchaos,"nein, ebp also frames"
+2014-07-15 00:53:18,Jidder,objdump -b binary
+2014-07-15 00:53:27,Jidder,-m i386 evtl.
+2014-07-15 00:53:33,Jidder,und dann noch -D natürlich
+2014-07-15 00:54:05,Jidder,aber auch das problem/den lösungsansatz verstehe ich nicht
+2014-07-15 00:55:29,Jidder,nicht dass verständnis dafür sorgen würde den zu unterstützen ^^
+2014-07-15 00:55:30,Darkchaos,"okay, das ist doof"
+2014-07-15 00:55:39,Darkchaos,Also. es ist so:
+2014-07-15 00:56:16,Darkchaos,"Ich habe doch komische aufrufe meiner vmm_alloc funktion. Jetzt habe ich mich mit ebp soweit zurück geschlagen, dass ich weiß, von welcher virtuellen adresse es kommt"
+2014-07-15 00:57:15,Darkchaos,"nachgeschlagen zur physischen adresse. Diese liegt aber nun außerhalb des kernels und scheint wohl nicht teil eines Programms zu sein, weil die an alle anderen Adressen geladen wird"
+2014-07-15 00:57:37,Darkchaos,"jetzt nutze ich einen memdump und lasse mir davon einen disasm anzeigen, um anhaltspunkte zu bekommen, was getan wird"
+2014-07-15 00:57:57,Darkchaos,"Problem: die Adresse liegt mitten in einem opcode, aber nicht am anfang"
+2014-07-15 01:04:26,Jidder,"also es wird seltsamerweise vmm_alloc aufgerufen, und du kommst irgendwie an einen stacktrace, der komisch aussieht?"
+2014-07-15 01:06:17,Jidder,hast du den stack eigentlich ordentlich terminiert?
+2014-07-15 01:06:24,Jidder,https://gitorious.org/tuxmaniac/arctic_revenge/source/db0fb500e93e772f171d4a84a7d1f938ca345ed3:kernel/asmkernel.asm sieht nicht danach aus
+2014-07-15 01:07:04,Jidder,"ebp auf 0 setzen, bevor in die c-funktion gesprungen wird"
+2014-07-15 01:09:30,Darkchaos,"Jidder: jein. Ich versuche rauszufinden wo vmm_alloc aufgerufen wird, weil ich da etwas fehlerhaft habe an den parametern. via stack trace versuche ich nun den verursacher zu finden"
+2014-07-15 01:09:47,th3falc0n,nabend
+2014-07-15 01:09:52,Darkchaos,hi
+2014-07-15 01:10:32,th3falc0n,was geht Jidder
+2014-07-15 01:10:37,Jidder,y0y0y0 mein homie
+2014-07-15 01:10:50,th3falc0n,"wow  er nennt mich homie, *blush*"
+2014-07-15 01:11:12,Darkchaos,"ich bin jetzt einen Schritt weiter, vom virtuell zu physisch. jetzt versuche ich rauszufinden, was da an das physische dynamisch hinkommt. also ebp gechecked, wieder keine funktion^^"
+2014-07-15 01:11:26,Jidder,hast du den stacktrace eigentlich schon getestet?
+2014-07-15 01:11:52,Jidder,"also an einem bekanntermaßen intakten stack, bei dem du die adressen verifizieren kannst?"
+2014-07-15 01:11:54,th3falc0n,"oh stacktrace hört sich gut an, brauch ich auch mal"
+2014-07-15 01:11:56,yayachiken,Darkchaos ist bei Jiddder jetzt physisch statt virtuell? nice
+2014-07-15 01:12:55,Darkchaos,"Jidder: nein, aber es ist auch kein echter trace. ich hab einfach 4(%%ebp) und gehe mit recompilen tiefer. mal 8, ggf. 12"
+2014-07-15 01:13:42,Darkchaos,jetzt das witzige. 8(%%ebp) gibt mir eine globale variable zurück
+2014-07-15 01:14:18,Jidder,recompilen?
+2014-07-15 01:14:28,Jidder,was heißt das?
+2014-07-15 01:14:33,yayachiken,klingt als wärest du beim stack ganz am anfang oder so
+2014-07-15 01:14:41,th3falc0n,ist dein stack kernel_end + x? wenn ja dann würd ich auf stack overflow tippen
+2014-07-15 01:15:05,Darkchaos,"naja, ich ändere das 4 zu einem 8 und gebe make ein"
+2014-07-15 01:15:16,Jidder,das ist nonsens
+2014-07-15 01:15:41,Jidder,http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/kernel/src/debug.c;h=34b51c0ddd42d3869f7634f59ccaaa06f496ff3e;hb=HEAD
+2014-07-15 01:15:46,Jidder,so macht man einen stack trace
+2014-07-15 01:16:46,Darkchaos,es ist ja nur für temporär
+2014-07-15 01:17:15,Jidder,bzw. kondensiert so http://pastebin.com/KqLw41QQ
+2014-07-15 01:17:37,Darkchaos,"th3falc0n: wo der stack liegt, weiß ich nicht genau, aber kann gut sein^^"
+2014-07-15 01:17:38,Jidder,"die eine kprintf(""\n"") zeile gegen die auskommentierte austauschen, wenn dich parameter interessieren"
+2014-07-15 01:17:47,Jidder,aber mit nonsens meine ich nonsens und nicht temporär
+2014-07-15 01:17:56,th3falc0n,wtf wieso weißt du nicht wo der stack liegt?
+2014-07-15 01:17:58,Jidder,du kannst den inhalt des stacks so nicht interpretieren
+2014-07-15 01:18:10,Jidder,beweisstück nummer 1: [01:13:43] <Darkchaos> jetzt das witzige. 8(%%ebp) gibt mir eine globale variable zurück
+2014-07-15 01:18:13,Darkchaos,weil 8(ebp) oft ein parameter sein kann?
+2014-07-15 01:18:33,Jidder,ja
+2014-07-15 01:20:46,th3falc0n,"hmm eclipse begrüßt mich in meinem mikrOS workspace jetzt immer mit der ""Tasks"" liste... ""vfs.h:32 - TODO whatever"""
+2014-07-15 01:22:30,Darkchaos,dword == uint32_T?
+2014-07-15 01:23:17,Jidder,jo
+2014-07-15 01:23:28,Jidder,und die elf zeile kann auch weg
+2014-07-15 01:24:27,Darkchaos,jep. so jetzt hagelts page faults^^
+2014-07-15 01:24:50,th3falc0n,page faults sind immer gut. das sind die letzten steine vorm erfolg
+2014-07-15 01:24:57,th3falc0n,genauso wie nullpointer
+2014-07-15 01:25:25,Jidder,ebp auf 0 gesetzt in asmkernel.asm?
+2014-07-15 01:27:44,Darkchaos,"nope, moment"
+2014-07-15 01:28:18,Darkchaos,aber ich dachte immer man kann nicht auf ebp direkt zugreifen?^^
+2014-07-15 01:28:52,Jidder,"ja, in inline assembler geht das nicht über register constraints"
+2014-07-15 01:29:04,Jidder,aber mov in ein anderes register geht selbstverständlich
+2014-07-15 01:29:35,Darkchaos,jetzt klappt der backtrace^^
+2014-07-15 01:35:59,th3falc0n,glückwunsch :D
+2014-07-15 01:36:03,Darkchaos,nur weiß ich jetzt nichts damit anzufangen. 
+2014-07-15 01:36:11,Darkchaos,:D doofes osdev
+2014-07-15 01:36:12,th3falc0n,lust den auf mikrOS zu portieren? kriegst auch nen keks *g*
+2014-07-15 01:36:29,Darkchaos,gibts da so viel zu porten?^^
+2014-07-15 01:36:41,th3falc0n,ich glaub nicht xD
+2014-07-15 01:37:06,Jidder,"Darkchaos: du weißt nicht, was du mit den adressen tun sollst, oder hast du nach ermittlung der adressen keine rückschlüsse ziehen können?"
+2014-07-15 01:37:17,Jidder,das war komisch formuliert^^
+2014-07-15 01:53:24,Darkchaos,das letztere ja
+2014-07-15 01:53:31,Darkchaos,aber ich bin einen schritt weiter :(
+2014-07-15 01:54:14,Darkchaos,ich vergleiche referenzen und hab zwei unterschiedliche
+2014-07-15 01:54:21,Darkchaos,kann ich structs eigentlich direkt vergleichen?
+2014-07-15 01:54:28,Darkchaos,aber ich gehe wohl erstmal schlafen
+2014-07-15 01:54:36,th3falc0n,gn8
+2014-07-15 01:55:41,Jidder,du kannst structs mit memcmp vergleichen
+2014-07-15 01:55:53,Jidder,"memcmp(pointer1, pointer2, sizeof(struct ...))"
+2014-07-15 01:56:42,Darkchaos,dazu muss ich aber wohl erst memcmp implementieren^
+2014-07-15 01:56:48,Jidder,oder natürlich von hand die einzelnen elemente: if (p1->xy == p2->xy && p1->ab == p2->ab && ...)
+2014-07-15 01:56:50,Darkchaos,ich werde wohl das eindeutige objekt vergleichen
+2014-07-15 01:57:03,Darkchaos,"also element, jep"
+2014-07-15 01:57:06,Darkchaos,"okay, gute nacht eucht"
+2014-07-15 01:57:16,Jidder,gn8
+2014-07-15 01:58:07,th3falc0n,"Darkchaos: memcmp kannste dir aus meinem repo holen, kann ich dir geben ^^"
+2014-07-15 02:00:15,th3falc0n,Jidder: wie gibt man eigentlich dynamisch allozierte arrays aus nem syscall zurück?
+2014-07-15 02:00:25,Jidder,am besten gar nicht
+2014-07-15 02:00:31,th3falc0n,kühl
+2014-07-15 02:00:43,Jidder,was soll denn da drin stehen?
+2014-07-15 02:00:51,th3falc0n,ls_dir
+2014-07-15 02:01:05,Jidder,der userspace kann puffer übergeben
+2014-07-15 02:01:10,th3falc0n,kk
+2014-07-15 02:01:13,Jidder,muss natürlich ordentlich gecheckt werden
+2014-07-15 02:01:42,th3falc0n,also bei vielen dateien im verzeichnis bin ich voll am arsch?
+2014-07-15 02:01:54,Jidder,nö. einfach einen großen puffer übergeben
+2014-07-15 02:02:28,th3falc0n,1GB? xD
+2014-07-15 02:02:44,Jidder,der syscall sollte nicht alle dateien aufeinmal übergeben
+2014-07-15 02:02:57,th3falc0n,also im prinzip wie strtok?
+2014-07-15 02:03:06,Jidder,wie opendir/readdir in posix
+2014-07-15 02:03:26,Jidder,oder FindFirstFile/FindNextFile in window
+2014-07-15 02:03:28,Jidder,s
+2014-07-15 02:03:32,th3falc0n,kk
+2014-07-15 02:03:47,th3falc0n,256 zeichen pro node name reichen doch oder?
+2014-07-15 02:04:09,Jidder,nicht wenn du dich an anderen system orientierst
+2014-07-15 02:04:35,th3falc0n,sagen wir ich orientier mich am original gba betriebssystem *g*
+2014-07-15 02:04:43,th3falc0n,und erweiter das ein wenig
+2014-07-15 02:04:49,Jidder,okidoki
+2014-07-15 02:06:00,th3falc0n,naja ichh machs mir auch relativ einfach mit dem dateisystem
+2014-07-15 02:06:10,th3falc0n,"gibt 3 file typen ""NODE"", ""MEM"", ""MOUNT"""
+2014-07-15 02:06:11,th3falc0n,das wars
+2014-07-15 02:06:32,th3falc0n,"und bei ""MOUNT"" gibts ne PID, dann darf sich der task damit rumkloppen"
+2014-07-15 02:06:43,Jidder,perfekt
+2014-07-15 02:06:53,Jidder,"wer braucht da noch ein betriebssystem, wenn die programme alles machen ^^"
+2014-07-15 02:07:05,th3falc0n,also der driver task
+2014-07-15 02:07:09,th3falc0n,der den mount bereitstellt
+2014-07-15 02:07:36,Jidder,was ist MEM
+2014-07-15 02:07:51,Jidder,eine datei?
+2014-07-15 02:07:55,Jidder,und NODE ist verzeichnis?
+2014-07-15 02:08:24,th3falc0n,"node ist ein verzeichnis, mem ist ne datei im speicher, mount ist sagt halt, dass es ab hier in nem mount weitergeht"
+2014-07-15 02:08:43,th3falc0n,fehlt eig noch LINK
+2014-07-15 02:08:51,th3falc0n,aber soweit hatte ich noch nicht gedacht
+2014-07-15 02:10:03,Jidder,wieso nur dateien im speicher?
+2014-07-15 02:10:08,Jidder,was ist mit den dateien auf der platte?
+2014-07-15 02:10:40,th3falc0n,"na in nem plattenpfad kommt irgendwo ne MOUNT node drin vor, und ab da kümmert sich der treiber drum"
+2014-07-15 02:11:04,Jidder,und programme nutzen diese funktion dann nicht um dateien aufzulisten?
+2014-07-15 02:11:11,th3falc0n,"für z.B. /usr/bin/bash  steht im vfs nur /usr -> MOUNT ""ext2treiber"""
+2014-07-15 02:11:40,th3falc0n,"das vfs kümmert sich darum, dass ein mount entsprechend vom treiber behandelt wird"
+2014-07-15 02:12:00,th3falc0n,sodass alle pfade unterm mount im treiber gespeichert sind und von dem behandelt werden müssen
+2014-07-15 02:12:27,Jidder,"also wenn ein programm eine liste der dateien haben will, muss es eine andere funktion nutzen?"
+2014-07-15 02:12:39,th3falc0n,nein
+2014-07-15 02:12:45,Jidder,"wenn nein, solltest du spezifizieren, was die treiber als typ zurückgeben müssen"
+2014-07-15 02:13:18,th3falc0n,"ein dateisystemtreiber muss alles können was das vfs auch kann, damit das vfs einfach in den treiber springen kann "
+2014-07-15 02:14:01,Jidder,mein programm macht folgendes: X = ListFiles(); if (X.Type == NODE) { aha verzeichnis }
+2014-07-15 02:14:08,Jidder,if (X.Type == ???) { aha verzeichnis }
+2014-07-15 02:14:17,Jidder,äh aha datei natürlich
+2014-07-15 02:14:30,Jidder,was muss ich für ??? einsetzen?
+2014-07-15 02:14:55,Jidder,"das sei bspw. ein programm, das dateien auflisten will"
+2014-07-15 02:14:58,Jidder,ls oder so
+2014-07-15 02:14:59,th3falc0n,"hmm eig MEM, der treiber müsste dann MEM zurückgeben"
+2014-07-15 02:15:08,th3falc0n,also sollte ich MEM in FILE umbenennen
+2014-07-15 02:15:15,Jidder,ok
+2014-07-15 02:15:39,th3falc0n,ein mount ist halt ein dir was in einen treiber führt
+2014-07-15 02:15:40,th3falc0n,mehr nicht
+2014-07-15 02:15:57,Jidder,muss ein programm das wissen?
+2014-07-15 02:16:03,th3falc0n,tut es nicht
+2014-07-15 02:16:13,th3falc0n,"das wird vom vfs behandelt, wenn der pfad ins mount reingeht"
+2014-07-15 02:16:54,th3falc0n,also fürs programm ist NODE/DIR und MOUNT das gleiche
+2014-07-15 02:17:02,Jidder,"das heißt ein programm, das ListFiles(""/"") aufruft, um die unterverzeichnisse aufzulisten, sieht für /usr den Type NODE?"
+2014-07-15 02:17:10,th3falc0n,nein MOUNT
+2014-07-15 02:17:14,Jidder,warum?
+2014-07-15 02:17:20,th3falc0n,weil es ein mount point ist
+2014-07-15 02:17:26,Jidder,interessiert das programm nicht
+2014-07-15 02:17:47,Jidder,"es kann immer noch if (X.Type == DIR && X.SpecialFlags & MOUNT != 0) machen, wenn es daran interessiert ist"
+2014-07-15 02:18:00,th3falc0n,ja so kann ichs auch machen
+2014-07-15 02:18:19,Jidder,"ansonsten muss ein programm, dass rekursiv durch verzeichnisse geht, immer if (X.Type == DIR || X.Type == MOUNT) machen"
+2014-07-15 02:18:43,th3falc0n,oder (X.Type < FILE) *g*
+2014-07-15 02:18:48,Jidder,^^
+2014-07-15 02:19:08,th3falc0n,das ist doch alles beta
+2014-07-15 02:19:23,th3falc0n,bisher hab ich nur RAM verzeichnisse
+2014-07-15 02:19:24,th3falc0n,ohne dateien
+2014-07-15 02:22:42,th3falc0n,und bevor ich nicht in /process/xyz/stdout schreiben kann mach ich mir auch keine gedanken über mounts
+2014-07-15 02:23:00,Jidder,oder was für eine typ stdout haben soll ^^
+2014-07-15 02:23:42,th3falc0n,stdout ist FILE im RAM
+2014-07-15 02:23:50,th3falc0n,mit wunderbaren 16KB buffer
+2014-07-15 02:24:05,Jidder,weißt du wie unix das macht?
+2014-07-15 02:24:22,th3falc0n,"ich hab keine ahnung von unix, dass dürftest du als mein homie inzwischen wissen :P"
+2014-07-15 02:25:00,Jidder,unter unix ist das ein sogenanntes character device
+2014-07-15 02:25:19,Jidder,"das heißt man kann lesen und schreiben, aber nicht seeken"
+2014-07-15 02:25:28,Jidder,"im gegensatz zu block devices, bei denen man seeken kann"
+2014-07-15 02:26:06,Jidder,"das heißt stdout, tastatur, serielle schnittstelle, etc. wären character devices, und festplatten block devices"
+2014-07-15 02:26:53,th3falc0n,hmm ich hätte das in den handles geregelt wie geschrieben wird
+2014-07-15 02:27:51,Jidder,ich weiß ja nicht wie explizit das mit dem puffer ist
+2014-07-15 02:28:05,Jidder,"wenn der transparent ist, dann kann das ja auf dasselbe hinauslaufen"
+2014-07-15 02:28:21,th3falc0n,oder ich geh von dem system weg
+2014-07-15 02:28:27,Jidder,"klingt halt mit puffer wie ein block device, vor allem, wenn der so groß ist"
+2014-07-15 02:28:28,th3falc0n,aber ne
+2014-07-15 02:28:52,th3falc0n,ich glaub ich bau char devices ein
+2014-07-15 02:28:56,th3falc0n,aber das entscheid ich morgen
+2014-07-15 02:29:03,th3falc0n,jetzt bleib ich erstmal bei planetside und stargate sg-1
+2014-07-15 02:29:21,Jidder,ah sehr gut
+2014-07-15 02:29:24,Jidder,dualunterhaltung ^^
+2014-07-15 02:29:38,Jidder,am besten noch ne mp3 laufen lassen und ein youtubevideo ^^
+2014-07-15 02:29:57,th3falc0n,danke dass du mich veräppelst :)
+2014-07-15 02:30:12,th3falc0n,"ich gucke meistens fernsehen nebenbei, meistens einfach nur damit was läuft"
+2014-07-15 02:30:38,Jidder,jo mach ich auch oft
+2014-07-15 02:30:58,Jidder,ich glaub ich kauf mir morgen nen neuen bildschirm. hab am wochenende einen kaputten pixel entdeckt
+2014-07-15 02:31:11,Jidder,dann kann ich das endlich mit dual screen machen
+2014-07-15 02:31:13,th3falc0n,und aufm linken bildschirm hab ich IRC/TS/Skype
+2014-07-15 02:31:22,th3falc0n,dual? anfänger *g*
+2014-07-15 02:31:44,Jidder,"wenn man sich erstmal dran gewöhnt, kann man auch in 1024x768 fenstern zocken ^^"
+2014-07-15 02:31:50,Jidder,oder noch kleiner je nach spiel ^^
+2014-07-15 02:31:53,th3falc0n,rofl
+2014-07-15 02:32:12,th3falc0n,ich hab 3 mal FULL-HD und bald noch mehr... 2560x1440 ist geplant
+2014-07-15 02:33:10,Jidder,dafür wär ich zu geizig
+2014-07-15 02:33:17,XanClic,*war meinst du
+2014-07-15 02:33:18,th3falc0n,ich spar da lange drauf *g*
+2014-07-15 02:33:22,Jidder,ich werde mich bestimmt morgen auch wieder aus meinem plan rausquatschen
+2014-07-15 02:33:28,XanClic,"Nicht den Konjunktiv verwenden, wenn du das Präteritum meintest"
+2014-07-15 02:33:48,Jidder,ok wär mir jetzt nicht aufgefallen
+2014-07-15 02:33:55,th3falc0n,*war
+2014-07-15 02:34:04,XanClic,geht da nicht
+2014-07-15 02:34:06,Jidder,wäre das richtig gewesen?
+2014-07-15 02:34:08,XanClic,Weil „jetzt“
+2014-07-15 02:34:28,th3falc0n,"nein da ist ""jetzt"" nicht zeitlich sondern als ""diesmal"" gemeint *g*"
+2014-07-15 02:34:33,XanClic,denkst du
+2014-07-15 02:35:23,th3falc0n,"Jidder, wenn du morgen abend keine 2 bildschirme hast gibts keine kekse mehr"
+2014-07-15 02:35:28,Jidder,"ich glaub zwei punkte über dem falschen vokal ist (sind? umformulieren überlass ich dir) noch einer der geringeren fehler, die ich hier so mache"
+2014-07-15 02:35:38,XanClic,Ich wollte gerade sagen „Jidder isst eh keine Kekse“
+2014-07-15 02:35:48,XanClic,"Und da ist mir aufgefallen, wieso Jidder nur einen Bildschirm hat"
+2014-07-15 02:35:52,XanClic,Er kauft zwar ständig einen zweiten
+2014-07-15 02:36:00,XanClic,"Aber dann ist der schon aufgeraucht, bevor er angeschlossen ist"
+2014-07-15 02:36:00,Jidder,haaaaaaardware
+2014-07-15 02:36:10,th3falc0n,spaaaarta
+2014-07-15 02:36:22,XanClic,Fun Fact
+2014-07-15 02:36:25,XanClic,Ich hab auch nur einen Bildschirm
+2014-07-15 02:38:06,th3falc0n,"fun fact, ich hab da kein problem mit, nur wenn du einmal angefangen hast willst du immer mehr. das ist wie mit keksen"
+2014-07-15 02:38:18,XanClic,Hm
+2014-07-15 02:38:28,XanClic,"Ich könnte ja versuchen, mein Smartphone als zweiten Bildschirm anzuschließen"
+2014-07-15 02:38:36,XanClic,"720p, das reicht zumindest für IRC"
+2014-07-15 02:38:47,XanClic,Oder für YouTube-Videos nebenbei
+2014-07-15 02:39:16,XanClic,"Schade, Synergy gibts noch nicht für Android"
+2014-07-15 02:39:20,th3falc0n,"hab ich auch mal probiert, habs nie hinbekommen, weil ich windows nicht überzeugen konnte nen virtuellen bildschirm zu haben für VNC zeugs"
+2014-07-15 02:39:21,XanClic,Muss ich mir wohl Ubuntu drauf installieren
+2014-07-15 03:31:17,th3falc0n,ich bin mal weg
+2014-07-15 03:31:17,th3falc0n,gn8
+2014-07-15 10:27:35,Darkchaos,"Manchmal wünschte ich, mein OS hätte einen Garbage Collector. Dann könnte es sich selbst komplett löschen^^"
+2014-07-15 10:59:53,kevin,Geht auch manuell ganz einfach
+2014-07-15 11:26:03,Darkchaos,"hmm, ist das nur javac, der eine Warning gibt, wenn man code nach einem return einfügt *g*. Böses gcc"
+2014-07-15 11:28:54,mgottschlag,das wurde nach der goto-fail-Geschichte ja auch recht lang diskutiert
+2014-07-15 11:29:12,mgottschlag,"das wurde beim GCC rausgeschmissen, weil das je nach Optimierungsstufe unterschiedlich viele Warnungen erzeugt hat oder so"
+2014-07-15 11:35:43,Jonathan,Moin
+2014-07-15 11:48:46,kevin,Moi
+2014-07-15 11:48:49,kevin,n
+2014-07-15 12:19:17,Svenska,"structs mit memcmp zu vergleichen geht nur, wenn der speicher vorher initialisiert wurde oder kein padding vom compiler gemacht wird :-)"
+2014-07-15 13:12:05,iksnagreb,moin
+2014-07-15 14:05:44,iksnagreb,moin
+2014-07-15 14:05:47,iksnagreb,.
+2014-07-15 14:05:47,iksnagreb,.
+2014-07-15 14:05:47,iksnagreb,.
+2014-07-15 14:05:47,iksnagreb,.
+2014-07-15 14:05:48,iksnagreb,.
+2014-07-15 14:05:48,iksnagreb,.
+2014-07-15 14:05:50,iksnagreb,.
+2014-07-15 14:05:52,iksnagreb,.
+2014-07-15 14:05:54,iksnagreb,.
+2014-07-15 14:05:56,iksnagreb,.
+2014-07-15 14:05:58,iksnagreb,.
+2014-07-15 14:06:00,iksnagreb,.
+2014-07-15 14:06:02,iksnagreb,.
+2014-07-15 14:06:04,iksnagreb,.
+2014-07-15 14:06:06,iksnagreb,.
+2014-07-15 14:06:08,iksnagreb,.
+2014-07-15 14:06:10,iksnagreb,.
+2014-07-15 14:06:12,iksnagreb,.
+2014-07-15 14:06:16,iksnagreb,.
+2014-07-15 14:06:18,iksnagreb,.
+2014-07-15 14:06:20,iksnagreb,.
+2014-07-15 14:06:22,iksnagreb,.
+2014-07-15 14:06:24,iksnagreb,.
+2014-07-15 14:06:26,iksnagreb,.
+2014-07-15 14:06:28,iksnagreb,.
+2014-07-15 14:06:30,iksnagreb,.
+2014-07-15 14:06:32,iksnagreb,.
+2014-07-15 14:06:34,iksnagreb,.
+2014-07-15 14:06:36,iksnagreb,.
+2014-07-15 14:28:09,DerAlex,Okay
+2014-07-15 14:33:03,th3falc0n,moin
+2014-07-15 15:32:18,kevin,"Huch, stultus treibt sich hier noch rum?"
+2014-07-15 15:37:07,DerAlex,"Ja klar, der ist doch aktiver denn je"
+2014-07-15 15:37:09,DerAlex,Also in anderen Channeln
+2014-07-15 15:45:49,kevin,DerAlex: Will man das näher wissen?
+2014-07-15 15:48:11,DerAlex,Kommt drauf an
+2014-07-15 15:48:41,XanClic,Ich wüsste das gern näher
+2014-07-15 15:51:02,Darkchaos,"Welche Ursachen kann es haben, dass beim setzen von cr3 (also des paging context) ein cpu reset auftritt?"
+2014-07-15 15:54:20,kevin,Dass neue Wert in cr3 nicht so geeignet war
+2014-07-15 15:54:32,kevin,"Oder sehr geeignet, falls das OS damit einen Reset machen will"
+2014-07-15 15:55:11,kevin,Aber als Resetmethode halte ich das für eher ungewöhnlich
+2014-07-15 16:05:26,Darkchaos,ja aber was ist da? Alles um EIP nicht mehr gemappt?
+2014-07-15 16:06:48,Darkchaos,hintergrund ist der. Ich hab ja zwei Tasks. der Kernel muss überall gleich sein. So und nun crasht es beim updaten des PDs
+2014-07-15 16:11:49,kevin,"Schau dir an, welcher Wert in cr3 steht"
+2014-07-15 16:11:52,kevin,Dann schau dir den Speicher da an
+2014-07-15 16:12:00,kevin,Eventuell noch die PT
+2014-07-15 16:12:04,kevin,"Und dann weißt du, was falsch ist"
+2014-07-15 16:14:42,Jonathan,"Mannnnn, wie doof"
+2014-07-15 16:14:49,Jonathan,Ich bastel mir diskrete Logikgatter
+2014-07-15 16:14:55,Jonathan,Mal in LTSpice simuliert
+2014-07-15 16:15:04,Jonathan,"Komme auf 2,5ns Verzögerungszeit..."
+2014-07-15 16:15:33,Jonathan,"Einziges Problem: Das doofe Gatter hat am Ausgang die falschen Spannungspegel, sodass weitere Gatter des selben Typs das Signal nicht mehr fressen würden xD"
+2014-07-15 16:15:49,th3falc0n,o.O
+2014-07-15 16:43:58,tdotu,moin
+2014-07-15 16:47:58,tdotu,mal wieder nix los...
+2014-07-15 16:49:05,mgottschlag,-.-
+2014-07-15 18:28:03,th3falc0n,"brauch ich undendlich file-handles pro task, oder gibts da unter unix/linux ein maximum?"
+2014-07-15 18:28:33,XanClic,es gibt zumindest EMFILE
+2014-07-15 18:28:40,XanClic,"Demnach nehme ich schon an, dass es ein Maximum geben darf"
+2014-07-15 18:29:02,XanClic,open(2): EMFILE The process already has the maximum number of files open.
+2014-07-15 18:29:37,th3falc0n,"hmm, ich frag mich dann nur wie  viele ich brauch"
+2014-07-15 18:31:22,th3falc0n,"ob 4 reichen ""stdin"" ""stdout"" ""stderr"" und eine beliebige *g*"
+2014-07-15 19:30:29,Darkchaos,Ich werde verrückt. Mein Code stirbt aufgrund eines memcpys. Jetzt hab ich mal quelle und ziel vor kopieren gedumpt. beide identisch
+2014-07-15 19:31:08,Jonathan,...lol
+2014-07-15 19:31:18,Jonathan,Was für Speicher wird da denn kopiert?
+2014-07-15 19:31:21,Jonathan,Und wieso?
+2014-07-15 19:31:44,Darkchaos,das neue PageDirectory
+2014-07-15 19:31:45,Darkchaos,ach kacke
+2014-07-15 19:31:51,Darkchaos,qemu schuld >.<
+2014-07-15 19:32:07,Darkchaos,wenn man nicht mit 0x prefixxed wird die speicherregion als dezimal angesehen
+2014-07-15 19:33:00,Jonathan,:D
+2014-07-15 19:35:13,Darkchaos,immernoch identisch
+2014-07-15 19:35:20,Darkchaos,wobei das an sich ja nichts schlechtes sein müsste
+2014-07-15 19:35:34,Darkchaos,denn wenn jemand was mapped und wieder frei gibt
+2014-07-15 19:46:04,th3falc0n,irgendwo ein dreher zwischen physisch und virtuell?
+2014-07-15 19:48:20,th3falc0n,was kopierst du da eigentlich Darkchaos?
+2014-07-15 20:19:34,Svenska,hi
+2014-07-15 20:26:30,th3falc0n,hallöchen Svenska
+2014-07-15 21:26:39,Darkchaos,"th3falc0n: Ich hab nen ""kernel""-Pagingcontext. In den wird reingemappt wenn jemand was am Kernel ändert. Dieses KiB vom Kernel (welches für das 1GiB steht), wird dann in alle Tasks kopiert, damit der kernel vollständig und synchronisiert ist"
+2014-07-15 21:27:39,Svenska,"Darkchaos: könntest du nicht einfach den kernel auf 4 MB ausrichten und dann einfach eine (oder mehrere) PTs haben, die du nur einträgst?"
+2014-07-15 21:27:55,Svenska,"also dass du nicht jeden task ändern musst, wenn du im kernelspace rummappst?"
+2014-07-15 21:29:25,Darkchaos,"das wäre auch ne gute Idee, Ich hab aber 1GiB als Kernelspace momentan, also müsste ich ja schon 256 PageTables vorallokieren"
+2014-07-15 21:29:35,Darkchaos,hmm wäre natürlich auch ne Möglichkeit
+2014-07-15 21:29:45,th3falc0n,ich mach das auch mit 128 kernel pts
+2014-07-15 21:31:06,Darkchaos,"aber das wird dann iwann kompliziert, weil jedes pagedirectory wiederum im kernel gemappt ist und ich rekursives mapping habe und so. Ich hasse Paging^^"
+2014-07-15 21:31:17,Svenska,?
+2014-07-15 21:31:18,Darkchaos,eigentlich ist es ja simpel. nur irgendwie macht es probleme
+2014-07-15 21:31:30,Svenska,jedes PD im kernel mappen ist schlecht.
+2014-07-15 21:31:42,Svenska,so viel adressraum hast du im 32-bit-modus nicht
+2014-07-15 21:31:58,Darkchaos,"nur das PD, damit ich zugriff auf die PTs habe"
+2014-07-15 21:32:03,Svenska,"ein einziges PD im kernel mappen (als ""aktiven kontext"") könnte nützlich sein, wobei hier andere schon gesagt haben, dass das doof ist ^^"
+2014-07-15 21:33:53,th3falc0n,also bei mir ist jedes PD in sich selbst gemappt und die kernel pagetables preallocated
+2014-07-15 21:34:24,Darkchaos,"aber theoretisch müsste doch meine Methode auch klappen, oder? ich glaube aber dass ich da synchronisierungsprobleme bekomme"
+2014-07-15 21:35:03,Svenska,"wenn du 256 kernel-PTs hast, und im kernel die PDs aller tasks mappen willst, dann brauchst du für jeden task ein PT -> und hast damit maximal 255 tasks"
+2014-07-15 21:45:23,Darkchaos,hmm okay. Es läuft jetzt. Ich hatte einfach einen #PF in malloc (es nutzte nur blocks außerhalb des kernelspaces)
+2014-07-15 21:45:30,Darkchaos,und damit war die struktur immer anders
+2014-07-15 21:46:27,Darkchaos,"nur was mich stutzig macht: vergleiche ich beide versionen des kernel-""pd"" bereiches, haben sich zwei Werte verändert. Das würde aber heißen, es hat sich nen PT Adresse verändert. Das dürfte ja nicht sein, oder?"
+2014-07-15 21:46:47,Darkchaos,"also wenn dann zu 0x0 werden, oder neue werte"
+2014-07-15 21:47:53,Darkchaos,"obwohl, wenn man annimmt, dass x /1024xw 1024 32bit's zählt, war ich falsch. Ich brauche ja 1024 Byte, dann lag das alles schon im userspace"
+2014-07-15 22:07:14,Darkchaos,Okay. Ne kurze Frage bezüglich Dynamischer Datentypen
+2014-07-15 22:07:34,Darkchaos,"Ich überlege mir gerade, ob ich ein dynamisch-großes Array oder eine LinkedList verwenden soll"
+2014-07-15 22:07:45,Svenska,für was?
+2014-07-15 22:08:38,Darkchaos,"Ich habe ""handles"" in meiner API, also wäre der Nachteil, dass ich O(n^2) für das suchen hätte, oder? (also n+1 mal for condition, n mal für den Datentyp (ich lern das grad nebenher^^))"
+2014-07-15 22:08:51,Darkchaos,für den Speicher des CommandLineInterface
+2014-07-15 22:08:57,Darkchaos,also ich habe quasi virtuelle Terminals
+2014-07-15 22:09:08,Darkchaos,momentan lege ich einfach mal 255 Fenster statisch an
+2014-07-15 22:10:03,Darkchaos,"der nächste Nachteil ist, mein Handle soll immer das niedrigste freie sein, das wären also wieder n^2 durchgänge alleine. Und dann für jede Operation, weil ich das Fenster erst mal finden muss"
+2014-07-15 22:10:30,Svenska,öh
+2014-07-15 22:10:32,Darkchaos,aber jedesmal das Array zu vergrößern macht auch keinen Spaß
+2014-07-15 22:10:45,Svenska,n^2 sagt erstmal nix über die geschwindigkeit aus
+2014-07-15 22:10:59,Svenska,sondern nur über die skalierung.
+2014-07-15 22:11:48,Svenska,"aber ""das niedrigste freie"" klingt für mich eher nach sorted list..."
+2014-07-15 22:13:01,XanClic,Man kann auch einen Index mit dem niedrigsten freien halten
+2014-07-15 22:13:24,Darkchaos,"XanClic: ja, gute Idee"
+2014-07-15 22:13:51,Darkchaos,"und naja, sorted muss es nicht sein, sondern wenn halt jemand ein fenster schließt und ein neues erzeugt, wird ja der alte index frei"
+2014-07-15 22:14:08,Darkchaos,und da möchte ich nicht bis \infty jagen
+2014-07-15 22:14:21,Svenska,"kannst du sowieso nicht, weil der speicher dann ausgeht ^^"
+2014-07-15 22:14:43,Darkchaos,"und naja, Svenska über die Anzahl der ElOps die ich durchführen muss, oder?"
+2014-07-15 22:15:00,Darkchaos,uint32_t a = CreateWindow(); FreeWindow(a);
+2014-07-15 22:15:07,Darkchaos,das meinte ich damit^^
+2014-07-15 22:15:23,Darkchaos,aber manchmal vergisst man so einfache Lösungen wie die von XanClick^^
+2014-07-15 22:15:26,Svenska,für 32 fenster ist es wurst
+2014-07-15 22:15:35,Svenska,für 256 fenster ist es vermutlich auch wurst
+2014-07-15 22:15:44,Svenska,für 2^18 fenster vermutlich nicht mehr.
+2014-07-15 22:15:48,Darkchaos,dann noch die Frage mit dem IDX->Pointer
+2014-07-15 22:16:16,Darkchaos,"Svenska: Wenn jemand immer ein Fenster erzeugt und Freed. Beispielsweise ein Popup, Benachrichtung, was auch immer"
+2014-07-15 22:16:19,Darkchaos,die Taucht 10s auf und geht wieder
+2014-07-15 22:16:26,Svenska,"ja, und?"
+2014-07-15 22:16:27,Darkchaos,"jetzt läuft das OS, weil es toll ist, monate durch xD"
+2014-07-15 22:16:46,Darkchaos,"Achso halt, du beziehst dich auf n^2?"
+2014-07-15 22:16:49,Svenska,microsoft baut sein neues gui in html5
+2014-07-15 22:16:52,Svenska,offensichtlich ist cp
+2014-07-15 22:16:56,Svenska,cpu-zeit genug vorhanden
+2014-07-15 22:17:08,Svenska,"siehe auch ""managed code"""
+2014-07-15 22:17:35,Darkchaos,"Oder ich baue eine art Lookup Table (index -> Listeneintrag), da wäre es O(1)"
+2014-07-15 22:17:45,Svenska,"du kannst deine handles als indizes in ein array benutzen, oder als pointer in die liste"
+2014-07-15 22:18:00,Svenska,"damit umgehst du in beiden fällen die suchzeiten, solange du ein paar randbedingungen garantieren kannst."
+2014-07-15 22:18:13,Darkchaos,"ja, dann kann aber der userspace ein bisschen mit pointern spielen^^"
+2014-07-15 22:18:25,Svenska,ja. und?
+2014-07-15 22:18:32,Svenska,kann er in beiden fällen.
+2014-07-15 22:19:04,Darkchaos,wenn ich in jedem Element ein uint32_t index; habe und durchloope bis ich dort bin?
+2014-07-15 22:19:26,Darkchaos,"Aber ich kann ja prüfen, ob dem das Fenster gehört"
+2014-07-15 22:19:31,Svenska,"dagegen hilft dir auch eine lookup-table nicht (außer, dass du jetzt beide datenstrukturen synchron halten musst und damit die vorteile beider für konstante kosten genießen kannst)"
+2014-07-15 22:19:34,Darkchaos,und wenn es nicht gemappt ist gibt es einen #PF im Kernel
+2014-07-15 22:19:40,Svenska,sanitizing
+2014-07-15 22:20:50,Darkchaos,Ich gaube ich suche doch^^
+2014-07-15 22:21:04,Darkchaos,Mache ich ja bei der Prozessliste glaube ich auch
+2014-07-15 22:21:08,Svenska,durch ein array zu loopen ist übrigens doof :)
+2014-07-15 22:21:20,Darkchaos,Aber durch eine LinkedList nciht^^
+2014-07-15 22:23:03,Darkchaos,"so jetzt bin ich mal gespannt, wie gut meine Idee für den Keyboard-Treiber ist"
+2014-07-15 22:23:07,Paddy,Wieso müsstest du durch die Liste loopen?
+2014-07-15 22:23:20,Darkchaos,Paddy: na ich muss doch das zugehörige Window-Objekt finden
+2014-07-15 22:23:39,Paddy,"Ich dachte, du willst einfach nur irgendein freies?"
+2014-07-15 22:23:54,Svenska,Paddy: für alle anderen funktionen außer erstellen ^^
+2014-07-15 22:24:18,Darkchaos,ja genau .D
+2014-07-15 22:24:20,Paddy,"Hm, die anderen Funktionen, die ich mir vorstellen kann, brauchen entweder ein foreach oder haben sowieso einen Pointer"
+2014-07-15 22:24:35,Darkchaos,"eben, und das foreach ist ja das loopen"
+2014-07-15 22:24:52,Paddy,"Ja, aber nicht foreach um ein Element zu suchen, sondern um was mit allen zu machen (z.B. zeichnen)"
+2014-07-15 22:24:52,Darkchaos,wobei es eher ein while((curr = curr->next) != 0) ist^^
+2014-07-15 22:25:18,Jidder,"wer braucht schon for-schleifen, wenn er while (ausgesprochen hwile) hat"
+2014-07-15 22:25:42,Darkchaos,Aber zB FensterTitel ändern oder einfach Text in den virtuellen Buffer schreiben
+2014-07-15 22:25:56,Paddy,"Wer tut das, der nicht sowieso einen Pointer hat?"
+2014-07-15 22:26:25,Svenska,ich wäre ja für handle = index in eine tabelle
+2014-07-15 22:27:00,Svenska,"und bei jedem zugriff prüfst du halt, ob das handle im rahmen liegt (>=first && <= last), gültig ist, dem korrekten gehört usw"
+2014-07-15 22:27:03,Jidder,und ich für key in einem b-tree
+2014-07-15 22:27:40,Paddy,"Svenska: Wenn das ein externes Interface ist, dann ja"
+2014-07-15 22:27:41,Darkchaos,Svenska: dann muss ich aber das Array immer dynamisch vergrößern
+2014-07-15 22:27:50,Paddy,Und?
+2014-07-15 22:27:54,Darkchaos,"Achso. Ja klar, dreht sich um Syscalls"
+2014-07-15 22:27:59,Svenska,du musst es ja nicht jedes mal vergrößern
+2014-07-15 22:28:12,Darkchaos,alle 10 Einträge?
+2014-07-15 22:28:13,Svenska,"reicht doch, wenn du es z.B. quadratisch vergrößerst"
+2014-07-15 22:28:24,Paddy,Dann ist das Mapping ja dasselbe Problem wie bei Filedeskriptoren. Die haben auch extern einen int und intern einen Pointer auf eine struct.
+2014-07-15 22:28:26,Svenska,immer verdoppeln bis maxgröße
+2014-07-15 22:29:11,Darkchaos,"Genau. Und nen Pointer ""rausgeben"" kann ich nicht, weil unüberprüfbar worauf ich zugreife"
+2014-07-15 22:29:20,Darkchaos,aber das hört sich wohl gu tan
+2014-07-15 22:29:58,Svenska,Paddy: also entweder ne tabelle index->pointer oder direkt die tabelle mit den structs?
+2014-07-15 22:30:03,XanClic,Man kann auch einen Index mit dem niedrigsten freien halten
+2014-07-15 22:30:04,XanClic,damnit
+2014-07-15 22:30:05,XanClic,EWINDOW
+2014-07-15 22:32:22,Paddy,"Svenska: Hm, ich würde index->pointer machen"
+2014-07-15 22:32:53,Paddy,Svenska: Bei Dateien sowieso weil eine Datei mehrere fds haben kann (oder gibt es da auch noch Zustand pro fd?)
+2014-07-15 22:33:16,Paddy,"Vielleicht mal meinen Code anschauen, bevor ich hier Mist erzähle *g*"
+2014-07-15 22:33:32,Svenska,"oh, klingt nachvollziehbar"
+2014-07-15 22:34:12,Paddy,"*lol* Okay, ich habe mir schon längst selbst widersprochen, mein Code benutzt eine verkettete Liste"
+2014-07-15 22:34:25,Paddy,War wohl einfacher ;-)
+2014-07-15 22:35:12,Darkchaos,^^
+2014-07-15 22:35:18,Paddy,"Und ich habe ein TVFSFileDesc für jeden fd, und der hat nur einen Pointer auf das eigentliche TVFSFile"
+2014-07-15 22:35:36,Paddy,Disclaimer: Paddygree ist kaputt und war nie anders geplant
+2014-07-15 22:35:42,Paddy,Nicht nachmachen
+2014-07-15 22:35:51,Darkchaos,war nie anders geplant? :D
+2014-07-15 22:36:09,Jidder,klares kennzeichen eines profis
+2014-07-15 22:36:11,Jidder,proffis
+2014-07-15 22:36:17,Paddy,"Ich weiß doch von Anfang an, dass ich zu faul bin, die Sachen ordentlich zu machen *g*"
+2014-07-15 22:37:13,Paddy,Deswegen alloziert mein kmalloc() auch nur pageweise und bekommt mein kfree() eine Größe als Parameter...
+2014-07-15 22:37:59,XanClic,Bah
+2014-07-15 22:38:08,Darkchaos,das ist echt heftig^^
+2014-07-15 22:38:10,XanClic,Ich hab mein kmalloc ja einfach einen size_t an den Anfang schreiben lassen
+2014-07-15 22:38:15,XanClic,Und dann pageweise allokiert *g*
+2014-07-15 22:38:31,Darkchaos,und ich habs richtig^^ und ne Menge Probleme gehabt :D
+2014-07-15 22:38:42,Svenska,ich hab kein kmalloc() :D
+2014-07-15 22:38:44,XanClic,"Na ja, eine richtige Implementierung bräuchte ich erst für C++"
+2014-07-15 22:38:53,Paddy,XanClic: Dafür war ich zu faul *g*
+2014-07-15 22:38:59,XanClic,Aber für C und einen Microkernel…
+2014-07-15 22:39:08,XanClic,Da reicht so ein pageweises kmalloc vollkommen *duck*
+2014-07-15 22:39:21,XanClic,Und MyXomycota hat das ja sogar bis in den Userspace durchgedrückt und das lief *g*
+2014-07-15 22:39:26,Paddy,"Ich finde, für Pascal und Monolith reicht das auch *g*"
+2014-07-15 22:39:46,XanClic,"Pascal ist doch nichts anderes als C, oder? ;-)"
+2014-07-15 22:40:00,Darkchaos,kann erst Delphi Klassen?
+2014-07-15 22:40:43,Svenska,"delphi nutzt object pascal, aber es gibt auch andere pascal-dialekte, die davon was gehört haben :)"
+2014-07-15 22:42:23,Darkchaos,"aber wisst ihr was echt faul ist? Den Include-Pfad richtig zu setzen und dafür ""../../../../../libs/native/libapi/"" zu haben"
+2014-07-15 22:43:07,yayachiken,porque no los dos
+2014-07-15 22:43:19,Svenska,schweine nutzen kein dos?
+2014-07-15 22:43:38,XanClic,killall -9 yayachiken
+2014-07-15 22:43:46,XanClic,LANG=de_DE.UTF-8 yayachiken &
+2014-07-15 22:45:21,yayachiken,Why not both?
+2014-07-15 22:45:40,XanClic,das war nu auch kein de_DE.UTF-8
+2014-07-15 22:46:01,yayachiken,Translation status: 96%
+2014-07-15 22:46:04,Darkchaos,pourquois non les deux?^^
+2014-07-15 22:46:17,XanClic,doushite nai sono futari
+2014-07-15 22:46:22,Svenska,schweine nutzen auch kein deux?
+2014-07-15 22:46:39,XanClic,"schade, SHyx0rmZ ist nicht da, dann kann mich ja niemand hauen"
+2014-07-15 22:47:04,yayachiken,"Svenska, schweine spielen nicht deus ex"
+2014-07-15 22:47:11,Svenska,aah
+2014-07-15 22:47:16,Darkchaos,doushiten haben keine eine zukunft
+2014-07-15 22:47:40,Svenska,framtiden är ändå skittråkigt
+2014-07-15 22:48:16,XanClic,oh gott
+2014-07-15 22:48:42,XanClic,google übersetzt 「どうしてないその二人？」 tatsächlich zu „Warum nicht die beiden Personen?“
+2014-07-15 22:49:04,Svenska,und was sollte es heißen?
+2014-07-15 22:49:07,XanClic,gar nichts
+2014-07-15 22:49:37,XanClic,"Wobei, wenn man es ernsthaft übersetzen würde"
+2014-07-15 22:50:24,XanClic,Dann wärs vermutlich „Warum gibt es diese beiden Puppen nicht“
+2014-07-15 22:50:44,yayachiken,Die Japaner stellen die wichtigen Fragen
+2014-07-15 22:50:48,Paddy,Darkchaos: Duschen heißt das
+2014-07-15 22:50:59,XanClic,"an sich ist 二人 „zwei Menschen“, aber ない als „nicht existieren“ benutzt man nur für nicht-lebende Dinge"
+2014-07-15 22:51:04,Paddy,"Und dass die in diesem Channel keine Zukunft haben, wissen wir schon lang"
+2014-07-15 22:51:04,Svenska,Det är nödvändigt att duscha regelbundet.
+2014-07-15 22:51:27,Svenska,"(und nein, das kriegt man auch ohne google zusammen.)"
+2014-07-15 22:54:16,Paddy,Grad so
+2014-07-15 22:54:51,Jidder,warum nicht beides?

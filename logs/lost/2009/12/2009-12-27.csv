@@ -1,0 +1,489 @@
+date/time,nick,message
+2009-12-27 00:02:23,SHyx0rmZ,Das kann man eigentlich machen wie man will
+2009-12-27 00:02:29,SHyx0rmZ,Ich würds so machen
+2009-12-27 00:02:48,SHyx0rmZ,"Sonst könnte man ja einfach mehr Threads erzeugen, um CPU-Zeit zu mopsen"
+2009-12-27 00:04:03,JanDing,jo das war auch mein gedanke
+2009-12-27 00:06:58,SHyx0rmZ,Du hast nicht rein zufällig schon MM?
+2009-12-27 00:22:49,JanDing,naja hmm
+2009-12-27 00:23:10,JanDing,"ich hab etwas, mit dem ich nicht zufrieden bin ^^"
+2009-12-27 00:23:10,JanDing,http://github.com/janding/incos/
+2009-12-27 00:24:16,JanDing,ich glaube 4 verscheidene allokatoren
+2009-12-27 00:24:20,JanDing,http://github.com/janding/incos/blob/master/kernel/arch/i386/boot/vm_boot.c
+2009-12-27 00:24:23,JanDing,http://github.com/janding/incos/blob/master/kernel/arch/i386/vm/vm.c
+2009-12-27 00:24:41,JanDing,die beiden bootstrap allokatoren
+2009-12-27 00:25:37,JanDing,dann http://github.com/janding/incos/blob/master/kernel/vm/phys.c
+2009-12-27 00:25:45,JanDing,für physischen speicher mit bitmap^^
+2009-12-27 00:25:53,JanDing,ach ne irgendwas kombiniertes
+2009-12-27 00:27:02,JanDing,"hm joar und dann geht das drama weiter in http://github.com/janding/incos/blob/master/kernel/vm/vm.c mit identity mapping, wenn ich das richtig sehe ^^"
+2009-12-27 00:27:19,JanDing,und dann als letztes http://github.com/janding/incos/blob/master/kernel/vm/pmem.c
+2009-12-27 00:27:31,JanDing,um tatsächlich objekte zu allokieren^^
+2009-12-27 00:28:23,SHyx0rmZ,^^
+2009-12-27 00:28:35,SHyx0rmZ,ach
+2009-12-27 00:28:37,SHyx0rmZ,ihr habts alle so gut
+2009-12-27 00:28:43,SHyx0rmZ,ihr kommt mit 128 kib hin
+2009-12-27 00:28:45,JanDing,ah das ist totaler mist
+2009-12-27 00:29:00,JanDing,ich mit weniger^^
+2009-12-27 00:29:16,SHyx0rmZ,ich brauch allein für den speicher...
+2009-12-27 00:29:30,JanDing,größe der binaries + page directories + für jede datenstruktur eine page ^^
+2009-12-27 00:29:57,SHyx0rmZ,Die Bitmap müsste 4 PiB groß sein -.-
+2009-12-27 00:30:16,JanDing,bitmap für physischen speicher?
+2009-12-27 00:30:19,SHyx0rmZ,jo
+2009-12-27 00:30:41,SHyx0rmZ,Hrm
+2009-12-27 00:30:48,SHyx0rmZ,Ich glaub ich mach mir das ganz einfach
+2009-12-27 00:31:01,JanDing,die müsste 1/32768 des hauptspeichers belegen
+2009-12-27 00:31:02,SHyx0rmZ,"Ich bau einfach darauf, dass mindestens 128 MiB RAM da sind"
+2009-12-27 00:31:09,SHyx0rmZ,?
+2009-12-27 00:31:32,JanDing,na du brauchst nicht mehr bits als speicher da ist. auf einem 4gb system musste auch nur 4gb verwalten
+2009-12-27 00:31:33,SHyx0rmZ,"Yay, nur noch 512 TiB"
+2009-12-27 00:31:45,SHyx0rmZ,Joa
+2009-12-27 00:31:50,SHyx0rmZ,Das ist alles so kompliziert
+2009-12-27 00:32:00,SHyx0rmZ,"Mit new zu denken, aber kein new zu haben xD"
+2009-12-27 00:32:02,JanDing,"du wirst merken, dass eine bitmap nicht reicht"
+2009-12-27 00:32:05,JanDing,hehe^^
+2009-12-27 00:32:15,SHyx0rmZ,Ich will das ja eigentlich mit nem Stack lösen
+2009-12-27 00:32:26,SHyx0rmZ,Nur die unteren 16 MiB oder so mit Bitmap
+2009-12-27 00:32:33,JanDing,"general purpose systeme haben pro seite eine objekt, das ca 50-100 bytes groß ist"
+2009-12-27 00:32:40,JanDing,"also linux, bsd und der ganze mist"
+2009-12-27 00:32:58,JanDing,"das heißt da geht 5% des hauptspeichers für die verwaltung von physischem, virtuellem, etc speicher drauf"
+2009-12-27 00:33:09,SHyx0rmZ,Jo
+2009-12-27 00:33:38,SHyx0rmZ,"So wie ich das hier ansatzweise hab, geht da auch für die vollen 2^64 Byte nur 4 KiB drauf"
+2009-12-27 00:35:19,SHyx0rmZ,"Na, ich versuch nochmal mein Glück, ohne in dem Scheiß hier stecken zu bleiben"
+2009-12-27 00:35:31,SHyx0rmZ,"Muss nur ma kurz schaun, wie ich bss Zeugs allozier :D"
+2009-12-27 00:36:28,JanDing,"hm ich hab hier nen heap, der mir schöne laufzeiten verspricht, aber in meinem test insert(10 9 8 ... 1) versagt der schonmal und entartet -.-"
+2009-12-27 00:36:40,JanDing,dabei sah insert(1 ... 10) so perfekt balanciert aus
+2009-12-27 00:39:01,SHyx0rmZ,xD
+2009-12-27 00:43:21,SHyx0rmZ,genius
+2009-12-27 00:43:33,SHyx0rmZ,"wui, trick entdeckt"
+2009-12-27 00:50:50,mastamind,"gibt es einen grund, nicht die fpu zu verwenden für 64 bit divisionen und modulo?"
+2009-12-27 00:51:46,JanDing,"das ist relativ langsam, weil du die werte durch den speicher schieben musst"
+2009-12-27 00:52:04,JanDing,du kannst nicht direkt von den general purpose registern in die fpu register laden
+2009-12-27 00:52:16,JanDing,und ich glaube die fpu hat nicht 64 bit genauigkeit
+2009-12-27 00:52:36,mastamind,hmm
+2009-12-27 00:52:46,mastamind,"das dürfte aber relativ egal sein, da der gcc sowieso die werte per stack übergibt."
+2009-12-27 00:52:58,JanDing,dann bleibt noch der punkt mit der genauigkeit
+2009-12-27 00:53:16,JanDing,vermutlich müsstest du dann sogar noch den rundungsmodus umstellen
+2009-12-27 00:53:21,JanDing,da gehen nochmal taktzyklen drauf
+2009-12-27 00:53:50,mastamind,die genauigkeit sollte klappen. es gibt funktionen zum laden von 64 bit integer werten.
+2009-12-27 00:54:07,mastamind,die dürften aber wohl immer signed sein.
+2009-12-27 00:54:10,JanDing,aber nicht in voller genauigkeit
+2009-12-27 00:54:17,mastamind,mist...
+2009-12-27 00:54:31,mastamind,und wie soll ich das dann machen?
+2009-12-27 00:54:36,JanDing,von hand^^
+2009-12-27 00:54:45,mastamind,und das ist dann schneller?
+2009-12-27 00:54:49,mastamind,schwer zu glauben.
+2009-12-27 00:54:49,JanDing,libgcc hat routinen dafür
+2009-12-27 00:54:57,mastamind,"ja, hast du dir die mal angesehen?"
+2009-12-27 00:55:11,mastamind,"das geht weit über meine mathematikkenntnisse hinaus, was die dort machen."
+2009-12-27 00:55:14,JanDing,"das schnelligkeits argument hat sich für mich erledigt, wenn du sagst, dass gcc das eh über den stack macht"
+2009-12-27 00:55:21,mastamind,jo
+2009-12-27 00:55:27,JanDing,das ist eigentlich gar nicht so kompliziert
+2009-12-27 00:55:43,JanDing,"im prinzip ist das wie schriftlich dividieren, nur halt etwas komplizierter"
+2009-12-27 00:55:45,mastamind,kannst dus mir erklären?
+2009-12-27 00:55:54,JanDing,in den amd manuals gibt es assembler code als beispiel
+2009-12-27 00:56:05,mastamind,ich schau mal.
+2009-12-27 00:56:10,mastamind,die fpu wäre wirklich praktisch gewesen.
+2009-12-27 00:56:27,mastamind,"ich hab so keine lust, mich mit mathematik auseinenader zu setzen."
+2009-12-27 00:56:34,JanDing,im software optimization guide
+2009-12-27 00:56:42,JanDing,von amd
+2009-12-27 00:56:42,JanDing,^^
+2009-12-27 00:56:49,JanDing,was spricht denn dagegen einfach gegen libgcc zu linken?
+2009-12-27 00:57:47,mastamind,dass das dann nicht von mir ist.
+2009-12-27 00:58:34,JanDing,hehe
+2009-12-27 00:58:53,JanDing,"also ich hab für tyndur bevor es gegen libgcc gelinkt wurde, eine funktion geschrieben, die 64 bit zahlen durch 32 bit zahlen dividiert"
+2009-12-27 00:58:59,JanDing,das ist der einfache spezialfall^^
+2009-12-27 00:59:00,JanDing,http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/modules/lib/stdlibc/jprintf.c;hb=562f940cdf912a45255a35c65c97065b1f4ec55a#l48
+2009-12-27 00:59:46,JanDing,"kannste kopieren, wenn du willst. diese 20 zeilen stell ich mal in public domain, und vergesse dann dass ich der autor war^^"
+2009-12-27 01:00:22,mastamind,"ich muss erst mal kapieren, wie du das gemacht hast."
+2009-12-27 01:00:34,JanDing,ich erklärs mal
+2009-12-27 01:00:47,mastamind,fein :-)
+2009-12-27 01:00:48,JanDing,"das basiert darauf, dass wenn eine 64 Bit Zahl x, die sich aus 2 32 Bit zahlen zusammensetzt: x = r * B + s mit B = 2^32"
+2009-12-27 01:01:52,JanDing,"wenn d jetzt eine 32 bit zahl ist, und du x / d rechnest, dann ergibt sich: x / d = (r * B + s) / d = (r * B) / d + s / d"
+2009-12-27 01:02:06,JanDing,= B * (r / d) + (s / d)
+2009-12-27 01:03:14,mastamind,ich versteh.
+2009-12-27 01:03:16,JanDing,"das interessant wird es wenn r kein vielfaches von d ist. dann ergibt das ganze einen rest: r / d = qh + rh / d, wobei qh eine ganze zahl ist, und rh halt der rest"
+2009-12-27 01:03:17,mastamind,das ist ja noch einfach.
+2009-12-27 01:03:28,JanDing,"es gilt rh < d, sonst wäre es nicht der rest"
+2009-12-27 01:04:15,mastamind,hm? das kapier ich nicht mehr.
+2009-12-27 01:04:22,mastamind,woher is das qh?
+2009-12-27 01:04:43,JanDing,qh ist der ganzzahlige teil von r / d
+2009-12-27 01:04:49,JanDing,"der quotient, deswegen q ^^"
+2009-12-27 01:05:05,JanDing,also bei 1234 / 100 ist qh = 12 und rh = 34
+2009-12-27 01:05:31,SHyx0rmZ,"mastamind, schreibst du fürn LM?"
+2009-12-27 01:05:37,JanDing,dann ergibt sich x / d = B * (qh + rh / d) + s / d = B * qh + B * (rh / d) + s / d^
+2009-12-27 01:05:40,mastamind,"ah, das ist nicht r*h und q*h?"
+2009-12-27 01:05:40,JanDing,                                                              ^^^^^^^^^^^^^^^^^^^^^
+2009-12-27 01:05:41,mastamind,ok
+2009-12-27 01:05:56,JanDing,nee qh ist ein zweibuchstabgier variablenname^^
+2009-12-27 01:06:00,mastamind,ok
+2009-12-27 01:06:04,mastamind,SHyx0rmZ: wer ist LM?
+2009-12-27 01:06:11,SHyx0rmZ,Long Mode / 64 Bit
+2009-12-27 01:06:15,mastamind,nein
+2009-12-27 01:06:19,mastamind,mach ich nicht.
+2009-12-27 01:06:21,SHyx0rmZ,Ok ^^
+2009-12-27 01:06:31,JanDing,"den teil mit den häkchen ist jetzt interressant, weil du den wieder umformen kannst"
+2009-12-27 01:06:33,SHyx0rmZ,Weil die Argumente da nämlich nicht übern Stack gehn :D
+2009-12-27 01:06:53,JanDing,also B * (rh / d) + s / d = (B * rh + s) / d
+2009-12-27 01:07:00,mastamind,"SHyx0rmZ: ok. aber da gibt es wohl eine normale funktion, die das dividiert, oder?"
+2009-12-27 01:07:12,JanDing,"und das ist eine 64 Bit Zahl geteilt durch eine 32 Bit Zahl, wobei das ergebnis in eine 32 Bit Zahl passt"
+2009-12-27 01:07:13,mastamind,also das normal div wird wohl dann auch 64 bit dividieren können.
+2009-12-27 01:07:19,JanDing,jo das kann es
+2009-12-27 01:07:33,JanDing,64 Bit durch 32 Bit mit 32 Bit Ergebnisgröße geht
+2009-12-27 01:07:48,JanDing,und die funktion macht 64 Bit durch 32 Bit mit 64 Bit Ergebnisgröße
+2009-12-27 01:08:07,mastamind,ja. long mode interessiert mich derzeit mal nicht.
+2009-12-27 01:09:18,mastamind,und das ist schneller als die fpu?
+2009-12-27 01:09:28,JanDing,jo
+2009-12-27 01:09:37,mastamind,ist die fpu derart extrem langsam?
+2009-12-27 01:10:13,JanDing,"das nicht, aber du musst die fpu beladen, dann rechnen und dann auf das ergebnis warten"
+2009-12-27 01:10:23,JanDing,also die ist ja asynchron zur normalen cpu
+2009-12-27 01:10:30,mastamind,hmm ja
+2009-12-27 01:10:36,JanDing,ich glaube das macht die für so eine kurze operation relativ langsam
+2009-12-27 01:10:43,JanDing,und dann bleibt da die sache mit der genauigkeit^^
+2009-12-27 01:11:02,mastamind,hmm ja.
+2009-12-27 01:11:15,JanDing,"in einer printf funktion kommt es gerade auf die letzen 4 bits an, weil die genau das auszugebene zeichen enthalten. deswegen war da fpu keine alternative."
+2009-12-27 01:11:22,mastamind,das is so extrem lästig. wieso erzeugt der gcc nicht einfach die funktion?
+2009-12-27 01:11:32,JanDing,dafür ist der gcc sich zu schade
+2009-12-27 01:11:37,SHyx0rmZ,^^
+2009-12-27 01:11:39,JanDing,"der erwartetet, dass du gegen libgcc linkst"
+2009-12-27 01:11:44,mastamind,das geht leider nicht.
+2009-12-27 01:11:47,JanDing,deswegen heißt die bibliothek libgcc
+2009-12-27 01:12:02,mastamind,das is recht unklug gelöst...
+2009-12-27 01:12:34,JanDing,"das ist ziemlich schlau gelöst, weil die divisionsfunktion 100 bytes oder so groß ist. da ist es schlau diese einmal zu implementieren und dann einen funktionsaufruf zu machen"
+2009-12-27 01:13:02,JanDing,"die allgemeine divisionsfunktion ist größer als mein schnipsel, das ich eben erklärt habe"
+2009-12-27 01:13:14,mastamind,seh ich nicht so. man könnte die funktion so wie template funktionen behandeln.
+2009-12-27 01:13:47,SHyx0rmZ,"Fuck yeah, jetzt kommen die ganz geilen Bugs"
+2009-12-27 01:14:48,mastamind,JanDing: auf die divisionmethode bist du selbst draufgekommen?
+2009-12-27 01:14:54,mastamind,aber das zeug is ja noch direkt einfach im gegensatz zu exceptions.
+2009-12-27 01:15:20,mastamind,"da haben sich die gcc entwickler echt ein bein ausgerissen, um das so kompliziert wie möglich zu machen. :-)"
+2009-12-27 01:16:10,JanDing,"wenn du einen code abschnitt hast, der größer als 64 bytes oder so ist, dann passt der nicht mehr in eine cache line hinein. das heißt für *jede* division *muss* die cpu mindestens 128 bytes aus dem ram laden (2 cache lines). das macht mehrere dutzend taktzyklen, die da verschwendet werden. bei einer ausgelagerten funktion besteht die chance, dass der code im cache ist."
+2009-12-27 01:16:19,SHyx0rmZ,Ah
+2009-12-27 01:16:25,SHyx0rmZ,Hätte ich mir denken können
+2009-12-27 01:16:28,JanDing,mastamind: ich weiß nicht mehr genau. ich glaube ich habe mich da auch irgendwo inspirieren lassen
+2009-12-27 01:16:31,SHyx0rmZ,Speicher nicht gemappt -.-
+2009-12-27 01:17:05,mastamind,JanDing: gegen das auslagern sag ich nichts.
+2009-12-27 01:17:19,mastamind,"nur dagegen, dass es in einer externen lib ist und nicht vom compiler erzeugt wird."
+2009-12-27 01:17:21,mastamind,das ist sehr ungut.
+2009-12-27 01:17:31,JanDing,"der gcc erwartet halt nicht, dass er einen kernel linkt"
+2009-12-27 01:17:32,SHyx0rmZ,Jo
+2009-12-27 01:17:35,SHyx0rmZ,Perfekt gemacht
+2009-12-27 01:17:35,mastamind,dadurch hat man eine abhängigkeit.
+2009-12-27 01:17:46,SHyx0rmZ,"Ich hab genau BIS zur Adresse, die ich brauche gemappt"
+2009-12-27 01:17:48,SHyx0rmZ,lol
+2009-12-27 01:18:01,JanDing,"der gcc wurde gebaut, um hurd zu linken. hurd hat vielleicht keine divisionen nötig^^"
+2009-12-27 01:18:07,JanDing,(das ist natürlich gelogen)
+2009-12-27 01:18:18,mastamind,JanDing: :-)
+2009-12-27 01:19:49,JanDing,übrigens kannste libgcc überall reinlinken
+2009-12-27 01:20:59,JanDing,"hab ich schon gesagt, dass amortisierte laufzeiten fürn arsch sind?"
+2009-12-27 01:21:04,JanDing,mann mann mann
+2009-12-27 01:21:15,JanDing,entartet mir der drecks heap zu einer linked list
+2009-12-27 01:21:35,mastamind,willst du eine priority queue machen?
+2009-12-27 01:21:36,JanDing,"ich hab jetzt den algorithmus woanders mal abgetippt, und der erzeugt die selben ergebnisse"
+2009-12-27 01:21:37,JanDing,jo
+2009-12-27 01:22:16,mastamind,und die prioritäten sind in welchem bereich?
+2009-12-27 01:22:28,JanDing,unsigned long long
+2009-12-27 01:22:30,JanDing,^^
+2009-12-27 01:22:36,mastamind,das is aber viel.
+2009-12-27 01:22:40,mastamind,für was brauchst du das?
+2009-12-27 01:22:48,JanDing,also das sind die erwarteten deadlines von prozessen
+2009-12-27 01:23:01,JanDing,oder irgendsowas. halt in nanosekunden auflösung und son mist
+2009-12-27 01:23:23,mastamind,aha... was ist eine deadline für einen prozess?
+2009-12-27 01:23:24,JanDing,"vielleicht lasse ich das auch mit heap, weil ich die gar nicht so direkt berechnen kann"
+2009-12-27 01:24:07,JanDing,"in echtzeitsystemen müssen bestimmte aufgaben bis zu einem bestimmten zeitpunkt erledigt sein (""der airbag muss sich in den nächsten 10 mikrosekunden öffnen"")"
+2009-12-27 01:24:26,mastamind,ihr habt echtzeit in tyndur?
+2009-12-27 01:24:28,JanDing,das wäre dann die deadline
+2009-12-27 01:25:05,JanDing,"ne, ich popel an meinem eigenen mist rum. "
+2009-12-27 01:25:10,mastamind,ok
+2009-12-27 01:25:26,JanDing,"und ich hab da eine beschreibung eines schedulers gefunden, den ich mal implementieren will. das ist auch kein echtzeitscheduler, sondern fürn desktop/mobilgerät"
+2009-12-27 01:26:00,mastamind,naja. echtzeit ist sowieso unmöglich.
+2009-12-27 01:26:02,JanDing,"und ich dachte, dass ich da eine O(n) operation in O(log n) mit dem heap hinbekomme. aber vermutlich ist das nicht der fall"
+2009-12-27 01:26:23,mastamind,man kann nur halt das beste probieren.
+2009-12-27 01:26:23,SHyx0rmZ,o
+2009-12-27 01:26:25,SHyx0rmZ,m
+2009-12-27 01:26:27,SHyx0rmZ,g
+2009-12-27 01:26:38,JanDing,also echtzeit ist möglich: kein task läuft -> alle tasks laufen innerhalb ihrer deadlines
+2009-12-27 01:26:52,JanDing,qed^^
+2009-12-27 01:27:10,mastamind,das ist aber dann nur ein wunsch.
+2009-12-27 01:27:11,JanDing,echtzeit ist möglich solange genug cpu zeit zur verfügung steht
+2009-12-27 01:27:13,SHyx0rmZ,xD
+2009-12-27 01:27:23,mastamind,garantieren kann man nichts.
+2009-12-27 01:27:44,JanDing,"ja, aber auf einen echtzeitsystem läuft kein webbrowser"
+2009-12-27 01:27:54,SHyx0rmZ,jo ^^
+2009-12-27 01:27:55,JanDing,damit haste schon mal 99% der probleme rausgeworfen
+2009-12-27 01:27:58,SHyx0rmZ,noch nicht :D
+2009-12-27 01:28:26,mastamind,"sobald das interval zw den einzelnen deadlines, wie du sie nennst, kürzer ist, als das, was zu diesen deadlines berechnet werden soll, is aus mit echtzeit."
+2009-12-27 01:28:27,JanDing,naja echtzeitsysteme können ja miese reaktionszeiten haben. -> nicht für server- oder desktopeinsatz geeignet
+2009-12-27 01:29:02,JanDing,"jo, sobald das passiert, zerstört sich die mondsonde selbst. fertig.^^"
+2009-12-27 01:29:17,JanDing,dann fallen ein paar kg plutionium in deinen garten
+2009-12-27 01:29:18,mastamind,"ja, aber deshalb halt ich die idee von echtzeit für recht sinnlos."
+2009-12-27 01:30:10,mastamind,regnen die nicht eher über ganz europa? *g*
+2009-12-27 01:30:20,Programm_Noob,Moin
+2009-12-27 01:31:07,JanDing,"es ist ja ein begriff, der bestimmte garantien beinhaltet. dass du keine deadlocks hast, dass du keinen blöden mechanismus brauchst, der deadlocks aufheben soll (""programm X reagiert nicht mehr. problembericht senden?""), ... "
+2009-12-27 01:31:23,JanDing,"wenn du dein system ausreichend spezifizierst ist das möglich, und einsatzgebiete gibt es ja"
+2009-12-27 01:31:53,mastamind,"ich denk mal, dass das einzige problem die dauer der aufgaben ist."
+2009-12-27 01:31:57,JanDing,jo
+2009-12-27 01:31:57,mastamind,alles andere bekommt man irgendwie hin.
+2009-12-27 01:32:38,mastamind,JanDing: was genau machst du da?
+2009-12-27 01:32:58,JanDing,wo? ich mach gar nichts
+2009-12-27 01:33:10,JanDing,"es ist halb 2, ich bin im internet. das mach ich^^"
+2009-12-27 01:33:14,mastamind,dein echtzeitzeug.
+2009-12-27 01:33:16,mastamind,mein ich.
+2009-12-27 01:33:29,JanDing,ich mach kein echtzeit. ich hab darüber nur gelesen/gehört
+2009-12-27 01:33:35,mastamind,aso.
+2009-12-27 01:33:41,mastamind,was machst dann mit dem heap?
+2009-12-27 01:34:16,JanDing,vermutlich nach c:\code\cote\kote\kot\20091226.zip verschieben
+2009-12-27 01:34:27,JanDing,ich hab http://ck.kolivas.org/patches/bfs/sched-BFS.txt gelesen
+2009-12-27 01:34:51,JanDing,"und mir gedacht: okay ich hab nicht mal round robin, aber aus einer schnulliwulli beschreibung krieg ich ein laufendes system hin"
+2009-12-27 01:35:01,JanDing,hm round robin hab ich sogar ...
+2009-12-27 01:35:55,JanDing,und dann hab ich da im test O(n) gesehen und mir gedacht: das ist was für eine 23:50-aktion
+2009-12-27 01:35:57,JanDing,weil der tag is ja noch lang
+2009-12-27 01:36:22,JanDing,"da fällt dir was ein, und die pinguine fallen vor dir auf die knie, wenn du ihre systeme skalierst"
+2009-12-27 01:36:32,JanDing,aber die haben das mit dem skalieren falsch verstanden
+2009-12-27 01:36:39,JanDing,die dachten ich meine skalpieren
+2009-12-27 01:36:53,JanDing,und dann haben die die beine in die hände genommen
+2009-12-27 01:37:04,mastamind,"ich denk mal, dass es relativ sinnlos ist, einen scheduling algorithmus zu überlegen. im endeffekt ist der doch extrem von der cpu abhängigkeit."
+2009-12-27 01:37:05,JanDing,bzw. die flossen in die flügel
+2009-12-27 01:37:34,JanDing,oder die pfoten in die patscher
+2009-12-27 01:37:56,JanDing,oder die kufen in die krallen
+2009-12-27 01:38:20,JanDing,mastamind: joar ich wollte aber einfach überhaupt mal was kompliziertes haben
+2009-12-27 01:38:27,mastamind,zu was?
+2009-12-27 01:38:32,mastamind,kompliziert ist schlecht.
+2009-12-27 01:38:40,JanDing,relativ zu round robin
+2009-12-27 01:38:49,JanDing,current_thread = current_thread->next; -.-
+2009-12-27 01:39:19,JanDing,parse error: expected identifier before .
+2009-12-27 01:39:30,mastamind,hmm
+2009-12-27 01:39:55,JanDing,ach ne primary expression
+2009-12-27 01:40:08,mastamind,priorität in den scheduler bringen ist doch eh leicht.
+2009-12-27 01:40:30,mastamind,also prioritäten für verscheidene prozesse.
+2009-12-27 01:41:06,JanDing,jo bei dem BFS sind allerdings alle prozesse in die selbe prioritätsklasse eingeordet
+2009-12-27 01:41:36,JanDing,"aber so genau kann ich das zu diesem zeitpunkt auch nicht mehr widergeben, was da im dem text steht^^"
+2009-12-27 01:41:51,JanDing,also alle nicht-echtzeit- und nicht-idle-prozesse
+2009-12-27 01:43:18,JanDing,so ich idle auch mal
+2009-12-27 01:43:19,JanDing,gn8
+2009-12-27 01:44:02,mastamind,gute nacht
+2009-12-27 02:56:41,Programm_Noob,"FreakyPenguin: hat eientlich schon jemand einen ""Taschenrechner"" für Tyndur in arbeit?"
+2009-12-27 03:00:08,Programm_Noob,??
+2009-12-27 03:00:56,Programm_Noob,"Weiß irgenwer anders, ob scon ein Taschenrechner in arbeit ist?"
+2009-12-27 10:06:40,taljeth,Moin
+2009-12-27 12:21:49,JanDing,moin moin
+2009-12-27 12:22:15,taljeth,Moin JanDing
+2009-12-27 12:26:19,DickHuuhn,von Xan von Clic
+2009-12-27 12:26:31,taljeth,Clici McXan heißt der doch
+2009-12-27 12:26:44,XanClic,wtf ist hier los? *g*
+2009-12-27 12:26:45,DickHuuhn,ach mist
+2009-12-27 12:26:57,XanClic,"Grad eben schon Weihnachts-GRUB gehabt, obwohl gar nicht Weihnachten ist"
+2009-12-27 12:27:04,XanClic,"Ich glaub, ich träume noch"
+2009-12-27 12:27:13,XanClic,Mal eben einen Reality-Check machen
+2009-12-27 12:27:30,taljeth,"Hm, was für einen Algorithmus benutzt der GRUB da eigentlich?"
+2009-12-27 15:00:05,mastamind,"JanDing: ich hab das pdf gefunden, in dem die optimierung von 64 bit operationen mit einem 32 bit prozessor beschrieben wird."
+2009-12-27 15:00:24,mastamind,JanDing: eigenartigerweise scheint aber der abgebildete code falsch zu sein.
+2009-12-27 15:06:51,JanDing,jo stimmt
+2009-12-27 15:07:35,JanDing,"ich hab den bug schon mal gefunden, und auch gefixt. da fehlte ein befehl oder ein befehl war falsch oder so"
+2009-12-27 15:08:03,JanDing,aber der rechner mit dem korrekten code ist 200 km von mir entfernt^^
+2009-12-27 15:10:35,JanDing,warum gibts keine suchfunktion in den logs? -.- ich hab mich sicherlich darüber hier mal aufgeregt ...
+2009-12-27 15:10:58,mastamind,naja.
+2009-12-27 15:11:05,mastamind,"ich denk, dass da mehr als ein bug drin ist."
+2009-12-27 15:11:15,mastamind,oder wart. nein.
+2009-12-27 15:11:17,mastamind,zumindest einer.
+2009-12-27 15:11:35,JanDing,also irgendwo am ende von big_divisor bei der unsigned division und modulo
+2009-12-27 15:11:44,mastamind,aso?
+2009-12-27 15:11:48,mastamind,nicht schon weit davor?
+2009-12-27 15:11:52,JanDing,ne
+2009-12-27 15:12:44,mastamind,"es wird zuerst geprüft, ob der divisor nur 32 bit hat. wenn ja, dann prüft er, ob die 32 high bits des dividenden kleiner als der divisor sind. wenn ja, dividiert er nur die beiden 32 low bits."
+2009-12-27 15:12:49,mastamind,das is doch falsch.
+2009-12-27 15:14:23,JanDing,also es hat zumindest die richtigen ergebnisse geliefert in ein paar millionen testfällen^^
+2009-12-27 15:14:48,mastamind,ok
+2009-12-27 15:14:55,mastamind,ich seh scho meinen fehler.
+2009-12-27 15:15:04,mastamind,das div dividiert edx:eax.
+2009-12-27 15:15:07,mastamind,und nicht nur eax.
+2009-12-27 15:15:12,mastamind,deshalb passt das mit kleiner.
+2009-12-27 15:18:15,mastamind,jetzt muss ich das alles noch irgendwie in c hinbringen. :-((
+2009-12-27 15:32:39,JanDing,wirste nicht schaffen. in c haste die division 64 bit durch 32 bit nicht
+2009-12-27 15:35:17,Programm_Noob,Moin
+2009-12-27 15:35:40,taljeth,Moin
+2009-12-27 15:38:51,cjuner,"JanDing, was kann C das echt nicht? also ein uint64_t wird nicht korrekt durch uint32_t geteilt?? nicht spezifiziert oder was? oder bin ich zu spät gejoint und hab was wichtiges verpasst?"
+2009-12-27 15:39:06,mastamind,JanDing: der linux kernel hat sowas drin.
+2009-12-27 15:39:39,mastamind,"cjuner: jein. es geht darum, dass 64 bit div und mod nicht vom gcc direkt eingebaut werden in den code."
+2009-12-27 15:40:10,mastamind,"cjuner: es wird eine externe funktion aus der libgcc aufgerufen. die muss man entweder verwenden, oder eien eigene bauen."
+2009-12-27 15:40:16,cjuner,okay
+2009-12-27 15:40:28,cjuner,wusste ich noch gar nicht
+2009-12-27 15:40:59,cjuner,"auf x86_64 geht's aber auch ohne externe funktion, oder? was ist denn der grund dafür?"
+2009-12-27 15:41:14,mastamind,du hast nur 32 bit register für 32 bit x86.
+2009-12-27 15:42:20,mastamind,"es gibt eine div funktion zwar auch dort, die 64 bit durch 32 bit dividiert. zum einen aber nicht 64 durch 64 bit. und das ergebnis der 63 durch 32 muss in 32 bit platz haben. das limitiert dann schon stark die verwendung von div für 64 bit."
+2009-12-27 18:00:58,Programm_Noob,Moin
+2009-12-27 18:01:04,taljeth,Moin Programm_Noob
+2009-12-27 18:01:12,SHyx0rmZ,Moin
+2009-12-27 18:01:52,SHyx0rmZ,"Sind die Speicherbereiche, die das BIOS zurückgibt, immer ein Vielfaches von 4096?"
+2009-12-27 18:02:50,taljeth,"Gute Frage, nächste ;-)"
+2009-12-27 18:03:02,Homix,ne
+2009-12-27 18:03:08,Homix,ich glaube nicht
+2009-12-27 18:03:16,SHyx0rmZ,"Hm, ich hab auch ne gute Antwort: Um die paar Bytes die beim runden wegfallen brauch ich mich auch nicht scheren"
+2009-12-27 18:03:20,taljeth,"Alles andere wär ja irgendwie ziemlich doof, aber am BIOS ist vieles doof"
+2009-12-27 18:03:29,Homix,"irgendwas vor 640 KB war bei mir irgendwann mal auch belegt, aber keine ganze page sondern weniger"
+2009-12-27 18:03:47,taljeth,Auf echter Hardware?
+2009-12-27 18:04:04,XanClic,IVT?
+2009-12-27 18:04:17,Homix,ne direkt vor 640 KB Adresse
+2009-12-27 18:04:31,Homix,"wenn ein emulator bios das machen kann, könnte es jederzeit auch ein echtes bios machen"
+2009-12-27 18:04:53,taljeth,XanClic: Die wird doch nicht als reserviert markiert?
+2009-12-27 18:05:02,XanClic,Was weiß denn ich? *g*
+2009-12-27 18:05:14,XanClic,"Sonst fällt mir da nichts ein, was dort reserviert sein könnte"
+2009-12-27 18:05:35,Homix,irgendwas mit ACPI vlt?
+2009-12-27 18:06:10,taljeth,"Homix: Ich habe nur gefragt, weil es bei einem Emulator ja jeder leicht reproduzieren könnte ;-)"
+2009-12-27 18:06:41,Homix,"ehrlich gesagt weiß ich das nicht mehr genau, ich hab sowas nur dunkel in erinnerung"
+2009-12-27 18:13:15,SHyx0rmZ,Hm
+2009-12-27 18:13:54,SHyx0rmZ,"Man kann doch auch auf Pagegrenzen schreiben, wenn die physischen Blöcke auseinander liegen, ist doch einfacher langsamer dann, oder?"
+2009-12-27 18:16:39,XanClic,"Du meinst z. B. ein DWord schreiben, davon die eine Hälfte in eine Page und die andere in die nächste?"
+2009-12-27 18:16:42,SHyx0rmZ,jo
+2009-12-27 18:16:52,XanClic,"An sich sollte das kein Problem sein, nur wird das eh vom Prozessor aufgeteilt"
+2009-12-27 18:16:59,SHyx0rmZ,gut
+2009-12-27 18:17:18,XanClic,"Der macht also immer zwei Zugriffe, egal, ob die Words physisch kontinuierlich oder nicht sind, afaik"
+2009-12-27 18:17:41,SHyx0rmZ,Ok
+2009-12-27 18:18:04,SHyx0rmZ,Ich seh hier grad das MM Beispiel von James Molloy
+2009-12-27 18:18:16,SHyx0rmZ,"Und denk mir die ganze Zeit, dass das viel zu viel Code ist :D"
+2009-12-27 18:20:05,taljeth,"Wieso schaust du denn das Zeug von JamesM an? Ist es nicht allgemein bekannt, dass das kaputt ist? ;-)"
+2009-12-27 18:22:40,SHyx0rmZ,Wenigstens nicht so kaputt wie meins
+2009-12-27 18:22:52,SHyx0rmZ,Immerhin bin ich die letzten 3 Male am MM gescheitert
+2009-12-27 18:22:53,Programm_Noob,Fehlt eigentlich im Wiki immernoch der Screenshot von V2OS?
+2009-12-27 18:24:22,taljeth,SHyx0rmZ: Wie das?
+2009-12-27 18:24:49,SHyx0rmZ,"Weil ich immer gleichzeitig allocen und freen muss, und das ist kompliziert"
+2009-12-27 18:25:28,taljeth,Hä?
+2009-12-27 18:25:29,XanClic,Programm_Noob: Seit wann ist das im Wiki?
+2009-12-27 18:25:57,SHyx0rmZ,Ich push die freien Blöcke auf nen Stack
+2009-12-27 18:26:12,SHyx0rmZ,"Wenn der Stack jetzt zu groß wird, muss ich die Page dahinter mappen"
+2009-12-27 18:26:23,SHyx0rmZ,Dafür brauch ich dann 0-2 neue Speicherblöcke
+2009-12-27 18:26:29,SHyx0rmZ,0-3
+2009-12-27 18:26:31,XanClic,"Hm, Bitmap ftw *g*"
+2009-12-27 18:26:42,SHyx0rmZ,Ich hab keine Lust auf 512 TiB Bitmap :D
+2009-12-27 18:27:02,XanClic,"Man kann eine Bitmap auch an den vorhandenen Speicher anpassen, oder?"
+2009-12-27 18:27:08,taljeth,Du hast einen Rechner mit 512T * 4k RAM? ;-)
+2009-12-27 18:27:13,FreakyPenguin,Dann machst du sie halt nur so gross wie nötig? ;-)
+2009-12-27 18:27:15,SHyx0rmZ,"taljeth, ja :D"
+2009-12-27 18:27:27,taljeth,"Was wär das überhaupt? 2 EB oder sowas, oder?"
+2009-12-27 18:27:29,SHyx0rmZ,Bitmap ist aber langsam xD
+2009-12-27 18:27:41,XanClic,Hm
+2009-12-27 18:27:44,XanClic,Ich finde meine schnell ;-)
+2009-12-27 18:27:49,taljeth,*g*
+2009-12-27 18:27:55,XanClic,Seit ich mein neues Mega-Bitmap-Beschleunigungssystem eingebaut hab *g*
+2009-12-27 18:27:59,Programm_Noob,"XanClic: auf der Todo liste fürs Wiki steht ""Screenshots von V2_OS für Ausgabe 2? siehe  Diskussionsseite zu Ausgabe 2"""
+2009-12-27 18:28:01,SHyx0rmZ,^^
+2009-12-27 18:28:17,XanClic,"Programm_Noob: Na, Magazin ist ja jetzt nicht mehr sooo aktuell ;-)"
+2009-12-27 18:28:32,XanClic,"Jo, mit Variable, damit ich nicht immer die ganze Bitmap durchsuchen muss"
+2009-12-27 18:28:38,Programm_Noob,Soll das denn da trotzdem noch rein?
+2009-12-27 18:28:41,XanClic,"Sondern nur ab dort, wo was frei sein könnte"
+2009-12-27 18:28:56,Programm_Noob,ich könnte nämlich ein paar machen
+2009-12-27 18:29:20,Programm_Noob,hab mämlich ein Floppy Image gefunden
+2009-12-27 18:29:24,XanClic,"Programm_Noob: Hm, ich weiß nicht, inwiefern das Magazin überhaupt noch verändert wird..."
+2009-12-27 18:29:28,SHyx0rmZ,"XanClic, und was ist, wenn du was altes freest? Dann ist der Platz doch erstma futsch, oder?"
+2009-12-27 18:29:31,XanClic,Aber wenns auf der ToDo-Liste steht
+2009-12-27 18:29:42,XanClic,SHyx0rmZ: Welcher Platz?
+2009-12-27 18:29:48,SHyx0rmZ,Den du freest :D
+2009-12-27 18:29:54,XanClic,"Öhm, nö"
+2009-12-27 18:29:59,XanClic,Der wird halt als frei gekennzeichnet
+2009-12-27 18:30:19,XanClic,Und die bewusste Variable auf den Anfang des gefreeten Speichers runtergesetzt
+2009-12-27 18:30:32,SHyx0rmZ,Hm
+2009-12-27 18:30:46,SHyx0rmZ,Ich hab grad folgendes Problem:
+2009-12-27 18:30:53,SHyx0rmZ,Wenn ich das mit dem Stack mache
+2009-12-27 18:31:02,Programm_Noob,Ich mach ma welche.
+2009-12-27 18:31:16,SHyx0rmZ,Muss ich ja immer noch den Blocki unterteilen
+2009-12-27 18:31:20,XanClic,"Ah, wenn ich was _altes_ freee, ich dachte, wenn ich ""alles"" freee *g*"
+2009-12-27 18:31:40,SHyx0rmZ,Also muss ich dazu wieder Verwaltungsgedöhns haben
+2009-12-27 18:31:45,SHyx0rmZ,Das muss aber dynamisch sein
+2009-12-27 18:31:49,SHyx0rmZ,Also brauch ich alloc
+2009-12-27 18:31:50,SHyx0rmZ,-.-
+2009-12-27 18:32:11,taljeth,Während dem free meinst du?
+2009-12-27 18:32:20,SHyx0rmZ,"Nein, grad mein ich während dem alloc"
+2009-12-27 18:32:34,taljeth,Beim alloc wird der Stack doch aber nicht größer?
+2009-12-27 18:32:48,SHyx0rmZ,"Jo, aber alloc muss den Block ja aufteilen"
+2009-12-27 18:33:04,taljeth,Block?
+2009-12-27 18:33:06,SHyx0rmZ,"Und das muss sich ja auch irgendwo merken, wie das aufgeteilt ist"
+2009-12-27 18:33:10,taljeth,Arbeitest du nicht einfach auf Pageebene?
+2009-12-27 18:33:16,SHyx0rmZ,"Ja, Page dann"
+2009-12-27 18:33:22,taljeth,Wieso willst du die aufteilen?
+2009-12-27 18:33:28,SHyx0rmZ,Auf jeden Fall liegen auf dem Stack nur 4 KiB Blöcke
+2009-12-27 18:33:35,taljeth,"Jo, passt doch"
+2009-12-27 18:33:37,SHyx0rmZ,Weil ein int keine 4 KiB braucht
+2009-12-27 18:33:47,taljeth,malloc benutzt auch nicht den PMM...
+2009-12-27 18:33:56,taljeth,Also nicht direkt jedenfalls
+2009-12-27 18:34:14,taljeth,"Der PMM arbeitet nur mit ganzen Pages, alles andere wäre Blödsinn"
+2009-12-27 18:34:22,XanClic,"Och, bei MyXomycota schon *g*"
+2009-12-27 18:34:27,SHyx0rmZ,xD
+2009-12-27 18:34:29,SHyx0rmZ,Hm
+2009-12-27 18:34:39,XanClic,Da hat das free() wenigstens auch was gemacht
+2009-12-27 18:34:39,SHyx0rmZ,Ich versuch noch ma was gescheites hierhin zu zeichnen -.-
+2009-12-27 18:34:44,taljeth,"XanClic: Ja, gut, das ist dann aber ein kaputtes malloc, das nur Pages zurückliefert, und nicht ein kaputter PMM, oder? ;-)"
+2009-12-27 18:34:54,XanClic,"Ersteres, jo ;-)"
+2009-12-27 18:36:29,SHyx0rmZ,Hrm
+2009-12-27 18:36:31,SHyx0rmZ,Idee
+2009-12-27 18:36:33,SHyx0rmZ,vllt
+2009-12-27 18:36:35,SHyx0rmZ,:D
+2009-12-27 18:39:29,Programm_Noob,XanClic: wie stellt man Bilder ins Wiki?
+2009-12-27 18:39:46,XanClic,http://lowlevel.brainsware.org/wiki/index.php/Spezial:Hochladen
+2009-12-27 18:40:15,SHyx0rmZ,Okay
+2009-12-27 18:40:17,SHyx0rmZ,Ich hab was
+2009-12-27 18:40:19,SHyx0rmZ,glaub ich
+2009-12-27 18:40:33,SHyx0rmZ,"Da ist das valloc dann zwar arschlangsam, aber das soll mir egal sein"
+2009-12-27 18:40:46,taljeth,Und zwar?
+2009-12-27 18:41:17,SHyx0rmZ,mom
+2009-12-27 18:41:35,taljeth,Und vor allem - warum machst du es nicht einfach richtig? ;-)
+2009-12-27 18:41:44,SHyx0rmZ,weil ich nicht weiß wie D:
+2009-12-27 18:42:50,taljeth,So wie wir es sagen? ;-)
+2009-12-27 18:44:15,SHyx0rmZ,et voila http://files.asxsoft.de/alloc.jpeg
+2009-12-27 18:44:45,XanClic,*lol*
+2009-12-27 18:46:26,taljeth,"SHyx0rmZ: Sollten wir verstehen, was du uns damit sagen möchtest? *g*"
+2009-12-27 18:46:38,SHyx0rmZ,Teilweise :D
+2009-12-27 18:46:39,SHyx0rmZ,Also
+2009-12-27 18:46:53,SHyx0rmZ,Der VMM holt sich nen Block vom PMM
+2009-12-27 18:46:54,taljeth,Außer dass du eine Sauklaue hast natürlich *g*
+2009-12-27 18:47:05,SHyx0rmZ,Und mappt den an die nächste Stelle
+2009-12-27 18:47:31,SHyx0rmZ,"Dann merkt der sich, welchen Teil vom Block der vergibt und gibt die Addresse davon zurück"
+2009-12-27 18:47:53,SHyx0rmZ,"Bei Bedarf holt der ""Manager"" sich selbst wieder nen Block"
+2009-12-27 18:48:13,SHyx0rmZ,"Und er kann sich so auch merken, wenn zwei oder mehr Blöcke gemerged werden"
+2009-12-27 18:48:19,taljeth,Bist du jetzt grad schon wieder beim malloc?
+2009-12-27 18:49:00,SHyx0rmZ,Jo
+2009-12-27 18:49:19,SHyx0rmZ,"Ich versuch das jetzt wenigstens mal so, weil sich das wenigstens einigermaßen sinnvoll anhört"
+2009-12-27 18:49:23,SHyx0rmZ,Find ich zumidnest
+2009-12-27 18:49:26,taljeth,Du willst VMM und malloc kombinieren?
+2009-12-27 18:49:29,taljeth,Das klingt nicht sehr sinnvoll
+2009-12-27 18:51:09,SHyx0rmZ,Ich werd schon merken wenns nciht klappt
+2009-12-27 18:51:16,SHyx0rmZ,Aus Fehlern lernt man schließlich
+2009-12-27 18:51:18,SHyx0rmZ,Hoffentlich
+2009-12-27 18:51:32,SHyx0rmZ,Der tolle Bug gestern war auch geil
+2009-12-27 18:51:39,SHyx0rmZ,Hier gefixt und da gefixt
+2009-12-27 18:51:59,SHyx0rmZ,"Aber übersehen, dass ich beim Kopieren der Multibootstrukturen einen Cast auf int vergessen hab"
+2009-12-27 18:55:41,taljeth,"Erwartest du dann eigentlich, dass Anwendungen für jedes malloc einen Syscall machen?"
+2009-12-27 18:56:55,SHyx0rmZ,Nein
+2009-12-27 18:57:35,Homix,ist bei mir derzeit aber auch noch so
+2009-12-27 18:58:19,XanClic,War bei paloxena1 in Ermangelung einer guten libc auch so ;-)
+2009-12-27 19:00:08,Homix,"hm eigentlich ist das nur im Kernel so, wo immer gleich ne ganze page alloziert wird"
+2009-12-27 19:00:20,Homix,im userspace macht das die FreePascal RTL denke ich
+2009-12-27 19:45:53,Guest160427,"Moinmoin, lang ists her, ich weiß"
+2009-12-27 19:47:19,Programm_Noob,"Ich würde gerne wissen, wie man vom PMode in den real mode zurückspringt, um dann den PC via APM auszuschalten"
+2009-12-27 19:55:38,DickHuuhn, http://meta.wikimedia.org/wiki/File:Wikty_full.png << Das ist doch wohl nicht wahr xD
+2009-12-27 19:55:49,DickHuuhn,Das ist gerade in der Abstimmung für das neue Logo
+2009-12-27 19:59:39,Programm_Noob,"DickHuuhn: was regst du dich so auf, solange die nicht über das Lowlevel Logo abstimmen, und das das neue lowlevel logo werden soll ist doch alles in Butter."
+2009-12-27 19:59:54,DickHuuhn,"menno, das wollt eich gerade vorschlagen"
+2009-12-27 20:04:03,Programm_Noob,"was wolltest du vorschlagen, etwa das das Logo von Lowlevel gegen diesen mist getauscht wird oder was? "
+2009-12-27 20:05:39,Programm_Noob,wie springt man in den realmode????
+2009-12-27 20:08:25,JanDing,"alle segmentregister mit 16 bit selektoren (limit 64 kb laden), PE flag löschen"
+2009-12-27 20:08:32,JanDing,"wenn du paging hast, paging deaktivieren"
+2009-12-27 20:08:43,JanDing,"und vorher noch eine idt mit basis 0, limit 0x3ff laden"
+2009-12-27 20:09:07,DickHuuhn,"Programm_Noob, das ist kein Mist, das würde so richtig schön zu lowlevel passen"
+2009-12-27 20:11:51,SHyx0rmZ,"Ich verzieh mich mal lieber für heute, bevor DickHuuhn noch mehr Memes rauskramt"
+2009-12-27 20:11:53,SHyx0rmZ,o/
+2009-12-27 20:29:45,Programm_Noob,"__asm__(""cpuid"" : ""=a""(EAX) : ""a""(0x00000000);"
+2009-12-27 20:30:00,Programm_Noob,dazu bekomme ich folgendem fehler:
+2009-12-27 20:31:00,Programm_Noob, error: expected ')' before ':' token
+2009-12-27 20:44:44,JanDing,na wer sieht den fehler? ^^
+2009-12-27 20:45:52,JanDing,"da muss natürlich __asm__(""cpuid"" : ""=a""(EAX) : ""a""(0x00000000) : __please__); stehen"
+2009-12-27 21:02:14,DickHuuhn,http://blog.fefe.de/?ts=b5c96b3e << THIS! IS! EPIC!
+2009-12-27 21:02:17,DickHuuhn,Das mit Island find ich tool
+2009-12-27 22:43:41,XanClic,Och ne
+2009-12-27 22:43:45,XanClic,Nicht schon wieder ein Angriff
+2009-12-27 22:44:02,XanClic,Hats nur mit root probiert
+2009-12-27 22:44:50,XanClic,AllowUsers und PermitRootLogin no ftw
+2009-12-27 22:45:20,XanClic,"Hm, ECHAN"
+2009-12-27 23:04:16,JanDing,jetzt coreboot vortrag auf 26c3
+2009-12-27 23:04:27,JanDing,ich guck mir den mal an. vielleicht ist das ja nicht uninteressant
+2009-12-27 23:12:32,Tobiking,Die haben ja richtig tolle Zeiten für Vorträge
+2009-12-27 23:13:46,JanDing,hm?
+2009-12-27 23:15:08,Tobiking,Naja 23 Uhr ist nicht gerade die normale Zeit an denen Vorträge gehalten werden
+2009-12-27 23:15:23,JanDing,tjo sind halt den ganzen tag vorträge^^
+2009-12-27 23:15:29,JanDing,http://events.ccc.de/congress/2009/Fahrplan/day_2009-12-27.en.html

@@ -1,0 +1,695 @@
+date/time,nick,message
+2010-01-14 00:21:33,Programm_Noob,gn8
+2010-01-14 07:02:12,DesL,min
+2010-01-14 09:27:09,FreakyPenguin,Moin
+2010-01-14 09:31:29,kwolf,Moin FreakyPenguin
+2010-01-14 09:43:48,bluecode,m0in
+2010-01-14 09:44:24,FreakyPenguin,Moin bluecode
+2010-01-14 09:44:43,kwolf,Moin bluecode
+2010-01-14 09:53:06,bluecode,"ah, die arbeitende Bevölkerung"
+2010-01-14 10:49:07,JanDing,moin moin
+2010-01-14 10:49:16,FreakyPenguin,Moin JanDing
+2010-01-14 10:49:23,FreakyPenguin,Du bist ja schon wieder so früh dran ;-)
+2010-01-14 10:49:57,JanDing,"ja der tischler war da, und hat die dichtgummis an der haustür ausgetauscht"
+2010-01-14 10:50:06,JanDing,der muss mindestens 10 minuten eher als ich aufgestanden sein
+2010-01-14 10:50:11,JanDing,verrückt was die für geld machen^^
+2010-01-14 11:08:41,bluecode,ROFL
+2010-01-14 11:38:19,Homix,hm ich hab mal wieder doofe probleme in meinem kernel
+2010-01-14 11:39:04,Homix,und zwar übergebe ich immer Pointer auf Datenstrukturen wie z.B. TerminateThread(Thread: PThreadObject)
+2010-01-14 11:39:31,Homix,"das problem ist, so kann ich nie wirklich rausfinden, ob ich eine Datenstruktur nach dem beenden schon freigeben kann oder ob die noch benutzt wird"
+2010-01-14 11:40:37,Homix,"und alles voll-locken ist auch doof, weil oft nur sehr kleine aufrufe erfolgen und u.a. der scheduler im IRQ0 darauf zugreift (und da sind locks nicht so praktisch)"
+2010-01-14 11:41:25,bluecode,ich glaub ich versteh nicht ganz das genaue Problem
+2010-01-14 11:41:58,Homix,"dass, wenn der thread beendet wird, ich nicht weiß ob ich die datenstruktur jetzt freigeben kann"
+2010-01-14 11:42:09,Homix,weil vlt irgendwo noch der Pointer darauf verwendet wird
+2010-01-14 11:48:57,bluecode,"da darf kein Pointer mehr vorhanden sein, ist meine Meinung, TerminateThread hat dafür zu sorgen"
+2010-01-14 11:49:16,bluecode,"und der scheduler muss locken, dass sollte klar sein"
+2010-01-14 11:50:22,Homix,ich weiß nicht ob locken während einem IRQ so gut ist
+2010-01-14 11:50:31,bluecode,warum nicht?
+2010-01-14 11:50:34,Homix,"aber mit einem kurzem cli, sti wäre es machbar ;)"
+2010-01-14 11:51:04,bluecode,"sobald ein lock genommen wird, ist cli pflicht"
+2010-01-14 11:51:19,Homix,hm dann funktionieren meine locks anders
+2010-01-14 11:51:28,bluecode,"nein, es sind die falschen locks"
+2010-01-14 11:51:30,bluecode,xD
+2010-01-14 11:51:37,Homix,hm was sind sie dann? :
+2010-01-14 11:51:57,bluecode,zumindest wenn man irqs innerhalb des kernels erlauben will
+2010-01-14 11:52:22,Homix,"mit EnterSection(@LockData); betrete ich so eine Region, wenn nochmal jemand EnterSection aufruft, wartet der in der EnterSection-Funktion so lange, bis der vorherige ein LeaveSection aufruft"
+2010-01-14 11:52:36,bluecode,das ist klar
+2010-01-14 11:52:46,bluecode,aber du musst halt auch interrupts deaktivieren
+2010-01-14 11:53:04,Homix,ne das nicht
+2010-01-14 11:53:10,bluecode,"damit du garnicht in die situation kommst, dass ein irq-handler da ist, der den lock auch nehmen kann"
+2010-01-14 11:53:20,bluecode,dann hast du ja sofort einen deadlock
+2010-01-14 11:53:52,Homix,hm bei den direkten IRQs ist sowas ja auch nicht der fall (bzw ist verboten ;) )
+2010-01-14 11:54:11,bluecode,das ist doch eher unvermeidbar?
+2010-01-14 11:54:18,Homix,ne
+2010-01-14 11:54:24,Homix,ich hab keinen einzigen Lock
+2010-01-14 11:54:37,bluecode,was macht denn dein interrupthandler?
+2010-01-14 11:54:42,Homix,in einem direkten IRQ Handler
+2010-01-14 11:55:14,bluecode,"ok, was machst so ein direkter IRQ-Handler?"
+2010-01-14 11:55:19,Homix,"aber ich hab auch noch indirekte IRQ-Handler, die laufen dann aber in einem extra Thread um z.B. größere arbeiten zu machen"
+2010-01-14 11:56:16,Homix,"wenn ein treiber ein irq mit einem direkten irq handler verknüpft, dann werden dort meistens so einfache variablen wie IRQ6_Status++; aufgerufen"
+2010-01-14 11:56:52,Homix,oder bei einem netzwerkkartentreiber z.B. IsRecvDataAvail = true;
+2010-01-14 11:57:23,Homix,und es wird der indirekte irq handler als aktiv gekennzeichnet und dann wird die eigentliche arbeit in einem thread und nicht mehr direkt im irq handler gemacht
+2010-01-14 11:58:12,bluecode,"dazu musst du wahrscheinlich den thead unblocken und damit auf dessen Datenstruktur und auch die vom Scheduler zugreifen, oder?"
+2010-01-14 11:58:16,bluecode,da wird es dann wohl ohne locks falsch
+2010-01-14 11:58:58,Homix,auf den scheduler muss er nicht zugreifen
+2010-01-14 11:59:21,bluecode,"hm, ich glaub ich pastebinne am besten wie ich mir das vorstellen würde"
+2010-01-14 11:59:35,Homix,"und auf die datenstruktur zuzugreifen, da kann man die IRQs manuell dann kurz abschalten, bzw die werden eh erst nach einem EOI wieder aktiv"
+2010-01-14 12:01:09,bluecode,"warum aktivierst du dann überhaupt die Interrupts, wenn es doch keine wegen fehlendem EOI geben kann?"
+2010-01-14 12:01:14,bluecode,ist doch unsinn ^^
+2010-01-14 12:01:50,bluecode,"ich habe ja oben bereits gesagt, dass locks nur cli/sti machen müssen, wenn es interrupts innerhalb des kernels geben kann"
+2010-01-14 12:02:07,bluecode,aber wir weichen sowieso vom thema ab
+2010-01-14 12:02:16,Homix,hehe ;) es gibt ja interrupts während dem kernel ;)
+2010-01-14 12:02:29,bluecode,es ging um TerminateThread(Thread*) und meine Frage ist wer Pointer auf diesen Thread haben sollte
+2010-01-14 12:02:41,bluecode,Homix: aber erst wenn alles wesentliche gelaufen ist
+2010-01-14 12:02:55,Homix,"wenn ein Programm auf kernelfunktionen zugreift per z.B. int 0x80, dann werden da nicht die IRQs blockiert"
+2010-01-14 12:03:01,bluecode,Homix: auf die Idee den Fall mit Sätzen abdecken zu müssen bin ich nicht wirklich gekommen ;-)
+2010-01-14 12:03:43,bluecode,ah
+2010-01-14 12:04:10,bluecode,könnte trotzdem falsch werden wenn der IRQ-Handler auf interessante Datenstrukturen zugreift
+2010-01-14 12:04:26,bluecode,was der indirekte Handler wohl muss
+2010-01-14 12:04:53,bluecode,aber eigentlich würde ich gerne eine Antwort auf:
+2010-01-14 12:04:54,bluecode,[12:02] <bluecode> es ging um TerminateThread(Thread*) und meine Frage ist wer Pointer auf diesen Thread haben sollte
+2010-01-14 12:05:01,Homix,jap in diesem fall muss ich wohl cli/sti locks einbauen ;)
+2010-01-14 12:05:19,Homix,ahja die frage ...
+2010-01-14 12:06:37,Homix,"wie gesagt, wenn GetThreadInfo und TerminateThread ungünstig gleichzeitig aufgerufen werden, dann krachts ;)"
+2010-01-14 12:07:26,bluecode,"also in meiner Welt würde TerminteThread den Prozess locken, dann den Thread aus der Liste der Threads rausnehmen, den Prozess unlocken und dann den Thread kaputtmachen"
+2010-01-14 12:07:44,bluecode,"getThreadInfo würde den Prozess locken, in der Liste der Threads suchen, den Prozess unlocken"
+2010-01-14 12:08:26,bluecode,"letzteres erst unlocken, wenn ich die infos ausgelesen habe"
+2010-01-14 12:08:29,Homix,"in meiner kernel-welt kann eine andere cpu aber per z.B. GetThreadInfo die Thread-Id zu einem PThreadObject umwandeln, dann kommt IRQ0+Scheduler und der andere Thread macht ein TerminateThread ;)"
+2010-01-14 12:09:27,bluecode,"achso, GetthreadInfo gibt keine Kopie von den Infos zurück, sondern wirklich das Objekt?"
+2010-01-14 12:09:44,bluecode,"dann muss man sich entweder überlegen das zu ändern, oder den Thread locken"
+2010-01-14 12:09:53,Homix,"ne aber um an die infos zu kommen, braucht er die PThreadObject, weil da die infos drin stehen"
+2010-01-14 12:09:54,bluecode,wobei ich das irgendwie doof finde
+2010-01-14 12:10:09,bluecode,"Homix: klar, aber das kann er noch vor dem unlock bei Prozess machen"
+2010-01-14 12:10:12,bluecode,damit wäre es korrekt
+2010-01-14 12:11:09,Homix,"wenn ich das mit locks+cli machen würde, dann gäbe es ab terminatethread keinen taskswitch mehr"
+2010-01-14 12:11:26,bluecode,?
+2010-01-14 12:12:39,bluecode,du musst natürich immer beim unlock ein sti machen (wenn das lock zu dem Lock auch wirklich die Interrupts verboten hat und sie nicht schon vorher durch einen Lock verboten wurden)
+2010-01-14 12:13:35,Homix,hm verzwickte probleme sind schwer zu beschreiben ;)
+2010-01-14 12:13:43,Homix,ich glaub ich muss trotzdem einiges nochmal überarbeiten ;)
+2010-01-14 12:13:54,bluecode,deswegen hab ich das seinlassen
+2010-01-14 12:13:57,bluecode,xD
+2010-01-14 12:14:10,Homix,wegen den locks? ;)
+2010-01-14 12:14:17,Homix,oder wegen der generellen arbeit? :D
+2010-01-14 12:14:36,bluecode,"ich habe SMP irgendwann erstmal seinlassen, man muss dafür ziemlich viel neu machen"
+2010-01-14 12:14:56,bluecode,"ich meinte jetzt nicht, dass ich lightOS deswegen generell gedropt hätte"
+2010-01-14 12:15:11,Homix,"ich hab beim derzeitgen design eigentlich drauf geachtet, aber v.a. prozess/thread verwaltung sind noch nicht so das wahre"
+2010-01-14 12:15:41,bluecode,"eben, du hast versucht dafür zu designen, aber ich hatte ja bei lightOS keinen rewrite des Kernels"
+2010-01-14 12:16:31,bluecode,"und das später versuchen einzubauen, war mir irgendwie zuviel gedanklicher aufwand ^^"
+2010-01-14 12:18:17,Homix,"hm ja, aber spaß machts trotzdem ;)"
+2010-01-14 12:20:12,kwolf,Für bestimmte Werte von Spaß...
+2010-01-14 12:27:53,Homix,"wobei ich langsam dann von kernelarbeiten her fertig sein dürfte, bzw. nichts großes mehr :D"
+2010-01-14 12:28:32,Homix,das nächste designproblem ist derzeit bei der gui ...
+2010-01-14 12:29:02,Homix,"ob ich das in kernel oder userspace tun soll, und wenn, wie viel wohin, ect ;)"
+2010-01-14 12:29:53,Homix,und ich tendiere derzeit sogar zu userspace ;)
+2010-01-14 12:33:59,Homix,hm
+2010-01-14 12:34:14,bluecode,kwolf: macht eigentlich qemu irgendwas parallel? ^^
+2010-01-14 12:34:20,Homix,eine kurze frage: könnte man so einen code außer durch parallelisierung noch irgendwie optimieren: http://pastebin.com/d21004e5b
+2010-01-14 12:34:45,Homix,sowas wie Multiplikationen per SSE macht GCC doch sicher irgendwie automatisch oder?
+2010-01-14 12:35:02,bluecode,autovectorization ist da
+2010-01-14 12:35:03,bluecode,s
+2010-01-14 12:35:09,bluecode,wimre
+2010-01-14 12:35:48,Homix,"also müsste man das dem gcc extra sagen, dass er das aktivieren soll"
+2010-01-14 12:36:53,bluecode,-ftree-vectorize
+2010-01-14 12:36:54,bluecode,Perform loop vectorization on trees. This flag is enabled by default at -O3
+2010-01-14 12:37:52,kwolf,bluecode: qemu macht viele lustige Sachen...
+2010-01-14 12:37:52,bluecode,http://gcc.gnu.org/projects/tree-ssa/vectorization.html enthält bestimmt mehr infos
+2010-01-14 12:37:57,Homix,by default ... auch wenn man target nicht angegeben hat? ;)
+2010-01-14 12:38:42,bluecode,"vectorization heißt nicht unbedingt, dass SSE verwendet wird"
+2010-01-14 12:39:17,bluecode,"ich meine, dass das nur bedeutet, dass ich teilweise mehrere Iterationen zu einer mache um weniger rumspringen zu müssen"
+2010-01-14 12:39:21,Homix,"hm ok, aber -msse/-msse2 scheint gut zu sein ;)"
+2010-01-14 12:39:36,Homix,thx für den link
+2010-01-14 12:40:25,bluecode,"The vectorizer test cases demonstrate the current vectorization capabilities; these can be found under gcc/gcc/testsuite/gcc.dg/vect/. Information on which loops were or were not vectorized and why, can be obtained using the flag -ftree-vectorizer-verbose."
+2010-01-14 12:40:30,bluecode,könnte interessant sein
+2010-01-14 12:40:37,bluecode,letzter satz ist gemeint
+2010-01-14 12:42:08,Homix,hm ok
+2010-01-14 12:42:12,Homix,benchmark projekt geht in die endphase ;)
+2010-01-14 12:42:37,Homix,und so vergleiche zw. optimiert und unoptimiert sind immer gut :)
+2010-01-14 12:43:36,bluecode,"hm, es könnte auch sein, dass vectorization wirklich nur SIMD ist, das was ich meinte ist eher die Stufe vorher: loop unrolling"
+2010-01-14 12:44:05,bluecode,"""Vectorization is enabled by the flag -ftree-vectorize and by default at -O3. To allow vectorization on powerpc* platforms also use -maltivec. On i?86 and x86_64 platforms use -msse/-msse2."" zumindest suggeriert das das"
+2010-01-14 12:44:35,Homix,"jop ich denke auch, dass vectorization sowas wie SSE ist, weil SSE ist ja extra für Vektorberechnungen gemacht worden ;)"
+2010-01-14 12:45:39,Homix,"hm kann mein mIRC jetzt keine ""3"" mehr anzeigen oder wieso i?86 ;)"
+2010-01-14 12:45:54,XanClic,"i486, i586 ;-)"
+2010-01-14 12:45:57,Homix,ah ist auf der webseite kaputt :)
+2010-01-14 12:46:01,XanClic,Oder auch i686
+2010-01-14 12:46:02,bluecode,nicht kaputt
+2010-01-14 12:46:06,bluecode,gewollt
+2010-01-14 12:46:11,Homix,ah ok
+2010-01-14 12:46:21,Homix,"stimmt, aber hab die schreibweise noch nie gesehen^^"
+2010-01-14 12:46:53,Homix,weil mit i386 ist ja eig alles abgedeckt
+2010-01-14 12:47:10,Homix,na ja ich bin essen
+2010-01-14 13:39:03,Homix,"http://winfuture.de/news,52771.html ;)"
+2010-01-14 13:52:36,Homix,"hm langsam stell ich mir die frage, ob es wirklich sinnvoll bzw. unbedingt wichtig ist, während eines syscalls taskswitches zuzulassen"
+2010-01-14 13:54:27,FreakyPenguin,Wenn man LostIO2 basteln will schon ;-)
+2010-01-14 13:54:45,Homix,inwiefern bzw wieso?
+2010-01-14 13:55:30,Homix,"ich hab auch einige funktionen, die lang im kernel sind, aber da kann man ja dann manuell sowas wie PerformTaskswitch; aufrufen"
+2010-01-14 14:17:55,kwolf,Homix: Kooperatives Multitasking? :-/
+2010-01-14 14:23:06,Homix,"genau, aber nur im kernel"
+2010-01-14 14:23:24,Homix,"bzw bei syscalls, also ich seh da auf den ersten blick keinen nachteil"
+2010-01-14 14:23:57,Homix,ordentliche programmierung des kernels vorausgesetzt :)
+2010-01-14 14:26:24,Homix,kwolf: oder siehst du einen nachteil?
+2010-01-14 14:27:27,Homix,"eher ist es sicherer, dann kann ein thread nicht einfach einem anderen, der zufällig gerade readsector aufruft, eine niedrigere priorität zuweisen und diese funktion dann wegen den locks lange blockieren ;)"
+2010-01-14 14:30:09,Homix,"wobei ich das wohl so einbau, dass man beim registrieren eines syscalls dieses verhalten aktivieren/deaktivieren kann per Flags"
+2010-01-14 14:30:15,kwolf,"Homix: Stimmt, sie kann einfach beliebig lange blockieren, ohne mit Prioritäten rumzufummeln ;-)"
+2010-01-14 14:30:58,kwolf,"Ich sehe eher das praktische Problem, wo genau du dein yield() einbauen würdest"
+2010-01-14 14:31:40,kwolf,"Zum Beispiel in einem Plattentreiber, der sich gerade per PIO seine Bytes zusammensammelt"
+2010-01-14 14:32:12,Homix,"also NO_TASKSWITCH wäre natürlich nur bei den Syscalls sinnvoll, wo keine langen berechnungen und keine langen operationen durchgeführt werden"
+2010-01-14 14:32:42,Homix,und bei hardwarezugriffen kann das durchaus der fall sein
+2010-01-14 14:33:15,kwolf,"Naja, die kurzen Syscalls sind doch eh uninteressant?"
+2010-01-14 14:33:39,Homix,"ne die sind auch interessant, aber nicht ganz so ;)"
+2010-01-14 16:02:55,FreakyPenguin,Ih vim ohne Bunt
+2010-01-14 16:04:22,JanDing,:q
+2010-01-14 16:04:27,JanDing,ne das hier ist kein vim
+2010-01-14 16:04:30,JanDing,und bunt is es auch
+2010-01-14 16:06:04,kwolf,FreakyPenguin: Solange es kein vim ohne m ist... ;-)
+2010-01-14 16:07:07,FreakyPenguin,"Du meinst das was man nach der Debian-Installation hat, das noch mehr piept? ;-)"
+2010-01-14 16:10:13,kwolf,"Wenn's nicht grad den Text kaputt macht, ja ;-)"
+2010-01-14 16:10:45,kwolf,"Aber ich glaube, so unvollständig hab ich noch kein Debian installiert..."
+2010-01-14 16:11:01,FreakyPenguin,Das schlimmste ist ja dass es nicht richtig undoen kann ;-)
+2010-01-14 16:11:02,kwolf,Bei mir war das immer BSD
+2010-01-14 16:11:07,FreakyPenguin,*g*
+2010-01-14 16:11:32,FreakyPenguin,Naja ich nehme da meist bei der installation keine Pakete mit rein
+2010-01-14 16:12:22,kwolf,So ganz ohne Pakete bleibt die Platte aber ziemlich leer ;-)
+2010-01-14 16:12:46,kwolf,"Hm, wann kriegen wir eigentlich einen lpt-basierten Installier?"
+2010-01-14 16:14:13,FreakyPenguin,Halt nur die die einfach kommen wenn man keine Häklein macht ;-)
+2010-01-14 16:14:27,FreakyPenguin,Und bevor lio2 einigermassen tut mache ich da wohl nichts dran ;-)
+2010-01-14 16:31:30,kwolf,Gutes Stichwort... Kannst du vielelicht mal wieder pushen?
+2010-01-14 16:33:16,FreakyPenguin,Hm habe ich nicht kürzlich mal gepusht?
+2010-01-14 16:39:05,kwolf,"Hm, stimmt. Ich habe schon länger nicht mehr geschaut, wie es aussieht ;-)"
+2010-01-14 16:39:19,FreakyPenguin,"3 days ago, das ist ja richtig aktuell ;-)"
+2010-01-14 16:39:35,kwolf,Die Queue sieht mittlerweile beängstigend aus...
+2010-01-14 16:39:43,FreakyPenguin,*g*
+2010-01-14 16:39:45,kwolf,Wie wollen wir das mit dem Mergen denn dann machen?
+2010-01-14 16:39:55,kwolf,Einfach ohne Review reinmergen?
+2010-01-14 16:39:58,FreakyPenguin,Augen zu und durch. *g*
+2010-01-14 16:40:07,kwolf,Hm :-/
+2010-01-14 16:40:21,FreakyPenguin,Nein ich habe mich das auch schon gefragt...
+2010-01-14 16:40:38,kwolf,"Ich mein, es passt zum Zustand des restlichen kernel2, aber begeistern tut es mich nicht gerade..."
+2010-01-14 16:42:00,kwolf,Wahrscheinlich müssen wir für den Kernelteil einfach einmal lostio2/ komplett durchgehen. Patchweise arbeiten bringt's nicht wirklich.
+2010-01-14 16:42:01,FreakyPenguin,Naja durchsehen sollte man es wohl schon... Aber das ist irgendwie etwas mühsam. Entweder viel zu viele Commits oder ein Monsterdiff
+2010-01-14 16:42:58,kwolf,"Du kannst ja auch versuchen, eine schöne Patchserie draus zu machen, wenn dir sehr langweilig ist ;-)"
+2010-01-14 16:43:16,FreakyPenguin,Da brauche ich aber erstmal JanDings Zeug ;-)
+2010-01-14 16:43:46,kwolf,*g*
+2010-01-14 16:43:55,kwolf,Du hast keine echten Computer? ;-)
+2010-01-14 16:45:55,FreakyPenguin,Die sind sicher nicht das selbe wie die von JanDing ;-)
+2010-01-14 16:58:18,DesL,moin
+2010-01-14 17:01:35,kwolf,Moin DesL
+2010-01-14 17:11:16,tecgod,moin
+2010-01-14 17:27:11,tecgod,moin
+2010-01-14 17:27:25,tecgod,ignoriert ihr die Warnungen der Compiler?
+2010-01-14 17:27:32,XanClic,Nö
+2010-01-14 17:27:59,tecgod,weil Programm_Noob tut das
+2010-01-14 17:28:07,DesL,wäre meist leichtsinnig
+2010-01-14 17:28:12,tecgod,ich weiß
+2010-01-14 17:28:16,tecgod,moin
+2010-01-14 17:28:22,DesL,die gibbet nich umsonst
+2010-01-14 17:28:25,XanClic,Und ich kompiliere immerhin mit -pedantic ;-)
+2010-01-14 17:28:36,tecgod,was bringt das?
+2010-01-14 17:28:42,tecgod,weil ich das nicht kenn
+2010-01-14 17:28:48,Tobiking,Kommt drauf an was für Warnungen das sind
+2010-01-14 17:29:00,XanClic,"Das alle möglichen Warnungen angezeigt werden, also vor allem, wenn irgendwas nicht ganz standardkonform ist"
+2010-01-14 17:29:03,XanClic,*Dass
+2010-01-14 17:30:03,tecgod,aber er hört nicht auf mich
+2010-01-14 17:30:34,DesL,dann hau ihn ^^
+2010-01-14 17:30:35,tecgod,"jetzt hab ich eine Datei in dem Repository ,die ihn darauf aufmerksam macht *g*"
+2010-01-14 17:32:43,DesL,XD
+2010-01-14 17:32:52,tecgod,https://code.google.com/p/pexus/source/browse/ACHTUNG!
+2010-01-14 17:32:57,tecgod,hier ;)
+2010-01-14 17:33:13,DesL,hat wer erfahrung mit den Huawei UMTS Modems?
+2010-01-14 17:33:31,XanClic,Ihr wollt Warnungen verbessern?
+2010-01-14 17:33:37,DesL,die url gibt es nicht!
+2010-01-14 17:33:47,XanClic,-1
+2010-01-14 17:34:08,kwolf,XanClic: Langweilige Warnungen durch schönere ersetzen ist doch legitim? ;-)
+2010-01-14 17:34:10,DesL,"sry, doch"
+2010-01-14 17:34:35,kwolf,tecgod: Wie wär's wenn du einfach ein -Werror in die Makefile reinpackst?
+2010-01-14 17:34:46,XanClic,"kwolf: Jo, aber Compiler pätschen ist evtl. nicht das Ziel des OS *g*"
+2010-01-14 17:35:04,kwolf,Kommt drauf an ;-)
+2010-01-14 17:35:09,tecgod,das verschwindet komischerweise kwolf
+2010-01-14 17:35:23,XanClic,Mysteriös *g*
+2010-01-14 17:35:32,DesL,maggie
+2010-01-14 17:37:22,tecgod,aber vielleicht könnt ihr im das mal sagen
+2010-01-14 17:37:59,tecgod,",denn ich will nicht immer erst ein haufen Zeugs ""reparieren"" bevor ich arbeiten kann"
+2010-01-14 17:38:07,DesL,jaja
+2010-01-14 17:40:09,XanClic,"Wenn du die Warnungen entfernt hast, kannst du das ganze doch hochladen und gut ist, oder nicht?"
+2010-01-14 17:40:58,tecgod,"ja sicher ist das gut ,aber ich finde man sollte die Warnungen selber entfern BEVOR man etwas hochlädt"
+2010-01-14 17:41:03,tecgod,oder stimmt doch?
+2010-01-14 17:41:15,XanClic,"Ach so, jo"
+2010-01-14 17:41:27,bluecode,zurück!
+2010-01-14 17:42:58,kwolf,"tecgod: Dann kümmer dich halt drum, dass das -Werror nicht ""verschwindet"""
+2010-01-14 17:43:19,tecgod,wenn man aber 2 Tage keine Zeit hat wird es schwer^^
+2010-01-14 17:43:30,tecgod,ich musste mich dem Techno widmen :)
+2010-01-14 17:44:53,bluecode,igitt
+2010-01-14 17:44:53,XanClic,"Bäh, das klingt ja direkt nach RL ;-)"
+2010-01-14 17:45:43,DesL,RL? gib mal link!
+2010-01-14 17:45:49,DesL,^^
+2010-01-14 17:46:25,tecgod,ganz einfach #RealLife
+2010-01-14 17:46:41,bluecode,DesL: http://www.das-ende-des-internets.de/
+2010-01-14 17:47:01,XanClic,*lol*
+2010-01-14 17:47:12,DesL,"boah, cool!"
+2010-01-14 17:47:15,XanClic,"Hm, das erinnert mich an Avatar"
+2010-01-14 17:47:16,bluecode,mgottschlag hats erwischt!
+2010-01-14 17:47:35,bluecode,XanClic: sehenswert?
+2010-01-14 17:47:38,XanClic,Oh ja
+2010-01-14 17:48:55,DesL,"Das leben ist ein Scheiss spiel, aber die Grafik ist fett XD"
+2010-01-14 17:48:56,tecgod,DesL du enttäuscht mich ist das RL so schlimm?
+2010-01-14 17:49:06,XanClic,Oh ja
+2010-01-14 17:49:08,DesL,als schüler...
+2010-01-14 17:49:12,tecgod,moin Programm_Noob
+2010-01-14 17:49:17,tecgod,bin doch auch Schüler...
+2010-01-14 17:49:26,DesL,eben darum...
+2010-01-14 17:49:33,XanClic,"Ich bezweifle nur, dass es jemals besser wird *g*"
+2010-01-14 17:49:59,bluecode,XanClic: ack
+2010-01-14 17:49:59,DesL,mit 81 wird ales gut...
+2010-01-14 17:50:13,tecgod,nach 2012 wirds besser mit der Schule^^
+2010-01-14 17:50:38,DesL,auch 2012 abi?
+2010-01-14 17:50:39,bluecode,nur für christen
+2010-01-14 17:50:46,bluecode,selbst budhisten sind da ausgeschlossen
+2010-01-14 17:51:04,DesL,o_O
+2010-01-14 17:51:25,tecgod,DesL sollte erst 2013 sein
+2010-01-14 17:51:35,DesL,?
+2010-01-14 17:51:46,bluecode,"es gibt nen film, der wird dir sagen was 2012 passiert ;-)"
+2010-01-14 17:51:48,tecgod,muss ja noch die 13.Klasse machen wegen Umwegen über FOS und Realschule
+2010-01-14 17:52:13,DesL,d?
+2010-01-14 17:52:17,DesL,*du?
+2010-01-14 17:52:27,XanClic,bluecode: War da je von Europa die Rede? Oder hab ich das nur verdrängt?
+2010-01-14 17:52:48,XanClic,"Also, wird garantiert auch vom Tsunami überrollt, aber wurde das auch explizit gesagt? *g*"
+2010-01-14 17:53:02,bluecode,*g*
+2010-01-14 17:53:32,bluecode,"weiß ich aber auch nicht mehr, ich hab den film auch mehr oder weniger verdrängt"
+2010-01-14 17:54:43,DesL,was denn? datenmüll?
+2010-01-14 17:55:01,XanClic,Da steht nichts
+2010-01-14 17:55:04,XanClic,Genau ;-)
+2010-01-14 17:55:09,tecgod,was mach ich denn da
+2010-01-14 17:55:11,tecgod,??
+2010-01-14 17:55:58,DesL,"das ist /me,nicht /you"
+2010-01-14 17:56:30,tecgod,darum ja
+2010-01-14 17:57:20,DesL,you Unknown command
+2010-01-14 17:58:09,DesL,rofl
+2010-01-14 17:59:07,DesL,gilt zulauter GV als ruhestörung?
+2010-01-14 17:59:12,tecgod,GV?
+2010-01-14 17:59:15,XanClic,Pssst
+2010-01-14 17:59:17,XanClic,niwohlos
+2010-01-14 17:59:33,DickHuuhn,"DesL, in England wurde letztens erst deswegen egen Ruhestörung verknackt"
+2010-01-14 17:59:54,XanClic,Nicht öffentliches Ärgernis?
+2010-01-14 18:00:15,DesL,nur wenn du *es* in der öffentlichkeit machst XD
+2010-01-14 18:00:26,XanClic,"Wenn jeder mithören kann, ist es doch öffentlich"
+2010-01-14 18:00:31,XanClic,Und ich mach mal gar nix ;-)
+2010-01-14 18:00:52,tecgod,http://www.youtube.com/watch?v=36J-CNO-dq0&feature=PlayList&p=9031E82E7DDC4F4D&index=29&playnext=6&playnext_from=PL
+2010-01-14 18:01:07,DesL,interressant das du dich gleich angesprochen fühlst...
+2010-01-14 18:01:17,XanClic,"Du hast ""du"" gesagt ;-)"
+2010-01-14 18:01:25,DesL,man
+2010-01-14 18:01:31,XanClic,Ah :-)
+2010-01-14 18:01:33,DesL,however
+2010-01-14 18:02:18,XanClic,"Hm, wenn ich bei Google nach ""cmove nasm"" suche, kommt zuerst ein 704573r-Tutorial"
+2010-01-14 18:03:27,DesL,is dein google put? muddu neu insallieren?
+2010-01-14 18:03:39,XanClic,Hu?
+2010-01-14 18:03:47,DesL,^^^^
+2010-01-14 18:03:56,XanClic,"Arrrgh, vier Augen"
+2010-01-14 18:04:03,XanClic,Oder sind das links und rechts Ohren?
+2010-01-14 18:04:20,DesL,^^^ war beabsichtigt
+2010-01-14 18:04:28,XanClic,"Hm, wtf"
+2010-01-14 18:04:30,XanClic,http://www.lmgtfy.com/?q=cmove+nasm
+2010-01-14 18:04:35,XanClic,Dort ist es nur an zweiter Stelle
+2010-01-14 18:04:42,XanClic,"Ich glaube doch, es gibt zwei Internets"
+2010-01-14 18:04:43,XanClic,JanDing!
+2010-01-14 18:05:00,tecgod,JanDing?
+2010-01-14 18:05:07,DesL,hä?
+2010-01-14 18:05:11,JanDing,JanDing!
+2010-01-14 18:05:28,XanClic,Da: http://www.google.de/search?sourceid=chrome&ie=UTF-8&q=cmove+nasm <- erste Stelle
+2010-01-14 18:06:17,JanDing,dann google nach cmovcc
+2010-01-14 18:06:28,JanDing,dem brotröster sind abstraktionen nicht bekannt
+2010-01-14 18:06:29,tecgod,das kommt wenn man bei Googlebilder XanClic eingibt
+2010-01-14 18:06:30,tecgod,http://www.c-plusplus.de/oop_dummies.jpg
+2010-01-14 18:06:33,XanClic,*g*
+2010-01-14 18:06:45,XanClic,"Jo, das müsste man mir echt mal erklären"
+2010-01-14 18:07:24,XanClic,*LOL*
+2010-01-14 18:07:25,DesL,"komm später wieder, muss Windows dissen..."
+2010-01-14 18:07:31,XanClic,Da kommt SHyx0rmZ pic xDDD
+2010-01-14 18:07:41,DesL,?
+2010-01-14 18:07:42,XanClic,"Und lowlevel, klario"
+2010-01-14 18:07:46,XanClic,http://images.google.de/images?sourceid=chrome&q=XanClic&um=1&ie=UTF-8&sa=N&hl=de&tab=wi
+2010-01-14 18:07:54,tecgod,wie kann man 18 Fehler in einer Zeile haben
+2010-01-14 18:07:56,tecgod,??
+2010-01-14 18:07:56,XanClic,http://i3.ytimg.com/i/nuz-CvlhIRCsaUVyjKOnKA/1.jpg
+2010-01-14 18:08:15,XanClic,"Hm, und der Speedtest von diesem da von OSDev.org"
+2010-01-14 18:08:24,XanClic,"Alles Bilder von anderen Leuten, die nichts mit mir zu tun haben"
+2010-01-14 18:08:42,Tobiking,Vor allem die Screenshots von PrettyOS ^^
+2010-01-14 18:08:43,XanClic,"Von ehenkes, von SHyx0rmZ, von Lowlevel, von c-plusplus.de"
+2010-01-14 18:09:18,XanClic,"Ah, auf der zweiten Seite kommen dann die MyXomycota-Screenshots"
+2010-01-14 18:09:39,XanClic,xD
+2010-01-14 18:12:03,Tobiking,Manchmal macht es einem schon angst was Google so an zusammenhängen findet
+2010-01-14 18:12:27,XanClic,"Hm, meinen Namen und meine gesammelte OS-Projekte, macht mir jetzt nicht extremst Angst *g*"
+2010-01-14 18:12:54,Tobiking,Wenn man nach Tobiking sucht kommen ab Seite 10 Nacktbilder von Frauen
+2010-01-14 18:12:59,XanClic,*g*
+2010-01-14 18:13:16,tecgod,uh Tobiking^^
+2010-01-14 18:14:16,tecgod,"bei Tecgod kommt extremst viel ,also fasst nichts"
+2010-01-14 18:14:16,XanClic,lolio
+2010-01-14 18:14:18,XanClic,http://www.nordicbots.com/?id=73&net=quakenet&cid=70228&year=2009&month=10&day=7&nocolors=0&download=1
+2010-01-14 18:14:38,XanClic,Schon in fremden Chaträumen finde ich Erwähnung *g*
+2010-01-14 18:14:51,XanClic,bzw. so: http://www.nordicbots.com/?id=73&net=quakenet&cid=70228&year=2009&month=10&day=7&nocolors=0
+2010-01-14 18:16:27,Tobiking,Meine Ergebnisse sind eh verfälscht weil immer irgendwer meinen Nick benutzt...
+2010-01-14 18:23:04,tecgod,das Video ist sau geil
+2010-01-14 18:23:05,tecgod,http://www.myvideo.de/watch/4047347/Bekloppter_Junge_Spielt_Unreal_Tournament_Techno_Hardcore_Remix
+2010-01-14 18:47:12,Tobiking,"Interessant, seitdem ich bei Ubuntu nen VPN Netz eingerichtet habe friert die ganze VM ein sobald ich auf den Netzwerkmanager klicke..."
+2010-01-14 18:52:08,tecgod,"was kann man tun ,damit das gültig wird?"
+2010-01-14 18:52:09,tecgod,http://pastebin.org/76277
+2010-01-14 18:52:42,FreakyPenguin,const char*
+2010-01-14 18:52:45,Tobiking,char* vielleicht?
+2010-01-14 18:52:54,Tobiking,oder ja mit const
+2010-01-14 18:53:33,tecgod,danke
+2010-01-14 19:04:42,Homix,"wtf, für was gibts denn OCaml?"
+2010-01-14 19:05:01,XanClic,Und wofür?
+2010-01-14 19:05:27,Homix,"irgendwie hab ich das gefühl, dass ich das für ne klausur lernen muss :("
+2010-01-14 19:07:37,XanClic,"Meh, was will denn nasm mit ""error: org value must be a critical expression"""
+2010-01-14 19:08:27,XanClic,"Warum erlaubt quok denn kein fasm, nasm ist echt beschissen"
+2010-01-14 19:08:38,tecgod,NASM Rockt!
+2010-01-14 19:08:44,XanClic,"Hm, wo denn?"
+2010-01-14 19:09:07,XanClic,"Lässt sich schwer portieren, die Binaries sind größer, man kann kein org mit $ machen..."
+2010-01-14 19:18:55,taljeth,Moin
+2010-01-14 19:19:09,XanClic,"Moin, moin, taljeth"
+2010-01-14 19:19:33,Programm_Noob,moin
+2010-01-14 19:23:46,taljeth,XanClic: Was ist denn eine KRITIKEL Expression? ;-)
+2010-01-14 19:23:59,XanClic,Hm?
+2010-01-14 19:24:11,taljeth,Der Begriff war mir neu?
+2010-01-14 19:24:12,XanClic,"Ah, nasm"
+2010-01-14 19:24:14,taljeth,-?
+2010-01-14 19:24:20,XanClic,Mir auch ;-)
+2010-01-14 19:24:25,XanClic,Muss wohl irgendwie absolut sein
+2010-01-14 19:24:40,XanClic,"""org 0x2FFE00+$-0x7C00"" hat er jedenfalls nicht akzeptiert"
+2010-01-14 19:24:52,XanClic,"Obwohl das ja ein absoluter Wert ist, der beim Assemblieren auch bekannt ist"
+2010-01-14 19:24:58,taljeth,wtf hast du vor? ;-)
+2010-01-14 19:25:01,taljeth,"Hm, cdi/fs in einem Bootloader bringt's wohl nicht so..."
+2010-01-14 19:25:16,taljeth,Das wär ein lustiges Projekt gewesen
+2010-01-14 19:25:21,XanClic,"quok hat gestern in #tyndur gesagt, man darf bei seinem Wettbewerb *nichts* über den Ladeort der ELF annehmen ;-)"
+2010-01-14 19:25:23,DickHuuhn,http://www.heise.de/newsticker/meldung/Flash-ohne-Player-904837.html omg wie geil
+2010-01-14 19:25:27,XanClic,Also ist auch 0x7C00 OK
+2010-01-14 19:25:36,XanClic,"Und somit muss ich den Bootloader nach oben kopieren, über 2 MB"
+2010-01-14 19:25:38,taljeth,"XanClic: Er hat doch gesagt, er ändert es entsprechend ab?"
+2010-01-14 19:25:49,XanClic,Egal *g*
+2010-01-14 19:26:05,taljeth,"Hm, also Unreal Mode dann?"
+2010-01-14 19:26:08,XanClic,"""If you're that far along with your entry already, perhaps I should leave out the ELF assumption you asked about :)"""
+2010-01-14 19:26:14,XanClic,"Nö, ich bin zu dem Zeitpunkt im PM"
+2010-01-14 19:26:24,XanClic,"Man muss ja im PM sein, sonst ist das mit ELF32 doof"
+2010-01-14 19:26:27,XanClic,...Dachte ich
+2010-01-14 19:26:28,taljeth,"Da wird das Laden aber doof, oder? ;-)"
+2010-01-14 19:26:37,taljeth,"XanClic: Hm, wieso? Unreal sollte doch genauso gut sein?"
+2010-01-14 19:26:44,DesL,moin
+2010-01-14 19:27:01,taljeth,XanClic: Allerdings habe ich davon nicht wirklich viel Ahnung
+2010-01-14 19:27:04,XanClic,"Ich lade die Datei nach 0x10000 (+ die Segmente drüber), gehe in den PM und kopier sie nach 0x200000"
+2010-01-14 19:27:14,XanClic,"Weil ich A20 nicht aktivieren möchte, nicht nach 0x100000"
+2010-01-14 19:27:22,taljeth,*lol*
+2010-01-14 19:27:29,taljeth,Warum nicht
+2010-01-14 19:27:34,XanClic,"Jo, ich hatte das drin, das hat aber einiges an Platz gefressen"
+2010-01-14 19:27:44,taljeth,Wie groß darf die ELF nochmal sein?
+2010-01-14 19:27:48,XanClic,128 kB
+2010-01-14 19:27:55,taljeth,"Ach so, das geht ja wirklich locker"
+2010-01-14 19:27:59,XanClic,"bzw. unbegrenzt, laut der Zusatzregel"
+2010-01-14 19:28:07,taljeth,Unbegrenzt wird schon heftiger
+2010-01-14 19:28:31,XanClic,"Und ich schaff eben so viel, wie in den konventionellen Speicher reinpasst (bzw. das zwischen 0x10000 und 0x9F000, oder wo EBDA halt beginnt)"
+2010-01-14 19:28:35,taljeth,Wie viel Bytes hast du denn jetzt schon verbraten?
+2010-01-14 19:28:39,taljeth,Jo
+2010-01-14 19:28:41,XanClic,Ich bin an sich fertig *g*
+2010-01-14 19:28:55,XanClic,Und bin bei 504 Bytes
+2010-01-14 19:29:11,taljeth,Acht Bytes für Signinfanten *g*
+2010-01-14 19:29:17,XanClic,*g*
+2010-01-14 19:29:25,XanClic,Wobei ich den Dateisystemtyp noch anhand des Typfelds in diesem Informationsblock bestimme
+2010-01-14 19:29:34,XanClic,"Also ob da ""FAT12   "" oder ""FAT16   "" drinsteht"
+2010-01-14 19:29:44,XanClic,"Jo, das ist eigentlich unzulässig ;-)"
+2010-01-14 19:29:59,XanClic,"Denn da sollte zwar genau das drinstehen, aber eigentlich sollte man sich nicht drauf verlassen"
+2010-01-14 19:30:10,taljeth,"Naja, wenn's in der Spec steht?"
+2010-01-14 19:30:17,Homix,"da kann auch nur ""FAT  .."" drinstehen ;)"
+2010-01-14 19:30:24,XanClic,"In der Spec steht aber auch, daass man sich nicht drauf verlassen soll *g*"
+2010-01-14 19:30:33,XanClic,*dass
+2010-01-14 19:30:44,taljeth,"Hm, also SHOULD in RFC-Sprache?"
+2010-01-14 19:30:50,XanClic,Vermutlich
+2010-01-14 19:31:02,XanClic,"Und ich sehe eigentlich auch nur nach, ob da an der fünften Stelle ""2"" oder nicht steht *g*"
+2010-01-14 19:31:14,taljeth,Dachte ich mir schon *g*
+2010-01-14 19:31:22,XanClic,"Aber es ist ja gegeben, dass es FAT12 oder FAT16 ist"
+2010-01-14 19:31:54,taljeth,"Ich glaube, das mit der ersten funktionierenden Einsendung wird nicht so, wie quok sich das vorgestellt hat, wenn am 31. die Leute Schlange stehen..."
+2010-01-14 19:31:55,XanClic,"Und laut WP gibt es wohl genügend Tools, die sich darauf verlassen, dass da ""FAT12""/""FAT16""/... drinsteht, also wird das schon in Ordnung sein"
+2010-01-14 19:32:13,XanClic,"Jo, das ist ein Samstag *g*"
+2010-01-14 19:32:25,XanClic,"Hm, 0:00 Uhr"
+2010-01-14 19:32:28,taljeth,Dann kommt's wohl auf die Zeitzone an *g*
+2010-01-14 19:32:29,XanClic,Welche Zeitzone eigentlich?
+2010-01-14 19:32:31,XanClic,Genau
+2010-01-14 19:32:32,Homix,was für ein wettbewerb eigentlich?
+2010-01-14 19:32:35,taljeth,UTC glaube ich
+2010-01-14 19:32:44,XanClic,"Ah, also 23:00 Uhr, oder?"
+2010-01-14 19:33:00,XanClic,Homix: http://forum.osdev.org/viewtopic.php?f=2&t=21423
+2010-01-14 19:33:09,XanClic,"Jup, UTC"
+2010-01-14 19:33:39,XanClic,"Vorher noch ein bisschen was posten, um zu sehen, wie die Forenzeit genau in Relation zur eigenen Computerzeit steht *g*"
+2010-01-14 19:35:03,taljeth,*lol*
+2010-01-14 19:35:20,taljeth,"Hm, ich glaube, ich bin unter diesem Umständen zu faul, mich selber damit zu befassen"
+2010-01-14 19:35:33,taljeth,"Vielleicht lieber mal quok fragen, ob er noch Tester braucht ;-)"
+2010-01-14 19:35:45,XanClic,"Ich hoffe mal, qemu -cpu 486 reicht *g*"
+2010-01-14 19:35:56,taljeth,Nein ;-)
+2010-01-14 19:36:19,taljeth,"Aber wenn es in KVM auf einem 486er läuft, sollte das reichen *g*"
+2010-01-14 19:37:19,XanClic,*g*
+2010-01-14 19:37:29,XanClic,"Hm, stimmt, erstmal KVM probieren"
+2010-01-14 19:37:51,taljeth,XanClic: An welcher Stelle verschwendet nasm eigentlich Bytes?
+2010-01-14 19:37:56,XanClic,kA
+2010-01-14 19:38:00,XanClic,Ohne -O99 weiß ich es *g*
+2010-01-14 19:38:07,XanClic,Müsste ich mal gucken
+2010-01-14 19:38:12,taljeth,diff ist ja nicht so schwer ;-)
+2010-01-14 19:38:15,XanClic,Jop
+2010-01-14 19:38:24,taljeth,Was macht er denn ohne -O99?
+2010-01-14 19:38:51,XanClic,"""add eax,4"" oder so macht es sozusagen zu ""add eax,dword 4"", während fasm (oder nasm mit -O99) das zu ""add eax,byte 4"" macht"
+2010-01-14 19:38:57,XanClic,Und so eben drei Bytes verliert
+2010-01-14 19:39:32,taljeth,Ah
+2010-01-14 19:39:46,taljeth,"Kann man das nicht explizit hinschreiben, was man will?"
+2010-01-14 19:39:58,XanClic,"Weiß nicht, aber mit -O99 funktionierts ja auch ;-)"
+2010-01-14 19:42:10,taljeth,"Hm, gas braucht dafür kein -O99 ;-)"
+2010-01-14 19:42:13,XanClic,"Hm, lustig, jetzt hab ich bei nasm und fasm das gleiche Ergebnis"
+2010-01-14 19:42:24,XanClic,Aber das mit org ist immer noch doof *g*
+2010-01-14 19:43:13,taljeth,"Was wolltest du denn damit tolles machen, was jetzt nicht mehr geht?"
+2010-01-14 19:43:26,XanClic,"Hm, A20 war noch drin..."
+2010-01-14 19:43:33,XanClic,Aber genau weiß ich es nicht
+2010-01-14 19:43:39,XanClic,"Also, was da noch drin war"
+2010-01-14 19:43:45,XanClic,Meine GDT war größer
+2010-01-14 19:43:53,XanClic,Ich hab den Nulldescriptor rausgestrichen *g*
+2010-01-14 19:44:01,taljeth,Ähm... ;-)
+2010-01-14 19:44:06,XanClic,bzw. halt nur theoretisch drin ;-)
+2010-01-14 19:44:19,XanClic,gdt equ real_gdt-8
+2010-01-14 19:44:21,XanClic,real_gdt:
+2010-01-14 19:44:21,taljeth,"Ah, die hast die GDT ein bisschen nach vorne verlängert, meinst du ;-)"
+2010-01-14 19:44:24,XanClic,So
+2010-01-14 19:44:24,XanClic,Jup
+2010-01-14 19:44:40,taljeth,"Jo, das ist wohl normal"
+2010-01-14 19:44:50,taljeth,"Hm, in der GDT steht nicht zufällig brauchbarer Code? *g*"
+2010-01-14 19:45:01,XanClic,Daran hab ich tatsächlich schon gedacht ;-)
+2010-01-14 19:45:24,taljeth,"Ich mein, irgendwo braucht so ein Loader ja auch das gewisse etwas ;-)"
+2010-01-14 19:45:26,XanClic,"Ich hab auch schon versucht, den Codedescriptor zu kopieren und dann das eine Byte zu verändern, dass ihn zum Datendescriptor macht"
+2010-01-14 19:45:43,XanClic,Aber der Kopiercode war etwas größer als 8 Bytes
+2010-01-14 19:46:16,taljeth,Geht das nicht mit weniger?
+2010-01-14 19:46:31,XanClic,"Na ja, man muss si setzen, di und dann zweimal movsd"
+2010-01-14 19:46:40,XanClic,Plus das Verändern des Bytes
+2010-01-14 19:46:58,taljeth,Ich dachte mehr an GDT komplett per Code aufbauen
+2010-01-14 19:47:03,XanClic,Aso
+2010-01-14 19:47:09,XanClic,"Jo, das meinte ich auch"
+2010-01-14 19:47:19,XanClic,"Aber ich hab eben noch mehr ausprobiert, das wollte ich sagen ;-)"
+2010-01-14 19:47:23,taljeth,Ach so
+2010-01-14 19:47:47,taljeth,Per Code war also größer als fest rein?
+2010-01-14 19:48:06,XanClic,Jo
+2010-01-14 19:48:24,XanClic,"Mal gucken, was die GDT so für Code produziert"
+2010-01-14 19:49:29,XanClic,"Hm, sieht nicht so toll aus"
+2010-01-14 19:49:44,XanClic,"Man könnte das Limit runtersetzen, aber obs das bringt"
+2010-01-14 19:49:49,taljeth,*hehe*
+2010-01-14 19:49:55,XanClic,"Ah, aber ein Call ist drin *g*"
+2010-01-14 19:50:01,XanClic,Da könnte man evtl. die Adresse anpassen *g*
+2010-01-14 19:50:16,taljeth,"Hm, das Limit für beliebige vorinitiaisierte Daten klingt aber lustig"
+2010-01-14 19:50:17,XanClic,"Das ist das Limit des Datensegments, passt doch *g*"
+2010-01-14 19:50:28,taljeth,*hehe*
+2010-01-14 19:53:03,XanClic,"Hm, sind leider ebenfalls 504 Bytes *g*"
+2010-01-14 19:53:34,XanClic,Weil man ja noch reinspringen muss
+2010-01-14 19:53:51,taljeth,"Ja, die GDT müsste man schon geschickt mitten in den Code legen"
+2010-01-14 19:54:10,taljeth,"Zwischen Code- und Datendeskriptor darf ja auch noch Müll liegen, könnte also schon gehen"
+2010-01-14 19:54:11,XanClic,"Hm, stimmt, mit relative jumps wirds kleiner"
+2010-01-14 20:06:12,taljeth,"Ah, die ganzen 66 sind das, die es so doof machen, die GDT mit Code zu bauen"
+2010-01-14 20:06:33,taljeth,Daran hatte ich natürlich nicht gedacht
+2010-01-14 20:33:40,DesL,"hm, tracingprogramme im sinne von ""ich finde mal schnell raus wer mich hackt"" á la Matrix gibt es  nicht wirklich, oder?"
+2010-01-14 20:34:00,XanClic,nmap
+2010-01-14 20:34:11,XanClic,"nmap -A -v [IP], afair"
+2010-01-14 20:34:25,XanClic,Oder Hostname
+2010-01-14 20:34:34,DesL,da liegen aber immer noch welten zwischen
+2010-01-14 20:34:41,XanClic,"Na, den Namen gibt dir das nicht *g*"
+2010-01-14 20:34:53,XanClic,Zusammen mit utrace.de bekommt man auch noch einen ungefähren Standort
+2010-01-14 20:36:13,DesL,"ich dachte mehr an ein service/daemon im hintergrund der Automatisch mit kriegt wer dich hackt, und dannn direkt losschreit ""der günther war's"" ^^"
+2010-01-14 20:36:24,XanClic,"Was meinst du grad mit ""hacken""?"
+2010-01-14 20:36:35,DesL,Computer knacken?
+2010-01-14 20:36:38,XanClic,"Jo, klar"
+2010-01-14 20:36:41,XanClic,Aber worüber? SSL?
+2010-01-14 20:36:44,XanClic,*SSH
+2010-01-14 20:36:47,DesL,alles XD
+2010-01-14 20:36:50,XanClic,-.-
+2010-01-14 20:37:12,XanClic,"Also, bei SSH kann man sich entweder einen Honeypot wie Kojoney zulegen, der ein Fake-SSH zur Verfügung stellt"
+2010-01-14 20:37:26,Tobiking,"Es gibt Intruder detection Systeme, aber die geben dir auch maximal die ip und paar zusatz infos"
+2010-01-14 20:37:26,XanClic,"Dummerweise haben es Angreifer bei mir nie hinbekommen, die Passwörter rauszufinden *g*"
+2010-01-14 20:37:31,DesL,"ich hatte da ein serh ""aufschlussreiches"" gespräch mit einem Scriptkiddie, das der Meinung war, es gäbe ein solches prog."
+2010-01-14 20:37:57,XanClic,"Bei Kojoney kann man dann das Log verfolgen, man bekommt die IP und wenn sich einer einloggt auch die versuchten Befehle"
+2010-01-14 20:38:13,XanClic,Und beim normalen SSH-Server verfolgt man möglichst /var/log/messages
+2010-01-14 20:38:18,XanClic,Da steht auch die IP drin
+2010-01-14 20:38:24,XanClic,Und die gibt man dann halt nmap und utrace
+2010-01-14 20:38:26,Tobiking,Sag ihm er soll 127.0.0.1 hacken ^^
+2010-01-14 20:38:28,XanClic,*g*
+2010-01-14 20:38:34,XanClic,"""Sag ihm"" ist halt immer schwierig"
+2010-01-14 20:38:55,DesL,kennnt ihr dieses fiktive chat-log mit dem Scriptkiddie und 127.0.0.1?
+2010-01-14 20:38:59,XanClic,Klar
+2010-01-14 20:39:05,Tobiking,jo ^^
+2010-01-14 20:39:33,DesL,ich könnte mich jedes mal wieder wegschiessen...
+2010-01-14 20:39:41,XanClic,"Also bei einem normalen SSH-Server sowas wie ""tail -f /var/log/messages | grep ssh"" oder so"
+2010-01-14 20:39:51,XanClic,"Und dann halt hin und wieder mal hingucken, ob was passiert ist"
+2010-01-14 20:40:09,Tobiking,Das kann sehr viel werden wenn der auf standard port läuft
+2010-01-14 20:40:14,XanClic,Oh ja *g*
+2010-01-14 20:40:18,XanClic,China ist da immer sehr aktiv xD
+2010-01-14 20:40:20,DesL,weit von Matrix entfernt... *g*
+2010-01-14 20:40:35,XanClic,"Oder ganz einfach SSH deaktivieren, das hab ich jetzt gemacht, weil es mir im Endeffekt doch nicht so viel gebracht hat"
+2010-01-14 20:40:45,XanClic,"Na, wie gesagt, was willst du haben?"
+2010-01-14 20:40:55,DesL,ich?
+2010-01-14 20:41:07,XanClic,"Günther Schuhmacher, wohnhaft in 01127 Dresden, Pestalozziplatz 5?"
+2010-01-14 20:41:12,DesL,eine gequältes Scriptkiddie...
+2010-01-14 20:41:16,DesL,dass will ich.
+2010-01-14 20:41:22,XanClic,Das bekommst du nicht.
+2010-01-14 20:41:24,Tobiking,Du könntest jeden Provider der Welt hacken und dort dann die IP zuweisungen rausholen ^^
+2010-01-14 20:41:37,XanClic,"Es ist eine Legende, dass man anhand der IP ganz einfach die Person zuordnen kann (afaik)"
+2010-01-14 20:41:56,XanClic,"Wie gesagt, utrace liefert dir einen ungefähren Standort (wirklich nur ungefähr, sieht man ja mit der eigenen IP)"
+2010-01-14 20:42:08,XanClic,Und nmap kann das OS erraten
+2010-01-14 20:42:21,XanClic,"Wenn ein Webserver läuft, kann man da nachgucken, aber das wird häufig nicht viel verraten"
+2010-01-14 20:42:30,XanClic,Oder ftp oder sowas halt
+2010-01-14 20:42:30,DesL,ich meinteeigtl  das dass S. ebensolche Tracingprogramm GENAU wie in Matrix für realität hielt. oder hält...
+2010-01-14 20:42:47,XanClic,"Das läuft dort aber mit Telefonnummern, nä?"
+2010-01-14 20:43:05,DesL,mit geschätzten 700 stellen ^^
+2010-01-14 20:43:05,XanClic,Und da muss man sich halt einfach ein Telefonbuch nehmen ;-)
+2010-01-14 20:43:09,DesL,XD
+2010-01-14 20:43:28,XanClic,Nur bekommt man die Telefonnummer halt nicht anhand der IP raus
+2010-01-14 20:43:35,Tobiking,Und nem Kabel im Kopf ^^
+2010-01-14 20:43:39,XanClic,Und viel mehr als die IP liefert so ein Loginversuch nicht
+2010-01-14 20:44:19,DesL,ganz meine rede
+2010-01-14 20:45:14,XanClic,"Also wenn man Zugriff auf die Providerdaten hat, kann man da evtl. schon was rausbekommen"
+2010-01-14 20:45:25,XanClic,"Aber wer nicht beim BKA arbeitet, hat den halt selten legal ;-)"
+2010-01-14 20:45:49,DesL,oder bnd
+2010-01-14 20:46:05,XanClic,"Jo, die CIA darfs bestimmt auch und Schäuble selbst latürnich ebenfalls *g*"
+2010-01-14 20:46:36,DesL,sss - schäubles secret service
+2010-01-14 20:51:14,Tobiking,"hmm, krieg ich unter Linux irgendwie heraus welches Modul für einen Sata controller wirklich benutzt wird?"
+2010-01-14 20:51:49,XanClic,"So lange rmmod benutzen, bis es nicht mehr funktioniert *g*"
+2010-01-14 21:00:55,DesL,"die alte ""hacker""-klamotte: http://pastebin.com/m4cd554ad"
+2010-01-14 21:02:40,DesL,kreigt man grub auf ne dvd rw?
+2010-01-14 21:03:27,taljeth,Vermutlich schon
+2010-01-14 21:03:52,DesL,ich krieg es von der Suse Dvd nähmlichn icht uaf die HD *g*
+2010-01-14 21:06:06,mgottschlag,sollte doch nicht anders als CD sein?
+2010-01-14 21:06:58,tecgod,DesL sau geil
+2010-01-14 21:08:01,DesL,hö?
+2010-01-14 21:08:29,tecgod,den Link den du geschickt hast
+2010-01-14 21:08:50,DesL,aso ^^
+2010-01-14 21:09:35,taljeth,"tecgod: Du willst nicht im Ernst sagen, dass du das noch nicht kanntest?"
+2010-01-14 21:09:50,tecgod,nein
+2010-01-14 21:09:58,tecgod,ich habs noch nicht gekannt
+2010-01-14 21:10:08,taljeth,DesL: Was hast du genau vor?
+2010-01-14 21:10:29,taljeth,Das klingt ja jetzt eher so als wolltest du den GRUB auf die Platte packen und nicht auf die DVD?
+2010-01-14 21:10:49,DesL,"windoze mit grub laden. auf dvd, weil ich auf platte nichg hinkrieg"
+2010-01-14 21:11:49,taljeth,Du hast ein Windows auf der DVD liegen? :-/
+2010-01-14 21:12:04,DesL,"ne, auf hd"
+2010-01-14 21:12:22,taljeth,Und was willst du von der SUSE-DVD auf Platte kopieren?
+2010-01-14 21:12:24,Tobiking,Du willst dir ne boot dvd mit Grub drauf erstellen um Windows zu booten?
+2010-01-14 21:12:33,DesL,ich will grub auf platte
+2010-01-14 21:12:42,taljeth,Dann mach das doch einfach? ;-)
+2010-01-14 21:12:51,DesL,geht ncih
+2010-01-14 21:12:55,taljeth,Weil?
+2010-01-14 21:13:20,DesL,kp
+2010-01-14 21:16:04,DesL,funktioniert einfach nicht
+2010-01-14 21:16:37,taljeth,Na dann
+2010-01-14 21:17:04,DesL,wie meinen?
+2010-01-14 21:17:19,DesL,er kopiert einfach nichts in den Bootsektor
+2010-01-14 21:17:54,Homix,ehrlich gesagt hab ich das auch noch nie geschafft ;)
+2010-01-14 21:18:09,Homix,und irgendwann sollte da jemand mal ein kleines tutorial schreiben :D
+2010-01-14 21:30:16,DesL,ich bei google nicht efektives gefunden
+2010-01-14 21:30:46,DesL,*habe
+2010-01-14 21:35:07,DesL,du?
+2010-01-14 21:46:35,Tobiking,Yay mein Gentoo bootet
+2010-01-14 21:49:32,Tobiking,Merke: Partitioniere niemals eine Festplatte unter Windows
+2010-01-14 21:50:03,XanClic,"Merke: Vermeide Windows, wann immer es geht :D"
+2010-01-14 21:50:52,taljeth,Es geht immer
+2010-01-14 21:50:58,DesL,TUX IS ALMIGHTY!
+2010-01-14 21:51:40,taljeth,Und Signi erst!
+2010-01-14 21:51:42,Tobiking,"Komisch war nur das die live cd mit den Partitonen klar kam (teilweise), aber das richtige system nicht mehr"
+2010-01-14 21:51:58,DesL,gentoo?
+2010-01-14 21:52:03,Tobiking,jo
+2010-01-14 21:52:19,DesL,skuril
+2010-01-14 21:52:54,tecgod,der Pexuspapagei ist aber auch toll oder?
+2010-01-14 21:53:17,taljeth,Kann der sprechen?
+2010-01-14 21:53:44,Tobiking,Der ist nicht in 224 farben beim booten zu sehen
+2010-01-14 21:55:06,tecgod,taljeth noch nicht und Tobiking
+2010-01-14 21:55:15,taljeth,Ich bevorzuge sowieso Tukane
+2010-01-14 21:55:18,tecgod,das stimmt maximal 16 reichen auch^^
+2010-01-14 21:55:42,Tobiking,ahhhh Panic
+2010-01-14 21:56:07,DesL,kernel panic?
+2010-01-14 21:56:28,Tobiking,ja
+2010-01-14 21:56:58,XanClic,"Ui, die hatte ich ja erst einmal - bei LFS *g*"
+2010-01-14 21:57:19,Tobiking,Beim bootvorgang passiert mir das irgendwie häufiger
+2010-01-14 21:57:46,Tobiking,Ich hab mich ja auch vertippt in der Grub config
+2010-01-14 21:58:21,Tobiking,och nö: modification time in the future...
+2010-01-14 21:59:02,XanClic,"Huuu, schon wieder Zeitreisen"
+2010-01-14 21:59:13,DesL,^^
+2010-01-14 21:59:14,taljeth,"XanClic: Panics hab ich jedes Mal, wenn ich einen eigenen Kernel gebaut habe"
+2010-01-14 21:59:28,taljeth,Dann darf ich erstmal ext3 einkompilieren und nochmal probieren
+2010-01-14 21:59:40,Tobiking,Was hat mich das mit dem Datum damals bei den kaputten mutlicore amds genervt
+2010-01-14 22:00:05,XanClic,taljeth: Genau das hatte ich auch :D
+2010-01-14 22:00:40,Tobiking,Da hatte das rescue System bei dem Serveranbieter den Fix nicht im Kernel
+2010-01-14 22:01:21,Tobiking,Beim entpacken des servers ist die uhr 3 Tage vorwärts gesprungen ^^
+2010-01-14 22:01:28,Tobiking,äh kernels
+2010-01-14 22:08:10,Tobiking,"interessant bei Daten vor 2010 zeigt ls Tag, Monat und Uhrzeit. Bei daten danach zeigt es Tag, Monat und 2010"
+2010-01-14 22:09:42,Tobiking,Wenn ich die Datei nochmal editiere zeigt er es richtig
+2010-01-14 22:10:15,Tobiking,Toller bug auf der installations cd...
+2010-01-14 22:10:25,DesL,"wie war das? der Y2,10K bug..."
+2010-01-14 22:11:54,Tobiking,Das ist doch jetzt echt verarsche
+2010-01-14 22:12:19,Tobiking,Jede Datei die nicht aus dem Stage3 archiv kam hat nen kaputtes Datum
+2010-01-14 22:15:35,Tobiking,Jetzt brauch ich nen rekursives touch ^^
+2010-01-14 22:15:43,DesL,^^
+2010-01-14 22:18:49,DesL,kann man (graphisceh) kompressionartefakte egtl. halbwegs wegzaubern?
+2010-01-14 22:35:22,mgottschlag,"jo, wenn man das originalbild hat."
+2010-01-14 22:36:03,mgottschlag,farbe = farbe_komprimiert + (farbe_original - farbe_komprimiert)
+2010-01-14 22:36:09,XanClic,"Oder man zeichnet halt alles weich, dann sind auch alle Artefakte weg *g*"
+2010-01-14 22:36:31,XanClic,"Und wenn sie ganz sicher weg sein sollen, dann färbt man alles mit grau ein *g*"
+2010-01-14 22:37:07,Homix,farbe = farbe_komprimiert + (farbe_original - farbe_komprimiert) ? lol ;) wie wärs dann mit farbe = farbe_original; ;)
+2010-01-14 22:38:16,DickHuuhn,Machts wie ich in der letzten Infoklausur
+2010-01-14 22:38:36,DickHuuhn,"farbe = {0, 255, 255 } // Cyan wurde als Hintergrundfarbe gewählt, weil Cyan toll ist"
+2010-01-14 22:38:45,DickHuuhn,Der Kommentar hat nen Haken gekriegt
+2010-01-14 22:39:33,mgottschlag,"Homix, -.-"
+2010-01-14 22:39:42,mgottschlag,"ich hoffe, das haben die anderen hier auch so gesehen -.-"
+2010-01-14 22:40:20,mgottschlag,Infoklausuren... da würd ich auch gerne mal wieder eine schreiben :D
+2010-01-14 22:40:33,mgottschlag,Die Klassenarbeiten damals in Info waren immer schön entspannend.
+2010-01-14 22:43:18,Tobiking,Unser Prof hat nichts dazu gesagt als die Ausgabe unseres OS Cyan auf Magenta war ^^
+2010-01-14 22:43:36,DickHuuhn,"Tobiking, ja, der hat ja auch Ahnung"
+2010-01-14 22:43:43,DickHuuhn,Cyan ist halt die beste Farbe eva
+2010-01-14 22:45:35,mgottschlag,schwarz auf schwarz ist viel tollerer
+2010-01-14 22:46:05,DickHuuhn,"Immer diese Anspielungen, also ehrlich"
+2010-01-14 22:46:18,DickHuuhn,(btw wtf)
+2010-01-14 22:46:29,mgottschlag,"was, wie, wo?"
+2010-01-14 22:47:09,XanClic,"Tobiking: Also unserer hat schon laut aufgeschrien (sic!), als jemand eine Präsentation hatte, auf der eine rote Überschrift auf blauem Grund war ;-)"
+2010-01-14 22:48:47,Tobiking,Präsentationen sind ja auch was anderes. Da nimmt man am besten die Uni oder Fachbereich Farben und das Logo ^^
+2010-01-14 22:50:46,XanClic,gn8
+2010-01-14 23:00:42,JanDing,"mal ne frage zu  regex: mit ^ matche ich anfang der zeile, wie matche ich ""nicht anfang"" der zeile. genauer gesagt: ich will alle großbuchstaben matchen, die nicht am anfang der zeile stehen."
+2010-01-14 23:01:38,JanDing,.([A-Z]) geht leider nicht. das matcht 2 zeichen
+2010-01-14 23:01:38,DickHuuhn,Nach Großbuchstaben matchen und davor ^(.*) setzen oder so
+2010-01-14 23:01:55,DickHuuhn,ohne klammern D:
+2010-01-14 23:02:59,DickHuuhn,"okay, stimmt ist mist :D"
+2010-01-14 23:05:11,DickHuuhn,(?<!\n)
+2010-01-14 23:05:20,DickHuuhn,http://www.spotlight.de/zforen/prl/m/prl-1186246743-4671.html
+2010-01-14 23:05:33,DickHuuhn,ich versteh den regex btw nicht :O
+2010-01-14 23:12:30,tecgod,was haltet ihr davon bisher?
+2010-01-14 23:12:31,tecgod,http://pexus.googlecode.com/files/Pexus.img
+2010-01-14 23:15:44,mastamind,was ist es?
+2010-01-14 23:16:03,tecgod,unser derzeitiges Image
+2010-01-14 23:17:35,mastamind,bootet sehr schnell. :-)
+2010-01-14 23:18:26,Programm_Noob,wie kann man in einem Linkerscript Kommentare einfügen?
+2010-01-14 23:20:04,mastamind,tecgod: sag ihm mit /* */
+2010-01-14 23:22:01,tecgod,wie kann ich den Fehler beheben
+2010-01-14 23:22:28,tecgod,error: control reaches end of non-void function
+2010-01-14 23:25:06,mastamind,indem du ein return einbaust.
+2010-01-14 23:26:08,tecgod,hab ich dann auch gemerkt
+2010-01-14 23:26:29,tecgod,",aber der Compiler wollte als erstes kein return annehmen"
+2010-01-14 23:26:40,tecgod,aber gute Nacht 
+2010-01-14 23:41:29,JanDing,funktioniert wunderbar. danke dickhuuhn
+2010-01-14 23:41:52,JanDing,(?<!^) hab ich allerdings genommen
+2010-01-14 23:41:59,JanDing,teufelszeug
+2010-01-14 23:44:22,DesL,"irgendeiner auf SM, der isch ernuet meine immer noch kaputte gdt anscheut?"
+2010-01-14 23:52:45,taljeth,DesL: bochs und qemu machen das gern
+2010-01-14 23:52:53,Programm_Noob,gn8
+2010-01-14 23:53:31,taljeth,gn8 Programm_Noob

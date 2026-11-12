@@ -1,0 +1,1184 @@
+date/time,nick,message
+2012-02-02 00:07:07,Jidder,"also im prinzip kannst du zum beispiel sagen, dass das obere gigabyte des adressraums kernel space ist"
+2012-02-02 00:07:16,Jidder,das heißt die letzten 256 einträge im page directory
+2012-02-02 00:07:43,Jidder,jedes mal wenn du zu einem task wechselst kopierst du diese einträge vom aktuellen page directory in das page directory des neuen task
+2012-02-02 00:08:50,Tectu,"wieso oberen? dachte  0x0 - 0x40000000  ist kernel, und von 0x40000001 bix 0xffffffff ist user"
+2012-02-02 00:08:54,Tectu,das sei das normale
+2012-02-02 00:08:59,Jidder,normal ist gar nichts
+2012-02-02 00:09:04,Jidder,mach wie du willst
+2012-02-02 00:09:15,Jidder,windows und linux haben den kernel allerdings oben
+2012-02-02 00:09:22,Tectu,mit welcher begründung?
+2012-02-02 00:09:30,Jidder,weil das seit 1970 so gemacht wurde
+2012-02-02 00:09:34,Jidder,(true story)
+2012-02-02 00:09:42,Tectu,"naja, gibt nen technischen hintergrund?"
+2012-02-02 00:09:55,Jidder,user space soll soviel speicher wie möglich bekommen
+2012-02-02 00:10:05,Jidder,und der user space wächst immer in die richtung oben
+2012-02-02 00:10:13,Jidder,das heißt der kernel muss so weit weg wie möglich sein
+2012-02-02 00:10:19,Tectu,hmm
+2012-02-02 00:10:22,Jidder,wobei man das natürlich auch anders lösen kann
+2012-02-02 00:10:35,Tectu,"naja, sagen wir einfachheitshalber für mich jetzt:  erstes GB ist kernel, der rest ist user"
+2012-02-02 00:10:43,Jidder,(das wachsen unter unix ist z.b. der sbrk call)
+2012-02-02 00:10:50,rizor_,außerdem bleibt so eine möglichkeit für vm86-tasks ohne viel geschummel
+2012-02-02 00:10:58,Tectu,"was jetzt in dem obig gelinkten wiki artikel steht... well, keine ahnung wie das implementieren o.O"
+2012-02-02 00:11:13,Tectu,"okay, dann halt kernel oben, ist ja gut :D"
+2012-02-02 00:11:40,Jidder,kernel oben kann auch schwierigkeiten bereiten
+2012-02-02 00:11:46,Tectu,"also ist user von 0x0 bis 0x40000000, einverstanden?"
+2012-02-02 00:11:46,Jidder,beim starten
+2012-02-02 00:11:53,Tectu,"urgs, nein, das währ ja fail"
+2012-02-02 00:12:10,Tectu,"Jidder, was für schwierigkeiten?"
+2012-02-02 00:12:32,Jidder,naja dann ist der kernel plötzlich an eine andere addresse gelinkt (0xc0000000) als der bootloader ihn lädt (0x100000)
+2012-02-02 00:12:37,Jidder,damit musst du irgendwie zurecht kommen
+2012-02-02 00:12:45,rizor_,"du musst aufpassen, dass du den boot-code klar vom normalen code trennst"
+2012-02-02 00:12:48,Jidder,"die erfahrung hat gezeigt, dass dich das tage beschäftigen kann"
+2012-02-02 00:12:55,rizor_,"sonst kann es zu problemen kommen, wenn paging deaktiviert ist"
+2012-02-02 00:13:06,Jidder,s/dich/anfänger
+2012-02-02 00:13:16,Jidder,s/anfänger/neukunden
+2012-02-02 00:13:44,Tectu,"okay, darf ich meinen kernel unten plazieren? :D"
+2012-02-02 00:13:48,Jidder,klar
+2012-02-02 00:13:51,rizor_,klar
+2012-02-02 00:13:51,Tectu,und user von 0x4... zu 0xf...
+2012-02-02 00:14:00,Tectu,"dann habe ich als newbie auch keine probleme, richtig?"
+2012-02-02 00:14:00,Jidder,erst0r
+2012-02-02 00:14:01,rizor_,alles machbar
+2012-02-02 00:14:24,Tectu,"also, zurück zum wiki..."
+2012-02-02 00:14:38,ph3-der-loewe,theoretich kannste deinen kernel auch auf jeder zweiten page plazieren
+2012-02-02 00:14:39,Tectu,ich hab erlich gesagt keinen plan wo ich lang gehen soll
+2012-02-02 00:14:48,ph3-der-loewe,aber viel spars beim speicher allozieren ;)
+2012-02-02 00:14:49,Tectu,"ph3-der-loewe, sehr schön, danke ;-)"
+2012-02-02 00:15:14,Jidder,"ich würde sagen dass der erste schritt ist, nur die nötigen pages zu mappen"
+2012-02-02 00:15:34,Tectu,was heisst nötige pages
+2012-02-02 00:15:48,Tectu,wie weit nötig
+2012-02-02 00:15:49,Jidder,"also du solltest erstmal versuchen diese schleife     for (i = 0; i < 4096 * 1024; i += 0x1000) {vmm_map_page(kernel_context, i, i); zu ersetzen"
+2012-02-02 00:16:10,Tectu,also dass nur die grösse vom kernel gemapped wird?
+2012-02-02 00:16:14,Jidder,genau
+2012-02-02 00:16:18,Tectu,und nicht die angenommenen 4MB
+2012-02-02 00:16:20,Jidder,jo
+2012-02-02 00:16:22,Jidder,aber das ist ja nicht alles
+2012-02-02 00:16:32,Tectu,"okay, vlt. ne dumme frage... aber wie kriege ich denn raus, wie gross mein kernel ist? o0"
+2012-02-02 00:16:39,Tectu,ist das auch in der mb_info?
+2012-02-02 00:16:47,Jidder,mit hilfe des linkers
+2012-02-02 00:16:54,Jidder,"es kommen dazu: stack, videospeicher, vielleicht mb_info"
+2012-02-02 00:17:03,Jidder,also ich bin hier auch so ein zwischenablagennutzer ...
+2012-02-02 00:17:15,Jidder,diese dinge musst du zusätzlich zum kernel mappen
+2012-02-02 00:17:30,Tectu,"Jidder, zwischenablagennutzer?"
+2012-02-02 00:17:39,Jidder,egal ignoriere die zeile
+2012-02-02 00:17:47,Tectu,"ui, um das linker script habe ich mich erlichgesagt noch garnicht gekümmert"
+2012-02-02 00:17:56,Jidder,"wenn du dich an das tutorial gehalten hast, dann solltest du im linkerskript zwei zeilen kernel_start = .; und kernel_end = .; haben"
+2012-02-02 00:18:10,Jidder,du schreibst in deinen code folgendes: extern char kernel_start[]; extern char kernel_end[];
+2012-02-02 00:18:17,Jidder,dann ist die größe des kernels kernel_end - kernel_start
+2012-02-02 00:18:23,Jidder,und die adresse des kerneles kernel_start
+2012-02-02 00:18:47,Tectu,mal gucken
+2012-02-02 00:18:56,Tectu,"jow, das habe ich"
+2012-02-02 00:19:04,Tectu,ich versuch das mit der kernelgrösse erst mal :)
+2012-02-02 00:19:20,Tectu,"habe gerne kleine schritte, darum bin ich mit dem wiki artikel gerade ziemlich überfordert."
+2012-02-02 00:19:44,Jidder,am ende dieses artikels bist du sogar ganz auf dich alleine gestellt ;)
+2012-02-02 00:19:51,Tectu,hrhr
+2012-02-02 00:20:06,Tectu,der artikel wird mich wohl noch ein paar monate bis jährchen beschäftigen -.-
+2012-02-02 00:20:26,Jidder,"bevor du dann tatsächlich anfängst am paging code rumzufummeln, solltest du schauen, dass du page faults anständig behandelst"
+2012-02-02 00:20:32,Jidder,und diese dann auch debuggen kannst
+2012-02-02 00:22:08,Jidder,"wenn du qemu verwendest, kannst du natürlich auch in das qemu.log gucken, wie im tutorial"
+2012-02-02 00:22:36,Tectu,"jup, bin ein QEMUler"
+2012-02-02 00:24:41,Tectu,wie ich sowas aber richtig handle ist mir noch schleierhaft
+2012-02-02 00:25:36,Jidder,richtig behandeln sind jetzt etwas große worte
+2012-02-02 00:25:55,Jidder,"vor allem solltest du schnell rauskriegen können, wo der fehler aufgetreten ist, und alles was die CPU zu dem fehler weiß"
+2012-02-02 00:27:37,Jidder,mein handler sieht z.b. so aus http://pastebin.com/raw.php?i=wHQ3Up3J
+2012-02-02 00:28:10,Jidder,der derzerlegt mir wenn num == 14 ist schön das error-feld aus dem interrupt stack frame
+2012-02-02 00:28:17,Jidder,"damit ich auch ja nicht denken muss, was die bits bedeuten"
+2012-02-02 00:28:24,Jidder,denken verursacht fehler
+2012-02-02 00:28:48,Jidder,"ansonsten sind immer eip, esp, cr2 und cr3 wichtige werte"
+2012-02-02 00:29:02,Jidder,"wenn welche davon gleich sind, ist heißt das meistens was"
+2012-02-02 00:29:03,Jidder,^^
+2012-02-02 00:29:37,taljeth,"kernel_start ist doch kein char[], sondern ein const void"
+2012-02-02 00:30:25,Jidder,der kernel ist eine folge von reellen zahlen
+2012-02-02 00:30:32,Jidder,meine turing maschine interpretiert das als array von bytes
+2012-02-02 00:30:39,Tectu,"dachte ich auch die ganze zeit, habe mich auch einem    extern const uint32_t* bedient"
+2012-02-02 00:30:51,Jidder,das is übrigens falsch
+2012-02-02 00:31:03,Tectu,"hmm, meine kernel_start adresse ist höher als meine kernel_end adresse?"
+2012-02-02 00:31:21,Jidder,hast du *kernel_start geschrieben?
+2012-02-02 00:31:22,taljeth,"Ob es falsch ist, kommt drauf an, was er macht"
+2012-02-02 00:31:43,Jidder,oder nein kernel_start verursacht das drama ja auch schon
+2012-02-02 00:31:44,Tectu,"Jidder, jow:    extern const uint32_t *kernel_start;"
+2012-02-02 00:31:46,taljeth,"Aber logisch gesehen ist es ein void, und da kann man auch nicht aus Versehen den Wert statt der Adresse benutzen"
+2012-02-02 00:32:01,Jidder,wenn extern const uint32_t *kernel_start; dann immer &kernel_start um die adresse rauszubekommen
+2012-02-02 00:32:17,Jidder,aber mit voids kann man keine arithmetik machen
+2012-02-02 00:32:25,Tectu,"Jidder, erst casten"
+2012-02-02 00:32:39,Jidder,meine 20 megabytefestplatte ist voll mit casts
+2012-02-02 00:32:41,Jidder,platzverschwendung!
+2012-02-02 00:32:42,Tectu,"Jidder, aber kann ich das so benutzen?"
+2012-02-02 00:32:50,Jidder,&kernel_start
+2012-02-02 00:32:55,taljeth,Außerhalb eines Objekts darf man eh keine Pointerarithmetik machen ;-)
+2012-02-02 00:32:58,Tectu,ich meine als const uint32_t *
+2012-02-02 00:33:03,Jidder,wenn es sein muss
+2012-02-02 00:33:11,taljeth,"Es ergibt nicht viel Sinn, aber es geht"
+2012-02-02 00:33:19,Jidder,"aber sowohl const, sowie uint32_t und der * sind nicht korrekt^^"
+2012-02-02 00:34:19,Jidder,"das ist als ob du dem hund deiner tante einen brief schreibst, und immer die adresse deiner tante auf den umschlag schreibst, aber nicht mit ihrem namen, sondern dem namen des hundes."
+2012-02-02 00:34:21,Jidder,der brief kommt zwar an
+2012-02-02 00:34:26,Jidder,aber der hund kann ihn trotzdem nicht aufmachen
+2012-02-02 00:34:49,Tectu,dafuq?
+2012-02-02 00:34:54,Tectu,erklär mir das bitte technisch ;)
+2012-02-02 00:35:27,Jidder,const uint32_t *kernel_start heißt dass an den ersten 4 bytes (uint32_t) deines kernels ein zeiger steht
+2012-02-02 00:35:48,Jidder,äh ne
+2012-02-02 00:35:57,taljeth,Ein Zeiger auf einen uint32_t
+2012-02-02 00:36:00,Jidder,"const uint32_t *kernel_start heißt dass an den ersten 4 bytes deines kernels ein zeiger steht, und er auf konstante uint32_t's zeigt"
+2012-02-02 00:36:22,Tectu,grml
+2012-02-02 00:36:38,Tectu,"ich blick nicht ganz durch, was ich von dem linker script mit extern kriege"
+2012-02-02 00:36:41,Tectu,ist das nen pointer?
+2012-02-02 00:36:42,Tectu,nehme ich an.
+2012-02-02 00:36:47,Jidder,nein ein symbol
+2012-02-02 00:36:47,taljeth,Das ist ein Symbol
+2012-02-02 00:36:48,Tectu,einfach ein void pointer?
+2012-02-02 00:37:07,Jidder,ein symbol ist in assembler ein label
+2012-02-02 00:37:09,taljeth,"Nein, nur ein Symbol ohne irgendwelchen Inhalt"
+2012-02-02 00:37:24,taljeth,Aber du kannst einen Pointer darauf nehmen
+2012-02-02 00:38:10,taljeth,gn8
+2012-02-02 00:38:13,Jidder,gn8
+2012-02-02 00:38:25,Jidder,so jetzt widerspricht mir keiner mehr
+2012-02-02 00:38:45,Tectu,hrhrhr
+2012-02-02 00:38:53,Tectu,"also, ich habe mich nach dem hier so entschieden:"
+2012-02-02 00:39:31,Tectu,extern const void kernel_start/_end;   static uint32_t kernel_length; kernel_length = (uint32_t*)&kernel_end - (uint32_t*)&kernel_start; o0
+2012-02-02 00:39:41,Jidder,ne
+2012-02-02 00:39:42,Tectu,ist das nicht quatsch?
+2012-02-02 00:40:14,Jidder,das (uint32_t*) durch uintptr
+2012-02-02 00:40:18,Jidder,das (uint32_t*) durch (uintptr_t) ersetzen
+2012-02-02 00:40:36,Jidder,weil (uint32_t*)8 - (uint32_t*)4 =  1
+2012-02-02 00:40:44,Tectu,kollege.... typedef  uint32_t* uintptr_t
+2012-02-02 00:40:46,Jidder,das ist nicht das was wir wollen
+2012-02-02 00:40:49,Jidder,nä
+2012-02-02 00:40:56,Jidder,uintptr_t ist kein pointer
+2012-02-02 00:41:03,Jidder,typedef unsigned int uintptr_t
+2012-02-02 00:41:13,Jidder,oder meinetwegen typedef uint32_t uintptr_t
+2012-02-02 00:41:16,Tectu,"aaah, stimm:   typedef uint32_t uintptr_t;"
+2012-02-02 00:41:19,Tectu,das steht in meiner types.h
+2012-02-02 00:41:22,Tectu,"falsche erinnerung, sorry"
+2012-02-02 00:41:22,Jidder,"uintptr_t ist ein integer, das so groß ist wie ein pointer"
+2012-02-02 00:41:34,Tectu,also 4
+2012-02-02 00:41:43,Jidder,jop
+2012-02-02 00:41:50,Jidder,kriegst eine 1 im nächsten mathetest
+2012-02-02 00:42:42,Tectu,:d
+2012-02-02 00:42:59,Tectu,also  kernel_length = 163840
+2012-02-02 00:43:08,Tectu,kommt das hin?
+2012-02-02 00:43:11,Jidder,"groß, aber plausibel"
+2012-02-02 00:43:26,Tectu,jud
+2012-02-02 00:43:26,Tectu,so
+2012-02-02 00:43:29,Jidder,was haste denn so alles in deinem kernel? zufällig eine bitmap für jede page im 4gb adressraum?
+2012-02-02 00:43:53,Jidder,in der physischen speicherverwaltung
+2012-02-02 00:44:56,Tectu,"Jidder, mein kernel ist so 80% tutorial code ;-)"
+2012-02-02 00:45:05,Tectu,also -> ja :D
+2012-02-02 00:45:21,Jidder,gut dann kommt die zahl wohl hin
+2012-02-02 00:45:27,Tectu,"128kb ist nur shcon die bitmap, afaik"
+2012-02-02 00:45:36,Jidder,jo
+2012-02-02 00:45:47,Tectu,"ja, will jetzt nen richtig fertigen tutorialkernel, wenn ich das dann habe, inc. paging, dann neu anfangen, mit dem jetzigen wissen"
+2012-02-02 00:45:50,Tectu,so sieht mein plan aus
+2012-02-02 00:46:07,Jidder,das kannste machen
+2012-02-02 00:46:16,Tectu,"sodele, also jetzt habe ich die kernel lenge in bytes"
+2012-02-02 00:46:30,Jidder,und die kernel-adresse!
+2012-02-02 00:46:55,Tectu,richtig.   (uintptr_t)&kernel_start
+2012-02-02 00:47:51,Tectu,for (i = 0; i < 4096 * 1024; i += 0x1000)  -> for (i = 0; i < kernel_length * 1024; i += 0x1000)
+2012-02-02 00:48:01,Tectu,sehe ich das richtig?
+2012-02-02 00:48:15,Jidder,kernel_length ist ja in bytes
+2012-02-02 00:48:46,Tectu,4096 ist doch auch in bytes?
+2012-02-02 00:49:05,Tectu,"""in bytes""..."
+2012-02-02 00:49:25,Tectu,"ah, jetzt hole ich mir speicher für 1024x den kernel"
+2012-02-02 00:49:25,Jidder,hm wie sag ich das besser ...
+2012-02-02 00:49:31,Jidder,genau
+2012-02-02 00:49:45,Tectu,"bissel waste, was? :D"
+2012-02-02 00:49:51,Jidder,wat
+2012-02-02 00:49:57,Jidder,ein bisschen?
+2012-02-02 00:50:13,Tectu,hrhr
+2012-02-02 00:50:13,Jidder,ich komm da gleich mal durch die leitung und dann heben wir einen
+2012-02-02 00:50:19,ph3-der-loewe,"(der loewe empfilt: nicht Dezimal und Hex in einer formel mixen, klammern um subausdreucke bei bergleichen)"
+2012-02-02 00:50:25,Jidder,"dann sehen wir mal, wer hier zuerst ausfallserscheinungen hat"
+2012-02-02 00:50:54,Tectu,"Jidder, naja, aber jetzt hab ich ja statt 4MB nur noch die kernel grösse in der vmm_init()... was bringt mir das? will doch den kernel_context los werden?"
+2012-02-02 00:51:10,Tectu,"ah, warte... einmal muss ich den erstellen, um dann den in die prozesse kopieren zu können, richtig?"
+2012-02-02 00:51:20,Tectu,also bis der erste prozess kommt brauche ich den kernel_context
+2012-02-02 00:51:21,Jidder,jo
+2012-02-02 00:51:27,Jidder,genau
+2012-02-02 00:51:44,Jidder,im kernel_context kannste dann einen idle prozess laufen lassen oder so
+2012-02-02 00:51:56,Tectu,http://pastebin.com/10kbYF7T
+2012-02-02 00:51:57,Tectu,sodele
+2012-02-02 00:52:30,Jidder,damit mappst du ja speicher beginnend von adresse 0
+2012-02-02 00:52:38,Tectu,"richtig, fail."
+2012-02-02 00:52:38,Jidder,aber du willst ja bei kernel_start anfangen
+2012-02-02 00:52:49,Tectu,i = kernel_start   i < kernel_length
+2012-02-02 00:52:59,Tectu,nein
+2012-02-02 00:53:04,Tectu,nein nein nein
+2012-02-02 00:53:20,Jidder,http://www.youtube.com/watch?v=6L9RgU8KB6A
+2012-02-02 00:53:54,Tectu,"Jidder, ich sehe das problem, gib mir ein paar minuten um das zu fixen, brauche da bissel länger, code nicht seit 40 jahren"
+2012-02-02 00:54:08,Jidder,"okay, sonst könnte ich die schleife auch vorsagen"
+2012-02-02 00:54:10,Jidder,du hast es ja fast ^^
+2012-02-02 00:54:21,Tectu,"ne, nicht einfach vorsagen :D"
+2012-02-02 00:54:30,Jidder,gut dann nicht ^^
+2012-02-02 00:54:34,Tectu,"ich frag schon, wenn ich nicht weiter weiss"
+2012-02-02 00:54:36,Tectu,:P
+2012-02-02 00:55:20,Jidder,"hm ist segment &s = *new vm::segment(addr, size); ein anti-pattern?"
+2012-02-02 00:55:26,Jidder,das dereferenzieren in eine referenz
+2012-02-02 00:55:44,Jidder,JidderOS Version 45 tut das nämlich
+2012-02-02 00:56:18,Tectu,"naja, Jidder aber so sollte das imo stimmen:"
+2012-02-02 00:56:19,Tectu,        for (i = kernel_start; i < kernel_length; i += 0x1000)
+2012-02-02 00:56:19,Tectu,"                vmm_map_page(kernel_context, i, i);"
+2012-02-02 00:56:28,Tectu,"oh, nein"
+2012-02-02 00:56:36,Jidder,:)
+2012-02-02 00:56:39,Tectu,das i ist jetzt nicht mehr += 0x1000 richtig?
+2012-02-02 00:56:42,Jidder,doch
+2012-02-02 00:56:47,Jidder,das i < kernel_length ist nicht richtig
+2012-02-02 00:57:02,Tectu,kernel_end
+2012-02-02 00:57:03,Jidder,kernel_start = 0x100000 = ca. 1000000 aber kernel_length= 160000
+2012-02-02 00:57:04,Jidder,jo
+2012-02-02 00:57:23,Tectu,"yae, darum hatte ich vorher noch i = 0; weil ich dann genau kernel_length aufrufe habe"
+2012-02-02 00:57:33,Tectu,aber das macht mit dem i als übergabeparameter nicht viel sinn für die map_page
+2012-02-02 00:57:34,Jidder,jo
+2012-02-02 00:57:51,Jidder,"alternative wäre vmm_map_page(kernel_context, i +kernel_Start, i+kernel_Start)"
+2012-02-02 00:58:08,Jidder,du solltest übrigens sichergehen das kernel_start page-aligned ist
+2012-02-02 00:58:16,Tectu,wie das?
+2012-02-02 00:58:33,Jidder,if (kernel_start & 0xfff != 0) { error_kernel_start_not_page_aligned(); }
+2012-02-02 00:58:42,Jidder,0xfff = 4095 = PAGE_SIZE - 1
+2012-02-02 00:58:53,Jidder,klammern etc
+2012-02-02 00:58:56,Jidder,nicht vergessen ^^
+2012-02-02 00:59:34,Tectu,was mache ich denn beim error
+2012-02-02 00:59:36,Tectu,wie handle ich sowas
+2012-02-02 00:59:55,Jidder,alternative: int start = &kernel_start; if (start & 0xfff != 0) start = start - (start & 0xfff);
+2012-02-02 01:00:05,Jidder,du machst es page aligned
+2012-02-02 01:00:10,Jidder,das macht mein beispiel da 
+2012-02-02 01:00:23,Jidder,"die if-abfrage kannste dir schenken, weil x - 0 = x"
+2012-02-02 01:01:02,Tectu,das legt doch ne maske über kernel_start
+2012-02-02 01:01:07,Tectu,das verändert ja den wert von kernel_start
+2012-02-02 01:01:14,Tectu,imo müsste doch ein alignement den kernel shiften?
+2012-02-02 01:01:27,Jidder,der wert wird nicht verändert. deswegen die neue variable stat
+2012-02-02 01:01:29,Tectu,"sorry, verstehe ich jetzt nicht"
+2012-02-02 01:01:29,Jidder,start
+2012-02-02 01:01:43,Tectu,"aye, jetzt sehe ich"
+2012-02-02 01:01:45,Jidder,"beispiel, wenn kernel_start nicht 0x100000 sondern 0x100123 ist"
+2012-02-02 01:02:13,Jidder,gut dann hör ich auf mit dem beispiel ^^
+2012-02-02 01:02:21,Tectu,"mmh, ich verstehe"
+2012-02-02 01:02:24,Tectu,"also ich kann in der vmm_init()   kernel_start & 0xfff   einfach immer aufrufen, und jud ist?"
+2012-02-02 01:02:49,Jidder,also ich hab ein problem mit dem wort immer
+2012-02-02 01:03:14,Tectu,"naja, einfach vmm_init() { kernel_start & 0xfff; und dann erst alles andere }"
+2012-02-02 01:03:25,Jidder,kernel_start ist keine variable
+2012-02-02 01:03:27,Jidder,sondern ein symbol
+2012-02-02 01:03:29,Jidder,du kannst es also nicht verändern
+2012-02-02 01:03:41,Tectu,stimmt
+2012-02-02 01:03:43,Tectu,hmm
+2012-02-02 01:03:50,Jidder,du kannst aber immer uintptr_t x = ((uintptr_t)&kernel_start) & ~0xfff; machen
+2012-02-02 01:04:19,Jidder,wobei das halt genau das selbe ist wie x = ((uintptr_t)&kernel_start) - ((uintptr_t)(&kernel_start) & 0xfff);
+2012-02-02 01:04:36,Jidder,und dann mit x statt kernel_start weiter rechnen
+2012-02-02 01:04:40,Tectu,"was mache ich dann für kernel_end? muss ja die gleiche länge gewährleisten... wenn ich kernel_start jetzt aligne, und kernel_end nicht, verändert sich ja die grösse?"
+2012-02-02 01:05:01,Jidder,jo
+2012-02-02 01:05:17,Jidder,"dafür musst du halt kernel_length erst berechnen, nachdem du kernel_start ""verändert"" hast"
+2012-02-02 01:06:40,Tectu,hä
+2012-02-02 01:06:43,Tectu,jetz tblick ich nimmer durch
+2012-02-02 01:07:00,Tectu,"warte, erstens, was zur hölle macht das  ~ vor zwischen dem & 0xfff;"
+2012-02-02 01:07:13,Tectu,und wieso ist das PAGE_SIZE - 1 und nicht PAGE_SIZE?
+2012-02-02 01:08:01,Jidder,hm da muss ich mal ein bild malen
+2012-02-02 01:09:11,Tectu,gerne
+2012-02-02 01:10:27,Jidder,ne mir fällt da jetzt auch nichts ein außer viel text
+2012-02-02 01:10:37,Jidder,also ich schreib mal was
+2012-02-02 01:11:52,Tectu,"gerne :) weisst, ja, dass ich gerne alles ganz genau weiss :D"
+2012-02-02 01:12:47,Jidder,achso erstmal ~ kippt alle bits um
+2012-02-02 01:14:01,Jidder,4096 ist in hex = 0x00001000 und in binär = 00000000 00000000 00010000 00000000
+2012-02-02 01:14:04,Jidder,4095 ist in hex = 0x00000fff und in binär = 00000000 00000000 00001111 11111111
+2012-02-02 01:14:25,Jidder,das ist eine schöne eigenschaft von binärzahlen beziehungsweise zweierpotenzen in binärdarstellung
+2012-02-02 01:15:00,Jidder,PAGE_SIZE = 2^12 und (2^12)-1 sind 12 kleine einsen
+2012-02-02 01:15:14,Tectu,dann sollte ich aber stat & ~0xfff auch   & 0x1000  schreiben können?
+2012-02-02 01:15:20,Jidder,ne
+2012-02-02 01:15:27,Jidder,~0xfff ist  11111111 11111111 11110000 00000000
+2012-02-02 01:15:33,Tectu,"aah, bits"
+2012-02-02 01:15:34,Jidder,weil alle 0 zu 1 werden und alle 1 zu 0
+2012-02-02 01:15:34,Tectu,ich sehe
+2012-02-02 01:16:06,Jidder,bzw. in hexadezimal ~0xfff = 0xfffff000
+2012-02-02 01:16:11,Jidder,für 32-bit integers
+2012-02-02 01:16:44,Jidder,und dann ist 0x12345678 & 0xfffff000 = 0x12345000
+2012-02-02 01:17:08,Jidder,"also page-aligned, abgerundet auf ein vielfaches der PAGE_SIZE oder was auch immer man dazu sagen will"
+2012-02-02 01:17:30,Tectu,komisch
+2012-02-02 01:17:33,Tectu,aber ich glaube du hast recht :D
+2012-02-02 01:18:30,Tectu,berechne ich kernel_length jetzt VOR oder NACH dem kernel_start alingement?
+2012-02-02 01:18:43,Tectu,"verstehe noch nicht was ich dann mit kernel_end mache, wegen dem alingment"
+2012-02-02 01:21:13,Jidder,danach
+2012-02-02 01:21:16,Jidder,oder vielleicht auch gar nicht
+2012-02-02 01:21:39,Jidder,wenn du for (i = kernel_start; i < kernel_start + kernel_length; ...) machst
+2012-02-02 01:21:52,Jidder,kannst du auch gleich for (i = kernel_start; i < kernel_end; ...) machen
+2012-02-02 01:22:08,Jidder,bzw. du musst natürlich die richtigen casts bzw. das mit dem alignment einsetzen
+2012-02-02 01:22:44,Tectu,"na, das hab ich ja jetzt"
+2012-02-02 01:22:49,Tectu,dann kamst du mit dem alingement
+2012-02-02 01:22:55,Jidder,"wenn du meinst, dass du kernel_end alignen musst: eigentlich ja"
+2012-02-02 01:23:19,Tectu,http://pastebin.com/F5YwVjZG
+2012-02-02 01:23:28,Tectu,"ich frage ja, ob der das muss oder nicht"
+2012-02-02 01:23:45,Jidder,for (i = kernel_start_al
+2012-02-02 01:24:15,Jidder,und dann natürlich nicht einfach i < kernel_end sondern i < ((uintptr_t)&kernel_end)
+2012-02-02 01:25:13,Tectu,"ja, das _al habe ich jetzt absichtlich noch nicht verwendet"
+2012-02-02 01:25:16,Jidder,"du musst kernel_end nicht alignen, weil du es nur in der schleife verwendest"
+2012-02-02 01:25:17,Tectu,will jetzt erst wissen wie ich das mache
+2012-02-02 01:25:23,Tectu,"also, mein kernel ist jetzt page aligned, richtig?"
+2012-02-02 01:25:24,Jidder,aber du kannst es
+2012-02-02 01:25:27,Jidder,ja
+2012-02-02 01:25:59,Tectu,und kernel_length habe ich VOR dem alignement berechnet?
+2012-02-02 01:26:24,Tectu,also kernel_length mit kernel_start oder mit kernel_start_al berechnen?
+2012-02-02 01:26:34,Jidder,mit kernel_start_al
+2012-02-02 01:27:28,Tectu,un dann muss ich meine schleife auch nicht ändern?
+2012-02-02 01:27:38,Tectu,ausser i = kernel_start_al
+2012-02-02 01:27:43,Jidder,jo
+2012-02-02 01:28:54,Tectu,kernel_start_al ist uintptr_t?
+2012-02-02 01:29:05,Jidder,ja
+2012-02-02 01:30:51,Tectu,dann muss ich kernel_start_al für i noch casten
+2012-02-02 01:30:56,Tectu,nein
+2012-02-02 01:31:00,Tectu,bwhahwhwahsdflasdfjaseu0ruadsjf
+2012-02-02 01:31:16,Jidder,das hab ich auch gerade gedacht
+2012-02-02 01:32:12,Tectu,hrhr
+2012-02-02 01:32:47,Jidder,man kann die abdrücke davon noch in meiner stirn erkennen
+2012-02-02 01:34:27,Tectu,src/vmm.c:31:6: error: void value not ignored as it ought to be
+2012-02-02 01:34:34,Tectu,was zur hölle soll das denn bedeuten?
+2012-02-02 01:34:55,Jidder,du hast eine funktion als void irgendwas() deklariert aber schreibst dann x = irgendwas()
+2012-02-02 01:35:07,Jidder,oder aber du hast ein & vor denen kernel_start/_end vergessen
+2012-02-02 01:36:20,Jidder,ich bin auch so ein code sortierer
+2012-02-02 01:37:05,Jidder,anstatt nach jeder allokation den zustand des allokator zu dump hab ich folgendes gemacht
+2012-02-02 01:37:15,Jidder,http://pastebin.com/HERtGC5H
+2012-02-02 01:37:18,Jidder,roflkopert
+2012-02-02 01:37:22,Jidder,wasn nerd
+2012-02-02 01:37:50,Jidder,welches jahr haben wir?
+2012-02-02 01:37:55,Tectu,2012
+2012-02-02 01:38:17,Tectu,        uintptr_t kernel_start_al = ((uintptr_t)&kernel_start) & ~0xfff;
+2012-02-02 01:38:17,Tectu,        kernel_length = (uintptr_t)&kernel_end - (uintptr_t)&kernel_start_al;
+2012-02-02 01:38:28,Tectu,"Jidder, sicher, dass das so stimmt? ich glaube nicht."
+2012-02-02 01:38:32,Jidder,ne
+2012-02-02 01:38:43,Tectu,uintptr_t x      |     (uintptr_t)&x;
+2012-02-02 01:38:47,Jidder,kernel_start_al ist ja eine normale variable
+2012-02-02 01:38:51,Jidder,kernel_length = (uintptr_t)&kernel_end - kernel_start_al;
+2012-02-02 01:39:07,Tectu,"ah, wir sind uns einig"
+2012-02-02 01:39:34,Tectu,naja
+2012-02-02 01:39:40,Tectu,der will noch immer nicht :P
+2012-02-02 01:39:49,Jidder,was sagt er?
+2012-02-02 01:40:27,Tectu,noch immer das selbe wie oben
+2012-02-02 01:40:31,Tectu,und zeile 32 ist die for
+2012-02-02 01:40:47,Tectu,for (i = kernel_start_al; i < kernel_end; i += 0x1000)
+2012-02-02 01:40:51,Tectu,irgend was mache ich noch falsch
+2012-02-02 01:40:56,Tectu,zumal habe ihc noch immer bedenken mit dieser for
+2012-02-02 01:40:56,Jidder,i < (uintptr_t)&kernel_end
+2012-02-02 01:41:16,Jidder,meine schnitzel sind alle
+2012-02-02 01:41:27,Tectu,"aber warte doch mal... mein kernel_length wird durch das alingement grösser, wenns nicht schon alinged ist, oder?"
+2012-02-02 01:41:38,Jidder,ja
+2012-02-02 01:41:45,Jidder,aber lass dich nicht verwirren
+2012-02-02 01:41:51,Jidder,wenn du kernel_length nirgends benutzt
+2012-02-02 01:42:43,Tectu,"naja, jetzt kann ich compilen, aber er bootet nimmer... -.-'  http://pastebin.com/GBy25pyX"
+2012-02-02 01:43:32,Tectu,"das kann so doch nicht richtig sein, Jidder "
+2012-02-02 01:45:40,Jidder,der elektriker hat die lichtschalter für die lampe auf der treppe und die auf dem flur verkehrt herum verkabelt
+2012-02-02 01:45:48,Jidder,wir wohnen hier seit 13 jahren 
+2012-02-02 01:46:00,Tectu,huch?
+2012-02-02 01:46:02,Tectu,wie das?
+2012-02-02 01:46:04,Jidder,ich drück immer noch auf den falschen schalter
+2012-02-02 01:46:08,Tectu,"hrhrhr, das kenn ich"
+2012-02-02 01:46:13,Tectu,geht mir inner küche immer wieder genau so
+2012-02-02 01:46:17,Tectu,die sind gerade falsch herum
+2012-02-02 01:46:22,Tectu,küche und esssaal
+2012-02-02 01:46:55,Jidder,"was heißt, dass er nicht mehr bootet?"
+2012-02-02 01:47:16,Jidder,also wie macht sich das bemerkbar?
+2012-02-02 01:47:22,Jidder,"""wo tuts denn weh?"""
+2012-02-02 01:47:32,Tectu,qemu starten -> reboot reboot reboot -> cpu reset
+2012-02-02 01:47:43,Jidder,"""herr doktor, immer wenn ich so machen, dann tuts im arm weh."" ""ja dann machen sie halt nicht mehr so"""
+2012-02-02 01:47:57,Jidder,und was machen wir wenn qemu rebootet?
+2012-02-02 01:48:06,Jidder,um rauszukriegen warum qemu rebootet?
+2012-02-02 01:48:18,Jidder,tip es steht in teil 9
+2012-02-02 01:48:47,Jidder,vielleicht nicht explizit
+2012-02-02 01:49:02,Jidder,"aber es wird da etwas von qemu erwähnt, das hilft fehler zu finden"
+2012-02-02 01:49:03,Tectu,jojo
+2012-02-02 01:49:06,Tectu,"doch, steht da ;-)"
+2012-02-02 01:52:19,Tectu,"Jidder, http://pastebin.com/jnJdkD9b"
+2012-02-02 01:53:14,Jidder,CR2=00000040
+2012-02-02 01:53:27,Jidder,das ist das was dir hoffentlich auch aufgefallen ist
+2012-02-02 01:53:38,Jidder,ansonsten bei page faults immer auf CR2 gucken
+2012-02-02 01:53:51,Tectu,"naja, kann erlich gesagt damit nicht soo viel anfangen, zum jetzigen zeitpunkt"
+2012-02-02 01:54:01,Jidder,hm moment
+2012-02-02 01:54:08,Jidder,das ist ja eine kopie deiner shell
+2012-02-02 01:54:32,Jidder,also
+2012-02-02 01:54:36,Jidder,wenn du einen reboot hast
+2012-02-02 01:54:49,Jidder,dann solltest du immer in der qemu.log nach der ersten exception suchen
+2012-02-02 01:54:58,Jidder,meistens entweder page fault oder general protection fault
+2012-02-02 01:55:16,Jidder,was für eine art exception das ist kannst du an der nummer erkennen
+2012-02-02 01:55:19,Jidder,check_exception old: 0xffffffff new 0xe
+2012-02-02 01:55:25,Jidder,das ist zum beispiel ein page fault
+2012-02-02 01:55:31,Jidder,das new 0xe ist das interessante
+2012-02-02 01:55:36,Tectu,das ist #PF
+2012-02-02 01:55:48,Tectu,"pagefault eben, ja"
+2012-02-02 01:55:59,Tectu,"er findet also den kernel nimmer, richtig?"
+2012-02-02 01:56:17,Jidder,das ist die frage
+2012-02-02 01:56:26,Jidder,und bei einem page fault immer cr2 angucken
+2012-02-02 01:56:35,Jidder,in deinem pastebin steht CR2 in zeile 215
+2012-02-02 01:56:40,Jidder,was ist das deiner meinung nach?
+2012-02-02 01:57:27,Tectu,video speicher
+2012-02-02 01:57:31,Jidder,korrekt
+2012-02-02 01:57:41,Tectu,"0xb8000 bis 0xb8ffff, richtig?"
+2012-02-02 01:57:54,Jidder,"die erklärung dafür ist, dass du vergessen hast den videospeicher zu mappen, und troztdem versuchst etwas auszugeben"
+2012-02-02 01:57:56,Tectu,also eig. funtzt das was ich in der vmm_init bis jetzt habe :D
+2012-02-02 01:57:56,Jidder,ja
+2012-02-02 01:58:01,Jidder,jop
+2012-02-02 01:58:15,Tectu,"gut, was sagtest du nochmal? ich muss kernel, video speicher, und was nochmal mappen?"
+2012-02-02 01:58:22,Jidder,multiboot info
+2012-02-02 01:58:29,Jidder,falls du darauf zugreifen willst
+2012-02-02 01:58:51,Tectu,stimmt
+2012-02-02 01:59:02,Jidder,"außerdem hab ich noch den stack genannt. quizfrage wäre jetzt, warum dein code funktioniert, obwohl du das nicht explizit gemacht hast"
+2012-02-02 01:59:11,Tectu,"muss ich beim videospeicher und mb auch drauf gucken, dass die physikalisch und virtuell zusammen kontinuierlich beim kernel sind?"
+2012-02-02 01:59:56,Jidder,"hm die frage verstehe ich nicht ganz. videospeicher ist phyisch ja kontinuierlich, und virtuell ist es egal"
+2012-02-02 02:00:14,Jidder,multiboot info ist phyisch nicht unbedingt kontinuierlich und virtuell auch egal
+2012-02-02 02:00:33,Jidder,"multiboot info ist sowieso etwas tricky zu mappen, weil die ja nicht mal so groß ist wie eine page"
+2012-02-02 02:00:36,Jidder,und in da stehen pointer drin
+2012-02-02 02:00:40,Tectu,"ganz einfach funtzt das, oder?"
+2012-02-02 02:00:40,Tectu,http://pastebin.com/jnJdkD9b
+2012-02-02 02:00:49,Tectu,"falsch, sorry"
+2012-02-02 02:00:53,Tectu,"wollte nicht das pasten, hier"
+2012-02-02 02:01:05,Tectu,        for (i = 0xb8000; i <= 0xbffff; i++)
+2012-02-02 02:01:05,Tectu,"                vmm_map_page(kernel_context, i, i);"
+2012-02-02 02:01:16,Jidder,i += PAGE_SIZE
+2012-02-02 02:01:18,Jidder,statt i++
+2012-02-02 02:01:30,Tectu,stimmt
+2012-02-02 02:01:32,Jidder,ansonsten ja
+2012-02-02 02:02:10,Tectu,"ups, schon 2 uhr?"
+2012-02-02 02:02:13,Tectu,dachte währ so 23 oder so
+2012-02-02 02:02:25,Jidder,irgendwo auf der welt ist es 23 uhr^^
+2012-02-02 02:03:22,Tectu,ich danke dir ;)
+2012-02-02 02:03:37,Jidder,"hätteste ohne mich nicht gewusst, wa^^"
+2012-02-02 02:03:47,Tectu,jup
+2012-02-02 02:03:54,Tectu,"also, mb_info muss ich noch machen, richtig?"
+2012-02-02 02:03:59,Tectu,wie mache ich das? o0
+2012-02-02 02:04:15,Tectu,brauche dazu ja den offset und die grösse
+2012-02-02 02:04:17,Jidder,solltest du. alternative wäre nach dem aktivieren von paging nicht mehr darauf zuzugreifen
+2012-02-02 02:04:18,Tectu,"gut, grösse hätt ich ja"
+2012-02-02 02:04:23,Jidder,jo wird nicht einfach
+2012-02-02 02:04:43,Jidder,du hast jetzt ja zwei for-schleifen bereits in deiner funktion
+2012-02-02 02:04:58,Jidder,"vielleicht willst du erstmal eine funktion vmm_map_range(context, start, end) erfinden"
+2012-02-02 02:05:05,Jidder,"die genau das macht, was eine schleife macht"
+2012-02-02 02:05:11,Jidder,inklusive alignment
+2012-02-02 02:05:30,Tectu,"naja, das alignment ist mir noch incht so gehäuer"
+2012-02-02 02:05:32,Tectu,geheuer*
+2012-02-02 02:05:32,Jidder,"und dann rufst du nur noch vmm_map_range(kernel_context, (uintptr_t)&kernel_start, (uintptr_t)&kernel_end)"
+2012-02-02 02:05:39,Tectu,"warte, muss ich mein video mem auch alingen?"
+2012-02-02 02:05:47,Jidder,"und vmm_map_range(kerneo_context, 0xb8000, 0xbffff) auf"
+2012-02-02 02:05:50,Jidder,nö der ist aligned
+2012-02-02 02:06:01,Jidder,aber eine funktion vmm_map_range müsste das machen
+2012-02-02 02:06:10,Jidder,weil die ja alles können soll. sowohl aligned als auch unaligned
+2012-02-02 02:07:06,Jidder,achso der name der funktion sollte nicht vmm_map_range sondern vmm_identity_map_range sein
+2012-02-02 02:07:10,Jidder,weil die ja alles 1:1 mapp
+2012-02-02 02:07:12,Jidder,t
+2012-02-02 02:07:26,Tectu,mmh
+2012-02-02 02:07:31,Tectu,wie kriege ich das mit der multiboot hin?
+2012-02-02 02:07:31,Jidder,also virtuelle adresse = physische adresse
+2012-02-02 02:08:01,Jidder,"wenn du die funktion hast dann vmm_map_identity(kernel_context, (uintptr_t)multiboot_info, sizeof(struct multiboot_info));"
+2012-02-02 02:08:32,Jidder,"und dann noch vmm_map_identity(kernel_context, (uintptr_t)(multiboot_info->mods_addr), multiboot_info->mods_count * sizeof(struct multibot_module))"
+2012-02-02 02:08:34,Jidder,oder so
+2012-02-02 02:08:41,Tectu,k
+2012-02-02 02:08:47,Tectu,mach ich 'morgen'
+2012-02-02 02:08:50,Jidder,das selbe für die memory map
+2012-02-02 02:08:54,Tectu,vlt. frag ich dann nochmal was
+2012-02-02 02:08:57,Tectu,die memory map?
+2012-02-02 02:09:02,Tectu,die bitmap?
+2012-02-02 02:09:16,Jidder,"wie gesagt: sinnvolle alternative wäre einfach nicht mehr auf die multiboot info zuzugreifen, nachdem du paging aktiviert hast"
+2012-02-02 02:09:20,Jidder,dann brauchst du die auch nicht mehr zu mappen
+2012-02-02 02:09:40,Tectu,jo
+2012-02-02 02:09:43,Jidder,memory map ist das was du in http://www.lowlevel.eu/wiki/Teil_7_-_Physische_Speicherverwaltung#Speicherverwaltung_initialisieren verwendet hast
+2012-02-02 02:09:53,Tectu,"Jidder, jo, die bitmap?"
+2012-02-02 02:09:57,Jidder, mb_info->mbs_mmap_addr + mb_info->mbs_mmap_length
+2012-02-02 02:09:58,Jidder,ne
+2012-02-02 02:10:04,Jidder,nicht die bitmap
+2012-02-02 02:10:07,Jidder,die ist ja im kernel drin
+2012-02-02 02:10:25,Tectu,"ah, das"
+2012-02-02 02:10:40,Jidder,vergiss nicht die alternative!
+2012-02-02 02:10:42,Jidder,spart arbeit
+2012-02-02 02:10:43,Jidder,^^
+2012-02-02 02:10:58,Tectu,hrhr
+2012-02-02 02:10:58,Tectu,jo
+2012-02-02 02:11:03,Tectu,werde ich wohl vorziehen
+2012-02-02 02:11:09,Tectu,aber die memorymap muss ich auf jeden fall?
+2012-02-02 02:11:30,Jidder,"wenn du die physische speicherverwaltung initialisierst, bevor du paging aktivierst, dann nicht"
+2012-02-02 02:11:44,Tectu,"ja, tu ich"
+2012-02-02 02:11:49,Tectu,pmm_init(); vmm_init();
+2012-02-02 02:11:55,Jidder,dann passt das
+2012-02-02 02:12:04,Tectu,währ doch dämlich umgekehrt?
+2012-02-02 02:12:13,Tectu,vmm init nutzt ja pmm_alloc
+2012-02-02 02:12:13,Jidder,nicht unbedingt
+2012-02-02 02:12:29,Jidder,"ein vmm_init das keine pages anfordern muss, wäre der trick"
+2012-02-02 02:12:40,Jidder,aber das ist zu viel für diese uhrzeit
+2012-02-02 02:12:45,Tectu,okay
+2012-02-02 02:12:46,Tectu,pennen
+2012-02-02 02:12:48,Jidder,aber es geht alles ^^
+2012-02-02 02:12:53,Tectu,ich bedanke mich bei dir recht herzlich!
+2012-02-02 02:12:55,Tectu,hat echt viel geholfen
+2012-02-02 02:12:57,Jidder,gerne
+2012-02-02 02:13:10,Tectu,"aber das mit dem alingement des kernels muss ich nochmal genauer angucken, werde dich wohl nochmal drauf ansprechen müssen"
+2012-02-02 02:13:24,Jidder,okay
+2012-02-02 02:14:05,Tectu,"so, und damit nen schönen abend :D"
+2012-02-02 02:14:23,Jidder,gn8
+2012-02-02 08:15:29,Tectu,moin
+2012-02-02 08:26:57,Tectu,"grml, exeption 14"
+2012-02-02 09:16:47,bluecode,moin
+2012-02-02 09:20:01,Tectu,moin
+2012-02-02 09:20:10,Tectu,"leute, mal ne frage zur reihenfolge der initialisierung_"
+2012-02-02 09:20:23,Tectu,"meine initialisierungsreihenfolge:  pmm, gdt, idt, multitasking, vmm"
+2012-02-02 09:20:28,Tectu,kann das so gut gehen?
+2012-02-02 09:21:08,Tectu,"ich wolle den vmm eig. direkt nach dem pmm, doch nach einem dialog mit jdder musste ich fest stellen, dass es etwas schwierig ist, auch die multiboot info in der vmm_init() zu mappen"
+2012-02-02 09:21:15,Tectu,darum ist die idee: vmm als letztes initialisieren
+2012-02-02 09:21:33,Tectu,in der vmm_init() wird also nur der kernel space und der videospeicher gemapped
+2012-02-02 09:22:52,DerHartmut,Datenübetragung abgebrochen bei dem Versuch zu lowelvel zu verbinden
+2012-02-02 09:23:11,kevin,DerHartmut: WORKSFORME
+2012-02-02 09:23:30,DerHartmut,It's not just you! http://lowlevel.eu looks down from here. 
+2012-02-02 09:23:49,Tectu,lowlevel ist hier auch down
+2012-02-02 09:24:01,kevin,Also das Forum tut
+2012-02-02 09:24:14,kevin,"Wiki ist kaputt, stimmt"
+2012-02-02 09:24:23,kevin,"""Zusätzliche Information: www.lowlevel.eu: SSL-Aushandlung fehlgeschlagen"""
+2012-02-02 09:24:28,DerHartmut,Forum funzt auch
+2012-02-02 09:25:06,kevin,Was will der bei ganz normalem HTTP überhaupt mit SSL?
+2012-02-02 09:25:58,kevin,"Hm, interessant... http://www.lowlevel.eu/wiki/ tut auch"
+2012-02-02 09:26:04,kevin,Aber nur mit abschließendem Slash
+2012-02-02 09:26:52,kevin,"Antoine: Arbeit für dich, fürchte ich ;-)"
+2012-02-02 09:43:19,Tectu,lebt der typ eigentlich?
+2012-02-02 09:48:10,bluecode_,man weiß es nicht so genau
+2012-02-02 09:56:57,Flurinox,morgen
+2012-02-02 10:02:42,Tectu,moin moin Flurinox 
+2012-02-02 10:11:40,kevin,Moin Flurinox
+2012-02-02 10:28:00,Tectu,"leute, ich brauch eure hilfe bim debuggen... paging geschichten...   in meiner vmm_init wird der kernel space und der videospeicher gemapped"
+2012-02-02 10:28:26,Tectu,"nachdem ich alles fertig initialisiert habe und der kernel in die while(1); kommt, gibts aber ne Expetion 14, also ein PageFault"
+2012-02-02 10:28:32,Jidder,moin
+2012-02-02 10:28:54,Tectu,"ah, da bist du ja, jidder :D"
+2012-02-02 10:28:59,Tectu,"Jidder, hilf mir :D"
+2012-02-02 10:29:00,Tectu,CR0=80000011 CR2=00000000 CR3=00001000 CR4=00000000
+2012-02-02 10:29:14,Tectu,"ich hab nen PE, nachdem ich vmm_init aufrufe :("
+2012-02-02 10:29:38,Tectu,das ist meine vmm_init();   http://pastebin.com/CqEHeWa0
+2012-02-02 10:30:05,Jidder,dann versuch mal rauszukriegen wo im code der PF auftritt
+2012-02-02 10:30:10,Jidder,dazu musst du eip wissen
+2012-02-02 10:30:21,Jidder,und dann schaust du dir mit objdump deinen kernel an
+2012-02-02 10:30:28,Tectu,und hier der gesammte qemu.log:   http://pastebin.com/Xj6aumQS
+2012-02-02 10:30:46,Tectu,"Jidder, das mim objdump und eip finden müsstest du mir erklären"
+2012-02-02 10:31:15,Tectu,im objdump -D oder -d und dann nach dem wert von EIP grepen?
+2012-02-02 10:31:28,Jidder,-d reicht
+2012-02-02 10:31:33,Jidder,und dann vielleicht im editor schauen
+2012-02-02 10:31:41,Jidder,aus einer zeile wird man normalerweise nicht schau
+2012-02-02 10:31:42,Jidder,schlau
+2012-02-02 10:32:10,Tectu,wie guck ich ds im editor an? stream von objdump in ein file umleiten?
+2012-02-02 10:32:14,Tectu,oder gibts dazu was fertiges?
+2012-02-02 10:32:27,Jidder,ja
+2012-02-02 10:32:29,Jidder,umleiten
+2012-02-02 10:33:33,Tectu,scheduler... zeile 100185   http://pastebin.com/anHQBynr
+2012-02-02 10:34:46,Tectu,"hmm, wie ist das weitere vorgehen? sorry, habe bisher noch nicht wirklich auf diese weise debugged"
+2012-02-02 10:34:56,Jidder,was meinste denn welche zeile im c code dazugehört?
+2012-02-02 10:35:11,Jidder,"wenn du nicht raten willst, kannst du deinen code mit -g kompilieren"
+2012-02-02 10:35:16,Jidder,und dann schau ich mal eben ins manual
+2012-02-02 10:36:09,Jidder,ah und dann objdump -d -S
+2012-02-02 10:36:09,Tectu,"Jidder, ich compile schon die ganze zeit mit -g"
+2012-02-02 10:36:13,Jidder,damit er dir den source code anzeigt
+2012-02-02 10:36:26,Jidder,wobei das natürlich wie mit den hamburgern
+2012-02-02 10:36:27,Jidder,ist
+2012-02-02 10:36:37,Jidder,und das nicht immer genau ist
+2012-02-02 10:37:57,Tectu,        return current_task->cpu_state;
+2012-02-02 10:37:57,Tectu,"  100180:       a1 04 50 10 00          mov    0x105004,%eax"
+2012-02-02 10:37:57,Tectu,"  100185:       8b 00                   mov    (%eax),%eax"
+2012-02-02 10:38:17,Tectu,in meiner   struct cpu_state *schedule(struct cpu_state* cpu)
+2012-02-02 10:38:33,Jidder,dann ist der zugriff auf current_task->cpu_state das problem
+2012-02-02 10:38:43,Jidder,steht da zufällig NULL drin?
+2012-02-02 10:38:57,Tectu,und die guckt os aus    http://pastebin.com/x3bB2U1E
+2012-02-02 10:39:01,Tectu,so*
+2012-02-02 10:39:29,Tectu,"Jidder, ohne vmm funtzt die routine aber gut"
+2012-02-02 10:39:32,Tectu,zumindest äusserlich
+2012-02-02 10:40:04,Jidder,naja hast du eine alloc-funktion oder so?
+2012-02-02 10:40:24,Tectu,pmm_alloc()
+2012-02-02 10:40:25,Jidder,alles was die zurückgibt muss gemappt werden
+2012-02-02 10:40:28,Tectu,eine vmm nohc nicht
+2012-02-02 10:41:08,Tectu,sollte ich in dem falle?
+2012-02-02 10:41:13,Jidder,muss
+2012-02-02 10:41:44,Tectu,http://pastebin.com/bHKK7TCn
+2012-02-02 10:41:53,Tectu,"und dann muss ich hier die zeile 54 ändern, richtig?"
+2012-02-02 10:42:01,Tectu,27 und 28 natürlich auch
+2012-02-02 10:42:22,Jidder,dann musst du init_task aber nach vmm_init aufrufen
+2012-02-02 10:42:39,Jidder,oder hast du vorher schon ein page directory wo du das eintragen kannst?
+2012-02-02 10:43:01,Tectu,nö
+2012-02-02 10:43:18,Tectu,grml
+2012-02-02 10:43:27,Tectu,habe mich heute morgen um die vmm_alloc() kümmern wollen
+2012-02-02 10:43:32,Tectu,aber das krieg ich i-wie nichtmal theoretishc hin
+2012-02-02 10:43:35,Tectu,theoretisch*
+2012-02-02 10:43:44,Tectu,bisher war eher das praktische umsetzten mein problem
+2012-02-02 10:44:59,Flurinox,was kriegst du denn theoretisch nicht hin? ;)
+2012-02-02 10:45:26,Jidder,theoretisch kann ich dieses browsertab nicht mehr schließen
+2012-02-02 10:45:26,Jidder,http://www.weebls-stuff.com/songs/blimp/
+2012-02-02 10:45:55,Tectu,"also, nur damit wir vom selben sprechen, das hier ist meine vmm.c. die ist quasi tutorial :D   http://pastebin.com/ywv678g6"
+2012-02-02 10:46:28,Tectu,"die  int vmm_map_page(struct vmm_context* context, uintptr_t virt, uintptr_t phys)   mappt ja eine virtuelle adresse zu einer freien physikalischen, richtig?"
+2012-02-02 10:47:05,Jidder,eine virtuelle adresse auf eine bestimmte physische
+2012-02-02 10:47:07,Tectu,"gut, wenn ich nun eine vmm_alloc() haben will, rufe ich darin ja sicherlich irgend wann mal die vmm_map_page() auf. die physkalische adresse würde ich mal sagen kriege ich von pmm_alloc() zurück, doch wie siehts mit den virtuellen aus?"
+2012-02-02 10:47:21,kevin,s/physikalisch/physisch/
+2012-02-02 10:47:32,Jidder,Tectu: speicherverwaltung
+2012-02-02 10:47:36,kevin,Virtuelle musst du dir eine freie suchen
+2012-02-02 10:47:51,Flurinox,kevin: das machen sogar rechnerarchitektur-profs falsch ;)
+2012-02-02 10:47:54,kevin,"Zum Beispiel durch die Page Tables durchlaufen und schauen, wo noch was frei ist"
+2012-02-02 10:48:02,kevin,"Flurinox: Ich weiß, und es ist traurig"
+2012-02-02 10:48:21,Jidder,gibts chemische adressen?
+2012-02-02 10:49:06,Tectu,"nun... aber die physikalische adresse kriege ich von pmm_alloc(), die adresse von pmm_alloc() wird dann in einer freien table (wenn alle vorhandenen tables voll belegt sind && tables > 1024, eine neue table erstellt) richtig?"
+2012-02-02 10:49:12,Tectu,"Jidder, cmon :D"
+2012-02-02 10:50:07,Jidder,kannste so machen
+2012-02-02 10:50:42,Flurinox,Tectu: wieso nimmst du einmal uint32_t und einmal uintptr_t ? ;)
+2012-02-02 10:51:07,Tectu,o.O
+2012-02-02 10:51:26,Tectu,void *pmm_alloc()  und uint32_t im sinne von tables_count?
+2012-02-02 10:52:01,Flurinox,o man^^ sry ;)
+2012-02-02 10:52:25,Flurinox,"ich benutz nur noch PAE und LM-PAE .. gar nicht dran gedacht, dass es auch noch das normale paging gibt ;)"
+2012-02-02 10:52:38,Tectu,"na, sorry, ich bin nicht der ober 1337 h4x0r coder mit 100 jahren erfahrung, ich bin froh, wenn ich auf fehler aufmerksam gemacht werde, nur bitte verständlich erklären :D"
+2012-02-02 10:52:54,Tectu,"aso, also bei mir atm alles richtig so?"
+2012-02-02 10:53:32,Flurinox,jop ;)
+2012-02-02 10:53:38,Tectu,k
+2012-02-02 10:53:43,Tectu,muss die vmm_alloc() noch was sonst können?
+2012-02-02 10:53:59,Jidder,nicht abstürzen
+2012-02-02 10:54:00,Flurinox,ich hab zB für meine physischen speicherpages immer uint64_t ;) aber bei dir reicht uint32_t auch aus ;)
+2012-02-02 10:54:11,Tectu,"Jidder, schön :)"
+2012-02-02 10:54:19,Flurinox,"Tectu: das was du willst, das es können soll ;) keiner schreibt dir beim os-dev was vor ;)"
+2012-02-02 10:54:23,Tectu,"okay, wie handle ich das mit den freien virtuellen adressen? bitmap? o0"
+2012-02-02 10:54:35,Tectu,"Flurinox, naja, ich rede von grundlagen ;-)"
+2012-02-02 10:54:52,Flurinox,"bitmap, listen, oder direkt die pagetables absuchen ;)"
+2012-02-02 10:55:36,Flurinox,"bei letzterem brauchst du nichts zusätzliches anlegen, das scannen ist bisschen langsamer ;)"
+2012-02-02 10:55:42,Tectu,direkt jedes mal in einer for alle tables durch?
+2012-02-02 10:55:46,Tectu,wird das bis am ende nicht etwas lange?
+2012-02-02 10:55:52,Tectu,"obwohl, bitmap muss ich ja auch durchlaufen"
+2012-02-02 10:56:06,Flurinox,"und v.a. es würde deinem Wissen deutlich mehr bringen, wenn du selbst mal die pagetables bearbeitest ;)"
+2012-02-02 10:56:06,Tectu,langsamer nur wegen zugriff auf die struct?
+2012-02-02 10:56:41,Flurinox,zB wenn du 1 MB am stück allozieren willst (256 pages) .. dann kann es bisschen langsam werden
+2012-02-02 10:56:58,stultus,moin
+2012-02-02 10:57:01,Flurinox,wie bei einer bitmap aber auch
+2012-02-02 10:57:12,Flurinox,nur dass man bei einer bitmap besser optimieren kann
+2012-02-02 10:57:54,Tectu,wie optimiere ich das denn bei einer bitmap theoretisch?
+2012-02-02 10:58:21,Jidder,vergiss das mal mit dem optimieren
+2012-02-02 10:58:49,Flurinox,du könntest durch einen speicherzugriff (32-bit dword) gleich 32 bits auf 0 überprüfen ;) oder auf 0xFFFFFFFF
+2012-02-02 10:58:53,Flurinox,aber Jidder hat recht ;)
+2012-02-02 10:59:12,stultus,"Optimiert wird grundsätzlich erst bei Bedarf, nicht vorher ;)"
+2012-02-02 10:59:53,kevin,"Eine Bitmap für den VMM würde ich grundsätzlich als Blödsinn ansehen, weil da die Page Tables genauso gut sind"
+2012-02-02 11:00:10,kevin,"Wenn man da was besseres machen will, dann sollte man gleich eine ganz andere Datenstruktur nehmen"
+2012-02-02 11:00:21,Flurinox,"ich würde auch sagen, er soll erstmal PageTables parsen, wegen dem lerneffekt ;)"
+2012-02-02 11:00:44,Tectu,"mmh, werde ich heute mal noch versuchen"
+2012-02-02 11:01:10,Tectu,"also, 1024 pages per table, und 1024 tables waren das, richtig?"
+2012-02-02 11:01:36,stultus,Exakt
+2012-02-02 11:01:47,Flurinox,das meine ich mit lerneffekt ;)
+2012-02-02 11:01:58,stultus,*g*
+2012-02-02 11:02:05,Tectu,"ich habe damals beim pmm im tutorial gelesen, dass die 4k nicht wahllos sind, sondern eine begründung haben ""aber dazu später mehr"" irgend wie kam das ""und nun sehen wir, wieso 4k"" meiner meinung nach nicht"
+2012-02-02 11:02:15,stultus,"Wenn das jemand üben möchte, ich hab grad so nen paar tolle Klausuren da, die enthalten Aufgaben zu Paging *g*"
+2012-02-02 11:02:17,Tectu,"ist das tiefgründiger, als sizeof(uint32_t) ?"
+2012-02-02 11:02:26,stultus,"(Nicht exakt x86, aber die Theorie wenigstens was und wieso man das macht)"
+2012-02-02 11:02:54,Flurinox,stultus: die Betriebssystemvorlesung hab ich leider schon hinter mir ;)
+2012-02-02 11:03:08,Flurinox,"und wenn ich Paging will, nehm ich mein OS her"
+2012-02-02 11:03:12,stultus,im PMM verwaltest du 4k-Blöcke weil das VMM genau 4k-Blöcke will. Das ist alles.
+2012-02-02 11:03:32,stultus,"Das war nicht die Betriebssystemvorlesung ;) ""Grundlagen der Rechnerarchitektur"" heißt das bei den Infos, grundlegender Prozessoraufbau ist das"
+2012-02-02 11:03:37,Tectu,vmm will wegen x86 genau 4k?
+2012-02-02 11:03:46,Flurinox,"Tectu: ich glaube, 4 KB hat Intel einfach so festgelegt ;) oder andere CPU Architekten und inzwischen ist es quasi bei vielen Architekturen standard ;)"
+2012-02-02 11:03:48,stultus,vmm auf x86 will genau 4k-seiten.
+2012-02-02 11:04:01,stultus,(Ausnahmen mal nicht betrachtet)
+2012-02-02 11:04:13,Flurinox,2 MB Pages braucht man am anfang nicht ;)
+2012-02-02 11:04:18,Tectu,x86_64 ist auch 4k?
+2012-02-02 11:04:19,stultus,"Wie die ursprünglich zustande kommen, wenn das wer sicher weiß *g*"
+2012-02-02 11:04:28,Flurinox,Tectu: ja
+2012-02-02 11:04:29,stultus,kann auch 4k aufjedenfall.
+2012-02-02 11:04:41,stultus,"du kannst auch größere Seiten nehmen, aber das ist anfangs nicht unbedingt sinnvoll."
+2012-02-02 11:04:52,Tectu,"äh, vlt. jetzt ne dumme frage, aber: wenn ich malloc() z.B. sehe, kann ich ja in bytes allozieren, oder?"
+2012-02-02 11:05:00,Tectu,kann mein vmm_alloc() nur 4k?
+2012-02-02 11:05:02,stultus,malloc ist noch ne andere Ebene.
+2012-02-02 11:05:17,stultus,"die malloc-implementierung holt vom OS entsprechend größere Blöcke, das wird im Userspace zerteilt"
+2012-02-02 11:05:23,Tectu,ahso
+2012-02-02 11:05:32,Tectu,also vmm_alloc will soll und darf nur 4k müssen?
+2012-02-02 11:05:47,stultus,Wäre jedenfalls das einfachste und üblichste ;)
+2012-02-02 11:05:50,kevin,"Ja, bzw. Mehrfache von 4k"
+2012-02-02 11:05:52,Flurinox,theoretisch kannst du auch gleich ein malloc ohne vmm_alloc machen ;) 
+2012-02-02 11:06:12,stultus,malloc() im Kernel? Hört sich lustig an. Und langsam. *g*
+2012-02-02 11:06:12,kevin,"Du kannst auch im Kopfstand programmieren, ja"
+2012-02-02 11:06:24,kevin,Sinnvoll ist es deswegen nicht
+2012-02-02 11:06:51,Flurinox,"man kann auch ohne vmm_alloc auskommen, und immer dann eine speicherseite mappen, wenn auf sie zugegriffen wird ;) (was schlecht für fehlerbehandlung ist^^)"
+2012-02-02 11:07:34,Tectu,ist amd64 im paging auch 4k?
+2012-02-02 11:07:39,Tectu,"ah, das war schon, sorry"
+2012-02-02 11:07:45,stultus,amd64 == x86_64 ;)
+2012-02-02 11:07:45,Tectu,"habe die antwort nicht gesehen, von Flurinox "
+2012-02-02 11:07:48,Tectu,trotz hilight -.-
+2012-02-02 11:08:03,Flurinox,"naja ich bin froh, dass ich meine libmemlist hab, darauf pmm, vmm und heap aufbauen kann, und hoffentlich nie wieder was damit zu tun haben werde ;)"
+2012-02-02 11:08:04,Tectu,"stultus, Flurinox würde dir sicher wiedersprechen, habe ich das gefühl :D"
+2012-02-02 11:08:17,Tectu,"Flurinox, warum? finde das ganze interessant"
+2012-02-02 11:09:21,Flurinox,"Tectu: irgendwann findest du das nicht mehr interessant, wenn du andere sachen auf deinem OS machen willst, die nichts mit speicher zu tun haben ;)"
+2012-02-02 11:09:53,Tectu,"Flurinox, sachen in nem OS die nichts mit speicher zu tun haben? ;-)"
+2012-02-02 11:10:11,Flurinox,"sowas wie dateisysteme, netzwerk, gui, ... ;)"
+2012-02-02 11:10:37,Tectu,"also, zusammenfassend beleibt zu sagen: die vmm_alloc() lässt sich mit einem normalen IQ und ein bisschen konsequenz erstellen, ohne dass man magische kräfte bestitzt, richtig?"
+2012-02-02 11:10:49,Tectu,gui? GUI? GUI??? bist du schon so weit? o0
+2012-02-02 11:11:26,Flurinox,"ich war mal so weit, seit dem letzten rewrite aber nicht mehr ;)"
+2012-02-02 11:11:30,stultus,Kommt alles nur auf die Grundlagen drauf an.
+2012-02-02 11:11:51,stultus,"Die Frage ist ob es sinnvoll ist und man nicht vorher was einfacheres vorzeigbares machen will, z.b. Netzwerk ;)"
+2012-02-02 11:12:07,Tectu,"Jidder, habe mich über nacht btw. i-wie dazu entschieden, dass ich vmm_init() nach dem letzten mb_info benötigenden init aufrufe :D"
+2012-02-02 11:12:13,Tectu,kommt mit meinem gewissen besser klar
+2012-02-02 11:12:33,stultus,"Generell, wenn VMM, Multitasking, etwas IPC läuft, VM86 zum Modus setzen, dannach kann man anfangen *g*"
+2012-02-02 11:12:39,Tectu,"stultus, ich währ froh, wenn ich demnächst mal tastatureingaben machen könnte ;)"
+2012-02-02 11:12:57,Tectu,IPC?
+2012-02-02 11:13:03,stultus,Das kommt fix wenn das läuft
+2012-02-02 11:13:06,stultus,Interprozesskommunikation
+2012-02-02 11:13:12,Tectu,hört sich pervers an :(
+2012-02-02 11:13:15,stultus,"Alternativ auch RPC, läuft alles irgendwo aufs gleiche hinaus."
+2012-02-02 11:13:23,stultus,Hauptsache Prozess A und B können sich irgendwie austauschen ;)
+2012-02-02 11:13:37,Tectu,so à la shared memory?
+2012-02-02 11:13:42,stultus,auch ne möglichkeit
+2012-02-02 11:13:46,Tectu,gibt ne andere? o0
+2012-02-02 11:13:52,stultus,"RPC, IPC *g*"
+2012-02-02 11:14:05,Tectu,wie macht man denn sowas
+2012-02-02 11:14:17,Tectu,"wenns nicht shared memory ist, ist es sicherlich hardware abhängig, oder?"
+2012-02-02 11:14:22,stultus,nö
+2012-02-02 11:14:29,stultus,Du kannst ja auch einfach im Syscall Daten rüberkopieren
+2012-02-02 11:15:07,stultus,"Oder den Prozess Einstiegspunkte beim System registrieren lassen, die dann (über den Kernelweg) aufgerufen werden können (RPC)"
+2012-02-02 11:15:21,stultus,"Naja, und viel viel mehr ;)"
+2012-02-02 11:15:36,Tectu,:|
+2012-02-02 11:15:54,stultus,"Ist halt nur ein Konzept, Implementieren kann mans auf viele Arten."
+2012-02-02 11:16:47,Flurinox,ich komm bei meinem mono.-kernel auch gut ohne rpc/ipc aus ;)
+2012-02-02 11:17:09,stultus,"Bah, GUI im Kernel ala Windows oder wie? *g*"
+2012-02-02 11:17:32,Jidder,Computerbild testet FlurinoxOS: Braucht man IPC wirklich?
+2012-02-02 11:19:00,Jidder,"""Das fehlen von IPC ist konsequent umgesetzt: Eine Datei kann nicht von zwei Programmen geöffnet werden, auch nicht nach dem Neustart des Systems."""
+2012-02-02 11:19:11,Jidder,"""Eine Datei kann nicht mal von einem Programm geöffnet werden."""
+2012-02-02 11:19:20,Jidder,"""Eigentlich läuft hier noch gar nichts."""
+2012-02-02 11:19:33,stultus,UniOS? *g*
+2012-02-02 11:19:41,Jidder,"""Testergebnis: ungenügend"" ""Preis/Leistungsverhältnis: sehr gut"""
+2012-02-02 11:20:14,Jidder,stultusOS
+2012-02-02 11:21:45,stultus,Gibts nicht *g*
+2012-02-02 11:22:41,Jidder,"""Computerbild konnte bereits vorab einen Blick auf stultusOS werfen."""
+2012-02-02 11:22:48,Jidder,die sind da wohl irgendwie rangekommen
+2012-02-02 11:24:24,Tectu,"wie komplex ist es eig. so ein modulinterface zu machen, wie linux es hat?"
+2012-02-02 11:24:50,Jidder,programmieren ist nicht komplex
+2012-02-02 11:25:33,Tectu,"hmm, ne frage zur vmm_alloc()  wie sieht das jetzt eig. mit den verschiedenen kontexten aus? die haben da nix zu suchen, die sind erst teil beim aufruf eines tasks, richtig?"
+2012-02-02 11:26:21,stultus,"Naja, vmm_alloc() sollte schon im richtigen Kontext alloziieren"
+2012-02-02 11:26:46,Tectu,"vmm_alloc() sollte ja eigentlich eine rechte ""highlevelfunktion"" sein, also nur     void *vmm_alloc(size_t bytes); oder? woher weiss ich denn jetzt welcher kontext, und ob kernelspace oder nicht"
+2012-02-02 11:27:01,Tectu,"stultus, sprich die muss den kontext als übergabe parameter kriegen?"
+2012-02-02 11:27:15,stultus,Nur wenn du nicht anders drankommst
+2012-02-02 11:27:24,Tectu,wie kann ich denn anders drann kommen
+2012-02-02 11:27:30,Jidder,soll vmm_alloc speicher für den kernel anfordern oder für programme?
+2012-02-02 11:27:33,stultus,"Normalerweise wird das am Ende ja eher aus Userspace her aufgerufen, da läuft der Kernel dann auch im richtigen Kontext."
+2012-02-02 11:27:59,Jidder,"wenn nur für den kernel, dann halt irgendwo eine globale variable mit dem kontext vorhalten"
+2012-02-02 11:28:01,kevin,"Naja, es gibt ungefähr genau einen Syscall, der das aus dem Userspace macht"
+2012-02-02 11:28:07,kevin,Alle anderen Aufrufer kommen aus dem Kernel
+2012-02-02 11:28:17,Tectu,"wie jetzt meinen? vmm_alloc() wird nur aufgerufen, wenn noch kein task läuft, ergo der kernel noch im kernel_context ist. sobal der kernel läuft, gibt nen userspace malloc?"
+2012-02-02 11:28:34,Tectu,"""ungefährt genau einen"""
+2012-02-02 11:28:48,stultus,das userspace-malloc lässt sich letztendlich aber vom Kernel erstmal den Speicher geben
+2012-02-02 11:28:59,Tectu,über vmm_alloc
+2012-02-02 11:29:02,kevin,Genau
+2012-02-02 11:29:23,Tectu,"heisst, vmm_alloc muss genau DANN wissen, welcher context, da der kernel ja dann in jedem kontext ist, und besonders wissen ob userspace oder nicht?"
+2012-02-02 11:30:04,kevin,"In tyndur sieht der Prototyp so aus: vaddr_t mmc_valloc(mmc_context_t* context, size_t num_pages, int flags);"
+2012-02-02 11:30:06,stultus,"Der Kernel ist in jedem Kontext, damit du den Kernelkontext nicht mehr brauchst."
+2012-02-02 11:30:24,kevin,Ob Userspace oder Kernel steckt da in den Flags mit drin
+2012-02-02 11:30:27,Tectu,"also kann ich eig. schlussendlich machen   vmm_alloc(size_t bytes, struct vmm_context *context, uint8_t user); ?"
+2012-02-02 11:30:40,Tectu,hmm
+2012-02-02 11:30:45,stultus,"Naja, irgendwann will man mehr flags haben ;)"
+2012-02-02 11:30:49,Tectu,richtig
+2012-02-02 11:31:04,kevin,In tyndur sind das die Flags aus der Page Table
+2012-02-02 11:31:04,Tectu,"okay, mein kernel steckt aber atm noch in seinem kernel_context. ich habe noch keinen blassen, wie ich das nacher anstellen muss"
+2012-02-02 11:31:09,stultus,"und bytes ist an sich müll, du kannst ja nur x pages holen"
+2012-02-02 11:31:20,Tectu,richtig
+2012-02-02 11:31:37,Tectu,was ist denn vaddr_t bei tyndur?
+2012-02-02 11:31:41,Tectu,void* ?
+2012-02-02 11:31:49,kevin,"Ja, müsste auf void* definert sein"
+2012-02-02 11:33:03,kevin,Der Kernel soll ja in allen Kontexten immer gleich sein
+2012-02-02 11:33:39,kevin,"Darauf musst du halt beim Hin- und Herwechseln aufpassen. Wenn sich was verändert hat, musst du das in alle Kontexte übernehmen."
+2012-02-02 11:35:08,Tectu,irgend wie habe ich angst davor
+2012-02-02 11:36:40,kevin,"Du kannst auch ganz am Anfang alle Page Tables für den Kernel anlegen, dann musst du nur beim Anlegen eines neuen PD die entsprechenden Verweise kopieren und brauchst dich ansonsten nicht darum zu kümmern"
+2012-02-02 11:37:03,kevin,"Aber das heißt natürlich, dass du im Regelfall knapp 256 Page Tables umsonst angelegt hast, die je 4k verbrauchen"
+2012-02-02 11:38:03,Tectu,"aber leute, wenn ich das richtig verstehe, werde ich nacher beim erstellen eines tasks, die pages in der pagetable des kontextes von dem aktuellen task als belegt setzten, wo mein kernel in der kernel_context ursprünglich lag, oder? sprich ich mache quasi ein bitwise copy der einträge (bildlich gesehen)"
+2012-02-02 11:38:21,Tectu,"wenn ich das bei jedem prozess mache, der erstellt wird, und bei jedem neuaufruf des prozesses durch den scheduler das jedes mal prüfen will, habe ich ja null resourcen mehr?"
+2012-02-02 11:40:19,kevin,"Nicht nur bildlich gesehen, das hier ist tyndur-Code: memcpy(context->page_directory_virt, page_directory_current, 0x3FC);"
+2012-02-02 11:41:24,kevin,"Wird aber nicht bei jeden Taskwechsel aufgerufen, sondern nur, wenn sich auch wirklich was verändert hat. Dazu wird einfach ein page_directory_version hochgezählt und mit dem letzten verglichen, das der Kontext hatte."
+2012-02-02 11:41:43,Tectu,was zur hölle?
+2012-02-02 11:41:46,Tectu,wozu macht man das?
+2012-02-02 11:41:52,Tectu,warum nicht einfach dem kernel seinen eigenen kontext lassen?
+2012-02-02 11:42:55,kevin,Weil der Kernel auch auf Userspace-Daten des aktuellen Prozesses zugreifen können will?
+2012-02-02 11:43:13,kevin,"Und weil Teile des Kernels _immer_ benötigt werden, auch im Userspace (GDT, IDT, TSS)"
+2012-02-02 11:43:44,kevin,Wenn du dir den tyndur-Code im Kontext anschauen willst: http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/kernel2/src/arch/i386/mm/mm_context.c;h=bfeb84eb2236d3a488f05676befa9881a527a2da;hb=HEAD#l145
+2012-02-02 11:45:05,Tectu,"danke, kevin "
+2012-02-02 11:45:50,Tectu,ihr habt bool?
+2012-02-02 11:45:57,kevin,Jo
+2012-02-02 11:46:03,kevin,stdbool.h
+2012-02-02 11:46:19,kevin,Gehört zu einer ordentlich C99-Umgebung dazu
+2012-02-02 11:46:43,Tectu,hab ich noch nicht
+2012-02-02 11:46:59,Tectu,wie ist ein bool denn eigentlich definiert?
+2012-02-02 11:47:33,kevin,typedef _Bool bool;
+2012-02-02 11:47:42,kevin,_Bool muss der Compiler bereitstellen
+2012-02-02 11:48:01,Tectu,"jo, aber wie ist _Bool definiert"
+2012-02-02 11:48:15,stultus,Macht der Compiler.
+2012-02-02 11:48:16,Tectu,"ein bool hat doch auf x86 auch 1 byte, und nicht 1 bit, oder?"
+2012-02-02 11:48:19,Tectu,"ja, aber wie, stultus wie :d"
+2012-02-02 11:48:26,stultus,Schaus im Compiler nach *g*
+2012-02-02 11:48:29,Tectu,hrhr
+2012-02-02 11:48:50,stultus,aber normalerweise wird das irgendein primitives int
+2012-02-02 11:49:21,Tectu,"und es wird beim schreibzugriff nur geguckt, ob 1 oder 0, und nix anderes?"
+2012-02-02 11:50:04,kevin,"Wenn du 2 zuweist, wird er auch true haben"
+2012-02-02 11:50:05,Antoine,Moin
+2012-02-02 11:50:10,kevin,Und beim Zurückkonvertieren nach int 1 liefern
+2012-02-02 11:50:15,Antoine,Ist Forum/wiki noch kaputt bei euch?
+2012-02-02 11:50:27,kevin,Tectu: Details kannst du im C99-Draft deines Vertrauens nachlesen
+2012-02-02 11:50:48,kevin,Antoine: Scheint wieder zu tun
+2012-02-02 11:50:58,Tectu,es gibt ein forum?
+2012-02-02 11:51:01,Tectu,läuft da was?
+2012-02-02 11:51:27,stultus,Wenn man da fragt schon *g*
+2012-02-02 11:51:38,kevin,"Huch, du kennst das Wiki, aber nicht das Forum?"
+2012-02-02 11:51:40,Tectu,"hrhr, ich meine kriegt das jemand mit, wenn man etwas fragt? :D"
+2012-02-02 11:51:43,Tectu,"kevin, richtig"
+2012-02-02 11:51:57,Tectu,"kevin, kriege ich jetzt einen permaban?"
+2012-02-02 11:52:01,kevin,So versteckt ist der Link doch gar nicht? :-/
+2012-02-02 11:52:12,stultus,Muss mit der neuen Struktur zusammenhängen
+2012-02-02 11:52:20,kevin,Und im zweiten Absatz auf der Hauptseite ist es auch nochmal verlinkt
+2012-02-02 11:52:21,stultus,Seit man zuerst das Wiki kriegt...
+2012-02-02 11:52:43,Tectu,"hab ich nie mitbekommen, in den 6 monaten"
+2012-02-02 11:53:11,Tectu,"aber das erklärt, warum ich beim zweiten anlauf nur noch   lowlevel.eu/wiki/* auf meine platte gecloned habe, und nicht  lowleve.eu/* :D"
+2012-02-02 11:53:38,kevin,*lol*
+2012-02-02 11:54:05,Antoine,Öhm das Forum ist doch auf einer eigenen Subdomain
+2012-02-02 11:54:37,kevin,lowlevel.eu/forum tut aber auch
+2012-02-02 11:54:47,kevin,Oder nicht?
+2012-02-02 11:54:55,Flurinox,nope oder?
+2012-02-02 11:54:56,kevin,Nö
+2012-02-02 11:55:03,kevin,Hatte ich falsch in Erinnerung ;-)
+2012-02-02 11:55:52,Tectu,nö
+2012-02-02 11:57:56,Tectu,darf ich das so verwenden?
+2012-02-02 11:57:56,Tectu,#define VMM_USER_START          0x40000001 /* 1GB mark */
+2012-02-02 11:57:56,Tectu,#define VMM_USER_END            0xffffffff /* top */
+2012-02-02 11:57:56,Tectu,#define VMM_KERNEL_START        0x00000000 /* bottom */
+2012-02-02 11:57:56,Tectu,#define VMM_KERNEL_END          0x40000000 /* to 1GB (-1 Byte) */
+2012-02-02 11:58:08,Tectu,oder sprechen spätere probleme dagegen?
+2012-02-02 11:58:20,Tectu,"äh, der letzte comment stimmt nicht mehr, das mit dem -1 byte"
+2012-02-02 11:59:22,Tectu,"essen, guddn zusammen /nick Tectu|omnomnom"
+2012-02-02 11:59:37,kevin,Das - 1 Byte war aber eine gute Idee
+2012-02-02 11:59:53,kevin,Dann würde die Grenze nämlich an einer Pagegrenze liegen und nicht ein Byte danach
+2012-02-02 12:37:39,DerHartmut,perversionen der volkswirtschaft ich kotze gleich
+2012-02-02 12:37:43,DerHartmut,ECHAN
+2012-02-02 12:41:08,kevin,Wer ist eigentlich fatmodul?
+2012-02-02 12:47:28,Jidder,ich kenne nur E-Modul
+2012-02-02 12:59:33,Tectu,"kevin, naja, habs jetzt einfach umgedreht:"
+2012-02-02 12:59:33,Tectu,#define VMM_USER_START          0x40000001 /* 1GB + 1 Byte */
+2012-02-02 12:59:33,Tectu,#define VMM_USER_END            0xffffffff /* top */
+2012-02-02 12:59:33,Tectu,#define VMM_KERNEL_START        0x00000000 /* bottom */
+2012-02-02 12:59:33,Tectu,#define VMM_KERNEL_END          0x40000000 /* 1GB mark */
+2012-02-02 12:59:52,Tectu,"ich sagte ja, der kommentar war falsch, nicht meine überlegung"
+2012-02-02 13:00:07,kevin,"Nein, die Überlegung war falsch, der Kommentar war toll"
+2012-02-02 13:00:38,kevin,Grenze zwischen Userspace und Kernel mitten in einer Page wie jetzt ist eine ziemlich doofe Idee
+2012-02-02 13:00:39,Tectu,o0
+2012-02-02 13:00:50,Tectu,also kernel ist  0x0 bis 1Gb -1 byte und user ist 1gb bis 4gb?
+2012-02-02 13:01:12,kevin,"Bis 4 GB - 1 dann, wenn du so genau rechnest ;-)"
+2012-02-02 13:01:29,Tectu,"also pro page sinds 4k, heisst pro table sinds 1024*4k sind 4MB pro table"
+2012-02-02 13:01:31,Tectu,oder?
+2012-02-02 13:01:33,kevin,Ja
+2012-02-02 13:01:35,Tectu,warum also -1 byte?
+2012-02-02 13:01:48,kevin,Die erste Page geht von wo bis wo?
+2012-02-02 13:02:36,Tectu,mathematisch? von 0byte zu 4kByte
+2012-02-02 13:02:48,stultus,4kb-1 ;)
+2012-02-02 13:02:50,kevin,Bitte in Bytes
+2012-02-02 13:03:03,kevin,"stultus: Psst, nicht alles verraten ;-)"
+2012-02-02 13:03:18,stultus,Hab das doch schon einmal unterdrückt :(
+2012-02-02 13:03:21,stultus,Man kann halt nicht alles *g*
+2012-02-02 13:03:30,Tectu,haw
+2012-02-02 13:03:39,Tectu,0 byte bis 4096 byte hätte ich gesagt?
+2012-02-02 13:04:06,stultus,"Tipp: [0,10] sind wieviele Zahlen? (nur natürliche)"
+2012-02-02 13:04:06,bluecode_,letztes byte ein oder ausgeschlossen?
+2012-02-02 13:04:20,kevin,Tectu: Das wären 4097 Bytes
+2012-02-02 13:04:26,kevin,Weil 0 ist ja auch ein Byte
+2012-02-02 13:04:35,bluecode_,"manche könnten jetzt ohne Probleme 10 sagen, stultus *g*"
+2012-02-02 13:04:43,Tectu,aaaaah
+2012-02-02 13:05:00,stultus,bluecode_: ich dachte dafür hab ich das +h *g*
+2012-02-02 13:05:02,Tectu,also 0 bis 4095
+2012-02-02 13:05:09,kevin,Genau
+2012-02-02 13:05:20,Tectu,weil das 4096 byteS sind ;)
+2012-02-02 13:05:21,kevin,"Also 0xfff, nicht 0x1000"
+2012-02-02 13:05:29,Tectu,richtig
+2012-02-02 13:05:29,bluecode_,stultus: berechtigt dich dazu N mit 0 zu definieren oder wie?
+2012-02-02 13:05:41,Tectu,"kevin, gib mir nem moment für die memory map"
+2012-02-02 13:05:42,kevin,Und dasselbe Spiel geht halt weiter bis an die 1-GB-Grenze
+2012-02-02 13:05:57,Tectu,also mache ich jetzt kernel ist  0 bis 0x3fffffff
+2012-02-02 13:05:59,kevin,"Und bis zu den 4 GB sogar, wo du ja schon 0xffffffff statt 0x100000000 stehen hast"
+2012-02-02 13:06:08,Tectu,und user von 0x40000000 bis 0xfffffffff ?
+2012-02-02 13:06:09,stultus,exakt *g*
+2012-02-02 13:06:21,kevin,"Tectu: Ja, das klingt sinnvoll"
+2012-02-02 13:06:24,Tectu,okay
+2012-02-02 13:06:27,stultus,bluecode_: einigen wir uns für die eindeutigkeit einfach auf Z statt N? ;)
+2012-02-02 13:06:34,Tectu,"so hatte ich das mal getippt, kam mir aber komisch vor, war 2 uhr morgends :D"
+2012-02-02 13:07:23,Tectu,"kevin, "
+2012-02-02 13:07:23,Tectu,#define VMM_USER_START          0x40000000 /* 1G */
+2012-02-02 13:07:23,Tectu,#define VMM_USER_END            0xffffffff /* top */
+2012-02-02 13:07:23,Tectu,#define VMM_KERNEL_START        0x00000000 /* bottom */
+2012-02-02 13:07:23,Tectu,#define VMM_KERNEL_END          0x3fffffff /* 1GB -1 Byte */
+2012-02-02 13:07:56,Tectu,somit habe ich   1GB - 1 Byte und 3GB + 1 Byte user
+2012-02-02 13:08:03,Tectu,also kann ich doch den user um 1 byte kürzen? macht das nicht sinn?
+2012-02-02 13:08:18,Tectu,um nicht ne neue page anfangen zu müssen
+2012-02-02 13:08:29,kevin,Deine Rechnung ist falsch
+2012-02-02 13:08:54,kevin,"Wo kriegst du das eine Byte her, das zum User gehört statt zum Kernel?"
+2012-02-02 13:09:03,kevin,Du hast so genau 1 GB Kernel und 3 GB User
+2012-02-02 13:09:05,Tectu,"wieso?     ich habe 1GB - 1 byte kernel ram, da sind wir uns einig?"
+2012-02-02 13:09:15,Tectu,aaah
+2012-02-02 13:09:17,Tectu,fängt bei 0 an
+2012-02-02 13:09:19,Tectu,genau ;-)
+2012-02-02 13:09:24,Tectu,0xfff nicht 0x1000 ;)
+2012-02-02 13:09:29,kevin,Eben
+2012-02-02 13:10:08,Tectu,dann ist aber     0x40000000 /* 1GB + 1 byte */?
+2012-02-02 13:10:21,stultus,"nö, exakt 1GB"
+2012-02-02 13:10:38,Tectu,wieso? o0  ich habe von 0x0 bis 0x3ff... genau 1 GB
+2012-02-02 13:10:41,Tectu,oder?
+2012-02-02 13:11:03,stultus,Länge. Nicht Adresse.
+2012-02-02 13:11:34,Tectu,"ah, ich sehe"
+2012-02-02 13:11:37,Tectu,jetzt wirklich :D
+2012-02-02 13:11:39,kevin,Von 0 bis 0 ist es ein Byte ;-)
+2012-02-02 13:12:20,Tectu,#define VMM_USER_START          0x40000000 /* 3GB User RAM */
+2012-02-02 13:12:20,Tectu,#define VMM_USER_END            0xffffffff
+2012-02-02 13:12:20,Tectu,#define VMM_KERNEL_START        0x00000000
+2012-02-02 13:12:20,Tectu,#define VMM_KERNEL_END          0x3fffffff /* 1GB Kernel RAM */
+2012-02-02 13:12:22,Tectu,sodele :D
+2012-02-02 13:12:49,Tectu,"noch den oberen kommentar zu VMM_USER_END verschieben, sauberer und so, ist klar"
+2012-02-02 13:13:42,kevin,So müsste es passen
+2012-02-02 13:14:22,kevin,Zeit für Mittagessen
+2012-02-02 13:14:52,Tectu,"hrhr, guddn"
+2012-02-02 13:25:11,Tectu,"leute, macht es sinn die flags sowohl für table, als auch für pages zu nutzen?"
+2012-02-02 13:28:29,Flurinox,"welche flags? die, die der vmm_alloc übergeben werden? die werden bei mir nicht hergenommen für pagetables, das macht die map_page funktion komplett automatisch (je nach adresse)"
+2012-02-02 13:30:13,Tectu,oh je
+2012-02-02 13:33:16,Flurinox,welche flags brauchen die pagetables denn großartiges?
+2012-02-02 13:34:36,Tectu,das frage ich ja
+2012-02-02 13:34:38,Tectu,ich denke keine?
+2012-02-02 13:34:47,Tectu,obwohl
+2012-02-02 13:34:47,Tectu,doch
+2012-02-02 13:34:49,Tectu,klar
+2012-02-02 13:34:53,Tectu,nein
+2012-02-02 13:34:56,Tectu,doch
+2012-02-02 13:34:59,Tectu,sorry :D
+2012-02-02 13:35:06,Flurinox,"nur das present bit, falls sie alloziert wird"
+2012-02-02 13:35:16,Tectu,"man muss ja davon ausgehen, dass die 1024 pages in einer table nicht alle kernel sein sollen?"
+2012-02-02 13:35:25,Tectu,"oh, warte das ist ja eigentlich schon getrennt, bei der page"
+2012-02-02 13:35:28,Tectu,richtig?
+2012-02-02 13:35:32,Tectu,page braucht nur present und fertig
+2012-02-02 13:35:35,Tectu,table braucht noch user
+2012-02-02 13:35:52,Flurinox,"wenn du die pagetable als WRITE + USER makierst, wird halt extra nochmal die page geprüft, und dort kannst du dann KERNEL + READONLY zB einstellen"
+2012-02-02 13:38:09,Tectu,habs jetzt mal so gemacht
+2012-02-02 13:38:09,Tectu, 
+2012-02-02 13:38:10,Tectu,#define PTE_PRESENT             0x01
+2012-02-02 13:38:10,Tectu,#define PTE_WRITE               0x02
+2012-02-02 13:38:12,Tectu,#define PTE_USER                0x04
+2012-02-02 13:38:14,Tectu,#define PDE_PRESENT             0x01
+2012-02-02 13:38:16,Tectu,#define PDE_WRITE               0x02
+2012-02-02 13:38:19,Tectu,#define PDE_USER                0x04
+2012-02-02 13:38:33,stultus,Regeln beachten ;)
+2012-02-02 13:38:39,stultus,Keine Pastes über 5 Zeilen.
+2012-02-02 13:38:39,Tectu,hrhr :)
+2012-02-02 13:38:46,Tectu,"richtig, sorry."
+2012-02-02 13:39:00,stultus,tyndur bräuchte mal wieder op ;)
+2012-02-02 13:39:05,Tectu,wahr schon froh dass es die zwei  /* .. */ zeilen nicht gesendet hat und mit unknown command quitiert hat :D
+2012-02-02 13:39:18,stultus,"Naja, ich muss *g* gleich uni"
+2012-02-02 13:39:20,stultus,bd
+2012-02-02 13:39:24,Tectu,bb
+2012-02-02 13:43:09,Flurinox,"ich hab nur sowas wie PAGE_READ , PAGE_WRITE , ..."
+2012-02-02 13:43:33,Flurinox,also so werden die allozierten Pages in der PageTable makiert
+2012-02-02 13:43:54,Flurinox,"wie die PageTables in der PageDirectory makiert werden, ist definitiv nicht aufgabe von vmm_alloc"
+2012-02-02 13:46:06,Tectu,wieso nicht?
+2012-02-02 13:46:15,Tectu,"wenn du ne neue table erstellen musst, musst du die ja ins directory eintragen"
+2012-02-02 13:49:35,Flurinox,aber die flags kann man sich denken
+2012-02-02 13:50:05,Jidder,"der computer kann sich auch denken, was ich meine"
+2012-02-02 13:50:16,Jidder,vor allem weil er meine browserhistory kennt
+2012-02-02 13:50:29,Flurinox,entweder du setzt alles auf WRITE + USER (weil die Page in der PageTable eh nochmal überprüft wird) oder du setzt die Flags entsprechend der adresse (ob kernel bereich oder user bereich)
+2012-02-02 13:52:14,kevin,Reh
+2012-02-02 13:52:24,Jidder,Jäger
+2012-02-02 13:52:28,Jidder,*peng*
+2012-02-02 13:52:48,Jidder,jetzt ist der Jidder geplatzt
+2012-02-02 13:52:59,Tectu,o0
+2012-02-02 13:54:19,Tectu,"ähm, ich guck noch immer tyndur code an...    vaddr_t  und  paddr_t   http://git.tyndur.org/?p=tyndur.git;a=blob;f=src/include/types.h;h=6ac4653179a1743b0b62216149adbb2b9e68f758;hb=94f16ea6020ccc597aef0c0f88ebb2c0bceb2c3c#l36"
+2012-02-02 13:54:29,Tectu,"warum wird mit vaddr_t void genommen, und paddr_t nicht"
+2012-02-02 13:54:32,Tectu,ich arbeite bei beiden mit void
+2012-02-02 13:54:42,Jidder,und ich hab beide als uintptr_t
+2012-02-02 13:54:55,Jidder,bzw integers
+2012-02-02 13:57:53,Flurinox,"paddr_t kann auf 32-bit systemen auch > 32-bit sein, wenn PAE verwendet wird"
+2012-02-02 13:58:16,Flurinox,d.h. statt 32-bit physischen speicher halt 36-bit ansprechen ;)
+2012-02-02 13:58:16,kevin,Tectu: Weil uns danach war
+2012-02-02 13:59:10,kevin,"Tectu: Mit ein Grund warum void* für paddr_t doof ist, ist, dass man es aus Versehen dereferenzieren kann, weil man vergessen hat, dass es eine physische Adresse ist."
+2012-02-02 13:59:17,kevin,Da will man einen Compilerfehler haben
+2012-02-02 13:59:31,Tectu,hmm
+2012-02-02 13:59:45,Tectu,ich tu mich gerade schwer etwas in den funktionsblock meiner vmm_alloc() ein zu tragen
+2012-02-02 13:59:58,Jidder,"64-bit integers für eine zahl, die nur 24 bits ungleich null hat?"
+2012-02-02 14:00:45,Tectu,"mal so pseudo code:   1. im übergebenen kontext gucken, obs mind. eine table gibt, wenn nicht, eine erstellen, in der table gucken obs pages gib, wenn nicht, erstellen, wenn =1024 pages in der table die geöffnet wode und alle anderen tables auch voll sind, neue table. wenn es 1024 tables gibt, NULL zurückgeben?"
+2012-02-02 14:00:52,kevin,Jidder: Du nimmst ein uint24_t pfn?
+2012-02-02 14:02:52,kevin,"Tectu: So ungefähr. Wobei der Fall mit ""es gibt keine PT"" schon von ""alle voll"" abgedeckt ist."
+2012-02-02 14:03:01,Tectu,richtig
+2012-02-02 14:03:21,Tectu,dann muss ich noch zusammehängenden speicher bedenken
+2012-02-02 14:09:03,Tectu,oder?
+2012-02-02 14:15:42,kevin,Solltest du
+2012-02-02 14:18:53,Tectu,soll ich das gleich berücksichtigen oder eher späteR?
+2012-02-02 14:26:35,Flurinox,warum erst falsch machen? ;)
+2012-02-02 14:26:49,Flurinox,aber musst du wissen ;)
+2012-02-02 14:26:58,Tectu,"heieieiei, ih kriegs echt nicht auf die reihe"
+2012-02-02 14:27:04,Tectu,ich krieg keine zeile code raus
+2012-02-02 14:27:18,Flurinox,willst du pagetables parsen?
+2012-02-02 14:27:32,Tectu,"Flurinox, ich hätte gerne mal eine vmm_alloc() ;)"
+2012-02-02 14:27:48,Flurinox,"indem du pagetables parst? oder bitmap,liste,..?"
+2012-02-02 14:29:22,Tectu,pagetable parsen
+2012-02-02 14:29:24,Tectu,würde ich gerne
+2012-02-02 14:31:29,kevin,"for (pde = 0; pde < 1024; pde++) for (pte = 0; pte < 1024; pte++) { if (is_free(pde, pdt)) num++; else num = 0; if (num > num_requested) heureka(); } "
+2012-02-02 14:31:46,kevin,s/>/>=/
+2012-02-02 14:32:00,Tectu,pde = pagedirectoryentry? 
+2012-02-02 14:32:04,kevin,Jo
+2012-02-02 14:32:06,Tectu,habe etwas mühe mit der namensgebung
+2012-02-02 14:32:18,Tectu,die struct im wiki vom context beinhaltet ja  pagedirectory
+2012-02-02 14:32:45,Tectu,ein uint32_t*
+2012-02-02 14:33:00,Tectu,"wo genau zeigt das teil denn bitte hin, das zeigt doch auf die tables, oder?"
+2012-02-02 14:34:15,kevin,"Das ist ein ganzes Array, das komplette PD halt"
+2012-02-02 14:34:44,Tectu,"ich habe schlussendlich    context->pagedir[1024]  <--- da sind 1024 tables drin, oder?"
+2012-02-02 14:34:46,kevin,Und PD-Einträge sind 32 Bit groß
+2012-02-02 14:35:07,kevin,"Nein, da sind 1024 Page-Directory-Einträge drin"
+2012-02-02 14:35:09,Tectu,"also ""schematisch""   context->pagedir[1024] und jede davon -> pages[1024]"
+2012-02-02 14:35:13,Tectu,häää
+2012-02-02 14:35:21,Tectu,"ich blick bei den namen nicht mehr durch, das ist mein haupt problem"
+2012-02-02 14:35:22,kevin,"PDEs zeigen auf PTs, aber PDEs sind nicht PTs"
+2012-02-02 14:36:12,kevin,"Also in einem PD sind ja nicht direkt Pointer drin, sondern auch noch Flags. Deswegen sind die Einträge nicht void*, sondern uint32_t."
+2012-02-02 14:37:17,Tectu,"ja, verstehe ich, "
+2012-02-02 14:37:25,Tectu,aber das sind schlussendlich 1024 einträge PRO context
+2012-02-02 14:38:39,Tectu,:(
+2012-02-02 14:39:17,kevin,Ja
+2012-02-02 14:39:43,kevin,Was ist dein Problem damit?
+2012-02-02 14:40:11,Tectu,ich tu mich gerade schwer damit mit dem zugriff im code o0
+2012-02-02 14:42:55,Tectu,ich muss/kann doch machen:   for( pde=0; pde < 1024; pde++) if( context->pagedir[pde] != NULL)   ?
+2012-02-02 14:44:40,kevin,Nö
+2012-02-02 14:44:56,kevin,"NULL ist ein Pointer, pagedir[pde] ein uint32_t"
+2012-02-02 14:45:04,kevin,"Macht nicht viel Sinn, die zu vergleichen"
+2012-02-02 14:49:07,Tectu,"damn, ich komme mit der einen struct einfach nicht klar"
+2012-02-02 14:49:21,Tectu,dein pseudocode verstehe ich
+2012-02-02 14:49:33,Tectu,mir hackts nur an der is_free()
+2012-02-02 14:51:49,Tectu,"sprich der zugriff mittels PDE und PTE, resp. das erstellen weitere einträge"
+2012-02-02 14:57:33,kevin,"is_free schaut erstmal, ob die PT überhaupt present ist"
+2012-02-02 14:57:49,kevin,Also pagedir[pde] & PTE_PRESENT
+2012-02-02 14:58:02,kevin,"Wenn nein, dann ist die Page auf jeden Fall drei"
+2012-02-02 14:58:08,kevin,*frei
+2012-02-02 14:58:29,kevin,"Aber die vermutlich auch drei Pages, wenn du nicht grad am Ende der PT bist ;-)"
+2012-02-02 14:58:45,kevin,"Wenn ja, musst du die PT anschauen"
+2012-02-02 14:59:06,kevin,"An die kommst du üben den PDE nicht direkt ran, weil der dir nur die physische Adresse der PT sagt"
+2012-02-02 14:59:17,Tectu,richtig
+2012-02-02 14:59:57,kevin,"Zwei Möglichkeiten: Es ist nicht der aktuelle Kontext, in den gemappt werden soll, dann mappst du diese physische Adresse der PT temporär"
+2012-02-02 15:00:13,kevin,"Oder es ist der aktuelle, dann nimmst du den Trick mit dem selbstreferenzierenden PD"
+2012-02-02 15:00:27,kevin,Und hast automagisch alle PTs am Stück an einer bekannten Adresse gemappt
+2012-02-02 15:00:51,Tectu,wtf
+2012-02-02 15:01:42,Tectu,"kevin, stimmt der ablauf an hand der kommentare soweit?"
+2012-02-02 15:01:42,Tectu,http://pastebin.com/CBbSZePS
+2012-02-02 15:02:11,billy,moin
+2012-02-02 15:02:18,Tectu,hi billy 
+2012-02-02 15:03:49,kevin,"Tectu: Willst du nicht lieber auf deutsche Kommentare umstellen? Also vorausgesetzt, du kannst deutsch besser. ;-)"
+2012-02-02 15:04:01,Jidder,"Tectu: du solltest die schleife verlassen, sobald du genug pages gefunden hast"
+2012-02-02 15:04:10,kevin,num sollte initialisiert werden
+2012-02-02 15:04:19,kevin,Und siehe Jidder
+2012-02-02 15:04:46,kevin,Das eigentliche Mappen fehlt auch noch
+2012-02-02 15:05:25,kevin,Das ist ja im Moment eher ein vmm_find_free() als ein vmm_alloc()
+2012-02-02 15:05:41,Tectu,"schleife verlassen... goto, break, oder doch nen weiteres flag setzten?"
+2012-02-02 15:05:49,kevin,goto
+2012-02-02 15:06:07,kevin,"Du musst aus zwei Schleifen raus, also reicht break nicht"
+2012-02-02 15:07:10,Tectu,hmm
+2012-02-02 15:08:49,Tectu,ach man warum ist das so kompliziert :(
+2012-02-02 15:09:10,Tectu,"wie lange habt ihr so gebraucht, bis das paging bei euch lief?"
+2012-02-02 15:09:11,Tectu,10min?
+2012-02-02 15:12:15,kevin,"Was heißt ""laufen""?"
+2012-02-02 15:12:35,Tectu,"einwandfrei, dass ihr am rest des OSs weiterbasteln konntent"
+2012-02-02 15:13:04,kevin,http://git.tyndur.org/?p=tyndur.git;a=history;f=src/kernel2/src/arch/i386/mm/mm_context.c;h=bfeb84eb2236d3a488f05676befa9881a527a2da;hb=HEAD
+2012-02-02 15:13:12,kevin,"Erste Änderung Mai 2007, letzte April 2011"
+2012-02-02 15:14:05,Flurinox,*g*
+2012-02-02 15:14:19,kevin,http://git.tyndur.org/?p=tyndur.git;a=history;f=src/kernel/src/mm/paging.c;h=48f9b7eedfb972faa9d08204ec8136c2a099560e;hb=HEAD
+2012-02-02 15:14:55,kevin,"In kernel1 August 2006 bis September 2009, wenn man die letzten beiden Commits außer acht lässt"
+2012-02-02 15:15:05,Tectu,:(
+2012-02-02 15:15:35,Tectu,"mir ist noch immer schleierhaft, wie auf das element UNTER  context-pagedir[pde] zu zu greiffen"
+2012-02-02 15:16:31,kevin,Du meinst auf den Inhalt der PT?
+2012-02-02 15:16:47,Tectu,jo
+2012-02-02 15:23:55,kevin,"Tectu: Hm, ich kann die zwei Zeilen von oben nochmal kopieren, aber vielleicht kannst du dein ""wtf"" auch mal --verbose machen"
+2012-02-02 15:25:04,Tectu,"kevin, ih glaube ich muss das etwas ruhen lassen ;-)"
+2012-02-02 15:32:47,kevin,"Das heißt, jetzt kommt erstmal die GUI? ;-)"
+2012-02-02 15:42:54,Tectu,"kevin, nein, dass heisst ich höre atm mit dem develn auf, da es mir gerade keinen spass mehr macht, vlt. morgen wieder ;)"
+2012-02-02 15:42:57,Tectu,oder heute nacht
+2012-02-02 15:43:38,kevin,"Ach so, du meinst, Jidder kann besser erklären als ich. ;-)"
+2012-02-02 15:46:22,Tectu,"misst, du hast mich durchschaut :P"
+2012-02-02 15:47:16,kevin,*Mist
+2012-02-02 15:48:43,Tectu,"nein, grosst missssst mit zwei s ;-)"
+2012-02-02 16:06:43,kevin,"Meh. Warum gehen anonyme structs nur, wenn man sie direkt an dieser Stelle deklariert...?"
+2012-02-02 16:09:21,DesL,moin
+2012-02-02 16:14:39,Tectu,hi DesL 
+2012-02-02 16:40:21,stultus,re
+2012-02-02 17:04:27,DesL,"pft, habe theorie prüfung am rosenmontag um 10 Uhr Oo"
+2012-02-02 17:07:30,rizor,führerschein?
+2012-02-02 17:18:08,DesL,jo
+2012-02-02 17:21:57,DesL,umzug geht ja afaik um 11 los ./
+2012-02-02 18:22:22,billy,moin
+2012-02-02 18:26:32,billy,wird eigentlich allozierter speicher bei einem exit(-1) wieder freigegeben?
+2012-02-02 18:26:45,billy,oder muss ich das selbst machen?
+2012-02-02 18:27:11,Jidder,wird freigegeben
+2012-02-02 18:27:17,Jidder,der prozess verschwindet ja komplett
+2012-02-02 18:27:28,Jidder,und damit auch der von ihn reserviere speicher
+2012-02-02 18:27:50,billy,"ok, danke"
+2012-02-02 19:11:17,rizor,re
+2012-02-02 19:11:33,rizor,hat einer von euch Erfahrung mit CMake?
+2012-02-02 19:53:54,DesL,Oo wieso kann gimp kein doofes svg exportieren -.- mit inkscape lässt es sich nicht so gut arbeiten wie mit gimp :P
+2012-02-02 19:54:16,taljeth,Weil Gimp kein Vektorzeichenprogramm ist...?
+2012-02-02 19:57:09,bluecode_,dia kann nach svg exportieren
+2012-02-02 20:00:42,stultus,dia ist ja noch ungeigneter für Grafiken
+2012-02-02 20:06:43,bluecode_,kommt drauf an was für grafiken....
+2012-02-02 20:08:03,stultus,"naja, ich denke nicht das jemand auf die Idee kommen könnte UML, ER oder sonstige coole Diagramme mit Gimp zu malen"
+2012-02-02 20:08:39,stultus,"(Hm ok, sollt ich vielleicht besser zurücknehmen, irgendwo hab ich letztens sowas mit Paint gesehn, insofern..)"
+2012-02-02 20:08:57,stultus,aber wer gimp findet könnte ja wissen wasser tut *g*
+2012-02-02 20:11:34,bluecode_,paint? wow
+2012-02-02 20:11:53,bluecode_,aber ist möglicherweise einfacher als jedes UML-Tool *g*
+2012-02-02 20:19:08,rizor,uml... bähh. Die schlimmste Erfindung seit es Software Engineering gibt
+2012-02-02 20:21:45,DesL,+1
+2012-02-02 20:24:12,rizor,ich musste in der uni mal dieses IBM tool verwenden
+2012-02-02 20:24:17,rizor,mir fällt grad der mane nicht ein
+2012-02-02 20:24:35,mgottschlag,"das hätten wir uns auch angeschaut, wenn wir Zeit gehabt hätten, aber an Visio sind wir einfacher rangekommen"
+2012-02-02 20:24:36,rizor,"basierte auf eclipse, war an sich ganz gut, brauchte aber extrem viele Resourcen"
+2012-02-02 20:24:41,mgottschlag,Rational Architect?
+2012-02-02 20:24:45,mgottschlag,"okay, ne, dann wars was anderes"
+2012-02-02 20:25:20,mgottschlag,"Alles, was wir vorher ausprobiert hatten (ArgoUML, UMLet, Umbrello, Dia) war entweder unbenutzbar oder hat regelmäßig alle Daten gefressen"
+2012-02-02 20:26:27,rizor,"naja, die dinger sind halt buggy... verwendet keiner oder sind nur mit UML gemacht worden ;) dann kann nur sowas bei rauskommen"
+2012-02-02 20:26:38,mgottschlag,heh
+2012-02-02 20:26:51,mgottschlag,also ich versteh das ganze UML-Bashing ehrlich gesagt nicht ^^
+2012-02-02 20:27:05,mgottschlag,"wenn man im Team arbeitet vor allem, da kenne ich keine benutzbare Alternative zur Kommunikation"
+2012-02-02 20:27:31,rizor,also wir haben jetzt ein großes projekt mit vielen leuten und da kommen wir auch ohne UML klar
+2012-02-02 20:27:53,rizor,also da arbeiten neun Leute zusammen und das ist auch inhaltlich schon ziemlich komplex
+2012-02-02 20:28:08,rizor,da haben wir uns ein Architekturmodell überlegt und darauf arbeiten alle und es klappt ziemlich gut
+2012-02-02 20:28:09,mgottschlag,"wenn ich das probiert hab, sind wir ziemlich schnell daran gescheitert, dass wir an unterschiedlichen Stellen was ganz unterschiedliches gebaut haben, sodass regelmäßig große Teile neu entworfen werden mussten"
+2012-02-02 20:28:28,rizor,"da würde UML nicht helfen. eher im Gegenteil, dann wäre alles viel komplizierten"
+2012-02-02 20:28:37,bluecode_,"wie dokumentiert ihr dann, rizor? Nur auf Sourcecodeebene?"
+2012-02-02 20:28:43,mgottschlag,+1
+2012-02-02 20:28:44,rizor,mit doxygen
+2012-02-02 20:29:06,rizor,und ansonsten mit verhaltensbeschreibungen
+2012-02-02 20:29:11,mgottschlag,"ich finde, UML hilft da ungemein, weil das Modell vorher halt für alle eindeutig verständlich visualisiert wird :)"
+2012-02-02 20:29:24,bluecode_,"hm, da würde mir ehrlich gesagt was fehlen, rizor"
+2012-02-02 20:29:30,rizor,"das problem an dem Softwareprojekt ist halt, dass es nicht unbedingt deterministisch ist"
+2012-02-02 20:29:45,rizor,was fehlt dir denn da?
+2012-02-02 20:29:52,bluecode_,sowas in richtung klassendiagramm
+2012-02-02 20:30:06,rizor,das wird durch unser Architekturmodel beschrieben
+2012-02-02 20:30:09,bluecode_,das gibt einen guten überblick über ein system und wie es zusammenhängt
+2012-02-02 20:30:21,rizor,Da haben wir uns halt einmal eine Grafik gemacht
+2012-02-02 20:30:32,bluecode_,"jo, genau dafür würde ich uml auch benutzen"
+2012-02-02 20:30:46,bluecode_,"btw. ich hab letztens visual paradigm verwendet, das war garnicht so schlecht"
+2012-02-02 20:30:53,rizor,"Das war auch schon Architekturdesign, aber UML benötigt da aus meiner Sicht zu viel Overhead"
+2012-02-02 20:31:07,rizor,diese ganzen Use-Case-Modelle bringen an sich nichts
+2012-02-02 20:31:11,rizor,finde ich zumindest
+2012-02-02 20:31:25,mgottschlag,"naja, man muss ja nicht unbedingt alles mit UML machen"
+2012-02-02 20:31:27,bluecode_,"hm, ich finde wenn dann bringt use case und klassenmodell noch was"
+2012-02-02 20:31:34,mgottschlag,joa
+2012-02-02 20:31:35,rizor,Das Klassendiagramm finde ich noch sinnvoll
+2012-02-02 20:31:48,bluecode_,aber alles verhaltensdiagrammszeugs ist unfug
+2012-02-02 20:32:04,bluecode_,"das ist entweder irrelevant weil trivial, oder unübersichtlich"
+2012-02-02 20:32:14,rizor,"Naja, aber auch Use-cases werden noch nicht benötigt"
+2012-02-02 20:32:26,rizor,Das ist auch schon aus den Klassendiagrammen ersichtlich
+2012-02-02 20:32:47,bluecode_,"hm, dem würd ich jetzt eher nicht zustimmen"
+2012-02-02 20:32:55,mgottschlag,"hm, imho sollte das Klassendiagramm schon aus den Use-Cases entstehen, weil irgendwas muss doch herhalten, um festzustellen, was genau gebraucht wird"
+2012-02-02 20:33:09,bluecode_,"use case ist das interfuck nach außen, klassendiagramm was es innen drinnen so gibt"
+2012-02-02 20:33:31,rizor,Das sollte ja noch vor den Use-Cases ersichtlich sein
+2012-02-02 20:33:58,bluecode_,"jo natürlich, mgottschlag, die reihenfolge ist use-case -> klassendiagramm"
+2012-02-02 20:34:17,mgottschlag,"naja, ich meine, die Use-Cases sind so ziemlich das erste, was ich machen würde"
+2012-02-02 20:34:34,mgottschlag,davor existiert bei mir normalerweise noch nicht viel von der Beschreibung des Projekts eigentlich o.O
+2012-02-02 20:34:38,rizor,"okay, wir haben damals zuerst die klassendiagramme und dann das use-case gemacht"
+2012-02-02 20:34:45,mgottschlag,"also, vor allem noch lange kein Klassendiagramm"
+2012-02-02 20:34:59,rizor,"naja, aber du hast ja immer eine Kundenanforderung oder sowas"
+2012-02-02 20:35:08,bluecode_,das ist ja ein witziger entwicklungsprozess :-)
+2012-02-02 20:35:23,bluecode_,wir entwerfen erstmal unser system statisch und schauen dann was der kunde eigentlich haben will :-D
+2012-02-02 20:35:27,mgottschlag,"naja, aber das Use-Case-Diagramm entsteht dann, wenn du die Kundenanforderung niederschreibst"
+2012-02-02 20:35:52,rizor,"stimmt schon, nur das ich dafür nie ein diagramm machen würde"
+2012-02-02 20:36:19,bluecode_,"zur übersicht halt schon nicht schlecht, teilweise"
+2012-02-02 20:36:24,mgottschlag,+1
+2012-02-02 20:36:30,bluecode_,muss leider gehen
+2012-02-02 20:36:32,mgottschlag,ansonsten könnte man sicher drauf verzichten
+2012-02-02 20:36:32,bluecode_,cu
+2012-02-02 20:37:14,rizor,Das war halt mein Lerneffekt dabei ;) Man kann drauf verzichten
+2012-02-02 20:37:22,rizor,Fand halt nur das Klassendiagramm richtig sinnvoll
+2012-02-02 21:02:31,Flurinox,"2,5 stunden im optimization manual gelesen^^ => pause^^"
+2012-02-02 21:04:52,Flurinox,"hab mir so viel mühe miot loop-unrolling per makros gegeben, und jetzt les ich tipps wie ""loop-fission: split the loop into multiple loops"" ;)"
+2012-02-02 21:15:47,rizor,danach kannst du ja noch superblöcke suchen ;)
+2012-02-02 22:48:39,DesL,"jemand ne idee wie ich die grafik realistische aussehen lassen kann? sollen (badezimmer)fliesen sein, aber zufriede bin ich damit nicht: http://dl.dropbox.com/u/55132163/Schule/Abizeitung/layout/tiles.svg"
+2012-02-02 22:50:57,stultus,Tiefeneffekte.
+2012-02-02 22:51:06,DesL,sprich?
+2012-02-02 22:51:12,stultus,"Fugen rein, Fließen raus, vorzugsweise beides."
+2012-02-02 22:51:18,DesL,"ah, k"
+2012-02-02 22:51:19,stultus,Halt entsprechend über mehr Schatten an den richtigen Rändern
+2012-02-02 22:51:29,DesL,ich schau mal wie ich das mit svg hinkriege :D thx
+2012-02-02 22:52:31,DesL,"meh, jetzt habe in konversation strg+L gedrückt :/"
+2012-02-02 22:53:26,DesL,*habe ich
+2012-02-02 22:53:51,stultus,was macht das..?
+2012-02-02 22:54:04,DesL,bildschirm leeren
+2012-02-02 22:57:42,stultus,"bin mal weg, gute nacht"

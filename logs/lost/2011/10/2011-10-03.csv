@@ -1,0 +1,666 @@
+date/time,nick,message
+2011-10-03 00:00:06,fkrauthan,server disconnect
+2011-10-03 00:00:22,fkrauthan,in der wird vermerkt wer gelöscht werden soll
+2011-10-03 00:00:32,fkrauthan,der Bot arbeitet stark multithreaded
+2011-10-03 00:00:33,stultus,und nen Thread macht das?
+2011-10-03 00:00:41,Paprikachu,ahja.
+2011-10-03 00:00:48,Paprikachu,warum löscht der thread nicht selbst?
+2011-10-03 00:01:00,stultus,"Ok, ich kenn die Implementierung nicht, aber das hört sich sehr nach Deadlockpotential an"
+2011-10-03 00:01:06,stultus,s/Deadlock/RaceCondition/
+2011-10-03 00:01:08,fkrauthan,nop
+2011-10-03 00:01:10,fkrauthan,keinsterweise
+2011-10-03 00:01:22,fkrauthan,mutliconnection ahdnling usw
+2011-10-03 00:01:27,Paprikachu,wie viele threads verwendet dein bot?
+2011-10-03 00:01:35,Paprikachu,immer gleich viele?
+2011-10-03 00:01:37,fkrauthan,Jede Verbindung besteht aus 2 Threads
+2011-10-03 00:01:40,Paprikachu,hardware abhängig?
+2011-10-03 00:01:42,Paprikachu,ouch.
+2011-10-03 00:01:48,stultus,wtf :/
+2011-10-03 00:01:48,fkrauthan,nix ouch
+2011-10-03 00:01:50,stultus,"ok, wofür?"
+2011-10-03 00:02:00,Paprikachu,meinem bot ist das egal.
+2011-10-03 00:02:04,fkrauthan,der MainThread
+2011-10-03 00:02:13,fkrauthan,wo nachrichten vom IRC Server abgefragt werden
+2011-10-03 00:02:13,Paprikachu,"der läuft auf 20 servern mit 1 thread, aber du kannst genauso 100 threads erzeugen ;)"
+2011-10-03 00:02:16,fkrauthan,geparst werden usw
+2011-10-03 00:02:24,Paprikachu,wird immer aufgeteilt ;)
+2011-10-03 00:02:26,fkrauthan,und ein 2. Thread ist fürs senden zuständig
+2011-10-03 00:02:33,stultus,hm
+2011-10-03 00:02:34,fkrauthan,auch um flooding zu verhindern
+2011-10-03 00:02:37,stultus,und wie sieht jetzt nen Verbindungsabbau aus?
+2011-10-03 00:02:38,fkrauthan,und solche späße
+2011-10-03 00:02:53,fkrauthan,naja quit wird an server gesendet
+2011-10-03 00:03:00,fkrauthan,Signal wird aufgerufen
+2011-10-03 00:03:06,fkrauthan,und connection wird in einer DelListe vermerkt
+2011-10-03 00:03:08,fkrauthan,und wird danach zerstört
+2011-10-03 00:03:16,Paprikachu,warum löscht der thread nicht selbst?
+2011-10-03 00:03:23,Paprikachu,ist doch seine connection?
+2011-10-03 00:03:30,stultus,Und was passiert wenn irgendein Plugin nach dem onDisconnect noch drauf arbeiten will?
+2011-10-03 00:03:40,fkrauthan,kann er nicht
+2011-10-03 00:03:51,stultus,und/oder der onDisconnect lang genug arbeitet dasser mit dem Aufräum-Thread in Kontakt kommt?
+2011-10-03 00:04:12,Paprikachu,ist doch alles käääääse
+2011-10-03 00:04:33,stultus,"kann er nicht -> Crash, Exception (wird irgendwo gefangen?), ?"
+2011-10-03 00:04:41,Paprikachu,email an fkr.
+2011-10-03 00:04:51,Paprikachu,danach std::terminate.
+2011-10-03 00:05:12,fkrauthan,ohmann
+2011-10-03 00:05:13,fkrauthan,stultus: http://dl.dropbox.com/u/3299733/libirc2.zip
+2011-10-03 00:05:17,fkrauthan,bitte erst code anschauen
+2011-10-03 00:05:25,fkrauthan,bevor du hier wüste theorein über den Code aufstellst
+2011-10-03 00:05:33,stultus,thx
+2011-10-03 00:05:41,Paprikachu,"wüste theorien für wüsten code, passt doch xD"
+2011-10-03 00:07:33,fkrauthan,ich möächte nicht deinen sehen
+2011-10-03 00:07:38,fkrauthan,und die CPU auslastung von deinem IRCBot
+2011-10-03 00:07:42,fkrauthan,;)
+2011-10-03 00:08:07,Naoe-Kanno,lieber CPU Auslastung als sonstwas
+2011-10-03 00:08:13,Naoe-Kanno,immerhin hat man genug CPU-Power
+2011-10-03 00:08:14,Paprikachu,"meine auslastung ist konstant auf 0,0 %"
+2011-10-03 00:08:22,Paprikachu,;)
+2011-10-03 00:08:27,XanClic,"Wozu hast du die CPU dann, die du hast"
+2011-10-03 00:08:28,fkrauthan,hmm dann flooded dein Bot aber
+2011-10-03 00:08:31,fkrauthan,wenn man nicht aufoasst
+2011-10-03 00:08:43,Paprikachu,wie meinen? :D
+2011-10-03 00:08:49,fkrauthan,naja wenn ein Bot
+2011-10-03 00:08:55,fkrauthan,100 mal ne privmessage schreibt
+2011-10-03 00:08:59,fkrauthan,werden die sofort rausgeschrieben
+2011-10-03 00:09:10,fkrauthan,also wirste gekickt aus den meisten channels
+2011-10-03 00:09:16,fkrauthan,und teilweise sogar vom server
+2011-10-03 00:09:16,Paprikachu,und?
+2011-10-03 00:09:31,Paprikachu,ist doch kein fehler vom bot
+2011-10-03 00:09:38,Paprikachu,sondern der plugins
+2011-10-03 00:09:53,fkrauthan,nein
+2011-10-03 00:09:58,fkrauthan,da versagt deine IRC Lib :P
+2011-10-03 00:10:03,Paprikachu,ne ;)
+2011-10-03 00:10:18,Paprikachu,warum sollte ich mit absicht ne drosselung reinhauen?
+2011-10-03 00:10:20,Paprikachu,total schwachsinnig.
+2011-10-03 00:10:37,fkrauthan,die plugins können das garnicht drosseln
+2011-10-03 00:10:38,fkrauthan,;)
+2011-10-03 00:10:50,Paprikachu,es gibt nichts zu drosseln.
+2011-10-03 00:10:53,Paprikachu,;)
+2011-10-03 00:11:11,Paprikachu,"wer scheiß plugins verwendet, ist selbst schuld."
+2011-10-03 00:11:26,fkrauthan,haha bestes beispiel mein lieber ist
+2011-10-03 00:11:30,fkrauthan,ein modul das auf user input reagiert
+2011-10-03 00:11:39,fkrauthan,wenn cih .google test
+2011-10-03 00:11:49,fkrauthan,oder .lastseen xyz
+2011-10-03 00:11:54,fkrauthan,das poste ich nun recht oft
+2011-10-03 00:11:58,fkrauthan,und dann postet stultus das noch recht oft
+2011-10-03 00:12:00,fkrauthan,fliegt dein ot
+2011-10-03 00:12:02,fkrauthan,bot
+2011-10-03 00:12:07,fkrauthan,obwohl das modul korrekt gearbeitet hat ;)
+2011-10-03 00:12:08,Paprikachu,achso meinst du ;)
+2011-10-03 00:12:42,Paprikachu,"hm, joa."
+2011-10-03 00:12:52,fkrauthan,tja mein lieber ;)
+2011-10-03 00:13:00,fkrauthan,und nun weißt du wieso meins 2 Thread pro Connection verwendet
+2011-10-03 00:13:01,fkrauthan,;)
+2011-10-03 00:13:08,Paprikachu,"nein, weiß ich nich."
+2011-10-03 00:13:12,Paprikachu,warum denn?
+2011-10-03 00:13:21,stultus,ROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOFL
+2011-10-03 00:13:41,fkrauthan,stultus: ?
+2011-10-03 00:13:46,Paprikachu,"ich kann auch nen einzigen thread für 20 server nehmen, wo problem?"
+2011-10-03 00:13:56,fkrauthan,dann hast du keine flood control
+2011-10-03 00:13:57,stultus,"Ok, da hab ich grad was falsch gelesen"
+2011-10-03 00:14:00,stultus,aber naja *g*
+2011-10-03 00:14:00,fkrauthan,das möchte ich sehen
+2011-10-03 00:14:05,Paprikachu,"klar, wenn ichs einbau schon."
+2011-10-03 00:14:09,fkrauthan,naalso
+2011-10-03 00:14:10,fkrauthan,-.-
+2011-10-03 00:14:12,fkrauthan,was sagte ich den
+2011-10-03 00:14:16,stultus,Nen paar Sachen find ich ehrlich kaputt ;)
+2011-10-03 00:14:21,Paprikachu,dazu brauch ich aber nicht 2 threads pro connection.
+2011-10-03 00:14:27,Paprikachu,;)
+2011-10-03 00:14:28,fkrauthan,stultus: dann solltest du nicht mein webframework anschauen
+2011-10-03 00:14:33,fkrauthan,da gibt es refleciton und serilaisation
+2011-10-03 00:14:36,fkrauthan,das sieht kaput aus :P
+2011-10-03 00:14:38,stultus,"Verbindungsaufbau im Konstruktor, jede Menge unmanaged-pointer"
+2011-10-03 00:14:51,fkrauthan,stultus: wer proggen kann kann mit unmanaged pointer arbeiten
+2011-10-03 00:14:52,fkrauthan,^^
+2011-10-03 00:14:57,Paprikachu,ne.
+2011-10-03 00:15:01,stultus,Naja.
+2011-10-03 00:15:03,Paprikachu,wer proggen kann verwendet die nicht.
+2011-10-03 00:15:08,stultus,Irgendwo wirds verdammt kompliziert
+2011-10-03 00:15:13,Paprikachu,"weil er weiß, dass es bessere alternativen gibt :P"
+2011-10-03 00:15:14,XanClic,"Wer proggen kann, nimmt Assembler!!!11!!elf"
+2011-10-03 00:15:22,Paprikachu,genau :)
+2011-10-03 00:15:23,stultus,wer geschickt ist nimmt sowas wie shared_ptr und ist sogar ganz nebenbei memleakfrei ;)
+2011-10-03 00:15:26,Naoe-Kanno,"XanClic, wir beide verstehen uns ;-)"
+2011-10-03 00:15:30,XanClic,yay
+2011-10-03 00:15:34,Paprikachu,stultus: neee.
+2011-10-03 00:15:43,Paprikachu,unique_ptr ist in den meisten fällen angebrachter.
+2011-10-03 00:16:00,Paprikachu,"shared_ptr hat 2 referenzzähler, die man oft nicht braucht."
+2011-10-03 00:16:21,stultus,echt? man lernt nie aus :)
+2011-10-03 00:16:29,fkrauthan,haha
+2011-10-03 00:16:36,fkrauthan,oder ich verwnede raw pointer
+2011-10-03 00:16:44,stultus,aber von nem unique kann ich auch wirklich nur einen haben?
+2011-10-03 00:16:45,Paprikachu,ode du verwendest sie nciht ;)
+2011-10-03 00:16:46,fkrauthan,und brauche garkeine referenzzähler
+2011-10-03 00:16:46,Paprikachu,*nicht
+2011-10-03 00:16:47,fkrauthan,:P
+2011-10-03 00:17:03,Paprikachu,"ja, stultus, der ist nicht kopierbar."
+2011-10-03 00:17:08,Paprikachu,nur movebar.
+2011-10-03 00:17:20,Paprikachu,cooles wort. movebar.
+2011-10-03 00:17:35,Paprikachu,movebar. movebar. movebar. movebar. movebar. movebar.
+2011-10-03 00:17:50,Paddy,XanClic: Aber keinen Falschrumassembler!!!11!!elf
+2011-10-03 00:17:57,XanClic,Ich doch nicht
+2011-10-03 00:18:08,fkrauthan,naja mir jetzt auch egal
+2011-10-03 00:18:08,Paprikachu,"hauptsache RUM assembler, was?"
+2011-10-03 00:18:15,fkrauthan,könnt ja gerne meine IRC Lib optimieren
+2011-10-03 00:18:15,fkrauthan,:P
+2011-10-03 00:18:19,Paprikachu,nee.
+2011-10-03 00:18:27,Paprikachu,zu viel kaputt da :P
+2011-10-03 00:18:52,fkrauthan,haha
+2011-10-03 00:18:58,fkrauthan,das sagt der der noch viel kaputeren code hat :P
+2011-10-03 00:19:06,Paprikachu,hab ich doch nicht ;)
+2011-10-03 00:19:06,XanClic,Mein Code ist am kaputtesten!
+2011-10-03 00:19:19,XanClic,"Seit wann streitet man denn in diesem Channel hier ab, kaputten Code zu haben"
+2011-10-03 00:19:21,XanClic,Ganz neue Töne
+2011-10-03 00:19:24,Paprikachu,meiner ist noch viel kaputerer.
+2011-10-03 00:19:24,Paddy,Und meiner ist kaputester
+2011-10-03 00:19:33,fkrauthan,und cih bin weg
+2011-10-03 00:19:43,Paprikachu,nun verzieht er sich :P
+2011-10-03 00:20:51,stultus,Schade
+2011-10-03 00:20:52,Paddy,XanClic: Du kannst für die Neulinge ja bei Gelegenheit mal eine Unterrichtseinheit #lost-Kultur halen
+2011-10-03 00:21:06,max,Ich bin doch selbst ganz neu hier
+2011-10-03 00:21:15,stultus,Dabei wollt ich grad fragen welchen Sinn das hat fürs mCV.notify zu schauen obs nötig wäre...
+2011-10-03 00:21:28,Paprikachu,stultus: kennst du weak_ptr? :)
+2011-10-03 00:21:33,stultus,Ich bin mir _ziemlich_ sicher dass das wirklich in ne RaceCondition laufen kann
+2011-10-03 00:21:37,Paprikachu,der ist voll sexy.
+2011-10-03 00:21:39,stultus,"von gehört, verwendet auch noch nicht"
+2011-10-03 00:21:53,stultus,letztendlich wie nen shared_ptr ohne die Referenz?
+2011-10-03 00:21:58,Paprikachu,nope
+2011-10-03 00:22:04,stultus,halt zum brechen von zyklischen Referenzen. soviel weiß ich.
+2011-10-03 00:22:06,Paprikachu,der shared_ptr hat ja 2 referenzzähler
+2011-10-03 00:22:15,Paprikachu,einer zählt die shared und einer die weak
+2011-10-03 00:22:26,Paprikachu,der weak hält das objekt nicht am leben
+2011-10-03 00:22:35,stultus,ah
+2011-10-03 00:22:39,stultus,so sehn also die Interna aus
+2011-10-03 00:22:48,Paprikachu,"wenn also alle shared weg sind, geht der shared-count auf 0 und das objekt wird gelöscht"
+2011-10-03 00:23:22,Paprikachu,"der weak ist noch da, hat noch den referenzzähler und kann nachsehen, ob das objekt vorhanden ist, indem er auf den shared count sieht"
+2011-10-03 00:23:45,Paprikachu,wenn dann shared und weak count auf 0 gehen wird der zähler gelöscht
+2011-10-03 00:24:18,Paprikachu,"da gibts natürlich noch tricks um das ganze für multithreading zu verbessern, aber im prinzip isses das schon."
+2011-10-03 00:24:45,Paprikachu,"ziemlicher overhead, wenn man ihn nicht gerade braucht ;)"
+2011-10-03 00:25:30,stultus,*g*
+2011-10-03 00:26:09,stultus,njo
+2011-10-03 00:26:21,Paprikachu,etwas besser wird das ganze mit make_shared
+2011-10-03 00:26:24,stultus,"bislang aber nix mit falsch gemacht, ich brauch die auch shared die ich shared hab *g*"
+2011-10-03 00:26:27,Paprikachu,make_shared kennst du?
+2011-10-03 00:26:30,stultus,nope
+2011-10-03 00:26:38,Paprikachu,solltest du immer verwenden
+2011-10-03 00:26:51,Paprikachu,shared_ptr<int> sp = make_shared<int>(42);
+2011-10-03 00:27:03,stultus,Vorteil gegenüber nem Konstruktor?
+2011-10-03 00:27:12,Paprikachu,make_shared packet das objekt mit den beiden referenzzählern zusammen in nen block
+2011-10-03 00:27:26,Paprikachu,und macht daraus ne einzige allokation
+2011-10-03 00:27:38,stultus,Das klappt auch für Nichtprimitive?
+2011-10-03 00:27:43,Paprikachu,ja.
+2011-10-03 00:27:46,stultus,"ah, klar"
+2011-10-03 00:27:46,Paprikachu,für alle typen.
+2011-10-03 00:27:50,stultus,placement_new gibts ja auch noch
+2011-10-03 00:28:32,Paprikachu,wie meinst du das?
+2011-10-03 00:28:42,stultus,den operator
+2011-10-03 00:28:44,stultus,new auf vordefinierte adresse
+2011-10-03 00:29:01,Paprikachu,"schon schon, aber inwiefern besteht da zusammenhang zu shared_ptr?"
+2011-10-03 00:29:42,stultus,"nein, zu make_shared"
+2011-10-03 00:29:51,stultus,"der fiel mir erst nicht ein, weswegen mir nicht klar war wie das funktionieren soll ;)"
+2011-10-03 00:30:07,Paprikachu,ich versteh nix mehr. xD
+2011-10-03 00:30:10,Paprikachu,red klartext :P
+2011-10-03 00:30:21,stultus,Implementierung zu make_shared.
+2011-10-03 00:30:34,stultus,Ist mir erst nicht eingefallen wie das denn gehen soll das die in einem alloc landen
+2011-10-03 00:30:40,Paprikachu,ahso
+2011-10-03 00:30:42,stultus,mit dem operator ist natürlich klar wies geht.
+2011-10-03 00:31:07,Paprikachu,"ich denke nicht, dass der da verwendet wird."
+2011-10-03 00:31:24,Paprikachu,shared_ptr hat ja auch noch einen deleter.
+2011-10-03 00:31:31,Paprikachu,der kommt auch in das pack rein
+2011-10-03 00:31:50,Paprikachu,"und im prinzip gibts dann, für jede art von allokation ne klasse"
+2011-10-03 00:32:17,Paprikachu,z.b sowas:
+2011-10-03 00:32:50,Paprikachu,template <typename T> struct extra_allocated { T* obj; size_t shareds; size_t weaks; };
+2011-10-03 00:33:07,Paprikachu,"und dann gibts halt noch eins für make_shared, das in etwa so aussieht:"
+2011-10-03 00:33:32,Paprikachu,template <typename T> struct make_allocated { T obj; size_t shareds; size_t weaks; };
+2011-10-03 00:33:54,Paprikachu,"wahrscheinlich haben die ne virtuelle methode get_object() oder so, die je nach struct den zeiger zurückgibt."
+2011-10-03 00:34:19,Paprikachu,beide sind abgeleitet von ner basisklasse.
+2011-10-03 00:34:31,Paprikachu,da kommt also auch noch n virtual call hinzu
+2011-10-03 00:34:53,Paprikachu,also ich würde shared_ptr vermeiden ;)
+2011-10-03 00:34:57,stultus,"naja, das sieht man eh öfters"
+2011-10-03 00:35:03,stultus,"hm, ok"
+2011-10-03 00:35:19,Paprikachu,den deleter hab ich da jetzt mal bei den structs weggelassen
+2011-10-03 00:35:31,Paprikachu,der wird noch zusätzlich über type erase gespeichert
+2011-10-03 00:35:37,Paprikachu,-> noch n virtual call beim deleten
+2011-10-03 00:36:00,Paprikachu,*type erasure
+2011-10-03 00:37:28,Paprikachu,"ich hoffe, ich muss jetzt nicht noch type erasure erklären xD"
+2011-10-03 00:37:46,Paprikachu,"das ist auch der weg, wie std::function normalerweise funktioniert. ^^"
+2011-10-03 00:38:33,Paprikachu,boost::any funktioniert auch damit.
+2011-10-03 00:38:45,Paprikachu,eigentlich ist type erasure auch recht simpel.
+2011-10-03 00:38:48,stultus,"hm, theoretisch schon, aber nicht jetzt *g*"
+2011-10-03 00:39:03,Paprikachu,"naja, so schwer isses gar nicht, aber okay :D"
+2011-10-03 00:39:15,stultus,dann erklär noch fix :D
+2011-10-03 00:39:25,Paprikachu,nur mal so aus interesse: wie alt seid ihr denn so alle? oder halt ungefähr?
+2011-10-03 00:40:12,stultus,Exakt wird eh schwer ;)
+2011-10-03 00:40:20,Paprikachu,"würd mich nicht wundern, wenn ich der jüngste hier bin. :D"
+2011-10-03 00:40:33,stultus,20. selber?
+2011-10-03 00:41:01,Paprikachu,16 ^^
+2011-10-03 00:41:09,stultus,nicht der jüngste.
+2011-10-03 00:41:12,stultus,16-jährige hats hier öfters ;)
+2011-10-03 00:41:16,Paprikachu,mist.
+2011-10-03 00:41:28,Paprikachu,"okay, der jünste der nen plan von gutem c++ hat :P"
+2011-10-03 00:41:28,stultus,"Hm, und meine lowlevel-registrierung (also forum) datiert auf 2004."
+2011-10-03 00:41:44,stultus,Und ich glaub das hat bislang keiner geknackt *g*
+2011-10-03 00:42:13,stultus,aber ist ja letztendlich auch egal
+2011-10-03 00:42:14,Paprikachu,ich erklär mal type erasure :P
+2011-10-03 00:42:28,Paprikachu,"anhand von... hmm ja, anhand wovon bloß."
+2011-10-03 00:42:50,Paprikachu,ich denke std::function ist mal das einfachste.
+2011-10-03 00:43:37,Paprikachu,"also, im prinzip ganz einfach, bei std::function kann man ja unterschiedliche aufrufbare objekte speichern, z.B. nen funktionszeiger, oder ein objekt mit operator (), beschränken wir uns mal auf die beiden."
+2011-10-03 00:44:14,Paprikachu,"so schlecht hab ich doch nicht angefangen, dass ihr jetzt leaved, oder? :O"
+2011-10-03 00:44:24,stultus,ne *g*
+2011-10-03 00:44:34,Paprikachu,gut :P
+2011-10-03 00:44:40,Paprikachu,xD
+2011-10-03 00:45:38,Paprikachu,"internt hat std::function ne basisklasse, ein template das auf rückgabetyp und parametertypen parametrisiert ist."
+2011-10-03 00:46:25,Paprikachu,"template <typename R, typename... P> struct wrapper_base { virtual R operator () (P...) = 0; virtual ~wrapper_base(); }"
+2011-10-03 00:46:43,Paprikachu,"der operator () ist virtual, nen virtuellen dtor braucht man dann auch noch."
+2011-10-03 00:47:14,Paprikachu,"nun gibt es ein template, abgeleitet von der klasse, dass zusätzlich noch den typ des aufrufbaren objekts enthält."
+2011-10-03 00:47:50,Paprikachu,"template <typename F, typename R, typename... P> struct wrapper : wrapper_base<R, P...> { ... };"
+2011-10-03 00:48:23,Paprikachu,"im prinzip speichert das ding nur ein objekt vom typ F, das ist das aufrufbare ding, und implementiert den virtuellen operator ()"
+2011-10-03 00:49:15,Paprikachu,"die klasse std::function speichert nun einen zeiger auf die basisklasse, darin speichert sie aber ein objekt vom typ wrapper"
+2011-10-03 00:49:51,Paprikachu,"wenn nun der operator () aufgerufen werden soll, ruft die einfach den virtuellen operator () der basisklasse auf"
+2011-10-03 00:50:12,stultus,huch?
+2011-10-03 00:50:16,Paprikachu,der typ des gespeicherten funktionsobjekts ist also irrelevant ;)
+2011-10-03 00:50:33,Paprikachu,und ist somit auch weg.
+2011-10-03 00:50:36,Paprikachu,huch?
+2011-10-03 00:50:48,stultus,"ah, moment, wrapper muss operator() ja nicht überschreiben."
+2011-10-03 00:50:52,Paprikachu,doch
+2011-10-03 00:50:57,Paprikachu,genau das tut er
+2011-10-03 00:51:04,Paprikachu,"bzw, er implementiert ihn"
+2011-10-03 00:51:04,stultus,"dann sollte der doch aufgerufen werden, wenn der virtual ist?"
+2011-10-03 00:51:11,Paprikachu,genau
+2011-10-03 00:52:04,Paprikachu,theoretisch könnte man den virtuellen dtor umgehen.
+2011-10-03 00:52:32,Paprikachu,"aber das würde keinen vorteil bringen, weil das sowieso wieder nen virtual call brauchen würde, daher egal."
+2011-10-03 00:53:02,Paprikachu,"gibt da noch ein paar nette optimierungen, um die heap allokation, alle virtuelle calls und so wegzukriegen, aber das ist recht krankes zeug."
+2011-10-03 00:53:27,stultus,hört sich nach typischer optimierung an (krankes zeugs)
+2011-10-03 00:53:42,Paprikachu,?
+2011-10-03 00:53:51,stultus,"Geht also letztendlich nur darum unnötige Typinfos rauszuwerfen, korrekt?"
+2011-10-03 00:54:06,stultus,"naja, das sich etwas ""schön"" optimieren lässt ist eher selten"
+2011-10-03 00:54:27,Paprikachu,"genau, der typ des gespeicherten objekts wird verworfen"
+2011-10-03 00:54:29,stultus,außer indem die offensichtliche lösung auch eine einfache ist
+2011-10-03 00:54:39,stultus,^^
+2011-10-03 00:55:14,Paprikachu,"das tolle daran ist, dass dieses eine template reich"
+2011-10-03 00:55:15,Paprikachu,*reicht
+2011-10-03 00:55:27,Paprikachu,"man braucht keins für memberfunktionszeiger, normale funktionszeiger, etc."
+2011-10-03 00:55:33,Paprikachu,es reicht dieses eine
+2011-10-03 00:55:56,Paprikachu,"huch, es ist schon fast 1."
+2011-10-03 00:56:01,Paprikachu,morgen schule :/
+2011-10-03 00:56:08,stultus,huch?
+2011-10-03 00:56:09,Paprikachu,;_;
+2011-10-03 00:56:11,stultus,NIcht aus DE?
+2011-10-03 00:56:17,Paprikachu,"nein, österreich."
+2011-10-03 00:56:20,stultus,Ewww
+2011-10-03 00:56:25,Paprikachu,"ja, eww."
+2011-10-03 00:56:32,stultus,Du hast unser Mitleid für den fehlenden Feiertag *g*
+2011-10-03 00:56:41,Paprikachu,:P
+2011-10-03 00:57:33,desl,:D
+2011-10-03 00:58:00,DesL,"irgendwie sollte ich ja um 23:59 disconnecten, aber o2 ist seltsam^^"
+2011-10-03 00:58:34,Paddy,Wahrscheinlich suchen sie dir ein anderes 23:59 raus
+2011-10-03 00:58:42,Paddy,Weil irgendwo ist immer 23:59
+2011-10-03 00:58:54,DesL,"hm, laut der SMS vom support eigentlich nciht"
+2011-10-03 00:59:01,Paprikachu,so
+2011-10-03 00:59:04,Paprikachu,bin nun weg.
+2011-10-03 00:59:08,DesL,"ich denek eher, das ich nicht wieder connecten kann, sobald ich off war"
+2011-10-03 00:59:20,Paprikachu,"bis dann, ich hoffe meine erklärungen waren einigermaßen verständlich."
+2011-10-03 00:59:27,Paprikachu,:P
+2011-10-03 01:00:27,stultus,^^
+2011-10-03 01:00:45,stultus,DesL: UTC?
+2011-10-03 01:00:51,stultus,dann wärst du ja jetzt erst dran
+2011-10-03 01:01:15,stultus,"bin aber auch, gute nacht"
+2011-10-03 11:23:08,billy,moin
+2011-10-03 12:03:30,bluecode,moin
+2011-10-03 12:52:19,DerHartmut,"Da ist man mal nen Tag nicht da, schon wird hier über C++ geredet"
+2011-10-03 12:52:24,DerHartmut,Schlimm Schlimm
+2011-10-03 12:54:08,bluecode,moin DerHartmut
+2011-10-03 12:54:21,DerHartmut,Moinerle bluecode 
+2011-10-03 13:00:10,fkrauthan,haha
+2011-10-03 13:00:11,fkrauthan,:D
+2011-10-03 13:00:23,fkrauthan,oh misst
+2011-10-03 13:00:26,fkrauthan,er is schon wieder offline
+2011-10-03 13:00:32,fkrauthan,da nützt mein auslachen garnix :(
+2011-10-03 13:02:01,ErikV,Guten Tag
+2011-10-03 13:02:40,fkrauthan,huhu
+2011-10-03 13:03:53,ErikV,"weiß jemand wie man unter POSIX zu einer bestehenden TCP-Verbindung (wurde von außen initiiert, also der aktuelle Prozess ist der Server) den localen Endpunkt (also die locale IP-Adresse) raus bekommt?"
+2011-10-03 13:06:13,bluecode,bei accept?
+2011-10-03 13:07:07,ErikV,"hm ,mal schauen ob es da was gibt, ich hab da bis jetzt nur die Adresse des Clients gesehen"
+2011-10-03 13:07:28,bluecode,"achso, jetzt versteh ich"
+2011-10-03 13:08:36,ErikV,"nein, der gibt nur den peer-socket zurück"
+2011-10-03 13:09:05,ErikV,ich benötige meine eigene IP um sie bei FTP beim PASV-Commando raus geben zu können
+2011-10-03 13:10:28,ErikV,"mein FTP funktioniert übrigens schon so einigermaßen (rudimentär), ich kann jedenfalls von einem Windows-PC mit VLC die Musik von meinem Linux-PC anhören ;)"
+2011-10-03 13:16:09,ErikV,"getsockopt() liefert die Info leider auch nicht, hat noch jemand ne Idee?"
+2011-10-03 13:18:00,Jidder,moin
+2011-10-03 13:18:11,ErikV,hi jidder
+2011-10-03 13:31:24,ErikV,getsockname liefert wohl was ich brauche
+2011-10-03 14:25:03,alexander,Reh
+2011-10-03 14:29:53,ErikV,Elch
+2011-10-03 15:27:43,ErikV,kennt jemand ne Library die mich beim verarbeiten von Kommandozeilenparametern unterstützt?
+2011-10-03 15:28:29,fkrauthan,boost programm_options
+2011-10-03 15:28:59,bluecode,posix hat da auch irgendwas
+2011-10-03 15:29:55,ErikV,"das möchte ich doch auch meinen, die ganzen core-utils haben das Rad doch bestimmt nicht jedes mal neu erfunden"
+2011-10-03 15:31:25,bluecode,getopt* scheinen die funktionen zu sein
+2011-10-03 15:32:07,ErikV,"Danke, das schau ich mir mal an"
+2011-10-03 15:32:33,bluecode,http://linux.die.net/man/3/getopt
+2011-10-03 15:32:37,ErikV,dann kann mein FTP-Server hoffentlich bald auch übliche Parameter verarbeiten
+2011-10-03 15:32:49,fkrauthan,ErikV: wie gesagt boost programm_options
+2011-10-03 15:32:52,fkrauthan,ist echt extrem nice
+2011-10-03 15:33:02,bluecode,wenn man sowieso schon c++ benutzt dann sicherlich
+2011-10-03 15:33:40,ErikV,fkrauthan: ja schon aber nur deswegen so ein Ungetüm wie boost einbinden erscheint mir etwas oversized ;)
+2011-10-03 15:33:54,bluecode,du musst dafür nicht ganz boost einbinden...
+2011-10-03 15:35:19,ErikV,"naja, aber der build-Vorgang wird wohl trotzdem etwas aufgebläht"
+2011-10-03 15:35:25,fkrauthan,du musst nur boost goramm options einbinden
+2011-10-03 15:35:40,fkrauthan,bin mir ned sicher evt ist das sogar header only
+2011-10-03 15:36:15,bluecode,scheint nicht so zu sein
+2011-10-03 15:36:48,bluecode,ErikV: Gründe an den Haaren herbeiziehen? ;-)
+2011-10-03 15:37:20,ErikV,ich wollte eigentlich als nächstes Qt einbinden (wegen der netten Socket-Klassen und damit ich so ein süßes Icon im Tray haben kann)
+2011-10-03 15:37:46,bluecode,boost hat auch einen socket-wrapper
+2011-10-03 15:38:07,ErikV,aber keine Tray-Icons
+2011-10-03 15:38:41,ErikV,und ob man mehr als ein Monster in der Executable haben will ist IMHO fraglich
+2011-10-03 15:39:02,fkrauthan,ErikV: du bindest ja nicht boost ein
+2011-10-03 15:39:07,fkrauthan,sondern nur eine lib aus boost
+2011-10-03 15:39:11,fkrauthan,boost ist eine sammlung von libs
+2011-10-03 15:39:42,ErikV,"schon klar, aber man muss doch dafür den Build-Process entsprechend aufweiten"
+2011-10-03 15:39:50,bluecode,"nächstes mal beschwer ich mich wenn jemand WinAPI verwendet, dann werden ka schließlich alle Windows-DLLs eingebunden"
+2011-10-03 15:40:08,bluecode,die libs sind bei jedem linux installierbar (-dev pakete)
+2011-10-03 15:40:23,ErikV,und cygwin?
+2011-10-03 15:40:52,fkrauthan,was willste mit cygwin
+2011-10-03 15:41:00,fkrauthan,es gibt für Boost precompiled installer für windows
+2011-10-03 15:41:03,fkrauthan,boostpro
+2011-10-03 15:41:19,ErikV,"damit soll mein ftp-Server auch unter windoof tun, geht zumindest bis jetzt"
+2011-10-03 15:41:48,fkrauthan,ja da hindert dich boost ja nicht dran
+2011-10-03 15:41:48,bluecode,wenn du es gescheit mit boost machst sollte es auch unter vc compilieren...
+2011-10-03 15:41:49,fkrauthan,;)
+2011-10-03 15:42:10,bluecode,"(also zB keine BSD-Sockets nutzen, sondern boost, etc...)"
+2011-10-03 15:42:22,bluecode,"wobei gut, windows hat ja sogar die sockets"
+2011-10-03 15:42:37,bluecode,also mein ich wohl eher den anderen posix-kram
+2011-10-03 15:43:04,ErikV,ich schau mir mal getopt näher an und wenn mir das reicht (ich will ja nur 2 oder 3 optionale Parameter supporten) dann bin ich zufrieden
+2011-10-03 15:43:16,fkrauthan,Windows ist nicht Posix conform
+2011-10-03 15:43:22,fkrauthan,und ein widnows FTP Server an cygwin binden ist unsauber
+2011-10-03 15:43:50,bluecode,ErikV: mit boost wärst du was das angeht platformunabhängig
+2011-10-03 15:44:06,fkrauthan,ErikV: außerdem schau dir mal boost programm options an
+2011-10-03 15:44:10,fkrauthan,das macht einiges für dich
+2011-10-03 15:44:14,fkrauthan,automatische hilfe generiern
+2011-10-03 15:44:15,ErikV,sind Parameter den so Platformabhängig?
+2011-10-03 15:44:19,fkrauthan,--dir=/test/
+2011-10-03 15:44:20,fkrauthan,auswerten
+2011-10-03 15:44:35,fkrauthan,überprüfen ob die angegeben parameter gültig sind
+2011-10-03 15:44:36,fkrauthan,usw
+2011-10-03 15:44:36,fkrauthan,;)
+2011-10-03 15:44:41,fkrauthan,du wolltest ja eine hilfe haben
+2011-10-03 15:44:48,fkrauthan,ansonsten reicht dir das normale argv array volla us ;)
+2011-10-03 15:45:00,bluecode,"ErikV: getopt ist posix, das gibts unter windows so einfach nicht"
+2011-10-03 15:45:09,ErikV,Hilfe ja aber es soll auch im Quell-Code noch überschaubar bleiben
+2011-10-03 15:45:32,bluecode,"und warum glaubst du, dass der Code mit boost kompliziert wäre?"
+2011-10-03 15:45:47,bluecode,oder unüberschaubar
+2011-10-03 15:45:52,ErikV,"keine Ahnung, ist so ne Bauchbefürchtung"
+2011-10-03 15:46:16,bluecode,"aha... d.h. wenn man C++ Konzepte verwendet, wird Code komplizierter?"
+2011-10-03 15:46:30,ErikV,ich bin doch schon bei C++
+2011-10-03 15:46:30,bluecode,und C/Posix ist automagisch überschaubar und sauber?
+2011-10-03 15:46:46,fkrauthan,http://pastebin.com/6EXCPHre
+2011-10-03 15:46:46,bluecode,ich rede von der verwendeten lib ;-)
+2011-10-03 15:46:52,fkrauthan,ich weiß ja nicht was daran jetzt unübersichtlih sein soll
+2011-10-03 15:47:57,ErikV,"ich schau mir das mal an und dann sehe ich weiter, aber nicht mehr heute, heute freue ich mich das ich überhaupt so weit gekommen bin das ich einen simplen Instant-FTP-Server habe ;)"
+2011-10-03 15:48:25,fkrauthan,ErikV: ich glaube du solltest dich mit der basis von programmierung nochmal auseinander setzen
+2011-10-03 15:48:51,ErikV,na wenn Du meinst
+2011-10-03 15:49:06,fkrauthan,naja deine aussagen gerade zeugen davon das du keine ahnung hast^^
+2011-10-03 15:49:20,ErikV,hm
+2011-10-03 15:49:23,bluecode,aber Bauchgefühl
+2011-10-03 15:49:40,bluecode,"(nein, ich stimme fkrauthan was das angeht nicht zu)"
+2011-10-03 15:50:13,ErikV,ich schätze ich hab mal wieder voll ins Fettnäpfchen glangt
+2011-10-03 15:51:09,fkrauthan,boost rpogramm options ist das was du woltlest den umgang mit kommandozeilen parametern leichter umgehen
+2011-10-03 15:51:32,ErikV,ich bin ja erstmal glücklich das VLC über FTP geht
+2011-10-03 15:51:34,fkrauthan,getopt oder was auch immer sit unix und da kannste quasi gleich das argv array hernehmen
+2011-10-03 15:52:08,ErikV,alles weitere kommt dann
+2011-10-03 15:52:27,fkrauthan,FTP is jetzt aber ja eh nicht so die kunst
+2011-10-03 15:52:33,fkrauthan,zumindest nicht das standard FTP protokoll
+2011-10-03 15:53:22,ErikV,wenn ich mir die existierenden FTP-Server ansehe dann scheint FTP ein Buch mit mehr als 7 Siegeln zu sein
+2011-10-03 15:53:34,fkrauthan,joa
+2011-10-03 15:53:39,fkrauthan,weil es extensions gibt
+2011-10-03 15:53:44,fkrauthan,verschlüsselungen
+2011-10-03 15:53:47,fkrauthan,und noch viel mehr späße
+2011-10-03 15:53:58,ErikV,ich will doch nur ein simples gibfrei /irgendwas haben
+2011-10-03 15:54:13,fkrauthan,wieso nimmst du nicht einen der FTP Server?
+2011-10-03 15:54:20,fkrauthan,die es gibt?
+2011-10-03 15:54:32,ErikV,zu aufwendug
+2011-10-03 15:54:38,fkrauthan,wieso zu afuwendig
+2011-10-03 15:54:40,fkrauthan,installieren
+2011-10-03 15:54:41,ErikV,auwendig
+2011-10-03 15:54:49,fkrauthan,5min konfigurieren und fertig
+2011-10-03 15:55:05,ErikV,weil konfigurieren schon zu viel ist
+2011-10-03 15:55:09,fkrauthan,das heißt 15min vs X Stunden?
+2011-10-03 15:55:24,ErikV,ich will ein gibfrei udn fertig
+2011-10-03 15:55:39,fkrauthan,Du meinst gerade konfuig ist zu viel arbeit?
+2011-10-03 15:55:46,fkrauthan,aber willst nen eigenen FTP Server machen?
+2011-10-03 15:55:53,fkrauthan,du hast echt seeeehr komische ansichten
+2011-10-03 15:55:55,SHyx0rmZ,wundert mich auch *g*
+2011-10-03 15:56:11,fkrauthan,aber das bauchgefühl sagt ja auch das boost böse ist
+2011-10-03 15:56:14,ErikV,und noch ein klein wenig Sicherheit damit ich keine Scheunentore aufreiße
+2011-10-03 15:56:28,fkrauthan,die warscheinlichkeit das du SO nen scheunentor aufreist ist da deutlich höher
+2011-10-03 15:56:34,fkrauthan,als wenn du einen etablierten FTP Server nimmst ;)
+2011-10-03 15:56:43,fkrauthan,du hst echt ne komische Weltanschauung
+2011-10-03 15:57:33,ErikV,"ich vermute das mein jetziger FTP-Server noch relativ sicher ist, ohne es zu beweisen"
+2011-10-03 15:57:57,ErikV,und zu komplex soll es auch nicht werden
+2011-10-03 15:58:05,fkrauthan,du vermutest auch das boost alles kompliziert und langsam und groß macht
+2011-10-03 15:58:21,ErikV,ne das nicht
+2011-10-03 15:58:54,ErikV,ich vermute nur das boost für ein paar Parameter mit Kanonen auf Spatzen schießen ist
+2011-10-03 15:59:00,fkrauthan,ErikV: ich geh mit dir jede Wette rein das ein ProFTPd deutlich sicherer ist als das was du zusammen baust
+2011-10-03 15:59:09,fkrauthan,du schiest ja nicht mit boost
+2011-10-03 15:59:11,ErikV,mag sein
+2011-10-03 15:59:13,fkrauthan,sondern mit boost programm_options
+2011-10-03 15:59:46,ErikV,aber mein ftp ist schneller auchgesetzt
+2011-10-03 15:59:59,fkrauthan,haha sag mir dann wo der läuft
+2011-10-03 16:00:05,fkrauthan,mag dann deinen Server ein wenig durchforsten
+2011-10-03 16:00:06,fkrauthan,:D
+2011-10-03 16:00:21,ErikV,bis jetzt nur im Home-LAN
+2011-10-03 16:00:32,ErikV,soll ja nich jeder ran
+2011-10-03 16:00:53,fkrauthan,haha ich wette trotzdem ein proftpd ist schneller aufgesetzt als du deinen FPT Server programmiert hast
+2011-10-03 16:00:56,fkrauthan,ist deutlich sicherer
+2011-10-03 16:01:00,fkrauthan,läuft stabiler und schneller
+2011-10-03 16:01:24,ErikV,ist aber nichts eigenes
+2011-10-03 16:02:13,ErikV,und proftp bietet auf jeden Fall nicht das was ich will
+2011-10-03 16:02:27,fkrauthan,wiso ws willst du den was er dir nicht bietet?
+2011-10-03 16:02:30,ErikV,z.B. ohne Konfiguration
+2011-10-03 16:02:48,ErikV,ein simples gibfrei
+2011-10-03 16:03:05,fkrauthan,das gibfrei ist aber konfiguration
+2011-10-03 16:03:06,fkrauthan,;)
+2011-10-03 16:03:49,ErikV,ich will einfach ein Verzeichnis frei geben ohne Verrenkungen und lange Vorgeschichten
+2011-10-03 16:04:11,fkrauthan,hast du nicht meine fresse
+2011-10-03 16:04:21,fkrauthan,beschäftige dich doch bitte erstmal mit einem Thema bevor du was behauptest
+2011-10-03 16:04:24,ErikV,und das hab ich jetzt erst mal
+2011-10-03 16:04:39,ErikV,wieso
+2011-10-03 16:04:47,fkrauthan,die default config reicht aus
+2011-10-03 16:04:47,ErikV,?
+2011-10-03 16:04:53,fkrauthan,dann sagste nur noch gebe dieses verzeichnis frei
+2011-10-03 16:04:56,fkrauthan,schon läuft das
+2011-10-03 16:04:58,fkrauthan,genau das was du willst
+2011-10-03 16:05:07,ErikV,leider nicht
+2011-10-03 16:05:09,fkrauthan,und du hast deine argumente für eigenentwicklung quasi selbst wiederlegt
+2011-10-03 16:05:36,ErikV,bei proftp benötige ich user
+2011-10-03 16:05:45,fkrauthan,gibt anonymus user
+2011-10-03 16:05:45,fkrauthan,;)
+2011-10-03 16:05:48,fkrauthan,kannste aktivieren
+2011-10-03 16:06:37,ErikV,macht aber Arbeit und funktioniert nicht auf Anhieb
+2011-10-03 16:06:47,ErikV,ist zu aufwendig
+2011-10-03 16:06:56,SHyx0rmZ,"wäre auch dumm, wenn das standardmäßig aktiviert wäre"
+2011-10-03 16:07:28,ErikV,mein gibfrei soll sofort funktionieren und nicht mehr machen als gewünscht
+2011-10-03 16:08:23,fkrauthan,ErikV: dann tu und nerv nicht
+2011-10-03 16:08:33,Jidder,sagt der richtige
+2011-10-03 16:08:49,SHyx0rmZ,uh
+2011-10-03 16:08:51,fkrauthan,Jidder: was konkret meinst du?
+2011-10-03 16:09:01,SHyx0rmZ,"ich hab grad den Grund wiedergefunden, weshalb ich kein C++ mehr nutze:"
+2011-10-03 16:09:03,SHyx0rmZ,http://www.gitorious.org/nuke/kernel4/blobs/master/src/kernel4/gdt.cpp
+2011-10-03 16:09:06,Jidder,du hältst ihn von der arbeit ab
+2011-10-03 16:09:07,ErikV,fkrauthan: mach ich doch
+2011-10-03 16:09:09,Jidder,und du nervst
+2011-10-03 16:09:18,fkrauthan,ahja ich wiederlege nur seine argumente
+2011-10-03 16:09:29,fkrauthan,und ich glaube diskussionen sind der sinn eines IRC Channels
+2011-10-03 16:09:31,Jidder,was nicht meiner aussage wiederspricht
+2011-10-03 16:09:31,fkrauthan,;)
+2011-10-03 16:09:44,Jidder,-e
+2011-10-03 16:10:23,ErikV,fkrauthan: welches Argument hast Du widerlegt?
+2011-10-03 16:10:42,fkrauthan,Das er sicher ist
+2011-10-03 16:10:47,fkrauthan,das es ohne konfiguration geht
+2011-10-03 16:10:49,fkrauthan,und das es schneller ist
+2011-10-03 16:10:51,fkrauthan,;)
+2011-10-03 16:11:07,bluecode,"dir ist langweilig, oder fkrauthan? *g*"
+2011-10-03 16:11:27,fkrauthan,Jaaaaaaaaaaaaaaaaaa man
+2011-10-03 16:11:29,fkrauthan,-.-
+2011-10-03 16:11:35,fkrauthan,aber ich kann mich nicht motivieren zu arbeiten
+2011-10-03 16:11:55,bluecode,was gäbs denn zu arbeiten?
+2011-10-03 16:12:12,fkrauthan,Ähhm Aktiv und Passiv Zeiten für ein Callcenter visualisieren
+2011-10-03 16:12:29,fkrauthan,"und Callcenter tariffmanagment (also tariffe verwalten, calls verwalten, rechnung erstellen)"
+2011-10-03 16:12:51,ErikV,"fkrauthan: das es ohne Konfiguration geht habe ich nicht behauptet, aus wenn es möglich ist, ich behaupte nur das es weniger Konfiguration als andere FTP-Server benötigt"
+2011-10-03 16:13:30,fkrauthan,nur das für deinen zweck die default config von großen servern ausreicht
+2011-10-03 16:13:39,fkrauthan,daher musste da nix maximal 1 2 zeilen anpassen
+2011-10-03 16:13:59,fkrauthan,nur weil du mehr konfigurieren kannst heißt das ja noch nicht das du das machen musst
+2011-10-03 16:15:05,ErikV,"dann erkläre noch mal wie man mit proftp ein ""gibfrei /verzeichnis"" mit _einen_ Befehl bekommt"
+2011-10-03 16:15:27,ErikV,und das mit CTRL-C vergessen ist
+2011-10-03 16:15:43,fkrauthan,http://www.proftpd.org/docs/configs/anonymous.conf
+2011-10-03 16:15:46,bluecode,"findet ihr nicht, dass die Diskussion mittlerweile den Aufwand 1. der Config eines vorhandenen FTP 2. des Programmierens eines eigenen, sicherererereren FTP-Server überschreitet?"
+2011-10-03 16:15:56,ErikV,ohne eine Datei zu ändern oder was bleibendes zu hinterlassen
+2011-10-03 16:16:15,fkrauthan,btw brauchst du User
+2011-10-03 16:16:18,SHyx0rmZ,außerdem ECHAN ;-P
+2011-10-03 16:16:24,fkrauthan,ErikV: das ist ja eh dumm
+2011-10-03 16:16:26,fkrauthan,wenn du server neustartest
+2011-10-03 16:16:31,fkrauthan,musst du alle verzeichnise neu freigeben? ;)
+2011-10-03 16:17:26,ErikV,in meinem Wunsch sind User optional und nicht zwingend
+2011-10-03 16:17:38,fkrauthan,das geht aber aufgrund des FTP proktolls nicht
+2011-10-03 16:17:45,fkrauthan,da es ein homeverzeichnis pro user gibt
+2011-10-03 16:17:55,ErikV,und ich muss die Eigenschaften meiner Verzeichnisse nicht ändern
+2011-10-03 16:18:50,fkrauthan,ErikV: du hast FTP wohl nicht verstanden
+2011-10-03 16:18:52,ErikV,und warum funktioniert dann mein FTP-Server so wie ich will?  ohne User und ohne Konfiguration?
+2011-10-03 16:19:04,SHyx0rmZ,weil er sich nciht an die RFC hält? :D
+2011-10-03 16:19:11,fkrauthan,wirds wohl sein^^
+2011-10-03 16:19:13,ErikV,doch tut er
+2011-10-03 16:19:30,ErikV,sonst würden ja kein FTP-Client funktionieren
+2011-10-03 16:20:03,ErikV,aber bis jetzt funktionieren alle Clients die ich ausprobiert hab
+2011-10-03 16:20:22,fkrauthan,egal ich gebs auf^^
+2011-10-03 16:20:54,ErikV,"sehr gut, Ziel erreicht"
+2011-10-03 16:20:58,ErikV,;)
+2011-10-03 16:21:03,fkrauthan,fall ruig auf die schnauze
+2011-10-03 16:21:04,fkrauthan,:D
+2011-10-03 16:21:34,ErikV,womit sollte ich auf die Schnauze fallen?
+2011-10-03 16:21:45,fkrauthan,mit deinem extrem sicheren FTP Server
+2011-10-03 16:22:12,fkrauthan,ich empfehle dir den nie zu veröffentlichen bzw public einzusetzen
+2011-10-03 16:22:17,ErikV,klar hat meine jetzige Implementierung noch Lücken aber die kann ich ja beheben
+2011-10-03 16:22:38,fkrauthan,du hattest vorhin noch gesagt dein server ist so sicher das er KEINE lücken hat ;)
+2011-10-03 16:25:53,ErikV,mit welcher Aussage habe ich behauptet das mein Server keine Lücken hat? Ich bemühe mich das er keine hat aber absolut sicher bin ich mir da nicht. Im jetzigen Zustand hat er bestimmt noch Lücken (ich hab z.B. noch nicht überall .. ausreichend abgefangen)
+2011-10-03 16:27:19,fkrauthan,"(15:57:33) ErikV: ich vermute das mein jetziger FTP-Server noch relativ sicher ist, ohne es zu beweisen"
+2011-10-03 16:27:44,ErikV,"der steht ""vermute"""
+2011-10-03 16:28:10,fkrauthan,wenn du was für dich vermutest ist er deiner meinung nach sicher ;)
+2011-10-03 16:28:27,ErikV,"und ""relativ"""
+2011-10-03 16:28:41,ErikV,"und ""ohne es zu beweisen"""
+2011-10-03 16:29:15,ErikV,womit wohl klar ist das ich noch keine _absolute_ Sicherheit unterstelle
+2011-10-03 16:29:33,fkrauthan,aber eine höhere als ein proftpd z.b. hat
+2011-10-03 16:29:34,fkrauthan,;)
+2011-10-03 16:30:27,fkrauthan,aber wie gesagt
+2011-10-03 16:30:32,fkrauthan,tu was du nicht lassen kannst
+2011-10-03 16:30:54,ErikV,mach ich auch
+2011-10-03 16:31:30,fkrauthan,schreib am besten auch einen webserver damit du ohne konfiguration sofort neue Domains schalten kansnt
+2011-10-03 16:31:35,ErikV,wenn ich nur das tun würde was andere wollen oder für richtig befinden würde ich nie zu dem kommen was ich will
+2011-10-03 16:32:04,ErikV,fkrauthan: bitte bleibe auf dem Teppich
+2011-10-03 16:32:35,ErikV,neue Domains haben nichts mit einem funktionierenden FTP-Server zu tun
+2011-10-03 16:35:05,fkrauthan,neue Domains bei nem Webserver sind wie Verzeichnise beim FTP
+2011-10-03 16:35:06,fkrauthan,;)
+2011-10-03 16:35:28,ErikV,"außerdem hält sich mein FTP-Server recht gut (wenn auch sicher nicht zu 100%) an die RFC 959, klar sind noch nicht alle Kommandos implementiert aber mein FTP-Server kann immerhin schon aktiv und passiv "
+2011-10-03 16:36:16,ErikV,"Verzeich isse bei FTP sind so wie Verzeichnisse bei FTP, Domains sind eine Methode IP-Adressen durch Namen zu ersetzen"
+2011-10-03 16:36:51,ErikV,Du scheinst da ein paar Ebenen durcheinander zu bringen
+2011-10-03 16:37:08,fkrauthan,Jein
+2011-10-03 16:37:16,fkrauthan,Domains sind nicht IP Adressen durch Namen zu ersetzen
+2011-10-03 16:37:26,fkrauthan,zumindest nicht für einen WebServer ;)
+2011-10-03 16:38:05,fkrauthan,dir fehlen echt grundlagen
+2011-10-03 16:38:55,ErikV,"okay, bei HTTP kann ein Server für mehrere Domains zuständig sein, bei FTP geht das nicht so einfach, aber das hat eben nichts damit zu tun ob mein FTP-Server sich an die RFC hält oder nicht"
+2011-10-03 16:39:18,fkrauthan,Lies doch bitte was ich geschrieben habe -.-
+2011-10-03 16:39:29,ErikV,was genau meinst Du?
+2011-10-03 16:40:17,fkrauthan,(16:31:29) fkrauthan: schreib am besten auch einen webserver damit du ohne konfiguration sofort neue Domains schalten kansnt
+2011-10-03 16:40:17,fkrauthan,(16:35:05) fkrauthan: neue Domains bei nem Webserver sind wie Verzeichnise beim FTP
+2011-10-03 16:40:28,fkrauthan,ich hab dich verarscht mein lieber
+2011-10-03 16:40:29,fkrauthan,-.-
+2011-10-03 16:41:00,ErikV,und auf was willst Du jetzt hinaus?
+2011-10-03 16:41:04,fkrauthan,auf nix
+2011-10-03 16:41:09,fkrauthan,das du ein wenig lächerlich bist
+2011-10-03 16:41:10,ErikV,gut
+2011-10-03 16:41:15,fkrauthan,und das mir sehr langweilig sit
+2011-10-03 16:42:01,ErikV,"ich bin lächerlich weil ich mich hab verarschen lassen?  gut, aber nach der Definition ist jeder Mensch lächerlich"
+2011-10-03 16:45:18,ChristianH,---------------------------------------- >8 ----------------------------------------
+2011-10-03 16:46:06,ErikV,"ich schätze ich bin heute einen gerissenem Troll aufgesessen, einen Fehler den ich versuche keine weiteres mal zu begehen"
+2011-10-03 16:47:33,fkrauthan,ich schätze bei diesem Satz hat dich dich das Deutsche sehr verlassen
+2011-10-03 16:48:30,SHyx0rmZ,könnt ihr jetzt beide einfach mal die Klappe halten? danke
+2011-10-03 16:49:44,fkrauthan,ok
+2011-10-03 17:17:23,ehenkes,hi
+2011-10-03 17:18:53,ehenkes,"fkrauthan: du passt gut hierher, lasse dich nicht beirren ^^"
+2011-10-03 17:24:44,bluecode,"hi ehenkes, was geht so?"
+2011-10-03 17:24:59,ehenkes,ich ringe mit ohci usb transfers
+2011-10-03 17:25:14,ehenkes,kennst du dich da aus?
+2011-10-03 17:25:36,bluecode,"nö, ich hab nie was mit usb gemacht"
+2011-10-03 17:25:41,ehenkes,IN/OUT mit 0 bytes macht probleme
+2011-10-03 17:25:44,ehenkes,rest geht
+2011-10-03 17:26:22,ehenkes,und mein test pc ärgert micht mit root hub change dauerbeschuss auf ohci 0 und dem dritten port
+2011-10-03 17:26:32,ehenkes,ansonsten spitze
+2011-10-03 17:31:26,ehenkes,"developer mit echtem interesse an usb könnten wir mehr brauchen, alleine ist hart"
+2011-10-03 17:31:47,ehenkes,"ehci läuft, ohci halbwegs, uhci nur HC bisher"
+2011-10-03 18:07:51,XanClic,Moin
+2011-10-03 18:08:55,SHyx0rmZ,Moin XanClic
+2011-10-03 18:09:21,Paddy,Hi
+2011-10-03 18:09:30,Paddy,Aber ich bin nicht XanClic
+2011-10-03 18:09:39,XanClic,Sicher?
+2011-10-03 18:09:42,Paddy,Hm...
+2011-10-03 18:09:48,Paddy,Zumindest nicht dieselbe Persönlichkeit
+2011-10-03 18:10:10,XanClic,"Hm, stimmt, auf meinem T-Shirt steht nicht lost-paddy, sondern niwohlos-clici, dann muss das stimmen"
+2011-10-03 18:10:17,XanClic,"Zum Glück hab ich das heute an, sonst hätten wir jetzt ein Proble"
+2011-10-03 18:10:23,XanClic,Oder sogar ein Problem
+2011-10-03 18:35:53,ehenkes,"XanClic: ohci läuft soweit, allerding noch keine IO-transaktionen mit 0 bytes, kA warum"
+2011-10-03 18:54:42,DerHartmut,Moin
+2011-10-03 19:02:44,ehenkes,moin
+2011-10-03 19:13:10,Paddy,Moin DerHartmut
+2011-10-03 19:13:38,Paddy,(Der nächste darf um 19:24)
+2011-10-03 20:02:45,Jidder,moin
+2011-10-03 20:02:51,Jidder,wir fangen nochmal an
+2011-10-03 20:03:12,Jidder,der nächste dann in genau 10 minuten
+2011-10-03 20:03:50,Jidder,wtf das sind ja mega lags
+2011-10-03 20:04:16,Jidder,laut tyndur hab ich 1-2 sekunden ungenauigkeit o_O
+2011-10-03 20:05:05,Svenska,moin
+2011-10-03 20:27:42,Paddy,Moin Svenska
+2011-10-03 20:28:03,Paddy,"So viel zum Thema ""mega lags"" ;-)"
+2011-10-03 20:28:15,Svenska,"ich glaub, der rekord liegt bei >12h ^^"
+2011-10-03 20:44:12,Jidder,meeeega
+2011-10-03 20:44:19,Jidder,(dieter bohlen stimme)
+2011-10-03 22:15:10,DerHartmut,"Freeeeundeee der Naaaaacht, dat wäre doch jelaaacht"
+2011-10-03 22:15:12,DerHartmut,Servus!
+2011-10-03 22:15:16,Svenska,namd
+2011-10-03 22:15:42,Svenska,"ich hab grad voll erstaunt festgestellt, dass linux ein UNIX System V dateisystem lesen kann"
+2011-10-03 22:15:55,Svenska,konkret die Xenix 2.3.2 für 286er-bootdiskette :D
+2011-10-03 22:16:32,Paddy,"Hirsch, DerHartmut"
+2011-10-03 22:16:50,Svenska,"5.25""-image auf 3.5""-diskette gebrannt, neuen bootstrap (/etc/fd135ds18boot0) draufkopiert, bootet. geil :D"
+2011-10-03 22:16:52,Paddy,Svenska: Was ist das für ein FS?
+2011-10-03 22:16:57,Paddy,Oder hat das keinen Namen?
+2011-10-03 22:17:00,Svenska,"""sysv"""
+2011-10-03 22:17:10,Paddy,Was es nicht alles gibt :-)
+2011-10-03 22:17:15,Svenska,"""modprobe sysv"" macht zwei neue dateisystemtypen: sysv und v7"
+2011-10-03 22:17:28,Paddy,"Weißt du zufällig, wie das funktioniert?"
+2011-10-03 22:17:30,Svenska,dmesg sagt:
+2011-10-03 22:17:33,Svenska,[324245.790697] VFS: unable to find oldfs superblock on device loop0
+2011-10-03 22:17:33,Svenska,[324248.998013] VFS: Found a Xenix FS (block size = 1024) on device loop0
+2011-10-03 22:17:49,Svenska,"hm ne. ist aber standard unix, also klassisch inode-basiert"
+2011-10-03 22:17:59,Paddy,Also so ähnlich wie ext2?
+2011-10-03 22:18:05,Svenska,höchstwahrscheinlich ähnlich primitiv wie fat ;)
+2011-10-03 22:18:17,Paddy,FAT hat aber keine Inodes ;-)
+2011-10-03 22:18:37,Svenska,"naja, ext2 ist der nachfolger vom kurzlebigen ext; ext wurde von minix inspiriert; minix ist eine art altes unix-dateisystem"
+2011-10-03 22:18:44,Svenska,ich mein von der komplexität ^^
+2011-10-03 22:21:16,Svenska,aber xenix ist schon ein seltsames biest
+2011-10-03 22:21:24,Svenska,ist von microsoft :-)
+2011-10-03 22:21:33,Jidder,wenn ihr so weiter macht kriegt jidderos beschleunigte grafiktreiber vor tyndur
+2011-10-03 22:22:31,Svenska,Jidder: xenix erkennt die cga-grafik korrekt. beschleunigt sich scheiße die hardware :D
+2011-10-03 22:22:35,Svenska,oder meinst du das forum?
+2011-10-03 22:22:51,Jidder,ne da gehts doch um GUI ... das ist mir zu trivial
+2011-10-03 22:23:06,Svenska,"hey, solange du's verstehst, ist doch gut"
+2011-10-03 22:23:18,Jidder,^^
+2011-10-03 22:24:03,Svenska,um beschleunigte grafik gehts da übrigens nicht ^^
+2011-10-03 22:24:10,Svenska,nur um compositing ;)
+2011-10-03 22:24:24,Jidder,"du hast ja auch die assoziation hergestellt, nicht ich ^^"
+2011-10-03 22:24:54,Svenska,"du kannst aber gern ein CDI-Interface für ""beschleunigte grafiktreiber"" bauen :D"
+2011-10-03 22:53:09,Jidder,grad keine lust in die manuals zu gucken: geht vm86 auch in ring3?
+2011-10-03 22:53:09,Jidder,äh ring0
+2011-10-03 22:53:18,Jidder,wie der von den b3atl3s?
+2011-10-03 22:53:37,Jidder,0xbea17e5
+2011-10-03 22:53:43,Jidder,oder so
+2011-10-03 22:54:57,Jidder,nvm
+2011-10-03 22:54:57,XanClic,wimre sind vm86-Tasks auf Ring 3 festgelegt

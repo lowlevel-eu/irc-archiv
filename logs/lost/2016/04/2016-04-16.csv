@@ -1,0 +1,64 @@
+date/time,nick,message
+2016-04-16 10:58:40,Jonathan,Moin ;)
+2016-04-16 15:39:29,darklink,zwei flachbandkabel gerissen. Mist
+2016-04-16 15:40:25,darklink,"Und der 3ds funktioniert nur dann nicht, wenn das gehäuse nicht dran ist"
+2016-04-16 15:41:00,darklink,D.h. das gehäuse zieht das bildschirmkabel raus
+2016-04-16 15:42:42,darklink,"Vielleicht kann ich die jetzt-kaputten L und R tasten ausbauen, damit die bereiche frei werden"
+2016-04-16 16:41:44,Jonathan,darklink: Zusammenlöten? ;)
+2016-04-16 16:52:51,darklink,die kabel waren gerade lang genug
+2016-04-16 16:53:43,darklink,Außerdem ist das ein flachbandkabel mit 3 verbindungen
+2016-04-16 16:55:54,darklink,"meine feinmotorik ist nicht die beste, also wäre es undenkbar vier flachbandkabel mit 3 traces zusammenzulöten, die allesamt nur 5mm breit sind"
+2016-04-16 16:57:00,darklink,hab gelogen. sind doch nur 2mm
+2016-04-16 16:57:34,darklink,"Weiter am kernel, der 3DS funktioniert wieder"
+2016-04-16 18:24:07,darklink,mm/pmm.cpp:9:10: error: 'operator new' must not return NULL unless it is declared 'throw()' (or -fcheck-new is in effect)
+2016-04-16 18:24:09,darklink,was zum?
+2016-04-16 18:25:19,darklink,Ich habe aber keine exceptions im kernel
+2016-04-16 18:32:52,Jonathan,"darklink: Na, irgendwo gibt ein überladenes new wohl null zurück... ;)"
+2016-04-16 18:33:10,Paddy,Vielleicht solltest du dann kein new benutzen
+2016-04-16 18:36:37,Paddy,"Du kannst natürlich auch einen Panic machen, aber das ist vielleicht nicht so tolles Verhalten"
+2016-04-16 18:38:48,darklink,ja
+2016-04-16 18:39:26,darklink,ist bloß ein test bei new
+2016-04-16 18:39:40,darklink,der soll null zurückgeben wenn size>4096 ist
+2016-04-16 18:41:00,darklink,"error: the program should also define 'void operator delete(void*, long unsigned int)"
+2016-04-16 18:41:04,darklink,was denn noch?
+2016-04-16 18:41:19,Paddy,Gerechte Strafe für C++
+2016-04-16 18:41:24,darklink,davon ist weder im odev wiki noch bei lowlevel die rede
+2016-04-16 18:41:26,darklink,nl
+2016-04-16 18:41:27,darklink,nö
+2016-04-16 18:42:38,MasterQ32,doch
+2016-04-16 18:42:38,MasterQ32,:D
+2016-04-16 18:42:43,MasterQ32,ist im wiki die rede davon
+2016-04-16 18:42:46,MasterQ32,bin ich mir sicher
+2016-04-16 18:42:52,MasterQ32,das eine ist delete und das andere delete[]
+2016-04-16 18:42:57,MasterQ32,du brauchst auch new und new[]
+2016-04-16 18:44:00,darklink,...
+2016-04-16 18:44:07,darklink,aber nur new(void*)
+2016-04-16 18:44:12,darklink,aber nur delete(void*)
+2016-04-16 18:44:18,darklink,und delete[](void*)
+2016-04-16 18:44:23,darklink,nicht mit size_t als argument
+2016-04-16 18:44:50,darklink,(since C++14) <- Das erklärt einiges :P
+2016-04-16 18:45:10,MasterQ32,long unsigned int sounds like size_T to me :D
+2016-04-16 18:46:06,darklink,ist es auch
+2016-04-16 18:46:29,darklink,long unsigned int ist uint32_t auf 32-bit systemen und uint64_t auf 64-bit systemen
+2016-04-16 18:46:36,darklink,wie size_t
+2016-04-16 18:46:39,MasterQ32,joar
+2016-04-16 18:46:44,MasterQ32,weil c++ weird ist :D
+2016-04-16 18:47:27,darklink,jetzt schreib ich endlich mal an meinem kernel weiter und lass ihn 4 tasks starten
+2016-04-16 18:48:14,MasterQ32,:)
+2016-04-16 18:48:43,darklink,die HAL macht den rest für mich :P
+2016-04-16 18:54:12,darklink,nope
+2016-04-16 19:01:03,darklink,mmap++ ne zeile zu tief. na toll
+2016-04-16 19:06:23,darklink,und jetzt gibt es eine null pointer deref
+2016-04-16 19:07:59,darklink,oh für den PMM ist 0 valid
+2016-04-16 19:10:24,darklink,"warte, der alloziert 4096x4096? lol"
+2016-04-16 19:11:01,darklink,16MiB für ein 4KiB array. toll
+2016-04-16 19:12:16,darklink,"bei 64 MiB RAM funktioniert das nicht mit 4 tasks, die jeweils 2 arrays mit 4KiB allozieren müssen"
+2016-04-16 19:25:20,darklink,error: no match for 'operator>>' (operand types are 'MTGosHAL::PMM' and 'void**')
+2016-04-16 19:25:21,darklink,auto operator >> (void ** addr) -> PMM &; //In PMM klassendefinition
+2016-04-16 19:25:22,darklink,was?
+2016-04-16 19:33:25,XanClic,MTGosHAL::PMM ist keine lvalue
+2016-04-16 19:33:31,darklink,oh
+2016-04-16 19:33:52,darklink,ich habe vegessen pmm.hpp zu #includen
+2016-04-16 19:34:01,XanClic,Das kann natürlich auch sein :-P
+2016-04-16 19:53:01,darklink,jetzt funktioniert der PM
+2016-04-16 19:53:21,darklink,PMM*. stattdessen springt der irgendwie nach 0x00000000cf9066cb

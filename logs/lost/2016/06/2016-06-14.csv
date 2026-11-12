@@ -1,0 +1,291 @@
+date/time,nick,message
+2016-06-14 10:48:16,Godwine,ich hab mir grad den code von tyndurs collections angeguckt
+2016-06-14 10:48:38,Godwine,warum gibt list_push wieder einen pointer auf die liste zurück?
+2016-06-14 10:48:45,Godwine,der ändert sich doch nicht?
+2016-06-14 10:50:31,Godwine,"also ich meine list_t* list_push(list_t* list, void* value)"
+2016-06-14 10:50:41,Godwine,das returnt letztendlich einfach list wieder
+2016-06-14 10:51:06,kevin,"Die Listenfunktionen in tyndur sind übrigens vom Ansatz her ziemlich kaputt, die willst du nicht übernehmen"
+2016-06-14 10:51:33,Godwine,ich kann das so garnicht übernehmen ich hab nämlich kein malloc :D
+2016-06-14 10:51:47,Godwine,ich wollte nur die funktionsprototypen übernehmen und das selbst implementieren
+2016-06-14 10:51:48,kevin,"Wenn du Listen willst, mach lieber sowas wie sys/queue.h"
+2016-06-14 10:52:07,kevin,"Ja, die Prototypen haben die Kaputtheit schon eingebaut, deswegen die Warnung ;-)"
+2016-06-14 10:52:42,kevin,"Einfach einen Parameter wieder zurückgeben kann bequem sein: list_push(list_push(list_push(l, ""a""), ""b""), ""c"");"
+2016-06-14 10:52:50,kevin,"Sonst wüsste ich auch nicht, wozu es gut ist"
+2016-06-14 10:54:05,Godwine,queue und list sind meines verständnisses nach doch verschieden oder nicht? queue sind fifo und lists sind eher wie ein stack?
+2016-06-14 10:58:35,Godwine,hm euer index startet beim letzten gepushten element das heißt doch mit jedem push ändert sich der index mit dem man ein bestimmtes element ansteuert?
+2016-06-14 11:03:22,kevin,sys/queue.h hat Makros sowohl für Listen als auch für Queues
+2016-06-14 11:04:16,kevin,"Und funktioniert auch ohne malloc(), braucht dafür aber ein zusätzliches Feld in den structs der Listenelemente"
+2016-06-14 11:05:15,kevin,"Wenn du Listen implementieren willst, die beliebige structs nehmen können wie in tyndur und ihre Metadaten selber mit malloc() allozieren, dann mach das, aber Zugriff per Index ist für Listen völlig unpassend"
+2016-06-14 11:06:35,kevin,Du willst stattdessen irgendeine Art von foreach haben
+2016-06-14 11:07:13,kevin,"Und eine Möglichkeit, basierend auf dem Iterator Listenelemente zu löschen"
+2016-06-14 11:11:17,Godwine,wie funktioniert das denn ohne malloc()?
+2016-06-14 11:12:31,Godwine,achso es macht per makro eine definition mit einem spezifischen struct und fügt einen pointer auf das nächste element an?
+2016-06-14 11:24:53,Godwine,sys/queue.h besteht nur aus makros oder?
+2016-06-14 11:26:42,kevin,"Ja, das sind nur Makros"
+2016-06-14 13:13:21,Godwine,hm jetzt hab ich zwar eine funktion zum blocken aber dadurch eine race condition wenn zwei threads auf einen puffer schreiben und der eine thread den voll macht bevor der andere geweckt wird :/
+2016-06-14 13:16:31,darklink,Kein malloc aber threads? Lol
+2016-06-14 13:16:59,Godwine,na ich hab nen memory manager xD
+2016-06-14 13:17:08,darklink,:)
+2016-06-14 13:17:11,Godwine,nur der spuckt nur minimum 4k blöcke aus
+2016-06-14 13:17:23,Godwine,also pages
+2016-06-14 13:17:25,Godwine,^^
+2016-06-14 13:18:19,Godwine,ich bin mir nicht sicher ob ich ein malloc brauche für den kernelspeicher
+2016-06-14 13:18:35,darklink,"Idee für die MTGos API: Programme müssen dem kernel eine liste mit berechtigungen geben, damit sie dann die entsprechenden handels kriegen können"
+2016-06-14 13:18:59,darklink,z.B: fg für Display und Keyboard
+2016-06-14 13:19:13,darklink,dio:RAW für BlockDevice
+2016-06-14 13:20:35,darklink,SecureController sc();
+2016-06-14 13:20:54,kevin,Godwine: Was für eine Art von Kernel wird das?
+2016-06-14 13:21:11,Godwine,kevin: so micro wie möglich ;D
+2016-06-14 13:21:22,kevin,"Hm, dann kommst du vielleicht sogar hin ohne ein richtiges malloc"
+2016-06-14 13:21:42,kevin,Ein paar einfache Speicherpools mit festen Objektgrößen sollten es dann tun
+2016-06-14 13:21:46,darklink,"if(!sc.request(""dio:RAW"")) die(""Could not get permission for the RAW disk IO!"");"
+2016-06-14 13:22:15,Godwine,naja die speicherpools können ja schon dynamisch alloziert werden
+2016-06-14 13:22:25,Godwine,ich kann z.B für listenelemente einen stack machen
+2016-06-14 13:22:40,Godwine,und wenn der leer ist hol ich mir noch ne kernelpage
+2016-06-14 13:23:15,Godwine,und dann kommen wieder PAGESIZE/sizeof(list_node_t) elemente auf den stack
+2016-06-14 13:23:20,Godwine,oder sowas eben
+2016-06-14 13:23:34,darklink,Und der SC kann auch zugriff auf spezielle interrupts erlauben/verweigern
+2016-06-14 13:24:08,darklink,"sc.requestSVC(""backdoor"");"
+2016-06-14 13:24:10,kevin,"Godwine: Ja, irgendwie sowas meinte ich"
+2016-06-14 13:25:20,Godwine,ich überlege aber auch wie ich die bestandteile des kernels modular mache um z.B zur laufzeit einen anderen scheduler zu laden oder den pic treiber durch einen apic treiber auszuwechseln o.ä
+2016-06-14 13:25:33,Godwine,vielleicht bräuchte sowas dann aber malloc hm
+2016-06-14 13:27:41,Godwine,das wäre für arm sowieso viel vorteilhafter weil da braucht ja fast jede plattform eine gewisse anzahl an modulen :D
+2016-06-14 13:28:02,Godwine,z.B könnte der memory manager direkt die memory map für ein raspberry pi hardcoded haben
+2016-06-14 13:28:34,Godwine,weil so wie ich das verstanden hab gibt es bei arm ja selten eine möglichkeit zur laufzeit eine map zu bekommen
+2016-06-14 13:28:54,kevin,"Wenn du das mit ""so mikro wie möglich"" ernst meinst, sind der Scheduler und der PIC-Treiber Userspace-Prozesse"
+2016-06-14 13:29:22,Godwine,oh ich wusste garnicht dass die in den userspace können
+2016-06-14 13:30:01,Godwine,ich dachte die gehören zur HAL
+2016-06-14 13:30:08,Godwine,also der pic treiber zumindest
+2016-06-14 13:30:24,darklink,int fork() { Program pr=Program(); return pr.launch(pr.getELF()); }
+2016-06-14 13:30:25,kevin,Hat ein anständiger Mikrokernel überhaupt einen HAL?
+2016-06-14 13:30:37,kevin,darklink: Das ist kein fork()
+2016-06-14 13:31:46,Godwine,naja selbst ein mikrokernel muss eine gdt machen wenn er auf einem x86 läuft oder?
+2016-06-14 13:31:55,Godwine,und der userspace hat dazu keine berechtigung
+2016-06-14 13:32:08,darklink,"die ELF wird nicht kopiert, also gibt es geteilte data"
+2016-06-14 13:32:23,Godwine,also muss der kernel entweder die berechtigung weiterreichen oder es für den userspace machen
+2016-06-14 13:34:17,kevin,darklink: Verstehe ich nicht ganz. Was hat die ELF mit dem aktuellen Speicherzustand zu tun?
+2016-06-14 13:34:33,kevin,"Godwine: Eine GDT ist ziemlich klar Kernelsache, ja"
+2016-06-14 13:34:57,Godwine,ja und das ist ein teil der HAL so wie ich das sehe
+2016-06-14 13:35:03,kevin,Wenn man eine HAL hat
+2016-06-14 13:35:15,Godwine,weil der gleiche kernel auf einem ARM würde keine GDT machen
+2016-06-14 13:36:24,kevin,Auch richtig
+2016-06-14 13:36:29,kevin,Baust du deinen Kernel denn gleichzeitig für ARM?
+2016-06-14 13:37:07,Godwine,ich wollte ja erstmal einen funktionierenden kernel mit terminal haben und den dann portieren und dabei gucken was ich ändern muss
+2016-06-14 13:37:35,Godwine,im grunde fehlt mir jetzt nur ein userspace keyboard treiber dann würde ich damit anfangen
+2016-06-14 13:40:36,Godwine,da fällt mir ein ich muss einen neuen rpi bestellen ich hab letztens einen kaputt gemacht D:
+2016-06-14 13:44:34,kevin,"Reicht es dir nicht mehr, Software kaputtzumachen? ;-)"
+2016-06-14 13:45:23,Godwine,wann mache ich denn software kaputt? :D
+2016-06-14 13:45:39,Godwine,ausserdem war es nicht ganz meine schuld
+2016-06-14 13:46:18,Godwine,es war ein billiges china netzteil dass sich nach ein paar monaten dauereinsatz verabschiedet hat aber nicht ohne mein rpi dabei mitzunehmen :(
+2016-06-14 13:47:20,kevin,"Keine Ahnung, ich dachte, Software kaputtmachen ist Grundvoraussetzung für diesen Channel"
+2016-06-14 13:47:36,Godwine,ja irgendwie schon
+2016-06-14 13:47:50,Godwine,aber zumindest mache ich nix kaputt was ich nicht auch selbst verbrochen hab :D
+2016-06-14 13:48:54,kevin,Anfänger *g*
+2016-06-14 13:49:21,Godwine,Hobbyist eher
+2016-06-14 13:49:32,Godwine,ich bin physiker nich informatiker :P
+2016-06-14 13:50:38,Godwine,"ich kann ja ein paar ""patches"" für tyndur submitten wenn du das willst ;D"
+2016-06-14 13:52:34,kevin,Gern ;-)
+2016-06-14 13:53:13,Godwine,was ist denn noch nicht kaputt? :D
+2016-06-14 13:53:17,kevin,Nichts *g*
+2016-06-14 13:53:44,kevin,Aber Kaputtheit ist ja immer steigerbar
+2016-06-14 13:55:33,Godwine,wann kommt eigentlich der versprochene rewrite in Go? :P
+2016-06-14 13:57:00,kevin,"Das musst du derhartmut fragen, der hat das Projekt schließlich gestartet. Ich vermute, die Ankündigung des Rewrites kommt auch an einem 1. April, wenn überhaupt. ;-)"
+2016-06-14 13:57:15,kevin,s/Ankündigung/Veröffentlichung/
+2016-06-14 13:57:36,kevin,Oder Bekanntmachung der Veröffentlichung vielleicht eher
+2016-06-14 13:57:55,Godwine,wie wärs mit einem rewrite in flash action script? :P
+2016-06-14 13:58:45,Godwine,ich hab den thread im forum gefunden :'D
+2016-06-14 13:59:19,kevin,Dazu gab es einen Thread?
+2016-06-14 14:02:10,Godwine,"""Für einen Anfänger ist Flash definitiv nicht das Werkzeug der Wahl. Ich möchte nicht ausschließen, daß ein Fortgeschrittener mit viel kranker Phantasie ein OS basteln kann, in dem die Hauptbestandteile Flash sind - dazu kenne ich es zu wenig. Aber es ist definitiv etwas, was man höchstens als technische Herausforderung machen könnte, wenn einem die normale Betriebssystemprogrammierung zu langweilig geworden ist."" - kevin am 11.5.2008"
+2016-06-14 14:02:32,Godwine,:D
+2016-06-14 14:04:07,kevin,"Interessant, was ich alles geschrieben habe ;-)"
+2016-06-14 14:04:11,Godwine,http://forum.lowlevel.eu/index.php?topic=1977.msg22444#msg22444
+2016-06-14 14:04:14,Godwine,der thread da
+2016-06-14 14:04:23,kevin,Hab ihn schon
+2016-06-14 14:04:32,Godwine,als ich den gefunden hab hab ich mich weggeschmissen :D
+2016-06-14 14:10:30,Godwine,aber hey aber viel kranke Phantasie finden wir hier doch bestimmt oder?
+2016-06-14 14:10:46,kevin,"Wenn nicht hier, wo sonst?"
+2016-06-14 14:11:00,kevin,"Ich meine, Leute hier haben auch schon Kernel in Java, Ada und Fortran gebastelt"
+2016-06-14 14:11:08,kevin,"Zwar jeweils nur ein Hello World, aber immerhin"
+2016-06-14 14:11:42,Godwine,dann ist es beschlossen: kernel3 wird ein Flash kernel :P
+2016-06-14 14:12:55,Godwine,für moderne bedürfnisse wie arkaden xD
+2016-06-14 14:16:55,Godwine,im englischen forum hat jemand einen kernel in brainfuck geschrieben
+2016-06-14 14:17:04,Godwine,leider ist der link tot
+2016-06-14 14:17:27,yayachiken,ein java-kernel auf einem picojava prozessor wäre sogar ein ziemlich sinnvolles projekt (zumindest wenn man was über hardware JVM lernen will) denke ich
+2016-06-14 14:18:35,Godwine,man könnte sich auch einen alten ARM prozessor mit jazelle suchen *g*
+2016-06-14 14:20:00,Godwine,naja ich muss los bis nachher ^^
+2016-06-14 14:23:18,darklink,Warum schreiben wir nicht ein betriebsystem in EineSprache?
+2016-06-14 14:37:46,kevin,Macht masterq32 doch
+2016-06-14 15:07:56,darklink,Nicht mit
+2016-06-14 15:07:58,darklink,in
+2016-06-14 15:17:02,kevin,"Was ist der Unterschied zwischen ""mit"" und ""in""? Darf bei ""mit"" der Anteil kleiner sein?"
+2016-06-14 15:42:29,darklink,Ja
+2016-06-14 15:42:48,darklink,Ja
+2016-06-14 15:51:23,darklink,Ich schreibe meinen kernel in c++ MIT C und asm
+2016-06-14 15:51:58,kevin,Dann schreibt masterq32 sein OS aber in EinerSprache mit C und ASM
+2016-06-14 15:54:10,darklink,Gcc ist in C mit c++ geschrieben
+2016-06-14 15:54:33,darklink,týndur in c mit pascal
+2016-06-14 15:56:32,kevin,Ein paar Zeilen Assembler sind auch dabei
+2016-06-14 19:41:58,TheInvisibleHaxor,Woran arbeitet ihr grade?
+2016-06-14 19:46:51,XanClic,sag ich nicht
+2016-06-14 19:47:52,TheInvisibleHaxor,Warum nich?
+2016-06-14 19:48:09,XanClic,"schon alleine, weils Offtopic wäre"
+2016-06-14 19:48:16,TheInvisibleHaxor,Ok
+2016-06-14 19:48:27,TheInvisibleHaxor,Wie kompiliert man das projekt mit gui?
+2016-06-14 19:48:48,XanClic,Du meinst týndur?
+2016-06-14 19:48:55,TheInvisibleHaxor,Ja
+2016-06-14 19:49:01,XanClic,Muss stultus wissen :3
+2016-06-14 19:49:08,TheInvisibleHaxor,Ok :)
+2016-06-14 20:10:21,TheInvisibleHaxor,In welchen Ordner müssen neue Treiber Projekte?
+2016-06-14 20:12:27,XanClic,"Wenn CDI, dann src/modules/cdi"
+2016-06-14 20:12:32,TheInvisibleHaxor,Danke
+2016-06-14 20:12:36,XanClic,Ansonsten… src/modules oder src/modules/c
+2016-06-14 20:21:04,MasterQ32,"ich bastel an DasOS, EinCompiler und Psi"
+2016-06-14 20:21:27,Godwine,DerOS!
+2016-06-14 20:24:04,TheInvisibleHaxor,Was ist das?
+2016-06-14 20:26:11,Paddy,Moin
+2016-06-14 20:26:31,TheInvisibleHaxor,Hi
+2016-06-14 20:26:41,MasterQ32,viel :D
+2016-06-14 20:26:58,MasterQ32,"und das letzte ist eine programmiersprache, den rest kannst du vom namen ablesen ;)"
+2016-06-14 20:27:00,MasterQ32,moin Paddy
+2016-06-14 20:27:21,TheInvisibleHaxor,Ein eigenes OS und ein Compiler
+2016-06-14 20:27:26,TheInvisibleHaxor,Stimts?
+2016-06-14 20:27:56,Godwine,Ein eigenes OS? haha sowas schreibt hier doch keiner
+2016-06-14 20:27:59,MasterQ32,ja
+2016-06-14 20:28:05,MasterQ32,"ne, völlig abwegig"
+2016-06-14 20:28:15,TheInvisibleHaxor,:D
+2016-06-14 20:28:35,TheInvisibleHaxor,Meins heißt RedOS
+2016-06-14 20:28:42,Paddy,"Ihr wisst schon, dass das eher die Ausnahme ist, dass zur Zeit mal wieder ein paar an einem OS basteln? ;-)"
+2016-06-14 20:28:58,Godwine,ist es? :D
+2016-06-14 20:29:03,TheInvisibleHaxor,Wie alt seid ihr eigentlich so?
+2016-06-14 20:29:19,Godwine,und RedOS erinnert mich an RedstarOS irgendwie xD
+2016-06-14 20:33:11,TheInvisibleHaxor,Ich bin 15
+2016-06-14 20:34:12,Paddy,Damit bist du vermutlich im Moment der jüngste
+2016-06-14 20:34:24,TheInvisibleHaxor,:D
+2016-06-14 20:34:33,TheInvisibleHaxor,Ist gut möglich
+2016-06-14 20:35:30,MasterQ32,yep
+2016-06-14 20:35:40,MasterQ32,22 here
+2016-06-14 20:35:54,TheInvisibleHaxor,Beruf?
+2016-06-14 20:36:01,TheInvisibleHaxor,Fachinformatiker?
+2016-06-14 20:36:41,MasterQ32,Student :D
+2016-06-14 20:36:47,TheInvisibleHaxor,:D
+2016-06-14 20:37:12,TheInvisibleHaxor,Für Fachinformatiker im Bereich Anwendungsentwicklung?
+2016-06-14 20:39:56,MasterQ32,hm? wie meinst?
+2016-06-14 20:40:15,Godwine,Student für Technikfutzi
+2016-06-14 20:40:24,Paddy,"Er meint, dass du eine Ausbildung machst. Was du nicht tust, weil du an der Uni Softwaretechnik studierst."
+2016-06-14 20:40:41,Paddy,Wenn ich das grad richtig hab
+2016-06-14 20:40:48,MasterQ32,ich verstehs noch nicht ganz :P
+2016-06-14 20:41:02,Paddy,"Egal, ich hoffe, dass ich seine Frage damit beantwortet habe ;-)"
+2016-06-14 20:41:17,TheInvisibleHaxor,Ja hast du xD
+2016-06-14 20:42:44,MasterQ32,huhu
+2016-06-14 20:50:26,MasterQ32,"gibts eigentlich irgendeine praktische funktion für ""maked signed""?"
+2016-06-14 20:50:59,Paddy,"""maked signed""?"
+2016-06-14 20:51:28,MasterQ32,*make signed
+2016-06-14 20:51:32,MasterQ32,also uint32_t -> int32_t 
+2016-06-14 20:51:32,MasterQ32,:D
+2016-06-14 20:51:52,MasterQ32,"ich weiß, ist nicht die feine art, sowas zu tun, aber irgendwie brauch ich nen generic 4-byte storage :D "
+2016-06-14 20:52:07,Paddy,Was sollte die Funktion tun?
+2016-06-14 20:52:22,Paddy,Also im Vergleich zu einem einfachen Cast?
+2016-06-14 20:54:42,MasterQ32,im endeffekt einfach nen binärkonvert
+2016-06-14 20:54:44,MasterQ32,reinterpret_cast
+2016-06-14 20:54:45,MasterQ32,:D
+2016-06-14 20:54:49,MasterQ32,aber ich bin in C
+2016-06-14 20:55:27,Paddy,Und ein normaler C-Cast tut das deiner Meinung nach nicht?
+2016-06-14 20:56:44,Godwine,der cast tut doch das selbe solange der wert nicht so groß ist dass ein signed int den nicht mehr erfassen kann
+2016-06-14 21:01:18,MasterQ32,"es geht aber darum, dass ich eben einen beliebigen int32_t in einem uint32_t speichere :D"
+2016-06-14 21:02:12,MasterQ32,auch sowas wie -10 :D
+2016-06-14 21:02:24,MasterQ32,was halt als logischer wert vom uint32_t nicht mehr in den signed wert passt
+2016-06-14 21:03:19,MasterQ32,aktuell hab ich halt *((int32_t*)&value)
+2016-06-14 21:03:20,MasterQ32,:D
+2016-06-14 21:03:23,Paddy,"Wenn du das castest kommt halt 2^32 - 10 raus. Und wenn du es zurückcastet, wird wieder -10 draus."
+2016-06-14 21:03:47,Godwine,du kannst einem unsigned int -1 zusweisen
+2016-06-14 21:03:53,MasterQ32,"ja, ich traue einem c-cast halt nicht, weil ich nicht weiß, ob er semantisch casted oder reinterpretiert"
+2016-06-14 21:04:01,Godwine,nur wenn du den abfragst kommt eben 0xFFFFFFFF raus
+2016-06-14 21:04:33,Paddy,"Ist doch egal, solange nach dem Zurückcasten dasselbe wieder rauskommt?"
+2016-06-14 21:04:43,Paddy,"Ist schon semantisch, aber mit passender Semantik ;-)"
+2016-06-14 21:09:19,MasterQ32,"naja, meine VM hat jetzt ein neues feature:"
+2016-06-14 21:09:22,MasterQ32,relative jumps
+2016-06-14 21:09:26,MasterQ32,PIC ist jetzt möglich
+2016-06-14 21:10:42,MasterQ32,jetzt mal nen binärformat machen :D
+2016-06-14 21:10:46,MasterQ32,mal anforderungen aufschreiben
+2016-06-14 21:11:14,MasterQ32,wir hatten doch schon nen bescheuerten namen für das Dateisystem 
+2016-06-14 21:11:32,Godwine,DasDateisystem?
+2016-06-14 21:11:40,MasterQ32,ähm nich dateisystem
+2016-06-14 21:11:42,MasterQ32,dateiformat :D
+2016-06-14 21:11:51,MasterQ32,ich glaube das war Essex (kennt ihr wahrscheinlich nicht)
+2016-06-14 21:12:33,Godwine,is das nich ne Stadt in den USA?
+2016-06-14 21:13:14,MasterQ32,:D
+2016-06-14 21:13:21,MasterQ32,essex ist in england
+2016-06-14 21:14:12,Godwine,oder so
+2016-06-14 21:14:59,XanClic,Es gibt garantiert auch mindestens zehn Essexe in den USA
+2016-06-14 21:15:34,XanClic,"16, sagt Wikipedia"
+2016-06-14 21:16:30,MasterQ32,^
+2016-06-14 21:25:46,Godwine,jetzt gibt es eins in Deutschland :P
+2016-06-14 21:26:07,MasterQ32,hm?
+2016-06-14 21:26:28,MasterQ32,"ich nenne das format nicht Essex, Essex ist ein Kumpel von mir :D"
+2016-06-14 21:26:45,MasterQ32,"okay, mal n bisschen gehirnstürmen"
+2016-06-14 21:27:30,MasterQ32,"Executable Format, ELF, Binary, SuperVM, DasOS, "
+2016-06-14 21:28:50,Godwine,Executable SuperFormat?
+2016-06-14 21:28:55,Godwine,xD
+2016-06-14 21:29:08,MasterQ32,näää :D
+2016-06-14 21:30:53,Godwine,DELF xD
+2016-06-14 21:31:30,MasterQ32,hm? :D
+2016-06-14 21:31:35,MasterQ32,DasELF ?
+2016-06-14 21:31:47,Godwine,DumbELF ist auch witzig
+2016-06-14 21:31:49,Godwine,xD
+2016-06-14 21:31:51,MasterQ32,hihi :D
+2016-06-14 21:32:00,MasterQ32,aber es hat ja nix mit ELF zu tun :D
+2016-06-14 21:32:29,Godwine,ELF steht doch für Executable Linkable Format oder nicht?
+2016-06-14 21:32:41,MasterQ32,ja
+2016-06-14 21:32:49,MasterQ32,Executable and Linking Format
+2016-06-14 21:33:39,Godwine,Warum nimmst du nicht einfach das?
+2016-06-14 21:34:12,Godwine,fügst ein paar neue IDs hinzu um deine Architektur zu identifizieren
+2016-06-14 21:35:49,MasterQ32,weil ich spezialfälle habe :D
+2016-06-14 21:36:03,Godwine,die wären?
+2016-06-14 21:36:05,MasterQ32,sehr spezielle spezialfälle :D
+2016-06-14 21:36:14,MasterQ32,ähm
+2016-06-14 21:36:26,MasterQ32,ich hab 5 speicherklassen + code
+2016-06-14 21:36:41,Godwine,5 Speicherklassen?
+2016-06-14 21:36:45,MasterQ32,ja
+2016-06-14 21:37:02,MasterQ32,der speicher muss zu verschiedenen zeiten an unterschiedliche stellen geladen und dupliziert werden :D
+2016-06-14 21:37:41,Godwine,und warum sollte deine VM das nicht beim Startup selber tun?
+2016-06-14 21:38:00,Godwine,du definierst halt Sektionen für jede Speicherklasse die du brauchst
+2016-06-14 21:38:05,Godwine,du kannst ja so viele machen wie du willst
+2016-06-14 21:38:21,Godwine,und deine VM verarbeitet beim laden die sektionen wie du es brauchst
+2016-06-14 21:38:44,MasterQ32,die speicherklassen sind shared memory :D
+2016-06-14 21:39:30,Godwine,das regelt trotzdem die VM
+2016-06-14 21:39:39,MasterQ32,njain
+2016-06-14 21:39:49,MasterQ32,die VM macht gar kein memory management bei mir
+2016-06-14 21:39:50,MasterQ32,das macht der Host :D
+2016-06-14 21:40:56,Godwine,Dann veranlasst die VM eben den Host den memory zu sharen xD
+2016-06-14 21:41:01,Godwine,syscalls und so
+2016-06-14 21:41:11,Godwine,das Binärformat kann es doch so oder so nicht tun
+2016-06-14 21:41:17,Godwine,weil das ist ja nur ein Format
+2016-06-14 21:41:51,Godwine,was die sektionen tun und was sie besonders macht liegt ja im code der das laden will
+2016-06-14 21:44:35,MasterQ32,syscalls sind auch host-implemented :D
+2016-06-14 21:44:47,MasterQ32,das format ist ja auch für den VM-Host
+2016-06-14 21:45:07,Godwine,ist das ding jetzt ne vm oder nur ne runtime? x
+2016-06-14 21:45:10,Godwine,xD
+2016-06-14 21:45:25,Godwine,wenn das eine vm ist managed die ihren speicher selbst
+2016-06-14 21:45:56,Godwine,wenn mehrere instanzen aktiv sind dann teilen die per ipc methoden des hosts bestimmte teile des Speichers
+2016-06-14 21:46:11,MasterQ32,im endeffekt ist das grade nur die implementierung der virtuellen CPU :D
+2016-06-14 21:46:17,MasterQ32,die kann ich in meinem OS verwenden
+2016-06-14 21:47:31,Godwine,dann mach erstmal die vm fertig weil sonst ändert sich das binärformat eh noch
+2016-06-14 21:48:35,Godwine,und wie gesagt dann reicht auch elf
+2016-06-14 21:51:29,MasterQ32,die VM ist fertig :P
+2016-06-14 21:51:42,MasterQ32,sie hat nur keine host-implementierungen von meiner kleinen demo und meinem debugger abgesehen
+2016-06-14 21:52:44,Paddy,"Das würde ich vielleicht als ""die VM-Spec ist fertig"" bezeichnen, aber unter einer fertigen VM stelle ich mir was implementiertes vor ;-)"
+2016-06-14 21:54:09,Godwine,"Wer das hosting macht ist doch egal letztendlich musst du irgendwo shared memory implementiert haben und dann machst du in deinem Binärformat irgendeine Sektion die für ein ""Shared memory objekt"" steht (das kann auch ELF sein) und dann muss dein Host dafür sorgen dass das auch shared memory ist. Ob das jetzt die VM macht oder ob die beim eigentlichen Host per syscalls veranlasst dass das gemacht wird ist völlig nebensäch"
+2016-06-14 21:54:09,Godwine,lich.
+2016-06-14 21:56:25,MasterQ32,mh
+2016-06-14 21:56:38,MasterQ32,@Paddy: Die 'VM' wird auch nicht näher spezifiziert
+2016-06-14 21:56:45,MasterQ32,das wird wenn dann die DasOS-Implementierung davon
+2016-06-14 21:56:52,MasterQ32,weil die Panzer in Destoroya brauchen definitiv keinen shared memory .D
+2016-06-14 21:57:23,MasterQ32,und meine CPU wird auch kein shared memory implementieren können ;D
+2016-06-14 21:57:45,Godwine,dann hast du keine VM gebaut
+2016-06-14 21:58:49,Godwine,eine VM hostet nämlich das Programm
+2016-06-14 21:58:57,MasterQ32,"naja, dann wird mein OS eine VM :D"
+2016-06-14 21:59:47,Godwine,gut dann kann dein OS ja die sektionen aus der ELF datei laden und dann veranlassen dass das bei allen Prozessen eingeblendet wird die das brauchen
+2016-06-14 22:00:21,MasterQ32,"ja, das wird eh noch lustig :D"
+2016-06-14 22:00:46,MasterQ32,"ich frag mich, wie ich cross-module-calls mache"
+2016-06-14 22:04:16,MasterQ32,"so, ich packs mal"
+2016-06-14 22:04:17,MasterQ32,servus

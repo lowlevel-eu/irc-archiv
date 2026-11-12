@@ -1,0 +1,745 @@
+date/time,nick,message
+2013-10-16 07:27:35,max,"Aaaaah, frisch und ausgeschlafen"
+2013-10-16 07:27:39,max,Guten Morgen allesamt
+2013-10-16 10:34:58,mroman,http://codepad.org/6e4kOVX1
+2013-10-16 10:35:24,mroman,So. Jetzt muss ich Programme fuer meinen Emulator langsam nicht mehr in Assembly schreiben
+2013-10-16 10:36:21,mroman,"der generierte Assemblercode daraus ist zwar horrend, extremst ineffizient"
+2013-10-16 10:36:25,mroman,aber das wurmt mich gerade nicht
+2013-10-16 10:36:30,kevin,Komische Syntax :-)
+2013-10-16 10:36:41,mroman,Ja
+2013-10-16 10:36:47,kevin,Aber immerhin hast du einen funktionierenden Codegenerator
+2013-10-16 10:36:54,mroman,so einfach zu parsen und zu compilen wie moeglich :)
+2013-10-16 10:36:58,kevin,So weit bin ich mit meinen Compilerversuchen nie gekommen
+2013-10-16 10:37:02,mroman,ist auch untyped wie du siehst
+2013-10-16 10:37:11,mroman,kevin: Der Compiler verschwendet sehr viel stack
+2013-10-16 10:37:16,mroman,und benutzt gerade mal zwei Register von 12
+2013-10-16 10:37:21,mroman,also kein register allocation oder so
+2013-10-16 10:37:29,kevin,Untypisiert oder alles sind ints? ;-)
+2013-10-16 10:37:55,mroman,naja
+2013-10-16 10:37:59,mroman,alles ist ein Register
+2013-10-16 10:38:08,mroman,also 32bit
+2013-10-16 10:38:18,mroman,fuer pointer z.b musst du angeben
+2013-10-16 10:38:29,mroman,z.b @DWORD:addr := isrPtr; schreibt ein dword nach addr
+2013-10-16 10:38:34,mroman,vs @BYTE:addr := isrPtr;
+2013-10-16 10:38:39,mroman,schreibt ein byte nach addr
+2013-10-16 10:39:00,mroman,bzw das low byte vom Register in das isrPtr gerade geladen wird
+2013-10-16 10:39:26,mroman,"du musst z.b auch angeben, ob du signed multiplication oder unsigned willst"
+2013-10-16 10:39:30,mroman,* 4 ist unsigned
+2013-10-16 10:39:35,mroman,_* 4 waere signed
+2013-10-16 10:39:49,mroman,aber ja
+2013-10-16 10:40:02,mroman,"grundsaetzlich ist eine Variable ein 32bit Wert, der vom Stack in ein Register geladen wird"
+2013-10-16 10:40:13,mroman,c := a + b wird z.b uebersetzt nach
+2013-10-16 10:40:49,mroman,"lade a vom stack, lade b vom stack, addiere die zwei register"
+2013-10-16 10:40:52,mroman,pushe das resultat
+2013-10-16 10:40:55,mroman,lade das resultat vom stack
+2013-10-16 10:41:11,mroman,schreibe es in den stack (dort wo c liegt)
+2013-10-16 10:41:17,mroman,also sehr viele push/pop
+2013-10-16 10:41:25,mroman,die teilweise total unnoetig sind
+2013-10-16 10:41:55,mroman,aber immerhin funktioniert es
+2013-10-16 10:42:03,mroman,effiziente code generierung wuerde meinen Zeitrahmen sprengen :(
+2013-10-16 10:53:09,kevin,Tja...
+2013-10-16 10:53:16,Jonathan,moin
+2013-10-16 10:53:19,kevin,Zu Codegenerierung kann ich wie gesagt nicht viel sagen
+2013-10-16 10:53:25,kevin,Das hat bei mir selber nie gut funktioniert
+2013-10-16 10:53:36,kevin,Dafür fand ich meine Syntax schöner *g*
+2013-10-16 10:53:42,kevin,Moin Jonathan
+2013-10-16 10:55:31,alexander,Bonjour
+2013-10-16 10:56:09,Jonathan,moin alexander
+2013-10-16 10:56:28,kevin,Goedemorgen alexander
+2013-10-16 12:13:21,mroman,ach
+2013-10-16 12:13:23,mroman,fu bison
+2013-10-16 12:13:33,mroman,kann er mir nicht wenigstens sagen WO er einen shift/reduce conflict sieht?
+2013-10-16 12:18:36,mroman,hm
+2013-10-16 12:18:49,mroman,vlt mag er IDENT | IDENT BRACKET_LEFT nicht
+2013-10-16 12:19:03,mroman,"wobei ich eigentlich erwaerten wuerde, dass er das laenger matcht"
+2013-10-16 12:22:18,mroman,ah. gefunden
+2013-10-16 12:27:35,mroman,kevin: http://codepad.org/F1Mtsfyh
+2013-10-16 12:27:49,mroman,"^- push r0, pop r0 ist besonders effizient :)"
+2013-10-16 12:28:02,mroman,Code zu generieren ist einfach.
+2013-10-16 12:28:09,mroman,Effizienten Code zu generieren ist schwer.
+2013-10-16 12:29:29,kevin,Sowas wie push r0/pop r0 zu vermeiden dürfte aber nicht _so_ schwer sein
+2013-10-16 12:30:07,kevin,"Also Variablen erstmal in Registern halten und nur auf den Stack schreiben, wenn das Register für was anderes gebraucht wird"
+2013-10-16 12:32:45,mroman,Ja
+2013-10-16 12:32:49,mroman,aber es ist schwerer :)
+2013-10-16 12:33:13,mroman,dann kann ich nicht einfach mit flex/bison so drueeber :)
+2013-10-16 12:34:09,mroman,mein terminal ist mal wieer kaputet
+2013-10-16 12:54:03,mroman,kevin: Das kann ich sonst in einem zweiten Durchlauf rausfiltern
+2013-10-16 12:54:10,mroman,mit regular expressions oder so :D
+2013-10-16 12:54:33,kevin,"Ja, schon... Aber richtig machen würde halt ein bisschen mehr Fälle abdecken ;-)"
+2013-10-16 12:56:01,mroman,Ja klar
+2013-10-16 12:56:22,mroman,eine halbwegs vernuenftige register allocation wuerde auch viel bringen
+2013-10-16 12:56:33,mroman,aber eben
+2013-10-16 12:56:36,mroman,der compiler ist halt simple
+2013-10-16 12:57:05,mroman,offiziell ist der compiler ja nicht in der Aufgabenstellung enthalten
+2013-10-16 12:57:11,mroman,also darf ich nicht allzuviel Zeit daran verbraten.
+2013-10-16 12:58:14,mroman,http://codepad.org/OEdWUzfk <- das z.b
+2013-10-16 12:58:17,mroman,von hand waere das uhm
+2013-10-16 12:58:37,mroman,"cmp r0, r1; retiz r0; retnz r1;"
+2013-10-16 12:58:56,mroman,also der Compiler benutzt auch keine conditional optimizations etc
+2013-10-16 12:59:09,mroman,waere alles viel zu viel Aufwand.
+2013-10-16 13:06:17,kevin,"Hm, gut..."
+2013-10-16 13:08:33,mroman,http://codepad.org/dMnQYGdg
+2013-10-16 13:08:40,mroman,und jetzt muss ich das testen ob das so stimmt :)
+2013-10-16 16:44:58,tufel,huhu
+2013-10-16 16:45:14,Jonathan,moin tufel
+2013-10-16 16:54:51,mroman,oh
+2013-10-16 16:54:57,mroman,stack aufraeumen sollte man vielleicht noch
+2013-10-16 16:55:42,mgottschlag,ich müsste ja eher mal wieder Zimmer aufräumen
+2013-10-16 17:03:06,kevin,Wird überbewertet
+2013-10-16 17:03:07,kevin,Beides
+2013-10-16 17:32:28,mroman,irgendwas ueberschreibt mir meine Ruecksprungadresse auf dem Stack
+2013-10-16 17:32:35,mroman,und ich weiss sogar was
+2013-10-16 17:32:39,mroman,"ich weiss nur nicht, warum"
+2013-10-16 17:33:49,alexander,buffa owaflo
+2013-10-16 17:36:33,mroman,oh.
+2013-10-16 17:36:34,mroman,dam
+2013-10-16 17:36:36,mroman,nein
+2013-10-16 17:36:39,mroman,platz reservieren wohl eher
+2013-10-16 17:41:10,mroman,argh
+2013-10-16 17:41:19,mroman,"muss ich den sub vor mov bp, sp machen oder danach?"
+2013-10-16 17:42:21,mroman,hm
+2013-10-16 17:42:27,mroman,davor?
+2013-10-16 18:05:41,tufel,huhu
+2013-10-16 18:26:50,tufel,"mmh wofür brucht man eigentlich den befehl  ""Add without Carry "" in einer CPU ? "
+2013-10-16 18:31:35,XanClic,"Ich würde ja raten, um ein ADC ohne C auszuführen"
+2013-10-16 18:31:49,XanClic,Oder vulgär ausgedrückt
+2013-10-16 18:31:59,XanClic,Das ist halt ein ADD
+2013-10-16 18:32:29,XanClic,"Wenn man eine einfache Möglichkeit hat, das CF zu löschen, ist ADD natürlich eine Untermenge von ADC"
+2013-10-16 18:32:46,XanClic,Aber andererseits kann man sich ein ADD/ADC aus INCs zusammensetzen
+2013-10-16 18:32:50,XanClic,Wie das halt so ist
+2013-10-16 18:33:12,XanClic,"Ist ja bekannt, dass eine einzige Instruktion ausreichen kann, wenn man unbedingt will"
+2013-10-16 18:37:19,tufel_,huhu
+2013-10-16 19:42:50,mroman,tufel_: der 8051 z.b hat nur SBB und kein normales SUB
+2013-10-16 19:43:14,mroman,also muss man zur Sicherheit quasi erst mal das Carryflag loeschen wenn man ungeschoren subtrahieren will
+2013-10-16 19:44:39,mroman,und andere coole Sachen wie bits adressieren
+2013-10-16 19:45:15,mroman,"wenn du also nicht genug platz fuer sbb, sub, adc und add hast"
+2013-10-16 19:45:37,mroman,kannst du sub und add weglassen dafuer eine instruktion um das carry flag zu loeschen
+2013-10-16 19:45:46,mroman,und hast dann 3 statt 4 Instruktionen.
+2013-10-16 19:50:54,mroman,oder
+2013-10-16 19:50:57,mroman,du laesst sub weg
+2013-10-16 19:51:08,mroman,wenn du neg hast oder so
+2013-10-16 19:51:57,XanClic,Oder du machst einfach subleq
+2013-10-16 19:52:08,XanClic,subtract and branch if less than or equal to zero
+2013-10-16 19:52:12,mroman,jaja
+2013-10-16 19:52:14,mroman,alter Schuh
+2013-10-16 19:52:17,XanClic,"Ja, eben"
+2013-10-16 19:52:17,mroman,verwirr ihn jetzt nicht.
+2013-10-16 19:52:27,XanClic,Ich mein ja nur
+2013-10-16 19:52:39,XanClic,Weil hier ständig gesagt wird „Du kannst du Instruktion auch einfach mit der machen“ und so
+2013-10-16 19:52:56,XanClic,"Man kann alles auf eine einzige Instruktion zurückführen, aber es gibt Gründe, dass normale CPUs das nicht tun :-P"
+2013-10-16 19:53:06,XanClic,s/du Instruktion/die Instruktion/
+2013-10-16 19:54:31,mroman,es waere ineffizient und zu new schoolz
+2013-10-16 19:57:46,tufel_,nun mit sbb und adc hätte ich exakt 16 befehle
+2013-10-16 19:58:56,mroman,hit me
+2013-10-16 20:01:51,tufel_,"mmh willst du etwas alle Befehle höhren ?  add, sub, and, or, not, shift, jump, strore, load, softint/Ret, Mul, AddK, SubK, LoadByte, Addc, Sbb"
+2013-10-16 20:02:25,mroman,addk?
+2013-10-16 20:02:31,mroman,was ist das K?
+2013-10-16 20:03:05,mgottschlag,Add mit Karry
+2013-10-16 20:03:20,mroman,Addition mit Katarine
+2013-10-16 20:03:34,tufel_,"ne :D , K steht für konstante "
+2013-10-16 20:04:33,tufel_,"also z.b AddK R1, 0xFF ( R1 = R1 + 0xFF"
+2013-10-16 20:04:52,mroman,oh achso
+2013-10-16 20:04:58,mroman,16bit instruction size?
+2013-10-16 20:05:03,tufel_,jop
+2013-10-16 20:05:08,mroman,ah ok
+2013-10-16 20:05:20,mroman,d.h 4 bits sind opcode
+2013-10-16 20:06:27,tufel_,"joar, nur bei shift sind es 2 mehr"
+2013-10-16 20:09:09,tufel_,naja kann man das instruktionset so lassen ?
+2013-10-16 20:10:36,mroman,wie machst du calls?
+2013-10-16 20:11:10,mroman,du hast kein mov?
+2013-10-16 20:12:26,tufel_,mmh calls hab ich weggelassen
+2013-10-16 20:13:22,tufel_,"da der ProgrammCounter im Registerset sitzt, Mov mach ich mit add da ich ein 0-Register"
+2013-10-16 20:13:34,tufel_,habe
+2013-10-16 20:14:03,mroman,0-Register?
+2013-10-16 20:14:30,tufel_,joar ein register das die ganze zeit auf 0 ist :D
+2013-10-16 20:14:51,mroman,also
+2013-10-16 20:14:59,mroman,"add ziel, quelle, nullregister?"
+2013-10-16 20:15:58,tufel_,joar
+2013-10-16 20:19:08,mroman,"etwas seltsam, aber ok"
+2013-10-16 20:20:17,tufel_,joar das spart eben ein Befehl :)
+2013-10-16 20:21:24,mroman,ehm
+2013-10-16 20:21:33,mroman,du koenntest das auch mit mulk machen
+2013-10-16 20:21:41,mroman,dann brauchst du kein register dafuer zu opfern
+2013-10-16 20:21:47,mroman,"mul ziel, quelle, 1"
+2013-10-16 20:21:57,mroman,oder moment
+2013-10-16 20:22:03,mroman,du hast doch addk?
+2013-10-16 20:22:09,mroman,"addk ziel, quelle, 0?"
+2013-10-16 20:22:23,mroman,oder ist addk nur zwei operandig?
+2013-10-16 20:22:33,tufel_,joar
+2013-10-16 20:25:17,mroman,super freaky
+2013-10-16 20:25:34,tufel_,mmh warum das den ? :D
+2013-10-16 20:29:30,mroman,kA
+2013-10-16 20:29:33,mroman,einfach so
+2013-10-16 20:30:23,mroman,addk klingt denglisch
+2013-10-16 20:31:04,tufel_,"joar, bin offen für vorschläge wie es sonst heißen sollte :D"
+2013-10-16 20:31:36,mroman,addi
+2013-10-16 20:31:41,mroman,add immediate
+2013-10-16 20:32:11,mroman,ueblicherweise nennt man sowas immediate data
+2013-10-16 20:32:33,tufel_,oh ok
+2013-10-16 20:33:16,mroman,http://pic.dhe.ibm.com/infocenter/zos/v1r11/topic/com.ibm.zos.r11.asma400/asmr102061.htm
+2013-10-16 20:34:43,mroman,hast du eine MMU
+2013-10-16 20:34:47,mroman,oder planst du eine?
+2013-10-16 20:35:49,tufel_,"joar, ne mmu habe ich, warum ?"
+2013-10-16 20:36:18,mroman,viel spass dann
+2013-10-16 20:37:35,tufel_,mit was sollte ich den spass haben ? :D
+2013-10-16 20:41:51,tufel_,sollte ich etwa keine mmu einbauen ? 
+2013-10-16 20:42:32,mroman,doch
+2013-10-16 20:42:36,mroman,also kA
+2013-10-16 20:44:02,tufel_,meine MMU ist eben ein Dual-Sram mit 128 einträge für 128 pages
+2013-10-16 20:49:11,LinuxHacker,Hi Leute
+2013-10-16 20:50:12,kevin,Hi LinuxHacker
+2013-10-16 20:50:56,LinuxHacker,Sorry letztens hatte ich einfach kein Bock mehr ich arbeite jetzt einfach mit dem normalen BIOS Text modus
+2013-10-16 20:51:05,Jonathan,Ist empfehlenswert ^^
+2013-10-16 20:51:20,Jonathan,Gute Kernel haben keine Grafikfunktionen.
+2013-10-16 20:51:30,Jonathan,Wie weit ist dein Kernel denn eigentlich schon?
+2013-10-16 20:52:00,LinuxHacker,naja ich habe schon eine funktion mit der ich an einer bestimmten x und y koordinate einen text ausgeben kann
+2013-10-16 20:52:30,Jonathan,Hast du schon Multitasking?
+2013-10-16 20:52:37,LinuxHacker,leider nicht :/
+2013-10-16 20:52:41,Jonathan,Hm...
+2013-10-16 20:52:47,LinuxHacker,erstmal möchte ich mir eine shell schreiben
+2013-10-16 20:52:57,Jonathan,"Halt, halt, halt. ;)"
+2013-10-16 20:53:01,LinuxHacker,?
+2013-10-16 20:53:26,Jonathan,An User Interfaces ist bei der Entwicklung eines Kernels eigentlich nicht zu denken.
+2013-10-16 20:53:38,Jonathan,Ein Kernel ist das Herzstück deines Betriebssystems.
+2013-10-16 20:53:51,Jonathan,Der Kernel muss die Ausführung der Prozesse steuern und kontrollieren.
+2013-10-16 20:54:09,Jonathan,"Er muss es Prozessen möglich machen, die Hardware zu nutzen, untereinander zu kommunizieren und Speicher zu verwenden."
+2013-10-16 20:54:21,Jonathan,Eine Shell wäre ein solcher Prozess.
+2013-10-16 20:54:43,LinuxHacker,ja ich mache das so das ich meinen kernel entwickel und dabei getrennt ein betriebssystem was diesen kernel benutzt :)
+2013-10-16 20:54:57,Jonathan,"So ein Shell-Prozess nutzt dann die Treiber für den Bildschirm, für die Tastatur, für die Festplatte usw, um dem Benutzer die Nutzung zu ermöglichen."
+2013-10-16 20:55:04,Jonathan,Hast du denn schon Treiber? ^^
+2013-10-16 20:55:15,LinuxHacker,ich werde heute mit den Keyboard Treiben anfangen
+2013-10-16 20:55:24,Jonathan,Monolith?
+2013-10-16 20:55:37,LinuxHacker,ich versuche es einfach bisschen getrennt zu machen
+2013-10-16 20:55:42,LinuxHacker,also hybridkernel
+2013-10-16 20:55:44,Jonathan,Hmmmm
+2013-10-16 20:56:08,Jonathan,Ich persönlich würde dem Nutzer jetzt noch gar keine Eingaben erlauben.
+2013-10-16 20:56:19,LinuxHacker,?
+2013-10-16 20:56:33,Jonathan,"Das allererste, was ich tun würde, ist, den Kernel als solchen zum Laufen zu bringen."
+2013-10-16 20:56:47,LinuxHacker,wie meinst du das im detail?
+2013-10-16 20:56:48,Jonathan,"Also Speicherverwaltung, Prozesse und Interprozesskommunikation."
+2013-10-16 20:57:00,LinuxHacker,spannende sachen oke ich versuch mich mal drab
+2013-10-16 20:57:04,Jonathan,^^
+2013-10-16 20:57:05,LinuxHacker,dran*
+2013-10-16 20:57:29,Jonathan,"Gleich ohne sowas Treiber schreiben zu wollen, ist etwas gewagt, da die Treiber sowas eigentlich nutzen müssen."
+2013-10-16 20:57:34,Jonathan,Und ohne geht es eben nicht.
+2013-10-16 20:57:42,LinuxHacker,ich fang mal mit speicherverwaltung an
+2013-10-16 20:57:55,Jonathan,"Diese drei Sachen (und naja, je nach Konzept noch etwas mehr) sind die absoluten Grundlagen deines Kernels."
+2013-10-16 20:58:05,Jonathan,Ohne die läuft absolut garnichts.
+2013-10-16 20:58:13,Jonathan,"Keine Shell, kein Tastaturtreiber, nichts."
+2013-10-16 20:58:30,LinuxHacker,jop ich les mal den Low Level artikel dazu
+2013-10-16 20:58:34,Jonathan,Jo ^^
+2013-10-16 20:58:53,Jonathan,Mein Kernel hat nur ne Speicherverwaltung per Bitmap...
+2013-10-16 20:59:01,Jonathan,"Das reicht mir, vorallem auf einem Z80."
+2013-10-16 20:59:41,Jonathan,Deine Speicherverwaltung sollte folgendes können: Speicher anfordern / freigeben (immer ganze Pages) und natürlich Paging.
+2013-10-16 21:00:05,Jonathan,"Dann haben deine späteren Prozesse schonmal eine Möglichkeit, sich irgendwie überhaupt mal Speicher zu beschaffen."
+2013-10-16 21:00:51,Jonathan,"Speicherschutz... hm, naja, wäre auf x86 ganz nett, aber für ein Hobby-OS braucht man das jetzt nicht sooooo unbedingt."
+2013-10-16 21:01:14,LinuxHacker,aber was ist wenn ich jetzt einem prozess 1MB zuweise aber im endeffekt braucht er mehr?
+2013-10-16 21:01:35,Jonathan,Genau dazu ist die Speicherverwaltung da: Der Prozess fragt dann einfach beim Kernel nach neuen Pages und bekommt welche
+2013-10-16 21:01:52,LinuxHacker,ahh also wird sein speicher automatisch wenn er mehr braucht erweitert
+2013-10-16 21:02:01,Jonathan,"Nö, da muss er schon selbst danach fragen. ^^"
+2013-10-16 21:02:11,LinuxHacker,:D
+2013-10-16 21:02:13,Jonathan,"Nicht automatisch. Der Kernel kann ja nicht wissen, wann der Prozess mehr Speicher braucht."
+2013-10-16 21:02:23,LinuxHacker,stimmt :P
+2013-10-16 21:02:24,mroman,wenn das so einfach waere
+2013-10-16 21:02:45,mroman,du kannst Intel ueberreden hardware-unterstuetzung fuer Speicherverwaltung einzubauen .
+2013-10-16 21:02:58,LinuxHacker,xD
+2013-10-16 21:03:09,LinuxHacker,naja sowas proggt man lieber selber
+2013-10-16 21:03:18,Jonathan,"Ja, dann mach mal, hopp hopp :P"
+2013-10-16 21:03:24,LinuxHacker,ja sir! xD
+2013-10-16 21:03:28,mroman,dann geh mal proggen
+2013-10-16 21:03:32,mroman,was auch immer proggen ist
+2013-10-16 21:03:38,Jonathan,(Und wirf alles bis auf Debug-Ausgaben aus deinem Kernel raus)
+2013-10-16 21:04:01,Jonathan,Da gehören keine Shells und so rein. ;P
+2013-10-16 21:04:18,LinuxHacker,aber die funktion um den monitor anzusprechen kann doch bleiben oder?
+2013-10-16 21:04:29,Jonathan,"Jo, das gehört ja zu den Debug-Ausgaben. ^^"
+2013-10-16 21:05:20,Jonathan,"Das wird jetzt ne ganze Zeit lang so ablaufen: Du programmierst was, baust z.B. was ein, was beim Kernel testweise ein paar Pages anfordert und freigibt, und die Ergebnisse werden dann auf den Bildschirm geschrieben."
+2013-10-16 21:05:39,Jonathan,"Wenn's nicht klappt, geht man auf Fehlersuche, wenn's klappt, dann implementiert man das nächste bisschen."
+2013-10-16 21:05:56,LinuxHacker,Gut Danke! 
+2013-10-16 21:06:00,Jonathan,Kein Problem ^^
+2013-10-16 21:06:36,LinuxHacker,Wie geht man eigentlich afk?
+2013-10-16 21:06:52,Jonathan,Also ich geh ja immer einfach weg *g*
+2013-10-16 21:06:54,mroman,ok
+2013-10-16 21:06:59,LinuxHacker,;D
+2013-10-16 21:06:59,Jonathan,"Aber du meinst bestimmt, wie man den Status setzt"
+2013-10-16 21:07:00,mroman,FINGER WEG VON DA TASTATUR
+2013-10-16 21:07:18,Jonathan,"...und da hab ich, ehrlich gesagt, auch keine Ahnung :P"
+2013-10-16 21:07:26,LinuxHacker,:D
+2013-10-16 21:07:30,LinuxHacker,naja egal 
+2013-10-16 21:07:45,LinuxHacker,[status:away_from_keyboard]
+2013-10-16 21:07:47,LinuxHacker,bye xD
+2013-10-16 21:08:12,Jonathan,xD
+2013-10-16 21:08:28,Jonathan,test?
+2013-10-16 21:08:39,Jidder,durchgefallen
+2013-10-16 21:08:42,Jonathan,Hmmm
+2013-10-16 21:09:13,mroman,irc hat doch gar keinen Awaystatus
+2013-10-16 21:09:17,mroman,das ist doch eh nur client mist?
+2013-10-16 21:09:27,Jonathan,Hm kA o.o
+2013-10-16 21:09:41,Jonathan,"Also ich hab jetzt auf die Schnelle ""/away"" gefunden"
+2013-10-16 21:09:50,mgottschlag,irc hat away
+2013-10-16 21:10:26,Jonathan,"Hm, ich hab das jetzt eben testweise eingegeben"
+2013-10-16 21:10:39,LinuxHacker,away
+2013-10-16 21:10:43,LinuxHacker,xD
+2013-10-16 21:10:43,Jonathan,"...könnt ihr das sehen, und wann genau hebt sich das wieder auf? xD"
+2013-10-16 21:10:52,LinuxHacker,jop seh das :D
+2013-10-16 21:10:53,mgottschlag,ich kann das sehen
+2013-10-16 21:10:56,Jonathan,Aaah ok
+2013-10-16 21:10:58,Jonathan,Und öh
+2013-10-16 21:11:02,Jonathan,Wie werd ich das wieder los? :D
+2013-10-16 21:11:11,mroman,wieder mit /away
+2013-10-16 21:11:12,mgottschlag,NIE WIEDER!!!!!!11112
+2013-10-16 21:11:14,Jidder,computer ausmachen
+2013-10-16 21:11:23,LinuxHacker,mgottschlag das war unnötig :P
+2013-10-16 21:11:31,LinuxHacker,oder irc client neustarten :D
+2013-10-16 21:11:35,Jonathan,Hmmm
+2013-10-16 21:11:53,LinuxHacker,naja aber wir sehen dich ja also ist doch alles easy
+2013-10-16 21:12:10,Jonathan,[21:11:09] <mroman> wieder mit /away <--- irgendwie tut das gerade nicht
+2013-10-16 21:12:56,mroman,ohne nachricht
+2013-10-16 21:13:01,mroman,mit irssi geht das
+2013-10-16 21:13:07,Jonathan,Hab ich ja ohne was eingegeben
+2013-10-16 21:13:17,Jonathan,"Aber der meint immernoch ""Wahrscheinlich abwesend"""
+2013-10-16 21:13:19,mroman," /away yuhu, i'm nicht ici und dann wieder einfach wieder /away"
+2013-10-16 21:13:52,Jonathan,Aaaaah! xD
+2013-10-16 21:13:58,Jonathan,"Mein Client will ""/back"" sehen."
+2013-10-16 21:16:06,LinuxHacker,Jonathan: Darf ein Kernel eigentlich schon eine Platform für nativen Code haben?
+2013-10-16 21:16:24,Jonathan,Inwiefern?
+2013-10-16 21:16:34,LinuxHacker,also ein ausführbares format
+2013-10-16 21:16:41,mgottschlag,"ja, das gehört in den Kernel"
+2013-10-16 21:16:45,mgottschlag,"bzw, nicht unbedingt"
+2013-10-16 21:16:49,mgottschlag,aber das *darf* in den Kernel
+2013-10-16 21:17:00,LinuxHacker,ich mach das einfach mal
+2013-10-16 21:17:00,Jonathan,Ich bin aber eher der Mikrokernel-Typ
+2013-10-16 21:17:16,LinuxHacker,ich eher der hybrid kernel typ :D
+2013-10-16 21:17:17,Jonathan,[21:16:58] <LinuxHacker> ich mach das einfach mal <--- ohne Speicherverwaltung und Prozesse wird das nix :D
+2013-10-16 21:17:23,mgottschlag,"bei Mikrokernel lädt ein Prozess den anderen, und der erste ""war einfach plötzlich da"""
+2013-10-16 21:17:31,Jonathan,So isses
+2013-10-16 21:17:43,Jonathan,Der erste ist bei mir der Kernel Task :P
+2013-10-16 21:18:01,LinuxHacker,ich bin dann mal /away :D
+2013-10-16 21:18:26,Jonathan,"Aber ich würd mich mit ausführbaren Dateiformaten erst befassen, wenn mein Dateisystem läuft :P"
+2013-10-16 21:18:35,Jonathan,Und das braucht Treiber
+2013-10-16 21:18:46,Jonathan,"Und die brauchen Speicherverwaltung, Prozesse und IPC"
+2013-10-16 21:18:56,Jonathan,Also gogogogo LinuxHacker :P
+2013-10-16 21:22:14,LinuxHacker,Sollte man eigentlich alle Kernel funktionen in eine Datei pressen oder sollte man das in einzelne dateien für eine bestimmte kategorie unterteilen?
+2013-10-16 21:22:30,Jonathan,Mehrere Dateien ist immer gut und hilft der Übersichtlichkeit
+2013-10-16 21:22:38,LinuxHacker,ah gut
+2013-10-16 21:23:04,Jonathan,btw...
+2013-10-16 21:23:32,Jonathan,"Schreib du mal lieber nen Mikrokernel, (Teil-)Monolithen können böse werden :D"
+2013-10-16 21:23:42,Jonathan,Zumindest bevorzuge ich Mikrokernel
+2013-10-16 21:23:57,LinuxHacker,was braucht man den alles für einen mikro kernel?
+2013-10-16 21:24:13,Jonathan,"Nur so viel, dass Prozesse laufen und sich unter einander austauschen können"
+2013-10-16 21:24:28,LinuxHacker,oke
+2013-10-16 21:24:39,Jonathan,"Die ganzen Treiber und so sind dann extra-Prozesse, die unter einander kommunizieren"
+2013-10-16 21:24:45,Jonathan,Das ist schön flexibel
+2013-10-16 21:24:56,LinuxHacker,danke für deine weisheit! :D
+2013-10-16 21:24:58,Jonathan,xD
+2013-10-16 21:25:02,Jonathan,Kein Problem ^^
+2013-10-16 21:25:32,Jonathan,"mgottschlag: Schreibst du eigentlich eher Mikrokernel oder Monolithen, und aus welchem Grund?"
+2013-10-16 21:30:12,Jidder,"""schön flexibel"" ... eher schön kompliziert"
+2013-10-16 21:30:18,LinuxHacker,What ?
+2013-10-16 21:30:54,Jonathan,Jidder: Geschmackssache
+2013-10-16 21:31:16,LinuxHacker,Mikrokernel sind deutlich einfacher gestaltet also Monokernel
+2013-10-16 21:31:25,Jidder,dafür ist der ganze rest komplizierter
+2013-10-16 21:32:09,LinuxHacker,Wieso bitteschön sag doch mal wieso ?!?
+2013-10-16 21:32:10,mgottschlag,Jonathan: ich schreib garnicht
+2013-10-16 21:32:13,Jonathan,"Beim Monolith ist dann halt der Rest einfacher, aber der Kernel komplizierter (und vorallem total überfüllt und meistens auch buggy)"
+2013-10-16 21:32:19,mgottschlag,ich hab schon viel zu lange kein osdev mehr gemacht
+2013-10-16 21:32:34,LinuxHacker,mgottschlag: echt?
+2013-10-16 21:32:35,mgottschlag,"ich hatte ab und zu mal einen Mikrokernel angefangen, aber bin da noch zu nichts gekommen"
+2013-10-16 21:32:37,Jonathan,"LinuxHacker: Ein Monolith bietet die ganzen Treiberfunktionen direkt selbst an, das heißt, die Treiber sind fest im Kernel integriert"
+2013-10-16 21:32:52,mgottschlag,mein letztes richtiges osdev-Projekt war glaub ich 2009
+2013-10-16 21:32:54,Jonathan,"Der Kernel wird dadurch ein ganzes Stück komplizierter, und vorallem viel fehleranfälliger."
+2013-10-16 21:32:57,mgottschlag,oder evtl 2010
+2013-10-16 21:33:07,mgottschlag,zwischendurch hab ich nur an Linux gearbeitet ^^
+2013-10-16 21:33:11,LinuxHacker,Ich geb Jonathan recht!
+2013-10-16 21:33:32,Jonathan,"Bei nem Mikrokernel bietet der Kernel nur die nötigsten Funktionen an, die dazu nötig sind, um Prozesse (und damit auch Treiber) laufen zu lassen."
+2013-10-16 21:33:40,Jonathan,Die Treiber sind dann eigenständige Prozesse.
+2013-10-16 21:33:40,kevin,"Jonathan: Sei vorsichtig damit, alle zu einem Mikrokernel zu überreden. Ich finde das wesentlich schwieriger als Monolithen."
+2013-10-16 21:33:47,mgottschlag,+1
+2013-10-16 21:34:01,Jidder,und Jonathan verwechselt fehleranfälligkeit mit fehlerisolation
+2013-10-16 21:34:01,Jonathan,Das schwierige an einem Mikrokernel ist die Synchronisation und Kommunikation zwischen Treibern und Prozessen...
+2013-10-16 21:34:02,mgottschlag,Monolithen sind von der Organisation einfacher
+2013-10-16 21:34:22,kevin,Jonathan: Korrekt. Und ich kenne die Musterlösung bis heute nicht. ;-)
+2013-10-16 21:34:29,Jonathan,"Ja, in der Hinsicht sind Mikrokernel ziemlich kompliziert. :P"
+2013-10-16 21:34:58,XanClic,Ich geh an das Problem ja mit Brute Force ran
+2013-10-16 21:34:58,Jonathan,"Aber für den Anfang wäre ein Mikrokernel doch nicht allzu schlecht, schließlich kann man hinterher einfach die Treiberfunktionen hinzufügen, wenn man einen Monolithen will."
+2013-10-16 21:35:15,Jonathan,Monolith ---> Mikrokernel ist dagegen doch sehr sehr schwer.
+2013-10-16 21:35:20,XanClic,Nö
+2013-10-16 21:35:23,XanClic,Sehr einfach ist das
+2013-10-16 21:35:36,XanClic,cd ..; mkdir paloxena42; cd paloxena42; git init
+2013-10-16 21:35:38,XanClic,fertig
+2013-10-16 21:35:52,kevin,"Naja, so lernt man immer mehr Wege kenne, wie es _nicht_ geht"
+2013-10-16 21:35:52,Jonathan,"Kommt drauf an, wie gut man Kernelfunktionen und Treiberfunktionen getrennt hat in dem Monolith :P"
+2013-10-16 21:36:01,XanClic,Und gerade für den Anfang ist ein echter Microkernel ziemlich… Örp
+2013-10-16 21:36:07,XanClic,Weil der halt gar keine Treiber haben sollte
+2013-10-16 21:36:09,XanClic,Also auch keine Ausgabe
+2013-10-16 21:36:23,XanClic,"Und wer gerade OS-Dev lernt, für den kommt „Keine Ausgabe bis zum ersten Benutzerprozess“ nicht so gut"
+2013-10-16 21:36:42,Jonathan,"Ja, sagen wir einfach: Hybridkernel mit deutlicher Ausprägung zum Mikrokernel *g*"
+2013-10-16 21:36:43,XanClic,"kevin, Brute Force halt *g*"
+2013-10-16 21:37:01,LinuxHacker,Hybrid find ich am besten ;)
+2013-10-16 21:37:06,kevin,"XanClic: Sag mir Bescheid, wenn du die richtige Lösung zusammengebruteforct hast *g*"
+2013-10-16 21:37:25,Jonathan,"Wären alle zufrieden mit ""Am Anfang einfach so wenige Treiber wie nur irgend möglich schreiben und zuerst mal die Prozesse und so zum Laufen bringen""? *g*"
+2013-10-16 21:37:33,kevin,"LinuxHacker: Hybrid heißt bei den meisten, dass sie nicht wissen, was sie eigentlich wollen"
+2013-10-16 21:37:34,LinuxHacker,Ja
+2013-10-16 21:37:36,Jidder,"hybrid heißt vor allem ""hat sich von der diskussion verwirren lassen"""
+2013-10-16 21:37:40,Jonathan,xd
+2013-10-16 21:37:45,LinuxHacker,LinuxHacker: ?
+2013-10-16 21:37:50,LinuxHacker,Oops
+2013-10-16 21:37:53,XanClic,Ein mikromonolither Modularhybrid muss her
+2013-10-16 21:37:53,LinuxHacker,kevin: ?
+2013-10-16 21:37:58,XanClic,Kurz emmmh
+2013-10-16 21:38:16,kevin,"""<LinuxHacker> LinuxHacker: ?"" - Das läuft unter ""hat sich von der diskussion verwirren lassen"" *g*"
+2013-10-16 21:38:21,Jonathan,:D
+2013-10-16 21:38:22,LinuxHacker,xD
+2013-10-16 21:38:28,LinuxHacker,sorry tippfehler :S
+2013-10-16 21:38:38,kevin,XanClic: Yay!
+2013-10-16 21:38:56,Jonathan,"XanClic: Und ich weiß immernoch nicht, wieso ich +b bin! :D"
+2013-10-16 21:39:03,XanClic,Ich doch auch nicht
+2013-10-16 21:39:07,Jidder,ich auch nicht
+2013-10-16 21:39:14,Jonathan,Huch?
+2013-10-16 21:39:15,XanClic,"kevin, wieso arbeitest du so spät eigentlich noch?"
+2013-10-16 21:39:15,kevin,Jetzt bist du auch +v :-)
+2013-10-16 21:39:27,Jonathan,Wieso bin ich denn jetzt +v? xD
+2013-10-16 21:39:34,kevin,Keine Ahnung
+2013-10-16 21:39:41,mgottschlag,ich will auch +v und +b sein!!!!!!11112
+2013-10-16 21:39:42,Jidder,ich auch nicht
+2013-10-16 21:39:43,kevin,Damit du auch mal nach +v fragst statt nach +b oder so *g*
+2013-10-16 21:39:48,Jonathan,*g*
+2013-10-16 21:40:00,Jonathan,Aber mit dem +b meinte ich ja eher #niwohlos oder so *g*
+2013-10-16 21:40:11,XanClic,#lost ist weicher als #niwohlos
+2013-10-16 21:40:16,XanClic,Deshalb wird aus dem B hier ein V
+2013-10-16 21:40:21,LinuxHacker,whois PIssedOff
+2013-10-16 21:40:23,LinuxHacker,oops xD
+2013-10-16 21:40:39,Jonathan,[21:40:14] <@XanClic> Deshalb wird aus dem B hier ein V <--- der war ja rischtisch gut :D
+2013-10-16 21:40:40,kevin,"#lost und Lenition, fängt beides mit L an"
+2013-10-16 21:41:33,kevin,"Jonathan: Du meinst, ich muss dir hier auch erst noch +b geben? ;-)"
+2013-10-16 21:41:42,Jonathan,"Ach was, +v geht schon *g*"
+2013-10-16 21:41:44,mroman,und ein Yoktokernel ist von der implementation her sehr einfach .
+2013-10-16 21:42:00,kevin,"XanClic: Ach so, warum ich noch arbeite - um deine Mails zu sehen, natürlich *g*"
+2013-10-16 21:42:07,XanClic,"Ach, das ist aber nett *g*"
+2013-10-16 21:43:26,kevin,Du hast übrigens nicht noch zufällig Zeit für BZ 1018451 diese Woche? ;-)
+2013-10-16 21:43:35,XanClic,Ich muss jetzt erstmal BZ 1004347 machen
+2013-10-16 21:43:42,XanClic,"Wobei das auch RHEL 7 ist, insofern…"
+2013-10-16 21:44:20,XanClic,"Ich weiß sofort, woran 1018451 liegt"
+2013-10-16 21:44:28,kevin,Hm?
+2013-10-16 21:44:28,XanClic,"Einfach daran, dass cluster_size=512 allgemein schnarchlahm ist :-P"
+2013-10-16 21:44:48,kevin,Aber doch nicht für info?
+2013-10-16 21:44:59,XanClic,"Hm, Argument *g*"
+2013-10-16 21:45:09,kevin,Außerdem war das angeblich mal besser
+2013-10-16 21:45:29,XanClic,An sich hab ich dafür schon Zeit
+2013-10-16 21:45:42,XanClic,Ich muss grad nur zwei Sachen auf 7 backporten
+2013-10-16 21:47:44,kevin,"Jo, der andere ist halt ein potentieller Blocker wegen Regression und ich muss endlich meine KVM-Forum-Präsentationen machen anstatt blöde Blocker-Bugs zu fixen *g*"
+2013-10-16 21:48:12,XanClic,Gut
+2013-10-16 21:49:09,LinuxHacker,Ich glaube ich mach jetzt  einfach einen Mono kernel
+2013-10-16 21:49:20,XanClic,Hoffentlich nicht Mono wie in C♯
+2013-10-16 21:49:27,LinuxHacker,nein :D
+2013-10-16 21:49:31,LinuxHacker,monolitisch
+2013-10-16 21:49:31,mroman,"Ich glaube, ich gehoere hier nicht hin."
+2013-10-16 21:50:21,kevin,Wir sind doch schon fertig mit off-topic
+2013-10-16 21:50:29,kevin,Ihr dürft jetzt wieder über OS-Dev reden ;-)
+2013-10-16 21:50:45,XanClic,"Also, ich fand, das hatte mehr mit OS-Dev zu tun als so manch anderes hier"
+2013-10-16 21:51:27,kevin,Für manche Werte von OS
+2013-10-16 21:51:43,Jonathan,Und kevin
+2013-10-16 21:51:54,Jonathan,"Du hattest doch bestimmt nen Hintergedanken, als du mich +v gemacht hast!!"
+2013-10-16 21:52:09,XanClic,"Ich kenne einen Channel, da wird +v als Deppenlampe benutzt"
+2013-10-16 21:52:15,LinuxHacker,:D
+2013-10-16 21:52:24,kevin,Nur einen?
+2013-10-16 21:52:28,XanClic,"Aber Google meint nicht, dass das allgemein so üblich ist"
+2013-10-16 21:52:35,kevin,Aber das wollte ich eigentlich nicht damit ausdrücken
+2013-10-16 21:52:47,XanClic,"Ich kenne nur einen, in dem überhaupt +v benutzt wird *g*"
+2013-10-16 21:52:57,XanClic,"Na gut, hiermit jetzt zwei"
+2013-10-16 21:53:00,Jonathan,xD
+2013-10-16 21:53:21,kevin,"Also wenn wir ein weicheres +b wollen, dann mag ich ja grundsätzlich Irisch und würde mich auch für +bh gewinnen lassen"
+2013-10-16 21:53:28,kevin,"Ich bin mir nur nicht sicher, ob Jonathan das mag"
+2013-10-16 21:53:33,Jonathan,*g*
+2013-10-16 21:53:58,Jonathan,+bo ist doch bestimmt ein toller Modus
+2013-10-16 21:54:15,kevin,"Ich glaube mit +bh kann man sogar reden, aber wehe, man verlässt den Channel"
+2013-10-16 21:54:52,kevin,"Hm, kann man sich dann eigentlich selber entbannen?"
+2013-10-16 21:54:56,kevin,Wart mal...
+2013-10-16 21:55:19,kevin,"Jetzt mal sehen, was passiert *g*"
+2013-10-16 21:55:30,Jonathan,*g*
+2013-10-16 21:55:36,kevin,Also schreiben kann er schonmal noch
+2013-10-16 21:55:44,XanClic,"Wenn man den Channel verlassen hat, wird das entbannen ohne Eintrag auf den Chanservlisten schwer"
+2013-10-16 21:55:54,kevin,Jo
+2013-10-16 21:56:04,kevin,"Jonathan: Probier mal, ob du dich jetzt selber entbannen kannst"
+2013-10-16 21:56:14,LinuxHacker,Wieder da
+2013-10-16 21:56:32,Jonathan,Öhm
+2013-10-16 21:56:39,Jonathan,"Wenn du mir den Command dazu sagst, gern *g*"
+2013-10-16 21:56:47,kevin, /mode #lost -b Jonathan!*@*
+2013-10-16 21:57:05,Jonathan,xD
+2013-10-16 21:57:08,LinuxHacker,xD
+2013-10-16 21:57:12,Jonathan,Tatsächlich
+2013-10-16 21:57:19,XanClic,+h ist imba
+2013-10-16 21:57:23,XanClic,nerf now
+2013-10-16 21:58:05,kevin,Haben wir eigentlich gar keine regelmäßigen +h mehr?
+2013-10-16 21:58:17,LinuxHacker,was heißt +h ?
+2013-10-16 21:58:23,kevin,HalfOp
+2013-10-16 21:58:24,XanClic,Homix musste sich ja erst umbenennen und dann nicht mehr kommen
+2013-10-16 21:58:35,kevin,Und Antoine ist auch mal wieder nicht registriert
+2013-10-16 21:58:51,XanClic,"Und ich dachte schon, +h dürfen hier nur Leute mit H am Nickanfang werden"
+2013-10-16 21:59:05,kevin,"Hartmut, Der und Hacker, Linux?"
+2013-10-16 21:59:21,XanClic,"Hm, so betrachtet"
+2013-10-16 21:59:22,kevin,"Han, Jonat? *g*"
+2013-10-16 21:59:36,XanClic,"Hlag, mgottsc? :-P"
+2013-10-16 22:00:34,kevin,"Och, dem würd ich auch ohne weiteres geben, wenn's einen Grund dafür geben"
+2013-10-16 22:00:36,kevin,*gäbe
+2013-10-16 22:01:04,XanClic,"Wenn du es ihm „ohne weiteres“ gäbest, bedarf es doch keines Grunds mehr?"
+2013-10-16 22:02:38,kevin,"""Ohne weiteres"" könnte man ja auch als ""ohne +b"" interpretieren *g*"
+2013-10-16 22:03:41,XanClic,"Ah, hm *g*"
+2013-10-16 22:04:53,kevin,"Endlich mal eine Ausrede, die du akzeptierst ;-)"
+2013-10-16 22:07:35,kevin,"Ist Jonathan eigentlich plötzlich so still, weil ihm das hier zu viel ist, oder weil er sich überlegt, was die beste Aktion ist, die er mit +h anstellen kann, bevor er es wieder weggenommen bekommt?"
+2013-10-16 22:07:45,Jonathan,*g*
+2013-10-16 22:07:53,Jonathan,"Nee, ich registriere gerade mal meinen Nick"
+2013-10-16 22:08:31,Jonathan,"Aber hmmmm, wenn du das so sagst"
+2013-10-16 22:08:43,Jonathan,Hmmmm *grübel*
+2013-10-16 22:08:50,Jonathan,Dich +b zu setzen wäre ja langweilig
+2013-10-16 22:09:22,XanClic,"Hm, ich erinnere mich gerade daran, wie du damals Hartmut und mir +h gegeben hast"
+2013-10-16 22:09:25,kevin,"Die Syntax zum Registrieren ist /msg kevin REGISTER <Passwort> <Email>, falls du noch suchst ;-)"
+2013-10-16 22:09:26,XanClic,"Hach, das war lustig"
+2013-10-16 22:09:49,Jonathan,Wieso denn jetzt kevin? xD
+2013-10-16 22:09:52,kevin,"XanClic: Hm, aus welchem Grund hab ich denn sowas gemacht?"
+2013-10-16 22:10:02,XanClic,Das war irgendeine Köln-Düsseldorf-Sache
+2013-10-16 22:10:02,kevin,Jonathan: Och... Ist halt so *g*
+2013-10-16 22:10:04,Jonathan,[22:07:06] NickServ [services@euirc.net]: Your password is xyz - remember this for later use.
+2013-10-16 22:10:10,Jonathan,Aaach ja
+2013-10-16 22:10:12,XanClic,Und dann hast du uns beiden praktisch gleichzeitig +h gegeben
+2013-10-16 22:10:17,Jonathan,Will da jemand Passwörter abgreifen? *g*
+2013-10-16 22:10:20,Jonathan,Wie pöse
+2013-10-16 22:10:28,XanClic,"Und wir haben gleichzeitig festgestellt, dass man als HOp andere HOps nicht kicken kann *g*"
+2013-10-16 22:10:30,kevin,Ich? Passwörter abgreifen? Niiieee!
+2013-10-16 22:10:39,Jonathan,Niiiiieeeeeeeee!
+2013-10-16 22:11:14,kevin,"Übrigens hast du gelogen, xyz tut nicht :-/"
+2013-10-16 22:11:19,Jonathan,xd
+2013-10-16 22:11:24,Jonathan,Guck mal an
+2013-10-16 22:12:32,Jonathan,ns IDENTIFY 74629346
+2013-10-16 22:12:35,Jonathan,oops
+2013-10-16 22:13:40,Jonathan,[22:13:34] Jonathan ist authentifiziert als Jonathan
+2013-10-16 22:13:44,Jonathan,Sieht doch schonmal gut aus
+2013-10-16 22:19:08,Jonathan,Öh soo
+2013-10-16 22:19:15,Jonathan,Wie läuft das jetzt beim Login?
+2013-10-16 22:19:35,kevin,So wie grad eben auch
+2013-10-16 22:19:43,Jonathan,Hm
+2013-10-16 22:19:45,kevin,Also /ns identify Jonathan <Passwort>
+2013-10-16 22:19:54,kevin,"Idealerweise kannst du deinem Client sagen, dass der das für dich machen soll"
+2013-10-16 22:19:59,Jonathan,Hab ich schon
+2013-10-16 22:20:05,Jonathan,Aber irgendwas anderes brauch ich nicht mehr?
+2013-10-16 22:20:11,kevin,Probier's doch einfach aus
+2013-10-16 22:20:34,Jonathan,Joar ^^
+2013-10-16 22:20:34,Jonathan,Also bis gleich
+2013-10-16 22:20:34,Jonathan,Mal schaun
+2013-10-16 22:20:34,kevin,Und weg ist das +h *g*
+2013-10-16 22:20:34,Jonathan,Ob ich mich selbst kicken kann? xD
+2013-10-16 22:20:36,kevin,"Nein, dafür brauchst du +o *g*"
+2013-10-16 22:20:45,kevin,Das hab ich auch nie kapiert
+2013-10-16 22:20:50,Jonathan,Ooooch schade
+2013-10-16 22:21:04,Jonathan,*g*
+2013-10-16 22:21:18,Jonathan,Ach määääh
+2013-10-16 22:21:20,kevin,Autorejoin ist böse
+2013-10-16 22:21:21,Jonathan,Da war doch was. xD
+2013-10-16 22:21:29,kevin,Und führt normal zu +b *g*
+2013-10-16 22:21:37,Jonathan,Wieso kann mein Client das nur global aktivieren
+2013-10-16 22:21:40,Jonathan,Das ist gemein
+2013-10-16 22:21:53,Jonathan,"Muss ich wohl abschalten, moment xD"
+2013-10-16 22:22:22,Jonathan,"So, gib mal nochmal +o *g*"
+2013-10-16 22:23:13,Jonathan,"Naja egal, bin mal kurz weg."
+2013-10-16 22:25:51,Jonathan,"[22:25:28] NickServ [services@euirc.net]: If you do not change within one minute, I will change your nick. <--- aaaaah."
+2013-10-16 22:26:17,XanClic,"[18:01:57] [Notice] -NickServ- Falls du nicht innerhalb der nächsten 20 Sekunden deinen Nick änderst, werde ich ihn ändern!"
+2013-10-16 22:26:20,XanClic,so muss das
+2013-10-16 22:26:24,Jonathan,"Ich hab mich schon gefragt, was passiert, wenn jemand fremdes mit dem Nick verbinden wird."
+2013-10-16 22:26:31,Jonathan,* -wird +will
+2013-10-16 22:30:29,Jonathan_,"kevin: Meinen alternativen Nickname sollte ich mir auch registrieren, oder? (also diesen hier)"
+2013-10-16 22:30:49,kevin,Also ich hab das nicht
+2013-10-16 22:31:05,Jonathan_,Hmmm...
+2013-10-16 22:31:26,Jonathan_,"Dazu müsste ich doch zunächst REGISTER, dann IDENTIFY und dann LINK benutzen, oder?"
+2013-10-16 22:31:27,kevin,"Du musst dich auch regelmäßig damit einloggen, sonst verlierst du die Registrierung, und ich glaube, das würde ich beim Alternativnick selten tun"
+2013-10-16 22:31:37,Jonathan_,Auch bei gelinkten Nicks?
+2013-10-16 22:31:43,kevin,Ja
+2013-10-16 22:31:45,XanClic,"Och, mir passiert das oft genug, dass ich auf XanCIic zurückfalle"
+2013-10-16 22:31:48,kevin,So hab ich den taljeth verloren
+2013-10-16 22:32:03,Jonathan_,Ah...okay
+2013-10-16 22:32:07,Jonathan_,Dann lass ich das wohl ^^
+2013-10-16 22:34:23,XanClic,Und ich bin im Bett
+2013-10-16 22:34:26,XanClic,gn8
+2013-10-16 22:34:53,kevin,"So, dann können wir endlich loslegen"
+2013-10-16 22:35:18,Jonathan,???
+2013-10-16 22:36:08,kevin,Nicht?
+2013-10-16 22:36:30,Jonathan,Womit?
+2013-10-16 22:36:41,kevin,Weiß doch ich nicht
+2013-10-16 22:37:06,Jonathan,Ich doch auch nicht
+2013-10-16 22:37:12,kevin,Da wären wir schonmal zwei
+2013-10-16 22:37:31,Jonathan,Noch jemand?
+2013-10-16 22:37:55,kevin,"Und wunder dich nicht. Ich glaube, das kommt davon, wenn man den ganzen Tag nur an Präsentationen statt an Code arbeitet."
+2013-10-16 22:38:17,Jonathan,"Oh, ja, das ist hart."
+2013-10-16 22:38:41,kevin,Ja. +b statt +v. Oder so.
+2013-10-16 22:39:18,Jonathan,Mag sein. Oder so.
+2013-10-16 22:41:26,kevin,"Kann es sein, dass du mich nicht ernst nimmst, oder so? :-/"
+2013-10-16 22:41:30,kevin,"Okay, würde ich auch nicht, aber trotzdem..."
+2013-10-16 22:42:22,kevin,Bist du übrigens mit IDE weitergekommen?
+2013-10-16 22:42:40,Jonathan,"Wieso sollte ich dich nicht ernst nehmen? Man kann doch trotzdem etwas frech auf Fragen antworten, auch wenn man das Gegenüber ernst nimmt :P"
+2013-10-16 22:42:59,Jonathan,IDE...
+2013-10-16 22:43:14,Jonathan,Dieser Schandfleck auf meinem Board :D
+2013-10-16 22:43:27,Jonathan,"Nee, ich hatte bisher keine Zeit dazu, zu viel Mischpult zu löten *g*"
+2013-10-16 22:44:17,kevin,Jonathan: Das war aber keine Frage
+2013-10-16 22:44:36,kevin,"Auf dem Board oder im OS, das ist die Frage"
+2013-10-16 22:44:53,Jonathan,Jep...
+2013-10-16 22:45:03,Jonathan,Eigentlich hätt ich jetzt frech antworten müssen
+2013-10-16 22:45:05,kevin,Das BSY hattest du probiert und ging trotzdem nicht? Oder steht das Probieren erst noch aus?
+2013-10-16 22:45:11,Jonathan,Das steht noch aus ^
+2013-10-16 22:45:16,kevin,So schlagfertig bist du halt nicht
+2013-10-16 22:45:20,Jonathan,Pfff
+2013-10-16 22:45:32,kevin,Das war jetzt zum Beispiel nicht wirklich überzeugend
+2013-10-16 22:46:45,Jonathan,"Ich bin jetzt erstmal ganz frech was trinken, momentchen :P"
+2013-10-16 22:47:21,kevin,Alkohol ist keine Lösung
+2013-10-16 22:47:39,kevin,"Wie kompliziert ist es denn, deine Software upzudaten, wenn den Check für BSY zu testen so viel Zeit kosten würde?"
+2013-10-16 22:49:11,Jonathan,Alkohol ist sehr wohl ein gutes Lösungsmittel *duck*
+2013-10-16 22:50:10,Jonathan,"Und in Assembler programmiere ich immer so langsam, weil ich jeden Abschnitt Code 30x durchlese und in Gedanken durchspiele :P"
+2013-10-16 22:50:29,Jonathan,"""Softwerker haben immer ein schlechtes Gewissen"""
+2013-10-16 22:50:52,kevin,"Ach stimmt, ich verdränge immer, dass du dich noch auf Assemblerebene rumtreibst"
+2013-10-16 22:51:12,Jonathan,"Ja, das find ich auch voll gemein"
+2013-10-16 22:51:37,kevin,"Sollen wir dir helfen, mromans Compiler zu portieren? ;-)"
+2013-10-16 22:51:41,Jonathan,Aber programmiertechnisch geht in einem reentranten Kernel mit Banking halt nix anderes
+2013-10-16 22:51:49,Jonathan,mromans Compiler...
+2013-10-16 22:51:55,Jonathan,Ähm
+2013-10-16 22:52:14,Jonathan,"Ist das zufälligerweise der, über dessen must-have-Features es hier mal ne Diskussion gab? :D"
+2013-10-16 22:52:24,kevin,Hm?
+2013-10-16 22:52:36,kevin,An die Diskussion erinnere ich mich nicht speziell
+2013-10-16 22:52:41,Jonathan,"So von wegen ""Jeder wünscht sich ein Feature"""
+2013-10-16 22:52:54,Jonathan,Sofern ich mich recht erinnere
+2013-10-16 22:53:06,kevin,"Ich glaube, das war eher SHyx0rmZ"
+2013-10-16 22:53:16,Jonathan,Hmmmm
+2013-10-16 22:53:21,Jonathan,Könnte auch sein :P
+2013-10-16 22:53:30,kevin,"Nein, ich meinte das, was er heute morgen/mittag so gepostet hat"
+2013-10-16 22:53:33,SHyx0rmZ,*duck*
+2013-10-16 22:53:34,Jonathan,Aber ich hab SDCC ja schon am Laufen
+2013-10-16 22:53:39,kevin,Warst du da noch nicht da?
+2013-10-16 22:53:45,Jonathan,*scroll*
+2013-10-16 22:54:06,Jonathan,Hab nur das Ende der Diskussion kurz gesehen ^^
+2013-10-16 22:54:42,SHyx0rmZ,ich war von 4-11 im Bett und bis gerade Beyond am spielen
+2013-10-16 22:55:18,kevin,"Ich wollte dich ja nicht weiter stören, aber wenn du schon joinst... ;-)"
+2013-10-16 22:57:50,Jonathan,Hmmm
+2013-10-16 22:58:04,Jonathan,"Mal schaun, ob mein Board durch den Kernel bootet :D"
+2013-10-16 22:58:19,Jonathan,"Wenn ja, dann fang ich jetzt tatsächlich mal den IDE-Treiber an"
+2013-10-16 22:58:30,Jonathan,...in höchstens 512 Bytes Code
+2013-10-16 22:59:22,kevin,Hast du eine technische Beschränkung auf 512 Bytes?
+2013-10-16 22:59:29,Jonathan,16kB Kernelspace
+2013-10-16 22:59:36,Jonathan,Und der is so gut wie voll :D
+2013-10-16 22:59:36,kevin,Jo
+2013-10-16 22:59:40,kevin,Ach so
+2013-10-16 22:59:42,kevin,Jetzt schon?
+2013-10-16 22:59:48,kevin,"Ich glaube, du kriegst ein Problem ;-)"
+2013-10-16 22:59:51,Jonathan,Nee
+2013-10-16 23:00:03,Jonathan,"Speicherverwaltung, Multitasking und IPC laufen"
+2013-10-16 23:00:11,Jonathan,Das sind die großen Speicherfresser
+2013-10-16 23:00:31,Jonathan,Deren Tabellen und Speicherpools brauchen halt viel.
+2013-10-16 23:00:48,kevin,"Das heißt, ein FS kannst du dir wohl zum Booten nicht leisten"
+2013-10-16 23:01:18,Jonathan,Ich werd wohl zwei Partitionen anlegen
+2013-10-16 23:01:30,Jonathan,Eine Raw-Partition für zum Booten benötigte Treiber / Prozesse
+2013-10-16 23:01:47,kevin,"Naja, fast raw"
+2013-10-16 23:01:55,kevin,Sobald du mehr als einen Treiber brauchst
+2013-10-16 23:02:04,Jonathan,"Joar, 64kB-Blöcke ^^"
+2013-10-16 23:02:11,Jonathan,Je Block ein Treiber
+2013-10-16 23:02:37,kevin,"Und der Kernel lädt so lange alles, was da rumliegt, bis die Partition zu Ende ist?"
+2013-10-16 23:03:15,Jonathan,Sagen wir so: Blockdeskriptoren + 64kB-Blöcke
+2013-10-16 23:04:19,Jonathan,"Muh, ich sollte erstmal die ganzen Bugs aus meinem Terminal entfernen... xD"
+2013-10-16 23:04:47,kevin,"Hatten wir es nicht vorhin davon, dass man Debugausgaben nicht braucht, bis der Userspace anständig tut? *g*"
+2013-10-16 23:05:56,Jonathan,Ich kann meine Unschuld beweisen!
+2013-10-16 23:05:57,Jonathan,[21:03:36] <Jonathan> (Und wirf alles bis auf Debug-Ausgaben aus deinem Kernel raus)
+2013-10-16 23:06:08,Jonathan,*g*
+2013-10-16 23:06:47,kevin,"Also hör mal zu, sowas lassen wir hier gar nicht erst einreißen"
+2013-10-16 23:06:52,kevin,"Unschuld, pah"
+2013-10-16 23:07:00,kevin,Du bist per Definition schuld
+2013-10-16 23:07:04,Jonathan,Du doch auch
+2013-10-16 23:07:09,kevin,Stimmt
+2013-10-16 23:07:21,Jonathan,Also sag du mal garnix
+2013-10-16 23:07:34,kevin,Dann wird's dir im Moment ziemlich langweilig hier
+2013-10-16 23:07:59,Jonathan,"Mann ey, wieso hab ich mir net vorher überlegt, was ich da schreib *g*"
+2013-10-16 23:08:01,Jonathan,G'mein
+2013-10-16 23:08:35,Jonathan,Hat er das eiskalt voll ausgenutzt
+2013-10-16 23:11:32,Jonathan,"Okay, jetzt kann ich auch mal nen extrem spitzfindigen Kommentar abgeben, der dich total niederlegen wird! :D"
+2013-10-16 23:11:44,kevin,Ich bin gespannt
+2013-10-16 23:11:53,Jonathan,Admins haben voll die Vorbildfunktion
+2013-10-16 23:12:36,kevin,"Hm, +a werd ich wohl nicht so einfach los"
+2013-10-16 23:13:37,Jonathan,"[23:10:58] kevin erwägt ein Erweichungs-+v für Jonathan <--- hmmm, vielleicht bin ich ja tatsächlich bestechlich"
+2013-10-16 23:13:57,kevin,*lol*
+2013-10-16 23:14:09,Jonathan,Hehehe *g*
+2013-10-16 23:14:18,kevin,Na gut ;-)
+2013-10-16 23:14:21,Jonathan,xd
+2013-10-16 23:14:32,Jonathan,Vielen Dank! ;D
+2013-10-16 23:16:00,Jonathan,Mäh...
+2013-10-16 23:16:44,Jonathan,"Da unterbricht man das Schreiben, um im IRC was zu antworten, denkt danach, man hätte noch das kopierte Stück Code in der Zwischenablage, drückt Strg+V, und plötzlich steht da ein Stück IRC-Log im Code"
+2013-10-16 23:18:19,kevin,Meine Nachrichten sind ja wohl auch eindeutig wertvoller als irgendso ein Stück Code
+2013-10-16 23:18:38,Jonathan,Ja natürlich
+2013-10-16 23:18:45,Jonathan,Deshalb hab ich es als Kommentar drin gelassen
+2013-10-16 23:18:49,kevin,Find ich gut
+2013-10-16 23:25:28,Jonathan,Soooo
+2013-10-16 23:25:38,Jonathan,Buggt jetzt nicht mehr so schlimm rum
+2013-10-16 23:25:59,kevin,IDE oder das Terminal oder was ganz anderes?
+2013-10-16 23:26:11,Jonathan,Aber eine andere Frage taucht plötzlich auf: Wie groß soll ich denn jetzt den Bildschirm machen? Also Zeilen/Spalten?
+2013-10-16 23:26:13,Jonathan,Terminal
+2013-10-16 23:27:01,kevin,Du baust einen eigenen Bildschirm?
+2013-10-16 23:27:08,Jonathan,Nee
+2013-10-16 23:27:19,kevin,"Dann würde ich ihn gar nicht zuschneiden, sondern so lassen wie er ist"
+2013-10-16 23:27:26,Jonathan,"""Bildschirm"" war auf das Terminal-Fenster am PC bezogen"
+2013-10-16 23:27:44,kevin,"Ach so. 80x25 ist die einzig wahre Größe, oder?"
+2013-10-16 23:27:55,Jonathan,Eigentlich ja schon
+2013-10-16 23:28:07,Jonathan,Aber dann buggt mein Cursor immer so schön rum :D
+2013-10-16 23:28:10,kevin,Wobei man die 25 von mir aus großzügig auslegen darf
+2013-10-16 23:28:30,Jonathan,Ich mach jetzt erstmal 60x25
+2013-10-16 23:28:36,kevin,Und das tut besser?
+2013-10-16 23:28:40,Jonathan,Morgen schreib ich dann mal ein *richtiges* Terminal
+2013-10-16 23:28:55,kevin,Auf dass die 16k voll werden ;-)
+2013-10-16 23:29:08,Jonathan,"Ja, denn ich nutze einfach den eingebauten Textmodus von XProfan, und der ist 80 Zeichen breit :P"
+2013-10-16 23:29:26,Jonathan,"Wenn mein Terminal da dann noch den Cursor hinterquetschen will, gibt's Zeichensalat"
+2013-10-16 23:29:41,Jonathan,"Deshalb ist das, was ich eben schnell programmiert hab, auch nur ein workaround"
+2013-10-16 23:29:55,Jonathan,"Wie gesagt, morgen mach ich was mit eigenem Bildschirmpuffer :P"
+2013-10-16 23:30:11,kevin,Stellst du den Cursor als Zeichen dar oder wie?
+2013-10-16 23:30:18,Jonathan,Aber natürlich
+2013-10-16 23:30:28,Jonathan,QnD-Miniterminal *g*
+2013-10-16 23:30:51,kevin,Das klingt ja richtig pr0ffesionel
+2013-10-16 23:31:03,Jonathan,"Ja, total"
+2013-10-16 23:31:06,Jonathan,Quasi QDOS
+2013-10-16 23:31:22,Jonathan,Iykwim
+2013-10-16 23:31:31,kevin,"Ohne zu prüfen würde ich behaupten, dass QDOS den Cursor nicht als Zeichen gemalt hat"
+2013-10-16 23:31:50,Jonathan,Das war nicht darauf bezogen :P
+2013-10-16 23:32:11,Jonathan,"Das war darauf bezogen, dass QDOS ja zunächst ein ""Quick and Dirt OS"" war, um nur mal was laufen zu sehen"
+2013-10-16 23:32:24,Jonathan,Und es dann genommen und tatsächlich vermarktet wurde
+2013-10-16 23:32:25,Jonathan,*g*
+2013-10-16 23:32:31,kevin,Ich wollte grad sagen
+2013-10-16 23:32:34,kevin,Ersteres kann tyndur auch
+2013-10-16 23:32:42,kevin,"Nur auf die Idee gekommen, es zu verkaufen, ist noch niemand gekommen"
+2013-10-16 23:32:49,kevin,-gekommen
+2013-10-16 23:32:56,Jonathan,Vielleicht ist das ja *der Durchbruch*?
+2013-10-16 23:33:27,kevin,"Bei *dem Durchbruch* in tyndur stelle ich mir eher vor, dass irgendein Hack endgültig durch-, also auseinanderbricht"
+2013-10-16 23:33:32,Jonathan,*g*
+2013-10-16 23:33:38,Jonathan,"Apropos ""Hack"""
+2013-10-16 23:33:46,kevin,Hab ich lieber als nethack
+2013-10-16 23:33:50,kevin,Oder wolltest du das nicht fragen?
+2013-10-16 23:33:59,Jonathan,Not rly xd
+2013-10-16 23:35:05,kevin,Du darfst dein Apropos trotzdem anbringen ;-)
+2013-10-16 23:35:10,Jonathan,"Was sich manche Spielefirmen denken, wenn sie ihre Spieldaten mit 16142352 Ebenen Schutzcode und Verschlüsselung absichern, und dann die Optionsdatei als unverschlüsselten, ungesicherten, durch den Nutzer kontrollierten Lua-Code ausführen, hab ich immernoch nicht begriffen..."
+2013-10-16 23:35:40,Jonathan,"Also nicht, dass das irgendwie unsicher wäre. xD"
+2013-10-16 23:35:47,kevin,"Hm, so weit war ich doch mit meiner Anwort gar nicht daneben *g*"
+2013-10-16 23:35:55,Jonathan,Jaja *g*
+2013-10-16 23:36:34,kevin,"Aber wo ist das Problem für den Hersteller, wenn jemand meine Optionen klauen kann?"
+2013-10-16 23:36:48,kevin,Oder modifizieren. Oder was auch immer.
+2013-10-16 23:36:58,Jonathan,"Die machen die ganzen Schutzfunktionen, weil sie die User davor hindern müssen, den Client zu manipulieren"
+2013-10-16 23:37:04,Jonathan,Da gab's diverse Hackwellen
+2013-10-16 23:37:13,kevin,"Und das kann man mit dem Skript aushebeln, oder wie?"
+2013-10-16 23:37:36,kevin,"Wenn das Ding wirklich nur Optionen setzen könnte, wäre daran ja kein Problem"
+2013-10-16 23:37:38,Jonathan,"Pack ne Optionsdatei ins Spiel, die einen dauerhaften Hook in das Lua Subsystem installiert"
+2013-10-16 23:37:44,Jonathan,Das Ding hat Vollzugriff
+2013-10-16 23:38:04,kevin,"Hm, gut, dann bekommen sie halt, was sie sich verdient haben"
+2013-10-16 23:38:06,Jonathan,xD
+2013-10-16 23:38:12,Jonathan,Joar...
+2013-10-16 23:38:23,Jonathan,Eigentlich hab ich ne ganze Zeit lang für die nach Lücken gesucht
+2013-10-16 23:38:42,Jonathan,"Bis sie mir der CM demonstriert hat, was er von mir hält"
+2013-10-16 23:38:48,kevin,"Ich finde ja sowieso Spiele am interessantesten, in denen man was skripten kann"
+2013-10-16 23:38:58,Jonathan,:D
+2013-10-16 23:39:22,Jonathan,"Aber nicht, wenn das 200 Kinder ausnutzen, die nichtmal programmieren können, um die Wirtschaft in einem MMORPG zu ruinieren xD"
+2013-10-16 23:39:32,Jonathan,Ist so leider passiert
+2013-10-16 23:39:50,kevin,Learning the hard way...
+2013-10-16 23:40:06,Jonathan,Hmjoar
+2013-10-16 23:40:34,Jonathan,"So, Terminal funktioniert irgendwie."
+2013-10-16 23:40:43,kevin,Das hat es vorher auch schon *g*
+2013-10-16 23:40:46,Jonathan,*g*
+2013-10-16 23:44:18,Jonathan,Hmm
+2013-10-16 23:45:34,Jonathan,"So, was braucht man denn alles für einen richtig schön kaputten Treiber..."
+2013-10-16 23:46:16,Jonathan,"Als erstes mal irgendwie ein init, würd ich sagen, um dem die Slotnummer zu sagen."

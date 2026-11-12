@@ -1,0 +1,410 @@
+date/time,nick,message
+2010-02-04 00:15:09,taljeth,gn8
+2010-02-04 08:25:28,pcmattman,"Hmm, taljeth isn't around yet"
+2010-02-04 08:37:02,FreakyPenguin,Moin
+2010-02-04 09:42:44,kwolf,Good morning everyone
+2010-02-04 09:44:29,pcmattman,"Hello kwolf, FreakyPenguin"
+2010-02-04 09:44:38,pcmattman,kwolf: is there any way to access the PCI configuration space in CDI?
+2010-02-04 09:45:51,kwolf,"Yes, there are optional functions for it, guarded by some define. I don't think anyone implements them yet. ;-)"
+2010-02-04 09:45:58,kwolf,Or Paloxena probably does
+2010-02-04 09:47:08,kwolf,"cdi/pci.h, the part after #define CDI_PCI_DIRECT_ACCESS"
+2010-02-04 09:47:17,pcmattman,Okay
+2010-02-04 09:47:32,pcmattman,"Just wondering, because I'm looking at writing my AHCI/SATA driver soon and I'll need access to that space"
+2010-02-04 09:47:33,pcmattman,"(CDI, naturally)"
+2010-02-04 09:48:59,FreakyPenguin,Hm how bad is SATA? ;-)
+2010-02-04 09:49:29,pcmattman,"Depends on how you define ""bad"" ;)"
+2010-02-04 09:49:45,kwolf,pcmattman: So you decided to do it in CDI right from the beginning now?
+2010-02-04 09:51:05,pcmattman,kwolf: sure did
+2010-02-04 09:51:21,pcmattman,It'll be a bit harder as I'm actually learning a lot about how to write CDI drivers as I go
+2010-02-04 09:51:31,pcmattman,"I know the interface, just not how to write drivers for it ;)"
+2010-02-04 09:51:35,XanClic,"Yes, Paloxena does"
+2010-02-04 09:52:02,kwolf,I think nobody has written a new driver for the current interface yet ;-)
+2010-02-04 09:52:44,pcmattman,The hardest thing conceptually at the moment that I'm finding is that I'm unsure how to handle the AHCI -> disk link
+2010-02-04 09:53:05,pcmattman,In Pedigree I would be able to have drivers use functions in other drivers and therefore be able to link them that way
+2010-02-04 09:53:09,pcmattman,"CDI is different, should be fun"
+2010-02-04 09:53:26,kwolf,"Hm, is this the same kind of problem as USB has?"
+2010-02-04 09:53:46,pcmattman,"Well, you have AHCI as the controller interface"
+2010-02-04 09:54:25,pcmattman,"It tells you about the SATA devices, but you still need a driver to talk to the SATA devices *through* AHCI"
+2010-02-04 09:55:04,pcmattman,So AHCI provides an MMIO area that is used to access the controller and also the disks themselves
+2010-02-04 09:55:15,kwolf,And you have multiple different SATA drivers and/or AHCI drivers?
+2010-02-04 09:55:50,pcmattman,"Well, AHCI is standardised by Intel"
+2010-02-04 09:56:05,pcmattman,I know for a fact though that there's six or seven sata-xyz.c files in Linux's tree
+2010-02-04 09:56:54,pcmattman,"I still need to read the specification further, but it seems so far that the SATA drives end up acting like conventional SCSI drivers, accessed through the AHCI interface"
+2010-02-04 09:57:12,pcmattman,"err, SCSI *drives*, not drivers"
+2010-02-04 09:57:26,kwolf,"Looks like we need to get IDC up and running first, then"
+2010-02-04 09:57:42,pcmattman,"For example, on Windows XP you merely install an AHCI driver and it can use SATA disks"
+2010-02-04 09:57:53,pcmattman,(in fact I did that yesterday)
+2010-02-04 09:58:07,kwolf,"Hm, so AHCI is actually enough if you already have a SCSI driver?"
+2010-02-04 09:58:12,pcmattman,It could well be
+2010-02-04 09:58:19,kwolf,Which you probably have to some extent because of ATAPI
+2010-02-04 09:58:33,pcmattman,"The AHCI specification is 100 pages, and the SATA 3.0 specification is almost 600"
+2010-02-04 09:58:47,pcmattman,I own but am ignoring pre-3.0 specifications for now
+2010-02-04 10:01:20,pcmattman,"With a quick glance of the specification I see DEVICE RESET, PACKET, READ/WRITE DMA QUEUED"
+2010-02-04 10:01:47,pcmattman,"IDENTIFY PACKET DEVICE... ""implemented by _native_ Serial ATA devices"""
+2010-02-04 10:01:49,pcmattman,"So yeah, looks like SCSI to me"
+2010-02-04 10:04:44,pcmattman,"Hmm, maybe rapid prototyping using Pedigree's native interface then porting will be more efficient"
+2010-02-04 10:05:08,kwolf,"Hm, we should get a scsi-disk driver some time. In tyndur, that code is in the CDI lib currentlyv to avoid the need for IDC."
+2010-02-04 10:06:02,kwolf,"pcmattman: If it is, we need to improve CDI. It shouldn't be tedious to write drivers for it."
+2010-02-04 10:06:26,pcmattman,It's not so much that it's tediou
+2010-02-04 10:06:27,pcmattman,s
+2010-02-04 10:06:49,pcmattman,It's more that it's much easier for me to add hacks to Pedigree to get my way than it is to do the same to CDI for testing ;)
+2010-02-04 10:08:56,kwolf,In the end you need to get the CDI part right anyway
+2010-02-04 10:09:13,kwolf,Unless you want to keep using your native version
+2010-02-04 10:09:23,pcmattman,Yup
+2010-02-04 10:09:50,pcmattman,The idea is that it's easier to get native right first because I don't need to wait for IDC (or hack around it) or anything like that
+2010-02-04 10:09:56,kwolf,And your motivation might be higher to do it if it doesn't work otherwise ;-)
+2010-02-04 10:10:00,pcmattman,I can get it written first and then find out what's missing in CDI
+2010-02-04 10:10:47,kwolf,"Well, yes, you could do it in CDI plus some Pedigree specific calls. I think this is an entirely reasonable way to start out."
+2010-02-04 10:11:28,kwolf,"Hm, does AHCI even access the SCSI disk or is it only the other way round?"
+2010-02-04 10:11:56,pcmattman,The AHCI controller provides the port ranges through which you access the SCSI disk
+2010-02-04 10:11:59,pcmattman,*SATA disk
+2010-02-04 10:12:30,kwolf,"So AHCI never needs to access the SATA disk driver, right?"
+2010-02-04 10:12:37,pcmattman,Technically no
+2010-02-04 10:12:48,kwolf,You could AHCI in CDI then and a native SATA disk driver
+2010-02-04 10:13:16,pcmattman,"Hm, defeats the purpose in my opinion"
+2010-02-04 10:13:17,kwolf,"If I understand right, AHCI should be the greatest part of the whole thing anyway"
+2010-02-04 10:13:52,pcmattman,"If there was an scsi driver, the AHCI driver could tell the scsi driver (via IDC) information about each detected drive"
+2010-02-04 10:13:53,kwolf,pcmattman: More than doing both native?
+2010-02-04 10:14:09,pcmattman,"Well, I'm thinking AHCI might be the only driver necessary if this is done correctly"
+2010-02-04 10:14:24,kwolf,"Sure, that SCSI driver and IDC is the next step"
+2010-02-04 10:14:35,pcmattman,"And of course, if I have interpreted the spec properly so far... otherwise none of this is right :)"
+2010-02-04 10:14:37,kwolf,I'm just saying that there's no point in doing a native AHCI driver
+2010-02-04 10:16:20,pcmattman,I think I'm beginning to agree
+2010-02-04 10:16:37,pcmattman,As long as someone else does the SCSI driver ;)
+2010-02-04 10:17:15,FreakyPenguin,*g*
+2010-02-04 10:17:47,kwolf,FreakyPenguin volunteers? ;-)
+2010-02-04 10:17:56,pcmattman,Sounds like it!
+2010-02-04 10:18:32,pcmattman,"Basically, the AHCI driver would set up the interface and pick up all the drives on the bus (up to 30, iirc)"
+2010-02-04 10:18:40,Homix,"i thought, ahci would use ata commands?"
+2010-02-04 10:18:59,pcmattman,"Then it tells the SCSI driver ""Here's a new disk device at this port, go talk to it"""
+2010-02-04 10:21:09,kwolf,"To be precise, AHCI would call some cdi_provide_device() for SCSI interface and CDI would go tell the SCSI driver about it"
+2010-02-04 10:21:32,pcmattman,Right
+2010-02-04 10:22:08,kwolf,I'm feeling like starting to hack on it ;-)
+2010-02-04 10:22:39,kwolf,Unfortunately it will have to wait until the evening at least
+2010-02-04 10:22:44,pcmattman,Heh
+2010-02-04 10:23:02,pcmattman,"Well, if an OS with a CDI implementation can run and use SATA disk drives, that's an instant selling point of CDI"
+2010-02-04 10:23:15,pcmattman,UDI can't do that yet ;)
+2010-02-04 10:23:50,kwolf,I still haven't seen the hobby OS with UDI support yet ;-)
+2010-02-04 10:24:02,pcmattman,"Heh, true"
+2010-02-04 10:24:35,kwolf,"Combuster claimed to have it, but when I kept asking for the code and he posted the URL of his repo eventually, I saw that it's all empty stubs"
+2010-02-04 10:26:41,pcmattman,Right
+2010-02-04 10:26:53,pcmattman,"And that aside, everyone likes SATA support ;)"
+2010-02-04 10:27:26,pcmattman,Homix: by the looks of it it uses a small subset of ATA commands
+2010-02-04 10:27:47,pcmattman,"IDENTIFY PACKET DEVICE, PACKET, etc..."
+2010-02-04 10:32:02,pcmattman,"It's certainly not going to happen tonight though, I'm still reading the specification and trying to make sense of what I need to do"
+2010-02-04 10:33:22,kwolf,It surely doesn't need to be done tomorrow. I'm happy as long as I see things moving.
+2010-02-04 10:48:17,pcmattman,Give me a couple of weeks
+2010-02-04 10:48:29,pcmattman,In the meantime I'll probably be looking at the automated driver loading patches
+2010-02-04 10:49:26,kwolf,"Yup, they would be nice to have, too"
+2010-02-04 10:52:50,pcmattman,"As for now, sleep time. Too much spec reading for one night ;)"
+2010-02-04 10:52:53,pcmattman,Night all
+2010-02-04 10:53:15,FreakyPenguin,n8 pc[away]
+2010-02-04 10:53:22,eddyb,'night
+2010-02-04 10:53:41,eddyb,"heh, sometimes spec reading is driving me crazy :)"
+2010-02-04 10:56:46,Homix,"ahci uses ata task files, so i think all ata commands schould be available ;)"
+2010-02-04 16:05:34,quok,moin
+2010-02-04 16:06:28,eddyb,"you mean ""morn"" ?"
+2010-02-04 16:06:32,eddyb,:P
+2010-02-04 16:07:07,quok,"no, I mean moin"
+2010-02-04 16:08:25,eddyb,moin as in ... ?
+2010-02-04 16:08:28,FreakyPenguin,Moin quok ;-)
+2010-02-04 16:09:31,eddyb,it's a short form of morgen?
+2010-02-04 16:10:34,FreakyPenguin,Yes indeed ;-)
+2010-02-04 16:11:02,eddyb,it didn't sound like it :P...
+2010-02-04 16:11:12,eddyb,"anyway, moin quok :P"
+2010-02-04 16:13:08,eddyb,hmm
+2010-02-04 16:13:17,eddyb,i like how it asks for keyboard...
+2010-02-04 16:13:30,eddyb,i'm looking at tyndur :)
+2010-02-04 16:14:14,eddyb,"pc[away]: for releases it could be useful, like something in login :)"
+2010-02-04 16:27:22,eddyb,"i choose EN at grub, why is the help in german :("
+2010-02-04 16:28:19,FreakyPenguin,Noone volonteered yet to translate it ;-)
+2010-02-04 16:28:39,eddyb,any kind of i18n layer?
+2010-02-04 16:29:09,kwolf,Moin quok
+2010-02-04 16:29:25,FreakyPenguin,quok: Would be a nice exercise for you *g*
+2010-02-04 16:29:40,eddyb,"for me, too :P"
+2010-02-04 16:29:52,FreakyPenguin,Feel free ;-)
+2010-02-04 16:30:21,eddyb,"if you gimme some files, i can translate, but just if i don't have to learn the source tree of tyndur :)"
+2010-02-04 16:30:43,eddyb,"it took me some while with pedigree, but now i can find a file with no problems :)"
+2010-02-04 16:31:36,kwolf,Actually I think help doesn't suport any kind of i18n yet
+2010-02-04 16:31:52,eddyb,you would really get more people to test tyndur if it would have some sort of localisation
+2010-02-04 16:32:08,eddyb,"kwolf: it's a xml file, right?"
+2010-02-04 16:32:29,stultus,uhm
+2010-02-04 16:32:40,stultus,help is somewhat similar to docbook
+2010-02-04 16:33:12,stultus,"at least i've tried to use that format. although the parsing probably really couldn't be considered ""conforming"""
+2010-02-04 16:33:36,eddyb,what about <lang:de>stuff</lang><lang:en>english stuff</lang> ?
+2010-02-04 16:33:52,eddyb,:)
+2010-02-04 16:33:58,kwolf,I would use different files for each language
+2010-02-04 16:34:10,eddyb,or that
+2010-02-04 16:34:15,kwolf,So you can choose which languages to install
+2010-02-04 16:34:38,eddyb,file:/system/lpt-doc/en/tyndur.xml :)
+2010-02-04 16:34:43,stultus,"would be the best, actually. Hacking language support into the program would be tedious."
+2010-02-04 16:35:20,kwolf,It could simply check $PAGENAME_$LANG.xml first and failing that it could fall back to the current $PAGENAME.xml
+2010-02-04 16:35:36,eddyb,or that :)
+2010-02-04 16:35:49,kwolf,"I like eddyb's suggestion more for its cleanness but it's a bit more effort to implement, iirc"
+2010-02-04 16:36:23,eddyb,that reminds of my dream of having pedigree in romanian :P
+2010-02-04 16:36:37,eddyb,"i can get maghyar translations, too"
+2010-02-04 16:37:25,eddyb,"actually, i think matt tried to get gettext working on pedigree"
+2010-02-04 16:37:30,kwolf,eddyb: But who would use Hungarian?
+2010-02-04 16:37:51,eddyb,"my friend who would translate it, LOL :P"
+2010-02-04 16:37:51,kwolf,gettext is easy to port. I think on tyndur it just worked without hacking anything.
+2010-02-04 16:38:26,eddyb,i think on pedigree it was something like not compiled it into the ports....
+2010-02-04 16:39:02,eddyb,where can i browse the source?
+2010-02-04 16:39:17,kwolf,For the ports?
+2010-02-04 16:39:29,kwolf,"Anyway, start at http://git.tyndur.org/"
+2010-02-04 16:39:30,eddyb,s/ports/ported apps/
+2010-02-04 16:39:50,kwolf,http://git.tyndur.org/?p=lbuilds.git;a=tree;f=lbuilds;h=ee6770ff138e648a51440fd18fd606b4e8742dee;hb=HEAD
+2010-02-04 16:39:52,eddyb,"ah, and, kwolf: what do you think about german keymaps for pedigree :P ?"
+2010-02-04 16:40:08,kwolf,"Oh, right, I think I promised at some point to do them"
+2010-02-04 16:40:16,eddyb,heh
+2010-02-04 16:40:31,eddyb,i can give you instructions and it's really simple...
+2010-02-04 16:41:19,kwolf,Ping me later this evening and I'll do it
+2010-02-04 16:41:44,eddyb,"we already have Us and Uk sets, so it'd be easy to do it, just looking at current ones :)"
+2010-02-04 16:41:49,eddyb,okey
+2010-02-04 16:42:24,kwolf,"Yup, and it will improve usability for me a lot ;-)"
+2010-02-04 16:50:44,eddyb,kwolf: those links almost forkbombed my system
+2010-02-04 16:50:54,kwolf,wtf?
+2010-02-04 16:51:08,kwolf,This is a normal gitweb frontend
+2010-02-04 16:51:27,eddyb,"i left it loading and after 5 min, the system was slowed down really bad"
+2010-02-04 16:51:40,FreakyPenguin,:-/
+2010-02-04 16:51:45,eddyb,"after closing the tab, it's almost okey"
+2010-02-04 16:51:50,kwolf,Something is wrong with your system...
+2010-02-04 16:52:18,kwolf,"I was already thinking that when you said that building an image takes three minutes, but even more so now"
+2010-02-04 16:53:33,eddyb,now i see a chome zombie was eating HALF A GYGABYTE
+2010-02-04 16:54:18,eddyb,much better now after i killed it
+2010-02-04 16:54:59,eddyb,"well, that page wasn't even loading, so i was thinking it's because of it"
+2010-02-04 16:55:57,eddyb,130MB when i stopped it
+2010-02-04 16:56:04,eddyb,it was tyndur git
+2010-02-04 16:56:24,eddyb,and i have sandbox enabled....
+2010-02-04 16:56:34,eddyb,kwolf: does it load for you?
+2010-02-04 16:56:48,kwolf,"Yes, without any problem"
+2010-02-04 16:57:07,eddyb,in what browser?
+2010-02-04 16:57:47,kwolf,"Eh, no, it doesn't work any more"
+2010-02-04 16:58:02,kwolf,"FreakyPenguin: ""403 Forbidden - No projects found"" - what are you doing?"
+2010-02-04 16:58:11,eddyb,told'ya :P
+2010-02-04 16:58:29,eddyb,it's insane for a chrome process to use more than 32MB
+2010-02-04 16:58:56,eddyb,"well, except flash and youtube"
+2010-02-04 16:59:03,eddyb,42 and 34
+2010-02-04 17:03:46,FreakyPenguin,kwolf: Now it should work again
+2010-02-04 17:04:09,kwolf,What was it?
+2010-02-04 17:04:19,FreakyPenguin,"I installed the debian gitweb-Package to have a look at the diff, and it installed a config-File ;-)"
+2010-02-04 17:04:53,FreakyPenguin,In our gitweb I just changed the default settings in the source ;-)
+2010-02-04 17:05:16,eddyb,it's still doing something like while(1);
+2010-02-04 17:05:42,eddyb,"anyway, its process eats all the memory fast"
+2010-02-04 17:05:51,FreakyPenguin,eddyb: The diff to the original debian script is almost empty
+2010-02-04 17:06:37,kwolf,eddyb: Have you tried with a different browser?
+2010-02-04 17:07:08,eddyb,i still think chrome can't be the problem :P
+2010-02-04 17:07:30,eddyb,the simple link seems to load
+2010-02-04 17:08:28,kwolf,"Hm, need to restart the X server..."
+2010-02-04 17:08:48,FreakyPenguin,Has qemu eaten your cursor? ;-)
+2010-02-04 17:09:27,eddyb,can qemu even do that?
+2010-02-04 17:09:33,eddyb,"hi, XanClic"
+2010-02-04 17:09:39,XanClic,"Uh, hi, eddyb *g*"
+2010-02-04 17:11:05,kwolf,"FreakyPenguin: Nah, my qemu is well-behaved :-)"
+2010-02-04 17:11:52,kwolf,"In F10 I had this problem where it made the keyboard unusual occasially, in F12 it seems to be the mouse"
+2010-02-04 17:12:08,kwolf,I call it progress ;-)
+2010-02-04 17:12:26,FreakyPenguin,Hehe
+2010-02-04 17:12:36,eddyb,XanClic: [11:26] <kwolf> Have you thought about teaming up with XanClic to get nice shared USB drivers? << I was considering the idea :)
+2010-02-04 17:12:42,kwolf,-unusual +unusable
+2010-02-04 17:12:45,eddyb,I'm now meddling with EHCI
+2010-02-04 17:12:56,XanClic,"eddyb: My ""uh"" was exactly referring to that ;-)"
+2010-02-04 17:13:26,eddyb,"if i get it working, i can make a CDI version or something like that"
+2010-02-04 17:13:45,eddyb,but it seems i can't get to that point...
+2010-02-04 17:13:52,eddyb,what do you know about EHCI?
+2010-02-04 17:14:28,XanClic,"Nothing, that's it ;-)"
+2010-02-04 17:14:41,XanClic,I have a tab constantly open on how to deactivate it *g*
+2010-02-04 17:15:14,XanClic,Because I first wanted to have working UHCI/OHCI drivers before coming to USB 2.0
+2010-02-04 17:15:40,XanClic,Though the HCD itself for EHCI might be simpler than the one for UHCI...
+2010-02-04 17:16:05,eddyb,not really. it looks to me that's just more bits to set :)
+2010-02-04 17:16:29,eddyb,where do you test your drivers?
+2010-02-04 17:16:35,XanClic,Mostly in qemu
+2010-02-04 17:16:45,XanClic,"I have to versions here, one with UHCI and one with OHCI"
+2010-02-04 17:16:51,eddyb,"i was using qemu for my UHCI one and it works there, but not really anywhere else :)"
+2010-02-04 17:17:05,XanClic,"Mine does so, too ;-)"
+2010-02-04 17:17:13,XanClic,"OHCI is simpler, btw ;-)"
+2010-02-04 17:17:38,eddyb,"and after my fail with VirtualBox( http://forum.osdev.org/viewtopic.php?f=1&t=21524 ), i switched to VMware"
+2010-02-04 17:18:09,XanClic,"Hm, I got that never working on my Linux"
+2010-02-04 17:18:36,kwolf,VMware?
+2010-02-04 17:18:38,eddyb,"still, the connected bit(in the PORTSC regs) doesn't get set and i can't get the HC to send a packet"
+2010-02-04 17:18:54,XanClic,kwolf: Jup
+2010-02-04 17:19:05,XanClic,eddyb: UHCI?
+2010-02-04 17:19:11,eddyb,EHCI :)
+2010-02-04 17:19:14,XanClic,Ah ;-)
+2010-02-04 17:19:28,eddyb,"also, which ""that"" ?"
+2010-02-04 17:19:28,XanClic,Else I would have suggested disabling the legacy support right now xD
+2010-02-04 17:19:50,kwolf,"XanClic: Compiling their kernel module is a PITA and usually requires patching, but it's not difficult to find instructions"
+2010-02-04 17:20:03,eddyb,kwolf: which kernel module?
+2010-02-04 17:20:06,eddyb,VirtualBox?
+2010-02-04 17:20:07,kwolf,The VMware one
+2010-02-04 17:20:10,XanClic,"kwolf: Hm, I was happy with VirtualBox, too"
+2010-02-04 17:20:13,eddyb,lol
+2010-02-04 17:20:19,eddyb,VMware?
+2010-02-04 17:20:33,eddyb,it's a .bundle file you have to run
+2010-02-04 17:20:44,eddyb,then use VMware to create the virtual machines
+2010-02-04 17:20:55,XanClic,"As said, been there, tried it, didn't work"
+2010-02-04 17:21:03,eddyb,and VMware player to use them
+2010-02-04 17:21:10,XanClic,"(by the way, that's from Garfield, I love that sentence *g*)"
+2010-02-04 17:21:35,eddyb,(this way you can use the trial as a full version :P)
+2010-02-04 17:21:42,eddyb,funny
+2010-02-04 17:21:53,eddyb,"did the installer fail, or what?"
+2010-02-04 17:22:37,kwolf,"If you have a recent kernel, it's very likely to fail"
+2010-02-04 17:22:51,eddyb,"i can upload my .bundle file somewhere, it just needs to be runned as root and it does everything by itself(except for the fact that you have to say no to the eclipse question :P)"
+2010-02-04 17:23:17,eddyb,kwolf: 1. it's quite a new version of VMware 2. you don't know how latest my packages are
+2010-02-04 17:23:43,eddyb,--disable-systax-cheking :P
+2010-02-04 17:23:49,eddyb,*checking
+2010-02-04 17:24:07,kwolf,*syntax ;-)
+2010-02-04 17:24:56,eddyb,"hey, this is because of my keyboard and fingers :P"
+2010-02-04 17:25:15,eddyb,"sometimes i can type a whole other word than the one i want to, without knowing"
+2010-02-04 17:25:22,XanClic,"eddyb: Hm, yes, it failed, afair"
+2010-02-04 17:25:22,eddyb,"hey, i can type without looking :P"
+2010-02-04 17:25:55,eddyb,XanClic: when?
+2010-02-04 17:26:06,XanClic,Half a year ago?
+2010-02-04 17:26:12,XanClic,Don't know exactly
+2010-02-04 17:26:13,eddyb,"heh, sure it did"
+2010-02-04 17:26:16,eddyb,try now
+2010-02-04 17:26:27,XanClic,*g*
+2010-02-04 17:26:27,eddyb,"i can give you the bundle, if you want"
+2010-02-04 17:26:31,XanClic,"Why ""sure""? *g*"
+2010-02-04 17:26:43,eddyb,because things change in days
+2010-02-04 17:27:06,XanClic,"Hm, I know some OS that don't *g*"
+2010-02-04 17:27:21,eddyb,"for example, i run chrome 5 >:)"
+2010-02-04 17:27:35,XanClic,Uh
+2010-02-04 17:27:36,eddyb,"(btw, that was yesterday or a couple of days ago :P)"
+2010-02-04 17:27:50,eddyb,"hmm, what distro?"
+2010-02-04 17:27:56,XanClic,openSUSE
+2010-02-04 17:28:05,eddyb,what version?
+2010-02-04 17:28:07,XanClic,11.2
+2010-02-04 17:28:08,quok,ewww opensuse ;)
+2010-02-04 17:28:22,XanClic,"quok: I'm in Germany here, come on ;-)"
+2010-02-04 17:28:33,eddyb,"btw, i use OpenSuSE and you can get latest svn for at least kde4(do you use it, btw?)"
+2010-02-04 17:28:41,quok,"XanClic: alright, I suppose I can cut you some slack for that."
+2010-02-04 17:28:45,quok,haha slack.. bad pun!
+2010-02-04 17:28:56,eddyb,"quok: hey, there's two of us now :P"
+2010-02-04 17:29:24,XanClic,"eddyb: Yes, I'm using KDE4"
+2010-02-04 17:29:28,quok,I use to have opensuse installed on one of my laptops
+2010-02-04 17:29:47,quok,but switched away to everyone's favorite ubuntu ;)
+2010-02-04 17:30:03,kwolf,It's not my favourite ;-)
+2010-02-04 17:30:07,XanClic,+1 ;-)
+2010-02-04 17:30:14,kwolf,"But then, I'm not sure what my favourite is"
+2010-02-04 17:30:15,eddyb,"still, i keep (only!) chrome dev, kde4, qemu and vlc unstable repos :)"
+2010-02-04 17:30:23,quok,it's not my favorite either... I rather dislike ubuntu
+2010-02-04 17:30:23,eddyb,"eww, ubuntu"
+2010-02-04 17:30:32,quok,don't even know why I bothered to install it other than I was tired of opensuse
+2010-02-04 17:30:36,XanClic,eddyb: I have bad experiences with an unstable KDE4 *g*
+2010-02-04 17:30:53,kwolf,"The distros I'm regularly using are Fedora, openSUSE and Debian"
+2010-02-04 17:31:03,eddyb,"if i have(after an update), i only need to restart X :P"
+2010-02-04 17:31:19,XanClic,"quok: I know another one who changed to Ubuntu from openSUSE, but that was because of hardware problems on the latter one... Though he hates Ubuntu ;-)"
+2010-02-04 17:32:04,eddyb,now every app gives a segfault or something like that when i close it. the only thing that bothers is the report dialog :)
+2010-02-04 17:32:08,kwolf,XanClic: And now he has hardware problems even with Ubuntu
+2010-02-04 17:32:15,XanClic,"kwolf: Oh yes, of course *g*"
+2010-02-04 17:33:15,XanClic,"Hm, vmware wants to know a lot of things"
+2010-02-04 17:33:23,XanClic,My phone number and we're I'm working
+2010-02-04 17:33:29,eddyb,i told'ya
+2010-02-04 17:33:34,eddyb,i can get you a bundle
+2010-02-04 17:33:40,eddyb,without all that :P
+2010-02-04 17:33:55,XanClic,Let me take a look at YaST first ;-)
+2010-02-04 17:33:57,eddyb,"it's one day old, btw, it's still fresh :P"
+2010-02-04 17:34:03,eddyb,"nah, nothing there"
+2010-02-04 17:34:10,eddyb,IIRC
+2010-02-04 17:34:12,XanClic,"Just tools to build VMX, yes"
+2010-02-04 17:34:29,XanClic,So would you be so kind...? :-)
+2010-02-04 17:34:48,eddyb,np
+2010-02-04 17:36:00,eddyb,"oh, shet"
+2010-02-04 17:36:06,eddyb,crap server
+2010-02-04 17:36:35,eddyb,does the IRC transfer thingy even work?
+2010-02-04 17:36:52,XanClic,"I never got it to work, though others did, afaik"
+2010-02-04 19:58:07,eddyb,kwolf: ping
+2010-02-04 19:58:19,eddyb,i may have to go soon :|
+2010-02-04 20:00:19,kwolf,eddyb: pong
+2010-02-04 20:00:38,eddyb,re: keymaps :)
+2010-02-04 20:01:41,kwolf,"Hm, ok. I should stop working anyway. Where in the tree are they?"
+2010-02-04 20:02:28,eddyb,/src/user/apps/keymap/
+2010-02-04 20:02:38,eddyb,"simple files, i think you know it..."
+2010-02-04 20:03:11,kwolf,Let me have a look
+2010-02-04 20:04:13,kwolf,"Hm, three files for each keymap?"
+2010-02-04 20:04:25,kwolf,And USB has different keymaps?
+2010-02-04 20:04:32,eddyb,.h and .kcm(or how was it) are generated
+2010-02-04 20:04:36,eddyb,yup
+2010-02-04 20:05:01,kwolf,Then why are they in the repo?
+2010-02-04 20:05:18,kwolf,"Okay, so I just copy one fo them without extension"
+2010-02-04 20:05:18,eddyb,because usb got nice numbered keycodes :)...
+2010-02-04 20:05:24,eddyb,yup
+2010-02-04 20:05:50,eddyb,first do pc102
+2010-02-04 20:06:00,eddyb,i think it's self-explanatory
+2010-02-04 20:06:08,eddyb,take EnUs as example
+2010-02-04 20:07:39,kwolf,"Not sure if I understand the dead key part, but the rest looks easy"
+2010-02-04 20:07:57,kwolf,Just the Unicode position
+2010-02-04 20:09:10,eddyb,"you do DEFINE <combinator> <index> at the start, index above 10"
+2010-02-04 20:10:08,eddyb,"then, for a dead key: ALTGR SET-COMBINE[<combinator>][<unicode(i think pressed twice)>]"
+2010-02-04 20:10:32,kwolf,"I saw that, but where is defined what combinations it produces?"
+2010-02-04 20:10:47,eddyb,0x12    U+0065 SHIFT U+0045 COMBINE[acute] U+00E9 SHIFT COMBINE[acute] U+00C9 COMBINE[grave] U+00E8 SHIFT COMBINE[grave] U+00C8 COMBINE[circumflex] U+00EA SHIFT COMBINE[circumflex] U+00CA COMBINE[diaeresis] U+00EB SHIFT COMBINE[diaeresis] U+00CB  # e E
+2010-02-04 20:10:54,eddyb,enjoy :)
+2010-02-04 20:11:29,kwolf,*hehe*
+2010-02-04 20:11:55,eddyb,"fell free to ad combinators to Usb, too i wasn't sure which standard to use for EnUs(the keys on top, or ; and ')"
+2010-02-04 20:11:55,kwolf,"Hm, does ALTGR SHIFT work?"
+2010-02-04 20:12:01,eddyb,yup
+2010-02-04 20:12:03,kwolf,Cool
+2010-02-04 20:12:16,kwolf,Will take a while then to make a nice keymap ;-)
+2010-02-04 20:12:19,eddyb,you can add as many flags as you want before the unicode point
+2010-02-04 20:12:40,eddyb,"sure, if german keyboards have fancy stuff"
+2010-02-04 20:13:12,kwolf,"Hm, you mean I can define something like ""dead acute + dead tilde + shift + ctrl + ü""? ;-)"
+2010-02-04 20:13:17,kwolf,Not that it would make any sense...
+2010-02-04 20:14:18,eddyb,<scancode> (SET)+
+2010-02-04 20:15:21,eddyb,where SET = (ALT|ALTGR|SHIFT|whatsoever|COMBINE[<conbinator>])* <unicode point/command string>
+2010-02-04 20:15:36,eddyb,"if you know a bit regex, you get what i mean"
+2010-02-04 20:17:05,kwolf,Maybe I'll add a funny nonsense combination somewhere ;-)
+2010-02-04 20:17:53,stultus,just out of curiosity... is it possible to bind a keystroke to more than one char?
+2010-02-04 20:18:22,eddyb,like type two chars with one key press?
+2010-02-04 20:18:38,kwolf,"Hm, is there is real use case for this?"
+2010-02-04 20:18:51,eddyb,it's not even possible
+2010-02-04 20:19:06,kwolf,stultus: Or do you want to make Shift+ß produce SZ? ;-)
+2010-02-04 20:19:29,XanClic,"Hm, it's possible on Windows, afair, if you press ""^"" once, nothing happens, but if you press it again, you get ""^^"" ;-)"
+2010-02-04 20:20:03,eddyb,XanClic: here you would get only one ^ if ^ is a dead key
+2010-02-04 20:20:08,stultus,kwolf: the example would fit ;)
+2010-02-04 20:22:14,kwolf,"Right, I'm changing to my private computer now to get this done"
+2010-02-04 20:31:55,eddyb,i gonna leave in max 10min
+2010-02-04 20:32:09,eddyb,taljeth: there was a HID pdf for those scancodes
+2010-02-04 20:32:16,eddyb,but i kinda use most of them
+2010-02-04 20:35:32,taljeth,I'll start with the normal keyboard
+2010-02-04 20:35:50,eddyb,"okey, i was saying in case you come to usb :)"
+2010-02-04 20:36:36,taljeth,Now let me see how long it takes to build the images ;-)
+2010-02-04 20:37:10,eddyb,"btw, it's generated by yourself ;)"
+2010-02-04 20:37:26,taljeth,"""it""?"
+2010-02-04 20:37:52,eddyb,like doing make in the keymap dir and then ./keymap compile <keymapfile>
+2010-02-04 20:37:59,taljeth,"Ah, I see"
+2010-02-04 20:38:11,taljeth,keymap is some script then?
+2010-02-04 20:38:17,eddyb,nope
+2010-02-04 20:38:24,eddyb,is the keymap app
+2010-02-04 20:38:32,eddyb,"with make, it builds the host version"
+2010-02-04 20:38:45,eddyb,"tehre's also a pedigree version, built by scons"
+2010-02-04 20:38:48,taljeth,Scary
+2010-02-04 20:39:22,eddyb,so you can put your .kcm file in images/x86 and do inside pedigree keymap install <keymapfile>
+2010-02-04 20:39:36,eddyb,and it loads your keymap... runtime :)
+2010-02-04 20:40:00,eddyb,"like same app, double-sided"
+2010-02-04 20:40:17,taljeth,Can I make it default somehow?
+2010-02-04 20:40:32,taljeth,"Btw, after the whole thing was compiled, it took something like 7 seconds for the images"
+2010-02-04 20:40:56,eddyb,by changing the include directive  in /src/system/kernel/machine/x86_common/Keyboard.cc
+2010-02-04 20:41:36,eddyb,"ah, quick stupid question: is possible to use defines in a #include?"
+2010-02-04 20:42:02,eddyb,"last time i tried(not really enough), i couldn't make it work..."
+2010-02-04 20:42:17,taljeth,Sure it's possible
+2010-02-04 20:42:17,quok,...
+2010-02-04 20:42:32,eddyb,/FAIL
+2010-02-04 20:42:41,eddyb,"so, how do i do it :P ?"
+2010-02-04 20:42:46,taljeth,Just use them? ;-)
+2010-02-04 20:42:59,eddyb,example?
+2010-02-04 20:43:07,taljeth,"Ah, wait, what exactly do you mean?"
+2010-02-04 20:43:19,taljeth,Determining the file to include by a macro?
+2010-02-04 20:43:25,stultus,i think he's been trying something like #define blabla \n #include blabla
+2010-02-04 20:43:29,taljeth,That's probably not possible
+2010-02-04 20:43:44,eddyb,yup
+2010-02-04 20:44:02,taljeth,However C contains so much magic that I wouldn't guarantee for anything
+2010-02-04 20:44:05,eddyb,"it'd be nifty, anyway..."
+2010-02-04 20:44:40,eddyb,#define GETSTDLIB  #include <stdlib.h>
+2010-02-04 20:44:45,eddyb,/FAIL :)
+2010-02-04 20:45:03,eddyb,never thinked of it that way...
+2010-02-04 20:45:12,eddyb,"anyway, will do tomorrow"
+2010-02-04 20:45:15,eddyb,seeya :)
+2010-02-04 22:56:29,taljeth,"Meh, I should have used version control for the keymap"
+2010-02-04 22:56:35,taljeth,"It just says ""syntax error"" without a line number or anything"
+2010-02-04 23:07:15,taljeth,"Hm, are West European languages enough or should I add some more characters?"
+2010-02-04 23:07:26,taljeth,"Anyway, this stuff is cool, we need the same!"
+2010-02-04 23:07:54,taljeth,0x1E    U+0061 SHIFT U+0041 ALTGR U+00E6 SHIFT-ALTGR U+00C6 COMBINE[diaeresis] U+00E4 SHIFT COMBINE[diaeresis] U+00C4 COMBINE[acute] U+00E1 SHIFT COMBINE[acute] U+00C1 COMBINE[grave] U+00E0 SHIFT COMBINE[grave] U+00C0  COMBINE[circumflex] U+00E2 SHIFT COMBINE[circumflex] U+00C2 COMBINE[tilde] U+00E3 SHIFT COMBINE[tilde] U+00C3 COMBINE[krouzek] U+00E5 SHIFT COMBINE[krouzek] U+00C5 # a A æ Æ

@@ -1,0 +1,253 @@
+date/time,nick,message
+2010-06-18 10:15:47,mastamind,"ext2 reserviert einen inode für den bootloader. würde es reichen, wenn ein stage1.5 nicht nach einer beliebigen datei suchen sondern einfach nur diesen inode laden würde?"
+2010-06-18 10:15:52,mastamind,das würde manches vereinfachen. :-)
+2010-06-18 10:16:35,kwolf,"Du meinst, du könntest dir sparen, die Verzeichnisse abzuklappern?"
+2010-06-18 10:16:39,mastamind,ja
+2010-06-18 10:16:43,kwolf,Wäre vermutlich schon eine Möglichkeit
+2010-06-18 10:16:53,kwolf,Du musst dann halt die Inode-Nummern in den Bootsektor reinpatchen
+2010-06-18 10:17:09,mastamind,hmm nein. die wäre immer fix.
+2010-06-18 10:17:10,kwolf,Bzw. in stage1.5
+2010-06-18 10:17:32,kwolf,"Hm, dann könnte man das aber nicht in ein bestehendes Dateisystem installieren, weil die Nummer schon besetzt sein könnte, oder?"
+2010-06-18 10:17:34,mastamind,ich müsste bei der installation des bootloaders immer einen link von diesem inode machen.
+2010-06-18 10:17:42,mastamind,die nummer ist reserviert.
+2010-06-18 10:17:45,mastamind,es ist nummer 5.
+2010-06-18 10:17:55,kwolf,"Okay, soweit kenne ich ext2 nicht auswendig"
+2010-06-18 10:17:59,kwolf,Ist das genau für sowas vorgesehen?
+2010-06-18 10:18:06,mastamind,jep. nennt sich sogar so.
+2010-06-18 10:18:11,kwolf,Na dann :-)
+2010-06-18 10:19:26,mastamind,ich probiers mal.
+2010-06-18 10:19:41,mastamind,das root verzeichen zu laden klappt ja schon.
+2010-06-18 10:19:45,mastamind,also im prinzip die daten zu einem inode.
+2010-06-18 10:20:00,kwolf,Hast du Größenprobleme mit deiner stage1.5 oder wieso willst du das Verzeichniszeug loswerden?
+2010-06-18 10:20:47,mastamind,schwer zu sagen. der stage1.5 soll in das 1 kib direkt vor dem superblock passen.
+2010-06-18 10:21:03,mastamind,er hat derzeit 433 byte.
+2010-06-18 10:21:26,kwolf,"Hm, okay"
+2010-06-18 10:22:23,kwolf,"Das mit der fixen Inodenummer ist wohl von daher auch besser, dass du keinen festen Pfad vorgeben musst, oder?"
+2010-06-18 10:22:44,mastamind,das auch.
+2010-06-18 10:23:02,mastamind,"hat halt den nachteil, dass man irgendwie den inode setzen muss."
+2010-06-18 10:23:15,mastamind,wie baut man sowas in die dateisystem api ein?
+2010-06-18 10:24:33,kwolf,"Naja, wenn du es vermeiden willst, musst du eben stage1.5 mit der Inodenummer patchen. Das ist auch nicht wesentlich schlechter."
+2010-06-18 10:24:48,kwolf,Aber in beiden Fällen ist die Installation mehr als ein einfaches dd auf das erste Kilobyte
+2010-06-18 10:24:53,mastamind,"ja, vor allem, weil es nur eine zahl ist..."
+2010-06-18 10:28:05,mastamind,ich probiers mit dem inode. danke soweit. :-)
+2010-06-18 10:37:27,kwolf,Moin bluecode
+2010-06-18 10:37:57,bluecode,moin kwolf
+2010-06-18 11:13:48,JanDing,moin moin
+2010-06-18 11:14:04,kwolf,Moin
+2010-06-18 12:36:29,PopUp,soo
+2010-06-18 12:36:32,PopUp,auf zum coden
+2010-06-18 12:36:41,PopUp,auf das etwas nützliches dabei entstehe!
+2010-06-18 12:39:03,PopUp,kennt sich hier jemand mit FUSE aus?
+2010-06-18 12:39:06,PopUp,(file system in userspace)
+2010-06-18 12:39:36,kwolf,Nicht wirklich
+2010-06-18 12:39:49,kwolf,"Hm, FreakyPenguin vielleicht"
+2010-06-18 12:40:22,FreakyPenguin,Das ist doch schon ewig her ;-)
+2010-06-18 12:40:47,PopUp,egal :D
+2010-06-18 12:41:09,PopUp,hmm
+2010-06-18 12:41:13,PopUp,wie nenne ich das projekt D:
+2010-06-18 12:41:34,PopUp,netfuse? multifuse? mufu (xD)? netf? nfuse? :/
+2010-06-18 12:42:35,kwolf,$ dd if=/dev/urandom bs=1 count=5 2>/dev/null | base64 
+2010-06-18 12:42:36,kwolf,kGsG9mI=
+2010-06-18 12:42:45,PopUp,._.
+2010-06-18 12:42:47,kwolf,du musst dir nur noch die passende Abkürzung ausdenken
+2010-06-18 12:43:00,kwolf,"Also die Langform, meine ich"
+2010-06-18 12:43:13,PopUp,ich glaube ich nehme netmnt oder netfuse
+2010-06-18 12:43:21,kwolf,Was soll es denn werden?
+2010-06-18 12:43:27,PopUp,du kennst vpns?
+2010-06-18 12:43:49,JanDing,virtuelle physische nuancen
+2010-06-18 12:43:49,kwolf,"Du meinst das, wo ständig die Verbindung kaputtgeht? ;-)"
+2010-06-18 12:43:55,PopUp,aye
+2010-06-18 12:44:11,PopUp,"es soll etwas ähnliches werden, allerdings auf Datei und FUSE basis ohne TUN/TAP"
+2010-06-18 12:44:30,PopUp,"sozusagen direkt entfernte dateien ""mounten"""
+2010-06-18 12:44:41,PopUp,und bearbeiten als lägen sie auf dem eigenen PC
+2010-06-18 12:44:44,kwolf,"Hm, aber dann nicht allgemein TCP/IP, sondern ein bestimmtes Protokoll, oder?"
+2010-06-18 12:45:12,PopUp,"ich denke die erste einfache implementierung benutzt TCP/IP, aber das lager ich sowieso aus von daher"
+2010-06-18 12:45:29,kwolf,Was wäre der Vorteil von deinem Tool gegenüber NFS über VPN?
+2010-06-18 12:45:45,PopUp,"<kwolf> Du meinst das, wo ständig die Verbindung kaputtgeht? ;-)"
+2010-06-18 12:46:06,kwolf,"Das erfordert erstmal, dass sie bei dir nicht kaputtgeht ;-)"
+2010-06-18 12:47:01,PopUp,"nunja in meinem könnte man zugriffsrechte etc., besser zuweisen ohne das sie auf dem server genauso sein müssen. Es erstellt keine extra netzwerkkarte über TUN/TAP was die fehlerwarscheinlichkeit verringert"
+2010-06-18 12:47:33,PopUp,eine Stabile verbindung bekomme ich hoffentlich hin und schlussendlich ist es eine FUSE-übung
+2010-06-18 12:48:06,PopUp,zudem könnte man das evtl besser fernsteuern als ein NFS über VPN. In einem Cluster z.B. um dessen zugriff zu verhindern
+2010-06-18 12:48:24,PopUp,(zugriff eines kaputten cluster teils)
+2010-06-18 12:48:47,PopUp,+s
+2010-06-18 12:49:27,PopUp,also welcher name kwolf ? :)
+2010-06-18 12:49:54,kwolf,[12:42] <kwolf> kGsG9mI=
+2010-06-18 12:50:09,PopUp,... ich bleibe bei netfuse 
+2010-06-18 12:52:21,kwolf,"Ich finde den Namen aber toll. Du müsstest es halt in ML schreiben und irgendeinen Bezug zur GSG9 bräucht man noch. k steht hier zur Abwechslung mal für ""kein kernel""."
+2010-06-18 12:53:09,PopUp,*g*
+2010-06-18 12:53:12,PopUp,nein danke
+2010-06-18 12:53:22,PopUp,meinste soetwas kann man gebrauchen kwolf?
+2010-06-18 12:53:59,kwolf,"""man"" vielleicht schon"
+2010-06-18 12:56:19,PopUp,?
+2010-06-18 12:58:51,kwolf,Ich persönlich vermutlich nicht
+2010-06-18 13:11:29,PopUp,grrr
+2010-06-18 13:11:36,PopUp,ich hasse veraltete tutorials
+2010-06-18 13:12:55,PopUp,lol
+2010-06-18 13:13:19,PopUp,\o/
+2010-06-18 13:13:21,PopUp,es geht
+2010-06-18 13:13:24,PopUp,hmm
+2010-06-18 13:13:32,PopUp,sollte ich netfuse in C oder C++ schreiben?
+2010-06-18 13:13:50,PopUp,C is portabler
+2010-06-18 13:14:29,PopUp,C++ einfacher
+2010-06-18 13:14:39,PopUp,kwolf : sag es mir D:
+2010-06-18 13:15:17,kwolf,Was ist an C++ einfacher?
+2010-06-18 13:15:52,PopUp,óop?
+2010-06-18 13:19:09,kwolf,"Dann darfst du dir jetzt raussuchen, ob du das dafür brauchst"
+2010-06-18 13:19:23,PopUp,eig nicht :/
+2010-06-18 13:23:48,PopUp,ok seltsam
+2010-06-18 13:24:23,PopUp,"hey FreakyPenguin, das eigentliche programm wird nach fuse_main beendet"
+2010-06-18 13:24:53,PopUp,ich muss das alles also per thread machen?
+2010-06-18 13:27:43,PopUp,ah
+2010-06-18 13:27:45,PopUp,init()
+2010-06-18 13:55:53,Papierkorb,moin
+2010-06-18 14:18:17,DickHuuhn,Heute ist ein schöner Tag für Deutschland
+2010-06-18 14:18:22,DickHuuhn,Die FDP steht bei 3%
+2010-06-18 14:19:42,kwolf,Aber der Halbzeitstand ist verkehrt ;-)
+2010-06-18 14:19:58,DickHuuhn,"Oh ja, stimmt"
+2010-06-18 14:20:01,DickHuuhn,Wie stehts denn :3
+2010-06-18 14:20:15,kwolf,0:1
+2010-06-18 14:20:37,Papierkorb,"ach, desswegen hörte ich ein schmerz verzerrtes ""NEEEIIINN!!!"" von unten xD"
+2010-06-18 14:20:39,kwolf,Und 10:11 ;-)
+2010-06-18 15:22:02,bluecode,moin
+2010-06-18 15:23:01,bluecode,"kwolf: kannst du eigentlich mit dem qemu-Fehler, dass irgendeine pxertl8irgendwas fehlt, nichts anfangen?"
+2010-06-18 15:23:17,bluecode,"(Forum, etwas älterer Thread)"
+2010-06-18 15:23:58,bluecode,xe-rtl8139.bin wars
+2010-06-18 15:24:03,bluecode,+p
+2010-06-18 15:24:08,bluecode,http://forum.lowlevel.eu/index.php?topic=2538.0
+2010-06-18 15:24:20,kwolf,"bluecode: Das ist eine Warnung, die tut nix zur Sache"
+2010-06-18 15:24:31,kwolf,"Außer er wollte PXE booten, aber das glaube ich nicht"
+2010-06-18 15:24:35,kwolf,Moin übrigens
+2010-06-18 15:24:47,bluecode,qemu -kernel kernel macht eher kein PXE
+2010-06-18 15:25:11,bluecode,"hm, das ""-kernel"" war aber doch irgendwann kaputt oder?"
+2010-06-18 15:30:25,kwolf,bluecode: Eben drum ist die Meldung ja völlig egal
+2010-06-18 15:30:54,kwolf,Kaputt war es in keinem Release seit es mit 0.11 dazugekommen ist
+2010-06-18 15:31:03,kwolf,"In 0.12.0 war es kaputt, aber das wurde nie releast ;-)"
+2010-06-18 15:31:21,kwolf,0.12.1 war das erste Release in der 0.12er-Serie
+2010-06-18 15:53:04,chris12,heiho
+2010-06-18 15:55:17,DerHartmut_AtTehWoark,Moin moin
+2010-06-18 15:55:24,kwolf,Moin moin moin
+2010-06-18 15:56:14,DerHartmut_AtTehWoark,UARGH
+2010-06-18 15:56:28,DerHartmut_AtTehWoark,Ja sogar mit zwei p
+2010-06-18 15:56:37,Papierkorb,"Wie kann ich in C checken, ob ein verzeichniss exestiert?"
+2010-06-18 15:57:02,kwolf,Was heißt denn exestieren? Ob eine .exe drin liegt?
+2010-06-18 15:57:08,DerHartmut_AtTehWoark,if (dir_exist())
+2010-06-18 15:57:11,DerHartmut_AtTehWoark,Was bin ich witzig.
+2010-06-18 15:57:12,Papierkorb,"existieren, bla..."
+2010-06-18 15:57:36,kwolf,Also tyndur hat ein is_directory() ;-)
+2010-06-18 15:57:41,FreakyPenguin,*g*
+2010-06-18 15:58:07,FreakyPenguin,Ob das wohl ist was er will? ;-)
+2010-06-18 16:00:24,kwolf,"Selber schuld, wenn nicht ;-)"
+2010-06-18 16:40:30,Tederian,hihihi.
+2010-06-18 17:06:07,JanDing,na
+2010-06-18 17:06:18,JanDing,ist hier die internetraststätte?
+2010-06-18 17:06:39,Tederian,"Und, wie stehts so im Fussball? 8D"
+2010-06-18 17:07:44,Tederian,"Oh, was seh ich denn da, Deutschland hat gegen Serbien verloren? :]"
+2010-06-18 17:09:29,DesL,moin
+2010-06-18 17:09:40,JanDing,moin
+2010-06-18 17:19:45,Homix,Tederian: ruhe ;)
+2010-06-18 17:20:10,JanDing,nicht drauf reagieren -.-
+2010-06-18 17:20:20,DesL,XD
+2010-06-18 17:20:22,Homix,"doch, kicken!"
+2010-06-18 17:20:26,Tederian,"Entschuldigung, könntest du lauter schreiben, ich höre dich nicht über das Geräusch der feiernden Serben :D"
+2010-06-18 17:20:31,Homix,wegen anstiftung zu off-topic themen *g*
+2010-06-18 17:21:35,DesL,das müste man wohl einen Grossteil der Leute hier im Nachhinen kicken...
+2010-06-18 18:04:55,Tederian,"Papierkorb, hoffentlich benutzt du eine Lümmeltüte bei deinem ständigen Rein/Raus hier. >:o"
+2010-06-18 18:05:20,DesL,Oo
+2010-06-18 18:05:57,Tederian,Echt ey. Soviel zur Aufklärung.
+2010-06-18 18:57:59,chris12,bye
+2010-06-18 19:53:49,Tederian,"http://benfirshman.com/projects/jsnes/ <- verdammt, github hat darauf gelinkt und jetzt komme ich nicht mehr davon weg. ich wollte doch gar http://benfirshman.com/projects/jsnes/nicht NES zocken :C"
+2010-06-18 19:56:07,JanDing,4aa
+2010-06-18 19:58:15,Papierkorb_,ein NES emulator inJavascript!?
+2010-06-18 19:58:56,Papierkorb,ich glaub ich seh mir den NES mal an zum emulieren... wenn selbst JS das schafft
+2010-06-18 19:59:27,Tederian,mein Netbook ist leider zu langsam dafür weil es nebenbei gerade noch Torrents saugt :C
+2010-06-18 19:59:49,DesL,Torrents brauchen doch kaum Speed?
+2010-06-18 20:00:03,Papierkorb,"yay, neue tinten patrone :D"
+2010-06-18 20:00:16,Tederian,"DesL: Keine Ahnung, aber das Netbook lüftet stark"
+2010-06-18 20:00:22,SHyx0rmZ,"Papierkorb, http://www.codebase.es/jsgb/ <- Gameboy"
+2010-06-18 20:00:31,Papierkorb,"naja, das kann man eher als Proof Of Concept sehen ... aber sinnvoll ist es nicht, würd ich sagen"
+2010-06-18 20:45:57,DesL,re
+2010-06-18 20:46:41,Tederian,wb
+2010-06-18 20:47:07,DesL,modem mal wieder abgekackt -_-
+2010-06-18 20:49:39,Tederian,"hä, warum zeigt die GNOME Systemüberwachung 2 CPUs an?"
+2010-06-18 20:49:51,Papierkorb_,hast du HyperThreading?
+2010-06-18 20:49:52,DesL,dual core?
+2010-06-18 20:50:07,Papierkorb_,oder so ;)
+2010-06-18 20:51:08,Tederian,Es ist ein Netbook
+2010-06-18 20:51:19,DesL,und?
+2010-06-18 20:51:23,Tederian,Von da her: Sehr wahrscheinlich nicht
+2010-06-18 20:51:27,Papierkorb_,Dann hast du wohl hyperThreading
+2010-06-18 20:51:35,Tederian,"Ah, k"
+2010-06-18 20:51:38,Papierkorb_,Die CPU täuscht ne zweite CPU vor
+2010-06-18 20:51:44,Papierkorb_,hab ich auch
+2010-06-18 20:51:45,Tederian,Wie gewitzt.
+2010-06-18 20:51:54,Tederian,Hat heute jeder Computer
+2010-06-18 20:51:57,Papierkorb_,"naja, anders wäre HT schwer zu realisieren ;)"
+2010-06-18 20:51:58,Tederian,*praktisch
+2010-06-18 20:52:17,Papierkorb_,"HT ist aber echt toll, reißt erstaunlicherweise viel raus"
+2010-06-18 20:52:21,Tederian,Darum gibt es Apple auch als Hauptfeature des MacBook Pros an. Es hat Hyperthreading. wow
+2010-06-18 20:52:32,bluecode,"das ist nicht nutzlos, Tederian"
+2010-06-18 20:52:55,Papierkorb_,"HT ist echt klasse, schonmal mit ner CPU mit gleich viel Leistung aber ohne HT verglichen?"
+2010-06-18 20:52:58,Tederian,"bluecode: Ich weiss, aber eine Technik die alle anderen haben als ""Revolutionär"" zu beschreiben ist es"
+2010-06-18 20:53:01,Papierkorb_,der Unterschied ist gewaltig
+2010-06-18 20:53:08,bluecode,achso
+2010-06-18 20:53:08,Tederian,Ich habe nie etwas gegen HT gesagt Oo
+2010-06-18 20:53:14,Papierkorb_,achso..
+2010-06-18 20:53:16,Papierkorb_,"naja, apfel halt"
+2010-06-18 20:53:28,bluecode,das ist mir banane
+2010-06-18 20:53:36,Papierkorb_,birne wär auch gut
+2010-06-18 20:53:40,Tederian,bananen gibts nicht
+2010-06-18 20:53:45,bluecode,"ne, die gibts ja, Papierkorb_"
+2010-06-18 20:53:46,Papierkorb_,dann würden vll. mal ne erleuchtung haben
+2010-06-18 20:58:02,Tederian,"hey, die haben eine neue qemu-Version auf die Ubuntu Paketquellen geschmissen :o"
+2010-06-18 20:58:27,bluecode,"yeay, lasst uns das feiern"
+2010-06-18 20:58:32,bluecode,ich geb nen O-Saft aus
+2010-06-18 20:58:40,Tederian,Nicht Bananensaft? :>
+2010-06-18 20:58:56,bluecode,"nein, den gibts nämlich nicht"
+2010-06-18 20:59:05,Tederian,"Oh, schade :c"
+2010-06-18 20:59:27,Papierkorb_,ist kein verlust
+2010-06-18 20:59:53,Tederian,"Naja, die Ubuntu Paketquellen werden wirklich selten geupdated. Ich warte schon seit einiger Zeit dass endlich die neuen Intel Grafiktreiber drauf sind"
+2010-06-18 21:01:13,bluecode,eh? Du musst halt die beta-quellen nutzen
+2010-06-18 21:01:19,bluecode,da sind die eigentlich ziemlich fix
+2010-06-18 21:01:35,bluecode,und das es bis stable ne weile braucht ist irgendwie klar
+2010-06-18 21:01:36,Paddy,Warum wollen eigentlich immer alle instabile Versionen?
+2010-06-18 21:01:47,Paddy,"Ich bin froh, wenn ich nicht upgraden muss, sondern das System einfach weiterläuft"
+2010-06-18 21:01:57,bluecode,das sind doch bei KDE immer die benutzbareren *g*
+2010-06-18 21:02:05,Paddy,"Bei KDE 4, bitte ;-)"
+2010-06-18 21:02:07,Tederian,"Wären sie stabil würde es keine updates geben, oder? :P"
+2010-06-18 21:02:18,bluecode,"gibt es denn noch ein anderen, Paddy?"
+2010-06-18 21:02:32,Paddy,"Hier läuft ein KDE 3.5, insofern gehe ich von seiner Existenz aus"
+2010-06-18 21:02:48,bluecode,dann ist das wohl eine uralt distri
+2010-06-18 21:03:37,Paddy,"In letzter Zeit hab ich auf Heise auch zwei-, dreimal was zu einer neuen Distributionsversion von irgendwelchen kleineren Distos gesehen, wo ein großes Feature war, dass KDE 3.x noch dabei ist"
+2010-06-18 21:04:01,Paddy,"Und die Uraltdistro ist noch kein Jahr alt, wenn ich mich nicht täusche"
+2010-06-18 21:04:27,Paddy,"Woody hat drei Jahre lang gehalten, da ist also noch Raum ;-)"
+2010-06-18 21:04:29,bluecode,das ist für meine verhältnisse uralt *g*
+2010-06-18 21:13:19,DesL,^^
+2010-06-18 21:15:02,Papierkorb_,öhm ... ... ... kann man aus einer keyfile für ssh authing das root pw auslesen?
+2010-06-18 21:15:27,Papierkorb_,"oder irgend wie anders, wenn man aufm server eingeloggt ist?"
+2010-06-18 21:18:02,FreakyPenguin,Hoffentlich nicht ;-)
+2010-06-18 21:18:54,Papierkorb_,naja ... ich habs vergessen -.-;
+2010-06-18 21:19:13,Papierkorb_,logg mich immer über keyfiles ein ... -.-
+2010-06-18 21:19:33,FreakyPenguin,Du kannst es ja neu setzen?
+2010-06-18 21:19:54,Papierkorb_,mit passwd... dann brauch ich doch das alte zur bestätigung?
+2010-06-18 21:20:06,FreakyPenguin,Root nicht
+2010-06-18 21:20:35,Papierkorb_,NICHT!? grad getestet... komisch
+2010-06-18 21:20:55,bluecode,man kann doch die datei mit den hashs anpassen
+2010-06-18 21:21:03,FreakyPenguin,Ausser vielleicht mit SELinux und so ;-)
+2010-06-18 21:21:16,FreakyPenguin,Also da braucht man das Passwort wohl ;-)
+2010-06-18 21:24:17,Tederian,SELinux?
+2010-06-18 21:24:26,bluecode,security enhanced linux?
+2010-06-18 21:24:32,Tederian,ah danke
+2010-06-18 21:25:21,bluecode,"hm ""... seit Ubuntu Version 9.04 ist es standardmäßig enthalten und aktiviert"""
+2010-06-18 21:27:19,bluecode,moin Homix
+2010-06-18 21:27:31,DesL,moin
+2010-06-18 21:27:50,FreakyPenguin,"bluecode: Jo solange es auf harmlos eingestellt ist, ists noch erträglich ;-)"
+2010-06-18 21:28:21,bluecode,dann bin ich ja berühigt
+2010-06-18 22:07:47,Tederian,wb
+2010-06-18 22:29:45,funz,guten abend \o
+2010-06-18 22:30:01,Papierkorb,n'abend
+2010-06-18 22:31:52,DesL,moin
+2010-06-18 22:48:22,Paddy,Moin funz
+2010-06-18 22:52:11,funz,hey Paddy :-)
+2010-06-18 22:58:50,bluecode,was ist eigentlich mit taljeth passiert?
+2010-06-18 23:02:37,DesL,hm?
+2010-06-18 23:07:11,bluecode,der war schon ganze 5 Tage nicht da

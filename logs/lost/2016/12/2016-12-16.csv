@@ -1,0 +1,55 @@
+date/time,nick,message
+2016-12-16 10:11:28,moritz31,Moin
+2016-12-16 10:31:08,kevin,Moin
+2016-12-16 10:36:10,moritz31,"@kevin vllt kannst du mir ja gerade nochmal etwas näher bringen :'D ich hab ja jetzt 1x ne PD bis jetzt .... schön und gut aber es sollte ja prinzipiell so sein das jeder Task ne eigene PD hat, ich frag mich jetzt gerade wie ich das am besten mit dem anlegen einer neuen PD mache, weil die muss ja auch wieder gemappt werden oder ? Wo mappe ich die dann wenn die ja prinzipiell noch nicht angelegt ist ?"
+2016-12-16 10:36:49,kevin,"Solange du nicht an den aktiven PDs und PTs rumhantierst, ist das doch völlig unproblematisch"
+2016-12-16 10:36:52,kevin,Sind halt Daten wie alles andere auch
+2016-12-16 10:37:34,moritz31,okay sprich ich mach einfach ein vmem_alloc() und in die neu angelegte PD muss ich dann aber noch die aktuelle reinmappen oder ?
+2016-12-16 10:37:39,kevin,"Du suchst dir irgendwo einen freien Platz im virtuellen Speicher, mappst sie da hin, und unmappst sie wieder, wenn du fertig bist"
+2016-12-16 10:38:07,kevin,"Jo, das neue PD musst du irgendwie sinnvoll füllen"
+2016-12-16 10:38:45,kevin,"Sinnvoll heißt normalerweise, dass du für den Kernelbereich überall die gleichen PTs benutzen, und für den Userspacebereich am Anfang genullt"
+2016-12-16 10:38:56,moritz31,mhhhhh okay dann muss ich mir mal überlegen wie ich das mache mit den verschiedenen PD's und ne Aufteilung für Kernel und User 
+2016-12-16 10:39:30,moritz31,ja PT's des Kernelbereich halte ich am besten einfach immer irgendwie synchron oder ?
+2016-12-16 10:39:46,kevin,"Wenn sich verschiedene PDs die gleichen PTs teilen und sich Einträge im PD ändern können, musst du noch drauf achten, dass ein Update immer in allen PDs gemacht wird"
+2016-12-16 10:40:15,kevin,"Naja, die PTs würde ich nicht nur synchron halten, sondern einfach genau dieselben benutzen"
+2016-12-16 10:40:57,moritz31,dann müsste ich eigentlich immer beim wechseln vergleichen ob der aktuelle Stand der PD noch richtig ist und wenn nicht per memcpy das rüberkopieren oder?
+2016-12-16 10:41:08,kevin,"So kann man das machen, ja"
+2016-12-16 10:41:22,kevin,"Ich glaube, das ist das, was tyndur auch macht"
+2016-12-16 10:45:05,moritz31,okay 
+2016-12-16 10:49:51,moritz31,die PD's sollten auch immer im Kernelteil gemappt sein oder ? meine Aufteilung ist momentan etwas blöd :'D
+2016-12-16 16:46:27,kevin,"XanClic: Du meinst, wenn ich pushe, ist da ein RFC implizit? ;-)"
+2016-12-16 16:46:49,XanClic,Soll ich da [TEMPORARY HEAD 0/5] schreiben? ;-)
+2016-12-16 16:47:32,kevin,Keine Ahnung ;-)
+2016-12-16 16:48:33,kevin,Hast du für bs->file übrigens eine bessere Idee als erstmal gar nichts zu requesten und dann in .bdrv_open() bei den einzelnen Formaten halt ein bdrv_child_try_set_perm() zu machen?
+2016-12-16 16:49:32,kevin,"Das trennt es halt wieder von der Erstellung, aber ich finde, das Probing macht das mal wieder schwierig, was anderes zu machen"
+2016-12-16 16:49:40,XanClic,"Na ja, R/W kann man vom Parent nehmen, GRAPH_MODIFY erlaubt man, und wenn ein Treiber mehr braucht (qcow2 bräuchte wohl RESIZE), dann muss man das halt requesten"
+2016-12-16 16:52:54,kevin,"Den Parent gibt es noch gar nicht, wenn man es erstellt"
+2016-12-16 16:53:04,kevin,Weil der wird ja erst nachher geprobt
+2016-12-16 16:53:06,XanClic,Ach so? Schade. ;-)
+2016-12-16 16:53:28,XanClic,Aber irgendwann muss man bs->file ja an bs attachen
+2016-12-16 16:54:07,kevin,"""qcow2 bräuchte wohl RESIZE"" -- Oooh! Ist das der Blocker für qcow2 auf NBD, den du irgendwann machen wolltest? :-)"
+2016-12-16 16:54:19,XanClic,Hab ich mich auch gefragt
+2016-12-16 16:54:30,XanClic,"Ist halt die Frage, ob man NBD dann einfach „Nö“ sagen lässt"
+2016-12-16 16:54:44,XanClic,Aber wäre mit LVM das gleiche…
+2016-12-16 16:54:45,kevin,Resize ist für NBD eindeutig nicht möglich
+2016-12-16 16:54:55,kevin,"Ah, hm, stimmt. Blöd."
+2016-12-16 16:55:37,kevin,"Wobei host_device ja ein .bdrv_truncate hat, das einfach nur prüft, ob das Device groß genug ist"
+2016-12-16 16:55:38,XanClic,Man könnte die Formate dann höchstens Warnungen ausgeben lassen (“Warning: Trying to use growing format on non-resizable media”)
+2016-12-16 16:55:46,kevin,Auch eine Möglichkeit
+2016-12-16 16:56:02,kevin,Außer dass man die Meldung nicht so spezifisch hinkriegt
+2016-12-16 16:56:17,kevin,"Du weißt ja nur, dass irgendjemand resizen will"
+2016-12-16 16:56:43,XanClic,“Warning: Potentially trying to resize non-resizable media (are you trying to use a growing format?)”
+2016-12-16 16:57:45,XanClic,"Die Notiz von Patch 4 kann ich ja dann auch hier schreiben: Ich glaube, blkdebug sollte auch RESIZE vom Elternknoten übernehmen"
+2016-12-16 16:58:14,kevin,s/blkdebug/alle Filter/?
+2016-12-16 16:58:28,XanClic,"Hmm… So gefragt, irgendwie schon"
+2016-12-16 16:58:47,XanClic,Wobei es bei quorum vermutlich einfach nicht geht
+2016-12-16 16:59:12,XanClic,"Aber ich bin mir nicht ganz sicher, vielleicht ja doch *g*"
+2016-12-16 16:59:37,XanClic,"Das hat zwar kein truncate, aber wenn alle Kindknoten write-beyond-EOF erlauben, dann kann vielleicht auch der Quorumknoten das"
+2016-12-16 17:01:23,kevin,Für manche Werte von können
+2016-12-16 17:07:37,kevin,"Hm, was willst du denn jetzt? RESIZE vom Parent nehmen oder lassen wie es ist?"
+2016-12-16 17:07:41,kevin,"Schon eher ersteres, oder?"
+2016-12-16 17:08:19,XanClic,Eigentlich will ich gleich zum Weihnachtsmarkt ;-)
+2016-12-16 17:08:28,XanClic,"Manchmal vom Parent nehmen, manchmal lassen, wie es ist, je nachdem"
+2016-12-16 17:09:12,XanClic,"So, bb"
+2016-12-16 20:45:04,Jonathan,Moin
+2016-12-16 20:46:46,MasterQ32,huhu

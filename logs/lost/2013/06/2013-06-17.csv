@@ -1,0 +1,372 @@
+date/time,nick,message
+2013-06-17 15:03:02,kevin,"Ui, ein Internetz!"
+2013-06-17 17:32:49,kevin,Hey Jonathan!
+2013-06-17 17:32:56,Jonathan,Hi! :D
+2013-06-17 17:33:10,kevin,Das war ja einfach ;-)
+2013-06-17 17:33:22,Jonathan,Pffff
+2013-06-17 17:34:55,Jonathan,"Naja, ich muss jetzt erstmal mein Zimmer aufräumen (Mutter zwingt mich), danach können wir wieder zum ""Geschäftlichen"" kommen. Bis gleich... ;)"
+2013-06-17 17:36:00,kevin,"Na dann, viel Erfolg oder so"
+2013-06-17 17:36:03,mgottschlag,"hach, das waren noch so Zeiten, wo die Mutter zum Aufräumen gezwungen hat..."
+2013-06-17 17:36:22,mgottschlag,... da war es noch so aufgeräumt
+2013-06-17 17:36:28,kevin,Hast du keine Prüfungen mehr? *g*
+2013-06-17 17:37:00,XanClic,Ich bevorzuge ja immer noch Minesweeper vor Aufräumen
+2013-06-17 17:37:00,mgottschlag,"nee, stimmt schon, bis etwa eine Woche vor Abgabe der Arbeit hab ich viel aufgweräumt :D"
+2013-06-17 17:37:31,kevin,Es funktioniert halt doch irgendwie bei jedem. Außer XanClic.
+2013-06-17 17:57:27,Jonathan,"So, endlich fertig. Wäre jemand bereit, sich mal mein Kernel-Konzept anzuhören und zu bewerten? ;)"
+2013-06-17 18:00:52,kevin,Im Meckern war ich schon immer gut ;-)
+2013-06-17 18:01:27,Jonathan,"Hehe, soll ich dich mal query'n oder spammen wir den Channel zu?"
+2013-06-17 18:01:36,mgottschlag,zuspammen bitte.
+2013-06-17 18:01:37,kevin,Channel zuspammen
+2013-06-17 18:01:40,Jonathan,xD
+2013-06-17 18:01:44,Jonathan,"Nagut, dann mal los..."
+2013-06-17 18:02:14,kevin,Hier ist sonst sowieso nicht so viel los und die anderen haben meistens noch Ergänzungen zu meinen dummen Ideen ;-)
+2013-06-17 18:02:31,Jonathan,"Aaaalso: Als allererstes wird ein simples Binär-Image des Kernels in die unterste Page (Kernel-Page) geladen, wo dann die Ausführung bei Adresse 0 beginnt."
+2013-06-17 18:02:53,Jonathan,Von dort aus geht es erstmal in eine Init-Funktion für Debugausgaben und den Task Switcher.
+2013-06-17 18:03:38,Jonathan,"Dann wird ein Prozess erstellt, der nur die Kernel-Page geladen hat und dessen Ausführung bei dem Einsprungpunkt für den Kernel Task beginnen soll."
+2013-06-17 18:03:43,Jonathan,(Per Syscall)
+2013-06-17 18:04:07,Jonathan,"Syscalls funktionieren einfach per ""RST 10h"", also einem etwas verkürzten ""CALL 10h""."
+2013-06-17 18:04:38,Jonathan,"Dabei übergibt man im 16-Bit-Register IY eine Funktionsnummer, deren zugehörige Funktion dann ausgeführt wird."
+2013-06-17 18:04:57,Jonathan,Danach geht's per RET ganz normal im Programm weiter. Vorher natürlich noch alles per POP wiederherstellen.
+2013-06-17 18:05:38,Jonathan,"Sobald der Kernel Task erstellt wurde, aktiviert die Init-Funktion den Task Switcher und begibt sich in eine Endlosschleife."
+2013-06-17 18:06:17,Jonathan,"Der Task Switcher legt dann los und gibt dem Kernel Task CPU-Zeit, welcher dann die Hardware initialisiert - und vorerst hier stoppt."
+2013-06-17 18:07:03,Jonathan,"Mehrere Tasks können bereits parallel laufen, auch in verschiedenen Speicherbereichen. Der Task Switcher schaltet dann entsprechend die Banks um."
+2013-06-17 18:07:09,kevin,Welchen Zweck hat ein separater Kerneltask?
+2013-06-17 18:07:21,kevin,"Tut der noch irgendwas bestimmtes, sobald mal Programme laufen?"
+2013-06-17 18:07:33,Jonathan,"Es ging einfach einfacher, als das Multitasking erst später zu aktivieren."
+2013-06-17 18:08:01,Jonathan,"Später *könnte* er noch eine Message-Verarbeitung bekommen, oder sich auch einfach nur in den Suspended-Zustand schicken."
+2013-06-17 18:08:04,kevin,"Das heißt, da läuft dann am Ende auch wieder nur eine Endlosschleife, die direkt weiterschedult?"
+2013-06-17 18:08:24,kevin,"Ah, gut, suspenden ist natürlich auch eine Möglichkeit"
+2013-06-17 18:08:57,Jonathan,"Theoretisch wäre dann ein Zustand ""wake up on message"" für Tasks ziemlich gut, vorallem für Treiber"
+2013-06-17 18:09:10,Jonathan,Aber das ist wohl jetzt noch zu früh...
+2013-06-17 18:09:36,kevin,"Ja, das habe ich meinem letzten Beitrag im Forum angekratzt"
+2013-06-17 18:10:13,Jonathan,"Jo, aber erstmal müssen Messages funktionieren."
+2013-06-17 18:11:02,Jonathan,"Die Idee mit dem vom Kernel verwalteten Speicherbereich im Prozess ist mMn ziemlich gut, führt nur leider zu häufigen Bank Switches..."
+2013-06-17 18:11:09,Jonathan,"Ist die Frage, was schneller ist:"
+2013-06-17 18:11:52,Jonathan,"Entweder alle Messages im Kernelspeicher puffern, was dann dazu führt, dass man eine riesige Liste durchsuchen muss, oder den Quatsch in den Prozessspeicher auslagern, was zu Bank Switches führt"
+2013-06-17 18:12:13,kevin,"Naja, Bank Switches hast du eh, wenn du Nachrichten durch die Gegend schiebst"
+2013-06-17 18:13:06,kevin,"Höchstens du willst die im Kernelspeicher zwischenlagern... Hattest du das ursprünglich vor? Dann kann ich mir nämlich jetzt grob vorstellen, in welche Richtung deine Frage gezielt hat.,"
+2013-06-17 18:13:07,Jonathan,"Naja, wenn ich es so mache (Verlauf der Nachricht): Prozess 1 ---> Kernelspeicher (wartet mit Auslieferung bis zur nächsten Aktivierung des Prozesses) ---> Prozess 2"
+2013-06-17 18:13:13,Svenska,*piep*
+2013-06-17 18:13:13,Jonathan,Genau
+2013-06-17 18:13:24,Jonathan,...piep? o:
+2013-06-17 18:13:46,kevin,"Piep piep piep, Svenska hat uns lieb?"
+2013-06-17 18:14:02,Svenska,"nein, mein xchat wirft mich gerade mit fehlermeldungen voll"
+2013-06-17 18:15:06,kevin,"Jonathan: Du kannst ja einen relativ kleinen Cache im Kernelspeicher machen und den flushen, wenn das Programm wieder dran ist oder wenn er eben voll ist."
+2013-06-17 18:15:19,kevin,"Aber ob es sich lohnt, das Zeug zweimal zu kopieren statt einmal zu switchen?"
+2013-06-17 18:15:19,Jonathan,Stimmt.
+2013-06-17 18:15:35,Jonathan,"Naja, man muss eben auch die Menge der Messages beachten"
+2013-06-17 18:15:51,kevin,Bei einem Mikrokernel? Viele.
+2013-06-17 18:15:56,Jonathan,Genau.
+2013-06-17 18:16:06,Svenska,deswegen ja meine aussage: mikrokernel ist eher doof
+2013-06-17 18:16:38,kevin,"Damit hast du eigentlich schon recht, aber mein Gegenargument ist: Aus Prinzip! Und because I can!"
+2013-06-17 18:16:42,XanClic,"Na ja, aber ein Monolith macht in 16 kB auch nicht so viel Spaß…"
+2013-06-17 18:17:16,kevin,Auch wieder wahr
+2013-06-17 18:17:19,Svenska,"XanClic: du kannst den monolithen aber in 2 teile spalten, d.h. ""Overlay-Verwaltung"" und ""Treiber"" in einer bank und ""Libraries"" in zweiter Bank"
+2013-06-17 18:18:09,Jonathan,"Und wenn man noch überlegt, was da alles an Hardware drangestöpselt werden könnte (jeder bastelt eigene Hardware, wenn das Ding mal publik wird, und selbst ich hab später schon an die 4 bis 5 Karten), ist ein Mikrokernel mMn doch besser"
+2013-06-17 18:18:18,XanClic,"Svenska, dann ist man aber auch nicht so viel besser dran"
+2013-06-17 18:18:20,kevin,"Jonathan: Die Frage ist auch, ob du überhaupt lange puffern würdest. Wenn ein Task eine Message kriegt, dann willst du wahrscheinlich direkt zu diesem Task wechseln, weil der Aufrufer eine Antwort braucht, bevor er weitermachen kann"
+2013-06-17 18:18:30,Svenska,"das klingt zumindest für mich immernoch deutlich besser, als es am ende in 20 teile zu spalten und 1/3 des RAMs für overhead zu verbraten..."
+2013-06-17 18:18:47,mgottschlag,im was für eine Architektur geht es eigentlich gerade? Irgendwie kommen mir die Begriffe teilweise neu vor
+2013-06-17 18:18:59,Svenska,"siehe aktuellen forenbeitrag, Z80"
+2013-06-17 18:19:02,Jonathan,Selbst gelötetes Z80-Board mit PCIe-Fake
+2013-06-17 18:19:02,mgottschlag,aso
+2013-06-17 18:19:15,Svenska,dein ding sieht übrigens viel mehr nach ISA-PnP aus als nach PCIe :D
+2013-06-17 18:19:55,Jonathan,Naja btt! :P
+2013-06-17 18:20:12,Jonathan,"Ich will halt ein Mikrokernel verwenden, weil ich's kann! xP"
+2013-06-17 18:20:32,Svenska,"joa, da kann ich dann nicht gegen argumentieren :p"
+2013-06-17 18:20:32,Jonathan,Man kann ja immer hinterher noch ein zweites OS schreiben. ^^
+2013-06-17 18:20:39,kevin,Und ein drittes ;-)
+2013-06-17 18:21:01,Svenska,"ja, das erste funktioniert nicht weil du dumm gewesen, das zweite funktioniert nicht, weil funktionaler overkill und das dritte könnte dann praktikabel sein xD"
+2013-06-17 18:21:09,Jonathan,Genau! xD
+2013-06-17 18:21:16,XanClic,Du bist aber optimistisch
+2013-06-17 18:21:24,Svenska,*kicher*
+2013-06-17 18:21:29,Jonathan,"Hey, ein Hallo Welt mit Hardware hab ich schonmal xP"
+2013-06-17 18:21:36,kevin,"XanClic: Vergiss nicht, Svenska ist Theoretiker ;-)"
+2013-06-17 18:21:42,XanClic,Na gut *g*
+2013-06-17 18:22:00,Svenska,"Hey, mein OS wirft mir auch schon eine Seite mit Speicherinfos aus (auf x86)"
+2013-06-17 18:22:00,kevin,"Dass er den Sprung vom nullten zum ersten überhaupt gemacht hat, erstaunt mich ja immer noch"
+2013-06-17 18:22:13,Svenska,…
+2013-06-17 18:22:18,kevin,Ist doch so
+2013-06-17 18:23:25,Jonathan,"So, jetzt aber wirklich: Die Idee mit dem ""nur ganz kurz puffern"" wäre wohl ganz praktikabel..."
+2013-06-17 18:23:29,Svenska,dafür darf ich den herbst über einen compiler/codegenerator entwickeln...
+2013-06-17 18:23:32,mgottschlag,"Jonathan: okay, ich hab grad den Forumthread durchgelesen... die Bilder, das ist sogar für den durchschnittlichen OS-Entwickler schon *sehr* abgefahren, respekt :D"
+2013-06-17 18:23:40,Svenska,jup.
+2013-06-17 18:23:54,Jonathan,Danke² ^^
+2013-06-17 18:24:04,kevin,"Jonathan: Hast du meinen Einwand oben gesehen, dass du meistens sowieso direkt zu dem aufgerufenen Task wechseln willst?"
+2013-06-17 18:24:16,Jonathan,Jep
+2013-06-17 18:24:29,mgottschlag,"hat der Z80 eigentlich Speicherverwaltung, oder baust du das da dran?"
+2013-06-17 18:24:31,Jonathan,Muss ich wohl aber meinen billigst-Task-Scheduler umbasteln
+2013-06-17 18:24:39,Jonathan,MMU hab ich extern
+2013-06-17 18:24:40,kevin,"Wenn das ""nur ganz kurz"" nämlich zum ""direkt anschließend wird"", ist es nur noch eine überflüssige Kopie, nicht mehr"
+2013-06-17 18:25:03,Jonathan,Hmmmm.
+2013-06-17 18:25:19,Jonathan,"Wobei das dann ja auch auf ein ""Task 1 sendet Message, Task 2 kommt sofort danach dran"""
+2013-06-17 18:25:24,Jonathan,hinausläuft
+2013-06-17 18:25:29,kevin,Ja
+2013-06-17 18:25:34,Jonathan,Will man das?
+2013-06-17 18:25:35,Svenska,So willst du das auch.
+2013-06-17 18:25:38,kevin,Task 1 gibt den Rest seiner Zeitscheibe an Task 2 ab
+2013-06-17 18:25:47,kevin,Weil Task 1 ja nichts mehr tun kann bis Task 2 fertig ist
+2013-06-17 18:25:50,Jonathan,Aaaah okay
+2013-06-17 18:26:18,Svenska,"Eben. Du kannst natürlich auch priorisieren, aber Task 2 hat dann die Priorität MAX(Task1, Task2) und Task1 die Priorität 0."
+2013-06-17 18:26:19,Jonathan,"Momentan hab ich eher so nen Billigscheduler: Task 1, Task 2, Task 3, Task 4, Task 1, ..."
+2013-06-17 18:26:48,kevin,"Das reicht im Prinzip auch für den Anfang. Schlafen lassen solltest du die Tasks noch können, aber sonst?"
+2013-06-17 18:26:55,Svenska,"Naja, wenigstens das Konzept ""geht nicht, überspringen"" sollte er noch können."
+2013-06-17 18:27:06,Jonathan,Hat er ^^
+2013-06-17 18:27:20,Jonathan,(Gibt im Flags-Byte jedes Prozesses ein Suspend-Bit)
+2013-06-17 18:28:05,Svenska,"Für gewöhnlich sitzt da ein Zustandsautomat mit ""Active, Waiting, Blocked"". irgendwo liegt hier auch noch mein Buch rum..."
+2013-06-17 18:28:44,kevin,Was ist der Unterschied zwischen Waiting und Blocked?
+2013-06-17 18:28:59,Svenska,"""Not Active, but Runnable"""
+2013-06-17 18:29:30,kevin,Ach sorum
+2013-06-17 18:29:33,Svenska,:-)
+2013-06-17 18:29:59,kevin,"Hm, tyndur hat READY, BLOCKED, RUNNING und WAIT_FOR_RPC"
+2013-06-17 18:30:08,kevin,"Ich glaube, ich muss mir die Frage selber stellen"
+2013-06-17 18:32:17,Svenska,"naja, das ist halt ein spezieller blocked-zustand"
+2013-06-17 18:33:32,Svenska,"Jonathan: mich würde ja mal interessieren, wie du die MMU praktisch aufgebaut hast :-)"
+2013-06-17 18:33:37,Svenska,das ist auf den bildern so schlecht erkennbar
+2013-06-17 18:33:53,Jonathan,Erstmal beglücke ich euch hiermit: 
+2013-06-17 18:33:55,Jonathan,http://pastebin.com/bXXk4MP6
+2013-06-17 18:34:09,Jonathan,"Dann schau ich mal im Thread, das hab ich da irgendwo schon geschrieben ;)"
+2013-06-17 18:34:42,Svenska,"aah, also doch ""OUT (C), Reg"", mit der Adresse in B :D"
+2013-06-17 18:34:52,Svenska,"gut, frage beantwortet ^^"
+2013-06-17 18:34:58,Jonathan,Okay ^^
+2013-06-17 18:35:39,Svenska,"weil das ist einerseits ziemlich Z80-spezifisch und andererseits die einzige sinnvolle möglichkeit, I/O >256 anzusprechen"
+2013-06-17 18:35:48,Jonathan,Jep
+2013-06-17 18:36:02,Svenska,"und kostet halt immer die register A, B und C - daher wollte ich das nur für meine MMU machen"
+2013-06-17 18:36:29,Jonathan,Für die gesamte Peripherie sind immer die Geräte-Ports in C und die Adresse darin in B.
+2013-06-17 18:36:43,Jonathan,So hab ich das auch mit den Steckplätzen realisiert
+2013-06-17 18:37:00,Svenska,hm. da hatte ich im thread noch was zu geschrieben
+2013-06-17 18:40:09,Svenska,wieso nimmst du eigentlich den NMI als taskswitcher? ^^
+2013-06-17 18:40:54,Jonathan,Weil ich den normalen INT für normale Hardware haben wollte ;P
+2013-06-17 18:41:06,Jonathan,(Werde ich später noch nachrüsten)
+2013-06-17 18:41:13,Svenska,"hast du keinen timer, der regelmäßig INTs wirft?"
+2013-06-17 18:41:27,Jonathan,"Naja, den hab ich doch an den NMI angeschlossen."
+2013-06-17 18:41:47,Jonathan,"Jau, die Z80 hat keine internen Timer."
+2013-06-17 18:41:54,Svenska,(der einfachste timer ist übrigens ein AND zwischen RFSH und Ax)
+2013-06-17 18:42:20,Jonathan,"Aaaah, klar"
+2013-06-17 18:42:21,Svenska,"ich weiß... in meiner bastelkiste habe ich einen Z80A und drei Z80-CTC, aber keine SIO und keine PIO ... -.-"
+2013-06-17 18:42:38,Jonathan,"Ich hab weder CTC, noch SIO oder PIO..."
+2013-06-17 18:42:47,Jonathan,Das wird alles mit AVRs gefrickelt!
+2013-06-17 18:42:54,Jonathan,(Und nem Logikgrab.)
+2013-06-17 18:43:14,Jonathan,"Naja, ne CTC in CMOS irgendwo her zu bekommen wird auch schwer"
+2013-06-17 18:43:25,Svenska,"mein plan ist ein AVR für sämtliches I/O bis auf die MMU, die ich zu fuß aufbauen muss"
+2013-06-17 18:43:41,Svenska,leider. ein avr ist definitiv zu langsam für einen dram-controller mit mmu :-(
+2013-06-17 18:43:46,Jonathan,Ja...
+2013-06-17 18:44:04,Jonathan,"Deshalb auch mein ""Design"" mit den Gattern rund um einen ATMega8515."
+2013-06-17 18:44:16,Jonathan,Der btw keinen einzigen seiner 35 I/O-Pins mehr freihat.
+2013-06-17 18:44:29,Jonathan,"Bin ich froh, dass der gereicht hat..."
+2013-06-17 18:44:51,Svenska,"uuh, das ist einer der großen... :-)"
+2013-06-17 18:45:18,Svenska,…
+2013-06-17 18:45:24,Svenska,der hat ein speicherinterface?
+2013-06-17 18:45:33,Jonathan,"Ja, bis zu 64kB"
+2013-06-17 18:46:08,Svenska,nice. ich wollte das mit 3x PCF8574 und bitbanging erschlagen...
+2013-06-17 18:46:31,Jonathan,Was für nen Takt hast du eigentlich angepeilt?
+2013-06-17 18:46:36,Svenska,4 MHz - Z80A
+2013-06-17 18:46:42,Jonathan,"Achso, okay"
+2013-06-17 18:46:55,Svenska,"mehr wäre schön, hab ich aber nicht *g*"
+2013-06-17 18:47:00,Jonathan,Da macht das mit dem AVR zwischendrin ja auch nicht viel aus ^^
+2013-06-17 18:47:08,Jonathan,(Ich hab 17 MHz - ätsch :P)
+2013-06-17 18:47:52,Svenska,"tja, für das zeitkritische reicht es leider nicht. ich wollte den dram-controller in software machen, mit nem attiny oder so (hab ich schonmal gemacht, für AVR-CP/M)"
+2013-06-17 18:48:05,Svenska,aber dann lande ich bei <1 MHz
+2013-06-17 18:48:22,Jonathan,"Ja, kenn ich nur zu gut..."
+2013-06-17 18:49:27,Jonathan,"AVR-Grafikkarte mit 160x100 (256 Farben): LD r16, Z+ : OUT PORTA, r16 : NOP : LD r16, Z+ : ..."
+2013-06-17 18:49:43,Jonathan,"Das ganze 160x hinter einander, ein Traum."
+2013-06-17 18:49:43,Svenska,hihi
+2013-06-17 18:49:57,Jonathan,"Naja, bin jetzt erstmal essen, bis gleich ^^"
+2013-06-17 18:49:59,Svenska,theoretisch braucht man ja nur einen gelatchten demux für das interface zwischen 8515 und z80... oder liege ich da falsch?
+2013-06-17 18:50:04,Svenska,"ja, ich auch... bis spæter"
+2013-06-17 20:29:44,Jonathan,"So, *endlich* wieder da."
+2013-06-17 20:29:48,Svenska,:-)
+2013-06-17 20:30:04,Jonathan,"Nundenn, was ich mir gerade so beim Packen/Aufräumen ausgedacht habe..."
+2013-06-17 20:30:40,Jonathan,Jeder Prozess bekommt zwei zusätzliche Bytes in seinem Eintrag: Einen Countdown.
+2013-06-17 20:31:13,Jonathan,"Ein Byte ist der Wert, auf den der Countdown nach Ablauf gesetzt werden soll, das andere zählt runter."
+2013-06-17 20:31:51,Jonathan,"Jedes mal, wenn der Task Switcher bei der Suche nach einem lauffähigen Prozess über einen solchen Countdown kommt, wird dieser um eins verringert."
+2013-06-17 20:32:12,Jonathan,"Erst sobald er einen Prozess mit einem abgelaufenen Countdown findet, führt er diesen aus."
+2013-06-17 20:32:23,Jonathan,Damit hätte ich ganz einfache Prioritäten.
+2013-06-17 20:32:30,Svenska,ja
+2013-06-17 20:33:07,Svenska,"also ein byte ""priorität"" und ein byte ""derzeitige priorität"""
+2013-06-17 20:33:13,Jonathan,Genau
+2013-06-17 20:33:41,Jonathan,"Und sobald ein Prozess drankommt, wird er wieder hinten eingereiht, indem sein Zähler wieder auf das Prioritätsbyte gesetzt wird."
+2013-06-17 20:33:43,Svenska,"wobei ich das mit dem ""erst wenn er..."" nicht machen würde. wenn die cpu idle ist, dann kannst du einen beliebigen nehmen"
+2013-06-17 20:33:59,Jonathan,"Naja, dann rennt die Schleife für die Prozesssuche halt ein paar mal durch..."
+2013-06-17 20:34:05,Jonathan,Bis ein Prozess die CPU will.
+2013-06-17 20:34:19,Svenska,ich würde da eine sortierte taskliste empfehlen
+2013-06-17 20:34:43,Jonathan,"Naja, sortierung auf einem 17 MHz Prozessor?"
+2013-06-17 20:34:50,Svenska,...wieviele elemente? :D
+2013-06-17 20:34:53,Jonathan,256 ^^
+2013-06-17 20:35:02,Svenska,...wieviele _aktive_ elemente? :D
+2013-06-17 20:35:06,Jonathan,Bis zu 256
+2013-06-17 20:35:15,Svenska,"vermutlich nicht mehr als 16, von ausnahmen abgesehen"
+2013-06-17 20:35:37,Svenska,du kannst dir ja mal EDF anschauen (Earliest Deadline First)
+2013-06-17 20:35:57,Svenska,daran erinnert mich deine idee ^^
+2013-06-17 20:36:06,Jonathan,Hm...
+2013-06-17 20:36:25,Jonathan,"Gegen meine Lösung spricht aber auch nichts, oder? ;P"
+2013-06-17 20:36:29,Svenska,nö
+2013-06-17 20:36:45,Svenska,"bis darauf, dass jeder task entsprechend seiner priorität zeit zugewiesen bekommt"
+2013-06-17 20:36:53,Svenska,"aber niemals mehr, selbst wenn das system nix zu tun hat"
+2013-06-17 20:37:12,Jonathan,"Nö, eigentlich schon"
+2013-06-17 20:37:42,Jonathan,"Hat das System nichts zu tun (also ist kein Task bereit), läuft die Schleife im Task Switcher, die nach einem bereiten Task sucht, ein paar mal durch"
+2013-06-17 20:37:57,Jonathan,Dabei verringern sich jedes mal die Countdowns
+2013-06-17 20:37:57,Svenska,hm
+2013-06-17 20:38:06,Svenska,das ist cpu-verschwendung :D
+2013-06-17 20:38:36,Svenska,"der punkt ist, dass in einem normalen system alle tasks blockieren"
+2013-06-17 20:38:36,Jonathan,"Ich will vielleicht 6 oder 8 Prioritätsstufen, mehr nicht! xP"
+2013-06-17 20:39:11,Svenska,"die shell wartet auf eingaben, die treiber warten auf interrupts (oder syscalls), ..."
+2013-06-17 20:39:19,Jonathan,"Naja, wenn ein Task blockieren muss, kann er auch seine verbleibende Zeit an den nächsten abgeben, anstatt sinnlos zu loopen."
+2013-06-17 20:39:25,Svenska,eben
+2013-06-17 20:39:35,Jonathan,Kann ich in dem Konzept doch auch machen o:
+2013-06-17 20:39:45,Svenska,"aber wenn alle tasks blockiert sind, kann die cpu ihre counter so schnell wie sie will runterzählen, die tasks werden trotzdem nicht weitermachen"
+2013-06-17 20:40:10,Svenska,"=> dann schlägt der idle-task zu, und der darf auch gerne aus einem ""l: HLT; JP l"" bestehen"
+2013-06-17 20:40:17,Jonathan,"Naja, wenn *alles* blockiert ist, wird das System eh nichts mehr tun. Oder welche Situation meinst du jetzt?"
+2013-06-17 20:40:19,Svenska,(ersetze HLT durch HALT)
+2013-06-17 20:40:40,Svenska,"den standardfall, dass alle tasks auf irgendwas warten. im zweifelsfall darauf, dass der benutzer endlich die nächste taste drückt..."
+2013-06-17 20:41:07,Jonathan,"Nunja, wenn das System nichts tun muss, muss die CPU-Zeit ja irgendwo bleiben."
+2013-06-17 20:41:20,Svenska,"ja, das erledigt normalerweise ein idle-thread"
+2013-06-17 20:41:44,Jonathan,Hmmm...
+2013-06-17 20:41:45,Svenska,"auf nem Z80 gibt es den befehl HALT, der die CPU anhält, bis der nächste interrupt kommt."
+2013-06-17 20:42:05,Jonathan,"Ich weiß, aber bei meiner CMOS-CPU muss ich sowieso keinen Strom sparen."
+2013-06-17 20:42:18,Jonathan,Und NMOS heizt auch ohne Takt.
+2013-06-17 20:42:37,Svenska,"den kannst du in einer endlosschleife vom idle-task ausführen lassen. wenn dieser task die niedrigste priorität bekommt, also nie ausgeführt wird, wenn es andere lauffähige tasks gibt, dann hast du immer etwas sinnvolles zu tnu"
+2013-06-17 20:42:38,Svenska,naja
+2013-06-17 20:42:44,Svenska,dein 7805 wird sich schon freuen...
+2013-06-17 20:43:03,Jonathan,Es gibt in meinem System größere Stromfresser :P
+2013-06-17 20:43:03,Svenska,HALT ist nicht dasselbe wie takt abschalten
+2013-06-17 20:43:14,Svenska,ist mir schon klar :p
+2013-06-17 20:43:40,Svenska,"du kannst das HALT auch weglassen und stattdessen eine endlosschleife machen, aber ändern tut das am konzept ja nichts."
+2013-06-17 20:45:12,Svenska,"in unix startet der bootloader den kernel, der initialisiert die hardware und startet den idle-task/-thread und ein weiteres programm (""init"")"
+2013-06-17 20:45:36,Jonathan,"Aber wo ist der Vorteil, wenn ich meine CPU-Zeit im Idle-Task verbraten lasse, anstatt immer von einem wartenden (pollenden!) Task zum nächsten zu springen und meine CPU-Zeit mit Task Switches und Polling zu verbraten?"
+2013-06-17 20:46:35,Svenska,"es bringt nichts, die prioritäten aller tasks ständig zu ändern, wenn die tasks sowieso nicht laufen können. polling ist übrigens auch doof, aber nicht das problem"
+2013-06-17 20:47:05,Svenska,polling macht man normalerweise sowieso mit einem sleep() in der mitte - also kein busy waiting
+2013-06-17 20:47:37,Jonathan,Genau - ein Task pollt und gibt an den Task Switcher zurück.
+2013-06-17 20:47:47,Jonathan,"Jetzt kommen noch 10 weitere hinzu, die genau das selbe tun."
+2013-06-17 20:47:59,Jonathan,Kein Task macht mehr etwas sinnvolles.
+2013-06-17 20:48:08,Svenska,"d.h. ein task, der auf etwas wartet, fragt das normalerweise nicht in jedem takt ab, sondern mit abständen zwischendurch. für ein sleep() brauchst du sowieso einen timer, also wird nach ablauf des sleep() ein interrupt ausgelöst und der wartende task unblockiert"
+2013-06-17 20:48:16,Svenska,…entblockt…
+2013-06-17 20:48:30,DerHartmut,unblockiert klingt nett denglisch *g*
+2013-06-17 20:48:56,Jonathan,"Mit meinem Konzept würde folgendes passieren: Die Tasks würden schnell hintereinander wieder aktiviert, prüfen einmal kurz und legen sich wieder schlafen."
+2013-06-17 20:49:07,Jonathan,Dann kommt immer der nächste dran.
+2013-06-17 20:49:08,Svenska,nicht wirklich
+2013-06-17 20:49:14,Jonathan,Wieso?
+2013-06-17 20:49:26,Svenska,weil du einen task ja _nach_ der laufenden instruktion fortsetzt
+2013-06-17 20:49:40,Svenska,"wie willst du dann ein sleep() implementieren? immer in einer endlosschleife mit ""ist es soweit?"""
+2013-06-17 20:49:58,Jonathan,while (pollingabfrage) {return_to_system()}
+2013-06-17 20:50:05,Svenska,hm
+2013-06-17 20:50:19,Svenska,"warum nicht ""wait_for_irq()""?"
+2013-06-17 20:50:21,Jonathan,"Wird der Task aufgerufen, prüft er einmal kurz, es passiert nix und der nächste ist dran."
+2013-06-17 20:51:01,Svenska,"wenn du die funktion aufrufst, wird im scheduler der task als nicht lauffähig markiert und wenn der irq dann kommt, wird der task wieder entblockt und sofort aktiviert (damit der irq möglichst schnell behandelt wird - niedrige latenz ist wichtig)"
+2013-06-17 20:51:32,Svenska,"gleiches bei RPC, wie auch immer du das implementierst. tasks werden oft auf nachrichten warten."
+2013-06-17 20:51:37,Jonathan,"IRQs sind momentan erstmal nicht geplant, das kommt noch - da fehlt mir noch ein gescheiter Interruptcontroller (also ein Stück Hardware)"
+2013-06-17 20:52:02,Svenska,"naja, kannst du auch in software lösen, mit dem INT-modus 1 oder so"
+2013-06-17 20:52:36,Svenska,"der punkt ist: je weniger zeit du mit polling verschwendest, desto schneller wird sich dein system anfühlen (auch wenn es garnicht schneller ist)"
+2013-06-17 20:52:44,Jonathan,Ich weiß ^^
+2013-06-17 20:52:53,Jonathan,Aber es wird immer pollende Tasks geben...
+2013-06-17 20:52:54,Svenska,"und die 17 mhz sind zwar nicht viel, aber es gab verdammt schnelle rechner mit viel weniger..."
+2013-06-17 20:52:57,Svenska,"nö, wozu?"
+2013-06-17 20:53:13,Jonathan,Schlecht programmiert?
+2013-06-17 20:53:16,Svenska,"pollende tasks gibt es nur, wenn du pollende tasks willst. nenne mir einen grund, wozu das gut sein sollte ^^"
+2013-06-17 20:53:24,Jonathan,Schon klar.
+2013-06-17 20:53:39,Svenska,"das einzige, was pollt, ist dein scheduler. und wenn der nix findet, kann er die cpu auch direkt schlafen legen."
+2013-06-17 20:53:43,Jonathan,"Bei Messages werde ich den Tasks natürlich sowas wie einen Zustand ""wake_up_on_message"" machen"
+2013-06-17 20:54:08,Jonathan,"Und später auch ein ""wake_up_on_interrupt"""
+2013-06-17 20:54:20,Jonathan,(Wobei ich da wahrscheinlich den Kernel ne Message schicken lasse)
+2013-06-17 20:54:42,Svenska,"alternativ ""wait_for_event(uint16 NR)"""
+2013-06-17 20:54:51,Jonathan,"oder so, ja"
+2013-06-17 20:55:08,Svenska,"und jedesmal wenn etwas passiert, was ein grund fürs aufwachen sein kann, wird geguckt, ob bestimmte tasks darauf warten (bitmaske oder sowas)"
+2013-06-17 20:55:52,Jonathan,"Trotzdem brauch ich aber Prioritäten. Und dafür sollte mein Countdown-System doch wenigstens taugen, oder?"
+2013-06-17 20:56:08,Svenska,ja
+2013-06-17 20:56:14,Jonathan,Na dann ^^
+2013-06-17 20:56:22,Svenska,"wobei ich wie gesagt die idee mit dem ""im idle massiv zählen"" nicht gut finde"
+2013-06-17 20:56:58,Svenska,"theoretisch brauchst du auch nichts zählen. einfach nur eine sortierte liste (musst du nur bei start/ende sortieren) und du nimmst immer den ersten task, der lauffähig ist :)"
+2013-06-17 20:58:00,Jonathan,"Naja, in Assembler ist mir das erstmal zu aufwändig... ;P"
+2013-06-17 20:58:27,Svenska,"was auch geht ist, dass du jedesmal, wenn der task durch den timer unterbrochen wurde (also er seine zeitscheibe ausgenutzt hat), seine priorität verringerst und bei 0 wieder zurücksetzt"
+2013-06-17 20:59:03,Svenska,damit verhinderst du starving.
+2013-06-17 20:59:30,Jonathan,"Hm, hm..."
+2013-06-17 21:00:20,Jonathan,"Was ich allerdings noch machen würde: Den Prioritäts-Countdown eines Tasks weiterlaufen lassen, wenn er auf etwas wartet, und ihn bei Ablauf die ganze Zeit auf 0 zu lassen."
+2013-06-17 21:00:33,Jonathan,"Trifft das Event ein, wird der Task sofort fortgesetzt."
+2013-06-17 21:00:50,Jonathan,(Sobald der Task vorher fertig ist.)
+2013-06-17 21:00:59,Svenska,geht auch
+2013-06-17 21:02:26,Svenska,gibt viele möglichkeiten. nur polling ist halt doof. :-)
+2013-06-17 21:02:40,Jonathan,Joa ^^
+2013-06-17 21:02:51,Jonathan,"Na dann weiß ich jetzt ja, was ich zu tun habe."
+2013-06-17 21:03:04,Svenska,viel spaß & erfolg
+2013-06-17 21:03:07,Jonathan,Danke ^^
+2013-06-17 21:14:33,Svenska,"übrigens, was mir gerade noch als idee einfällt"
+2013-06-17 21:14:47,Svenska,du könntest messages als tasks betrachten.
+2013-06-17 21:16:05,Svenska,"d.h. jedesmal, wenn ein task eine rpc-message schicken will, wird ein task erzeugt, der genau das tut (code in einer gemeinsamen page, daten+stack in einer anderen) und danach endet. dann hättest du beliebig viele RPCs gleichzeitig in der luft (zumindest, bis dir der speicher ausgeht) und abhängigkeiten etc. werden vom task-scheduler aufgelöst"
+2013-06-17 21:17:03,Jonathan,"Puh, ich glaub das fänd dann sogar ich auf dem kleinen Systemchen langsam Overkill."
+2013-06-17 21:18:04,Svenska,"naja, gibt einige vorteile... keine vermeidbaren deadlocks, du hast messages bis ~15 KB"
+2013-06-17 21:18:21,Svenska,und es ist an sich einfach zu implementieren.
+2013-06-17 21:19:31,Jonathan,Ich bleibe lieber erstmal bei meinen ganz normalen Messages. ;)
+2013-06-17 21:19:36,Svenska,"statt RPC-Ringpuffer und sowas nutzt du dann einfach die Runqueue im Scheduler, die du für multitasking sowieso brauchst"
+2013-06-17 21:19:48,Svenska,:-)
+2013-06-17 21:20:01,Jonathan,Man kann ja über eine Message bei einem Task anfragen
+2013-06-17 21:20:22,Jonathan,Und dieser ruft dann einfach die passende Funktion auf.
+2013-06-17 21:20:37,Jonathan,Reicht für den Anfang.
+2013-06-17 21:20:47,Svenska,ja
+2013-06-17 21:21:32,Svenska,"wirf die idee aber nicht komplett weg. für festplatten ist das vermutlich keine dumme idee, wenn eine anwendung in einem einzelnen request an den treiber sagen kann ""und diese 16 sektoren (=8K) bitte dorthin"""
+2013-06-17 21:21:56,Jonathan,"Nuja, das könnte man aber auch per Message machen... ;P"
+2013-06-17 21:22:05,Jonathan,"Aber ja, ich behalte es mir im Hinterkopf."
+2013-06-17 21:22:19,Svenska,du musst aber den platz für die message reservieren... und den dürftest du in der kernelpage nicht haben
+2013-06-17 21:22:34,Jonathan,Ich übergeb einfach nen Pointer auf den Zielbereich!
+2013-06-17 21:22:49,Svenska,also eine 24-bit-zahl=
+2013-06-17 21:22:50,Svenska,?
+2013-06-17 21:23:00,Svenska,:D
+2013-06-17 21:23:04,Jonathan,"Dann mappt sich der Festplattentreiber die entsprechende Page kurz rein, schreibt es dort hin und meldet zurück."
+2013-06-17 21:23:13,Jonathan,Eigentlich 22 Bit ;P
+2013-06-17 21:23:15,Svenska,ok
+2013-06-17 21:26:00,Svenska,wie hast du den 8515 eigentlich mit dem z80 verbunden?
+2013-06-17 21:26:30,Jonathan,"Datenleitungen rübergeschafft, Adressdekodierung in Logikbausteinen"
+2013-06-17 21:27:01,Jonathan,"Bei nem Write auf die passende Adresse bekommt der 8515 eine Adresse an 2 Pins, womit er dann die passende Bank neu lädt."
+2013-06-17 21:27:23,Svenska,"also macht er ""nur"" das bankswitching und sonst nichts"
+2013-06-17 21:27:27,Jonathan,Jep
+2013-06-17 21:27:36,Svenska,ok
+2013-06-17 21:27:44,Jonathan,"Hab sämtliche Pins an dem großen Brocken verwendet, mehr geht da sowieso nicht."
+2013-06-17 21:27:49,Svenska,"du nutzt BUSRQ/BUSACK also nicht, oder?"
+2013-06-17 21:27:55,Jonathan,Doch
+2013-06-17 21:28:01,Jonathan,Für den Waitstate-Controller
+2013-06-17 21:28:09,Svenska,!?
+2013-06-17 21:28:10,Jonathan,Und später auch für DMA
+2013-06-17 21:28:17,Svenska,:-)
+2013-06-17 21:28:28,Jonathan,"Naja, meine Peripherie (AVRs) ist schnarchlahm."
+2013-06-17 21:28:38,Jonathan,Bei nem IORQ passier folgendes:
+2013-06-17 21:28:58,Jonathan,"Sobald IORQ auf low geht, reißt der Waitstate-Controller den WAIT-Pin auch auf low."
+2013-06-17 21:29:23,Jonathan,Dadurch wird der Bus eingefroren und die Hardware hat Zeit zum Reagieren.
+2013-06-17 21:29:27,Svenska,jo
+2013-06-17 21:29:58,Jonathan,"Würde keine Hardware antworten, schlägt nach kurzer Zeit der Timeout zu und lässt die CPU weiterlaufen."
+2013-06-17 21:30:24,Svenska,"ich versuche gerade, möglichst viel vom chipsatz in den avr zu stecken"
+2013-06-17 21:30:45,Jonathan,"Hm, da musst du aber vieeeel mit Waitstates arbeiten"
+2013-06-17 21:30:53,Jonathan,Aber einen guten Tipp kann ich da noch geben:
+2013-06-17 21:30:57,Svenska,nur für I/O-requests
+2013-06-17 21:33:15,Jonathan,"Schalte so schnell wie möglich WAIT ein, sobald ein IORQ eintrifft (OR-Gate: Ausgang an WAIT, Eingang 1 an IORQ, Eingang 2 an den AVR). Dann hast du genug Zeit, um das zu verarbeiten. Wenn du fertig bist, schaltest du BUSREQ ein und betätigst den Eingang 2 des OR-Gates. Dadurch beendet die CPU den IORQ und bleibt dann mit leerem Bus wieder stehen. Jetzt kann dein AVR gemütlich die Ports wieder"
+2013-06-17 21:33:25,Jonathan,hochohmig schalten und dann BUSREQ wieder abschalten.
+2013-06-17 21:33:32,Jonathan,Dann erst läuft die CPU weiter.
+2013-06-17 21:33:40,Jonathan,Timing-Probleme hat man so überhaupt nicht mehr.
+2013-06-17 21:35:07,Svenska,"hm, klingt logisch. ich wollte das auch mit software erschlagen und hätte quasi eine NAKED_ISR dafür genommen. dann hätte der AVR innerhalb von 4-5 takten reagieren können, also gerade noch so im T1 vom Z80"
+2013-06-17 21:35:30,Jonathan,"Naja, wenn dann die Taktraten etwas höher werden..."
+2013-06-17 21:35:31,Svenska,(also das /WAIT)
+2013-06-17 21:35:36,Svenska,geht ja bei mir nicht xD
+2013-06-17 21:35:44,Jonathan,Bestell in Hongkong! xD
+2013-06-17 21:35:59,Svenska,... :-)
+2013-06-17 21:36:01,Jonathan,http://www.ebay.de/itm/ZILOG-Z84C0020PEC-DIP-40-/320995156409?pt=Bauteile&hash=item4abccd61b9
+2013-06-17 21:36:08,Jonathan,"Daaaa isser, den hab ich mir geholt"
+2013-06-17 21:36:08,Svenska,möchtest du eine Z80-CTC in NMOS? ^^
+2013-06-17 21:36:36,Jonathan,"Oh moment, hab ich so eine nicht auch noch?"
+2013-06-17 21:36:39,Jonathan,Grad mal schauen!
+2013-06-17 21:36:48,Svenska,ich hab 3 oder so
+2013-06-17 21:37:45,Jonathan,"Ja tatsächlich, eine Z80ACTC ist noch da"
+2013-06-17 21:37:52,Svenska,hihi
+2013-06-17 21:52:56,Svenska,"wie lange (wie viele versuche) hast du eigentlich gebraucht, bis das ding lief?"
+2013-06-17 21:57:23,Jonathan,Definitiv zu viele :P
+2013-06-17 22:05:03,kevin,"Und das alles nur, um uns zu beeindrucken ;-)"
+2013-06-17 22:05:09,Svenska,*g*
+2013-06-17 22:05:10,kevin,Reh übrigens
+2013-06-17 22:15:32,Svenska,"hm, jetzt weiß ich, warum viele designs ein PLD benutzen..."
+2013-06-17 22:21:34,mgottschlag2,gibt es PLDs als DIP?
+2013-06-17 22:21:41,Svenska,"klassische, ja."
+2013-06-17 22:21:46,Svenska,"CPLDs und FPGAs, nein."
+2013-06-17 22:24:58,Svenska,2x 74189 und 1x 74138 ergibt eine MMU mit 1 MB Adressraum und 4K-Pages...
+2013-06-17 22:27:16,Svenska,mgottschlag2: die laufen unter den namen PAL oder GAL und sind ziemlich ausgestorben.
+2013-06-17 22:27:31,DerHartmut,Das ist ja schon fast gruselig
+2013-06-17 22:27:37,DerHartmut,Hier wird über lowlevel-mäßiges gesprochen
+2013-06-17 22:28:01,Svenska,und nix niederländisches :)
+2013-06-17 22:28:22,Svenska,(obwohl ich mit vielen holländern vor einigen wochen zu tun hatte)
+2013-06-17 22:28:38,Svenska,((waren aber zur hälfte deutsche. in schweden.))

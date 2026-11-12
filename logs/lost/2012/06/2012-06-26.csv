@@ -1,0 +1,532 @@
+date/time,nick,message
+2012-06-26 10:16:41,Th3Falc0n,moin
+2012-06-26 10:17:00,kevin,Moin
+2012-06-26 10:17:12,max,Moin
+2012-06-26 10:22:22,Th3Falc0n,"kevin: da das paging mich langsam in den wahnsinn treibt: ist es akzeptabel, die ersten 128MB für den kernel zu reservieren, und die statisch zu mappen inklusive der auteilung vom alloc in 2 funktionen, wobei die erste immer <= 128MB alloziert und die zweite > 128MB und das dann dynamisch mappt?"
+2012-06-26 10:23:51,kevin,> 128 MB wäre dann Userspace?
+2012-06-26 10:24:48,Th3Falc0n,ja
+2012-06-26 10:25:19,kevin,"Ich glaube nicht, dass das langfristig tragfähig ist"
+2012-06-26 10:25:49,kevin,Der Kernel muss wahrscheinlich auch Sachen aus einem anderen Prozess irgendwohin mappen können (und das müsste dann im Kernelbereich landen)
+2012-06-26 10:28:08,Th3Falc0n,aber ich könnte es erstmal so machen und dann später ändern? ^^
+2012-06-26 10:29:38,kevin,Man kann viel Unsinn machen
+2012-06-26 10:30:03,Th3Falc0n,dann nimm dir bitte meinen code und richte diese verdammte paging ein :(
+2012-06-26 10:52:14,kevin,"Th3Falc0n: Guck mal, ich hab deinen Code grad komplett umgeschrieben"
+2012-06-26 10:52:25,kevin,Hier ist die neue Version:
+2012-06-26 10:52:26,kevin,http://git.tyndur.org/?p=tyndur.git;a=summary
+2012-06-26 10:52:31,kevin,Da kannst du jetzt dran weiterbasteln :-P
+2012-06-26 10:53:10,Th3Falc0n,an was genau kevin ?
+2012-06-26 10:53:22,Th3Falc0n,sag jetzt bitte nicht memory management...
+2012-06-26 10:53:31,kevin,*lol*
+2012-06-26 10:53:34,kevin,Wäre aber eine gute Idee ;-)
+2012-06-26 10:53:47,Th3Falc0n,AAARGHHH
+2012-06-26 10:54:43,Th3Falc0n,Nein.
+2012-06-26 10:54:48,kevin,Was kriegst du denn bei deinem Paging genau nicht hin?
+2012-06-26 10:54:56,Th3Falc0n,weiss ich gerade nicht
+2012-06-26 10:55:00,Th3Falc0n,es endet mit Exception 13
+2012-06-26 10:55:13,kevin,"13 ist aber #GP, nicht #PF"
+2012-06-26 10:55:17,Th3Falc0n,ich weiss
+2012-06-26 10:55:22,Th3Falc0n,das ist ja das problem
+2012-06-26 10:55:38,kevin,git-URL?
+2012-06-26 10:55:58,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS
+2012-06-26 10:56:02,Th3Falc0n,warte ich push eben das neuste
+2012-06-26 10:56:36,Th3Falc0n,so ist aktuell
+2012-06-26 10:57:44,Th3Falc0n,"immoment versuch ich nur den kernel zum laufen zu bringen, deswegen muss das irgendein banaler fehler sein."
+2012-06-26 10:58:03,Th3Falc0n,vorher lag mein problem nämlich immer bei den tasks
+2012-06-26 11:03:35,kevin,Kompiliert ja nichtmal...
+2012-06-26 11:03:51,Th3Falc0n,whut?
+2012-06-26 11:04:08,Th3Falc0n,oh ich hab meinen fehler gefunden
+2012-06-26 11:04:11,stultus,kevin: hast du etwa einfach -Wall -Werror reingemacht? *g*
+2012-06-26 11:04:19,stultus,moin ;)
+2012-06-26 11:04:20,Th3Falc0n,ich hab übersehen das dass nicht komplett kompiliert...
+2012-06-26 11:04:57,kevin,...
+2012-06-26 11:05:00,stultus,Ok ^^ Arbeitest du denn mit den beiden Optionen?
+2012-06-26 11:05:01,kevin,Moin stultus
+2012-06-26 11:05:11,kevin,"Nein, ich habe einfach mal make clean; make gemacht ;-)"
+2012-06-26 11:05:23,kevin,"os/drivers/keyboard.c:78:7: Warnung: Variable »break_code« gesetzt, aber nicht verwendet [-Wunused-but-set-variable]"
+2012-06-26 11:05:34,kevin,"Wenn ich das kriege, müsste wenigstens ein -Wall dabei sein"
+2012-06-26 11:05:36,kevin,Aber kein -Werror
+2012-06-26 11:05:52,Th3Falc0n,nur -Wall
+2012-06-26 11:05:53,kevin,Und auch kein -Wextra -pedantic ;-)
+2012-06-26 11:06:44,Th3Falc0n,nö
+2012-06-26 11:07:47,stultus,Was bringt mir -pedantic denn noch?
+2012-06-26 11:08:08,kevin,Fehlermeldungen *g*
+2012-06-26 11:08:42,kevin,"Ich glaube, das prüft auf Standardkonformität, also ohne gcc-Erweiterungen"
+2012-06-26 11:09:17,stultus,Hört sich so an als obs sehr schnell vieles was man schreibt kaputtmacht *g*
+2012-06-26 11:09:41,kevin,Ja ;-)
+2012-06-26 11:09:51,kevin,Wobei da schon -Wextra schlimm genug ist
+2012-06-26 11:10:29,Th3Falc0n,"kevin: habs gefixt, jetzt restartet er nurnoch :D"
+2012-06-26 11:11:07,kevin,Schön
+2012-06-26 11:11:27,kevin,"Aber ganz ehrlich: Dass du ""kompiliert nicht"" selber erkennst, würde ich in Zukunft schon erwarten"
+2012-06-26 11:12:09,Th3Falc0n,ich habs überlesen
+2012-06-26 11:12:12,Th3Falc0n,http://pastebin.com/irbF3m23
+2012-06-26 11:14:17,kevin,Was soll ich damit machen? Die interessante Zeile raussuchen?
+2012-06-26 11:14:17,kevin,   1: v=06 e=0000 i=0 cpl=0 IP=0008:00100e5d pc=00100e5d SP=0010:00100e3c EAX=00000000
+2012-06-26 11:14:26,rsoft___,hi!
+2012-06-26 11:15:19,Th3Falc0n,kevin: ich versteh die zeile aber nicht...
+2012-06-26 11:15:27,Th3Falc0n,deswegen
+2012-06-26 11:15:31,rsoft,hallo zusammen! wie geht's?
+2012-06-26 11:15:37,Th3Falc0n,"hi rsoft, gut"
+2012-06-26 11:15:43,rsoft,:)
+2012-06-26 11:15:51,kevin,Die Zeile heißt: Exception 6 mit Errorcode 0 and cs:eip 0x8:0x100e5d.
+2012-06-26 11:15:59,kevin,-d
+2012-06-26 11:16:20,kevin,Exception 6 ist #UD
+2012-06-26 11:16:35,kevin,Invalid opcode oder so
+2012-06-26 11:16:53,Th3Falc0n,WTF?
+2012-06-26 11:17:57,stultus,"Naja, wenn man Daten ausführt kann sowas fix passieren"
+2012-06-26 11:18:23,Th3Falc0n,am 100e5d stehen aber keine daten sondern mein pmm_alloc
+2012-06-26 11:18:30,kevin,"Und wenn man falsch mappt, kann es auch leicht passieren, dass Daten dort stehen, wo man meint, dass eigentlich Code sein sollte"
+2012-06-26 11:18:55,kevin,"Alternativ ist selbstmodifizierender Code auch was nettes, was man gern unabsichtlich produziert"
+2012-06-26 11:19:23,stultus,"Moment, selbstmodifizierend unabsichtlich? Wie schafft man das :/"
+2012-06-26 11:19:28,Th3Falc0n,"hmm, das kann man ja nachgucken"
+2012-06-26 11:20:35,kevin,"stultus: Auf eine Page schreiben, von der man meint, es sei eine Datenpage, aber in Wirklichkeit ist es unbeabsichtigter Shared Memory?"
+2012-06-26 11:21:26,stultus,"Ok, das würde ich nicht mehr unbedingt als selbstmodifizierend anführen, der eigene prozess wird ja vermutlich trotzdem nicht den eigenen code schreiben meistens"
+2012-06-26 11:22:09,kevin,"Sowas macht man im Kernel, damit es sich lohnt"
+2012-06-26 11:28:50,rsoft,ich arbeite momentan am idt
+2012-06-26 11:31:14,rsoft,"und habe eine frage: ist die c-schreibweise ""offset = (uint32_t)interrupthandler"" so richtig?"
+2012-06-26 11:32:03,Th3Falc0n,in welchem kontext?
+2012-06-26 11:32:43,rsoft,als offset für einen idt-eintrag
+2012-06-26 11:33:09,Th3Falc0n,was ist interrupthandler?
+2012-06-26 11:33:37,rsoft,"eine void-funktion, welche etwas auf den bildschirm schreibt und dann ""while(1);"""
+2012-06-26 11:34:34,stultus,rsoft: Jein.
+2012-06-26 11:34:45,stultus,"Prinzipiell funktioniert das so wie du das denkst, weil du nen while(1); da hast."
+2012-06-26 11:34:53,stultus,praktisch macht die Funktion natürlich ret und nicht iret.
+2012-06-26 11:35:12,rsoft,also muss ich mit inline-asm da ein iret hinterpacken?
+2012-06-26 11:35:23,stultus,Letztendlich willst du Assemblerstubs eintragen die dann aus ner Funktion per Calling Convention normale Funktionen aufrufen.
+2012-06-26 11:35:35,rsoft,"ja, danke#"
+2012-06-26 11:35:35,stultus,"ehm, aus ner Tabelle mit Funktionen natürlich..."
+2012-06-26 11:35:40,rsoft,ja
+2012-06-26 11:35:45,Th3Falc0n,Und du musst den prozessortstatus speichern und wiederherstellen
+2012-06-26 11:35:51,rsoft,"hm, ok"
+2012-06-26 11:36:23,rsoft,aber leider schlägt das sogar mit while(1); fehl :/
+2012-06-26 11:36:28,Th3Falc0n,wobei manche sachen automatisch auf den stack wandern und andere nicht
+2012-06-26 11:37:00,rsoft,hmm
+2012-06-26 11:37:14,rsoft,irgendeinen tipp für mich?
+2012-06-26 11:37:24,stultus,"öh, ja"
+2012-06-26 11:37:36,Th3Falc0n,int_stub.S
+2012-06-26 11:37:38,stultus,nicht jeden Mist glauben den wir dir bestätigen und den korrekten Aufbau eines IDT-Eintrages verwenden *g*
+2012-06-26 11:37:48,rsoft,:|
+2012-06-26 11:37:48,stultus,http://www.lowlevel.eu/wiki/IDT
+2012-06-26 11:38:15,rsoft,nach diesem artikel habe ich meine funktion zum hinzufügen gebaut
+2012-06-26 11:39:09,rsoft,etwas gutes: wenn ich den interrupt nicht aufrufe gibt es keinen double fault
+2012-06-26 11:39:41,stultus,Was passiert denn vor dem double fault?
+2012-06-26 11:39:51,stultus,Vermutlich passt einfach irgendeine Berechtigung nicht
+2012-06-26 11:40:04,rsoft,"ich glaube, ich habe die ursache jetzt"
+2012-06-26 11:40:11,stultus,Oder du bist grad in einem Kontext vom Paging in dem deine Routine fehlt.
+2012-06-26 11:40:17,rsoft,ich habe den selector nicht richtig behandelt
+2012-06-26 11:42:26,rsoft,wie muss denn der verweis auf den selector aussehen/wie könnte ich das lesbar in c gestalten?
+2012-06-26 11:43:50,rsoft,ha!
+2012-06-26 11:43:57,rsoft,geschafft!
+2012-06-26 11:43:57,kevin,Was ist ein Verweis auf einen Selektor?
+2012-06-26 11:44:05,kevin,Ein int-Pointer?
+2012-06-26 11:44:06,stultus,&cs ;)
+2012-06-26 11:44:30,stultus,Bräuchte man nur noch sämtliche Register memorymapped *g*
+2012-06-26 11:44:38,rsoft,ich hab einfach 0x08 eingesetzt und es hat funktioniert o.o
+2012-06-26 11:44:45,stultus,(Gibt es eigentlich Architekturen die das machen?)
+2012-06-26 11:46:00,kevin,"Hm, Erik wollte doch komisches Zeug machen"
+2012-06-26 11:46:21,kevin,Wo man auf die Register anderer CPUs zugreifen kann
+2012-06-26 11:46:45,stultus,Hört sich problematisch an
+2012-06-26 11:47:57,Th3Falc0n,kevin: 14 war #PF oder?
+2012-06-26 11:48:01,kevin,Ja
+2012-06-26 11:48:45,stultus,kevin: ne Funktion für tyndur um qemu-logs zu parsen und wichtige Konstanten zu übersetzen? ;)
+2012-06-26 11:49:08,kevin,Das bringt uns nichs
+2012-06-26 11:49:21,kevin,"Wenn, dann braucht er einen eingebauten Kernelgenerator"
+2012-06-26 11:49:26,stultus,Eingabe bleibt immernoch an allen erfahrenen hängen meinst du?
+2012-06-26 11:49:27,stultus,Ok :d
+2012-06-26 11:49:55,kevin,"Es ist nicht so, dass die Information nicht verfügbar wäre"
+2012-06-26 11:50:14,kevin,Das Intel-Manual ist für jeden verfügbar. Nur müsste man halt auch reinschauen.
+2012-06-26 11:50:32,stultus,"Stimmt natürlich, die Manuals sind halt nur grob abschreckend"
+2012-06-26 11:50:55,kevin,"Ja, teilweise schon"
+2012-06-26 11:51:11,kevin,"Aber es geht halt auch nicht, dass jeder seine Fragen ins IRC steht und ich soll dann für ihn im Manual nachschauen..."
+2012-06-26 11:51:30,Th3Falc0n,ich probier jetzt erstmal tyndur aus...
+2012-06-26 11:52:05,kevin,"stultus: Bei kniffligen Fragen (insbesondere zu C) lasse ich das schon mal mit mir machen, aber nicht, wenn es einfach nur darum geht, eigentlich verständlichen Text zu lesen."
+2012-06-26 11:52:38,stultus,Verständlich
+2012-06-26 11:53:10,rsoft,mein df-handler hat geklappt :D
+2012-06-26 11:53:45,th3falc0n|kirc,:D
+2012-06-26 11:55:08,Th3Falc0n,kevin: wie funktioniert shutdown bei týndur?
+2012-06-26 11:55:34,stultus,ich kann das auch beantworten ;)
+2012-06-26 11:55:34,stultus,garnicht.
+2012-06-26 11:55:42,Th3Falc0n,schlecht
+2012-06-26 11:55:58,stultus,Du bist gerne eingeladen irgendeine art von PowerManagment einzubauen ;)
+2012-06-26 11:56:18,Th3Falc0n,ich will erstmal mein eigenes os zum laufen bringen
+2012-06-26 11:56:22,stultus,"APM ist unschön, und ACPI wird richtig doof. und ACPI will man haben wenn es ginge *g*"
+2012-06-26 11:57:14,stultus,Was man natürlich eher trivial nachrüsten könnte wäre nen riesenhaufen shutdown-methoden um wenigstens caches leer zu kriegen bevor man abschaltet.
+2012-06-26 11:57:30,stultus,"aber das ist ja auch nur die halbe Miete. Halt so Win95-Niveau ""sie können ihren Computer jetzt ausschalten"""
+2012-06-26 11:58:07,max,Ich finds die ganze Miete minus Epsilon
+2012-06-26 12:01:36,kevin,stultus: Welche Caches? *g*
+2012-06-26 12:01:46,stultus,kevin: die theoretischen aus LIOv2? ;)
+2012-06-26 12:02:00,noonex,moin
+2012-06-26 12:02:07,kevin,Du meinst tmp:/ und so? ;-)
+2012-06-26 12:02:09,stultus,moin
+2012-06-26 12:02:16,kevin,Was anderes ist ja noch nicht LIOv2
+2012-06-26 12:02:18,kevin,Moin NoOneX
+2012-06-26 12:02:21,stultus,grade für tmp ist das essentiell *g*
+2012-06-26 12:02:25,kevin,Total *g*
+2012-06-26 12:02:29,stultus,"Geht ja ums Prinzip, was gemacht werden muss"
+2012-06-26 12:02:43,kevin,"Jo, mit einem echten LIOv2-System sollte man vor dem Ausschalten ein sync machen"
+2012-06-26 12:13:40,Th3Falc0n,kevin: ich glaub ich weiss wo mein fehler lag.
+2012-06-26 12:14:14,Th3Falc0n,beim 1. versuch hab ich immer vergessen den kontext des tasks zu laden
+2012-06-26 12:14:26,Th3Falc0n,und beim 2. versuch hab ich nie nen neuen kontext erstellt.
+2012-06-26 12:16:47,noonex,"lässt sich bei bochs die ausgabe von ""info tab"" irgendwie begrenzen?"
+2012-06-26 12:18:46,stultus,"Handbuch fragen, die meisten hier verwenden qemu ;)"
+2012-06-26 12:19:17,Th3Falc0n,jo :)
+2012-06-26 12:23:46,noonex,ok..leider steht da nichts zu...da muss ich wohl den buffer für mein terminal erhöhen :D
+2012-06-26 12:24:21,stultus,"Hm, tee oder ähnliches könnte dir auch helfen."
+2012-06-26 12:24:36,stultus,"Output in eine Datei klonen, danach kann man ja grep, less und alles was man will verwenden"
+2012-06-26 12:25:14,noonex,"stimmt das würde auch gehen...hab beim kde-terminal das scrolling einfach auf unlimited gestellt, das hat auch geholfen :D"
+2012-06-26 12:53:20,PatrickBic,kevin: was passiert wenn ich den kernel-stack nicht angebe und trotzdem den ring wechsle?
+2012-06-26 12:56:45,bluecode,"was genau soll ""nicht angeben"" bedeuten?"
+2012-06-26 13:17:02,PatrickBic,bluecode: naja... man move'd den ja von <irgendwo> (da wo grub den hinsteckt) nach ner fixen position
+2012-06-26 13:17:14,PatrickBic,und dann sagt man die adresse im tss entry
+2012-06-26 13:19:46,kevin,"Echt, sagt man die dort?"
+2012-06-26 13:20:02,kevin,Ich hab da eigentlich immer einen neuen taskspezifischen Stack stehen
+2012-06-26 13:20:34,kevin,"Auf dem der gespeicherte Prozessorzustand in Ruhe rumliegen kann, während der Task nicht aktiv ist"
+2012-06-26 13:20:49,kevin,Mit nur einem einzigen Kernelstack müsstest du den Zustand irgendwoanders hinspeichern
+2012-06-26 13:23:24,DesL,moin
+2012-06-26 13:32:48,PatrickBic,kevin: ss0 sollte doch den kernel-stack halt oder?
+2012-06-26 13:33:10,PatrickBic,*esp0
+2012-06-26 13:33:10,PatrickBic,so
+2012-06-26 13:33:13,kevin,ss0 ist der ss-Selektor
+2012-06-26 13:33:24,PatrickBic,jo
+2012-06-26 13:33:29,kevin,"Jo, esp0 ist der Stack, auf den gewechselt wird, wenn man in Ring 0 zurückspringt"
+2012-06-26 13:33:30,PatrickBic,und esp der pointer
+2012-06-26 13:33:49,PatrickBic,hat da auch jeder task seinen eigenen? 
+2012-06-26 13:34:00,kevin,"Muss nicht, aber wenn du dem Tutorial folgst, dann ja"
+2012-06-26 13:34:09,kevin,Das theoretische Minimum ist einer pro CPU
+2012-06-26 13:35:25,PatrickBic,ich hab im moment einen gesamten
+2012-06-26 13:36:29,kevin,Wie funktioniert dein Multitasking?
+2012-06-26 13:36:39,kevin,"(Okay, ich ahne es... Gar nicht? *g*)"
+2012-06-26 13:38:15,PatrickBic,kevin: doch das hast du ja aufn bild gesehen (das wo du meintest das zuviele A's dabei sind)
+2012-06-26 13:38:34,kevin,"Für manche Werte von funktionieren, stimmt ;-)"
+2012-06-26 13:38:50,kevin,"Nein, aber im Ernst. Was passiert bei dir bei einem Interrupt? Irgendwohin musst du den Prozessorzustand ja speichern?"
+2012-06-26 13:52:37,PatrickBic,KVM internal error. Suberror: 1
+2012-06-26 13:52:37,PatrickBic,emulation failure
+2012-06-26 13:52:37,PatrickBic,cool :P
+2012-06-26 13:55:29,kevin,Ich würde für OS-Dev ja eher die klassische qemu-Emulation (TCG) benutzen als KVM...
+2012-06-26 14:07:12,rsoft,"hmm - sobald ich 14 oder mehr idt-einträge hinzufüge gibt grub mir einen ""unsupported format""-fehler!?"
+2012-06-26 14:07:38,stultus,rsoft: Hast du deinen mb-header in einer eigenen Sektion?
+2012-06-26 14:08:00,rsoft,muss ich mal gucken
+2012-06-26 14:08:21,rsoft,ja
+2012-06-26 14:08:40,stultus,und die wird auch annen anfang des binary gepackt?
+2012-06-26 14:08:49,stultus,"bzw, erste 4k war glaub ich pflicht."
+2012-06-26 14:08:55,rsoft,hat bis jetzt immer geklappt
+2012-06-26 14:09:08,stultus,"naja, bei ner kleinen binary klappt das immer..."
+2012-06-26 14:09:27,rsoft,dann setze ich den mal manuell an den anfang (im linker vor *.o)
+2012-06-26 14:10:32,rsoft,hmm
+2012-06-26 14:11:17,rsoft,"wie kann ich den linker übereden, jede datei nur einmal zu lesen, auch wenn ich ihm sie mehrmals vorwerfe(einmal explizit und einmal durch die *.o-maske)?"
+2012-06-26 14:11:35,rsoft,oder muss ich die dann zwangsläufig anders nennen?
+2012-06-26 14:12:41,Jitter,warum gibst du ihm eine datei mehrmals?
+2012-06-26 14:13:06,rsoft,weil der multiboot-header in den ersten 4k stehen muss
+2012-06-26 14:13:22,Jitter,"wenn du ihn in einer eigenen sektion hast, dann ist das nicht nötig"
+2012-06-26 14:13:31,rsoft,hmm
+2012-06-26 14:13:35,Jitter,also .section .irgendwas ist damit gemeint
+2012-06-26 14:13:55,rsoft,ah
+2012-06-26 14:15:19,rsoft,"also ich habe den linker jetzt dazu gezwungen, indem ich den loader/mb-header mit der endung .object versehen habe. dadurch greift die *.o-maske nicht mehr"
+2012-06-26 14:15:51,stultus,http://www.lowlevel.eu/wiki/Teil_4_-_Hello_World#Multiboot-Header_in_einer_eigenen_Sektion
+2012-06-26 14:15:53,Jitter,findest du das nicht unschön?
+2012-06-26 14:16:34,stultus,http://gcc.gnu.org/onlinedocs/gcc/Variable-Attributes.html#Variable-Attributes unter section
+2012-06-26 14:16:46,rsoft,danke
+2012-06-26 14:16:54,rsoft,werde ich mir jetzt angucken
+2012-06-26 14:17:24,stultus,Und nicht ja sagen wenn du nicht weißt worums geht ;)
+2012-06-26 14:17:37,stultus,Machts debuggen bzw dabei helfen nicht grade einfacher
+2012-06-26 14:18:41,rsoft,"sorry, dachte an labels"
+2012-06-26 14:18:48,rsoft,aber klar - sektionen
+2012-06-26 14:20:30,rsoft,"vielen, vielen dank!"
+2012-06-26 14:20:32,rsoft,:D
+2012-06-26 14:22:09,rsoft,"jetzt funktioniert auf jeden fall alles und das beste: ich weiss, warum :D"
+2012-06-26 14:22:44,stultus,^^
+2012-06-26 14:22:55,stultus,Und nebenbei entfällt jede Menge unsauberes GEhacke mit dem Linker und Reihenfolgen
+2012-06-26 14:23:08,stultus,"Je einfacher eine Lösung ist, desto besser ist sie meistens auch ;)"
+2012-06-26 14:23:19,stultus,also einfach im sinne von simpel&elegant
+2012-06-26 14:25:21,rsoft,genau :)
+2012-06-26 14:26:37,rsoft,ich habe leider noch etwas unschönes gehacke: das hinzufügen der exceptions zum gdt
+2012-06-26 14:27:57,rsoft,"da gibt's dann erstmal so 18 recht gleiche aufrufe der hinzufügen-funktion(nur index und offset ändern sich, und das von 0 bis 17 und 1 bis 18)"
+2012-06-26 14:28:23,rsoft,das ist natürlich nicht wiklich elegant :/
+2012-06-26 14:29:08,stultus,Schleife?
+2012-06-26 14:30:01,rsoft,"das geht leider (meines wissens nach) nicht, da sich die funktionsnamen ändern(""intr_stub_1"" bis ""intr_stub_18"")"
+2012-06-26 14:30:26,rsoft,"ausser, wenn man das auf präprozessor-ebene machen würde"
+2012-06-26 14:30:39,stultus,Was tust du da mit Funktionsnamen als String?
+2012-06-26 14:30:54,rsoft,"nee, nicht als string"
+2012-06-26 14:31:04,stultus,"aber Makromagie wäre ne möglichkeit, jo"
+2012-06-26 14:31:09,rsoft,"beispiel: add_idt_entry(0, (uint32_t)intr_stub_1, 0x08, TYPE_INT_GATE, 0, 1);"
+2012-06-26 14:31:22,stultus,"aber optimal, stubs in asm, die aus ner Funktionstabelle callen."
+2012-06-26 14:31:49,rsoft,"ja, ist noch keine tabelle :/"
+2012-06-26 14:32:09,stultus,"Wobei, stimmt, löst das Problem auch noch nicht"
+2012-06-26 14:32:15,stultus,"Dann Präprozessormagie, jo"
+2012-06-26 14:32:20,rsoft,hmm
+2012-06-26 14:32:27,stultus,Dann ist immerhin die Codeduplikation weg
+2012-06-26 14:32:47,rsoft,ja
+2012-06-26 14:36:49,rsoft,"stultus, hast du ne idee, wie ich das mit dem präprozessor machen könnte?"
+2012-06-26 14:39:06,stultus,"#define Makro(x, y, z) printf(""Hello #x #y: %d\n"", z); ?"
+2012-06-26 14:39:21,stultus,oder schau dir an wies in tyndur aussieht
+2012-06-26 14:39:28,rsoft,"also nur als makro, und nicht als loop?"
+2012-06-26 14:39:35,rsoft,"danke, stultus"
+2012-06-26 14:40:00,stultus,"Oh, besser, der tutorialkernel hats fast genauso"
+2012-06-26 14:40:01,stultus,http://git.tyndur.org/?p=tutorial.git;a=blob_plain;f=kernel/int_stub.S;hb=HEAD
+2012-06-26 14:40:02,stultus,jo
+2012-06-26 14:40:26,stultus,"ne loop wird zur Laufzeit ausgeführt, da kommst du mit Makro nicht sehr viel weiter in dem Fall ;)"
+2012-06-26 14:40:30,rsoft,das ist aber nur der asm-teil
+2012-06-26 14:40:48,rsoft,und ich rede über den c-teil
+2012-06-26 14:40:54,stultus,http://git.tyndur.org/?p=tutorial.git;a=blob;f=kernel/intr.c;h=ee353b47a1613c72dcece0ddf2f53cf322d9dd5f;hb=HEAD
+2012-06-26 14:40:58,stultus,alles da *g*
+2012-06-26 14:41:11,stultus,"http://git.tyndur.org/?p=tutorial.git;a=tree;f=kernel;hb=HEAD überhaupt, der Code beißt nicht"
+2012-06-26 14:41:17,rsoft,danke
+2012-06-26 14:41:54,rsoft,"aua, im tut ist das ohne makro geregelt"
+2012-06-26 14:42:19,stultus,"auf C-Seite, ja"
+2012-06-26 14:42:28,rsoft,genau die meine ich ja
+2012-06-26 14:42:34,stultus,"naja, wenns nen einzeiler ist."
+2012-06-26 14:42:37,stultus,je nachdem
+2012-06-26 14:42:42,stultus,Muss man abwägen was man mag *g*
+2012-06-26 14:42:59,rsoft,ich glaube ich werde das mit makros machen
+2012-06-26 14:43:17,Jitter,was schreibt man denn in den kommentar zu einem ssh public key?
+2012-06-26 14:43:28,stultus,"""Ich mag Äpfel"""
+2012-06-26 14:43:47,rsoft,"""42"""
+2012-06-26 14:43:55,stultus,"Der ist nur zur User-Info da, ich belass es also normalerweise bei ner Kontaktmailadresse oder user@standardort"
+2012-06-26 14:51:19,rsoft,"nee, das mit den makros bereitet mir zu viele kopfschmerzen"
+2012-06-26 14:59:57,kevin,"Vielleicht gibt es ja einen Grund, warum das Tut es so macht"
+2012-06-26 15:01:31,stultus,"kevin: Du kannst doch kein hinterfragen von Tatsachen fordern, sowas lernt man heutzutage doch nichtmal mehr inner Uni ;)"
+2012-06-26 15:02:10,kevin,"Verlange ich doch gar nicht, ich verlange nur, dass er blind dem Tutorial folgt *g*"
+2012-06-26 15:02:24,stultus,"Ok, _das_ lernt man :D"
+2012-06-26 15:06:15,kevin,"stultus: Also bei den meisten müsste man froh sein, wenn sie wenigstens gelernt hätten, das Tutorial überhaupt zu lesen. Von der offiziellen Doku ganz zu schweigen..."
+2012-06-26 15:10:18,stultus,"Nah, offizielle Doku ist zu kompliziert ;)"
+2012-06-26 15:10:36,stultus,Mehr als drauf hinweisen kann man leider auch schlecht :/
+2012-06-26 15:11:47,rsoft,gibt es bei lowlevel eigentlich auch ein kaputtes-os-screenshot-topic?
+2012-06-26 15:14:17,bluecode,ist das nicht das gleiche wie das os-screenshot-topic?
+2012-06-26 15:14:50,rsoft,"also bei osdev gibts ein extra ""lustige"" bugs-screenshot-topic"
+2012-06-26 15:15:09,stultus,ham wir nicht
+2012-06-26 15:15:18,stultus,aber wir haben auch insgesamt nicht allzu viele screenshots *g*
+2012-06-26 15:15:21,bluecode,wir haben aber kaputte OS
+2012-06-26 15:15:29,stultus,full ack :D
+2012-06-26 15:15:51,rsoft,:D
+2012-06-26 15:16:16,rsoft,"mein code macht etwas witziges, wenn ich durch 0 teile(in c) :D"
+2012-06-26 15:17:09,kevin,Erstell halt einen Thread
+2012-06-26 15:17:27,rsoft,muss ich mich erstmal anmelden
+2012-06-26 15:59:20,kevin,"Paprikachu_: Kann es sein, dass deine Verbindung ein kleines Problem hat?"
+2012-06-26 16:00:58,stultus,"Paprikachu: melden, verbindungsprobleme beheben."
+2012-06-26 16:01:13,stultus,Mal schauen ob überhaupt ne msg durchkommt.
+2012-06-26 16:02:38,kevin,"Naja, notfalls muss halt ein +b durchkommen"
+2012-06-26 16:04:45,stultus,Paprikachu_: letzter Versuch....
+2012-06-26 16:05:09,stultus,oder wolltest du ne längere Frist? Aber so lang wie das schon geht...
+2012-06-26 16:06:57,rsoft,hmm
+2012-06-26 16:07:01,rsoft,komisch
+2012-06-26 16:13:00,rsoft,auch gut
+2012-06-26 16:13:18,rsoft,"und, was machst du so, stultus?"
+2012-06-26 16:14:22,stultus,"Wie, was mach ich so? *g*"
+2012-06-26 16:14:51,stultus,"OS-Dev-Mäßig? Demnächst (tm) Grafik für tyndur fixen, fertigmachen und nach master bringen. sonst wenig."
+2012-06-26 16:18:27,kevin,Demnächst im Sinn von RSN? ;-)
+2012-06-26 16:20:24,stultus,RSN?
+2012-06-26 16:22:56,kevin,http://www.catb.org/jargon/html/R/Real-Soon-Now.html
+2012-06-26 16:23:21,XanClic,Ich kenn RSN nur von den Sternklassen
+2012-06-26 16:23:46,XanClic,"Oh Be A Fine Girl, Kiss Me – Smack Right Now (OBAFGKM/SRN)"
+2012-06-26 16:23:59,XanClic,Wobei die Reihenfolge der Dreiergruppe egal ist
+2012-06-26 16:31:57,stultus,Ah
+2012-06-26 16:32:07,stultus,Ich präferier ja eher das klassische When it's done 
+2012-06-26 16:32:36,stultus,"Duke Nukem ist erschienen, da wird der ganze kleinkram auch noch *g*"
+2012-06-26 16:33:11,kevin,"Kein Problem, wenn es demnächst mal done ist *g*"
+2012-06-26 17:08:34,rsoft,"arbeite momentan daran, tastatureingaben zu verarbeiten/eine anständige schnittstelle zum hinzufügen von irqs zu basteln"
+2012-06-26 17:08:37,rsoft,:D
+2012-06-26 17:38:55,rsoft,hallo falcon!
+2012-06-26 17:42:27,Th3Falc0n,hi rsoft 
+2012-06-26 17:43:50,rsoft,wie gehts?
+2012-06-26 17:46:59,Th3Falc0n,naja morgen magenspiegelung :(
+2012-06-26 17:47:27,Th3Falc0n,und ansonsten ganz ok
+2012-06-26 17:47:39,DesL,besser magen als darm
+2012-06-26 17:47:45,XanClic,Da sagst du was
+2012-06-26 17:48:28,Th3Falc0n,hmm joa..
+2012-06-26 17:48:50,XanClic,"Man könnte sagen, zumindest besser als beides zusammen"
+2012-06-26 18:02:35,rsoft,hmm
+2012-06-26 18:02:43,rsoft,dann alles gute!
+2012-06-26 18:03:36,Th3Falc0n,danke rsoft 
+2012-06-26 18:28:14,livinskull,nabend
+2012-06-26 18:30:45,rsoft,hallo livingskull!
+2012-06-26 18:31:03,rsoft,*grrr* blöde function pointer
+2012-06-26 18:31:25,livinskull,für was brauchst du function pointer? warst du nicht gestern noch bei gdt? :P
+2012-06-26 18:31:34,stultus,"Wieso blöd, die sind ungemein praktisch *g*"
+2012-06-26 18:31:46,stultus,Kaum etwas was so elegant probleme löst wie ne gut designte Sprungtabelle.
+2012-06-26 18:31:49,rsoft,bin gestern mit gdt fertig geworden und bin jetzt bei idt
+2012-06-26 18:32:14,rsoft,ich komme nur leider nicht weiter(mit den function pointern)
+2012-06-26 18:32:33,livinskull,und wo ist das problem?
+2012-06-26 18:33:17,rsoft,"ich schaffe es nicht, sie in einem array einzusetzen(das array soll durch eine funktion mit function pointern befüllt werden können)"
+2012-06-26 18:34:14,livinskull,typedef char* (*MYFUNC)(const char *); MYFUNC myArray[x]; myArray[0] = func1;
+2012-06-26 18:34:16,livinskull,;)
+2012-06-26 18:35:40,livinskull,abgesehen davon für was brauchst dui function ptr bei der idt? o.O
+2012-06-26 18:36:02,livinskull,registrierbare handler?
+2012-06-26 18:36:07,rsoft,genau
+2012-06-26 18:36:13,rsoft,error: passing argument 2 of ‘register_intr_handler’ from incompatible pointer type :/
+2012-06-26 18:36:26,stultus,Definition?
+2012-06-26 18:36:33,rsoft,"void register_intr_handler(int index, MYFUNC command);"
+2012-06-26 18:36:48,stultus,wie ist MYFUNC deklariert?
+2012-06-26 18:37:02,stultus,außerdem sind typen groß doof.
+2012-06-26 18:37:08,rsoft,"so, wie livinskull es vorgeschlagen hat"
+2012-06-26 18:37:14,stultus,so schreiben 99% der Leute Makros.
+2012-06-26 18:37:16,stultus,lulz
+2012-06-26 18:37:20,livinskull,O.o
+2012-06-26 18:37:26,rsoft,"ja, werde ich noch ändern"
+2012-06-26 18:37:26,stultus,dann pass den typ doch mal an :D
+2012-06-26 18:37:35,rsoft,woran?
+2012-06-26 18:37:38,stultus,Naja
+2012-06-26 18:37:48,stultus,"du hast keine funktionen die char* annehmen und char* zurückgeben, oder?"
+2012-06-26 18:37:56,rsoft,"oh, moment"
+2012-06-26 18:38:04,stultus,Für nen Interrupthandler wäre beides als int erheblich angebrachter
+2012-06-26 18:38:22,stultus,"(Interruptnummer reinschieben für default-handler, Rückgabewert raus damit der asm-stub den in ein Register setzen kann wo er dann hingehört)"
+2012-06-26 18:39:13,livinskull,ehehe ich hab das damals mit nem array aus void* pointern gemacht :P
+2012-06-26 18:40:14,rsoft,"ich hab jetzt versucht, das ""char"" durch ""void"" zu ersetzen(in der typendefinition) und gcc gibt mir noch immer den gleichen fehler :/"
+2012-06-26 18:40:38,Th3Falc0n,re
+2012-06-26 18:40:44,rsoft,wb
+2012-06-26 18:40:46,livinskull,kompletter code wäre hilfreich...
+2012-06-26 18:40:48,Th3Falc0n,"rsoft: ich hab auch dynamische handler, moment ich sags dir"
+2012-06-26 18:41:07,rsoft,livinskull: ich kann ihn eben nach pastebin kopieren
+2012-06-26 18:41:37,Th3Falc0n,https://github.com/Th3Falc0n/mikrOS/blob/master/kernel/os/idt.c
+2012-06-26 18:41:51,Th3Falc0n,static void (*handlers[IDT_ENTRIES])();
+2012-06-26 18:42:10,Th3Falc0n,handlers[cpu->intr]();
+2012-06-26 18:42:19,Th3Falc0n,definition bzw aufruf
+2012-06-26 18:42:53,Th3Falc0n, void (*fn)() < funktionsargument beim register_intr_handler
+2012-06-26 18:43:39,rsoft,hmm
+2012-06-26 18:43:45,rsoft,ich poste mal nach pastebin
+2012-06-26 18:43:56,rsoft,http://pastebin.com/bYnuvK0h
+2012-06-26 18:44:06,rsoft,"das ist etwas ""destilliert"""
+2012-06-26 18:45:15,livinskull,typedef void* (*MYFUNC)(const void *); => typedef void (*MYFUNC)();
+2012-06-26 18:45:26,livinskull,du willst doch keine void pointer als parameter und rückgabe ;)
+2012-06-26 18:45:36,rsoft,"jau, danke"
+2012-06-26 18:45:41,rsoft,probier ich mal aus
+2012-06-26 18:46:06,rsoft,immer noch der selbe fehler :(
+2012-06-26 18:46:08,livinskull,MYFUNC (*registered_intr_handlers[0xFF]); <= und was zum henker ist das?
+2012-06-26 18:46:26,rsoft,ups
+2012-06-26 18:46:35,taljeth,livinskull: typedef void (*MYFUNC)(void);
+2012-06-26 18:46:35,rsoft,so sollte das nicht sein
+2012-06-26 18:46:42,taljeth,Leere Parameterliste gibt es nicht
+2012-06-26 18:46:53,livinskull,müsste beides gehen je nach compiler optionen
+2012-06-26 18:47:16,taljeth,"Ja, aber ist trotzdem deprecated"
+2012-06-26 18:47:16,rsoft,"hmm, geht immer noch nicht"
+2012-06-26 18:48:09,rsoft,nach dem entfernen eines weiteren pointers kompiliert es :D
+2012-06-26 18:48:13,livinskull,^^
+2012-06-26 18:48:16,rsoft,"vielen, vielen dank!"
+2012-06-26 18:48:35,livinskull,vllt funktionierts ja auch ;)
+2012-06-26 18:49:50,livinskull,"taljeth: immer was zum meckern, eh? :P"
+2012-06-26 18:50:00,livinskull,"kürzestes C programm: ""main;"""
+2012-06-26 18:50:01,livinskull,^^
+2012-06-26 18:50:09,taljeth,wtf? :-/
+2012-06-26 18:50:23,Th3Falc0n,livinskull: ne leere datei kompiliert auch
+2012-06-26 18:50:26,livinskull,ich mach zu viel code-golfing :/
+2012-06-26 18:51:15,taljeth,"Ich behaupte einfach mal, dass das kein C-Programm ist"
+2012-06-26 18:51:16,livinskull,"ne leere Datei erstellt aber keine binary, wenn ohne defines in compileroptionen"
+2012-06-26 18:51:29,taljeth,Auch wenn gcc es schluckt
+2012-06-26 18:51:39,livinskull,"""programm"" is es eh nich"
+2012-06-26 18:51:40,livinskull,xD
+2012-06-26 18:51:54,taljeth,Und auch wenn die ersten vier Instruktionen im Programm vorhersagbar sind *g*
+2012-06-26 18:55:18,bluecode,"mit c99 soll ""main;"" legal sein?"
+2012-06-26 18:55:27,livinskull,ne
+2012-06-26 18:55:29,livinskull,ohne c99
+2012-06-26 18:55:30,livinskull,^^
+2012-06-26 18:55:37,livinskull,einfach mit gcc file.c
+2012-06-26 18:55:39,livinskull,;)
+2012-06-26 18:56:04,bluecode,das ist einfach nur falsch
+2012-06-26 18:56:09,bluecode,mindestens moralisch
+2012-06-26 18:56:52,livinskull,das war ne shortening challenge von spoj ;)
+2012-06-26 18:57:04,taljeth,"Gültiges C99 ist es schon allein deswegen nicht, weil es mindestens int main; heißen müsste"
+2012-06-26 18:57:10,taljeth,Aber das wäre moralische immer noch falsch. ;-)
+2012-06-26 18:57:23,taljeth,Und undefiniert eh
+2012-06-26 18:57:40,bluecode,achso jetzt
+2012-06-26 18:57:44,bluecode,das soll ne variable sein
+2012-06-26 18:57:58,taljeth,Wie sollte denn daraus eine Funktion werden?
+2012-06-26 18:58:08,bluecode,ich hab keine Ahnung was vor c99 war
+2012-06-26 18:58:21,bluecode,im speziellen nicht was das k&r zeug mit parameterlisten tut
+2012-06-26 18:58:59,livinskull,"naja. ""variable"". n label halt, die libc wird da hübsch draufsprungen und verrecken :P"
+2012-06-26 18:59:09,livinskull,s/libc/crt
+2012-06-26 19:02:43,rsoft,so. den rest des keyboard handlings(beinahe alles) mache ich morgen :P
+2012-06-26 19:03:19,rsoft,ich bin dann mal weg
+2012-06-26 19:08:53,taljeth,livinskull: Das ist eine ganz normale globale int-Variable
+2012-06-26 19:09:12,livinskull,aber ne funtkion is auch ne variable :P
+2012-06-26 19:09:25,livinskull,intern
+2012-06-26 19:09:29,livinskull,deswegen geht das ja
+2012-06-26 19:09:37,livinskull,sonst würd ihm ja main fehlen
+2012-06-26 19:09:58,livinskull,alles symbole in der smybol-table halt
+2012-06-26 19:10:43,livinskull,"der linekr will bloss n symbol main, egal wies aussieht"
+2012-06-26 19:10:54,livinskull,und die crt springt dahin wenns da is
+2012-06-26 19:21:03,bluecode,oh reginald
+2012-06-26 19:21:06,bluecode,I disagree!
+2012-06-26 19:27:42,micha,Moin
+2012-06-26 19:28:00,noonex,moin
+2012-06-26 19:50:09,rsoft,wieder da
+2012-06-26 20:52:36,rsoft,hmm
+2012-06-26 20:52:44,rsoft,hallo jitter!
+2012-06-26 21:02:40,micha,rsoft: dass er jitter heißt hast du mir zu verdanken. er heißt Jidder!!!
+2012-06-26 21:02:56,rsoft,"oh, ok"
+2012-06-26 21:03:09,rsoft,auch gut
+2012-06-26 21:03:15,rsoft,micha: wie gehts?
+2012-06-26 21:03:25,micha,so wie immer?
+2012-06-26 21:03:30,rsoft,aha
+2012-06-26 21:03:32,micha,ähhhh es geht nicht :)
+2012-06-26 21:03:39,rsoft,hmm
+2012-06-26 21:03:54,rsoft,sehr bedenklich ;)
+2012-06-26 21:03:57,micha,das bezieht sich auf das paging
+2012-06-26 21:04:01,rsoft,ah
+2012-06-26 21:04:11,rsoft,dann weiterhin viel glück!
+2012-06-26 21:04:27,micha,danke!
+2012-06-26 21:05:04,rsoft,"ach ja - mittlerweile laufen bei mir gdt und idt und sogar ein dummy-tastaturhandler(gibt immer ""Keypress!\n"" aus) :)"
+2012-06-26 21:09:43,livinskull,warum ist tyndur eigentlich so unperformant? :/
+2012-06-26 21:09:50,XanClic,Weil Microkernel
+2012-06-26 21:10:02,XanClic,"Ich habs schon immer gesagt, Microkernel sind unser Verderben"
+2012-06-26 21:10:05,XanClic,Aber auf mich hört ja keiner
+2012-06-26 21:10:06,Jitter,micha -.-
+2012-06-26 21:10:42,rsoft,XanClic: bitte was? ich kann dich nicht hören! ;)
+2012-06-26 21:12:00,livinskull,und warum kann gcc keine 64bit division ohne extra funktion? :/
+2012-06-26 21:13:47,Jitter,"weil die operation hinreichend komplex ist, um eine funktion zu rechtfertigen"
+2012-06-26 21:15:14,livinskull,"und warum heisst Jidder auf einmal Jitter, das beunruhigt mich"
+2012-06-26 21:15:22,livinskull,Jitter ist unschön
+2012-06-26 21:16:23,Jidter,kompromiss?
+2012-06-26 21:16:32,livinskull,besser
+2012-06-26 21:16:33,livinskull,:D
+2012-06-26 21:16:39,rsoft,hahaha
+2012-06-26 21:17:06,livinskull,jitter ist immer so negativ
+2012-06-26 21:17:27,Jidter,sagt ein lebender schädel
+2012-06-26 21:17:37,livinskull,ich rede von jitter nicht von jidder
+2012-06-26 21:17:38,livinskull,:P
+2012-06-26 21:17:44,rsoft,"meinst du jetzt ""jitter"" oder jitter/jidter/jidder? :P"
+2012-06-26 21:18:07,JanDing,das ist ...
+2012-06-26 21:18:27,stultus,"Wir hatten noch keinen Jitder, oder?"
+2012-06-26 21:18:46,rsoft,glaube nicht
+2012-06-26 21:19:21,livinskull,wer hat eigentlich die tyndur-sysinfo-cpuid-brand-string-detection verbrochen?
+2012-06-26 21:19:30,livinskull,docs nicht gelesen? :P
+2012-06-26 21:21:02,JanDing,warum docs lesen? wir können doch programmieren
+2012-06-26 21:21:12,rsoft,hahaha :D
+2012-06-26 21:21:29,livinskull,"das war ja auf so viele arten falsch, unglaublich"
+2012-06-26 21:21:55,rsoft,genau
+2012-06-26 21:22:28,JanDing,Warum Dokumentation lesen? Wir können doch programmieren!
+2012-06-26 21:22:34,JanDing,das ist jetzt auf ein paar arten weniger falsch
+2012-06-26 21:22:56,rsoft,schön! aber noch immer falsch genug! ;D
+2012-06-26 21:22:57,livinskull,lol
+2012-06-26 21:25:53,stultus,"livinskull: danke, gerne wieder :)"
+2012-06-26 21:26:14,livinskull,:P
+2012-06-26 21:26:15,stultus,"die chancen stehn jedenfalls gut dass das von mir war, so viele leute haben an sysinfo sonst nicht rumgedoktort mein ich"
+2012-06-26 21:26:32,livinskull,hab gestern n patch geschickt^^
+2012-06-26 21:26:56,livinskull,da kommt dann auch endlich ne lesbare ausgabe raus!
+2012-06-26 21:26:58,livinskull,xD
+2012-06-26 21:27:08,stultus,"Hm, dann war das kein Part von mir."
+2012-06-26 21:27:14,stultus,"Lesbar war meins immer, ist ja getestet *g*"
+2012-06-26 21:27:20,stultus,"Also, einmalig jedenfalls"
+2012-06-26 21:28:30,livinskull,teste doch mal cat sysinfo:/cpu :P
+2012-06-26 21:28:38,livinskull,mit standard qemu cpu gehts ja noch einigermassen
+2012-06-26 21:28:58,stultus,Gibts was anderes als qemu? ^^
+2012-06-26 21:29:23,livinskull,aber mit -cpu core2duo z bsp kommt sowas wie ) Core)tm
+2012-06-26 21:29:24,livinskull,raus
+2012-06-26 21:29:24,livinskull,:P
+2012-06-26 21:29:33,stultus,"Oh, schade *g*"
+2012-06-26 21:29:43,stultus,"moment, Brand String sagtest du?"
+2012-06-26 21:29:46,livinskull,jo
+2012-06-26 21:30:33,livinskull,http://list.tyndur.org/pipermail/tyndur-devel/2012-June/002359.html <= das da
+2012-06-26 21:31:57,stultus,"Jo, muss meine Schuld sein"
+2012-06-26 21:32:38,stultus,Hast du auch gleich den Wikiartikel angepasst? ^^ Auf dem basierte das damals
+2012-06-26 21:32:48,livinskull,o.O
+2012-06-26 21:32:58,livinskull,wusste gar nciht das wir n cpuid artikel haben
+2012-06-26 21:34:21,livinskull,da stimmt eh was nich
+2012-06-26 21:34:29,livinskull,da steht brand string sei intel-spezifisch
+2012-06-26 21:34:33,livinskull,stimmt nicht
+2012-06-26 21:34:36,livinskull,amd kann das auch
+2012-06-26 21:34:56,livinskull,auf die gleiche weise wenn ich mcih recht erinnere
+2012-06-26 21:37:24,livinskull,aber sonst stimmt die beschreibung dort dazu
+2012-06-26 21:38:11,stultus,"Njo, danke für den Patch, ich werd den bei Gelegenheit ack'en"
+2012-06-26 21:38:33,stultus,(d.h. wenn ich ne Kiste mit ner eingerichteten entwicklungsumgebung vor mir hab)
+2012-06-26 21:39:36,livinskull,;P
+2012-06-26 21:39:58,livinskull,joa kein Ding is mri nur gestern beim rumspielen aufgefallen und hab das gleich gefixed
+2012-06-26 21:49:11,rsoft,bin dann mal weg
+2012-06-26 22:23:19,DesL,re

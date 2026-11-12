@@ -1,0 +1,84 @@
+date/time,nick,message
+2015-05-23 09:38:09,Jonathan,Moin
+2015-05-23 18:13:52,arbu,"Abend. Ich kriege nen linkfehler bei meinem Versuch einen 64-Bit Kernel zu erstellen. Probleme macht wohl der Entrypoint, der zu hoch gewählt ist. code und ld-error: http://nopaste.euirc.net/index.php?id=a70abb6efa Wer ne Idee?"
+2015-05-23 18:16:55,arbu,"das ganze sollte eigentlich nen x86_64 elf exec geben, dass ich von meinem bootloader aus direkt lade."
+2015-05-23 18:39:09,iksnagreb,nabend
+2015-05-23 18:45:50,Jidder,arbu: mit welchen parametern rufst du assembler und linker auf?
+2015-05-23 18:56:14,arbu,yasm -m amd64 -f elf64 -o start.o start.s
+2015-05-23 18:57:30,arbu,ld -melf_x86_64 -Tkernel.ld -o kernel kernel.o start.o
+2015-05-23 18:57:58,Jidder,"hat das einen bestimmten grund, warum du das nach 0x800000000000 linkst"
+2015-05-23 18:57:59,Jidder,?
+2015-05-23 18:58:43,Jidder,"wenn ich in meinen alten code reinschaue, habe ich da 0xffffffff80000000 + SIZEOF_HEADERS"
+2015-05-23 18:59:22,Jidder,"vielleicht macht das einen unterschied, weil es dann wieder in ein signed 32-bit integer reinpasst"
+2015-05-23 19:01:20,arbu,"weil das so die hälte von adressierbaren virtuellen Speicher sein müsste, ist nicht ganz schön, wollte primär über den 4GB sein und das würd mir für den Anfang reichen"
+2015-05-23 19:02:23,arbu,"das prob ist dass ja 64 bit sich nicht adressieren lassen. Da gibts Workarounds die ich nicht ganz verstehe. Deswegen dachte ich mir, bleibe ich in dem Raum der sicher adressierbar sein sollte"
+2015-05-23 19:02:30,Jidder,hat der 64-bit adressraum nicht eine lücke in der mitte?
+2015-05-23 19:02:47,Jidder,"also die ersten 2^47 bytes, dann lücke und dann die letzten 2^47 bytes oder so"
+2015-05-23 19:02:56,Jidder,oder verwechsel ich da was?
+2015-05-23 19:11:35,Jidder,jpep
+2015-05-23 19:12:22,Jidder,0x800000000000 ist keine gültige adresse
+2015-05-23 19:12:50,Jidder,die oberen 16 bits müssen den selben wert wie das bit 47 haben
+2015-05-23 19:12:52,Jidder,https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
+2015-05-23 19:13:19,Jidder,"also 0xffff800000000000 müsste es sein, wenn du den kernel an der untere grenze der oberen hälfte haben willst"
+2015-05-23 19:13:39,Jidder,das behebt aber nicht den fehler
+2015-05-23 19:14:08,Jidder,ich glaube der fehler wird von call kmain verursacht
+2015-05-23 19:14:24,Jidder,wenn du kmain in ein register lädst und einen indirekten call machst sollte das gehen
+2015-05-23 19:14:40,Jidder,c code musst du dann außerdem mit -mcmodel=large kompileren
+2015-05-23 19:14:46,Jidder,das ebenfalls entsprechenden code produziert
+2015-05-23 19:14:58,Jidder,http://forum.osdev.org/viewtopic.php?f=1&t=22121
+2015-05-23 19:43:01,arbu,"von der Lücke weiss ich, dachte ich wäre da noch drunter"
+2015-05-23 19:43:28,arbu,habs mal auf 0xffff800000000000 geändert. Bringt immer noch die gleiche meldung
+2015-05-23 19:44:23,arbu,das mcmodel hatte ich testweise schon auf large gestellt
+2015-05-23 19:50:10,arbu,indirekter call bringt leider auch nicht -.-
+2015-05-23 19:56:30,arbu,"vom fehler siehts für mich nach dem Stack aus, den die fehlermeldung nimmt bezug auf .bss und da hockt nur der Stack"
+2015-05-23 20:01:46,arbu,hm. Kriege den Fehler sobald ich über 4GB gehe
+2015-05-23 20:02:55,arbu,denke da läuft irgendwas im 32-Bit modus
+2015-05-23 20:44:42,arbu,hm. habs hinbekommen
+2015-05-23 20:45:00,arbu,aber wirklich verstehen tu ich es noch nicht
+2015-05-23 20:45:41,arbu,https://www.tortall.net/projects/yasm/manual/html/nasm-effaddr.html Abschnitt 3.3.1
+2015-05-23 20:46:15,arbu,"Aus mov rsp,kernel_stack musste ein mov rax,[qword kernel_stack]; mov rsp,eax werden"
+2015-05-23 20:47:54,Jidder,das ist aber nicht richtig. das liest ja den speicher aus
+2015-05-23 20:48:01,Jidder,"wenn dann lea rax, [qword kernel_stack]"
+2015-05-23 20:48:06,Jidder,"falls mov rax, kernel_stack nicht geht"
+2015-05-23 20:48:29,Paddy,Kriegt man nicht allgemein mit direkten 64-Bit-Adressen Probleme?
+2015-05-23 20:49:02,Paddy,"Oder war das nur, dass es keine 64-Bit-Immediates gibt?"
+2015-05-23 20:50:10,Jidder,keine ahnung. bin auch nur am rumraten
+2015-05-23 20:50:53,Paddy,"Ich glaube, ich sollte auch nichts sagen, das Intel-Manual widerspricht beidem"
+2015-05-23 20:51:48,Paddy,"Ah nein, doch nicht: ""The maximum value allowed for an immediate operand varies among instructions, but can never be greater than the maximum value of an unsigned doubleword integer (2^32)."""
+2015-05-23 20:52:33,arbu,öh
+2015-05-23 20:52:58,Paddy,Aber die lea-Lösung sollte dann gehen
+2015-05-23 20:54:01,arbu,"nö, dafür gibt scheints keinen passenden opcode"
+2015-05-23 20:54:52,arbu,"auf http://wiki.osdev.org/D_barebone_with_ldc2 hab ich gesehn, dass die das als workaround über shiftoperationen machen, aber wirklich zum laufen gebracht habe ich das auch nicht"
+2015-05-23 20:56:15,Paddy,"Jo, wenn das alles nicht tut, dann bleiben wohl nur die Shifts"
+2015-05-23 20:56:35,arbu,"jo, aber eben dass klappt auch nicht wirklich"
+2015-05-23 20:56:50,Paddy,Dann machst du was falsch
+2015-05-23 20:56:51,arbu,zumindest nach meinem naiven verständnis
+2015-05-23 20:57:15,XanClic,ESC? Es ist schon wieder so weit?
+2015-05-23 20:57:25,arbu,sobald ich den kernel_stack erwähne kriege ich obige meldung
+2015-05-23 20:58:09,Paddy,Auch für KERNEL_VMA_BASE >> 32?
+2015-05-23 20:58:14,arbu,dafür nicht
+2015-05-23 20:58:33,arbu,kanns auch nach links wieder mit shl zurückschieben
+2015-05-23 20:58:35,Paddy,kernel_stack >> 32 meine ich natürlich
+2015-05-23 20:58:44,arbu,aber bei den ersten 32 bits der adresse haperts dann
+2015-05-23 20:59:09,Paddy,"or rax, kernel_stack & 0xffffffff tut nicht?"
+2015-05-23 20:59:36,arbu,"ne, das war das, was ich auch gemacht hätte, bringt aber wieder den fehler"
+2015-05-23 21:00:23,arbu,"bei dem D-barebone rechnen die da noch wild rum, was aber imho das gleiche ergebnis bringen sollte. Den Fehler produzierts aber trotzdem"
+2015-05-23 21:02:40,arbu,"korrektur: bei kernal_stack >> 32 krieg ich ""relocation too complex"""
+2015-05-23 21:02:43,Paddy,Was für einen Fehelr bekommst du denn überhaupt genau?
+2015-05-23 21:03:52,arbu,start.o: In function `_start':
+2015-05-23 21:03:56,arbu,start.s:(.text+0x3): relocation truncated to fit: R_X86_64_32 against `.bss'
+2015-05-23 21:05:14,arbu,"wenn ich z.B. ""mov rsp, kernel_stack"" mache"
+2015-05-23 21:05:17,Paddy,"Ah, beim Linken. Ich dachte, der Assembler mag schon nicht."
+2015-05-23 21:05:34,arbu,"ne, meine objektdateien kriege ich"
+2015-05-23 21:05:47,arbu,"linken kann ich auch, wenn im im Adressraum 2^32 bleibe"
+2015-05-23 21:05:53,arbu,nur drüber gibts probleme
+2015-05-23 21:05:56,Paddy,Musst du dem Linker auch noch ein Memory Model geben?
+2015-05-23 21:06:25,Mtgxyz|ESC,Mein os hat ne funzende panic() routine
+2015-05-23 21:06:30,Mtgxyz|ESC,in asm
+2015-05-23 21:06:38,arbu,"habe das target als elf64 festgelegt, mehr habe ich nicht gefunden"
+2015-05-23 21:14:31,arbu,mein c-file habe ich mit large übersetzt. Für den assemblerteil habe ich ichts in der Art gefunden
+2015-05-23 21:17:10,arbu,"ehm, angenommen ""mov rsp, qword kernel_stack"" würde sich übersetzten lassen. Das würde doch das machen, was ich will, oder?"
+2015-05-23 21:18:48,arbu,die Klammern waren blödsinn vorhin. Aber so würds doch passen. Lässt sich auch übersetzten und linken
+2015-05-23 21:22:52,arbu,mit stolzen 2MB...
+2015-05-23 21:35:17,arbu,"hm lat readelf habe ich nur 2 Segmente, die im im KB-Bereich liegen aber der Offset vom ersten programm hader liegt bei 2MB. Wer ne Idee wie ich rausfinden kann, was davor liegt?"
+2015-05-23 23:28:01,Mtgxyz|ESC,Ich sollte mal die RAM-map fürn kernel machen

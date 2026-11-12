@@ -1,0 +1,123 @@
+date/time,nick,message
+2009-10-06 10:37:59,kwolf,Hi pcmattman ;-)
+2009-10-06 10:38:04,pcmattman,Hello kwolf
+2009-10-06 10:39:32,kwolf,"The audio thing was posted on cdi-devel yesterday, you should have received the mail"
+2009-10-06 10:39:51,kwolf,Or do you filter all of our mails directly into the spam folder? ;-)
+2009-10-06 10:39:56,pcmattman,"Ah, I have them"
+2009-10-06 10:40:02,pcmattman,"Nah, they got lost in the flood of QEMU emails :)"
+2009-10-06 10:40:16,kwolf,"Ah, you don't filter at all, it seems?"
+2009-10-06 10:40:20,pcmattman,I don't
+2009-10-06 10:40:32,pcmattman,"I have decent full-text search on my email though, so it's ok"
+2009-10-06 10:40:42,pcmattman,So the CDI sound layer is an interface between the OS and the sound hardware?
+2009-10-06 10:40:53,kwolf,Right
+2009-10-06 10:40:54,pcmattman,"If I understand right from looking at this, there's no mixer or anything like that?"
+2009-10-06 10:41:12,kwolf,I think it would live outside the driver
+2009-10-06 10:41:24,kwolf,"It's the same for all devices anyway, right?"
+2009-10-06 10:41:26,pcmattman,"I agree with that, I just wanted to be sure"
+2009-10-06 10:42:19,kwolf,"I mean if you want to have some shared mixer code I'm all for it, but it doesn't belong into the driver interface"
+2009-10-06 10:43:02,pcmattman,"Yup, that's why I was checking. I'd think the mixer et al would be quite host-specific, so they shouldn't be done via CDI"
+2009-10-06 10:43:38,kwolf,Unless there is a hardware mixer. But I think we can keep it simple for now.
+2009-10-06 11:02:35,pcmattman,"kwolf: One thing I did want to mention, related to the CDI network code"
+2009-10-06 11:03:05,pcmattman,As far as I can tell there's no way to tell if the NIC is actually connected to a network in the current interface
+2009-10-06 11:04:03,kwolf,I think you're right
+2009-10-06 11:06:06,kwolf,Would you like to propose an interface?
+2009-10-06 11:06:29,pcmattman,"It's a little tricky, but I'm going to be implementing it for our native driver interface in the next couple of days"
+2009-10-06 11:06:53,pcmattman,"Once I've got that sorted I'll get a patch together for CDI, to see what I can put together"
+2009-10-06 11:08:20,kwolf,You probably need to poll the state?
+2009-10-06 11:08:26,pcmattman,"Probably end up being something like ""link_state_t cdi_net_link_state(device)"" where link_state_t is an enum of different link states"
+2009-10-06 11:09:11,pcmattman,"Some NICs will be able to store it as a variable, others will just return a ""connected"" value (no method to find out link state), and others will have to read registers"
+2009-10-06 11:09:29,pcmattman,"I know some can fire an IRQ when the link state changes, which backs up storing as a variable"
+2009-10-06 11:09:50,pcmattman,"I guess it's driver-dependent, as long as the cdi_net_link_state function is implemented and returns valid data :)"
+2009-10-06 11:09:54,kwolf,It would be more convenient for the OS to have a callback interface then
+2009-10-06 11:10:59,pcmattman,"Possibly, but that only works if the device can fire an IRQ to tell the driver that the link state has changed"
+2009-10-06 11:11:21,kwolf,"Right. But if it can, polling would be wasted work."
+2009-10-06 11:11:24,pcmattman,"I was thinking that the host would initiate the communication, requesting the link state from the driver"
+2009-10-06 11:12:04,kwolf,"We can start with the polling interface, adding a callback later is still possible"
+2009-10-06 11:12:11,pcmattman,"You would mainly be doing something like ""if(cdi_new_link_state(device) != connected) { some_sort_of_error; }"""
+2009-10-06 11:13:11,pcmattman,"NICs which can use an IRQ will store link state in a variable and simply return that variable, others will have to talk to the NIC"
+2009-10-06 11:13:22,kwolf,"Hm, there could be more information that just connected or not, like link speed etc. Maybe make cdi_link_state_t a struct?"
+2009-10-06 11:13:41,kwolf,"pcmattman: Right, that makes sense"
+2009-10-06 11:13:49,pcmattman,"Hm, good point"
+2009-10-06 11:14:15,pcmattman,"So the link state is more or less a structure, containing information about whether there's a connection or not and link speed"
+2009-10-06 11:15:04,kwolf,And anything else we still forgot ;-)
+2009-10-06 11:15:59,pcmattman,:)
+2009-10-06 11:16:43,pcmattman,I'll be back in a couple of hours
+2009-10-06 11:17:36,kwolf,"Ok, maybe Max will be here then, too"
+2009-10-06 11:51:20,DerHartmut,re and hello @ all
+2009-10-06 11:54:13,kwolf,hirsc
+2009-10-06 13:51:05,pcmattman,Back
+2009-10-06 13:52:09,kwolf,wb
+2009-10-06 14:22:44,kwolf,Hi XanClic
+2009-10-06 14:22:55,XanClic,Good afternoon
+2009-10-06 14:23:37,XanClic,Should I translate all the comments to English?
+2009-10-06 14:25:35,kwolf,I think a while ago we decided to have them bilingual
+2009-10-06 14:26:10,kwolf,With some doxygen config option to switch the language
+2009-10-06 14:26:23,XanClic,"Oh, so how do you do it with doxygen comments?"
+2009-10-06 14:26:41,kwolf,Something like bluecode did for the liblightc++ beginnings
+2009-10-06 14:28:11,kwolf,Basically it was the doxygen version of #ifdef GERMAN
+2009-10-06 14:33:55,kwolf,"Anyway, let's get the audio interface right first. I think the most important point is if cdi_audio_driver.act is what we want."
+2009-10-06 14:34:34,XanClic,"I thought, the operating system has one buffer which is refreshed all the time."
+2009-10-06 14:35:03,XanClic,If calls one time act() with this buffer as a parameter and CDI_AUDIO_LOOP
+2009-10-06 14:35:06,XanClic,-If +It
+2009-10-06 14:37:22,kwolf,"Hm, ok... I didn't even understand that changing the buffer was allowed while it's being played ;-)"
+2009-10-06 14:37:32,XanClic,"No, it would not be"
+2009-10-06 14:37:33,kwolf,But I still need to keep in sync what the card is playing right now and where I'm inserting new data
+2009-10-06 14:37:45,XanClic,"Yeah, that's a problem"
+2009-10-06 14:38:13,kwolf,XanClic: It wouldn't be allowed? Then how is looping going to help?
+2009-10-06 14:38:47,XanClic,"If you call act() when there's stuff being played, then this old operation would be canceled"
+2009-10-06 14:39:34,XanClic,"-1 is returned, if you gave act() bad parameters or something like this"
+2009-10-06 14:39:41,XanClic,Or just if the hardware fails
+2009-10-06 14:40:17,kwolf,"Right, but obviously I don't want to skip the old buffer. I usually just want to add some more data at the end"
+2009-10-06 14:40:30,XanClic,Then you have to loop ;-)
+2009-10-06 14:40:39,XanClic,And insert it at the beginning
+2009-10-06 14:41:03,XanClic,"But that's right, there must be a function that returns the position in the current buffer or something like this"
+2009-10-06 14:41:23,kwolf,Would definitely be helpful
+2009-10-06 14:44:44,kwolf,And act and that looping thing is underdocumented. I still don't understand what really happens. It copies the data into some hardware buffers and only when everything played and we're looping it'll re-read the user buffer?
+2009-10-06 14:45:02,XanClic,That's right.
+2009-10-06 14:45:09,kwolf,pcmattman: How do you feel about this?
+2009-10-06 14:45:48,XanClic,"I didn't write how I thought this should be used, because that's not the problem of the interface CDI - OS, but of the interface OS - User"
+2009-10-06 14:45:59,XanClic,*CDI driver
+2009-10-06 14:47:17,kwolf,"Well, which data is copied when is a basic part of the driver interface"
+2009-10-06 15:12:35,pcmattman,"kwolf: "" If you call act() when there's stuff being played, then this old operation would be canceled"" <-- That's logical, the OS itself would control the operations and when to send"
+2009-10-06 15:15:01,kwolf,"I'm not arguing that it's insane, but I wasn't clear to me that it works this way"
+2009-10-06 15:15:11,pcmattman,"Ah, I understand"
+2009-10-06 15:15:51,kwolf,"However, I'm not sure if it's really easy to use this way"
+2009-10-06 15:16:23,kwolf,Because you would need to provide a new buffer that starts exactly at the point where the sound card is when you call act()
+2009-10-06 15:17:05,pcmattman,Perhaps act() should push onto a queue then?
+2009-10-06 15:18:16,kwolf,Don't think that helps. We need some way to replace data that is already sent
+2009-10-06 15:18:37,kwolf,Say I send 5 seconds to the card and after one second another sound needs to be played
+2009-10-06 15:19:14,pcmattman,"Hmm, true"
+2009-10-06 15:19:22,kwolf,Not sure how the best interface for such a replacement would look like
+2009-10-06 15:19:38,pcmattman,I unfortunately don't know enough about sound devices to be able to talk intelligently about how to do that specific example
+2009-10-06 15:19:57,kwolf,Neither do I ;-)
+2009-10-06 15:20:58,kwolf,I just know that I want the first sound to be played without a short pause or skipping a small part
+2009-10-06 15:21:49,kwolf,XanClic: Did you have plans how to implement this?
+2009-10-06 15:22:02,pcmattman,It all depends on whether sound data is sent to the card in full or if it's sent in blocks every <n> ticks
+2009-10-06 15:23:05,kwolf,How do you send an internet radio stream to the card in full?
+2009-10-06 15:23:40,kwolf,"The question is how large the blocks are, but chances are that you still need to replace them when they are already sent to the card"
+2009-10-06 15:24:11,kwolf,Unless you want to wait for sounds for a second (or how long one block will be)
+2009-10-06 15:25:08,pcmattman,What I meant is a block being a tiny frame of a sound
+2009-10-06 15:25:50,pcmattman,"In my naive understanding of how this works, it'd be something like sending data to the card many times each second"
+2009-10-06 15:26:06,pcmattman,"No, that can't be right, it'd be horribly slow in practice"
+2009-10-06 15:26:15,kwolf,Won't making the sound blocks tiny increase the CPU usage?
+2009-10-06 15:27:04,kwolf,I think XanClic mentioned something like with ac97 he could submit like 30 seconds at once
+2009-10-06 15:27:41,pcmattman,"So if that buffer is DMA'd, you're saying make it possible to modify that buffer live?"
+2009-10-06 15:28:47,kwolf,"Not sure if you would just modify the buffer or stop the soundcard, point to the new buffer and start again"
+2009-10-06 15:29:02,kwolf,"Shouldn't make a big difference for the interface, though"
+2009-10-06 15:54:51,XanClic,It should be no problem to modify the buffer given to the card via act() after calling this function
+2009-10-06 15:55:38,XanClic,"So you could give the buffer to the card driver and if you want to play other stuff after a second, you could replace the content of the buffer at this point"
+2009-10-06 15:56:23,pcmattman,Sounds good to me
+2009-10-06 15:56:44,XanClic,"That was my idea when I wrote ""#define CDI_AUDIO_LOOP 1"" ;-)"
+2009-10-06 15:57:13,kwolf,Ok
+2009-10-06 15:57:14,XanClic,"The blocks really sent to an AC97 card have a duration of... 0,37 seconds."
+2009-10-06 15:57:38,kwolf,"I guess we need to implement it to see if it works out, but it sounds reasonable at least"
+2009-10-06 16:01:15,kwolf,XanClic: I'm afraid this means implementing a mixer ;-)
+2009-10-06 16:01:27,XanClic,Of course it does ;-)
+2009-10-06 16:01:54,kwolf,"Well then, have fun ;-)"
+2009-10-06 16:02:01,XanClic,"You also could enqueue all request, so you don't actually need to ""mix"" something, but the sound driver card won't do that"
+2009-10-06 16:02:02,XanClic,xD
+2009-10-06 16:02:06,XanClic,*sound card driver
+2009-10-06 16:02:23,XanClic,"""sound driver card"", also interesting. A card designed for a sound driver *g*"
+2009-10-06 16:02:49,kwolf,"No, a card producing sound drivers. We definitely need to buy one."
+2009-10-06 16:03:08,XanClic,*g*
+2009-10-06 16:59:38,pcmattman,Night

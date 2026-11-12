@@ -1,0 +1,42 @@
+date/time,nick,message
+2017-03-12 20:36:00,Svenska,moin
+2017-03-12 20:36:31,Svenska,mal ne c-frage :-D
+2017-03-12 20:36:59,Svenska,"struct { ... } ops[] = { { ""load"", cmd_load, ""loads a core"" } }"
+2017-03-12 20:37:10,Svenska,"wirft ein ""error: initializer element is not constant"""
+2017-03-12 20:37:35,Svenska,das soll doch bloß ne lookup-tabelle sein ;)
+2017-03-12 20:37:55,Svenska,wie krieg ich das problem weg?
+2017-03-12 20:38:07,Svenska,"die struct besteht aus { char*, cmdfunc, char* }"
+2017-03-12 20:54:01,Svenska,im initializer hilft &cmd_load (und dann noch den typ fixen)
+2017-03-12 21:26:46,mgottschlag,und cmd_load ist eine methode?
+2017-03-12 21:26:55,mgottschlag,"wobei, hm"
+2017-03-12 21:26:56,Svenska,"nein, ein funktionspointer"
+2017-03-12 21:27:07,Svenska,also das funktioniert uebrigens auch nicht
+2017-03-12 21:27:13,Svenska,gibt nur ein segfault.
+2017-03-12 21:27:41,mgottschlag,und das ist eine lokale Methode?
+2017-03-12 21:27:44,mgottschlag,äh
+2017-03-12 21:27:45,mgottschlag,Variable?
+2017-03-12 21:28:02,Svenska,"nein, ist in anderer datei und dort nicht static"
+2017-03-12 21:28:20,mgottschlag,wie ist cmd_load deklariert?
+2017-03-12 21:28:31,Svenska,extern cmdfunc cmd_load;
+2017-03-12 21:28:38,Svenska,und cmdfunc ist:
+2017-03-12 21:28:49,Svenska,"typedef int (*cmdfunc)(char*, char*, volatile uint32_t*);"
+2017-03-12 21:29:01,mgottschlag,"ja, das kann nicht gehen, weil das ist wirklich nicht konstant :)"
+2017-03-12 21:29:23,XanClic,cmd_load ist ein Funktionspointer in einer externen Datei?
+2017-03-12 21:29:26,XanClic,Was machst du denn für Sachen?
+2017-03-12 21:29:32,Svenska,äh
+2017-03-12 21:29:42,Svenska,in einer datei habe ich eine normale funktion
+2017-03-12 21:29:55,Svenska,"int cmd_load(char* a, char* b, volatile uint32_t *map);"
+2017-03-12 21:30:00,mgottschlag,ah
+2017-03-12 21:30:02,mgottschlag,das ist kaputt
+2017-03-12 21:30:05,XanClic,"Na, dann sollte der erste Stern vom typedef weg."
+2017-03-12 21:30:07,mgottschlag,dann muss der * da weg in dem typedef
+2017-03-12 21:30:30,mgottschlag,"weil das ist ja eine Funktion, keine 4/8 Bytes, wo die Adresse der Funktion steht"
+2017-03-12 21:31:25,XanClic,Und die struct muss dann natürlich auch cmdfunc * benutzen statt cmdfunc
+2017-03-12 21:31:27,Svenska,oh
+2017-03-12 21:31:33,mgottschlag,"(""cmd_load"" ergibt bei Auswertung in beiden Fällen das selbe, ob es jetzt die Funktion direkt oder ein indirekter Pointer ist... aber das ist auch nur deshalb, weil C halt bei Funktionen und Arrays das automatisch castet)"
+2017-03-12 21:31:49,Svenska,"ja, wenn ich das so mache, passt das"
+2017-03-12 21:32:11,Svenska,"und ich kriege vom linker auch die passenden referenzen, weil (staun) ich vergessen hab, das objekt ins makefile zu tun"
+2017-03-12 21:36:01,Svenska,"okay, funktioniert, dankeschön :)"
+2017-03-12 21:38:37,Svenska,"erst hat man einen befehl, dann hat man zwei, dann hat man fuenf"
+2017-03-12 21:38:56,Svenska,"und dann stellt man fest, dass drei-vier convenience-befehle in der shell auch nuetzlich sind..."
+2017-03-12 21:39:13,Svenska,...und dann wird die kette aus strcmp()s hässlich =)

@@ -1,0 +1,228 @@
+date/time,nick,message
+2014-07-08 00:01:16,iksnagreb,"das muss irgend wie nen bug sein, es sollte für etw 500 prozess strukturen platz sein, das ist zwar auch wenig und kann optimiert werden, ist aber mehr als die drei, bei denen es jetzt abstürtzt..."
+2014-07-08 00:04:54,iksnagreb,"oh, es laufen sogar 4, aber bei 5 stürzt es ab :("
+2014-07-08 00:13:46,iksnagreb,"kann es sein, das es daran liegt, dass ich den speicher mit einer bitmap verwlte? ist die vielleicht zu groß?"
+2014-07-08 00:26:45,th3falc0n,ne die bitmap für 4GB hat ja gerademal 128kB
+2014-07-08 00:27:09,Jidder,"wenn das die größe deiner bitmap ist, dann passt sie https://github.com/iksnagreb/quartus/blob/master/src/hal/x86/include/pmm.hpp#L152"
+2014-07-08 00:27:34,iksnagreb,"naja, bei mir hat der speichermanager für jeden addressraum auch noch ne bitmap, das wird das problem sein"
+2014-07-08 00:27:45,Jidder,128 kB * 5 ist nicht 64 MB
+2014-07-08 00:28:06,th3falc0n,jap 
+2014-07-08 00:28:25,th3falc0n,selbst wenn da noch 4MB komplette pagetables zu kommen sind das 14 prozesso oder so die laufen sollten
+2014-07-08 00:28:37,iksnagreb,"naja, da komm ja nochn paar andere daten dazu, aber insgesammt dürfte es auf höchstens ein paar mb kommen, sollte weniger sein"
+2014-07-08 00:28:50,Jidder,überhaupt sollte es ja nicht abstürzen
+2014-07-08 00:28:54,Jidder,sondern eine fehlermeldung ausgeben
+2014-07-08 00:28:58,Jidder,das kein speicher mehr da ist
+2014-07-08 00:29:01,iksnagreb,"ja, das tut es ja"
+2014-07-08 00:29:09,th3falc0n,ich hab momentan 4MB pro prozess ca
+2014-07-08 00:29:31,th3falc0n,mit dynamischen PT's könnte ich das auf 20kB oder so senken
+2014-07-08 00:30:02,th3falc0n,"iksnagreb: wo finde ich den den punkt, an dem er nen neuen task erstellt?"
+2014-07-08 00:30:06,Jidder,"tja, wenn man den speicher nicht in einer bitmap verwalten würde, dann könnte man da jetzt debuginformationen ranhängen und das analysieren"
+2014-07-08 00:30:59,iksnagreb,th3falc0n: schau mal in process.cpp und elf.cpp
+2014-07-08 00:31:49,th3falc0n,lol du hast tar support
+2014-07-08 00:31:53,th3falc0n,das finde ich iwie lustig
+2014-07-08 00:32:03,iksnagreb,"ach ja, das ganze tritt jetzt auch erst auf, seit dem in meinem prozess nochn bisschen mehr ""drin is"""
+2014-07-08 00:32:11,iksnagreb,warum lustig?
+2014-07-08 00:32:49,th3falc0n,weil so früh implementiert ^^
+2014-07-08 00:33:02,th3falc0n,und lustig heißt bei mir nicht schlecht
+2014-07-08 00:33:07,th3falc0n,sondern eher beeindruckend
+2014-07-08 00:33:13,iksnagreb,irgendwoher muss man ja programme laden bei nem microkernel
+2014-07-08 00:33:28,iksnagreb,und tar ist halt relativ einfach
+2014-07-08 00:33:38,th3falc0n,naja ich lade noch elf module ausm multiboot *g*
+2014-07-08 00:34:28,th3falc0n,inwiefern funktioniert dein vfs?
+2014-07-08 00:35:02,iksnagreb,"ich hab noch keins, aber ich denk ich werds ähnlich machen, wie bei meinem letzten kernel"
+2014-07-08 00:36:02,th3falc0n,und x64 support... nais :D
+2014-07-08 00:36:08,iksnagreb,naja
+2014-07-08 00:36:18,iksnagreb,das sind nur stubs
+2014-07-08 00:36:27,th3falc0n,ok ich seh schon xD
+2014-07-08 00:36:35,th3falc0n,aber wenigstens hast du ne HAL ...
+2014-07-08 00:36:54,iksnagreb,aber nur die für x86
+2014-07-08 00:36:55,th3falc0n,ich hab ähm was auf x86 geklatsch
+2014-07-08 00:38:14,th3falc0n,"#define clear_bit(bitmap,bit) ((bitmap) ^= (1 << (bit)))   ? sollte das nicht eher ((bitmap) &= ~(1 << (bit))) sein?"
+2014-07-08 00:40:12,iksnagreb,"oh, ja sollte es wohl, danke"
+2014-07-08 00:40:25,Papierkorb,sieht eher nach ein toggle_bit aus
+2014-07-08 00:42:14,iksnagreb,"argh, wenn ich jetzt endlich die lösung für mein problem hätte, könnt ich endlich vorrankommen, oder ruhig schlafen gehn..."
+2014-07-08 00:42:29,th3falc0n,"ich suche, kann aber nicht garantieren was zu finden"
+2014-07-08 00:42:59,iksnagreb,"ich befürchte, das das diesmal mehr ein problem des konzepts ist..."
+2014-07-08 00:43:57,th3falc0n,"ich hoffe, dass es ein bug ist, sonst sind >12MB speicher pro prozess irgendwie strange"
+2014-07-08 00:44:22,iksnagreb,was?
+2014-07-08 00:45:50,th3falc0n,oder dass der kernel vorher soviel von den 64MB verbrät dass nicht mehr als 4 prozesse passen
+2014-07-08 00:45:53,th3falc0n,beides ist seltsam
+2014-07-08 00:46:33,iksnagreb,"ich glaub ich lass mir mal ausgeben, was so durch den speichermanager läuft"
+2014-07-08 00:47:02,th3falc0n,ja und dein bitmap_px/py hat ne hardgecodete pagesize ;P
+2014-07-08 00:47:35,iksnagreb,"oh, danke , dass du mich darauf hinweist"
+2014-07-08 00:47:48,th3falc0n,n.p.
+2014-07-08 00:48:12,iksnagreb,"die hab ich noch aus meinem alten kernel übernommen, da war fast alles hardcoded"
+2014-07-08 00:54:18,th3falc0n,vergleich mal unsere vmm::alloc() http://pastebin.com/YQQcqsXL
+2014-07-08 00:55:23,th3falc0n,und ja ich will darauf hinaus dass es fast exakt gleich ist xD
+2014-07-08 00:55:36,iksnagreb,du verwaltest mit hilfe der flags in der page table?
+2014-07-08 00:55:46,th3falc0n,"jo, ich hab ja 3 freie"
+2014-07-08 00:56:16,iksnagreb,"und genau da unterscheiden sich unsere implementierungen, ich nehm da ne bitmap"
+2014-07-08 00:56:27,th3falc0n,ja aber das seh ich nicht als problem
+2014-07-08 00:56:32,th3falc0n,"wie gesagt, 128kB"
+2014-07-08 00:57:29,th3falc0n,"+ 4MB ptables, + sagen wir 512kB an Klassenstrukturen und so sind das 5MB pro task.. also dürftest du bei 4 task, geben wir dem rest des kernels einfach mal 16MB noch etwa die hälfte frei haben"
+2014-07-08 00:57:36,iksnagreb,"mein speichermanager ist anscheinen auch nicht da problem, ich hab mal alles ausgegeben, was der so alloziert und das kommt nicht mal ansatzweise auf 64mb"
+2014-07-08 00:57:59,th3falc0n,lass dir am anfang mal ausrechnen wieviel MB du überhaupt frei hast
+2014-07-08 00:58:08,th3falc0n,vllt liegt da das problem
+2014-07-08 00:59:14,th3falc0n,das implementiere ich auch mal kurz in meinem pmm... das interressiert mich nämlich mal
+2014-07-08 01:00:15,iksnagreb,"der sagt mir, nachdem die 4 prozesse erstellt wurden sind 1071939584 bytes frei"
+2014-07-08 01:00:36,iksnagreb,das is noch fast nen gb
+2014-07-08 01:00:46,th3falc0n,hat deine VM so viel? xD
+2014-07-08 01:00:51,iksnagreb,"vie interessanter wär wohl, was der kernel vmm sagt"
+2014-07-08 01:00:59,th3falc0n,dann frag den doch auch mal
+2014-07-08 01:01:34,iksnagreb,der hat leider keine info methode 
+2014-07-08 01:01:46,th3falc0n,dann implementiere sie
+2014-07-08 01:01:54,th3falc0n,geh einfach die bitmap durch
+2014-07-08 01:02:44,iksnagreb,"das problem ist, dass man dem vmm sagt, das er nur für einen bestimmten adressbereich zuständig ist, das macht das ganze irgendwie fummlig"
+2014-07-08 01:03:27,th3falc0n,"du solltest trotzdem einmal den VMM bitmap im kernel bereich checken, und auch deine PMM"
+2014-07-08 01:03:55,th3falc0n,also in erster linie meinte ich eigentlich auch die PMM
+2014-07-08 01:04:21,iksnagreb,"naja, das mach ich morgen, wenn ich wieder klar denken kann"
+2014-07-08 01:04:41,th3falc0n,mach das
+2014-07-08 01:06:10,iksnagreb,gn8
+2014-07-08 01:06:15,th3falc0n,gn8
+2014-07-08 14:11:33,iksnagreb,moin
+2014-07-08 14:19:05,kevin,Moin
+2014-07-08 14:34:19,kevin,"Hm, wie hat das jemals für irgendjemanden funktioniert...?"
+2014-07-08 14:34:55,kevin,"Bisher was das halbe Image kaputt, aber beschwert hat sich erst jemand als ich es ganz kaputtgemacht habe"
+2014-07-08 14:59:16,th3falc0n,hmm... soll ich den textmode treiber wirklich in den userspace packen?
+2014-07-08 15:02:59,th3falc0n,moin du absoluter chefkeks
+2014-07-08 15:04:43,XanClic,Moooooooin~
+2014-07-08 15:05:18,th3falc0n,du bringst mich mit der domain jedes mal zum schmunzeln
+2014-07-08 15:05:54,XanClic,"ich hätte ja noch .is-a-geek.org, wenn DynDNS nicht plötzlich Geld hätte haben wollen"
+2014-07-08 15:06:17,XanClic,Aber SHyx0rmZ war ein Retter in höchster Not ♥
+2014-07-08 15:06:17,th3falc0n,*g*
+2014-07-08 15:08:26,th3falc0n,ich hab nur meine hässliche IPv6 addresse... oder 213.165.78.19
+2014-07-08 15:09:05,kevin,Ich hab auch noch 127.0.0.1
+2014-07-08 15:09:22,XanClic,"Ach, du warst das, der sich die Domain localhost reserviert hat?"
+2014-07-08 15:09:26,th3falc0n,kann ich mir nicht leisten *g*
+2014-07-08 15:10:26,SHyx0rmZ,irgendwer musste die Domain ja mal nutzen *g*
+2014-07-08 15:11:21,SHyx0rmZ,"nanu, seit wann lasse ich die Domain denn auf den Server zeigen..."
+2014-07-08 15:11:50,kevin,"XanClic: Was habe ich dir eigentlich böses getan, dass du mich ausgerechnet qed nochmal anschauen lässt? ;-)"
+2014-07-08 15:12:23,XanClic,"qed ist doch eigentlich das bessere Format als qcow2, das wissen wir insgeheim alle, oder etwa nicht? *g*"
+2014-07-08 15:12:30,DerAlex,XanClic is halt geil und SHyx0rmZ auch
+2014-07-08 15:12:51,XanClic,♥
+2014-07-08 15:13:26,DerAlex,Wir muessen noch den Haekkathoenen planen fuer Oktober - also den Kurzhaekkathoenen
+2014-07-08 15:13:35,livinskull,muss hier denn keiner arbeiten? :P
+2014-07-08 15:13:41,XanClic,"Doch, kevin :-P"
+2014-07-08 15:13:58,th3falc0n,"ich hab ferien, ich muss nicht arbeiten"
+2014-07-08 15:14:00,DerAlex,Arbeit ist so ein fieses Wort
+2014-07-08 15:14:16,XanClic,DerAlex muss bestimmt nur wieder Bananen essen
+2014-07-08 15:14:24,kevin,DerAlex: Was willst du denn häkkatönieren?
+2014-07-08 15:14:31,DerAlex,"Nein, der SHyx0rmZ ist ja nicht da, darum gibt's hier keinen Bananen D:"
+2014-07-08 15:14:41,XanClic,oh gott
+2014-07-08 15:14:44,XanClic,ist ja grausam
+2014-07-08 15:14:48,DerAlex,"kevin: Och, all das, was sich so in einen Tag oder wie euer Schedule aussieht packen laesst ;-)"
+2014-07-08 15:15:02,XanClic,"DerAlex, ich könnte auch irgendwie einen Tag eher oder so zu dir kommen :-P"
+2014-07-08 15:15:31,DerAlex,<3
+2014-07-08 15:15:38,kevin,"Jo, in den Schedule passt eher nichts, da müsste man schon einen Tag vorne oder hinten anhängen"
+2014-07-08 15:16:04,th3falc0n,mir werden das hier zu viele herzen o.O
+2014-07-08 15:16:10,XanClic,♥♥♥♥♥
+2014-07-08 15:16:15,th3falc0n,ARGH
+2014-07-08 15:16:18,XanClic,❣
+2014-07-08 15:16:21,th3falc0n,ich bin allergisch
+2014-07-08 15:16:36,XanClic,❤❦❧
+2014-07-08 15:16:38,kevin,Oder einfach nur herzlos
+2014-07-08 15:16:41,DerAlex,Genau
+2014-07-08 15:16:41,XanClic,> rotated floral heart bullet
+2014-07-08 15:16:49,XanClic,"Ich will gar nicht wissen, wie es das nach Unicode geschafft hat"
+2014-07-08 15:17:00,kevin,Denen muss teilweise echt langweilig gewesen sein...
+2014-07-08 15:17:05,th3falc0n,kevin: ich hab auch genug grund dazu herzlos zu sein
+2014-07-08 15:17:38,kevin,Findest du?
+2014-07-08 15:17:47,DerAlex,th3falc0n: Die Welt braucht mehr Liebe
+2014-07-08 15:17:49,DerAlex,Hak dich ein
+2014-07-08 15:17:50,DerAlex,Mach mit
+2014-07-08 15:17:56,DerAlex,Liebe die Liebe
+2014-07-08 15:18:02,th3falc0n,ich kanns ja mal versuchen ♥
+2014-07-08 15:18:14,XanClic,
+2014-07-08 15:18:26,th3falc0n,fragezeichen kästen?
+2014-07-08 15:18:34,XanClic,
+2014-07-08 15:18:57,th3falc0n,
+2014-07-08 15:19:02,kevin,"Das erschreckende daran ist, dass der allergrößte Teil davon auch noch dargestellt wird *g*"
+2014-07-08 15:19:05,XanClic,"gibt noch ein paar mehr, aber die hat meine Font nicht"
+2014-07-08 15:19:17,th3falc0n,gibts das bei euch 
+2014-07-08 15:19:19,XanClic,jo
+2014-07-08 15:19:20,kevin,Ja
+2014-07-08 15:19:22,th3falc0n,mist
+2014-07-08 15:19:31,th3falc0n,windows ist kacke
+2014-07-08 15:19:48,th3falc0n,welche fonts habt ihr?
+2014-07-08 15:20:00,kevin,Sollen wir die jetzt alle aufzählen oder was?
+2014-07-08 15:20:11,XanClic,DejaVu Sans
+2014-07-08 15:20:11,th3falc0n,"nein, die die ihr im IRC benutzt "
+2014-07-08 15:20:43,XanClic,
+2014-07-08 15:20:47,XanClic,^ die hab ich nicht
+2014-07-08 15:20:51,livinskull,wer schon überlegt warum ein herz da drin ist sollte mal überlegen warum n haufen scheisse drin ist :P
+2014-07-08 15:20:58,XanClic,"Aber ich will auch gar nicht wissen, wie Purple Heart aussehen sollen"
+2014-07-08 15:21:08,XanClic,"Dass Unicode die Farbe des Zeichens festlegt, erscheint mir suspekt"
+2014-07-08 15:21:13,XanClic,und natürlich 心
+2014-07-08 15:21:16,kevin,Das zweite und drite davon hab ich
+2014-07-08 15:21:23,th3falc0n,ich hab auch keins
+2014-07-08 15:21:29,kevin,"Wo schaut man denn nach, was die KDE-Standardschrift ist?"
+2014-07-08 15:21:39,XanClic,"livinskull, da ist ja nicht nur ein Herz drin"
+2014-07-08 15:21:56,XanClic,"kevin, bei Konversation unter Einstellungen → Konversation einrichten → Oberfläche → Schriftarten"
+2014-07-08 15:22:25,XanClic,"Hm, wobei, kann man auch deaktivieren, dann nimmt er vielleicht irgendeinen Standard"
+2014-07-08 15:22:28,XanClic,Langweilig *g*
+2014-07-08 15:22:55,XanClic,Dann wohl Systemeinstellungen → Erscheinungsbild von Anwendungen → Schriftarten
+2014-07-08 15:23:04,th3falc0n,also ich bleib bei Consolas
+2014-07-08 15:45:14,kevin,"XanClic: Naja, Sans Serif sagt er da, aber das ist ja auch nur ein Platzhalter"
+2014-07-08 15:45:45,XanClic,"Bei Arch werde ich am Anfang gefragt, welches Schriftartenpaket ich als Default haben will :3"
+2014-07-08 15:46:07,kevin,"RHEL macht einfach irgendwas, was funktioniert"
+2014-07-08 15:46:21,XanClic,Funktionieren tut irgendwie alles *g*
+2014-07-08 15:46:39,kevin,"Wenn man ""irgendwie"" passend definiert schon ;-)"
+2014-07-08 15:46:45,XanClic,"Na gut, wenn es nicht DejaVu ist, wirds wohl Bitstream sein"
+2014-07-08 15:46:46,XanClic,Behaupte ich
+2014-07-08 15:47:05,XanClic,"Hm, doch nicht"
+2014-07-08 15:47:11,XanClic,Ändert bei mir bei den Zeichen jedenfalls nix
+2014-07-08 15:48:44,XanClic,"Irgendwie ist völlig egal, welche Schriftart ich nehme *g*"
+2014-07-08 15:49:19,XanClic,Sogar mit Comic Sans MS seh ich genau die gleichen Zeichen und genau die gleichen Zeichen nicht
+2014-07-08 15:51:39,th3falc0n,du hast echt comic sans ausprobiert?
+2014-07-08 15:52:30,XanClic,"Da ich den Namen der Schriftart hier schreiben musste, hab ich natürlich die absurdeste genommen"
+2014-07-08 15:52:53,th3falc0n,hmm k
+2014-07-08 15:53:24,XanClic,"Hm, und mit Wingdings seh ich gar nix"
+2014-07-08 15:53:41,th3falc0n,lb↨e█♫█►?
+2014-07-08 15:53:55,XanClic,何するの
+2014-07-08 15:54:01,SHyx0rmZ,unifont ftw
+2014-07-08 15:54:09,SHyx0rmZ,やめて！
+2014-07-08 16:00:14,kevin,-ELANG
+2014-07-08 16:00:24,kevin,Oder -ECHARSET?
+2014-07-08 16:02:37,kevin,"Hm, Tengwar sind anscheinend nicht unterstützt"
+2014-07-08 16:02:47,XanClic,"Ja, das ist schon bitter"
+2014-07-08 16:03:02,Jonathan,Moin
+2014-07-08 16:03:15,kevin,Wären die nicht wesentlich wichtiger als das drölfzehnte Herz?
+2014-07-08 16:03:20,kevin,Moin Jonathan
+2014-07-08 17:04:33,iksnagreb,"wie kann es sein, das bei mir objekte hinter dem lable kernel_end liegen? ich dachte, das wär im linkerscript vorgebe, das das das letzte ist???"
+2014-07-08 17:10:25,kevin,Das hängt vom Linkerskript ab
+2014-07-08 17:10:39,kevin,Was für Objekte sind das denn?
+2014-07-08 17:13:29,iksnagreb,"readelf sagt mii z.b., dass _ZGVZN3hal3x863pmm8instan bei 13700b8 liegt und kernel end bei 137000"
+2014-07-08 17:14:27,iksnagreb,*1370b8 natürlich
+2014-07-08 17:19:36,iksnagreb,"aber das dürfte eigentlich gar kein problem sein, weil ich ja die ersten 4mb noch 1:1 mappe... hm, irgendwas ist bei mir total kaput"
+2014-07-08 17:24:10,Jidder,möglicherweise sind nicht alle sektionen im linkerskript erwähnt
+2014-07-08 17:24:29,Jidder,"schau mal mit readelf in die .o-datei, in der _ZGVZN3hal3x863pmm8instan deklariert ist"
+2014-07-08 17:24:42,Jidder,und in welche sektion das da ist
+2014-07-08 17:27:21,iksnagreb,das scheint die .bss sektion zu sein
+2014-07-08 17:27:39,iksnagreb,"aber im linkerscript sagt ich, das die vor kernel_end kommt"
+2014-07-08 17:28:42,Jidder,exakt .bss oder .bss mit irgendwas dahinter?
+2014-07-08 17:28:47,Jidder,manchmal macht der compiler sowas ja
+2014-07-08 17:29:02,iksnagreb,.bss._ZGVZN3hal3x und ähnliches
+2014-07-08 17:29:17,Jidder,jo dann musst du wohl im linkerskript *(.bss*) schreiben
+2014-07-08 17:29:21,Jidder,statt *(.bss)
+2014-07-08 17:31:33,Jidder,empfiehlt sich evtl. für die anderen sektionen auch
+2014-07-08 17:31:48,iksnagreb,"ah, jetzt kann ich schonmal nen paar programme mehr laufen lassen, stürtzt leider trotzdem noch irgendwann mit nem pagefault ab"
+2014-07-08 17:33:44,Jidder,liegt jetzt alles vor kernel_end?
+2014-07-08 17:36:37,iksnagreb,"ja, liegt es"
+2014-07-08 17:37:16,iksnagreb,jetzt is da noch nen problem mit dem temprären mapings für das pagedirectory
+2014-07-08 18:38:28,iksnagreb,wie kann man möglichts effizient mappings von einem pagedirectory in ein anderes übernehmen?
+2014-07-08 18:41:13,Jidder,memcpy oder for-schleife
+2014-07-08 18:41:31,Jidder,also eintrage von einem page directory in ein anderes kopieren
+2014-07-08 18:45:12,iksnagreb,"ah, es tut und läuft auch noch wesentlich schneller als meine alte lösung"
+2014-07-08 18:45:43,iksnagreb,nachteil: die kopieradressen müssen an pagetable grenzen ausgerichtet sein
+2014-07-08 18:46:43,iksnagreb,"wolln wirs doch gleich mal übertreiebn und 400 mal das gleiche programm laden, hoffe dabei find ich nich nochn bug"
+2014-07-08 18:48:56,Jidder,"bugs nicht finden heißt nicht, dass keine da sind ^^"
+2014-07-08 18:49:07,Jidder,zum kopieren: was kopierst du denn?
+2014-07-08 18:49:20,iksnagreb,das mapping des kernel
+2014-07-08 18:49:25,Jidder,ah
+2014-07-08 18:49:28,iksnagreb,das muss ja überall gleich sein
+2014-07-08 18:49:42,iksnagreb,hm bei 400 stürtzt es mit nem pagefault ab
+2014-07-08 18:49:51,Jidder,"jo, da ist das mit der ausrichtung ja eigentlich kein problem, oder?"
+2014-07-08 18:50:21,iksnagreb,"ne, ist kein problem, sollte ich nur in die dokumentation der funktion schreiebn, damit ich das nich vergesse"
+2014-07-08 18:50:32,Jidder,jo das ist keine schlechte idee ^^
+2014-07-08 20:02:51,Paddy,Hardy!
+2014-07-08 20:08:02,Hardy,Paddy!

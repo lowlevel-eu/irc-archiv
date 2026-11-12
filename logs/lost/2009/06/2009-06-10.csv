@@ -1,0 +1,266 @@
+date/time,nick,message
+2009-06-10 09:16:50,ThePuppetMaster__,hi kwolf 
+2009-06-10 09:17:23,ThePuppetMaster__,FreakyPenguin biste wach?
+2009-06-10 09:17:35,ThePuppetMaster__,:)
+2009-06-10 09:18:30,kwolf,Moin
+2009-06-10 09:18:37,FreakyPenguin,Moin kwolf 
+2009-06-10 09:18:41,ThePuppetMaster__,"hät da mal ne kleine frage. Ich nutz ja FB und hab die RTLib selbst gebastelt .. wenn ich jetzt speicher allocen will, muss ich ja quasi auf den kernel zugreifen. da der kernel in ring 0 workelt, und die rtlib warscheinlich in ring3 (vonnem APP aus gesehen), dann brauch ich n gatecall zum allocen, .. oder?"
+2009-06-10 09:18:47,kwolf,FreakyPenguin: Fleißig calloc debuggen? ;-)
+2009-06-10 09:19:26,kwolf,ThePuppetMaster__: Irgendeine Art von Syscall halt. Ob du das über ein Callgate realisierst oder über einen Interrupt oder wie auch immer bleibt dir überlassen
+2009-06-10 09:19:43,kwolf,Interrupt ist üblicher
+2009-06-10 09:19:50,ThePuppetMaster__,ok.. dan geht ein direkter funktionsaufruf nicht
+2009-06-10 09:20:04,ThePuppetMaster__,für interrupt brauch ich erstma vm86 *g*
+2009-06-10 09:20:22,FreakyPenguin,"kwolf: Das doof. Ich habe jetzt nochmal alle mallocs und callocs in help durchgesehn, und da hat eigentlich nichts nach Buffer overflow ausgesehen, und ncurses auch noch zu debuggen ist irgendwie mühsam... ;-)"
+2009-06-10 09:20:24,kwolf,"Naja, Kernelcode in Ring 3 ausführen wird meistens schwer..."
+2009-06-10 09:20:36,kwolf,ThePuppetMaster__: wtf hat VM86 damit zu tun?
+2009-06-10 09:20:46,ThePuppetMaster__,denkfehler
+2009-06-10 09:21:43,ThePuppetMaster__,welchen interrupt ich verwende is egal .. (solang er über 47 is) .. oder?
+2009-06-10 09:22:59,FreakyPenguin,Halt einfach keine exception oder IRQ ;-)
+2009-06-10 09:23:18,ThePuppetMaster__,genau ... bis wie weit gehen die interrupts denn? .. 255 ? oder noch höher?
+2009-06-10 09:24:04,FreakyPenguin,Jo 255
+2009-06-10 09:24:09,ThePuppetMaster__,k .. thx
+2009-06-10 09:24:16,ThePuppetMaster__,dann nehm ich einfahc mal 255 *g*
+2009-06-10 09:26:25,kwolf,"FreakyPenguin: liballoc hat auch nichts, um Overflows abzufangen, oder?"
+2009-06-10 09:26:55,FreakyPenguin,kwolf: Du meinst ich sollte da vorsorglich einen Faktor 2 oder so reinbasteln? *g*
+2009-06-10 09:27:02,kwolf,Und valgrind portieren geht wohl auch nicht so leicht *g*
+2009-06-10 09:27:23,kwolf,"FreakyPenguin: Nein, ich meinte irgendeine Endmarkierung, die dann überschrieben wird und wo bei free ein abort() fliegt"
+2009-06-10 09:27:51,kwolf,Am besten mit Stacktrace
+2009-06-10 09:28:23,FreakyPenguin,"Ich finde es ja seltsam, dass valgrind unter linux nichts findet, das deutet ja irgendwie nicht so auf help hin, sondern eher auf ncurses oder libnxml..."
+2009-06-10 09:28:49,kwolf,Jo
+2009-06-10 09:29:23,kwolf,Vielleicht mal libnxml/ncurses mit unseren Patches für Linux bauen?
+2009-06-10 09:29:33,kwolf,Falls das dann noch geht *g*
+2009-06-10 09:30:06,FreakyPenguin,*g*
+2009-06-10 10:23:34,FreakyPenguin,"kwolf: Hm, liballoc findet schon mal was vonwegen doofes free, und das mitten in ncurses. Sehr viel sagt das aber wohl nicht aus..."
+2009-06-10 10:28:49,kwolf,Wieso? Ist das die falsche Stelle?
+2009-06-10 10:35:19,FreakyPenguin,"Naja, wenn die Magic kaputt ist, war das wohl eher der Block davor, der overgerunt wurde... ;-)"
+2009-06-10 10:42:52,kwolf,"Ah, ich dachte, da wäre noch eine Magic am Ende"
+2009-06-10 10:44:04,ThePuppetMaster__,gn8
+2009-06-10 10:44:19,kwolf,"Man bräuchte ein malloc, das garantiert, daß direkt beim Byte danach ein PF kommt ;-)"
+2009-06-10 10:44:46,FreakyPenguin,*g*
+2009-06-10 10:45:16,FreakyPenguin,"Naja, sowas kriege ich vermutlich schon irgendwie hin. ;-)"
+2009-06-10 10:45:27,FreakyPenguin,Halt Seitenweise... ;-)
+2009-06-10 10:45:54,kwolf,"Du mußt halt dafür sorgen, daß der Kernel eine Page mehr mappt und die dann schreibgeschützt ist"
+2009-06-10 10:46:15,kwolf,"Oder eine Kernelpage, das ist noch besser"
+2009-06-10 10:46:34,kwolf,"Die Frage ist nur, wieviel Speicher help dann braucht *g*"
+2009-06-10 10:47:23,FreakyPenguin,"Ich kann auch mindestens 3 Pages holen, und die 2. letzte dann freigeben *g*"
+2009-06-10 10:47:51,kwolf,Und beim nächsten malloc wird sie wieder alloziert...
+2009-06-10 10:48:04,kwolf,Ach so meinst du. Das ist aber kaputt *g*
+2009-06-10 10:48:25,FreakyPenguin,Aber selbstverständlich ;-)
+2009-06-10 10:49:17,FreakyPenguin,Und free ist ja was fuer Weicheier ;-)
+2009-06-10 10:49:57,kwolf,Zumindest drei Pages kannst du dann ja auf jeden Fall freigeben ;-)
+2009-06-10 11:32:57,kwolf,Ah...!
+2009-06-10 11:33:02,kwolf,<< != >> *g*
+2009-06-10 11:34:11,kwolf,Solche Fehler mach auch nur ich... Hat mich ja nur einen halben Tag gekostet...
+2009-06-10 11:34:21,FreakyPenguin,*g*
+2009-06-10 11:34:51,FreakyPenguin,"Ich habe gestern an einer andern stelle auch eine halbe Stunde gebraucht, um das for(); {} zu bemerken *g*"
+2009-06-10 11:36:18,kwolf,*hehe*
+2009-06-10 11:36:22,kwolf,C ist schon eine tolle Sprache
+2009-06-10 11:44:36,FreakyPenguin,"Uiii, das war aber viel rot. *g*"
+2009-06-10 11:52:49,bluecode,hm :-)
+2009-06-10 12:46:11,kwolf,"Oha, ehenkes will wirklich einsteigen"
+2009-06-10 13:00:39,kwolf,*hehe*
+2009-06-10 13:00:53,kwolf,Was geht denn da schief?
+2009-06-10 13:01:48,FreakyPenguin,Es gibt halt rot im kernel ;-)
+2009-06-10 13:03:45,kwolf,"Du sollst das seitenweise malloc auch nicht für den Kernel benutzen, sondern nur für ncurses ;-)"
+2009-06-10 13:04:06,kwolf,Obwohl es theoretisch sogar im Kernel tun sollte
+2009-06-10 13:04:09,FreakyPenguin,"Wenn es kaputt ist, bringt es aber nicht viel ;-)"
+2009-06-10 13:04:29,kwolf,Wie kann man das denn kaputtkriegen?
+2009-06-10 13:04:38,FreakyPenguin,Das wüsste ich auch gerne ;-)
+2009-06-10 13:06:07,kwolf,"Sinngemäß hast du doch sicher sowas wie malloc(x) { return mem_allocate(x, 0); } ?"
+2009-06-10 13:07:03,FreakyPenguin,"Nein, ich muss noch eine Struktur reinpacken, damit ich die Grösse für realloc weiss"
+2009-06-10 13:08:14,kwolf,Ah. Dann kannst du ja sogar ein free? ;-)
+2009-06-10 13:08:23,FreakyPenguin,Jo ;-)
+2009-06-10 13:08:30,FreakyPenguin,Ohne gibts ja einen OOM *g*
+2009-06-10 13:08:41,kwolf,Mit nicht? ;-)
+2009-06-10 13:08:53,FreakyPenguin,"Nein, da gibts anderes rot ;-)"
+2009-06-10 13:08:56,kwolf,Zeig mal dein malloc her
+2009-06-10 13:09:20,kwolf,Ich warte grad eh auf den qemu ;-)
+2009-06-10 13:09:45,FreakyPenguin,http://nopaste.info/d8a3971a4f.html
+2009-06-10 13:10:55,FreakyPenguin,Wo ist der peinliche Fehler? *g*
+2009-06-10 13:13:40,kwolf,"Faszinierend, daß das nicht tut"
+2009-06-10 13:14:03,FreakyPenguin,Hehe ;-)
+2009-06-10 13:14:50,kwolf,Also eigentlich sieht das total logisch aus
+2009-06-10 13:20:06,kwolf,"Wo bricht er denn? Irgendwas, wo man nachvollziehen könnte, welche Funktion kaputt ist?"
+2009-06-10 13:25:50,FreakyPenguin,"Hm in get_task, beim durchsuchen der Task-Liste"
+2009-06-10 13:28:53,kwolf,Also nichts hilfreiches
+2009-06-10 13:28:59,FreakyPenguin,Nein
+2009-06-10 13:32:28,kwolf,"Der bluecode soll mal deinen Code anschauen, der sieht den Fehler sicher sofort ;-)"
+2009-06-10 13:45:28,bluecode,Alloziert irgendwer mehr als eine Seite?
+2009-06-10 13:47:41,FreakyPenguin,"Nein, sieht nicht so aus"
+2009-06-10 13:48:06,bluecode,ich hab aber keine Lust mir den Code anzusehen :-)
+2009-06-10 13:54:28,PopUp,brb
+2009-06-10 14:01:35,janosch,moin
+2009-06-10 14:16:39,bluecode,moin janosch
+2009-06-10 14:26:29,kwolf,Genau
+2009-06-10 15:13:06,Jidder,moin
+2009-06-10 15:13:10,Jidder,mmmmh käse ^_^
+2009-06-10 15:17:24,Jidder,im käserausch das /identify vergessen ...
+2009-06-10 18:17:50,bluecode,ah richtg
+2009-06-10 18:17:56,bluecode,tz
+2009-06-10 18:17:58,bluecode,ECAHN
+2009-06-10 18:18:00,bluecode,*ECHAN
+2009-06-10 18:19:28,kwolf,"Wie, du hast noch andere Channels?! ;-)"
+2009-06-10 18:21:02,bluecode,rofl
+2009-06-10 18:21:07,bluecode,"nö, natürlich nicht"
+2009-06-10 18:22:33,bluecode,abgesehen von den anderen 8 zumindest nicht xD
+2009-06-10 18:23:19,kwolf,*g*
+2009-06-10 18:23:55,kwolf,"Ätsch, ich hab mehr ;-)"
+2009-06-10 18:23:59,bluecode,aber obiges sollte eigentlich über ICQ gehen ;-)
+2009-06-10 18:24:05,kwolf,Ah
+2009-06-10 18:24:11,bluecode,kwolf: wo hängst du denn überall ab?
+2009-06-10 18:24:39,kwolf,Ein Haufen interne und ein paar Freenode
+2009-06-10 18:24:49,kwolf,Insgesamt im Moment 10
+2009-06-10 18:25:10,bluecode,"intern? Das klingt interessant, erzählen sie mehr"
+2009-06-10 18:26:46,kwolf,Das klingt interessanter als es ist ;-)
+2009-06-10 18:27:17,kwolf,"Ich mein, irgendwie muß man ja mit Kollegen kommunizieren? ;-)"
+2009-06-10 18:28:05,bluecode,"ist es traurig, wenn ich soeben erst dank meines Vaters festgestellt habe, dass morgen Feiertag ist?"
+2009-06-10 18:28:24,XanClic,Was? Bei mir ist kein Feiertag... ^^
+2009-06-10 18:28:52,bluecode,Frohenleichnam oder sowas?
+2009-06-10 18:29:00,XanClic,Nicht in Sachsen! :D
+2009-06-10 18:29:03,bluecode,oder kommt es von fronen?
+2009-06-10 18:29:04,bluecode,kA
+2009-06-10 18:29:25,bluecode,Fronleichnam
+2009-06-10 18:31:13,kwolf,"bluecode: Ich glaube schon, daß das traurig ist"
+2009-06-10 18:32:13,kwolf,Aber so hast du immerhin nichts geplant und einen ganzen Tag für die C++-Lib Zeit ;-)
+2009-06-10 18:37:24,bluecode,ich hätte morgen genau eine Vorlesung gehabt ;-)
+2009-06-10 18:37:35,bluecode,da konnte ich defintiv genug sonstige Zeit verplanen ;-)
+2009-06-10 18:39:10,kwolf,Schade ;-)
+2009-06-10 18:39:26,bluecode,sieht eher nach dnd aus :-)
+2009-06-10 19:12:57,matheguru,"wie kann man die textfarben im programm ändern? geht das wie unter Windows mit system(""color A""); ?"
+2009-06-10 19:13:13,ThePuppetMaster,welche textfarbe?
+2009-06-10 19:14:18,matheguru,"ansich die textfarben zu ändern, im terminal, oder wie auch immer, vieleicht auch hintergrundfarbe! kedit ist ja auch farbig"
+2009-06-10 19:24:12,bluecode,ncurses
+2009-06-10 19:24:26,bluecode,ansonsten excape sequences
+2009-06-10 19:24:29,bluecode,*escape
+2009-06-10 19:25:06,pmedia,hä? Kann mir mal einer sagen wieso ich von der Konversation hier nix mitbekommen hab udn wieso au feinmal soviele da sind? o.O
+2009-06-10 19:25:49,bluecode,falscher Client?
+2009-06-10 19:25:55,pmedia,hm nö
+2009-06-10 19:26:03,pmedia,was soll man da falshc machen können?
+2009-06-10 19:55:08,matheguru,"sry: escape sequencen sind bei mir schon etwas länger her! Gib mir mal kurz ne gedankenstütze, wenn nicht schau ich im i-nett:-D"
+2009-06-10 19:57:28,matheguru,pmedia: ja und was machst du hier nun
+2009-06-10 19:58:01,pmedia,"hm... rumidlen, bis ich an meinem OS mal wieder weitercode, das letzte Mal dass ich dran was gemacht hab is ja n knappes JJahr her ^^"
+2009-06-10 19:59:45,matheguru,"dann mach doch bei uns mit! frag mal FreakePenguin, der gehört zur Projektleitung:-D! "
+2009-06-10 20:00:00,pmedia,ähm...? Schule? Abi? Prüfungen? ;D
+2009-06-10 20:00:23,FreakyPenguin,matheguru: http://bash-hackers.org/wiki/doku.php/scripting/terminalcodes
+2009-06-10 20:00:52,matheguru,thx
+2009-06-10 20:01:22,matheguru,"pmedia: naja aber schule und ABI, da können hier ein paar auch ein lied von singen!"
+2009-06-10 20:01:26,FreakyPenguin,"Hm wobei das nicht sehr übersichtlich ist, bei bedarf halt selber mal nach color und vt100 suchen. ;-)"
+2009-06-10 20:01:38,pmedia,:D
+2009-06-10 20:04:00,DickHuuhn,moin
+2009-06-10 20:04:07,matheguru,MOIN
+2009-06-10 20:08:07,matheguru,"ka entweder ich bin zu blöd, glaub ich eher, aber es funktioniert nicht, gib mir biite ma nen beispiel! "
+2009-06-10 20:08:53,FreakyPenguin,"puts(""\n\033[1;33mtyndur-Init $Rev$ \033[0;37m\n"");"
+2009-06-10 20:10:50,FreakyPenguin,"Wobei fürs wieder aufzuheben \033[0m reichen müsste, mit dem neusten Patch von Andreas Freimuth, der gestern eingecheckt wurde."
+2009-06-10 20:11:08,FreakyPenguin,Hm sogar ohne 0 vermutlich ;-)
+2009-06-10 20:11:21,matheguru,thx
+2009-06-10 20:11:48,matheguru,geht es auch so im Terminal mit echo?
+2009-06-10 20:12:06,FreakyPenguin,"Nein, dafür fehlt unserem echo das -n Flag ;-)"
+2009-06-10 20:12:39,matheguru,"ok thx, warum benutz du puts und printf?"
+2009-06-10 20:14:17,FreakyPenguin,Dort benutze ich nur puts und nicht printf ;-)
+2009-06-10 20:15:52,FreakyPenguin,"Und puts ist generell die bessere Idee, wenn keine Parameter ans printf gehen sollen (vorausgesetzt, das automatisch angehaengte \n stoert nicht), da printf den ganzen String parsen muss, während puts einfach unbesorgt rausschreiben kann."
+2009-06-10 20:16:29,matheguru,thx
+2009-06-10 21:31:45,stultus,moin
+2009-06-10 21:32:27,Jidder,moin
+2009-06-10 21:32:32,pmedia,moin
+2009-06-10 21:47:34,FreakyPenguin,"Toll, mein malloc macht schon wieder Speicherrecycling ;-)"
+2009-06-10 21:47:52,FreakyPenguin,"Schade nur, dass dazwischen kein free war. *g*"
+2009-06-10 21:48:05,pmedia,"aber natürlich mit erhöhtem Effizienzgrad, indem der Müll aka Programme auch gleich mitgenommen wird, oder? :D"
+2009-06-10 21:48:26,FreakyPenguin,"Klar, und der kernel auch ;-)"
+2009-06-10 21:49:06,FreakyPenguin,"Jidder: Könntest du bei Gelegenheit hier mal einen Blick reinwerfen: http://nopaste.info/d8a3971a4f.html Mir fällt der Fehler nicht auf, aber das kann eigentlich nicht so schwer sein. ;-)"
+2009-06-10 21:49:48,Jidder,hm ich guck mal ^^
+2009-06-10 21:50:20,stultus,:D
+2009-06-10 21:51:00,stultus,Weiß irgendjemand wie man nen größeren Rewrite eines Interface am besten durchzieht?
+2009-06-10 21:51:18,FreakyPenguin,"Jidder: Also nicht wegen dem Speicherrecycling, das dort macht halt einfach rot. ;-)"
+2009-06-10 21:51:19,pmedia,"strg+alt, delete"
+2009-06-10 21:51:36,pmedia,-lt
+2009-06-10 22:00:18,taljeth,Moin
+2009-06-10 22:00:24,pmedia,moin
+2009-06-10 22:00:43,Jidder,moin
+2009-06-10 22:00:52,FreakyPenguin,Moin taljeth 
+2009-06-10 22:00:58,FreakyPenguin,taljeth: Gut geschlafen? ;-)
+2009-06-10 22:04:49,taljeth,;-)
+2009-06-10 22:05:25,FreakyPenguin,"Du wolltest dich nur vom help debuggen drücken, gibs doch zu. ;-)"
+2009-06-10 22:07:32,stultus,moin taljeth
+2009-06-10 22:11:34,FreakyPenguin,"Kuhl, unser alloc_kernel_pages alloziert sogar 0 Pages, toll sowas *g*"
+2009-06-10 22:11:47,stultus,Hm
+2009-06-10 22:11:53,stultus,Fast so schön wie mein problem :)
+2009-06-10 22:12:05,stultus,Irgendwo faultet es. Ich weiß nur nicht an welcher Stelle. *gg*
+2009-06-10 22:12:34,stultus,Erinnert mich das nächste mal daran dasses ne schlechte Idee ist was laufendes umzuschreiben 
+2009-06-10 22:12:35,stultus,;)
+2009-06-10 22:16:10,taljeth,"FreakyPenguin: Wenn du 0 haben willst, warum nicht? ;-)"
+2009-06-10 22:16:25,taljeth,Aber bitte nicht schon wieder eine malloc(0)-Diskussion... *g*
+2009-06-10 22:16:58,FreakyPenguin,*g*
+2009-06-10 22:17:10,FreakyPenguin,"Ich will einen infinitesimal kleinen Speicherbereich, jo *g*"
+2009-06-10 22:18:46,taljeth,Halbe Bits produzieren eine wieviel-wertige Logik? ;-)
+2009-06-10 22:19:15,stultus,wtf?
+2009-06-10 22:19:34,FreakyPenguin,taljeth: Eine wertlose ;-)
+2009-06-10 22:19:44,stultus,"Btw, Hackathon?"
+2009-06-10 22:21:09,taljeth,FreakyPenguin: Also den philosophischen Wert würde ich nicht unterschätzen *g*
+2009-06-10 22:22:10,FreakyPenguin,"Stimmt, aber das überlassen wir mal schön dem Jidder. ;-)"
+2009-06-10 22:22:12,taljeth,stultus: Hat dich eine dermaßen sinnlose Frage an dieses Thema erinnert? ;-)
+2009-06-10 22:22:24,stultus,erinnert weniger
+2009-06-10 22:22:31,stultus,war nur der verzweifelte versuch eines themenwechsels ;)
+2009-06-10 22:22:54,taljeth,Mein Thema willst du wechseln? Pah.
+2009-06-10 22:23:28,stultus,:P
+2009-06-10 22:23:46,FreakyPenguin,bluecode hat mal was von August gesagt
+2009-06-10 22:24:36,stultus,August klingt gut. Bis zum 14. hab ich Ferien ;)
+2009-06-10 22:25:17,stultus,"rpc_get_dword und Konsorten free'en den Speicher den ich denen zur Übertragung geb doch nicht, oder?"
+2009-06-10 22:30:30,taljeth,"Öh, nein"
+2009-06-10 22:32:36,stultus,Uhm.
+2009-06-10 22:32:41,stultus,Mal so ne ganz dumme Frage.
+2009-06-10 22:32:51,stultus,"Wenn ich nen Pagefault in nem RPC erzeuge, welchen Prozess erwischt das?"
+2009-06-10 22:33:04,FreakyPenguin,Das richtige ;-)
+2009-06-10 22:33:13,FreakyPenguin,taljeth: Hm interessant: http://nopaste.info/cfd0bb02d8.html *g*
+2009-06-10 22:33:19,stultus,Den Aufrufer? ^^
+2009-06-10 22:33:27,stultus,"Das ist jedenfalls meine Beobachtung, dubioserweise"
+2009-06-10 22:33:55,FreakyPenguin,"Nein, den aufgerufenen, aber wenn du dort einen PF erzeugen kannst, ist dein Code doof"
+2009-06-10 22:35:05,stultus,"Hm, hat sich auch erledigt."
+2009-06-10 22:35:21,stultus,Das geht doch garnicht... Wie kann bei ner Zuweisung an ein alloziiertes Objekt nen PF fliegen? :/
+2009-06-10 22:36:27,stultus,Ach leute... Ich bin doch doof.
+2009-06-10 22:37:26,stultus,Genügend Speicher hol ich. Ich vergess nur den Pointer zu setzen...
+2009-06-10 22:37:37,taljeth,FreakyPenguin: Wie ist das zu interpretieren? ;-)
+2009-06-10 22:37:52,FreakyPenguin,Das frage ich mich auch... ;-)
+2009-06-10 22:38:18,FreakyPenguin,"Ich würde sagen, wenn da noch 2 free mehr wären, wäre das ganz in Ordnung... ;-)"
+2009-06-10 22:38:53,taljeth,"mem_allocate(0x3) heißt in Wirklichkeit mem_allocate(0x3000, 0)?"
+2009-06-10 22:39:04,FreakyPenguin,Jo
+2009-06-10 22:40:00,taljeth,Ist das kernel oder kernel2?
+2009-06-10 22:40:07,FreakyPenguin,kernel
+2009-06-10 22:40:24,FreakyPenguin,Ist also in src/kernel/src/mm/kmm.c unten
+2009-06-10 22:42:22,taljeth,alloc_kernel_pages() gehört nicht zu meinen Lieblingsfunktionen..
+2009-06-10 22:42:49,FreakyPenguin,Interessant ist wohl vorallem find_contiguous_kernel_pages
+2009-06-10 22:42:54,FreakyPenguin,Die ist aber auch nicht besser. *g*
+2009-06-10 22:43:27,taljeth,Ich meine eigentlich die gesamte kmm.c ;-)
+2009-06-10 22:43:38,FreakyPenguin,*g*
+2009-06-10 22:43:44,Jidder,möp
+2009-06-10 22:45:04,taljeth,FreakyPenguin: gdb und Brechpunkt dort rein?
+2009-06-10 22:45:44,taljeth,"Und jedesmal nachschauen, wie die Pagetables aussehen"
+2009-06-10 22:46:03,taljeth,Und ob er überhaupt die richtigen Pagetables nimmt und so ;-)
+2009-06-10 22:46:23,FreakyPenguin,"Schade nur, dass es vorher schon viele Mal geklappt hat. ;-)"
+2009-06-10 22:46:35,FreakyPenguin,"Hm, das ist natürlich eine gute Frage... *g*"
+2009-06-10 22:47:35,Jidder,das is ne gute idee
+2009-06-10 22:48:16,Jidder,wer weiß ob die page tables korrekt invalidiert wirden
+2009-06-10 22:48:28,Jidder,= ich weiß es zumindest nicht
+2009-06-10 22:49:45,taljeth,"Hm, mal eine andere Frage... Läuft denn kernel2 mit dem malloc? ;-)"
+2009-06-10 22:50:31,taljeth,Der macht nämlich nicht mehr so gewagte Sachen für Kernelspeicher
+2009-06-10 22:50:35,taljeth,Sondern noch viel gewagtere
+2009-06-10 22:50:40,FreakyPenguin,*g*
+2009-06-10 22:50:51,FreakyPenguin,Hm oom *g*
+2009-06-10 22:51:02,taljeth,Gibt ihm halt mehr Speicher ;-)
+2009-06-10 22:51:32,Jidder,"der unterschied zu anderen mallocs ist doch auch, dass dieses nur minimalen speicher vom kernel anfordert, oder? die anderen holen sich doch erstmal ein paar megabytes, oder?"
+2009-06-10 22:51:43,Jidder,hm zweimal oder
+2009-06-10 22:51:46,Jidder,oder?
+2009-06-10 22:54:19,FreakyPenguin,"Hm liballoc holt 64k oder so, wimre"
+2009-06-10 22:54:37,taljeth,"FreakyPenguin: Oder schonmal drüber nachgedacht, für den Kernel liballoc zu nehmen und dein brokenalloc nur für Userspace?"
+2009-06-10 22:55:05,taljeth,"Es sei denn, du willst kernel tatsächlich noch debuggen"
+2009-06-10 22:55:19,taljeth,Was natürlich auch für die 0.2.1 sehr löblich wäre ;-)
+2009-06-10 22:55:26,taljeth,Aber hinterher ist er eh Geschichte
+2009-06-10 22:58:46,FreakyPenguin,"Hm, das war jetzt besonders schlau: mem_free(head, head->alloc_size); mem_free((void*) head + head->alloc_size + PAGE_SIZE, PAGE_SIZE); Aber das habe ich nur noch eingebaut, um den OOM loszuwerden *g*"
+2009-06-10 22:59:45,taljeth,Und dafür gab es dann SMU? ;-)
+2009-06-10 22:59:58,FreakyPenguin,Nein rot ;-)
+2009-06-10 23:00:15,taljeth,Das folgt meistens daraus ;-)
+2009-06-10 23:00:23,FreakyPenguin,"Auf head zugreifen, das gefreet wurde, ist halt ungünstig ;-)"
+2009-06-10 23:00:38,taljeth,Du mußt eben -O4 einschalten ;-)
+2009-06-10 23:27:04,FreakyPenguin,"Toll, ohne free und mit brokenmalloc braucht tyndur nur 230 Mb *g*"
+2009-06-10 23:43:21,FreakyPenguin,"Hm, strnlen verunsichert mich grad... Darf strnlen(a, 1) dann auf *(a+1) zugreifen?"
+2009-06-10 23:47:21,FreakyPenguin,"Wenn nein, ist unsere Implementierung nämlich kaputt ;-)"
+2009-06-10 23:59:36,FreakyPenguin,"Irgendwie beunruhigt es mich aber trotzdem wie leicht ich immer wieder PFs im kernel hinkriege, mit meinem malloc nur im Userspace... ;-)"

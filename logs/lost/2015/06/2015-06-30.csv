@@ -1,0 +1,162 @@
+date/time,nick,message
+2015-06-30 12:00:15,Jonathan,Moin
+2015-06-30 12:17:18,max,Moin
+2015-06-30 12:28:41,moritz31,moinsen
+2015-06-30 12:32:40,max,moin
+2015-06-30 16:13:26,iksnagreb,moin
+2015-06-30 17:12:36,moritz31,moinmoin
+2015-06-30 17:12:47,moritz31,jemand der sich gut mit structs auskennt hier ?
+2015-06-30 17:13:01,mgottschlag,"ja, structs sind toll! \o/"
+2015-06-30 17:13:08,mgottschlag,fast so gut wie Klassen!
+2015-06-30 17:13:35,mgottschlag,"und viel besser als unions, weil mehr reinpasst!"
+2015-06-30 17:13:38,XanClic,yfw Klassen sind structs
+2015-06-30 17:14:20,mgottschlag,"ja, aber Klassen klingen cooler."
+2015-06-30 17:14:26,moritz31,naja ich versuch mir gerade nen stack zu basteln habn struct stack der nen pointer stack node enthält
+2015-06-30 17:14:50,moritz31,"und dann hab ich nen struct stack_node, und darin is dann halt auch en pointer auf stack_node "
+2015-06-30 17:14:54,XanClic,„Struktur“ klingt aber so strikt
+2015-06-30 17:14:57,XanClic,So deutsch
+2015-06-30 17:14:58,XanClic,So nach Ordnung
+2015-06-30 17:15:03,moritz31,aber ihrgendwie geht gar nix :/
+2015-06-30 17:15:20,XanClic,"Wenn gar nichts geht, ist das immerhin schonmal besser, als wenn alles kaputt ist"
+2015-06-30 17:15:53,moritz31,naja x
+2015-06-30 17:17:37,XanClic,"Ach so, ja, wenn alles kaputt ist *und* nichts geht, das ist besonders doof"
+2015-06-30 17:17:50,moritz31,joa ^^
+2015-06-30 17:18:10,moritz31,also ich glaub die struktur an sich ist okay nur das problem ist mit pointern und adressen
+2015-06-30 17:19:31,moritz31,"ich geh mit ner while schleife den freien adressraum in 4kb blöcken durch und will bei jedem durchschlauf ein struct_node erstellen und auf den stack ""pushen"" heißt pointer von dem neune struct_node auf stack_top und dann stack_top neu auf das struct_node setzten oder ?"
+2015-06-30 17:19:56,XanClic,"Ich kenn mich zwar mit structs aus, aber nicht mit stackbasierten Speicherverwaltungssystemen"
+2015-06-30 17:20:04,XanClic,"Ich würde ja jetzt auf SHyx0rmZ zeigen, aber der ist nicht da"
+2015-06-30 17:20:58,moritz31,mhhh okay schade :/
+2015-06-30 17:25:58,mgottschlag,moritz31: zeig lieber bisschen Code
+2015-06-30 17:27:33,moritz31,pastebin.com/KkVBXmrK
+2015-06-30 17:27:39,moritz31,so sehen die structs aus
+2015-06-30 17:38:00,mgottschlag,"ich glaube, interessanter wären die Operationen darauf"
+2015-06-30 17:40:13,moritz31,mgottschlag: pastebin.com/gdXwdRzn
+2015-06-30 17:41:08,mgottschlag,"wtf, man lernt nie aus"
+2015-06-30 17:41:21,mgottschlag,"wzH ist denn ""stack_element_t *tmp = {base_addr_end,memory_stack->stack_top};"" für eine Syntax?"
+2015-06-30 17:41:26,mgottschlag,frisst der Compiler das?
+2015-06-30 17:41:42,mgottschlag,und wo sollen da überhaupt die Daten gespeichert werden?
+2015-06-30 17:42:00,moritz31,ja so hab ich des mal für struct initaliseren gelernt
+2015-06-30 17:42:08,mgottschlag,"ja, aber as ist ja ein Pointer"
+2015-06-30 17:42:19,mgottschlag,da musst du ja erst per malloc oder ähnliches eine Adresse reinschreiben
+2015-06-30 17:42:25,mgottschlag,und dann an diese Adresse die Werte schreiben
+2015-06-30 17:43:06,moritz31,ja des is ja auch des problem des ich habe oder vermute das ich nicht richtig weiß wie ich mit den adressen umgehen soll da ich ja noch kein alloc hab 
+2015-06-30 17:43:20,mgottschlag,dann musst du dir irgenwo her anderweitig Speicher besorgen
+2015-06-30 17:43:48,mgottschlag,"in der physischen Speicherverwaltung bietet es sich z.B. an, die einzelnen Stackelemente direkt in die Seiten zu legen, die von den Einträgen verwaltet werden"
+2015-06-30 17:44:46,moritz31,du meinst also das ich jede stack_node am anfang des 4kb blocks speichern soll 
+2015-06-30 17:45:45,mgottschlag,zum Beispiel
+2015-06-30 17:46:10,mgottschlag,"alternativ am Anfang einfach ausrechnen, wie viel Speicher du maximal brauchst, und da bereits beiseite legen"
+2015-06-30 17:46:35,moritz31,wäre des dann aber nicht en bisschen blöd weil jeder block dann kleiner 4kb wäre
+2015-06-30 17:47:16,mgottschlag,"nee, schon als zusammenhängenden Block reservieren"
+2015-06-30 17:47:32,mgottschlag,z.B. 1% aller Seiten für Speicherverwaltung zur Seite legen oder so
+2015-06-30 17:47:58,mgottschlag,"wobei das, wenn du eine verlinkte Liste nimmst, wahrscheinlich weniger sinnvoll ist, als wenn du einfach die freien Blöcke nimmst und die Knoten da rein legst"
+2015-06-30 17:49:09,moritz31,du meinst also wenn z.B adresse 0 ist dass ich dann anfange node1 an adresse 0 node2 an adresse sizeof struct 
+2015-06-30 17:49:35,mgottschlag,"äh, ne, jeweils an den Anfang des 4k-Blockes einen Knoten"
+2015-06-30 17:50:21,mgottschlag,"wobei ich hier lokal gerade in einem Test genau diese Methode implementiert habe, dass ich node2 an Adresse sizeof(...) lege, aber das ist v.a. komplexer zu implementieren und hat kaum Vorteile"
+2015-06-30 17:50:31,mgottschlag,"weil du dann schauen musst, was passiert, wenn die Seite voll ist"
+2015-06-30 17:50:46,mgottschlag,also lieber in jede leere 4k-Seite einen Knoten
+2015-06-30 17:51:16,moritz31,dann ist die 4k-seite ja aber keine 4k seite mehr weil sizeof ja abgezogen werden muss is das später ihrgendwann schlimm ?
+2015-06-30 17:51:54,mgottschlag,"naja, aber deine Liste mit freiem Speicher enthält ja erstmal nur ungenutzte Seiten, oder?"
+2015-06-30 17:52:14,mgottschlag,"und sobald die Seite dann verwendet wird, wird sie aus der Liste entfernt und der Knoten darin ist nicht mehr wichtig und kann überschrieben werden"
+2015-06-30 17:52:25,moritz31,aso stimmt ja :D
+2015-06-30 17:52:37,moritz31,eigentlich logisch ^^
+2015-06-30 17:52:39,moritz31,ohh man xD
+2015-06-30 17:52:40,mgottschlag,"wenn du auch verwendete Seiten verwalten willst, kommst du nicht darum herum, am Anfang eine feste Menge Speicher zu allokieren"
+2015-06-30 17:53:07,moritz31,ja mir reicht erstmal was funktionierendes was ich aus eigener kraft erstellt habe :D
+2015-06-30 17:53:47,moritz31,"öhhm kurze Frage noch ich hab ja im struct stack_node noch en uint32_t mit der adresse, kann ich des eigentlich entfernen weil der zeiger auf den struct ist ja eigentlich immer die adresse"
+2015-06-30 19:44:24,moritz31,mhhh wieder da
+2015-06-30 20:40:11,moritz31,jemand ne idee warum sich nix ändert wenn ich nem struct was zuweise
+2015-06-30 20:58:21,Jonathan,moritz31: Code or it didn't happen
+2015-06-30 20:59:47,moritz31,Jonathan naja ich hab stack_element_t* stack_top = 0;
+2015-06-30 21:00:05,moritz31,und wenn ich jetzt stack_top = node mache oder halt ihrgendwie verändern will passiert einfach gar nix
+2015-06-30 21:00:23,moritz31,dachte erst kprintf is eventuell fehlerhaft aber 
+2015-06-30 21:00:47,moritz31,wenn ich node und stack_top gleichsetzte und dann beides ausgebe haben die beiden unterschiedliche werte
+2015-06-30 21:13:05,Jonathan,Ööööh
+2015-06-30 21:13:05,moritz31,okay ich glaub der fehler liegt darin das kprintf keine 2 großen werte verarbeiten kann
+2015-06-30 21:13:12,Jonathan,stack_element_t* stack_top = 0;
+2015-06-30 21:13:18,Jonathan,Müsste der Compiler hier nicht schreien?
+2015-06-30 21:13:43,Jonathan,"Also, richtig laut vor Schmerzen schreien?"
+2015-06-30 21:14:57,Jonathan,"Hast du zufälligerweise eine Warnung vom Typ ""Converting int to pointer without cast"" übersehen/ignoriert/abgestellt und Dinge an 0x00000000 gemappt?"
+2015-06-30 21:15:10,Jonathan,Oder bekommst du vielleicht *zufälligerweise* auch eine Exception?
+2015-06-30 21:15:58,Jonathan,"Wusstest du, dass ""NULL"" in den Headern als ""(void*)0"" definiert ist? :D"
+2015-06-30 21:17:52,moritz31,das problem ist ein ganz anderes
+2015-06-30 21:18:15,Jonathan,"Zumindest diese eine Codezeile schreit ""fix me!"""
+2015-06-30 21:18:17,moritz31,habe mir gerade einfachmal 2x 1000000 hintereinander in kprintf ausgeben lassen ..... 1. stimmt 2. is null
+2015-06-30 21:18:39,Jonathan,"Gut, dann fix mal dein kprintf ;)"
+2015-06-30 21:18:58,Jonathan,Aber ptr = 0 solltest du trotzdem nicht tun
+2015-06-30 21:19:11,Jonathan,"Wenn du das wirklich willst, schreib ptr = NULL"
+2015-06-30 21:19:16,Jonathan,Dann ist das dem Compiler wenigstens klar :P
+2015-06-30 21:19:33,moritz31,NULL muss ich erst definieren xD
+2015-06-30 21:19:37,Jonathan,"(Und denjenigen, die deinen Code lesen, auch - und spätestens in 12 Monaten willst du den Code lesen und verstehen können)"
+2015-06-30 21:19:39,Jonathan,Ääääh
+2015-06-30 21:19:45,Jonathan,Für sowas gibt's Standard-Header
+2015-06-30 21:19:47,Jonathan,stddef.h
+2015-06-30 21:19:52,Jonathan,Müsste das sein
+2015-06-30 21:20:34,Jonathan,http://www.cplusplus.com/reference/cstddef/ <----
+2015-06-30 21:20:46,moritz31,joa ich guck morgen mal ich heul jetzt erstmal xD
+2015-06-30 21:21:04,Jonathan,Mach das ^^
+2015-06-30 21:21:07,moritz31,woran könnte des liegen das des erste %d geht und des 2. net xD
+2015-06-30 21:21:28,Jonathan,"Fehler im Parser, falsche Calling Convention, was auch immer"
+2015-06-30 21:21:39,Jonathan,Mit letzterem durfte ich mich auch schon mal rumschlagen
+2015-06-30 21:22:17,Jonathan,"(Was genau tut an ""#include <stddef.h>"" weh?)"
+2015-06-30 21:24:12,moritz31,"geht va_arg(ap,unsigned long long) nicht ?"
+2015-06-30 21:24:24,moritz31,Jonathan: unwissenheit xD
+2015-06-30 21:24:53,Jonathan,Ähm
+2015-06-30 21:25:01,Jonathan,Das ist also der Code aus dem Parser?
+2015-06-30 21:25:04,Jonathan,Für %d?
+2015-06-30 21:26:23,Jonathan,Also... Du holst dir da einen uint64_t (= unsigned long long) aus den Argumenten.
+2015-06-30 21:26:39,Jonathan,"Wie ""verarbeitest"" du den weiter?"
+2015-06-30 21:27:02,Jonathan,Und was übergibst du kprintf überhaupt als Argumente?
+2015-06-30 21:27:28,Jonathan,"Mit einzelnen Codezeilen kann ich nur raten, was du falsch machst."
+2015-06-30 21:28:27,Jonathan,"Ich würde jetzt erstmal auf ""falsche calling convention"" tippen. Du übergibst der Funktion einen int/long, obwohl sie eigentlich einen long long erwartet."
+2015-06-30 21:28:39,moritz31,ahhhhh okay 
+2015-06-30 21:28:45,moritz31,ich hab gerade den fehler gefunden
+2015-06-30 21:28:49,Jonathan,Ja?
+2015-06-30 21:28:56,moritz31,hatte als buffer nur 65 also ein long long
+2015-06-30 21:29:06,moritz31,wenn ich jetzt 2 long long werte hatte is der 2. immer null
+2015-06-30 21:29:38,moritz31,jetzt hab ich den buffer mal verdoppelt jetzt gehts für 2 ich muss die kprintf bei gelegenheit mal komplett neu machen
+2015-06-30 21:30:04,Jonathan,"Ich kann sehr empfehlen, dass du dir eine fertige Implementation irgendwo runterlädst ^^"
+2015-06-30 21:30:22,Jonathan,"Gibt auch welche, die ohne Heap arbeiten, so eine hab ich in meinem OS auch eingesetzt"
+2015-06-30 21:31:01,Jonathan,Alternative:
+2015-06-30 21:32:01,Jonathan,"Du schreibst dein kprintf so, dass es den Buffer nach jedem übersetzten ""Ding"" (sei es %d, %x, %s) an ein Ausgabegerät übergibt und den Buffer dann löscht"
+2015-06-30 21:32:24,Jonathan,"Das kannst du z.B. mit einem Funktionspointer realisieren, den du kprintf übergibst"
+2015-06-30 21:32:32,moritz31,ich lad mir jetzt erstmal eine runter
+2015-06-30 21:32:35,moritz31,empfehlung ?
+2015-06-30 21:32:35,Jonathan,Und dieser Funktion übergibt kprintf dann immer die fertigen Datenblöcke
+2015-06-30 21:32:38,Jonathan,Hmmm
+2015-06-30 21:32:45,Jonathan,Wo hatte ich meine denn her?
+2015-06-30 21:32:46,Jonathan,Ich guck mal
+2015-06-30 21:33:56,Jonathan,http://www.sparetimelabs.com/printfrevisited/printfrevisited.php <--- Das hier hab ich genommen
+2015-06-30 21:34:46,Jonathan,"Frisst auch nur wenige hundert Bytes Speicher für den Code, aber das ist bei deinem OS vermutlich irrelevant - bist ja bestimmt auf x86 :P"
+2015-06-30 21:37:05,Jonathan,"Halt, warte"
+2015-06-30 21:37:18,Jonathan,"http://www.sparetimelabs.com/tinyprintf/tinyprintf.php <--- Ich hatte nicht Version 2, sonder diese hier, Version 1 ^^"
+2015-06-30 21:41:27,moritz31,ich nehm mal version 2 :P
+2015-06-30 21:41:34,moritz31,wobei da ein putchar anscheinend fehlt
+2015-06-30 21:42:08,Jonathan,Version 1 braucht keine Sachen aus den stdlibs
+2015-06-30 21:42:10,Jonathan,Soweit ich weiß
+2015-06-30 21:44:07,moritz31,jetzt geht nix mehr xD
+2015-06-30 21:45:09,Jonathan,"Hast du das neue printf einfach rein gehauen, ohne es zu initialisieren? ôo"
+2015-06-30 21:45:22,moritz31,?
+2015-06-30 21:45:39,Jonathan,Ohje ^^
+2015-06-30 21:45:49,Jonathan,Dokumentation zu dem tiny printf gelesen?
+2015-06-30 21:46:17,moritz31,mach ich jetzt lieber mal xD
+2015-06-30 21:49:14,moritz31,Jonathan: wo wie was ?
+2015-06-30 21:50:47,Jonathan,Nimm Version 1 von dem printf.
+2015-06-30 21:50:52,Jonathan,Dann initialisiere es korrekt.
+2015-06-30 21:50:57,Jonathan,Dann funktioniert es.
+2015-06-30 21:51:20,moritz31,Jonathan: wo steht das mit dem initialisieren ?
+2015-06-30 21:51:57,Jonathan,"""To use the printf you need to supply your own character output function,  something like : [...]"""
+2015-06-30 21:53:14,moritz31,ja ich seh es ja gerade :(
+2015-06-30 21:53:25,moritz31,meine charakter output funktion war kprintf :'(
+2015-06-30 21:53:26,moritz31,schnief
+2015-06-30 21:53:43,Jonathan,xD
+2015-06-30 21:53:56,Jonathan,Irgendwo muss dein kprintf seine Daten auch hin geschaufelt haben...
+2015-06-30 21:54:54,moritz31,ja ich muss mir jetzt ne putc schreiben xD
+2015-06-30 22:02:55,moritz31,Jonathan: ich hab en schwarzes bild aber es crasht immerhin nicht :P
+2015-06-30 22:04:47,moritz31,Jonathan: ich geb auf
+2015-06-30 22:11:16,moritz31,öhhhm Jonathan ?
+2015-06-30 22:27:08,Jonathan,Jaaaa?
+2015-06-30 22:27:17,Jonathan,Schon mal dein putc allein getestet?
+2015-06-30 22:35:35,moritz31_,nein also es geht das problem ist die uint64_t bekomm ich immer noch net angezeigt xD
+2015-06-30 22:41:55,Jonathan,xd
+2015-06-30 22:42:06,Jonathan,Die Funktion erwartet bei %d einen int
+2015-06-30 22:42:31,moritz31_,"ja, aber das ausgangsproblem war ja das mein uint64_t net richtig funktioniert hat"

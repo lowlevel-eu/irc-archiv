@@ -1,0 +1,861 @@
+date/time,nick,message
+2013-11-05 00:14:21,Darkchaos,Die Pascalsche Typenbestimmung?
+2013-11-05 00:14:25,Darkchaos,oder ist das Delphi-only?
+2013-11-05 00:14:41,Darkchaos,"so noch 2 commits rausgehauen, OS überlebt wieder ein paar Sekunden und crasht dann :D"
+2013-11-05 11:46:10,Darkchaos,Morgen
+2013-11-05 11:46:27,Darkchaos,"Könnt ihr mir einen guten Grund geben, kein c++ zu verwenden? :D"
+2013-11-05 11:47:22,Darkchaos,weil es für das Driver-Interface und auch allgemein recht praktisch wäre Klassen zu haben
+2013-11-05 11:47:52,Darkchaos,"auch beim MemoryManager zB. Einfach eine Instanz pro Kontext, die dann die memberfunktionen aufruft, so viel mehr Speicher kann das ja nicht brauchen"
+2013-11-05 11:48:02,Darkchaos,oder muss ich da wesentlich mehr schon implementieren (new zB)
+2013-11-05 11:50:22,kevin,"Wenn du unbedingt C++ benutzen willst, dann mach das doch einfach"
+2013-11-05 11:50:42,Darkchaos,Weil Jidder so dagegen war (wimre)
+2013-11-05 11:50:51,kevin,"Wozu man für die Speicherverwaltung Klassen braucht, außer um Klassen zu haben, ist mir allerdings nicht ganz klar"
+2013-11-05 11:51:14,Darkchaos,"Ich kann ja auch C++ und C-Code verknüpfen? (Muss dann aber bei jeder headerdatei extern ""C"" angeben?)"
+2013-11-05 11:51:42,Darkchaos,"Da gibt es keinen Grund, ich fände es lediglich intuitiver/ästhetischer"
+2013-11-05 11:52:41,kevin,"Du kannst auch auf einem Bein rückwärts hüpfend durch die Fußgängerzone hüpfen und dabei ""Alle meine Entchen"" singen"
+2013-11-05 11:52:53,kevin,"Ich mein, tu dir keinen Zwang an..."
+2013-11-05 11:53:12,kevin,"Man kann vieles machen. Mag nicht immer sinnvoll sein, aber gehen, doch, das schon"
+2013-11-05 11:53:23,Darkchaos,"Die Frage war nur, warum C++ auf einem Bein hüpfen sei?"
+2013-11-05 11:53:46,kevin,Das war mehr auf das Mischen bezogen
+2013-11-05 11:53:54,Darkchaos,achso
+2013-11-05 11:54:28,Darkchaos,"Naja, um C++ Features zu nutzen, ohne den alten Code, oder da wo es nichts bringt, umzuschreiben"
+2013-11-05 11:54:54,Darkchaos,"Wobei sich das wohl auf nur wenige Probleme bezieht nehme ich an, oder?"
+2013-11-05 11:55:41,kevin,"Du kannst einen C++-Compiler nehmen und trotzdem C programmieren, ja"
+2013-11-05 11:55:59,kevin,"Eine veraltete Version von C zwar, aber das geht"
+2013-11-05 11:56:15,kevin,"Die Frage wäre dann, warum du überhaupt C++ nimmst, wenn du am Ende doch nur C-Code hast"
+2013-11-05 11:56:38,Darkchaos,kevin: Um 10% C++ Code zu haben. Vererbung geht ja in C nicht nehme ich an. interfaces auch nicht?
+2013-11-05 11:57:01,kevin,"Kommt drauf an, was du drunter verstehst"
+2013-11-05 11:57:17,kevin,Vererbung kann man in C mit Funktionspointern ohne weiteres implementieren
+2013-11-05 11:59:44,Darkchaos,Es bezieht sich eigentlich nur auf Klassen für ein Driver-Interface zunächst
+2013-11-05 12:00:06,Darkchaos,"wo man zB ein ""FileDevice"" hat, das fopen(), fseek() etc implementiert."
+2013-11-05 12:00:27,Darkchaos,"Davon abgeleitet gibt es a) HardDrive und b) ""Wechseldatenträger"""
+2013-11-05 12:00:32,Darkchaos,b hat eben noch ein .eject();
+2013-11-05 12:03:41,Darkchaos,"wobei auch natürlich ein driver_eject(); geht und jede klasse einzeln implementieren, bzw ein enum in ""FileDevice"" mit Type"
+2013-11-05 12:22:39,Darkchaos,"kevin: Hast du noch einen Tipp, was zu einem GPF (Stackfault) führen könnte? Das Problem ist, dass es entweder erst nach 1 Minute Laufzeit (2 Tasks die hin und her shedulen) oder garnicht (ich habe logischerweiße nicht stundenlang gewartet) auftritt"
+2013-11-05 12:22:54,Darkchaos,"Die Tasks an sich machen aber rein garnichts, es sind beides while-schleifen gewesen."
+2013-11-05 12:23:36,Darkchaos,"Ich habe zu debugging zwecken den einen Task mal die ""Uptime"" (lokale Variable, die eigentlich bei jedem PIT inkrementiert wird) ausgeben lassen, da viel mir auf, dass ihr Wert konstant ist, obwohl ein PIT ankommen _muss_"
+2013-11-05 12:25:04,Darkchaos,In anderen Worten https://gitorious.org/tuxmaniac/arctic_revenge/source/24c7b08ace94974bee7de32e4a7984df65670e10:kernel/kernel.cpp#L56 und https://gitorious.org/tuxmaniac/arctic_revenge/source/24c7b08ace94974bee7de32e4a7984df65670e10:kernel/kernel.cpp#L398
+2013-11-05 12:25:21,Darkchaos,"Aber das scheint wohl ein Fehler meiner libconvert zu sein, die irgendwie doch nicht funktioniert wie erwartet :D"
+2013-11-05 12:26:09,Darkchaos,"Jedenfalls fällt debugging flach, da mein EIP ""irgendwohin"" zeigt. Daher muss der Stack kaputt sein, und ein dump der letzten 3 Werte auf dem Stack (vielleicht eine Rücksprungadresse), wird nicht hilfreich sein"
+2013-11-05 12:27:24,Darkchaos,"Und wenn ein Fehler zu finden ist, ggf. hier: https://gitorious.org/tuxmaniac/arctic_revenge/source/24c7b08ace94974bee7de32e4a7984df65670e10:kernel/multitasking.cpp#L35 (Bei der Taskerstellung, der scheduler lief ohne paging 1A)"
+2013-11-05 13:03:35,Jonathan,moin
+2013-11-05 13:04:48,kevin,Moin Jonathan
+2013-11-05 13:05:13,Jonathan,"Der ATAPI-Controller macht immernoch nicht das, was ich will... Grrrrr"
+2013-11-05 13:05:55,kevin,Was macht er denn?
+2013-11-05 13:06:22,Jonathan,Buskollisionen macht der
+2013-11-05 13:06:28,Jonathan,Zwischen ROM und Data-Latch
+2013-11-05 13:06:55,Jonathan,"Und ich versteh einfach nicht, wieso das doofe ROM immer seine Daten auf den Bus haut, obwohl es garnicht angesprochen wird :D"
+2013-11-05 13:08:30,kevin,Solche Leute kenne ich auch *g*
+2013-11-05 13:10:02,Jonathan,*g*
+2013-11-05 13:10:28,kevin,"Aber ich fürchte, das ist mir zu lowlevelig, dass ich da helfen könnte"
+2013-11-05 13:11:03,Jonathan,...sprach der Lowlevel-Admin
+2013-11-05 13:11:08,Jonathan,:P
+2013-11-05 13:12:35,Darkchaos,"Jonathan: Wenn du mal Ablenkung brauchst und einen knackigen Stackfault debuggen willst, melde dich gerade :P"
+2013-11-05 13:12:46,Jonathan,*g*
+2013-11-05 13:13:01,Jonathan,"Kannst mir den Fehler ja gern mal beschreiben, vielleicht fällt mir ja was ein :P"
+2013-11-05 13:14:29,kevin,Darkchaos: Warst nicht du derjenige mit den haarsträubenden Buffer Overflows?
+2013-11-05 13:14:38,Darkchaos,kevin: Die ich gefixxed habe
+2013-11-05 13:15:10,kevin,"Naja, wer sowas an einer Stelle einbaut, hat sicher auch noch andere Sachen in seinem Code"
+2013-11-05 13:15:12,Darkchaos,"Jonathan: Ursprünglich lief mein System ohne Paging recht zufriedenstellend, doch seitdem ich paging implementiert habe, kommt es immer zu crashes. Aber nur, sobald ein zweiter Task läuft. "
+2013-11-05 13:15:37,Darkchaos,"Es passiert auch einfach willkürlich, mal nach 1 Minute, mal garnicht. "
+2013-11-05 13:15:44,kevin,"Jonathan: Ist das ein Versuch, die Adminschaft zu übernehmen? ;-)"
+2013-11-05 13:16:16,Darkchaos,"Das Problem ist, dass EIP nach dem Fault unbrauchbar ist, springt irgendwo hin, weil Stack kaputt"
+2013-11-05 13:16:44,Darkchaos,"Da ich aber nun das mal am laufen hatte, muss hier: https://gitorious.org/tuxmaniac/arctic_revenge/source/24c7b08ace94974bee7de32e4a7984df65670e10:kernel/multitasking.cpp#L35 in der Datei was schieflaufen :/"
+2013-11-05 13:17:07,Darkchaos,Irgendwie wird der Stack überschrieben. Was eigentlich nicht sein kann :O
+2013-11-05 13:17:24,Jonathan,Vielleicht werden ja irgendwo falsche Pages hingepaget?
+2013-11-05 13:17:33,Jonathan,kevin: Niemals ;-)
+2013-11-05 13:17:35,Darkchaos,"Zumal ich beide ""Programme"" mal als nur while() am laufen hatte, und es gefaultet hat"
+2013-11-05 13:17:50,Jonathan,Hmmm...
+2013-11-05 13:17:55,Darkchaos,Jonathan: Aber wie sollte sowas passieren? Durch kaputten paging-code?
+2013-11-05 13:18:02,Jonathan,"Hast du gerade den Krempel offen, sodass du schnell was testen kannst?"
+2013-11-05 13:18:12,Darkchaos,Also laut QEMU mapped er 0x0 - 0x1MB ohne Probleme 
+2013-11-05 13:18:17,kevin,"Jonathan: Ich dachte fast schon, +v wäre dir nicht mehr genug ;-)"
+2013-11-05 13:18:17,Darkchaos,"nope, bin in der Uni, was hättest du vor?"
+2013-11-05 13:18:42,Jonathan,"Ich würd beide Tasks mal als ""Label: JP Label"" laufen lassen."
+2013-11-05 13:18:50,Jonathan,Das benötigt zum Loopen nämlich keinen Stack.
+2013-11-05 13:19:00,Jonathan,"Du bekommst nen PF, richtig?"
+2013-11-05 13:20:00,Darkchaos,"Jonathan: wimre bekomme ich einen PF, falls der Task als Usermode läuft  und einen GPF, wenn der Task Ring0 rechte hat"
+2013-11-05 13:20:37,Darkchaos,"Ich frage mich dabei nur: Kann sich Ring0 über Paging setzen, nein! Daher hätte ich gesagt, Ring0 nutzt immer den kernelstack statt den Userstack? (wobei ich das auch nicht glaube)"
+2013-11-05 13:20:58,Jonathan,Jeder Task *muss* einen eigenen Stack nutzen
+2013-11-05 13:21:27,Darkchaos,ja aber ich habe irgendwie zwei stacks. einen für den Task an sich und einen für den Interupt-Handler beim Syscall/Schedule
+2013-11-05 13:21:35,Darkchaos,auf dem im Endeffekt der CPU-Zustand immer liegt
+2013-11-05 13:21:54,Jonathan,"Ja, aber beim normalen Laufen müssen die Tasks eigene Stacks haben."
+2013-11-05 13:22:14,Jonathan,"Vielleicht versuchst du ja auch nen Pageswitch, während deine CPU noch mit Kernelstack in nem Int-Handler steckt?"
+2013-11-05 13:22:52,Darkchaos,Du meinst ein Interupt während des Interupts?
+2013-11-05 13:23:14,Jonathan,"Andere blöde Frage: Sind alle Operationen, die auf dem Kernelstack arbeiten, vollständig atomar?"
+2013-11-05 13:23:54,Darkchaos,Ich habe keine ahnung was du damit meinst :D
+2013-11-05 13:24:15,Jonathan,"Lassen sich Funktionen, die den Kernelstack nutzen, durch Interrupts unterbrechen?"
+2013-11-05 13:24:27,Darkchaos,"Aber mir sagte jemand, dass ich auf keinen fall ein sti/cli nutzen soll in meinem Interupthandler, die IDT wäre eh so konfiguriert, dass keine Interupts zugelassen würden"
+2013-11-05 13:24:39,Jonathan,Hm...
+2013-11-05 13:24:58,Jonathan,"Und wenn dann doch mal einer kommt, macht es Bumm."
+2013-11-05 13:25:18,Darkchaos,"Jonathan:  Wie kann ich das prüfen? qemu -d int und dann schauen ob ein 20d kommt, während EIP noch auf Kernel-Mode steht"
+2013-11-05 13:25:21,Jonathan,"Wann und wie genau sagst du dem System, dass wieder Ints kommen dürfen?"
+2013-11-05 13:25:31,Jonathan,qemu kenn ich nicht :P
+2013-11-05 13:25:33,Darkchaos,Garnicht mehr
+2013-11-05 13:25:33,kevin,Das macht das iret
+2013-11-05 13:25:42,Jonathan,"Ah, danke kevin ^^"
+2013-11-05 13:25:44,kevin,"Und ja, -d int ist wahrscheinlich ein guter Ansatz"
+2013-11-05 13:26:26,kevin,Und cs ist noch ein bisschen verlässlicher als eip
+2013-11-05 13:26:50,Jonathan,"Darkchaos: Auf jeden Fall würd ich mal ganz genau nachprüfen, ob ein Task Switch kommen kann, während dein System auf dem Kernelstack arbeitet."
+2013-11-05 13:27:12,kevin,"Also wenn er korrekt vom Tut abgeschrieben hat, dann passiert sowas nicht ;-)"
+2013-11-05 13:27:17,Jonathan,*g*
+2013-11-05 13:27:32,Darkchaos,bspw durch ein int 0x20 im Kernelstack?
+2013-11-05 13:27:37,Jonathan,z.B.
+2013-11-05 13:28:23,Jonathan,"Vollständig reentrante Kernel, deren Funktionen auf dem Prozessstack arbeiten und keinen Kernel-Speicher nutzen, sind doch was Feines. *g*"
+2013-11-05 13:28:36,Darkchaos,"""IDT_FLAG_INTERRUPT_GATE | IDT_FLAG_RING0 | IDT_FLAG_PRESENT"" für 0x20"
+2013-11-05 13:28:56,Darkchaos,"Interrupt_gate sperrt und trap nicht, oder wie ist das?"
+2013-11-05 13:29:14,Jonathan,"Keine Ahnung, ich kenn mich mit x86 - nicht aus.... kevin! :D"
+2013-11-05 13:29:26,kevin,Ich hab doch grundsätzlich keine Ahnung
+2013-11-05 13:29:46,Jonathan,Wie schon gesagt: Faule Ausreden
+2013-11-05 13:29:51,kevin,"Aber ja, ich glaube, sorum war es"
+2013-11-05 13:30:10,Jonathan,Hm...
+2013-11-05 13:30:11,kevin,Jonathan: _Vollständig_ reentrant?
+2013-11-05 13:30:53,Jonathan,"Manche Funktionen blocken eben für die Zeit, in der sie auf gemeinsam genutztem Speicher arbeiten, die Task Switches. Ein verpasster Task Switch wird danach nachgeholt."
+2013-11-05 13:31:18,Darkchaos,hmm
+2013-11-05 13:31:21,Jonathan,"Aber das sind nur solche Funktionen, die irgendwo in den Prozesslisten oder so rumschreiben müssen."
+2013-11-05 13:31:23,kevin,Na dann ist das doch qualitativ nichts anderes mehr als Interrupts im Interrupthandler abzuschalten
+2013-11-05 13:31:37,kevin,Nur vielleicht ein bisschen selektiver als einfach im kompletten Kernel
+2013-11-05 13:31:41,Jonathan,Sozusagen :P
+2013-11-05 13:31:57,Jonathan,"Aber das sind nur wenige Funktionen, der Rest nutzt vollständig Register und Stack"
+2013-11-05 13:32:17,kevin,"Naja, alles, was keinen Kernelspeicher braucht, muss auch nicht im Kernel sein, imho ;-)"
+2013-11-05 13:32:18,Jonathan,...wodurch sich dann wirklich mehrere Tasks gleichzeitig in den selben Kernelfunktionen befinden dürfen.
+2013-11-05 13:32:29,Darkchaos,"Jonathan: Kannst du mir ggf. heute abend nochmal die Idee mit der ASM-Schleife schreiben, falls ich es vergesse. Auch noch ne Idee hatte ich, den Kernel-Task nicht zu spawnen aber dafür einen Alternativ-Task, um zu sehen ob der faulty ist"
+2013-11-05 13:32:42,Jonathan,Darkchaos: Klar ^^
+2013-11-05 13:33:00,Jonathan,"kevin: Sachen, die Kernelspeicher lesen / durchsuchen, sind aber auch reentrant :P"
+2013-11-05 13:33:14,kevin,Hm.. Machst du eine Art RCU?
+2013-11-05 13:33:22,Jonathan,RCU = ?
+2013-11-05 13:33:34,kevin,Oder wie synchronisierst du das mit den schreibenden Prozessen?
+2013-11-05 13:34:11,kevin,http://en.wikipedia.org/wiki/Read-copy-update
+2013-11-05 13:34:34,Jonathan,"Wenn der Kernel schreibt, kann er nicht durch einen Task Switch unterbrochen werden... Da gibt's reentrante (und stapelbare) Funktionen wie _KRNL_start_atomic und _KRNL_end_atomic"
+2013-11-05 13:34:50,kevin,"Ja, aber er könnte grad mitten in einem lesenden Prozess sein"
+2013-11-05 13:35:06,kevin,"Und der muss ja irgendwie mitkriegen, dass unter seinen Füßen die alten Daten weggezogen worden sind"
+2013-11-05 13:35:16,Jonathan,"Hm, verdammt. :D"
+2013-11-05 13:35:20,kevin,"Nicht, dass er halb alte und halb neue Daten zurückliefert"
+2013-11-05 13:35:49,Jonathan,Na da werd ich doch an kritischen Stellen noch ein paar Calls zur Atomic-Funktion unterbringen müssen... *g*
+2013-11-05 13:36:13,kevin,Tut mir leid... *g*
+2013-11-05 13:36:22,Jonathan,"1-Byte-Reads/Writes sind ja unkritisch, da von sich aus atomar... Der Rest wird halt auch noch gekapselt *g*"
+2013-11-05 13:36:41,kevin,"Naja, interessant sind halt vor allem reads auf mehrere Felder von structs und so"
+2013-11-05 13:36:59,kevin,Die in der Regel einen konsistenten Zustand haben sollten
+2013-11-05 13:37:03,Jonathan,Genau
+2013-11-05 13:37:23,kevin,Da muss man halt aufpassen und locken
+2013-11-05 13:37:35,kevin,"Und weil mir das immer zu blöd war, hab ich Interrupts ausgeschaltet *g*"
+2013-11-05 13:38:02,Darkchaos,Jonathan: Was für eine Architektur nutzt du denn? Den ARM deines iPhones? :P
+2013-11-05 13:38:04,Jonathan,"So allzu viele Funktionen hat mein Kernel ja nicht (Speichermangel und so), da geht das noch :P"
+2013-11-05 13:38:07,Darkchaos,Oder eigene Hardware
+2013-11-05 13:38:16,Jonathan,"Eigene Hardware, ja"
+2013-11-05 13:38:23,Darkchaos,Z80 emulator?
+2013-11-05 13:38:40,Jonathan,"Nö, der steht hier schon neben mir und frisst fleißig viel Strom *g*"
+2013-11-05 13:38:54,Darkchaos,"Ja meine ich ja, Z80 Nachbau"
+2013-11-05 13:39:05,Jonathan,"Also der Z80 da drin ist schon ""echt"". xD"
+2013-11-05 13:39:30,Darkchaos,Ich dachte das ist ein Großrechner von Zuse? :P
+2013-11-05 13:39:53,Jonathan,...close enough. :P
+2013-11-05 13:40:25,Jonathan,"So, _KRNL_create_process ist eh schon atomar... Mal weiterschauen"
+2013-11-05 13:40:27,Darkchaos,jetzt mal ernsthaft? :D
+2013-11-05 13:40:34,Jonathan,xD
+2013-11-05 13:40:41,Darkchaos,"Und vorallem, warum hat der sowas wie Interrupts etc? :D"
+2013-11-05 13:40:55,Darkchaos,Turing hatte auch nur ein lesestreifen und ein schreibstreifen
+2013-11-05 13:40:59,Jonathan,Ich bin jetzt einfach echt mal so böse: http://de.wikipedia.org/wiki/Z80
+2013-11-05 13:41:16,kevin,"Das ist doch nicht böse, lmgtfy wäre es vielleicht"
+2013-11-05 13:41:28,Jonathan,"Stimmt, moment"
+2013-11-05 13:41:44,Darkchaos,Und wie unterscheidet der sich von einem Atmel?
+2013-11-05 13:41:45,Darkchaos,:D
+2013-11-05 13:41:49,Jonathan,Bitteschön: http://lmgtfy.com?q=Z80
+2013-11-05 13:41:56,kevin,*g*
+2013-11-05 13:42:12,Jonathan,"Insofern, dass das ne richtige CPU ist, und kein Mikrocontroller ;)"
+2013-11-05 13:42:17,Jonathan,Der hat keine---
+2013-11-05 13:42:37,Jonathan,"Äh, ohkay."
+2013-11-05 13:43:00,kevin,Keine was? ;-)
+2013-11-05 13:43:09,Jonathan,Der hat keinen eingebauten Speicher :P
+2013-11-05 13:43:23,Jonathan,Und keine eingebaute Peripherie
+2013-11-05 13:43:48,Jonathan,"So ein AVR enthält ja neben vielem anderen Krempel ne CPU, ein Z80 ist eine nackte CPU ohne alles."
+2013-11-05 13:43:53,kevin,Jo
+2013-11-05 13:44:13,kevin,Nicht dass ich je was ernsthaftes mit einem davon gemacht hätte...
+2013-11-05 13:44:41,kevin,"Aber was unernsthaftes mit AVR immerhin, da durfte ich jemandem helfen, weil ich mich ja mit Computern auskenne und so"
+2013-11-05 13:45:15,Jonathan,?
+2013-11-05 13:46:18,kevin,"Kennst du das nicht, dass Leute meinen, du hast von aller Soft- und Hardware der Welt Ahnung, nur weil du ein bisschen programmieren kannst?"
+2013-11-05 13:46:49,kevin,"Dass ich von Hardware keine Ahnung habe, dürftest du ja mittlerweile wissen ;-)"
+2013-11-05 13:48:14,Jonathan,*g*
+2013-11-05 13:48:22,Jonathan,Aber wobei musstest du denn helfen? ;)
+2013-11-05 13:48:54,Jonathan,"btw, wenn ich mal viel zu viel Zeit habe, bastel ich ein Z80-Dualcore-Board"
+2013-11-05 13:49:17,Jonathan,Oder vielleicht sogar Quadcore :D
+2013-11-05 13:49:27,kevin,Spinner ;-)
+2013-11-05 13:49:31,Jonathan,Och was ;)
+2013-11-05 13:49:44,Jonathan,Die Synchronisation zwischen den CPUs dürfte abenteuerlich werden...
+2013-11-05 13:49:59,Jonathan,Wahrscheinlich muss ich den armen Z80 dann sogar L1-Cache extern verpassen
+2013-11-05 13:50:55,Jonathan,"Oder die müssen sich einfach auf sehr schnellem RAM abwechseln, wird wohl einfacher sein"
+2013-11-05 13:51:07,kevin,"Und was das genau war, weiß ich gar nicht mehr, irgendwelche Sensordaten einlesen und in dem Zustand, indem es war, erstmal LEDs entsprechend blinken lassen, oder sowas. Mit ein paar OS-Dev-Grundkenntnissen und etwas Doku war das schon hinfummelbar."
+2013-11-05 13:51:28,Jonathan,Jo ^^
+2013-11-05 13:52:09,Jonathan,"Hm, wenn ich mal überlege... In meinem Board arbeiten 6 AVRs rund um den Z80, damit der ordentlich laufen kann :D"
+2013-11-05 13:52:58,Jonathan,"Wobei das auch nur deshalb ist, weil ein AVR mit Software die selbe Aufgabe wie 20 Logik-ICs erledigt, weniger Aufwand ist und nicht so viel kostet"
+2013-11-05 13:54:25,Jonathan,"Das absolute (machbare) Ultimum wäre es wohl, 4 i486 auf ein Board zu werfen und einen i486-Quadcore zu basteln."
+2013-11-05 13:54:26,kevin,Wahrscheinlich hat dein Board dann am Ende insgesamt zigmal mehr Rechenpower als die CPU selber? *g*
+2013-11-05 13:54:40,Jonathan,Ein einzelner AVR hat das doch schon *g*
+2013-11-05 13:55:12,Jonathan,Aber stell dir mal vor... Ein 486-Quadcore :D
+2013-11-05 13:55:32,kevin,Ich find's gut
+2013-11-05 13:55:59,kevin,"Ich würde sogar Patches in tyndur akzeptieren, dass es dann auch SMP auf dem Ding macht ;-)"
+2013-11-05 13:56:05,Jonathan,*g*
+2013-11-05 13:56:17,Jonathan,Kann tyndur denn schon SMP?
+2013-11-05 13:56:35,kevin,Für manche Werte von können *g*
+2013-11-05 13:56:39,Jonathan,*g*
+2013-11-05 13:57:07,Jonathan,"Aber hmmm, so was kleines x86-PC-kompatibles müsste sich mit ein paar Wochen Lötkolben-Schwingen schon machen lassen..."
+2013-11-05 13:57:12,kevin,"Ich glaube, es schaltet alle Prozessoren an, schreibt dann von jedem einmal ""Hello World"" auf die Konsole und hält an"
+2013-11-05 13:57:19,Jonathan,:D
+2013-11-05 13:57:48,kevin,"Deswegen will man SMP auf der Kernelkommandozeile deaktivieren, dann läuft wenigstens was ;-)"
+2013-11-05 13:58:20,Jonathan,"Eins steht fest: Meinen i386 und i486 will ich gut aufbewahren, vielleicht kann man die in ein paar Jährchen noch gebrauchen. ;)"
+2013-11-05 13:58:32,Jonathan,(Die 4 Z80 natürlich genauso)
+2013-11-05 13:59:28,Jonathan,Läuft tyndur eigentlich schon mit 8MB RAM?
+2013-11-05 13:59:39,kevin,"Ich hab hier auch noch einen 486er, aber keine Festplatte mehr und ich glaube, der FDC hat einen weg. Deswegen taugt der nicht so gut als Testrechner..."
+2013-11-05 13:59:55,Jonathan,"Naja, ich hab hier nur die nackten CPUs ;)"
+2013-11-05 13:59:56,kevin,8 MB müssten reichen
+2013-11-05 14:00:25,Jonathan,Hmmm... 8x 1MB DRAM wäre nämlich auch noch da...
+2013-11-05 14:01:04,kevin,"Die nackte CPU ließe sich aus dem Ding rausholen, wenn ich Verwendung dafür hätte ;-)"
+2013-11-05 14:01:05,Jonathan,"Ist der PIC beim i486 eigentlich noch ein Extra-Chip? Und wenn ja, gibt's den auch in DIP?"
+2013-11-05 14:01:34,kevin,"Hm, meine Vermutung wäre, dass er extern ist, aber sicher bin ich mir nicht"
+2013-11-05 14:02:50,Jonathan,Yay: http://de.wikipedia.org/wiki/Intel_8259
+2013-11-05 14:04:00,Jonathan,"Uh yeah, den gibt's sogar auf eBay: http://www.ebay.de/itm/NEC-D8259AC-2-DIP-28-Programmable-Interrupt-Controller-/221241012701?pt=Bauteile&hash=item3382fdf1dd"
+2013-11-05 14:09:06,Jonathan,"FDC hab ich auf eBay auch gefunden, den 82072..."
+2013-11-05 14:10:10,Jonathan,"Hm, den DRAM-Controller find ich jetzt nicht auf eBay... Aber den sollte man nachbilden können"
+2013-11-05 14:10:20,kevin,Sieht fast so aus als hättest du ein neues Projekt? *g*
+2013-11-05 14:10:28,Jonathan,Ich sondiere nur die Lage *g*
+2013-11-05 14:10:35,kevin,So fängt es immer an ;-)
+2013-11-05 14:10:51,Jonathan,"Nee, ich hab ja noch ein halb-fertiges System zu bauen ;)"
+2013-11-05 14:11:13,kevin,Kannst du kein Multitasking? ;-)
+2013-11-05 14:11:20,Jonathan,*g*
+2013-11-05 14:11:39,Jonathan,"Das ist schon mit parallel Schule, Mischpult und Krempel relativ ausgelastet ;)"
+2013-11-05 14:12:57,Jonathan,Hm... Die Page-Switching-Funktion scheine ich mit ein paar Tricks tatsächlich reentrant hinbekommen zu haben
+2013-11-05 14:19:57,Jonathan,"Trollz, was ich da teilweise für Code finde... xD"
+2013-11-05 14:20:14,Jonathan,"""SUB A, 1 | ADC A, 0 ;Trololololo"""
+2013-11-05 15:03:47,max,"[15:02:15] <max> Der Dozent erklärt uns gerade, dass 512 Bytes nicht viel sind"
+2013-11-05 15:03:51,max,"[15:02:58] <max> Ich würde ja sagen „challenge accepted“, aber eigentlich ist es ja „challenge accomplished“"
+2013-11-05 15:07:47,Jonathan,Manche Leute schreiben ganze DirectX-Demos in 256 Bytes
+2013-11-05 15:10:27,kevin,Standalone? Also inklusive DirectX-Implementierung und so? Respekt.
+2013-11-05 15:11:09,Jonathan,"Hm, wobei - ob's DirectX ist, weiß ich jetzt nicht, aber solche Demos gibt's auf jeden Fall."
+2013-11-05 15:11:33,kevin,"512 Bytes gilt nur, wenn die Bytes auch aus dem Bootsektor kommen"
+2013-11-05 15:12:13,Jonathan,"Ne 4kB-Demo mit DirectX, Musik, Szenen und allem drum und dran hab ich hier noch auf meiner Platte gefunden."
+2013-11-05 15:12:25,Jonathan,"Oder OpenGL, kann ich jetzt schlecht sagen. :P"
+2013-11-05 15:12:50,max,Wir sind hier in einem OS-Dev-Channel
+2013-11-05 15:12:57,max,"BIOS ist gerade noch akzeptabel, aber das wars"
+2013-11-05 15:13:31,max,"Vor allem, da es hier auch in der Übung gerade um Bootloader geht, offensichtlich"
+2013-11-05 15:44:44,mroman,512 Bytes ist doch genug :)
+2013-11-05 15:45:06,mroman,Das waeren 128 Instruktionen auf einer ueblichen 32bit RISC-CPU
+2013-11-05 15:45:39,kevin,Das sind bis zu 512 auf i386
+2013-11-05 15:46:05,mroman,Ja
+2013-11-05 15:46:09,kevin,"Hm, kriegt man mit nur 1-Byte-Instruktionen irgendwas sinnvolles hin?"
+2013-11-05 15:46:10,mroman,512 NOPS .
+2013-11-05 15:46:15,mroman,kevin: hm.
+2013-11-05 15:46:21,kevin,Wäre auch mal eine interessante Einschränkung
+2013-11-05 15:46:24,mroman,Evtl.
+2013-11-05 15:46:59,mroman,du kannst jedenfalls mal push/pop/dec/inc
+2013-11-05 15:47:13,kevin,Und ist das noch turingvollständig? Falls mal jemand Lowlevel mit Theoretischer Informatik verbinden will *g*
+2013-11-05 15:47:19,mroman,"movsb, movsd"
+2013-11-05 15:47:22,mroman,xchg
+2013-11-05 15:47:25,max,512-Byte-Contests wären mit fixed-instruction-length irgendwie langweilig
+2013-11-05 15:47:58,max,"SSE-Befehle sind bspw. generell drei Bytes, also auch weniger als vier"
+2013-11-05 15:47:59,mroman,max: finde ich nicht
+2013-11-05 15:48:04,mroman,kevin: Ohne Loops jedenfalls nicht
+2013-11-05 15:48:06,mroman,jmp ist nicht 1 byte
+2013-11-05 15:48:09,mroman,aeber int waere 1 byte
+2013-11-05 15:48:15,max,Und? Man kann doch seinen Code modifizieren
+2013-11-05 15:48:17,kevin,Selbstmodifizierender Code? ;-)
+2013-11-05 15:48:18,max,int sind 2
+2013-11-05 15:48:20,mroman,also
+2013-11-05 15:48:20,max,int3 sind 1
+2013-11-05 15:48:22,mroman,INT3 ist 1 byte
+2013-11-05 15:48:22,max,*ist
+2013-11-05 15:48:28,max,Und into ist auch 1
+2013-11-05 15:48:36,kevin,ud2 ist auch ein Sprung
+2013-11-05 15:48:39,max,Hm *g*
+2013-11-05 15:48:45,mroman,INT3 und IRET
+2013-11-05 15:48:46,max,nop ist auch ein Sprung :-P
+2013-11-05 15:48:55,kevin,Hm?
+2013-11-05 15:49:07,max,Ein relativer Sprung mit dem Offset 0
+2013-11-05 15:49:14,mroman,also
+2013-11-05 15:49:21,mroman,x86 hat die IVT ab adresse 0?
+2013-11-05 15:49:25,mroman,oder war das nur der 8086?
+2013-11-05 15:49:30,kevin,Jo
+2013-11-05 15:49:34,kevin,Also ersteres
+2013-11-05 15:49:34,mroman,"XOR reg, reg;"
+2013-11-05 15:49:40,mroman,und dann fuer INT3 braeuchte man
+2013-11-05 15:49:42,mroman,uhm
+2013-11-05 15:49:42,mroman,12
+2013-11-05 15:49:53,mroman,also 12 mal inc reg
+2013-11-05 15:50:17,mroman,das muesste man jetzt in esi/edi bekommen
+2013-11-05 15:51:20,mroman,Gibt's keine one byte moves?
+2013-11-05 15:51:40,max,es gibt push und pop
+2013-11-05 15:51:41,mroman,pop es waere ein byte
+2013-11-05 15:52:25,mroman,movsb verschiebt also von ds:[si] nach es:[di] ?
+2013-11-05 15:53:10,mroman,ja ok
+2013-11-05 15:53:20,mroman,"also ds,es,si,di kann man alle problemlos laden mit 1 byte"
+2013-11-05 15:53:48,mroman,und funktionen kann man aufrufen mit INT3
+2013-11-05 15:53:57,mroman,man muss einfach vorher die Adresse der Funktion irgendwie in die IVT bekommen :)
+2013-11-05 15:53:59,kevin,"Wenn man natürlich Konstanten über 512 haben will, hat man ein Problem *g*"
+2013-11-05 15:54:52,mroman,oder ret halt
+2013-11-05 15:55:04,mroman,ret springt ja einfach zur Adresse die es vom Stack poppt
+2013-11-05 15:55:23,kevin,"Jo, aber wie kriegst du die Adresse auf den Stack?"
+2013-11-05 15:55:25,mroman,also irgendwelche random jumps gingen
+2013-11-05 15:55:34,mroman,aber man muesste an eip kommen
+2013-11-05 15:55:35,kevin,"Du musst ja erstmal viele incs machen, bis du die passende Zahl hast"
+2013-11-05 15:56:23,mroman,was ist cmc?
+2013-11-05 15:56:58,mroman,kevin: Du kannst ja Brainfuck-Code ausfuehren quasi
+2013-11-05 15:57:01,mroman,mit einer Sprungtabelle
+2013-11-05 15:57:08,mroman,das duerfte schon *irgendwie* gehen
+2013-11-05 15:57:20,mroman,allerdings...
+2013-11-05 15:57:27,mroman,conditional jumps sind evtl ein Problem
+2013-11-05 15:57:27,kevin,Außer dass Brainfuck so tut als hätte es ein unendliches Band
+2013-11-05 15:57:30,kevin,Mehr als 512 auf jeden Fall
+2013-11-05 15:57:40,mroman,kevin: ja gut.
+2013-11-05 15:57:47,mroman,Reale Computer sind per Definition nicht turing complete
+2013-11-05 15:57:50,mroman,assembly ist nicht turing complete
+2013-11-05 15:57:56,mroman,also von daher
+2013-11-05 15:57:59,mroman,wenn das die Frage war
+2013-11-05 15:58:05,mroman,"Nein, es ist auf keinen Fall Turing Complete"
+2013-11-05 15:58:16,kevin,"Hm, wobei, unser Band ist ja ausrecihend unendlich"
+2013-11-05 15:58:21,kevin,Aber die Zustandstabelle nicht
+2013-11-05 15:58:35,mroman,welche Zustandstabelle?
+2013-11-05 15:58:40,kevin,Also ausreichend unendlich = 640k ;-)
+2013-11-05 15:58:50,mroman,die Sprungtabelle muss ja auch nur endlich sein
+2013-11-05 15:59:00,mroman,du musst ja nur fuer jedes [ und ] die entsprechenden Sprungstellen codieren
+2013-11-05 15:59:01,kevin,"Naja, die Befehle halt"
+2013-11-05 15:59:06,kevin,Wir haben 512 Bytes für Instruktionen
+2013-11-05 15:59:17,kevin,Das würde der Zustandstabelle der Turingmaschine entsprechen
+2013-11-05 15:59:18,mroman,oh
+2013-11-05 15:59:24,mroman,dann ist es eh nicht turing complete
+2013-11-05 15:59:27,mroman,@512 bytes
+2013-11-05 15:59:49,mroman,Ich frage mich ob die Menge aller 1-byte Instruktionen mehr oder weniger Turing Complete waeren
+2013-11-05 16:00:07,kevin,Mit beliebig langen Programmen?
+2013-11-05 16:00:22,mroman,ja
+2013-11-05 16:00:24,mroman,also
+2013-11-05 16:00:28,mroman,mit genug langen Programmen
+2013-11-05 16:00:37,kevin,"Hm, das Bootstrappen ist halt eine interessante Frage"
+2013-11-05 16:00:46,kevin,Weil wir jetzt mehr als einen Bootsektor brauchen
+2013-11-05 16:00:50,mroman,Oh.
+2013-11-05 16:00:53,mroman,Das ist mir egal
+2013-11-05 16:01:08,mroman,"das hat ja nichts damit zu tun, ob die Sprache selbst turing complete waere"
+2013-11-05 16:01:09,kevin,"Das heißt, du nimmst einfach an, du kannst dir die Speicherbelegung im Anfangszustand frei raussuchen?"
+2013-11-05 16:01:20,mroman,"du kannst ja annehmen, dein Programm wird durch ein OS geladen oder so"
+2013-11-05 16:01:22,kevin,Und cs:ip und so
+2013-11-05 16:01:28,mroman,kevin: Ja
+2013-11-05 16:01:38,mroman,also
+2013-11-05 16:01:46,mroman,sonst wird es wohl zu schwierig
+2013-11-05 16:01:56,mroman,wenn du noch Sachen laden muestest von einer Festplatte oder so :)
+2013-11-05 16:02:16,mroman,ich glaube man darf bei einer Turing Maschine den Initial Zustand durchaus definieren?
+2013-11-05 16:02:31,kevin,"Ja schon, bei i386-Maschinen in der Regel aber nicht so sehr ;-)"
+2013-11-05 16:03:16,max,Ach schön
+2013-11-05 16:03:24,max,"Das L4 der Uni funktioniert nicht mit KVM, wenn man eine menu.lst hat"
+2013-11-05 16:03:25,mroman,kann ich bedingt inkrementieren?
+2013-11-05 16:03:30,max,"Wenn man keine hat und das manuell eingibt, tut es"
+2013-11-05 16:03:34,mroman,also uhm...
+2013-11-05 16:03:36,max,Und mt 64 oder 256 MB RAM tut es auch
+2013-11-05 16:03:38,max,Sehr schön
+2013-11-05 16:03:58,mroman,puh
+2013-11-05 16:04:19,mroman,wenn du raus findest wie du Bedingte Spruenge machen kannst
+2013-11-05 16:04:21,mroman,hast du gewonnen :)
+2013-11-05 16:04:27,kevin,max: Huch? Was heißt funktioniert nicht?
+2013-11-05 16:04:28,mroman,das ist eigentlich der Knackpunkt.
+2013-11-05 16:04:59,kevin,Du kannst zumindest berechnete Sprünge machen
+2013-11-05 16:05:00,max,"kevin, es gibt da einen PF beim Booten"
+2013-11-05 16:05:05,max,Und das ist wohl schon bekannt
+2013-11-05 16:05:13,kevin,Im Bootloader?
+2013-11-05 16:05:16,max,Im Kernel
+2013-11-05 16:05:25,kevin,"Wieso kriegt der Kernel mit, ob es eine menu.lst gibt?"
+2013-11-05 16:05:36,max,Das ist eine gute Frage *g*
+2013-11-05 16:05:57,max,"Hier wurde die Vermutung geäußert, dass GRUB das Speicherlayout vielleicht ein bisschen anders macht"
+2013-11-05 16:06:11,kevin,"Ach so, ist der Vergleich -kernel?"
+2013-11-05 16:06:41,kevin,"Oder meinst, GRUB ändert das Speicherlayout je nachdem, ob man menu.lst oder die Shell benutzt?"
+2013-11-05 16:06:42,max,"ach, jetzt gehts auch mit 256 MB kaputt *g*"
+2013-11-05 16:06:47,kevin,Das wäre sehr seltsam
+2013-11-05 16:06:47,max,Letzteres
+2013-11-05 16:06:57,kevin,"Aber gut, GRUB ist manchmal sehr seltsam"
+2013-11-05 16:07:00,max,"Ich glaub, ich lass KVM einfach lieber aus *g*"
+2013-11-05 16:07:00,kevin,Ist es GRUB 2? *g*
+2013-11-05 16:07:04,max,Nö
+2013-11-05 16:07:14,max,"Ich wäre übrigens froh, mal GRUB2 für µxoµcota hinzubekommen…"
+2013-11-05 16:07:38,kevin,Wie hinzubekommen? Im Sinn von µxoµcota-Image bauen?
+2013-11-05 16:07:57,kevin,Oder im Sinn von lässt sich unter µxoµcota einrichten?
+2013-11-05 16:07:59,max,Im Sinne von „Das booten können“
+2013-11-05 16:08:09,max,GRUB2 findet meinen Kernel nicht so richtig bootbar
+2013-11-05 16:08:12,max,wimre
+2013-11-05 16:08:22,kevin,Was machst du kaputtes?
+2013-11-05 16:08:33,max,Nichts? *g*
+2013-11-05 16:08:53,kevin,"Also mit GRUB 2 hab ich schon alle möglichen Schwierigkeiten gehabt, aber das war dann in der Regel, dass er irgendein Modul von sich selber nicht findet"
+2013-11-05 16:09:11,kevin,Und nichts mit dem Kernel
+2013-11-05 16:11:01,max,Und meine Konfigurationsdateien mochte er irgendwie auch nicht
+2013-11-05 16:11:11,max,"aber ich hab jetzt keine lust, mich schon wieder mit grub2 anzulegen"
+2013-11-05 16:12:01,kevin,Also meine Lösung auf Fedora ist ja im Moment build/scripts/image_hd_syslinux
+2013-11-05 16:12:24,kevin,"Svenska würde sich freuen, wenn er hier wäre"
+2013-11-05 16:13:20,max,"Ich hab schon überlegt, einfach die GRUB1-Dateien mitzuschleppen"
+2013-11-05 16:13:25,mroman,kevin: XLAT kann man btw auch benutzen
+2013-11-05 16:13:47,mroman,aber das laedt nur :(
+2013-11-05 16:13:58,kevin,"Oh, das ist cool"
+2013-11-05 16:14:27,kevin,"Hm, geht eigentlich ein logisches not?"
+2013-11-05 16:18:05,mroman,dec/inc
+2013-11-05 16:18:15,mroman,wenn true = 0; false = 0xFF
+2013-11-05 16:18:16,mroman,oder so
+2013-11-05 16:18:17,mroman,vlt
+2013-11-05 16:18:33,kevin,"Nein, ich meine das normale false = 0, true != 0"
+2013-11-05 16:18:47,kevin,Du brauchst irgendeine Möglichkeit zum Normalisieren
+2013-11-05 16:18:56,mroman,wenn du's nicht mit dec/inc hinbekommen kannst
+2013-11-05 16:19:00,mroman,dann nein
+2013-11-05 16:19:08,kevin,"Hm, xlat vielleicht?"
+2013-11-05 16:19:14,kevin,Komplette Tabelle...
+2013-11-05 16:19:19,mroman,wenn du eine lange tabelle hast
+2013-11-05 16:19:21,mroman,dann vlt
+2013-11-05 16:19:24,mroman,aber was bringt dir ein not?
+2013-11-05 16:19:30,mroman,Du musst ja nur in der Lage sein ein
+2013-11-05 16:19:32,kevin,Die Tabelle kriegt man mit nur inc hin
+2013-11-05 16:19:39,mroman,if x == 0 jump foo; else jump bar;
+2013-11-05 16:19:46,mroman,oder so
+2013-11-05 16:20:03,kevin,"Ja, für eine Bedingung muss ich zwei unterschiedliche Werte in die IVT schreiben können"
+2013-11-05 16:20:19,kevin,"Wenn die in der Tabelle stehen, dann geht das"
+2013-11-05 16:22:09,mroman,oh
+2013-11-05 16:22:11,mroman,schiess los?
+2013-11-05 16:22:33,mroman,wie funktioniert das?
+2013-11-05 16:22:38,kevin,Das war doch schon das interessante?
+2013-11-05 16:22:44,mroman,ich meine
+2013-11-05 16:22:48,mroman,wie realisierst du die Bedingung?
+2013-11-05 16:23:31,kevin,"xlat übersetzt mir den Wert, den ich prüfen will, in eine von zwei Adressen"
+2013-11-05 16:23:41,kevin,"Die eine ist der then-Zweig, die andere der else-Zweig"
+2013-11-05 16:23:45,mroman,oh
+2013-11-05 16:23:53,mroman,ok
+2013-11-05 16:23:53,kevin,"Dann schreibe ich den Wert in die IVT, Interrupt und los geht's"
+2013-11-05 16:24:12,mroman,xlat ist halt nur 8 Bit :(
+2013-11-05 16:24:26,kevin,"Ach, ret gibt's ja auch noch, gar kein Bedarf für die IVT :-("
+2013-11-05 16:24:40,mroman,ja
+2013-11-05 16:25:12,mroman,stimmt
+2013-11-05 16:25:19,mroman,mit XLAT koennte man auch 32bit Adressen laden
+2013-11-05 16:25:21,mroman,theoretisch
+2013-11-05 16:25:25,mroman,muss man halt mehrere bytes laden
+2013-11-05 16:25:30,kevin,"Dass xlat nur 8 Bit ist, sollte nicht stören, oder kriegen wir die Bytes nicht verodert?"
+2013-11-05 16:25:45,kevin,"Ach so, nur ein Byte Ergebnis"
+2013-11-05 16:25:53,mroman,bzw. 16bit adressen
+2013-11-05 16:25:59,mroman,"xchg al, ah evtl"
+2013-11-05 16:26:05,kevin,Braucht man halt zwei xlats hintereinander
+2013-11-05 16:26:16,mroman,hm neh
+2013-11-05 16:26:19,kevin,"xchg al,ah ist sicher nicht nur ein Byte?"
+2013-11-05 16:26:19,mroman,das braucht 2 bytes xchg
+2013-11-05 16:27:11,mroman,wie bekommt man al nach ah :)
+2013-11-05 16:27:13,kevin,Gehen push/pop ah/al?
+2013-11-05 16:27:17,mroman,moment
+2013-11-05 16:27:37,Lowl3v3l,"mroman, im rm oder im pm?"
+2013-11-05 16:27:43,kevin,RM
+2013-11-05 16:27:51,kevin,push/pop ist das neue mov ;-)
+2013-11-05 16:27:55,mroman,push reg8 gibt's nicht
+2013-11-05 16:28:03,mroman,anscheinend
+2013-11-05 16:28:05,mroman,es gibt push imm8
+2013-11-05 16:28:06,Lowl3v3l,öhm naja es gibt die möglichkeit einfach shl zu nehmen
+2013-11-05 16:28:12,mroman,shl ist nicht 1-byte
+2013-11-05 16:28:28,Lowl3v3l,ja und?
+2013-11-05 16:28:33,mroman,kevin: push ax; pop bx;
+2013-11-05 16:28:38,mroman,dann haette man die Adresse in al und bl
+2013-11-05 16:28:41,mroman,aber puh
+2013-11-05 16:28:43,Lowl3v3l,wenn du 16 bit hast und shl 8.
+2013-11-05 16:28:52,Lowl3v3l,dann tauscht du beide bytes nehm ich an
+2013-11-05 16:28:55,mroman,Lowl3v3l: Es sind nur single byte instructions erlaubt
+2013-11-05 16:29:19,Lowl3v3l,oh
+2013-11-05 16:30:23,mroman,vlt kann man mit movsd etwas tun
+2013-11-05 16:30:24,kevin,Wie kriegen wir den Wert überhaupt in die IVT am Ende?
+2013-11-05 16:30:33,mroman,mit movsb kann man doch strings umkehren?
+2013-11-05 16:30:34,kevin,Und kann man das auch byteweise tun?
+2013-11-05 16:30:36,Lowl3v3l,xchg?
+2013-11-05 16:30:38,mroman,wenn man das direction flag umkehrt?
+2013-11-05 16:30:47,kevin,"Könnte klappen, weiß nicht"
+2013-11-05 16:30:51,mroman,kevin: Mit movsb
+2013-11-05 16:31:01,Lowl3v3l,"xchg al, ah sollte es tun"
+2013-11-05 16:31:12,kevin,Braucht zwei Bytes
+2013-11-05 16:31:15,mroman,"xchg reg8, reg8 ist zwei Byte"
+2013-11-05 16:32:48,mroman,kevin: ja. movsb mit direction flag ginge
+2013-11-05 16:33:02,mroman,std und cld sind 1 byte
+2013-11-05 16:33:04,mroman,von daher
+2013-11-05 16:33:09,mroman,muessten wir strings umkehren koennen :)
+2013-11-05 16:33:14,kevin,Brauchen wir das? ;-)
+2013-11-05 16:33:20,mroman,kevin: ja
+2013-11-05 16:33:26,mroman,dann koennen wir ax irgendwo hinschreiben
+2013-11-05 16:33:30,mroman,die Bytes umdrehen
+2013-11-05 16:33:31,mroman,wieder laden
+2013-11-05 16:33:34,mroman,dann wieder xlat
+2013-11-05 16:33:36,kevin,"Öhm, aber movsb löst unser Problem doch sowieso schon, ohne dass wir ah benutzen?"
+2013-11-05 16:33:39,mroman,und wir haben eine 16bit Adresse geladen?
+2013-11-05 16:33:59,mroman,aha
+2013-11-05 16:34:00,mroman,ja
+2013-11-05 16:34:06,mroman,man koennte eigentlich auf den stack schreiben mit movsb?
+2013-11-05 16:34:11,mroman,und dann einfach ret
+2013-11-05 16:34:12,mroman,:)
+2013-11-05 16:34:14,kevin,Ich denke schon
+2013-11-05 16:34:16,mroman,yay
+2013-11-05 16:34:48,kevin,"So, und jetzt implementieren ;-)"
+2013-11-05 16:35:00,mroman,ok
+2013-11-05 16:35:02,mroman,also
+2013-11-05 16:35:16,mroman,theoretisch koennte man wohl Brainfuck nach single-byte x86 kompilieren
+2013-11-05 16:35:34,kevin,Wenn wir nichts übersehen haben
+2013-11-05 16:35:47,mroman,kevin: jetzt haben wir xlat nicht mehr fuer conditional?
+2013-11-05 16:36:02,kevin,Doch
+2013-11-05 16:36:14,kevin,"Sonst weißt du ja nicht, was du auf den Stack movsb-en musst"
+2013-11-05 16:36:46,mroman,?
+2013-11-05 16:37:01,mroman,xlat genuegt nicht um eine 16bit adresse zu laden
+2013-11-05 16:37:03,kevin,Wie machst du deine bedingten Sprünge denn ohne xlat?
+2013-11-05 16:37:07,mroman,kA
+2013-11-05 16:37:13,mroman,mit es/ds/si/di
+2013-11-05 16:37:17,kevin,Zwei xlats genügen
+2013-11-05 16:37:29,mroman,und wie?
+2013-11-05 16:37:43,mroman,du muesstest ax vor dem zweiten xlat ja speichern irgendwo
+2013-11-05 16:37:44,kevin,"Erstes Byte laden, auf den Stack schreiben, zweites Byte laden, auf den Stack schreiben, ret"
+2013-11-05 16:38:09,mroman,movsb kann single bytes schreiben?
+2013-11-05 16:38:18,mroman,ich dachte das kopiert einen ganzen string
+2013-11-05 16:38:21,mroman,bis zum null-byte
+2013-11-05 16:38:57,mroman,oh nein
+2013-11-05 16:39:00,mroman,das verschiebt nur ein byte
+2013-11-05 16:39:01,mroman,cool
+2013-11-05 16:39:02,mroman,ja
+2013-11-05 16:39:05,mroman,dann muesste das gehen
+2013-11-05 16:39:21,kevin,"Was du meinst ist mit rep zusammen, glaube ich"
+2013-11-05 16:48:30,max,"Hmmmm, anscheinend verträgt sich grub2 nicht so gut mit higher-half"
+2013-11-05 16:53:03,max,"Ich glaube, das einfachste ist, die Kernel-ELF zu patchen"
+2013-11-05 16:53:18,max,Sodass auch die virtuellen Adressen auf die physischen zeigen
+2013-11-05 16:53:22,max,Also in den Programmheadern
+2013-11-05 16:53:39,kevin,Hm..
+2013-11-05 16:53:39,tufel,huhu
+2013-11-05 16:57:00,mroman,386 hat keine single-takt instruktionen 
+2013-11-05 16:57:06,mroman,auch interessant.
+2013-11-05 16:57:34,mroman,und 486 hat 1 takt fuer jumps
+2013-11-05 16:57:38,mroman,waehrend Pentium 6 hat o_O
+2013-11-05 16:58:02,mroman,"oder ich interpretiere den Wert von ""Timing 486"" gerade falsch"
+2013-11-05 17:05:31,Jonathan,Moin Svenska! :P
+2013-11-05 17:05:42,Svenska^T,hi
+2013-11-05 17:06:30,Svenska^T,^T = tablet. hab im log meinen nick gesehen.
+2013-11-05 17:06:39,Svenska^T,:-)
+2013-11-05 17:07:40,Jonathan,"Ah okay, hab mich schon gewundert ^^"
+2013-11-05 17:08:08,Svenska^T,"es gibt smp-386er. ein dual-z80 solöte, mit interleaved mem access, möglich sein"
+2013-11-05 17:08:46,Jonathan,Jop
+2013-11-05 17:08:56,Svenska^T,quad wird schwieriger :-)
+2013-11-05 17:09:08,Jonathan,Kann man auch noch interleaven ;)
+2013-11-05 17:09:16,Jonathan,Autowait und ab dafür
+2013-11-05 17:09:42,Svenska^T,"dann hast mem congestion, doof"
+2013-11-05 17:10:07,Svenska^T,guter sram ist schnell genug
+2013-11-05 17:10:48,Jonathan,"Ja, sollte auch so funktionieren"
+2013-11-05 17:11:16,Jonathan,"Braucht man halt nur etwas Logik, die die Zugriffe in Reih und Glied bringt, dann geht das."
+2013-11-05 17:11:41,Jonathan,"...und ein paar Latches, aber davon hab ich ja genug. :P"
+2013-11-05 17:11:48,Svenska^T,"vllt ist 6502 einfacher, wg phi0/phi1"
+2013-11-05 17:12:33,Jonathan,"Ja, aber das ist doch langweilig. ^^"
+2013-11-05 17:12:59,Jonathan,"Das können die ja schon von sich aus, da braucht man keine 2000 externen ICs, um der CPU das nachträglich beizubringen."
+2013-11-05 17:13:24,Svenska^T,selbst machen. 16 mhz/4+idx=phi :-)
+2013-11-05 17:14:37,Svenska^T,"brauchst nur gutes banking für shm, oder komplexe intercore-kommunikation"
+2013-11-05 17:14:56,Svenska^T,nmi :)
+2013-11-05 17:16:30,Svenska^T,außerdem kann ein 6502 kein mt
+2013-11-05 17:18:36,Svenska^T,bis jahresende werde ich wohl keine mmu/dram-platine entwerfen können
+2013-11-05 17:18:44,Jonathan,"Hm, schade"
+2013-11-05 17:19:08,Jonathan,Wobei ein wenig Lochraster und ein wenig Zeit da ja schon hilft
+2013-11-05 17:19:29,Jonathan,"Machst du eigentlich richtige PCBs, oder lochrasterst du den Krempel auch?"
+2013-11-05 17:19:41,Svenska^T,lochraster
+2013-11-05 17:19:55,Jonathan,"Hm, wieso dann keine Platine? Keine Chips da?"
+2013-11-05 17:20:09,Svenska^T,ich kann ja mal fotos hochladen irgendwann
+2013-11-05 17:20:15,Jonathan,Jaaaa :D
+2013-11-05 17:20:50,Svenska^T,muss ich erst wieder zurück nach norden
+2013-11-05 17:21:02,Jonathan,?
+2013-11-05 17:21:11,Svenska^T,meinen cfide-adapter hab ich bereitgelegt
+2013-11-05 17:21:20,Svenska^T,bin grad in der heimat
+2013-11-05 17:21:37,Jonathan,Ah ok ^^
+2013-11-05 17:22:27,Svenska^T,"was sollte ich sonst mitnehmen, wo ich schonmal hier bin? :-)"
+2013-11-05 17:24:59,max,yay mit gepatchter Kernel-ELF funktioniert GRUB2
+2013-11-05 17:25:03,max,Nur meine Configfile noch nicht
+2013-11-05 17:25:05,max,aber gut
+2013-11-05 17:26:13,Svenska^T,es gibt übrigens multiboot2
+2013-11-05 17:26:29,Svenska^T,was natürlich nur grub2 kann
+2013-11-05 17:27:33,max,Das ist mir ja auch egal
+2013-11-05 17:27:36,max,So ist das viel schöner
+2013-11-05 17:27:37,max,*duck*
+2013-11-05 17:28:08,Svenska^T,"was ist ""so""?"
+2013-11-05 17:28:21,max,Die Kernel-ELF patchen *g*
+2013-11-05 17:28:41,max,Also für alle virtuellen Adressen im Program-Header einmal & 0x0fffffff machen
+2013-11-05 17:29:33,max,"Jetzt muss ich nur noch rausfinden, warum der meine Configfile nicht mag…"
+2013-11-05 17:35:11,max,aha
+2013-11-05 17:35:25,max,"GRUB2 reagiert sehr allergisch darauf, wenn man eine Newline zwischen menuentry und { hat"
+2013-11-05 17:36:22,max,týndur hat schon ein paar bessere Designentscheidungen getroffen als ich
+2013-11-05 17:36:27,max,Kein Higher-Half
+2013-11-05 17:36:34,max,Kein Newline vor {
+2013-11-05 17:36:39,kevin,hehe
+2013-11-05 17:36:51,kevin,Du solltest endlich die Seiten wechseln
+2013-11-05 17:36:56,max,Sieht wohl so aus *g*
+2013-11-05 17:37:02,max,Aber der Stern bleibt an der Variable!
+2013-11-05 17:37:03,kevin,"Und wenn's nur ist, damit tyndur auch mal wieder kaputt ist *g*"
+2013-11-05 17:37:19,kevin,Der Stern gehört zum Typ!
+2013-11-05 17:38:02,kevin,Irgendwie muss man sich ja noch von qemu unterscheiden ;-)
+2013-11-05 17:38:12,max,Ahja *g*
+2013-11-05 17:38:35,max,"Der Unterschied ist doch schon, dass die Entscheidungen nicht mit „Because it is the týndur coding style“ begründet werden ;-)"
+2013-11-05 17:39:21,kevin,Wie denn sonst? ;-)
+2013-11-05 17:39:47,kevin,"Kennst du die Originalversion von CODING_STYLE, übrigens, oder nur das, was noch davon übrig ist?"
+2013-11-05 17:39:58,max,Vermutlich letzteres
+2013-11-05 17:40:25,kevin,Die war mal wesentlich lesenswerter
+2013-11-05 17:41:41,kevin,"Hm, wobei, ein bisschen was ist ja doch noch übrig"
+2013-11-05 17:42:12,max,Die qemu-CODING_STYLE oder die týndur-codestil.txt?
+2013-11-05 17:42:56,kevin,qemu
+2013-11-05 17:43:13,kevin,Die codestil.txt hab ich schon lang nicht mehr angeschaut
+2013-11-05 17:43:22,max,Die sieht sowieso aus wie ein Schatten ihrer selbst *g*
+2013-11-05 17:43:25,kevin,"Aber ich weiß, dass sie selber Trailing Whitespace hat *g*"
+2013-11-05 17:45:57,tufel,"Mhh hab den Textmodus meiner Grafikkarte fertiggestellt, kann einer mal kurz den  VHDL-Code anschauen, bevor ich jetzt anfang das VGA-Timing zu schreiben. :)  Code: http://codeviewer.org/view/code:38a4"
+2013-11-05 17:50:58,Jonathan,"Äh, wozu eine Grafikkarte, wenn keine CPU läuft?"
+2013-11-05 17:52:31,tufel,"naja, das mit der CPU dauert noch ein wenig... deswegen bau ich jetzt mal zuerst die grafikkarte :D "
+2013-11-05 17:53:20,Jonathan,"Die wird dir aber absolut nichts bringen und so lange ungenutzt rumliegen, bis du ein funktionierendes Betriebssystem hast, mit Multitasking, Treibern und allem drum und dran"
+2013-11-05 17:53:22,Svenska^T,*g*
+2013-11-05 17:53:30,Jonathan,"Ach ja, wb Svenska ;O"
+2013-11-05 17:53:38,Svenska^T,keller ^^
+2013-11-05 17:53:50,Svenska^T,graka=debugoutput
+2013-11-05 17:54:10,Svenska^T,alternativ serielles iface
+2013-11-05 17:54:18,Jonathan,"Ja, ich wäre auch eher für seriell"
+2013-11-05 17:54:30,Svenska^T,aber sollte leichter als eig cpu sein
+2013-11-05 17:54:35,Jonathan,GraKa ist nur ne weitere riesige Fehlerquelle
+2013-11-05 17:54:55,Jonathan,"Und ne RS232 ist halt doch noch etwas leichter anzusteuern, als ne GraKa"
+2013-11-05 17:55:00,Svenska^T,"d.h. wenn graka text kann, sind grundlagen für gute cpu imho"
+2013-11-05 17:56:00,Svenska^T,bei ner graka sind die anforderungen aber deutlich eingeschränkter
+2013-11-05 17:56:26,Svenska^T,"(war meine empf, sry *g*)"
+2013-11-05 17:56:54,tufel,"naja hier nochmal den code für svenska http://codeviewer.org/view/code:38a4 :D Naja, ein serielles iface wär vielleicht eine gute alternative gewesen ...."
+2013-11-05 18:11:46,Tectu,"Ich les mich gerade durch den GDT artikel. Wenn ich das mit der segmentierung richtig verstehe: ich kann unmöglich mehr als 64kb kontinuierlichen speicher pro ""programm"" oder ""kontext"" verwenden?"
+2013-11-05 18:12:11,Darkchaos,"Tectu: keine Ahnung, aber selbst wenn, kannst du es später durch Paging doch"
+2013-11-05 18:12:41,Tectu,"Darkchaos, hätts trotzdem gerne gewusst ;-) Jemand anders?"
+2013-11-05 18:13:36,Jonathan,"Auf 32-Bit-Prozessoren sind die Adressregister 32 Bit breit, wodurch sich 4GB linearen Adressraum ergeben"
+2013-11-05 18:13:54,Darkchaos,Und im Real-Mode?
+2013-11-05 18:14:12,Darkchaos,re btw :D
+2013-11-05 18:15:05,Jonathan,wb ^^
+2013-11-05 18:15:14,Jonathan,"Im RM sind die, öh, keine Ahnung? :D"
+2013-11-05 18:15:17,Jonathan,Frag doch mal den kevin :P
+2013-11-05 18:15:21,Jonathan,*g*
+2013-11-05 18:15:40,Darkchaos,Hat man da nicht ein Segment/Selektor und ein offset ein kleineres
+2013-11-05 18:15:41,Tectu,"Jonathan, jup, geht mir gerade um den RM, sorry."
+2013-11-05 18:15:44,Darkchaos,Tectu: Arbeitest du denn im RM
+2013-11-05 18:15:49,Darkchaos,Das erklärts :)
+2013-11-05 18:16:01,Darkchaos,Gibts denn im RM überhaupt Paging? Und warum zur hölle arbeitet man im RM? :P
+2013-11-05 18:16:10,Tectu,...
+2013-11-05 18:16:22,Jonathan,Da gibt's natürlich kein Paging
+2013-11-05 18:16:52,Jonathan,Und die Register sind aus Kompatibilitätsgründen wahrscheinlich auch nur 16 Bit breit... Was dann wieder zu 64k linearem Adressraum führt
+2013-11-05 18:17:11,Jonathan,"Aber wie gesagt, lieber mal beim kevin fragen, der weiß das ;)"
+2013-11-05 18:18:08,kevin,"Mensch, merk dir doch endlich, dass ich keine Ahnung habe *g*"
+2013-11-05 18:18:19,Darkchaos,"Ist JanDing, Jidder ist nicht da :("
+2013-11-05 18:18:41,Darkchaos,"Und die GI kann nicht mit Kodierung umgehen. Mein Nachname beinhaltet ein ""?"""
+2013-11-05 18:18:56,kevin,"RM wird durch die Segmentierung auf 64k pro Segment limitiert, auf 32-Bit-Register kann man trotzdem zugreifen"
+2013-11-05 18:19:01,Jonathan,"[18:18:07] <!kevin> Mensch, merk dir doch endlich, dass ich keine Ahnung habe *g* <--- ich bin mir aber sicher, dass du das weißt *g*"
+2013-11-05 18:19:09,Jonathan,"Siehste, hab ich's doch gewusst"
+2013-11-05 18:19:21,kevin,"Die Limitierung kann man auch umgehen, nennt sich dann Unreal Mode"
+2013-11-05 18:19:40,Darkchaos,"Wurde beim Spiel Unreal Tournament angewendet, um größere Texturen zu laden :D"
+2013-11-05 18:19:59,Tectu,"hmm... Also der adressbus ist 16-bit breit - nun addiert man noch 4-bits dazu um auf einen 20-bit adressraum zu kommen, richtig? Der adressbus ist ja physikalisch durch 16-bits limitiert, woher kommen die 4 weiteren?"
+2013-11-05 18:20:18,Jonathan,adr + (seg << 4)
+2013-11-05 18:20:57,Jonathan,"Und der Adressbus, der beim 8086 nach außen ging, war 20 Bit breit. ;)"
+2013-11-05 18:21:11,Jonathan,Die Register waren nur 16 Bit breit.
+2013-11-05 18:21:28,Tectu,hört sich abenteuerlich an
+2013-11-05 18:21:39,Jonathan,Ist es auch :D
+2013-11-05 18:21:57,Jonathan,Wobei es da abenteuerlichere Sachen gibt :P
+2013-11-05 18:48:34,tufel,"nun, wie schlimm ist es wenn das Timing von vertikale und die horizontale sync.  etwas von richtwert abweicht ?"
+2013-11-05 18:49:53,Jonathan,Da werden viele Monitore nicht korrekt drauf synchronisieren
+2013-11-05 18:50:02,Jonathan,Durfte ich selbst schmerzhaft erfahren :P
+2013-11-05 18:50:33,tufel,mmh mist...
+2013-11-05 18:50:42,Jonathan,"Vorallem der Pixeltakt und die Zeilenfrequenz muss exakt stimmen - 25,175MHz (gibt Quarze und Quarzoszillatoren mit der Frequenz)"
+2013-11-05 18:52:07,tufel,wie ermittelt eigentlich der monitor den pixeltakt ?
+2013-11-05 18:52:24,Jonathan,Garnicht
+2013-11-05 18:52:38,Jonathan,"Der arbeitet mit seinem eigenen Pixeltakt, den er aus der Zeilenfrequenz ableitet"
+2013-11-05 18:52:58,tufel,aja ok
+2013-11-05 18:53:52,Jonathan,"Du kannst dir das einfach so vorstellen, dass es am VGA-Anschluss keine ""Pixel"" gibt, sondern die Zeile eine Reihe aus unendlich vielen Farbwerten ist."
+2013-11-05 18:54:14,Jonathan,"Der Monitor pickt sich dann so viele Momentanwerte raus, wie er Pixel hat."
+2013-11-05 18:55:04,Jonathan,"Deshalb kannst du auch z.B. 5 Pixel pro Zeile ausgeben, und der Monitor wird die trotzdem über alle *seine* Pixel darstellen."
+2013-11-05 18:57:54,Svenska^T,die maximal mögliche anzahl von pixeln pro zeile ist beschränkt durch die analoge bandbreite
+2013-11-05 18:58:19,Svenska^T,"nimmt man mehr, verschwimmen die ineinander"
+2013-11-05 18:58:41,Jonathan,"Klar, aber übertragen werden können theoretisch beliebig viele ;)"
+2013-11-05 18:59:18,Svenska^T,jup
+2013-11-05 18:59:43,tufel,"naja ich glaub ich geh mal was essen und überleg mir wie ich die horizentale und vertikale sync. time, bg"
+2013-11-05 19:00:17,Tectu,mit welcher begründung ist der erste eintrag in der GDT ein nulldeskriptor?
+2013-11-05 19:14:29,Svenska^T,evtl um eine gültige gdt zu markieren oder um cs=0 abzufangen. genau weiß ichs aber nicht
+2013-11-05 19:21:01,Tectu,ich habe noch eine frage: Das wiki empfiehlt die GDT wie folgt anzulegen: http://www.lowlevel.eu/wiki/Global_Descriptor_Table#Einrichten_der_GDT
+2013-11-05 19:22:41,Tectu,"also ein segment ist z.B. user code und ein anderes user daten. dann gibts da noch das task segment für multitasking etc. Das heisst, das sämtliche stacks aller tasks die ich später erstelle in dem segment sein werden?"
+2013-11-05 19:34:35,kevin,Nein
+2013-11-05 19:35:20,kevin,"Das TSS ist ein Segment, das genau eine Datenstruktur enthält, die im Intel-Manual beschrieben ist"
+2013-11-05 19:35:40,kevin,"Meistens ist auch die Datenstruktur drin und nicht das Segment an sich gemeint, wenn man vom TSS reset"
+2013-11-05 19:35:42,kevin,*redet
+2013-11-05 19:39:27,Tectu,in welchem segment nach der empfohlenen GDT segmentierung werden sich denn später die thread stacks finden?
+2013-11-05 19:40:55,tufel,huhu
+2013-11-05 19:40:59,Tectu,nabnd
+2013-11-05 19:52:52,mroman,namdmdamadmaabnabend
+2013-11-05 19:56:24,Svenska^T,"grml, buggy irc client"
+2013-11-05 19:59:10,Svenska^T,"tectu: normalerweise (tutorialkernel) nutzt man flat memory, d.h. kernelcode, -data, usercode, -data sind verschiedene segmente weil x86 das so vorschreibt"
+2013-11-05 19:59:44,Svenska^T,"aber die zeigen auf den gleichen speicher, idR 0..4G"
+2013-11-05 20:00:13,Tectu,okay
+2013-11-05 20:00:23,Tectu,gibts eigentlich bekannte architekturen die nicht flat memory nutzen?
+2013-11-05 20:00:36,Tectu,die ARMs mit denen ich bisher gearbeitet habe (Cortex-M serien) sind auch alle flat
+2013-11-05 20:01:54,mroman,muss mit paging ja nicht mehr flat sein?
+2013-11-05 20:03:18,Jidder,paging ist orthogonal zu flat/segmentiert
+2013-11-05 20:03:42,kevin,Tectu: 8086? ;-)
+2013-11-05 20:10:00,Jidder,transponiert?
+2013-11-05 20:10:11,Svenska^T,tablet
+2013-11-05 20:10:31,Jidder,http://de.wikipedia.org/wiki/Tablet_%28Mathematik%29 existiert nicht
+2013-11-05 20:10:59,Svenska^T,T=1
+2013-11-05 20:11:10,Svenska^T,dann stimmts wieder
+2013-11-05 20:32:20,Tectu,"das mit den 16 adressbits + 4 im RealMode, ist das etwa so wie das PAE das später kam? (physical address extension)"
+2013-11-05 20:40:34,Svenska^T,"nein, pae ist paging, also unabhängige speicherseiten"
+2013-11-05 20:41:15,Svenska^T,die rm-segmentierung ist fix mit sich überlappenden 64k-blöcken
+2013-11-05 21:03:37,Jidder,warum war ich vorhin kurz weg?
+2013-11-05 21:04:22,Tectu,"sollte mein kernel nach dem laden der GDT weiter laufen, oder sind IDT und co. zwingend nötig? "
+2013-11-05 21:04:27,Tectu,(rebootet zur zeit immer)
+2013-11-05 21:04:46,Jidder,wenn die GDT korrekt eingerichtet ist und der wechseln in den protected mode klappt brauchst du keine IDT
+2013-11-05 21:05:03,Jidder,"zumindest sollten dann keine exceptions auftreten, außer du machst was kaputtes"
+2013-11-05 21:05:09,Jidder,interrupts müssen übrigens deaktiviert sein
+2013-11-05 21:05:43,Tectu,die sind dann wohl standardmässig an?
+2013-11-05 21:05:51,Jidder,kommt auf den bootloader an
+2013-11-05 21:05:58,Tectu,lade den kernel direkt in QEMU
+2013-11-05 21:06:03,Jidder,dann sind sie aus
+2013-11-05 21:06:06,Jidder,lässt du interrupts loggen?
+2013-11-05 21:06:14,Jidder,qemu die parameter -d int übergeben
+2013-11-05 21:06:16,Tectu,"öhm, nicht das ich wüsste"
+2013-11-05 21:06:26,Jidder,dann erstellt er eine datei namens qemu.log (linux: /tmp/qemu.log)
+2013-11-05 21:06:26,Tectu,"hmm, ich glaube ich wechsel zur zeit noch nicht in den PM (bin in tutorial Teil 5)"
+2013-11-05 21:06:34,Jidder,dann bist du längst im PM
+2013-11-05 21:06:40,Jidder,qemu macht das für dich
+2013-11-05 21:06:47,Tectu,achso
+2013-11-05 21:06:49,Jidder,log mal die interrupts und schau in die qemu.log
+2013-11-05 21:06:54,Tectu,"gute idee, danke!"
+2013-11-05 21:07:16,Tectu,kommt bei mir ins stdout ;-)
+2013-11-05 21:07:19,Tectu,oder stderr...
+2013-11-05 21:08:13,Tectu,tolles register-gewirr
+2013-11-05 21:08:38,Jidder,"hm das ist komisch, dass er das nach stdout macht"
+2013-11-05 21:08:57,Tectu,archlinux here
+2013-11-05 21:09:01,Tectu,hab nix im /tmp
+2013-11-05 21:09:03,Jidder,"ich kann da mal einen blick drauf werfen, wenn du das irgendwie auf ein pastebin hochgeladen bekommst"
+2013-11-05 21:09:10,Tectu,also krieg da die gesamte register übersicht im stdout
+2013-11-05 21:09:37,Jidder,"jo, manchmal kann man daran ein paar sachen ablesen"
+2013-11-05 21:10:01,Tectu,"hmm, gerne "
+2013-11-05 21:10:04,Jidder,"welcher interrupt aufgetreten ist, basis der gdt, werte der segmentregister, werte von eip, etc."
+2013-11-05 21:10:05,Tectu,wenn ich dich damit nicht zu sehr belaste :)
+2013-11-05 21:10:20,Jidder,das passt schon ^^
+2013-11-05 21:10:28,Tectu,http://pastebin.com/2Y9sAANY
+2013-11-05 21:10:36,Tectu,gibt halt bei jedem reboot nochmals die ganze übersicht raus
+2013-11-05 21:11:25,Jidder,jo. wenn dich das stört kann man das deaktivieren. irgendwas gibts da in den flags
+2013-11-05 21:11:27,Jidder,also zu den logs
+2013-11-05 21:11:37,Jidder,die ersten beiden interrupts sind uninteressant
+2013-11-05 21:11:49,Jidder,"das sind die registerdumps, die mit SMM: enter bzw. SMM: after RSM anfangen"
+2013-11-05 21:11:56,Jidder,den nächsten müssen wir uns dann angucken
+2013-11-05 21:12:02,Jidder,check_exception old: 0xffffffff new 0xd
+2013-11-05 21:12:05,Tectu,"wofür steht SMM und RSM, wenn ich fragen darf?"
+2013-11-05 21:12:07,Jidder,in zeile 41
+2013-11-05 21:12:16,Jidder,SMM ist der system management mode
+2013-11-05 21:12:41,Jidder,"ist ein spezieller modus der cpu. manche sagen dazu ring -1, aber das stimmt eigentlich nicht."
+2013-11-05 21:12:59,Tectu,okay
+2013-11-05 21:13:02,Jidder,RSM ist der rückkehrbefehl aus dem SMM. steht wohl für resume. im prinzip sowas wie IRET.
+2013-11-05 21:13:21,Tectu,I see
+2013-11-05 21:13:26,Tectu,wonach halten wir jetzt ausschau?
+2013-11-05 21:13:40,Jidder,in zeile 41 bzw. 42 steht die interrupt nummer
+2013-11-05 21:13:43,Tectu,bei den ARMs mit denen ich etwas gearbeitet habe gabs halt immer ein status/failure register
+2013-11-05 21:13:47,Jidder,das ist das erste interessante 0x0d
+2013-11-05 21:13:56,Jidder,das ist ein general protection fault
+2013-11-05 21:14:23,Jidder,"hilft uns also nicht witer, außer dass wir jetzt wissen, dass etwas kaputt ist. dann kann man sich manchmal den wert e=0028 angucken"
+2013-11-05 21:14:31,Tectu,0x0d ist ein #GP - General Protection
+2013-11-05 21:14:34,Tectu,"ah, warst schneller :P"
+2013-11-05 21:14:45,Jidder,"das 0028 bedeutet in diesem fall, dass du irgendwo den selektor 0x28 geladen hast"
+2013-11-05 21:14:47,Tectu,"war das nicht der ""wenn wir keinen handler dafür haben"" interrupt?"
+2013-11-05 21:15:06,Jidder,"ne. wenn du den double fault meinst, dann ist es der auch nicht ;)"
+2013-11-05 21:15:24,Tectu,ach menno :)
+2013-11-05 21:15:43,Jidder,lädst du irgendwo eins der segment register mit 0x28?
+2013-11-05 21:15:45,Tectu,pc und SP sagt mir was. was ist e für ein register?
+2013-11-05 21:15:51,Jidder,das ist der error code
+2013-11-05 21:15:58,Jidder,hätt ich dazu sagen können
+2013-11-05 21:16:25,Tectu,muss kurz nachrechnen. Hab jetzt mal die segmentinitialisierung wie im wiki empfohlen übernommen (mit den flags)
+2013-11-05 21:16:25,Jidder,für general protection faults ist der error code der selektor der auf die GDT oder IDT zeigt
+2013-11-05 21:16:29,Jidder,sofern das zutrifft
+2013-11-05 21:16:48,Jidder,"ich mein sowas wie mov $0x28, %ax mov %ax, %ds"
+2013-11-05 21:16:59,Jidder,"oder ljmp $0x28, irgendwas"
+2013-11-05 21:17:45,Tectu,"nein, garnichts"
+2013-11-05 21:18:38,Tectu,"ich kann meine gdt source pasten, wenn da hilft. Ist aber wirklich der code im wiki. Ich bin nicht stolz drauf, aber ich sehe (zur zeit) keine möglichkeit da etwas anderes zu machen (als kopieren)"
+2013-11-05 21:18:43,Svenska^T,gn8
+2013-11-05 21:18:59,Jidder,"Tectu: ich vertrete die meinung, dass bei sowas kopieren in ordnung ist"
+2013-11-05 21:19:19,Tectu,"Jidder, http://pastebin.com/MBNDs0UD"
+2013-11-05 21:19:54,Jidder,schaut auf dem ersten blick nicht verkehrt aus
+2013-11-05 21:20:07,Jidder,"dann müssen wir härtere methoden nehmen und mal gucken, welche instruktion den fault auslöst"
+2013-11-05 21:20:20,Jidder,kannst du den kernel mal disassemblieren (objdump -d kernel)?
+2013-11-05 21:20:33,Jidder,und dann den wert 100262 suchen
+2013-11-05 21:20:40,Jidder,der kommt auch aus dem registerdump (EIP)
+2013-11-05 21:21:12,Tectu,"EIP ist der pointer auf die nächste instruktion, richtig?"
+2013-11-05 21:21:24,Jidder,"interessant ist dann einmal welche c-funktion das ist. manchmal weiß man dann schon was sache ist, und ansonsten muss man mal auf den kontext schauen, was der code macht"
+2013-11-05 21:21:32,Jidder,in diesem fall auf die instruktion die den fault ausgelöst hat
+2013-11-05 21:21:47,Tectu,"  10025d:	b8 28 00 00 00       	mov    $0x28,%eax"
+2013-11-05 21:21:47,Tectu,  100262:	0f 00 d8             	ltr    %ax
+2013-11-05 21:21:50,Jidder,"eigentlich ist das bei faults immer so, dass eip auf die verursachende instruktion zeigt"
+2013-11-05 21:21:52,Jidder,ah
+2013-11-05 21:22:09,Jidder,"da hast du aber aus teil 6 vorgegriffen, oder?"
+2013-11-05 21:22:11,Tectu,label ist   .1
+2013-11-05 21:22:31,Jidder,da lädst du ja das task register
+2013-11-05 21:22:34,Tectu,"jap, etwas :P"
+2013-11-05 21:22:47,Tectu,hab erst das ganze mal durchgelesen...
+2013-11-05 21:23:15,Jidder,hast du was in dem vorletzten absatz steht beachtet? http://www.lowlevel.eu/wiki/Teil_6_-_Multitasking
+2013-11-05 21:23:38,Jidder,vor allem das vergrößern der gdt
+2013-11-05 21:24:28,Tectu,ich habe meine GDT aber noch unberührt belassen - von dem taskmanagement
+2013-11-05 21:24:40,Tectu,meine GDT hat 5 einträge
+2013-11-05 21:24:53,Jidder,"tjo dann kommentier entweder das asm volatile ltr zeug aus, oder befolge das tutorial ;)"
+2013-11-05 21:24:58,Tectu,"ah, zeile 44 in meiner gdt.c"
+2013-11-05 21:25:01,Tectu,jup
+2013-11-05 21:25:05,Tectu,tut mir leid :(
+2013-11-05 21:25:39,Tectu,"jap, jetzt rennt er ;-)"
+2013-11-05 21:25:41,Jidder,"kein problem. ich helfe immer gerne bei den einfachen dingen. für außenstehende sieht das so aus, als könnte ich ganz gut betriebssysteme programmieren ^^"
+2013-11-05 21:25:52,Tectu,hrhr
+2013-11-05 21:26:06,Tectu,"naja, ich hasse es einfach jedes mal wenn es ein so dummer fehler wie der eben war..."
+2013-11-05 21:26:53,Tectu,gibts ein debugging guide?
+2013-11-05 21:27:02,Tectu,also nur so ansatzweise
+2013-11-05 21:27:07,Tectu,eben wie tricks mit dem EIP etc.
+2013-11-05 21:27:43,Jidder,wir haben einmal http://www.lowlevel.eu/wiki/Debugging aber das ist auch nur eine einleitung
+2013-11-05 21:27:47,Jidder,http://wiki.osdev.org/Troubleshooting gibts noch
+2013-11-05 21:27:55,Jidder,aber das hab ich noch nicht angeguckt ^^
+2013-11-05 21:28:05,Tectu,hrhr
+2013-11-05 21:28:24,Tectu,"kann man mit qemu eigentlich bequem ""benchmarks"" durch führen? "
+2013-11-05 21:28:31,Tectu,z.B. speicherverbrauch ermitteln etc.
+2013-11-05 21:28:52,Jidder,vermutlich nicht bequemer als mit jeder anderen vm auch
+2013-11-05 21:29:26,Jidder,"ich wüsste zumindest kein feature, dass da irgendwie in diese richtung geht"
+2013-11-05 21:30:25,Tectu,"hmm, wie aufwendig wird es eigentlich geschichten wie SMP zu implementieren?"
+2013-11-05 21:30:44,Tectu,wenn wir mal die benötigten C kenntnisse voraussetzen
+2013-11-05 21:30:50,Jidder,implementieren ist einfach. die bugs die durch parallelität sind das problem ^^
+2013-11-05 21:31:05,Jidder,+entstehen
+2013-11-05 21:32:17,Tectu,btw... das tutorial orientiert sich rein an intel prozessoren? würde das ganze also nicht auf einem AMD rennen?
+2013-11-05 21:32:22,Tectu,"ich denke mal schon, oder?"
+2013-11-05 21:32:22,Jidder,doch
+2013-11-05 21:32:28,Tectu,windows wird ja auch nicht für beides getrennt geschrieben ;)
+2013-11-05 21:32:57,Jidder,jop die beiden cpus haben die selbe architektur
+2013-11-05 21:33:05,Jidder,natürlich gibt es unterschiede bei den erweiterungen
+2013-11-05 21:35:52,Tectu,I see
+2013-11-05 21:36:25,Tectu,danke für deine hilfe.
+2013-11-05 21:36:46,Jidder,bitte
+2013-11-05 21:44:10,Tectu,"naja, x86 debugging scheint sich ja ziemlich stark von ARM debugging zu unterscheiden"
+2013-11-05 21:44:13,Tectu,(Da man keinen host hat)
+2013-11-05 21:45:24,Tectu,kein JTAG und so :P
+2013-11-05 21:51:24,Tectu,"kommt mir das nur so vor oder ist x86 gegnüber ARM ein ziemliches ""gemüse""?"
+2013-11-05 21:54:07,tufel,nun wie macht man größergleich - Vergleiche in vhdl ?
+2013-11-05 21:57:44,Jidder,"Tectu: du meinst, dass man bei arm einen externen debugger hat?"
+2013-11-05 21:57:59,Tectu,"Jidder, jup"
+2013-11-05 21:58:15,Tectu,"Jidder, also das mit ""gemüse"" meine ich jetzt eher auf die architektur selbst bezogen. Scheint mir ein ziemliches gebastel zu sein :P"
+2013-11-05 21:58:34,Jidder,es entwickelt sich halt weiter ^^
+2013-11-05 21:59:53,Tectu,"Jidder, also bei QEMU muss ich die interrupts erst aktivieren?"
+2013-11-05 22:00:07,Jidder,ja
+2013-11-05 22:00:11,Jidder,hardware interrupts
+2013-11-05 22:06:56,Tectu,dann sollte ich die wohl mal an machen :)
+2013-11-05 22:09:18,Jidder,"ey, interrupt! was guckst du!"
+2013-11-05 22:09:22,Jidder,okay ich hör ja schon auf
+2013-11-05 22:14:14,mroman,tufel: mit >= vermutlich?
+2013-11-05 22:14:35,mroman,"kommt halt darauf an, was dein Datentype ist."
+2013-11-05 22:15:19,Darkchaos,String
+2013-11-05 22:17:08,tufel,naja std_logic_vector
+2013-11-05 22:18:51,mroman,k
+2013-11-05 22:18:57,mroman,dann konvertiert der halt zu unsigned
+2013-11-05 22:18:59,mroman,oder signed
+2013-11-05 22:19:07,mroman,und dann hast du ja >= <= etc
+2013-11-05 22:19:07,tufel,"meine if-verzweigung sieht jetzt so aus: "" if(v_cout <= 659) and (v_cout >= 755)."
+2013-11-05 22:24:31,tufel,"ich glaub ich steh auf nem schlauch... hab jetzt mal die zahlen mit signalen ausgetauscht die als anfangswert die Zahlen haben, aber  die 2 datentypen vertragen sich immernoch nicht -.- :   if(unsigned(h_count(9 downto 0)) <= unsigned(zahl_659(9 downto 0)) ) and (unsigned(h_count(9 downto 0)) => unsigned(zahl_755(9 downto 0)))"
+2013-11-05 22:39:58,tufel,mmh ich glaub ich hab mein problem gelöst :)
+2013-11-05 22:47:21,tufel,ich geh mal schlafen bb
+2013-11-05 22:47:33,Darkchaos,"Danke, dass du deine Lösung mit allen teilst :)"
+2013-11-05 23:00:14,Tectu,"""Zumindest IRQ 0 muss also auf jeden Fall sinnvoll behandelt werden, ansonsten währt die Freude nicht lang.""   <--- bwhahaha"
+2013-11-05 23:51:36,Tectu,"kommt mir das nur so vor oder ist die PIT frequenz etwas ""zufällig"" gewählt?"
+2013-11-05 23:53:12,Tectu,1193182Hz
+2013-11-05 23:53:48,XanClic,hmmm
+2013-11-05 23:53:52,XanClic,wo du es gerade sagst
+2013-11-05 23:53:53,Jidder,das hat was mit der frequenz der originalen 8086 cpu zu tun
+2013-11-05 23:53:57,XanClic,in hex sieht die ganz hübsch aus
+2013-11-05 23:53:59,XanClic,0x1234DE
+2013-11-05 23:54:04,Jidder,und dem video controller
+2013-11-05 23:54:17,Jidder,"ich glaube das war irgendwie gekoppelt, damit man sich da oszillatoren sparen konnte"
+2013-11-05 23:55:44,Tectu,oh man
+2013-11-05 23:55:52,Tectu,"siehst du, genau solche sachen meinte ich vorhin, Jidder ^^"
+2013-11-05 23:56:07,Tectu,"XanClic, war das jetzt kopfarbeit oder wusstest du das bereits?"
+2013-11-05 23:56:17,XanClic,Ich hab nachgeguckt
+2013-11-05 23:57:30,Tectu,"naja, den PIT kann man wohl nur mit ganz viel phantasie mit dem systick eines ARMs vergleichen, was?"
+2013-11-05 23:58:06,XanClic,"Der Unterschied wird sein, dass man bei x86 davon ausgehen kann, dass der PIT da ist :-P"

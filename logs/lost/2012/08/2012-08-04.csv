@@ -1,0 +1,142 @@
+date/time,nick,message
+2012-08-04 00:28:09,Scatha,noob
+2012-08-04 00:28:09,Scatha,s
+2012-08-04 00:28:15,Scatha,überall noobs
+2012-08-04 00:28:32,Scatha,dämliches counter strike ^^
+2012-08-04 00:28:36,Jidder,so ist
+2012-08-04 00:28:36,Jidder,es
+2012-08-04 00:28:46,Scatha,aber noch is es nich vorbei xD
+2012-08-04 00:28:57,Jidder,meh
+2012-08-04 00:34:57,Scatha,tjaaaa is wohl doch vorbei xD
+2012-08-04 00:35:03,Scatha,glück gehabt :D
+2012-08-04 00:35:32,Jidder,yeah
+2012-08-04 00:36:15,Jidder,aber nu is eh zu spät ^^
+2012-08-04 00:38:00,Scatha,cool ^^
+2012-08-04 00:38:39,Scatha,dann kannste ja jetzt die dümmste frau der welt angucken
+2012-08-04 00:38:39,Scatha,http://www.youtube.com/watch?v=0uDzpa-eU0A
+2012-08-04 00:39:57,Scatha,"""bio is für mich abfall"" so siehts aus"
+2012-08-04 00:42:21,Scatha,"""in wurst sind vitamine drin... in leberwurst, in schinkenwurst und in erdbeerkäse"""
+2012-08-04 00:46:03,Jidder,"lol ""is der briefträger?"" ^^"
+2012-08-04 00:50:00,Scatha,:D
+2012-08-04 09:47:29,bluecode,moin
+2012-08-04 11:42:01,PatrickBic,oi
+2012-08-04 15:23:15,DesL,moin
+2012-08-04 15:25:04,PatrickBic,moin
+2012-08-04 15:34:32,PatrickBic,beim ersten zugriff auf den kernel_context nach dem einschalten des pagings gibts nen page-fault...  ich finde kaum was (wohl aber weil ich keine ahnung nach was ich genau suchen soll) was ich vergessen hab.. jemand ne idee?
+2012-08-04 15:36:47,Paddy,Die CPU findet wahrscheinlich auch kaum was
+2012-08-04 15:37:24,Paddy,"Ansonsten übliches PF-Debugging halt: cr2 anschauen, Fehlercode anschauen"
+2012-08-04 15:39:58,PatrickBic,cr2 is ja die adresse vom kernel-ctx
+2012-08-04 15:41:04,PatrickBic,ah moment.. 
+2012-08-04 15:42:41,Paddy,"Dann machst du einen manuellen Lookup von diesem cr2 im aktuellen PD und schaust, was da anderes drin steht als du erwartet hättest"
+2012-08-04 15:43:28,PatrickBic,gibt nur das eine page-dir vom kernel (aktuell.. sollen natuerlich spaeter mehr werden ;) )
+2012-08-04 15:43:51,Paddy,Dann ist das vermutlich das aktuelle
+2012-08-04 15:43:59,Paddy,"Außer du hast vergessen, cr3 zu setzen"
+2012-08-04 15:44:34,PatrickBic,ne cr3 is gesetzt.. dann fange ich eben an nen heap zu machen .. und beim map_page fuern heap schmiert mir das ganze ab
+2012-08-04 15:44:40,PatrickBic,mit der adresse vom kernel-ctx (0x400000)
+2012-08-04 15:44:52,PatrickBic,mit page-present 
+2012-08-04 15:45:02,PatrickBic,laut wiki protection-violation
+2012-08-04 15:45:04,Paddy,Dann schau dir den zweiten Eintrag im PD an
+2012-08-04 15:45:11,DesL,"ähm, du überschreibst das pdir?  oder was?"
+2012-08-04 15:45:36,PatrickBic,"nein.. ich mappe einiges, setze cr3, aktiviere paging"
+2012-08-04 15:45:52,PatrickBic,dann faengt der heap-kram an => map_page vom heap => page-fault
+2012-08-04 15:47:13,DesL,"ähm, richte dir doch einfach mal ein 1:1 mapping ein bevor du paging aktivierst?"
+2012-08-04 15:47:49,PatrickBic,hab ich ja fuer die ersten 4mb
+2012-08-04 15:48:32,DesL,hast du auch dein pagedirectory 1:1 gemappt?
+2012-08-04 15:48:33,PatrickBic,"gdt-start bis ende, kernel start-bis ende, idt start bis ende, kernel-stack (4kb), 0xb8000 usw, ersten 4 mb"
+2012-08-04 15:48:35,DesL,oder irgendwie?
+2012-08-04 15:48:36,PatrickBic,das mappe ich
+2012-08-04 15:48:52,DesL,"das solltest du gemappt haben bevor du pagign reinhaust, sonst problem :D"
+2012-08-04 15:49:01,PatrickBic,gute frage.. ich guck eben
+2012-08-04 15:49:19,PatrickBic,einfach map_page mitn kernel-ctx + adresse von PD
+2012-08-04 15:49:27,PatrickBic,also virt=PD nach phys=PD oder?
+2012-08-04 15:50:03,DesL,wasn ctx?
+2012-08-04 15:50:17,PatrickBic,kernel context
+2012-08-04 15:50:50,DesL,und das ist vom PD inwiefern unterschiedlich?
+2012-08-04 15:51:34,PatrickBic,es ist ein struct mitn zeiger aufs page-dir drin
+2012-08-04 15:51:49,PatrickBic,wo spaeter noch anderes reinkommt (userspace usw)
+2012-08-04 15:52:41,DesL,"map doch einfach testweise den gesamten RAM 1:1, das ist um zu gucken ob paging überhaupt klappt imho am besten"
+2012-08-04 15:59:11,PatrickBic,DesL: sieht gut aus.. ohne page fault dann
+2012-08-04 15:59:35,PatrickBic,wenn ich alle 256mb (derzeit mein bochs setup fuer ram) mappe
+2012-08-04 16:04:24,DesL,dann haste vorhin ja offenbar auf nicht gemappte bereiche zugegriffen
+2012-08-04 16:04:46,Paddy,Ach ne...
+2012-08-04 16:07:34,DesL,Paddy: iss was? :D 
+2012-08-04 16:09:44,Paddy,Jetzt sind wir wieder an der Stelle an der du mich unterbrochen hattest
+2012-08-04 16:09:48,Paddy,Bzw. PatrickBic von meiner Frage abgelenkt
+2012-08-04 16:15:34,PatrickBic,ich hab scheinbar vergessen das pagedir selber zu mappen :-O
+2012-08-04 16:15:40,PatrickBic,eh wie paddy angedeutet/gefragt hat
+2012-08-04 16:16:40,DesL,ich auch *schmoll* 
+2012-08-04 16:17:15,PatrickBic,stimmt.. sorry *keks geb*
+2012-08-04 16:23:52,DesL,"aaaah, endlich hat risugami geupdatet. dann kann ich jetzt ja auch mal meine mods updaten :D"
+2012-08-04 16:36:02,DesL,hoffentlich gibt das nicht zu viele änderungen mit der neuen version 
+2012-08-04 16:57:49,DesL,"natürlich, war ja klar. der ganze kram ""wir packen nen localen server in den client"" führt zu vielen kleinen änderungen -.-"
+2012-08-04 19:47:46,abc,hallo
+2012-08-04 19:48:07,abc,?
+2012-08-04 19:48:07,abc,??
+2012-08-04 19:48:09,abc,???
+2012-08-04 19:48:10,abc,????
+2012-08-04 21:17:30,Jidder,und wie is die wassertemperatur?
+2012-08-04 21:18:14,DesL,42. kelvin.
+2012-08-04 21:19:23,DesL,"die mods von minecraft 1.2.5 auf 1.3.1 zu updaten ist einfach nur schmerzhaft, weil die ganzen ""alten"" strukturen im client noch vorhanden sind, man die auch ändern kann, das aber nix bringt weil nur die änderungen im server relavant sind *kotz*"
+2012-08-04 21:19:58,DesL,"und nein, der server ist dann auch nicht von den klassen kompatibel zum client, nein der ist in teilen einfach komplett anders geschrieben. http://dl.dropbox.com/u/55132163/pics/Nooooooooooooooooooootch.png"
+2012-08-04 21:20:58,bluecode,http://www.youtube.com/watch?v=o4BOZcDMw_A
+2012-08-04 21:21:43,DesL,"auch sehr schön, es exisitert pro minecart nicht EINE ""EntityMinecart"" sonder ZWEI, eine im server, eine im client -.-"
+2012-08-04 21:32:22,DerHartmut,Guten Abend
+2012-08-04 21:34:58,Jidder,guten abend
+2012-08-04 21:36:45,bluecode,y0
+2012-08-04 21:36:47,bluecode,peoples
+2012-08-04 21:38:01,Jidder,was ist denn mal ein gutes lagerungssystem?
+2012-08-04 21:38:02,Jidder,in minecraft
+2012-08-04 21:38:04,DerHartmut,lolwut a Jidder and a code de blue
+2012-08-04 21:38:13,Jidder,mein aktuelles: wenn eine truhe voll ist eine neue bauen
+2012-08-04 21:38:16,DerHartmut,Ich bau mir immer Tunnels
+2012-08-04 21:38:20,Jidder,und die irgendwo platzieren wo platz ist
+2012-08-04 21:38:51,Jidder,hm platzieren und platz ... ich dachte eins von beiden hat mit plätzchen zu tun?
+2012-08-04 21:39:08,Jidder,ich finde immer so viele glänzende sachen in meinen tunneln
+2012-08-04 21:39:44,Jidder,und das andere mit hunden
+2012-08-04 21:40:02,bluecode,was ist mit katzen?
+2012-08-04 21:40:11,Jidder,die hören nicht
+2012-08-04 21:40:29,Jidder,ich hab es versucht. aber die reagieren weder auf sitz noch platz
+2012-08-04 21:40:38,Jidder,ob wohl loge klappt?
+2012-08-04 21:41:08,Jidder,hallo
+2012-08-04 21:41:10,Jidder,?
+2012-08-04 21:41:10,Jidder,??
+2012-08-04 21:41:11,Jidder,???
+2012-08-04 21:41:12,Jidder,????
+2012-08-04 21:41:35,bluecode,"hi Jidder, wie gehts dir so?"
+2012-08-04 21:41:42,Jidder,hallo
+2012-08-04 21:41:45,Jidder,es geht mir gut
+2012-08-04 21:41:50,Jidder,ich hab nicht viel zeit
+2012-08-04 21:41:54,Jidder,ich glaube ich werde nicht mit dir chatten
+2012-08-04 21:41:56,bluecode,was macht das studium?
+2012-08-04 21:42:05,bluecode,schade :-/
+2012-08-04 21:42:10,Jidder,pokemon studium
+2012-08-04 21:42:16,Jidder,für nintendo 64
+2012-08-04 21:42:48,bluecode,ist super mario auch dabei?
+2012-08-04 21:43:12,Jidder,ne leider nich
+2012-08-04 21:43:42,bluecode,"also der super mario, mein ich: http://images.zeit.de/wirtschaft/2012-08/mario-draghi/mario-draghi-540x304.jpg"
+2012-08-04 21:44:16,Jidder,der sollte auch mal pilze essen und mit dem kopf gegen schwebende steinblöcke springen
+2012-08-04 21:44:21,Jidder,vielleicht kriegt er dann ein paar münzen
+2012-08-04 21:44:49,Jidder,ja ich hab ihn erkannt
+2012-08-04 21:44:53,Jidder,ich lese nämlich auch zeitung
+2012-08-04 21:45:00,Jidder,das ist ein weltbekannter münzsammler
+2012-08-04 21:45:18,Jidder,"eine zeitung die ""zeit"" heißt"
+2012-08-04 21:45:26,Jidder,"was haben die wohl mit dem ""ung"" gemacht?"
+2012-08-04 21:45:44,Jidder,wtf jidder verwendet satzzeichen was soll denn das ist der bekloppt
+2012-08-04 21:46:07,bluecode,der ist doch kein sammler
+2012-08-04 21:46:12,bluecode,der ist präger
+2012-08-04 21:46:13,XanClic,Zählt das Leerzeichen eigentlich als Satzzeichen?
+2012-08-04 21:46:41,Jidder,ohhastrecht
+2012-08-04 21:46:41,bluecode,möglicherweise auch preggers
+2012-08-04 21:46:42,XanClic,Wikipedia meint ja
+2012-08-04 22:21:40,DesL,"kein bock mehr, 1.3.1 für Plantcart kann bleiben wo  der pfeffer wächst"
+2012-08-04 22:49:30,sfan,was? redet ihr in #lost über minecraft?
+2012-08-04 22:49:51,Jidder,oh ja
+2012-08-04 22:49:54,Jidder,ist ja die konkurrenzserie
+2012-08-04 22:51:15,sfan,hm
+2012-08-04 23:03:25,bluecode,arrrrrrrrrrrrrrrrrrr
+2012-08-04 23:03:48,bluecode,I'mma politician
+2012-08-04 23:04:05,bluecode,and Imma enter your reichstag
+2012-08-04 23:38:47,DesL,...wieso habe ich als ich das gelesen habe das grade mit einem französischen akzent gehört? XD
+2012-08-04 23:57:44,Jidder,"mov eax, 0x40"
+2012-08-04 23:57:44,Jidder,"mov cr1, eax ; ""MikroOps Modus"" aktivieren"
+2012-08-04 23:58:47,Jidder,warum hab ich diesen code geschrieben?

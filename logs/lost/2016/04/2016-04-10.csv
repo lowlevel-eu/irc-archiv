@@ -1,0 +1,96 @@
+date/time,nick,message
+2016-04-10 15:40:27,iksnagreb,moin
+2016-04-10 17:30:28,Paddy,"Was haltet ihr für die unkaputteste Methode, Filedeskriptoren an Kindprozesse weiterzugeben?"
+2016-04-10 17:34:58,XanClic,"Als Benutzer oder als derjenige, der die Deskriptoren verwaltet?"
+2016-04-10 17:35:23,Paddy,Sag am besten mal beides und warum es nicht zusammenpasst ;-)
+2016-04-10 17:35:41,XanClic,Für den Benutzer würd ich ja fork vorschlagen ;-)
+2016-04-10 17:35:57,XanClic,"Nur muss fork das ja irgendwie implementieren, und das ist eine andere Frage"
+2016-04-10 17:36:56,XanClic,"Bei mir verwaltet jeder Prozess seine Filedeskriptoren selbst, und da muss man nur dafür sorgen, dass die Handles, auf die die Deskriptoren zeigen, dupliziert werden"
+2016-04-10 17:37:01,Paddy,"Auch mit fork() finde ich den Unix-Weg, einfach alle Deskriptoren zu vererben ziemlich kaputt ;-)"
+2016-04-10 17:37:29,XanClic,"Und das passiert, indem man dem Server, der die Datei bereit stellt, sagt, dass das Handle jetzt dupliziert werden soll"
+2016-04-10 17:38:01,Paddy,"Jo, mit LIOv2 ist der Teil nicht so problematisch, weil das ja eh der Kernel macht"
+2016-04-10 17:38:20,XanClic,"Meinetwegen könnte man bei fork auch noch eine Whitelist von Deskriptoren angeben, welche vererbt werden soll, die per Default einfach „alle“ ist"
+2016-04-10 17:38:34,XanClic,Aber find ich aus Benutzersicht jetzt nicht unbedingt schöner oder weniger schön
+2016-04-10 17:38:47,Paddy,Also unter Unix leakt man ständig FDs
+2016-04-10 17:38:59,Paddy,Weil man halt doch nicht immer aufpasst und ordentlich O_CLOEXEC macht
+2016-04-10 17:39:28,XanClic,Ich öffne Dateien halt eher kurzzeitig und forke nicht in der Zwischenzeit
+2016-04-10 17:40:09,Paddy,"Wird Zeit, dass du wieder öfter an qemu arbeitest *g*"
+2016-04-10 17:40:24,Paddy,"Die Empfängerseite gefällt mir aber auch nicht so richtig. Da ist dann einfach irgendein FD gemappt, von dem der Prozess an sich nichts weiß."
+2016-04-10 17:41:26,Paddy,"Vermutlich wird ihm über die Kommandozeile oder sowas gesagt, auf welchem FD er etwas erwarten kann, aber ich glaube, wenn man da ordentlich prüfen will, ob da einem nicht jemand was unterschieben will, was gar nicht vom Elternprozess kommt, dann wird das aufwendig"
+2016-04-10 17:42:26,XanClic,"Wenn der Elternprozess open(""foo"") und dann exec(""bar"", ""fd=3"") macht, ist er selber schuld :-P"
+2016-04-10 17:45:30,Paddy,"Oder der Kindprozess ist SUID root und macht dann lustige Sachen mit einer privilegierten Datei, die er selber geöffnet hat ;-)"
+2016-04-10 17:45:43,Paddy,Dann hat der Elternprozess nur sein Ziel erreicht
+2016-04-10 17:46:18,XanClic,SUID ist ja auch kaputt
+2016-04-10 17:46:41,Paddy,"Okay, ich hoffe nicht, dass irgendein SUID-root-Prozess Fildeskriptoren auf der Kommandozeile nimmt, aber es geht ums Prinzip"
+2016-04-10 17:47:28,XanClic,"Ich fürchte, ich hab das Prinzip nicht genau verstanden ;-)"
+2016-04-10 17:48:01,XanClic,"Aus meiner Sicht sind Filedeskriptoren sowas wie Capabilities, und die bekommt man nicht untergeschoben, sondern die bekommt man einfach so und dann freut man sich drüber, dass man darauf Zugriff erhält"
+2016-04-10 17:48:25,XanClic,"Ich verstehe nicht genau, wie man irgendwo einen Filedeskriptor haben kann, den man nicht erwartet"
+2016-04-10 18:05:46,Paddy,Eher andersrum
+2016-04-10 18:06:38,Paddy,"Weil der Prozess über irgendeinen anderen Weg die Information bekommen muss, was dieser FD eigentlich bedeutet, gibt es auch die Möglichkeit, ihm Informationen über einen FD zu geben, den er gar nicht bekommen hat"
+2016-04-10 18:07:24,Paddy,"Yay, ein Cross-Endian-masterq32! ;-)"
+2016-04-10 18:08:05,XanClic,"Ob er den gar nicht bekommen hat, ist doch aber eher trivial festzustellen…"
+2016-04-10 18:08:37,Paddy,Solange er noch nichts eigenes geöffnet hat
+2016-04-10 18:09:43,XanClic,"Ja, ist doch ok? *duck*"
+2016-04-10 18:11:01,XanClic,"Wenn man unbedingt Kommandozeilenparsing machen will, nachdem man etwas geöffnet hat, kann man ja erfordern, dass die übergebenen FDs keine Lücken haben"
+2016-04-10 18:11:18,Paddy,"Na gut, wenn das das unkaputteste ist, was dir einfällt... ;-)"
+2016-04-10 18:11:20,XanClic,"Dann macht man ein open(""/dev/null"") und weiß, welche FDs übergeben wurden"
+2016-04-10 18:11:36,Paddy,So lange bis man was übergebenes schließ
+2016-04-10 18:11:52,XanClic,Und?
+2016-04-10 18:12:12,XanClic,"Es geht ja nur darum, dass man prüft, ob ein FD, der angeblich da sein sollte, wirklich vom Aufrufer kommt"
+2016-04-10 18:12:28,XanClic,Und das kann man beim Kommandozeilenparsing machen
+2016-04-10 18:12:58,XanClic,Für mich klingt das weniger nach einem Problem beim FD vererben als vielmehr nach einem Problem von fehlendem ordentlichem IPC
+2016-04-10 18:13:11,Paddy,Inwiefern?
+2016-04-10 18:13:56,XanClic,"Das Problem ist ja nicht, dass es so schwer wäre, FDs zu vererben, sondern dass das Kind vielleicht komplizierte Sachen machen muss, um FDs zu weiteren Informationen zu assoziieren"
+2016-04-10 18:14:14,XanClic,"Wobei ich persönlich finde, dass Kommandozeilenparsing nicht erfordert, dass man selber was öffnet"
+2016-04-10 18:14:27,XanClic,Oder zumindest nicht erfordern sollte
+2016-04-10 18:14:35,XanClic,"Ich weiß, qemu sieht das anders :-P"
+2016-04-10 18:14:54,Paddy,Und was hat das mit IPC zu tun?
+2016-04-10 18:15:15,XanClic,"Dann könnte der Prozess, wenn er FDs erwartet, beim Start auf IPC vom Elternprozess warten, die die FDs beschreiben"
+2016-04-10 18:15:22,Paddy,"Jede Möglichkeit, die nach der Prozesserstellung noch IPC zwischen Elternprozess und Kind benötigt, ist racy und damit kaputt"
+2016-04-10 18:15:38,XanClic,Wieso?
+2016-04-10 18:15:39,Paddy,Der Elternprozess kann schließlich jederzeit gekillt werden
+2016-04-10 18:16:04,XanClic,Kommt auf das IPC-Modell an
+2016-04-10 18:16:23,XanClic,"Posix kennt waitpid(), also wäre es denkbar, auf IPC von einem bestimmten Prozess zu warten"
+2016-04-10 18:16:34,XanClic,Und nicht einfach nur receive from anyone
+2016-04-10 18:16:59,XanClic,"Und wenn der Prozess stirbt, kehrt die Funktion halt mit einem Fehler zurück"
+2016-04-10 18:18:37,Paddy,"waitpid() ist die falsche Richtung, aber man könnte theoretisch auch Kindern mitteilen, dass der Elternprozess gestorben ist"
+2016-04-10 18:18:50,Paddy,"Wobei ich nicht weiß, ob man das will"
+2016-04-10 18:18:58,XanClic,"Ich meinte nur, dass prozessgebundenes Warten keine absurde IDee ist"
+2016-04-10 18:19:00,XanClic,*Idee
+2016-04-10 18:20:02,Paddy,"Ach so, nein, ist es nicht"
+2016-04-10 18:20:38,Paddy,"Aber wenn der Elternprozess stirbt, dann ist halt der Kindprozess auch zu nichts mehr nutze solang er nicht fertig mit Initialisieren ist und kann sich dann auch gleich beenden"
+2016-04-10 18:20:59,Paddy,"Wobei ich eh noch nicht verstanden habe, was der Vorteil von IPC nach dem Start gegenüber genug Informationen mitgeben beim Start ist"
+2016-04-10 18:21:49,XanClic,"Zu 1.: Wenn der Elternprozess direkt nach dem fork() gekillt wird, dann war dem Killer offenbar egal, ob das fork() überhaupt stattfindet oder nicht, ich sehe das Problem also nicht"
+2016-04-10 18:22:35,XanClic,"Zu 2.: Kommandozeilenparsing find ich in Ordnung, aber einige mögen meinen, dass das zu aufgebläht sein kann und man währenddessen an seinen FDs rumfummeln könnte"
+2016-04-10 18:22:36,Paddy,"Ja, schon, aber dann ist ja die Gesamtoperation trotzdem noch atomar wie wenn man kein gesondertes IPC gemacht hätte"
+2016-04-10 18:23:08,XanClic,Und außerdem ist Übergabe von Kommandozeilenoptionen für mich auch IPC
+2016-04-10 18:23:29,XanClic,"Das heißt, „fehlendes IPC“ könnte auch bedeuten, dass man andere leichtgewichtige Optionen beim exec() übergeben können sollte"
+2016-04-10 18:24:29,XanClic,"Und so kaputt kann das alles nicht sein, schließlich nehmen alle Prozess übergebene FDs in Form von stdin, stdout und stderr an"
+2016-04-10 18:24:34,XanClic,Und viele schreiben da auch rein
+2016-04-10 18:25:13,Paddy,"Bei 0, 1 und 2 brauche ich deswegen auch keine zusätzliche Information"
+2016-04-10 18:25:19,Paddy,"Das weiß ich eh, was das ist"
+2016-04-10 18:25:24,XanClic,Aha?
+2016-04-10 18:25:39,XanClic,Kommen wir doch noch mal auf SUID zurück ;-)
+2016-04-10 18:26:20,Paddy,Interessante Idee. Hast du schonmal geschaut? *g*
+2016-04-10 18:27:06,XanClic,"Wie gesagt, das ist eh kaputt :-P"
+2016-04-10 18:27:27,XanClic,"Aber prinzipiell meintest du, dass eben jeder Prozess dadurch Dinge mit Dateien anstellen könnte, die er selber geöffnet hat, von denen er das nicht wollte"
+2016-04-10 18:27:43,XanClic,Und da kann man halt auch stdout schließen und das gleiche passiert
+2016-04-10 18:28:02,Paddy,"Jo, das stimmt"
+2016-04-10 18:28:06,XanClic,"…OK, vielleicht doch kaputt ;-)"
+2016-04-10 18:28:24,Paddy,"Und ich vermute, dass man damit in der Praxis das eine oder andere Programm tatsächlich reinlegen kann"
+2016-04-10 18:28:35,XanClic,"Ja, ich hätte da ein paar hier…"
+2016-04-10 18:28:58,XanClic,"Und ich glaube, jeder Bugreport würde mit CLOSED SELBER_SCHULD geschlossen"
+2016-04-10 18:29:37,XanClic,"Ein Sicherheitsproblem wäre es halt nur, wenn der Kindprozess mehr Privilegien als der Elternprozess hat, und das finde ich ist kaputt ;-)"
+2016-04-10 18:29:46,Paddy,Das Schlüsselwort CVE reinzubekommen sei dem geneigten Leser zur Übung überlassen ;-)
+2016-04-10 18:30:14,Paddy,"Dann findest du es halt kaputt, aber es kommt in der Praxis vor"
+2016-04-10 18:30:59,XanClic,"Ja, fork kommt auch in der Praxis vor, und das findest du kaputt ;_0"
+2016-04-10 18:31:01,XanClic,*;-)
+2016-04-10 18:31:19,Paddy,"Hm, nicht zwingend kaputt, aber unangenehm zu emulieren ;-)"
+2016-04-10 18:31:32,XanClic,"Das wäre eben die Implementierungssicht, und wie gesagt, das ist eine andere"
+2016-04-10 18:31:42,XanClic,"Ach, Mensch, jetzt sind wir wieder an den „Alles kaputt“-Punkt"
+2016-04-10 18:31:47,XanClic,Das kann so nicht weitergehen
+2016-04-10 18:31:51,Paddy,Hat aber auch gedauert *g*
+2016-04-10 18:32:07,Paddy,Sogar deine Grammatik ist jetzt schon kaputt
+2016-04-10 18:32:59,XanClic,Immer
+2016-04-10 18:33:35,XanClic,"Ich hab vorhin zu viel -m bei „fehlendem ordentlichem IPC“ benutzt, da kann es jetzt mal ein -n sein"
+2016-04-10 18:33:43,XanClic,Vielleicht hätte es aber auch ein -r zur Ausgleich sein soller

@@ -1,0 +1,209 @@
+date/time,nick,message
+2013-04-12 09:59:33,mroman,What does an x86 compatible CPU push on INT?
+2013-04-12 10:00:16,mroman,Oh. Ist ja deutsch hier :)
+2013-04-12 10:04:19,kevin,Moin ;-)
+2013-04-12 10:04:34,mroman,Moin.
+2013-04-12 10:05:01,mroman,Ist es definiert was die CPU pusht bei einem Interrupt?
+2013-04-12 10:05:02,kevin,Die Antwort ist natürlich: Kommt drauf an
+2013-04-12 10:05:21,kevin,"Klar, definiert ist es schon, wäre sonst schwer zu programmieren"
+2013-04-12 10:05:55,kevin,"Zumindest cs, eip und eflags werden immer gepusht"
+2013-04-12 10:06:12,kevin,"Wenn du einen Ringwechsel hast (also in der Regel, wenn du aus dem Userspace kommst), zusätzlich ss und esp"
+2013-04-12 10:06:26,kevin,Und bei manchen Exceptions außerdem noch ein Error Code
+2013-04-12 10:06:52,mroman,Ok.
+2013-04-12 10:07:01,mroman,Aber keine anderen Register.
+2013-04-12 10:07:10,mroman,Wie ax etc.
+2013-04-12 10:07:21,kevin,"Nein, den Rest muss dein Interrupthandler sichern, wenn er die Register selber benutzen will"
+2013-04-12 10:07:28,mroman,Schon klar.
+2013-04-12 10:07:43,mroman,Ok. Danke.
+2013-04-12 10:07:56,kevin,"Die CPU macht ziemlich genau das Minimum, das absolut nötig ist, damit der Interrupthandler überhaupt loslaufen kann"
+2013-04-12 10:08:11,mroman,"Wenn die CPU einen Interrupt mehrfach ""erhaelt"" bevor sie ihn abgearbeitet  hat"
+2013-04-12 10:08:14,mroman,wird das gestappelt?
+2013-04-12 10:08:27,kevin,Ja
+2013-04-12 10:09:04,kevin,"Hardwareinterrupts können natürlich deaktiviert werden, deswegen wirst du das damit nicht sehen, wenn du es richtig machst"
+2013-04-12 10:09:11,kevin,Aber mit Exceptions oder so ist das relevant
+2013-04-12 10:09:43,mroman,"Wenn die CPU einen Interrupthandler aufruft, und darin ein Interrupt kommt"
+2013-04-12 10:09:45,mroman,ist sie blockiert?
+2013-04-12 10:09:53,mroman,bis der Interrupthandler returned?
+2013-04-12 10:10:10,mroman,bzw. endet
+2013-04-12 10:10:16,mroman,um weniger Denglismen zu benutzen.
+2013-04-12 10:11:12,mroman,"ansonsten koennte es ja sein, dass ein Handler gar nie mehr endet"
+2013-04-12 10:17:06,kevin,"Was meinst du mit ""blockiert""?"
+2013-04-12 10:18:53,mroman,sie verarbeitet keine Interrupts mehr bis zum IRET
+2013-04-12 10:19:31,mroman,sprich sie unterbricht keinen Interrupthandler mit einem anderen Interrupthandler.
+2013-04-12 10:20:09,kevin,"Wie gesagt, deaktivieren kannst du nur Hardwareinterrupts"
+2013-04-12 10:20:32,mroman,z.b wenn zwei INT 0 kommen
+2013-04-12 10:20:32,mroman,dann ruft sie ja den Handler zu INT 0 auf
+2013-04-12 10:20:35,mroman,dann bin ich im Handler
+2013-04-12 10:20:41,mroman,und jetzt kommt der zweite INT 0
+2013-04-12 10:20:58,kevin,"Interrupt 0 ist eine Exception, nämlich Division durch null"
+2013-04-12 10:21:05,kevin,Meinst du IRQ 0?
+2013-04-12 10:21:13,mroman,das war nur ein Beispielzahl.
+2013-04-12 10:21:17,mroman,Es ist ein externen Interrupt.
+2013-04-12 10:21:26,mroman,durch Hardware.
+2013-04-12 10:21:39,kevin,"Ok. Also wenn der Handler für einen Interrupt ein Interrupt Gate ist, werden Hardwareinterrupts deaktiviert."
+2013-04-12 10:21:52,kevin,Bei einem Trap Gate passiert das nicht
+2013-04-12 10:21:59,kevin,Kommt also auf deinen IDT-Eintrag an
+2013-04-12 10:22:46,mroman,Also konfigurierbar. Sehr gut.
+2013-04-12 10:22:57,mroman,Ok. Dann waer das alles :)
+2013-04-12 10:51:08,mroman,Ich muss im Handler natuerlich den Stackpointer auf den Kernelstack umbiegen
+2013-04-12 10:51:22,mroman,hm.
+2013-04-12 10:58:50,kevin,Hm?
+2013-04-12 10:59:20,kevin,"Entweder du kommst aus dem Kernelmode, dann ist dein Stackpointer auf dem Kernelstack"
+2013-04-12 10:59:38,kevin,"Oder du kommst aus dem Userspace, dann kommt der neue Stackpointer aus dem TSS"
+2013-04-12 11:12:26,alexander,Morgen
+2013-04-12 13:26:02,XanClic,"Ach, kevin, bei µxoµcota hat vm86 unter KVM so funktioniert"
+2013-04-12 13:26:20,kevin,Danke für's testen :-)
+2013-04-12 13:28:27,kevin,Falls du je den Patch für VM86 mit Task Gates brauchst: http://www.mail-archive.com/kvm@vger.kernel.org/msg88743.html
+2013-04-12 13:28:48,XanClic,"Brauchen schon, aber applien wird schwer *g*"
+2013-04-12 13:30:07,kevin,"Och, das applien nicht, höchstens das Bauen ;-)"
+2013-04-12 13:30:58,XanClic,"Na ja, erstmal bräuchte ich meinen Kernelsource"
+2013-04-12 13:31:19,kevin,"Hm, hast du nicht?"
+2013-04-12 13:31:32,kevin,"Hast du wenigstens die Header, dass du Module gegen deinen Kernel bauen kannst?"
+2013-04-12 13:31:33,XanClic,Zumindest sind da außer Kconfigs keine Dateien drin *g*
+2013-04-12 13:31:36,XanClic,Header hab ich
+2013-04-12 13:32:15,kevin,"Dann nimm einen Upstream-Kernel und nimm kvm-kmod, um daraus ein Modul für deinen Kernel zu bauen"
+2013-04-12 13:32:37,kevin,Also die Sourcen vom Upstream-Kernel (plus Patch)
+2013-04-12 13:50:18,XanClic,"Hm, auf welchen Kernel geht der Patch denn?"
+2013-04-12 13:51:52,XanClic,Bei mir liegt die Funktion nämlich auf Zeile 1389
+2013-04-12 13:52:53,XanClic,"Ah, auf HEAD"
+2013-04-12 14:44:30,XanClic,"Hm, toll, der HEAD, den ich gezogen hab, hatte den Fix jetzt auch schon drin *g*"
+2013-04-12 14:50:43,kevin,Was für ein HEAD ist das denn?
+2013-04-12 14:50:50,XanClic,linux-next
+2013-04-12 14:51:30,kevin,"Ah, ok"
+2013-04-12 14:54:05,XanClic,"Hm, ich glaub, ich lass das lieber"
+2013-04-12 14:54:13,XanClic,Das wird mir zu viel Gefrickel
+2013-04-12 14:54:35,kevin,"Hm, was ist denn das Problem?"
+2013-04-12 14:54:56,kevin,Kompiliert es nicht durch?
+2013-04-12 14:54:57,XanClic,"Dass ich nicht weiß, wie ich gegen meine installierten Kernelheader baue"
+2013-04-12 14:55:09,kevin,kvm-kmod hast du?
+2013-04-12 14:55:13,XanClic,Nein? :3
+2013-04-12 14:55:25,kevin,git clone git://git.kiszka.org/kvm-kmod.git
+2013-04-12 14:55:44,XanClic,"Ich bin es doch nicht gewöhnt, dass es Sachen nicht im AUR gibt"
+2013-04-12 14:56:03,kevin,rmdir linux; ln -s /path/to/linux-next linux
+2013-04-12 14:56:09,kevin,./configure; make sync; make
+2013-04-12 14:56:46,XanClic,NameError: global name 'file' is not defined
+2013-04-12 14:57:45,kevin,Beim make sync?
+2013-04-12 14:57:51,kevin,"Hm, jetzt müsste man Python können"
+2013-04-12 14:58:00,XanClic,"Ja, aber #!/usr/bin/python2 hats behoben"
+2013-04-12 14:58:02,kevin,Ah
+2013-04-12 14:58:18,XanClic,include/uapi/linux/types.h:4:23: schwerwiegender Fehler: asm/types.h: Datei oder Verzeichnis nicht gefunden
+2013-04-12 14:58:20,XanClic, #include <asm/types.h>
+2013-04-12 14:58:21,XanClic,das klingt ja lustig
+2013-04-12 14:59:37,kevin,Vielleicht ist linux-next doch zu neu *g*
+2013-04-12 14:59:48,XanClic,Das ist jetzt ein Pfadproblem mit meinen eigenen Kernelheadern
+2013-04-12 15:00:00,XanClic,Weil der sich einen falschen Pfad zusammengebaut hat
+2013-04-12 15:00:06,kevin,Ach so?
+2013-04-12 15:00:15,XanClic,-I/lib/modules/3.8.6-3-ck/source/include
+2013-04-12 15:00:18,XanClic,Und das existiert schonmal nicht
+2013-04-12 15:00:18,kevin,"Na gut, wie man sowas zusammenfrickelt weißt du ja selber ;-)"
+2013-04-12 15:00:23,XanClic,Weiß ich nicht
+2013-04-12 15:00:30,XanClic,configure scheint dafür nichts zu haben
+2013-04-12 15:00:38,kevin,vi Makefile?
+2013-04-12 15:00:41,XanClic,Bah
+2013-04-12 15:00:59,kevin,Oder config.mak eher
+2013-04-12 15:01:07,XanClic,Hab ich schon Gefrickel erwähnt? :3
+2013-04-12 15:01:45,kevin,:-)
+2013-04-12 15:02:19,kevin,"Wer hat auch schon einen Kernel, bei dem der source-Symlink nicht gesetzt ist?"
+2013-04-12 15:02:34,XanClic,bei mir liegt das ja unter /usr/src
+2013-04-12 15:02:45,XanClic,Da wars auch schon bei SuSE
+2013-04-12 15:02:49,kevin,"Ja, aber in /lib/modules/... liegt normal ein Symlink auf /usr/src/..."
+2013-04-12 15:02:57,XanClic,Gerüchte
+2013-04-12 15:03:24,kevin,lrwxrwxrwx.  1 root root      5  3. Apr 19:06 source -> build
+2013-04-12 15:03:25,kevin,lrwxrwxrwx.  1 root root     38  3. Apr 19:06 build -> /usr/src/kernels/3.8.5-201.fc18.x86_64
+2013-04-12 15:03:27,kevin,Bei mir
+2013-04-12 15:03:38,XanClic,Du hast ja auch eine ganz komische Distribution
+2013-04-12 15:03:46,XanClic,failed to initialize KVM: Device or resource busy
+2013-04-12 15:05:13,XanClic,"Hm, gut, VBox zumachen hat geholfen *g*"
+2013-04-12 15:05:13,kevin,"Sprich, gebaut und geladen ist es? Dann wohl dmesg?"
+2013-04-12 15:05:16,kevin,"Ah, auch gut *g*"
+2013-04-12 15:05:33,XanClic,Das sieht gut aus
+2013-04-12 15:05:46,XanClic,Gleich viel besser
+2013-04-12 15:05:48,XanClic,"Also, die FPS"
+2013-04-12 15:05:57,kevin,Wie viel?
+2013-04-12 15:06:02,XanClic,Kann ich schlecht zählen
+2013-04-12 15:06:12,XanClic,"Mal gucken, ob das auf seriell rauskommt"
+2013-04-12 15:06:19,kevin,"Und siehst du, zehn Minuten Frickeln hält sich doch in Grenzen ;-)"
+2013-04-12 15:06:39,XanClic,Ich hätt auch auf den nächsten Kernel warten können ;-)
+2013-04-12 15:06:53,kevin,Das hätte länger als zehn Minuten gedauert *g*
+2013-04-12 15:06:56,XanClic,"Hm, ne, nichts auf seriell"
+2013-04-12 15:07:18,kevin,Vielleicht stdout = NULL einbauen irgendwo?
+2013-04-12 15:07:25,XanClic,Na ja
+2013-04-12 15:07:30,XanClic,Der gibt schon was aus
+2013-04-12 15:07:33,XanClic,Also mit -info halt die GL-Infos
+2013-04-12 15:07:35,XanClic,Aber keine FPS
+2013-04-12 15:07:43,kevin,"Hm, dann halt nicht"
+2013-04-12 15:07:47,XanClic,"Liegt vermutlich daran, dass ich das rausgepatcht hab *g*"
+2013-04-12 15:08:06,kevin,*g*
+2013-04-12 15:08:14,XanClic,http://git.tyndur.org/?p=lbuilds.git;a=blob;f=lbuilds/soft-and-slow/master/patches/gears.patch#l62 also da
+2013-04-12 15:08:44,XanClic,Kann týndur gettimeofday?
+2013-04-12 15:08:49,kevin,Vermutlich nicht
+2013-04-12 15:08:57,XanClic,Würde das zumindest erklären
+2013-04-12 15:09:22,kevin,"src/modules/lib/posix/time.c:int gettimeofday(struct timeval *tv, void* tz)"
+2013-04-12 15:09:38,XanClic,Hm *g*
+2013-04-12 15:09:39,kevin,"Okay, gibt immer 0 zurück..."
+2013-04-12 15:10:21,kevin,"Aber get_tick_count() oder sowas dürfte es doch auch tun, mit der richtigen Skalierung"
+2013-04-12 15:10:36,XanClic,"Sollte, aber ich war halt zu faul *g*"
+2013-04-12 15:11:10,kevin,"Tja, dann gibt's halt keine FPS ;-)"
+2013-04-12 15:11:19,XanClic,Bah
+2013-04-12 15:11:36,kevin,Musst du jetzt auf osdev.org nochmal nachlegen? ;-)
+2013-04-12 15:11:49,XanClic,KVM ist ja nicht meine Sache ;-)
+2013-04-12 15:12:25,XanClic,"Gut, man könnte argumentieren „Aber komisches vm86, das nicht auf KVM tut, wenn man nicht besonders aufpasst, schon“, aber das tu ich nicht *g*"
+2013-04-12 15:12:28,kevin,Aber objektiv geschätzte tollere FPS
+2013-04-12 15:13:51,kevin,Und das VM86 ist einfach nur ein toller Testcase für Emulatoren ;-)
+2013-04-12 15:14:10,kevin,"Wie geht eigentlich VBox kaputt? Da hast du doch letztens auch gemeint, dass das nicht tut?"
+2013-04-12 15:14:24,XanClic,Das war irgendein Pagingfehler
+2013-04-12 15:15:02,kevin,"Ui, das klingt interessant"
+2013-04-12 15:15:17,XanClic,http://xanclic.is-a-geek.org/users/vbox.png
+2013-04-12 15:15:41,kevin,Mitten im Videospeicher? :-/
+2013-04-12 15:15:53,kevin,Und auf dem Stack
+2013-04-12 15:15:56,kevin,Lustig
+2013-04-12 15:16:14,kevin,Wie kriegt man sowas hin?
+2013-04-12 15:17:11,XanClic,Dafür hatten wir doch eine Theorie
+2013-04-12 15:17:38,XanClic,http://pastebin.com/Z1sy10kE
+2013-04-12 15:18:50,kevin,"Naja, die hilft aber auch nicht wirklich weiter ;-)"
+2013-04-12 15:18:54,XanClic,Was gibt get_tick_count() denn zurück? ms? 10 ms?
+2013-04-12 15:19:28,kevin,"Ich glaube, das ist eine kleinere Einheit. Mal msleep anschauen..."
+2013-04-12 15:19:47,kevin,uint64_t timeout = get_tick_count() + msec * 1000;
+2013-04-12 15:20:03,XanClic,"Ui, µs, das mag ich ja *g*"
+2013-04-12 15:20:04,kevin,Also Mikrosekunden wohl?
+2013-04-12 15:20:11,kevin,Jo
+2013-04-12 15:21:10,kevin,"µs zu benutzen ist besonders toll, wenn man die Variable mit 50 Hz aktualisiert ;-)"
+2013-04-12 15:35:37,XanClic,Ziemlich genau 60 FPS
+2013-04-12 15:35:42,XanClic,Also
+2013-04-12 15:35:46,XanClic,_ziemlich_ egnau
+2013-04-12 15:35:47,XanClic,*genau
+2013-04-12 15:35:54,XanClic,"Und irgendwie glaube ich nicht, dass das an vsync liegt *g*"
+2013-04-12 15:36:15,XanClic,http://pastebin.com/3T93SBKW Auch wenn das ganz schön genau ist *g*
+2013-04-12 15:48:05,kevin,Das musst du ja keinem sagen *g*
+2013-04-12 15:48:26,kevin,"Darf ruhig jeder denken, dass das in Wirklichkeit noch viel schneller sein könnte ;-)"
+2013-04-12 15:48:37,XanClic,Bestimmt *g*
+2013-04-12 15:48:41,SHyx0rmZ,Moin
+2013-04-12 15:48:46,kevin,Moin SHyx0rmZ
+2013-04-12 15:48:51,XanClic,Moin
+2013-04-12 15:49:03,kevin,Und wieviel FPS bringt TCG?
+2013-04-12 15:49:37,XanClic,"2,5"
+2013-04-12 15:50:22,kevin,Hm. Kleiner Unterschied. *g*
+2013-04-12 15:50:49,kevin,Nach bochs frage ich mal lieber nicht ;-)
+2013-04-12 15:51:16,SHyx0rmZ,bestimmt so 200 SPF
+2013-04-12 15:51:16,XanClic,týndur läuft in bochs?
+2013-04-12 15:51:36,kevin,Ab und zu
+2013-04-12 15:52:11,kevin,In VBox hat es auch schonmal funktioniert
+2013-04-12 15:53:04,XanClic,"Also, VESA tut schonmal nicht ;-)"
+2013-04-12 15:54:03,kevin,"Was im Umkehrschluss heißt, dass man zumindest eine Shell kriegt? Das ist ja fast schon überdurchschnittlich für bochs. ;-)"
+2013-04-12 15:54:17,XanClic,"Ich bekomm bei µxoµcota ja auch eine Shell, aber keine Eingaben *g*"
+2013-04-12 15:54:41,kevin,Dein Tastaturtreiber ist noch kaputter als unserer?
+2013-04-12 15:54:54,XanClic,Eigentlich tut er ganz gut
+2013-04-12 15:54:56,XanClic,Außer in bochs
+2013-04-12 15:55:33,kevin,Auf livinskulls Antiquität tut der dann sicher auch nicht
+2013-04-12 22:37:40,DerHartmut,9Nabend zusammen
+2013-04-12 22:38:18,DerHartmut,"Mensch kevin, haste mal auf den Tacho geschaut? Feierabend ist angesagt :-)"
+2013-04-12 22:38:36,kevin,Moin DerHartmut
+2013-04-12 22:38:54,kevin,"Jo, der Bug, den ich vor zwei, drei Stunden nur noch kurz fixen wollte, ist doch irgendwie hartnäckig gewesen... ;-)"
+2013-04-12 22:39:18,kevin,Letztendlich hätte auf meine Sig schauen vielleicht geholfen *g*
+2013-04-12 22:40:08,DerHartmut,*lol*
+2013-04-12 22:42:45,DesL,HARDY
+2013-04-12 22:42:51,DesL,"ach, ETAB"
+2013-04-12 22:42:53,DesL,:D
+2013-04-12 22:42:55,XanClic,DESU
+2013-04-12 22:44:05,DerHartmut,*g*
+2013-04-12 22:44:21,DerHartmut,"DesL, ich grüße dich energischst und in bekannter Manier"

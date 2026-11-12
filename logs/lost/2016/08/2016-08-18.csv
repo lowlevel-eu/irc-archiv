@@ -1,0 +1,268 @@
+date/time,nick,message
+2016-08-18 00:37:32,Quantenmagier,kann tyndur eigentlich pthreads und ansi-escapecodes?
+2016-08-18 00:51:47,Quantenmagier,hm mein nanosleep sleeped irgendwie nicht XD
+2016-08-18 00:55:51,Quantenmagier,"aso in meiner libc war ne falsche syscallnummer, der hat 0x02000115 für nanosleep benutzt statt 0x01000115.. ^^"
+2016-08-18 01:11:30,Quantenmagier,"yay hab jetzt endlich die richtige syscall nummer (0x0100215) für nanosleep, aber das verursacht irgendwie nen General Protection Fault, wär hätte gedacht daß ne wartefunktion so kompliziert sein kann. ^^"
+2016-08-18 01:13:40,Quantenmagier,ok gpf ist weg ^^
+2016-08-18 01:43:44,Quantenmagier,"ok abgesehn von pthread_create scheint mein neues spiel jetzt zu gehen, aber es wirkt extrem flackerig und undspielbar, weil das löschen des bildschirms zu lange dauert."
+2016-08-18 01:45:45,Quantenmagier,"entweder muß ich die routine zum löscen des bildschirms optimieren oder ich muß die neue version meines spiels verwenden die den bildschirm nicht mehr löscht, aber die nutzt noch viele andere neue funktionen die ich dann vermutlich erst implementieren muß.. :-/"
+2016-08-18 01:46:25,Quantenmagier,hm vllt versuch ich erstmal nur das spielfeld zu verkleinern dann müßte das löschen schneller gehn..
+2016-08-18 02:27:35,Quantenmagier,"hm ok das spielfeld verkleinern hat nicht wirklich geholfen, obwohl ich eigentlich das gefühl habe der bildschirm wird schnell genug gelöscht, vllt kommt qemu bei der refreshrate auch einfach nicht mit.. *grübel*"
+2016-08-18 09:10:51,darklink,VESA ist halt langsam
+2016-08-18 09:11:54,darklink,Ich würde bei spielen double buffering verwenden
+2016-08-18 09:12:25,darklink,und dass dann 60mal pro sekunde in den hauptbuffer kopieren und den buffer ändern
+2016-08-18 10:15:33,darklink,Bzw wenn das zu langsam ist würde ich einen triple buffer verwenden
+2016-08-18 10:15:42,darklink,und irgend eine form von DMA
+2016-08-18 10:38:15,Quantenmagier,"double buffering wollte ich noch für video wiedergabe und so implementieren, aber das hier is nen terminal-spiel, da wär double buffering overkill. Aber wieso ist tripple buffering schneller als double buffering?"
+2016-08-18 10:46:17,Quantenmagier,"huch sehe grade ich hab das scheinbar falsch gelernt, scheinbar benutzt mein os eh immer nen double buffer, aber es benutzt den buffer nicht im buffering modus, weil ich ja nen LCD hab.. xD das was ich unter double buffering verstanden hatte war scheinbar nach der skizze in wikipedia tripe buffering :D"
+2016-08-18 10:47:09,Quantenmagier,hmm
+2016-08-18 10:48:06,Quantenmagier,"ich glaub das missverständnis ist duch die verschiedenen screen ebenen in qbasic entstanden, da sind die beiden buffer ja quasi direkt der videospeicher und somit ist da double buffering gleich tripe buffering :D"
+2016-08-18 10:48:22,Quantenmagier,*triple
+2016-08-18 10:51:33,Quantenmagier,ich war ja damals qbasic programmierer und da hat man dann das double/triple-buffering über die video page gemacht..
+2016-08-18 11:03:32,Quantenmagier,"SCREEN 9,,0,1 /drawhere/ SCREEN 9,,1,0 /drawhere/ SCREEN 9,,0,1"
+2016-08-18 11:03:49,Quantenmagier,usw :D
+2016-08-18 11:05:49,darklink,Quantenmagier: es ist nicht schneller
+2016-08-18 11:06:52,darklink,allerdings wird nicht während des blittens des buffers auf den bildschirm alles überschrieben
+2016-08-18 11:07:18,darklink,falls das blitten mehr als 1/60s braucht
+2016-08-18 11:08:13,Quantenmagier,aso
+2016-08-18 11:12:18,Quantenmagier,naja tripple buffering hat halt den vorteil wenn mal ne einzelne seite länger als nen vertical retrace braucht kann man das ausgleichen. denke für video vidergabe ist das nützlich wegen der aufwändigeren I-frames und B-frames. ^^
+2016-08-18 11:12:31,Quantenmagier,*wiedergabe
+2016-08-18 11:18:22,Quantenmagier,"IPPBIPPBI die schnellen P Frames gleichen dann die I Frames und besonders die BI Frames auch, schade daß die die P frames nicht F-Frames genannt haben von F= follow, dann hieße es FBI FBI FBI.. xD"
+2016-08-18 11:19:37,Quantenmagier,s/auch/aus/
+2016-08-18 11:20:42,Quantenmagier,"hm ich hab grad mal nen QBASIC Emulator aus archive.org ausgeführt aber ein paar tasten wie "" und ? gehen leider nicht unter dem dosbox emulator.. :-/ https://archive.org/details/msdos_qbasic_megapack"
+2016-08-18 11:24:26,Quantenmagier,"aber ich eh grad richtiges double buffering is unter qbasic auch möglich, man muß dann im gegensatz zum triplebuffering nur die page kopieren, statt wechseln, also PCOPY 0,1 statt SCREEN 9,,1,0"
+2016-08-18 11:24:41,Quantenmagier,s/eh/seh/
+2016-08-18 11:37:21,Quantenmagier,"vermutlich was mit den ansi-escapecodes, aber eigentlich sehen die in ordnung aus, muß die nochmal zeile für zeile durchgehn.."
+2016-08-18 11:38:08,Quantenmagier,"also wegen dem terminal spiel was nicht richtig geht denke das hängt doch nciht mit der geschwindigkeit zsm, sondern mit den escapecodes.."
+2016-08-18 11:38:26,Quantenmagier,oder mit der terminos.h
+2016-08-18 11:47:36,Quantenmagier,"ok an den escapecodes scheints nicht zu liegen wen ich die rausnehme spinnt die ausgabe immernoch, bleiben noch die terminos.h und die mutexe als fehlerquallen, und sonst weiß ich auch nichts mehr. :D"
+2016-08-18 12:16:37,Quantenmagier,"ok das ganze scheint sowohl ein fehler in den mutexen als auch ein fehler in dem nanosleep zu sein, wenn ich die mutexe umgehe und das nanosleep durch ne forschleife ersetzte läuft es ^^"
+2016-08-18 12:20:26,Quantenmagier,ok also fehler in mutexen und nanosleep beheben und pthread_create fertigstellen und mit etwas glück läuft das spiel dann :3
+2016-08-18 12:33:58,Quantenmagier,"hmm ok den fehler in den mutexen hab ich behoben, seltsam hatte den erst gestern verursacht, weil ich dachte es würde nen fehler beheben, scheinbar war die manpage die ich zur rate gezogen hatte fehlerhaft.."
+2016-08-18 12:36:09,Quantenmagier,"aso hatte pthread_mutex trylock mit mutex_trylock verwechselt, die rückgabe ist nämlich dummerweise genau gegensätzlich, mutex_trylock gibt ne 1 zurück wenn es den mutex bekommen hat und ne 0 wenn nicht und pthread_mutex_trylock gibt ne 0 zurück, wenn es den mutex bekommen hat.. xD"
+2016-08-18 12:37:06,Quantenmagier,"voll dumm irgendwie, warum geben die im kernel nicht auch 0 zurück, wenn sie dne mutex bekommen haben, linux ist seltsam"
+2016-08-18 12:37:17,darklink,^^
+2016-08-18 12:37:47,Quantenmagier,"""this function follows the spin_trylock convention, so it is negated from the down_trylock return values!"""
+2016-08-18 12:39:35,darklink,Bäh
+2016-08-18 12:39:52,darklink,am handy kann man ja überhaupt nicht programmieren
+2016-08-18 12:41:15,Quantenmagier,lol joa ne usb tastertur wär zumindest praktisch ^^
+2016-08-18 12:43:08,darklink,Android mag aber kein alt gr
+2016-08-18 12:43:27,darklink,bzw modifier außer shift
+2016-08-18 12:47:45,Quantenmagier,dann nimm ne englishe tastertur ;)
+2016-08-18 12:48:00,Quantenmagier,is zum progen eh besser
+2016-08-18 12:48:12,darklink,Naja
+2016-08-18 12:48:49,Quantenmagier,"ich mag ja die japanische tastertur die is so ähnlich wie die englische baer mit nen par mehr tasten für sonderzeichen, leider bekommt man die so schwer, aber nen japaner hat mir mal nen netbook geschenkt, daher kenn ich die. ^^"
+2016-08-18 12:49:10,darklink,"Und die hat "" bei shift+2"
+2016-08-18 12:49:40,Quantenmagier,jop :)
+2016-08-18 12:49:50,Quantenmagier,voll cool ^^
+2016-08-18 12:50:24,Quantenmagier,is quasi ne mischung aus der deutschen und der englischen tastuertur mit nen paar sondertasten ^^
+2016-08-18 12:50:46,Quantenmagier,woher kennst du die denn?
+2016-08-18 12:51:58,darklink,"Was gut wäre, wenn ich neo2 schnell genug verwenden könnte"
+2016-08-18 12:53:31,darklink,Quantenmagier: wollte japanisch mit meinem bluetooth keyboard tippen
+2016-08-18 12:54:01,darklink,Ging nicht wirklich
+2016-08-18 12:54:25,Quantenmagier,ah ok welche tastertur hat das keypad denn?
+2016-08-18 12:55:57,darklink,Eigentlich mac qwertz
+2016-08-18 12:56:12,darklink,Passte aber
+2016-08-18 12:59:30,Quantenmagier,ah ok
+2016-08-18 13:00:03,Quantenmagier,"ohaio gozaimasu, ogenki desuka? :D"
+2016-08-18 13:01:23,darklink,Ich bin nicht dein senpai. Kannst auch das gozaimasu weglassen :D
+2016-08-18 13:03:11,Quantenmagier,"ich dachte ich bin lieber höflich, weiß ja nicht ob du zufällig kaiser von Nordkorea bist oder so :D"
+2016-08-18 13:24:49,darklink,"Quantenmagier: dann hätte ich dich exekutieren lassen, weil ich dann was gegen japan(isch) hätte "
+2016-08-18 13:25:36,Jonathan,Morgähn
+2016-08-18 13:26:35,MasterQ32,morgen
+2016-08-18 13:27:22,darklink,Morgen
+2016-08-18 15:51:16,kevin,Reicht ja wenn ich was gegen Japanisch habe und Admin bin
+2016-08-18 15:51:46,kevin,"Er war nur klug genug, selber zu gehen bevor ich das sehe und ihn kicken könnte"
+2016-08-18 16:00:41,kevin,Oh! Man kann den qemu-Monitor in einem separaten Fenster laufen lassen? Das könnte manchmal praktisch sein. :-)
+2016-08-18 19:55:33,Quantenmagier,"echt was bringt das den parallel laufen zu lassen, ich wechsel nur ab und an mit strg alt 2 oder wie das war rüber wenn ich befehle eintippen will"
+2016-08-18 20:01:31,kevin,Manchmal will man schnell reagieren z.B. um die VM anzuhalten
+2016-08-18 20:05:19,Quantenmagier,aso
+2016-08-18 20:05:48,Quantenmagier,"wenn ich das gewollt hätte ich es bei mir meist schon zu spät um die anzuhalten, dafür setz ich lieber breakpoints ^^"
+2016-08-18 20:06:55,kevin,Breakpoints könnte ja jeder ;-)
+2016-08-18 20:08:26,XanClic,das heißt übrigens ohayou und nicht ohaio
+2016-08-18 20:08:32,XanClic,sonst könnte man ja auch gleich ohio sagen
+2016-08-18 20:10:10,Quantenmagier,ah ok
+2016-08-18 20:10:23,Quantenmagier,ich bin nochmal ne runde xonotic zocken
+2016-08-18 20:11:49,kevin,"XanClic: Willst du behaupten, dass jegliches I/O AIO ist?"
+2016-08-18 20:18:04,XanClic,"Wenn das heißt, dass ich dann nicht gekickt werde, ja"
+2016-08-18 20:18:59,XanClic,Übrigens läuft bei SDL2 der Monitor immer in einem Extrafenster
+2016-08-18 20:19:13,XanClic,"…auch wenn der Monitor mit SDL2 bei mir gerade nicht so wirklich funktioniert, weil er Return nicht so sehr mag."
+2016-08-18 20:22:50,kevin,"Jetzt bräuchtest du einen Monitor für den Monitor, wo du ein sendkey machen könntest"
+2016-08-18 20:23:08,XanClic,das ist die Idee
+2016-08-18 20:23:31,XanClic,Oder ich nehm einfach ein ordentliches Character Device für den Monitor
+2016-08-18 20:23:33,XanClic,Also IRC
+2016-08-18 20:23:33,kevin,"Oder nimm einfach das IRC-Chardev, das geht sicher"
+2016-08-18 20:23:44,XanClic,Einstimmig beschlossen
+2016-08-18 20:23:50,kevin,Zweistimmig sogar
+2016-08-18 20:24:20,XanClic,Zweistimmig einstimmig?
+2016-08-18 20:24:37,kevin,Darauf könnte man sich einigen (oder zweiigen?)
+2016-08-18 20:24:52,XanClic,Vielleicht sogar zweieiigen
+2016-08-18 20:25:25,kevin,"Nur wenn du ""Meinten Sie"" dazusagst"
+2016-08-18 20:25:57,XanClic,„Meintest Du“
+2016-08-18 20:26:03,XanClic,Ich hab Google auf „Deutsch (Ikea)“
+2016-08-18 20:26:24,XanClic,"Hm, oder schreiben die das mittlerweile auch klein…?"
+2016-08-18 20:26:52,XanClic,Tatsächlich
+2016-08-18 20:27:12,kevin,"Ich hab Google auf Standard, was irgendwie immer vom Computer abhängt"
+2016-08-18 20:27:37,XanClic,Das war auch nur ein Witz
+2016-08-18 20:27:41,XanClic,Offenbar kein besonders guter
+2016-08-18 20:28:35,kevin,"Ich hab keinen Ikea-Computer, von daher war er schwer als solcher erkennbar"
+2016-08-18 20:29:26,XanClic,Eigentlich braucht man ja auch nur einen Ikea-Katalog
+2016-08-18 20:29:38,kevin,Und da läuft Google drauf?
+2016-08-18 20:29:51,kevin,Muss ich mir mal einen zulegen
+2016-08-18 20:30:51,XanClic,"Der Witz sollte einfach sein, dass wenn ich zwei Deutschvarianten anbieten würde, eine, die siezt, und eine, die duzt, dann würde ich letztere definitiv „Deutsch (Ikea)“ nennen"
+2016-08-18 20:31:04,XanClic,"Oder „Deutsch (schwedisches Möbelhaus)“, um Markenprobleme zu umgehen"
+2016-08-18 20:36:42,kevin,Dabei ist der Schwede im Moment gar nicht hier
+2016-08-18 21:00:50,Quantenmagier,"hm verflixt, pthread_create soll ja einen thread callen und danach pthread_exit machen.."
+2016-08-18 21:02:17,Quantenmagier,aber wnen ich den thread in assembler calle kann ich nicht hinterher die c routine pthread exit ausführen und wenn ich ihn in c calle dann muß ich den stack des aufrufenden threads kopieren um nach c zurückzuspringen und man will ja grad nix kopieren.. :-/
+2016-08-18 21:06:57,Quantenmagier,"es gibt zwar kein pthread_atexit, also könnte ich pthread_exit einfach in asm dublizieren, aber dafür gibt es pthread_cleanup_push und den destructor in pthread_key_create und wer weiß was es noch an anpassbaren exit-aufrufen beim beenden des threads geben sollte.. und die kann ich ja nicht in asm realisieren, wenn die in c definiert werden müssen"
+2016-08-18 21:07:54,kevin,Was tust du?
+2016-08-18 21:08:14,kevin,Und warum schließen sich deiner Meinung Assembler und C gegenseitig aus?
+2016-08-18 21:09:32,Quantenmagier,"ausschliessen nicht, aber der thread des neuen stacks ist ja leer deswegen kann ich nicht nach c zurückspringen"
+2016-08-18 21:09:46,Quantenmagier,*der stack des neuen threads
+2016-08-18 21:11:34,kevin,Warum packst du dann nicht einfach was auf den Stack drauf bevor du in den Thread reinspringst?
+2016-08-18 21:12:18,kevin,Bzw. warum springst du nicht in einen Einsprungpunkt in der libc statt direkt in die Threadfunktion?
+2016-08-18 21:12:37,Quantenmagier,"naja das könnte ich zwar aber der sinn von pthread_create ist doch eigentlich, daß man nicht inhalte des alten programms wie zB den stack kopieren will, wenn ich zu c zurückspringen will muß ich aber den stack kopieren"
+2016-08-18 21:13:03,Quantenmagier,hm einsprungpunkt?
+2016-08-18 21:13:54,kevin,"Was verstehst du überhaupt genau unter ""nach C zurückspringen""?"
+2016-08-18 21:15:37,Quantenmagier,naja ich hab nen inline asm und das macht nen syscall und in dem syscall erstell ich nen neuen thread samt stack und jetzt muß ich bei dem neuen thread ja irgendeinen instruction pointer übergeben wo die ausführung des neuen threads beginnen soll..
+2016-08-18 21:16:37,Quantenmagier,und der stack des neuen threads ist ja leer..
+2016-08-18 21:17:00,Quantenmagier,dh ich kann nicht wieder aus dem inline asm zurückspringen
+2016-08-18 21:17:38,Quantenmagier,also vermutlich muß ich dann direkt ne c funktion anspringen? aber wie übergebe ich dann die parameter und so?
+2016-08-18 21:18:27,Quantenmagier,und woher weiß ich welche ich anspringen soll muß ich dafür vorher nen pointe rübergeben haben oder kann der das irgendwie automatisch aus der libc bekommen durch irgendne funktionstabelle??
+2016-08-18 21:20:25,kevin,"Natürlich springst du aus dem Inline-ASM wieder zurück. Aber halt im Vaterthread, nichts im neuen Thread."
+2016-08-18 21:20:44,Quantenmagier,jop im vaterthread schon das stimmt
+2016-08-18 21:20:48,kevin,Und du übergibst die Parameter entsprechend der C-Aufrufkonvention
+2016-08-18 21:21:50,Quantenmagier,aber ich hab das gefühl es gibt zig verschiedene call konventions?
+2016-08-18 21:23:58,kevin,"Naja, du musst halt die nehmen, die der aufgerufene C-Code benutzt"
+2016-08-18 21:25:25,Quantenmagier,"steht das irgendwie in der elf, welche er benutzt?"
+2016-08-18 21:27:20,Quantenmagier,und sieht die konvention zB anders aus wenn ich -fomit-frame-pointer mache oder so?
+2016-08-18 21:30:51,kevin,Nein und nein
+2016-08-18 21:31:32,kevin,"Du legst du für dein OS pro Plattform einfach eine Aufrufkonvention fest, die man für Threads benutzen muss"
+2016-08-18 21:31:44,kevin,In der Praxis wird eh nur eine benutzt
+2016-08-18 21:40:08,Quantenmagier,"ah ok ich kann die festlegen, also kann man dem gcc irgendwo sagen welche er benutzen soll um den code zu compiliern?"
+2016-08-18 21:42:36,kevin,"Du nimmst am besten einfach die, die gcc standardmäßig benutzt"
+2016-08-18 21:44:26,darklink,Meine syscall aufrufkonvention funktioniert glaube ich nicht mit ppc wirklich
+2016-08-18 21:44:56,Quantenmagier,wieso nicht?
+2016-08-18 21:45:05,Quantenmagier,du schreibst ein OS für ppc?
+2016-08-18 21:45:49,darklink,Noch nicht
+2016-08-18 21:46:04,darklink,Erst schreibe ich eins für pc und 3ds
+2016-08-18 21:46:21,darklink,Aber der stackpointer ist standartmäßig r1
+2016-08-18 21:48:15,Quantenmagier,der stackpointer?
+2016-08-18 21:48:17,darklink,"Und meine syscallkonvention sagt: ""First GP register contains syscall number, second gpr contains handle to kernel object, and third gpr contains a pointer to an table of arguments (usually on stack)"
+2016-08-18 21:48:21,Quantenmagier,du meinst den framepointer?
+2016-08-18 21:49:22,darklink,Das wäre r0
+2016-08-18 21:49:43,Quantenmagier,aso
+2016-08-18 21:51:28,Quantenmagier,"mein kernel hat bisher keine einheitliche konvention meist ist es so, daß er adressen über ebx übergibt, deskriptorselektoren über dx, ranges über ecx und allgemeine nummer wie zum beispiel die nummer des syscalls über eax, aber es kann auch in ner funktion anders sien, man muß sich immer den kommentar beim funktion-header ansehn um den aufruf richtig zu machen ^^"
+2016-08-18 21:52:46,darklink,Wat
+2016-08-18 21:53:12,darklink,Das habe ich in der einzigen dokumentation in mtgos-old drin
+2016-08-18 21:54:08,Quantenmagier,"joa ich will auch mal ne doku mit allen funktion headern machen, damit man es übersichtlich hat und nicht immer im quelltext nachsehn muß ^^"
+2016-08-18 21:54:36,Quantenmagier,"bisher isses halt so daß das bei den funktionen beisteht, zb:"
+2016-08-18 21:54:37,Quantenmagier,append_RAM_fuer_Deskriptor: ;<dx=Desk <ecx=size >ebx=relDesOffset
+2016-08-18 21:56:03,Quantenmagier,"diese append_RAM funktion verwende ich um neuen ram für eine existierendes programm zu reservieren und der kommentar dahinter sagt dx ist der deskriptor für den man mehr ram will, ecx ist die größes des rams den man hinzufügen will und ebx ist dann das relative offset in dem deskriptor wo der neue ram liegt"
+2016-08-18 21:56:20,Quantenmagier,und < und > sagt einfach ob es eingabe oder ausgabeparameter ist ^^
+2016-08-18 21:56:47,Quantenmagier,zudem gibt es noch ne syntax um zu zeigen welche register clobbered sind wenn die nicht in der funktion selbst gesichert werden
+2016-08-18 21:57:47,darklink,"Bei mir ist es sowas wie: Display::puts(String str) // syscall no. = 1, args: str"
+2016-08-18 21:59:00,darklink,Die args werden von rechts nach links auf den stack gepusht und dann wird der syscall mit dem stackpointer in z.B. r3/ecx aufgerufen
+2016-08-18 21:59:11,Quantenmagier,"ah ok nee das is dann ja nur die nummer des syscalls, meine syntax is halt dafür da wenn ich was direkt im kernel aufrufen will ohne syscall, für syscalls hab ich nochmal ne extra tabelle und wenn man die aus c benutzt gibt es da nochmal wrapper funktionen in der surlib.c/.h"
+2016-08-18 22:00:42,Quantenmagier,"ah ok dh du übergibst letztendlich über den stack nee meine aufrufe im kernel und für syscalls sind eigentlich fast alle über register. is dann natürlich schwerer beim architekturwechsel, aber der asm code is ja bisher eh nicht portabel ^^"
+2016-08-18 22:01:03,darklink,Die argumente sind ja in der definition ersichtlich
+2016-08-18 22:02:09,Quantenmagier,"joa klar ist schon übersichtlicher als bei mir, aber dafür hast du halt overhead durch den stack und der stack ist ja langsaer als register"
+2016-08-18 22:05:43,Quantenmagier,"hm apropos, weiß einer ob ein mit lock prefix synchronisierter speicherzugriff, oder eben xchg was das lock implizit hat wesentlich langsamer ist als ein normaler speicher read? überlege mein trylock eventuell zu beschleunigen indem ich erst nen normalen read mache ohne lock, damit er shconmal vorher prüft ob der mutex nicht schon belegt ist ehe er das leure lock bts macht?"
+2016-08-18 22:06:17,Quantenmagier,s/leure/teure
+2016-08-18 22:07:05,darklink,"Also wenn ich unter arm einen string auf dem bildschirm bringen will mach ich das: push r1; mov r2, sp; mov r1, r0; ldr r0, =#0x00000001; swi; pop {r3, pc}"
+2016-08-18 22:13:58,Quantenmagier,ah ok c-string zeichnen geht in meinem os entweder direkt im kernel so:
+2016-08-18 22:13:59,Quantenmagier,<eax=position auf bildschirm <ecx=schriftfarbe <esi=string >eax=neue position des cursors
+2016-08-18 22:13:59,Quantenmagier,call zeichne_byteCString
+2016-08-18 22:14:36,Quantenmagier,oder über syscall so:
+2016-08-18 22:14:37,Quantenmagier,<eax=0x03000334 <ebx=position auf bildschirm <ecx=schriftfarbe <esi=string >eax=neue position des cursors
+2016-08-18 22:14:37,Quantenmagier,int 0x35
+2016-08-18 22:15:20,Quantenmagier,"also die position ist beim syscall ein register weiter gewandert, weil der syscall eax für die syscall nummer braucht xD"
+2016-08-18 22:16:25,Quantenmagier,esi und esi is natürlich ein pointer auf den c-string und nicht der string selbst
+2016-08-18 22:18:41,Quantenmagier,"du hast diene sycall numern scheinbar einfach durchnummeriert? also meine sind strukturiert, deswegen hat cstring-zeichnen auch 0x03000334 das 0x0300 steht für ausgabe und 0x030003 für grafikausgabe und 34 ist dann die entsprechende funktion der grafikausgabe ^^"
+2016-08-18 22:19:02,darklink,Meine sind auch durchstrukturiert
+2016-08-18 22:19:31,darklink,Der dekonstruktor für Display ist syscall nummer 0xFFFF
+2016-08-18 22:19:40,Quantenmagier,ah ok Display::puts(String str) // syscall no. = 1 wirkte so alswenn du durchnummeriert hast weil 1 ja nicht sehr strukturiert aussieht ^^
+2016-08-18 22:19:54,darklink,Der konstruktor für die tastatureingabe ist bei 0x10000
+2016-08-18 22:19:56,darklink,Etc
+2016-08-18 22:20:01,Quantenmagier,ah ok
+2016-08-18 22:23:07,Quantenmagier,"0x0100 ist system 0x0200 speicher 0x0300 ausgabe 0x0400 eingabe und 0x0500 sind umwandlungsfunktionen, erstelle fenster ist 0x03000111 und zerstöre fenster ist 0x03000113 und alphanumerische tastertur anfordern ist 0x04000123"
+2016-08-18 22:26:06,Quantenmagier,und der syscall an dem ich grad arbeite ist: syslib_subThread_Fork alias 0x01000220 zum erstellen eines neuen threads
+2016-08-18 22:30:43,Quantenmagier,"alias pthread_create() das soll halbwegs wie sagt man ""poxis complient"" sein xD"
+2016-08-18 22:36:23,Quantenmagier,mein problem ist jetzt bloß noch die addressen von void *(*start_routine) (void *) und von void pthread_exit(void *retval) samt void *arg an asm zu übergeben und dann pthread_exit(start_routine(arg)); in assembler auszuführen..
+2016-08-18 22:37:41,Quantenmagier,und dafür brauch ich die passenden call konventions
+2016-08-18 22:42:51,Quantenmagier,wie bekomme ich denn eigentlich die adresse von pthread_exit() muß ich dafür &pthread_exit sagen?
+2016-08-18 22:44:46,Quantenmagier,weil bei pthread_create muß man scheinbar ein & vor die funktion packen das irritiert mich gerade?!
+2016-08-18 22:44:57,Quantenmagier,KEIN und davorpacken
+2016-08-18 22:45:04,Quantenmagier,*
+2016-08-18 22:45:24,mgottschlag,"Funktion ohne () dahinter ist immer direkt ein Pointer, auch ohne &"
+2016-08-18 22:45:44,mgottschlag,"das & braucht man erst, wenn man in C++ Pointe auf Memberfunktionen will, aber das ist dann eh was ganz anderes"
+2016-08-18 22:48:47,Quantenmagier,ahh ok thx
+2016-08-18 22:49:42,mgottschlag,bei Arrays hast du ja btw auch kein &
+2016-08-18 22:50:39,Quantenmagier,"hm das verwirrt mich grad noch mehr, hab grad gelesen daß wohl a und &a bei einem array a den selben wert haben.. o.O aber a ist doch der pointer auf das erste element und &a müßte dann doch die adresse des pointers auf das erste element sein!?"
+2016-08-18 22:52:57,mgottschlag,"der Pointer hat aber potenziell keine Adresse, das ist eine rvalue"
+2016-08-18 22:53:57,mgottschlag,"(genau wie ""&42"" keinen Sinn ergibt)"
+2016-08-18 22:53:57,Quantenmagier,"achso kras in meiner vorstellung war das immer ne eigene variable, is das bei allen arrays so oder nur bei arrays die nicht mit malloc angefordert werden, sondern statisch?"
+2016-08-18 22:54:41,mgottschlag,"Ich hoffe, ich erzähle jetzt keinen Müll, bin mir aber nicht 100% sicher:"
+2016-08-18 22:54:46,mgottschlag,du unterscheidest grundsätzlich zwischen rvalues und lvalues
+2016-08-18 22:55:17,mgottschlag,"lvalues (""kann links von Zuweisung stehen"") ist alles, wo man reinschreiben könnte, also alles, was quasi eine richtige Variable potenziell mit Adresse im Speicher ist."
+2016-08-18 22:55:28,mgottschlag,"bei ""int i;"" ist ""i"" eine lvalue, &i macht Sinn."
+2016-08-18 22:55:38,mgottschlag,"""42"" ist keine lvalue, weil man da nicht reinschreiben kann"
+2016-08-18 22:55:59,XanClic,und was ist bei const int i = 42;? :x
+2016-08-18 22:56:07,mgottschlag,"&malloc(42) macht auch keinen Sinn, da der Rückgabewert von malloc ja zwar ein Pointer ist, dieser Pointer ist aber nicht in einer richtigen Variable gespeichert"
+2016-08-18 22:56:31,mgottschlag,"""void *x = malloc(42)"", dann macht ""&x"" wieder Sinn"
+2016-08-18 22:56:36,mgottschlag,"XanClic: okay, du hast gewonnen :p"
+2016-08-18 22:56:41,XanClic,und was ist bei int &bar(int i);? :x
+2016-08-18 22:56:56,XanClic,„Ohne meinen Language Lawyer sag ich nix“
+2016-08-18 22:57:21,XanClic,wobei in letzterem Fall bar(42) ja schon eine lvalue wäre
+2016-08-18 22:57:25,mgottschlag,letzteres ist kein C. :p
+2016-08-18 22:57:43,mgottschlag,"ansonsten ja, in C++ wäre das eine lvalue"
+2016-08-18 22:58:14,Quantenmagier,krass ich les grad bei array ist die pointerarithmetic mit und ohne & anders also zB a + 10 == &a + 1
+2016-08-18 22:58:33,mgottschlag,"Quantenmagier: huh, Link?"
+2016-08-18 22:58:58,mgottschlag,ich hab ehrlich gesagt noch nie & mit einem Array verwendet
+2016-08-18 22:59:39,XanClic,Ergäbe eigentlich Sinn
+2016-08-18 22:59:47,Quantenmagier,also im fall char a[10] weil &a vom type char[10] ist aber a nur mit sizeof(char) rechnet
+2016-08-18 22:59:52,XanClic,Bei „a“ nimmt man für die Pointerarithmetik ja sizeof(*a)
+2016-08-18 23:00:05,XanClic,Bei „&a“ wäre das also sizeof(*&a) == sizeof(a)
+2016-08-18 23:00:35,XanClic,Aber &a ist genauso komisch wie Arrays als Parameter zu nehmen
+2016-08-18 23:01:05,Quantenmagier,mit parameter meinst du funktionsargument?
+2016-08-18 23:01:11,XanClic,ja
+2016-08-18 23:01:24,XanClic,Also irgendwie so void foo(char a[])
+2016-08-18 23:01:31,XanClic,Am besten noch void foo(char a[10])
+2016-08-18 23:01:41,Quantenmagier,"ich mach immer int main(int argc, char* argv[]){"
+2016-08-18 23:04:54,Quantenmagier,aber wenn man jetzt nen array hätte int* ip=(int*)malloc(5*sizeof(int)); dann wäre ip doch ein lvalue und &ip würde was anderes als ip bedeuten obwohl ip ja nen array ist und man es mit ip[3] zb ansprechen kann? dh je nachdem was für ein array man hat gibt &a und a doch was unterschiedliches zurück?
+2016-08-18 23:05:13,XanClic,"eigentlich ist ip ja kein Array, sondern ein Pointer"
+2016-08-18 23:05:32,Quantenmagier,ich hab mal gelernt das ist das selbe?
+2016-08-18 23:05:38,XanClic,"Eigentlich nicht so, wie du siehst"
+2016-08-18 23:07:04,Quantenmagier,"aber ich kann ip ja als array ansprechen, der einzige unterschied ist dann nen pointer hat nen lvalue und nen array hat dafür ne sizeof ?"
+2016-08-18 23:07:25,XanClic,"Ein Pointer ist eine lvalue, und ein Pointer hat auch ein sizeof"
+2016-08-18 23:07:42,XanClic,"sizeof auf einen Pointer gibt dir aber die Pointergröße des Systems zurück, sizeof auf ein Array die Größe des Arrays in Byte"
+2016-08-18 23:09:28,Quantenmagier,was is denn sizeof(*ip) is das dann 5*sizeof(int) oder nur sizeof(int) ?
+2016-08-18 23:10:15,mgottschlag,"ip ist int*, dann ist *ip int, also sizeof(int)"
+2016-08-18 23:10:29,Quantenmagier,weil free muß ja scheinbar die größe des array das zu dem pointer gehört kennen..
+2016-08-18 23:10:29,XanClic,"Ich wüsste nicht, woher ip wissen sollte, dass du da mal irgendwann malloc(5 * sizeof(int)) aufgerufen hast"
+2016-08-18 23:10:38,XanClic,"Tja, free macht das halt mit Magie"
+2016-08-18 23:11:53,Quantenmagier,"ich hab es so gemacht, daß ich die größe für free an ip[-1] speicher, wekche magie verwendet free denn normal?"
+2016-08-18 23:12:31,mgottschlag,ziemlich genau sowas
+2016-08-18 23:12:38,Quantenmagier,ah ok
+2016-08-18 23:12:50,mgottschlag,"oder gleichgroße Objekte werden in gemeinsame Speicherregionen gepackt, und dann wird über die Adresse die Größe identifiziert"
+2016-08-18 23:13:14,Quantenmagier,"ah ok sowas in der art hatte ich auch shcon überlegt, weil man ja oft zweierpotenzen braucht"
+2016-08-18 23:13:56,Quantenmagier,kann man mit readelf eigentlich die einzelnen funktionsadressen auslesen?
+2016-08-18 23:14:11,mgottschlag,vor allem für kleine Objekte ist die Größe unnötig viel Overhead
+2016-08-18 23:14:23,mgottschlag,"ja, kann man... bei readelf -a kommst du irgendwann an die Symboltabelle"
+2016-08-18 23:15:49,Quantenmagier,ah ok sehe grade in der für linux kompilierten elf ist die .symtab drin aber bei der für SurO kompilierten version fehlt sie
+2016-08-18 23:16:34,Quantenmagier,muß ich irgendwi export oder so dazu schreiben damit klar ist welches symbol ich exportieren will?
+2016-08-18 23:17:13,Quantenmagier,hm oder ich übergeb die adresse für pthread_exit einfach im funktionsaufruf.. *grübel*
+2016-08-18 23:18:06,mgottschlag,"standardmäßig exportiert gcc erstmal alles, du kannst das afaik mit fvisibility ändern"
+2016-08-18 23:18:19,mgottschlag,"aber innerhalb der Anwendung ist das eh egal, da ist alles, was nicht static ist, sichtbar"
+2016-08-18 23:22:49,Quantenmagier,"hm nach der c call convention muß der stack scheinbar 16 byte aligned sein, bezieht sich das auf den physischen oder auf den virtuellen adressspace?"
+2016-08-18 23:23:29,Quantenmagier,denke mal virtuell weil vom physischen merkt gcc ja eigentlich nix..
+2016-08-18 23:25:05,mgottschlag,"Das sollte zumindest mit Paging egal sein, ist immernoch an 16B ausgerichtet, egal welche Art von Adresse"
+2016-08-18 23:27:55,Quantenmagier,"ich überlege gerade wie der stack eigentlich funktioniert, also wenn es 16 byte aligned sein soll muß ich dann vor dem pushen den esp auf 0xffff oder auf 0x0000 setzen, bei 16 bit stack?"
+2016-08-18 23:34:24,Quantenmagier,"naja ich hab mal nen Invalid Opcode Syscall geschrieben um das rauszufinden, damit bekomme ich dann nen dump und sehe so wie gcc den esp aligned hat. ^^"
+2016-08-18 23:35:27,Quantenmagier,hm hoffe mein InvOp irq kann das sonst muß ich nen GPF auslösen der irq kann das auf jedenfall..
+2016-08-18 23:36:14,Quantenmagier,ach ich idiot mir fällt grad ein ich hätte garkeinen syscall dafür vergeben müssen inline asm hätts auch getan xD
+2016-08-18 23:44:36,Quantenmagier,"ok inline asm is so ne sache, ""bad register name `%%ds'"""
+2016-08-18 23:45:10,Quantenmagier,"seltsam in meiner surlib.c konnte ich %%ds im inline asm benutzen, warum geht das denn auf einmal nicht mehr.. o.O"
+2016-08-18 23:45:51,Quantenmagier,ahh wenn ich zwei doppelpunkte hinter den inline asm mache geht es xD
+2016-08-18 23:52:32,Quantenmagier,"wtf? ich hab inline asm ""ud2"" in den code gepackt, aber es gibt keine Invalid Opcode Exception?!? is das wohl nen fehler in qemu?"
+2016-08-18 23:55:55,Quantenmagier,"hm schonwieder keine exception, irgendwas mach ich falsch.. :-/"

@@ -1,0 +1,495 @@
+date/time,nick,message
+2013-03-25 00:04:23,Splitty,Hey Leute
+2013-03-25 00:04:43,Splitty,"Ich schreibe eine IDE für Split# und es wäre sehr gut, wenn der Compiler mit der IDE kommunizieren könnte."
+2013-03-25 00:05:13,Splitty,"Named Pipes sind theoretisch möglich, aber nicht die beste Lösung. Einfach den stdout umzuleiten würde auch gehen, ist aber auch dirty."
+2013-03-25 00:05:45,Splitty,"Hat jemand eine Idee, wie man das effizient machen könnte?"
+2013-03-25 00:06:17,PatrickBic,dateien! :D
+2013-03-25 00:06:55,Splitty,"hmm. Geht aber viel performance drauf, wenn man dateien ausliest, die der compiler schreibt."
+2013-03-25 00:07:12,Splitty,Zu ineffizient.
+2013-03-25 00:11:50,PatrickBic,das war auch nicht sonderlich ernst gemeint
+2013-03-25 00:12:02,PatrickBic,"Splitty, lokale sockets."
+2013-03-25 00:12:29,Splitty,Lokale Sockets? Kannst du mir das bitte erklären? =) Hab mit sockets noch nie gearbeitet
+2013-03-25 00:13:35,PatrickBic,die IDE hat 2 sockets offen. sagen wir mal 123 und 456 (natuerlich waeren die hoeher und anders aber ok)
+2013-03-25 00:13:48,PatrickBic,einen fuer stdout und einen fuer stderr oder sonstwas
+2013-03-25 00:14:03,PatrickBic,nun schreibt der compiler einfach unter laufzeit alles auf port 123 und 456 raus. 
+2013-03-25 00:14:11,PatrickBic,und die IDE braucht da nur zu lauschen und fertig
+2013-03-25 00:14:26,PatrickBic,somit koennte der compiler auch auf ner ganz anderen maschine laufen und sonstwas =) 
+2013-03-25 00:16:41,Splitty,cool =)
+2013-03-25 00:18:09,PatrickBic,"Splitty, du hast echt noch nie was mit sockets gemacht? O_O"
+2013-03-25 00:18:16,Splitty,genau =)
+2013-03-25 00:18:28,Splitty,Für interaktionen zwischen Prozessen habe ich bis jetzt immer Named Pipes benutzt.
+2013-03-25 00:19:30,PatrickBic,"sockets sind sicher auch nicht das beste, aber eine moeglichkeit"
+2013-03-25 00:20:07,DerHartmut,Mach es so wie xdebug z.B.
+2013-03-25 00:20:31,DerHartmut,Also ähnlich wie PatrickBic beschrieben hat
+2013-03-25 00:21:09,PatrickBic,ich mach auch mit sockets IPC .. aber halt zwischen 2 desktop-java-apps (in 2 verschiedenen jvm's)
+2013-03-25 00:25:00,Splitty,"Sloan meinte gerade, ich solle einfach den stderr auslesen."
+2013-03-25 00:25:06,Splitty,Aber ist das nicht ein bisschen dirty? ^^
+2013-03-25 00:26:33,DerHartmut,Das ist dann keine Kommunikation
+2013-03-25 00:26:56,DerHartmut,"Wenn du stderr ausliest, kann die IDE darauf reagieren und dem User Feedback geben"
+2013-03-25 00:27:03,DerHartmut,"Ich denke aber mal, dass du auf etwas anderes hinauswillst"
+2013-03-25 00:27:16,DerHartmut,"Du möchtest, dass IDE und Compiler quasi miteinander ""reden"", im Dialog"
+2013-03-25 00:27:40,DerHartmut,"Wenn der Compiler was nach stderr geschrieben hat ist die Geschichte ja quasi schon vorbei, er hat sich ausgemeckert und die IDE kann den Compiler nur dazu anweisen, neu anzufangen"
+2013-03-25 00:28:10,DerHartmut,"In einem socket-gesteuerten Dialog kann das anders aussehen, die IDE könnte den Compiler interaktiv steuern, die Kompilierung einzelner Dateien erneut anfordern usw. usf."
+2013-03-25 00:28:31,DerHartmut,"Ungeachtet der Tatsache, dass ihr erstmal die Sprache und deren Implementierung nach vorne bringen solltet :-P"
+2013-03-25 00:28:49,Splitty,"stimmt. Aber theoretisch muss ich dem compiler sonst nichts sagen. Eine einweg-kommunikation würde also reichen. Beim Debugger sieht es natürlich so aus, dass ich eine Duplex-Pipe brauche, oder eben Sockets."
+2013-03-25 00:29:32,DerHartmut,"Sicher, theoretisch musst du das nicht, aber du kannst ja absolut neue Wege fahren, den ""semantischen Compiler"" schaffen (Microsoft hat da meine ich ein Projekt in der Pipeline)"
+2013-03-25 00:30:25,PatrickBic,ja da gabs was von MS @ DerHartmut 
+2013-03-25 00:30:30,PatrickBic,auch wenn ich nichtmehr weiß wie das heißt
+2013-03-25 00:31:20,DerHartmut,"Splitty: Nur für alles andere brauchst du weder Socket noch Named Pipes, du gibt's dem Compiler (welcher von der Kommandozeile aus bedient wird) einfach an, er soll alles nach stderr schreiben und die Fehlermeldungen werden in der IDE ausgegeben"
+2013-03-25 00:31:28,DerHartmut,"PatrickBic: Das war auch irgendwie eine Art Compiler-Framework, oder?"
+2013-03-25 00:31:42,PatrickBic,glaub das ging in die richtung ja
+2013-03-25 00:31:50,PatrickBic,hab da was vonner compilerbau uebung/vorlesung im kopf ja
+2013-03-25 00:32:16,PatrickBic,roslyn!
+2013-03-25 00:32:16,PatrickBic,das wars :D
+2013-03-25 00:32:25,PatrickBic,http://msdn.microsoft.com/en-us/vstudio/roslyn.aspxy <-
+2013-03-25 00:32:30,PatrickBic,http://msdn.microsoft.com/en-us/vstudio/roslyn.aspx <-
+2013-03-25 00:32:30,PatrickBic,so
+2013-03-25 00:33:12,DerHartmut,Genau! :D
+2013-03-25 00:34:20,Splitty,Sowas wird auf keinen Fall benutzt =)
+2013-03-25 00:34:41,Splitty,Der compiler sowie die VM sind vollständig plattformunabhängig.
+2013-03-25 00:34:56,DerHartmut,...in C# geschrieben?
+2013-03-25 00:35:01,PatrickBic,"DerHartmut, ja."
+2013-03-25 00:35:10,PatrickBic,glaub ich zumindest
+2013-03-25 00:35:11,PatrickBic,xD
+2013-03-25 00:35:34,DerHartmut,Also bei Java wärt ihr noch eine Ecke plattformunabhängiger
+2013-03-25 00:35:37,DerHartmut,</sarcasm>
+2013-03-25 00:37:33,PatrickBic,och ich find das nicht sarkasmus
+2013-03-25 00:38:21,PatrickBic,"DerHartmut, erklaer mal ;-)"
+2013-03-25 00:40:11,DerHartmut,"Naja, was gibt's da zu erklären :-) C# ist halt alles andere als plattformunabhängig, und selbst wenn es Microsofts ursprüngliche Intention war/gewesen sein sollte (meinte mal so etwas Wahnsinniger in dieser Richtung gehört zu haben), ist halt nur allein durch das mono/dotgnu-Projekt eine Art Plattformunabhängigkeit geschaffen worden"
+2013-03-25 00:40:29,PatrickBic,ja 
+2013-03-25 00:40:43,PatrickBic,ich meinte aber warum die plattform-unabhaengigkeit von java sarkastisch ist
+2013-03-25 00:41:12,DerHartmut,Achso - weil Java an sich sarkastisch ist
+2013-03-25 00:41:55,PatrickBic,find ich nicht. 
+2013-03-25 00:43:22,DerHartmut,"Habe ich früher auch, sowohl privat als auch auf der Arbeit"
+2013-03-25 00:43:31,PatrickBic,mit SWT (als bsp) laesst sich da viel machen.
+2013-03-25 00:43:58,Splitty,"Der compiler ist in C geschrieben, genauso wie die VM =)"
+2013-03-25 00:44:10,Splitty,C# ist nicht wirklich plattformunabhängig =P
+2013-03-25 00:44:17,Splitty,Ich schreibe nur die IDE in C#
+2013-03-25 00:44:33,PatrickBic,warum nicht c (mit gtk) oder c++ (mit gtkmm)?
+2013-03-25 00:44:46,DerHartmut,"Java ist für mich einfach eine extrem inperformante bloatige Sprache, die sicherlich irgendwo ihren Einsatzzweck hat (manche munkeln, großartige riesige Enterprise-Web-Applikationen seien prädestiniert dafür, in Java entwickelt zu werden)"
+2013-03-25 00:45:02,DerHartmut,Allerdings ist Java für die meisten Einsatzzwecke einfach (zumindest für mich) nicht ansatzweise das Richtige
+2013-03-25 00:45:08,DerHartmut,"Splitty: Ah, sehr gut :)"
+2013-03-25 00:45:20,Splitty,^^
+2013-03-25 00:45:41,PatrickBic,"DerHartmut, crossplattform multimedia wiedergabe und verwaltung (nicht im sinne von nem vlc oder so.. so infoscreens)"
+2013-03-25 00:45:56,PatrickBic,meine java loesung schlaegt die vorherige webloesung im ram-verbrauch. (als bsp)
+2013-03-25 00:46:15,DerHartmut,"Oha, auf welcher Technologie baute die Weblösung auf?"
+2013-03-25 00:46:45,PatrickBic,und durch SWT nutzt es auf jeder plattform die native widgets (SWT is ne art java-wrapper der auf jedem system dann die jeweiligen komponenten verwendet)
+2013-03-25 00:46:49,PatrickBic,*nativen
+2013-03-25 00:47:09,PatrickBic,"DerHartmut, activeX, flash, ... "
+2013-03-25 00:47:41,DerHartmut,"Ok, da schafft es selbst Java, performanter zu sein"
+2013-03-25 00:47:55,DerHartmut,"Ich mein, Hallo, ActiveX und Flash, da braucht man nicht mehr zu sagen"
+2013-03-25 00:48:38,PatrickBic,nuja.. geht um lokale-daten wiedergabe
+2013-03-25 00:48:45,DerHartmut,"Dennoch ist Java in meinen Augen für die meisten Anwendungszwecke zu viel - ich hab nicht zuletzt auf der Arbeit eine Art ""Proxy"", welches eine Applikation mit Userverwaltung ausstattet von einer JavaEE-Spring-Tomcat-Anwendung zu einer PHP-Symfony2 (ja, PHP, ich weiß, ist halt so) verwandelt"
+2013-03-25 00:48:46,PatrickBic,da brauchst halt activeX fuern browser (leider)
+2013-03-25 00:49:05,PatrickBic,ich meine keineswegs das java das non-plus-ultra ist
+2013-03-25 00:49:16,PatrickBic,"aber so ""bloatig"" ist es auch wieder nicht"
+2013-03-25 00:56:07,PatrickBic,nachtarbeiten sind nicht gut... erster start => ~ 5 seiten fehlermeldungen ^^
+2013-03-25 01:52:02,Splitty,Hey =)
+2013-03-25 01:52:12,Splitty,Was haltet ihr vom Design meines neuen Projekts?
+2013-03-25 01:52:17,Splitty,http://www.gredpic.tk/files/OU4y4Xf8EBcMS4f.png
+2013-03-25 01:53:38,PatrickBic,"fuer meinen geschmack zu dunkel, der verlauf beim großen button ist sichtbar (gewollt)? (also die trennlinie), die schrift beim kleinen button gehoert groeßer"
+2013-03-25 01:53:42,PatrickBic,"Splitty, was soll das dann darstellen?"
+2013-03-25 01:54:53,PatrickBic,und ich zuck hier noch aus wegen dem scheiss lag waaaaaaaaaaaaaaaaaah
+2013-03-25 01:55:05,PatrickBic,irgendwas haut mir alle 5-15min nen 100%-cpu-load rein
+2013-03-25 02:01:23,Splitty,Die trennlinie im Button ist gewollt =)
+2013-03-25 02:01:33,Splitty,Das wird der Startbildschirm für die Split# IDE
+2013-03-25 02:01:37,Splitty,Ist erst 5% fertig
+2013-03-25 02:11:32,PatrickBic,"Splitty, ideen wegen der spikes?"
+2013-03-25 02:11:42,Splitty,Spikes?
+2013-03-25 02:12:05,PatrickBic,<PatrickBic> jemand ideen was es haben kann wenn ab und an (5-15m) immer mal wieder ein prozess auf 25% (1 core auf 100% (da 4 cores)) geht fuer ein paar sekunden?
+2013-03-25 02:12:05,PatrickBic,<PatrickBic> die jweilige applikation haengt dann fuer diese 1-5s und dann gehts wieder normal weiter 
+2013-03-25 02:12:21,Splitty,Was haste denn für Anwendungen laufen?
+2013-03-25 02:13:13,PatrickBic,es ist nicht auf 1 begrenzt (die haenger) sondern tritt quer durch auf
+2013-03-25 02:13:24,Splitty,hmm..
+2013-03-25 02:13:42,PatrickBic,"ff, paar mal explorer, thunderbird, xchat, notepad++, netbeans, eclipse, db2, mysql, apache, tomcat, skype"
+2013-03-25 02:13:47,PatrickBic,das faellt mri auf die schnelle ein
+2013-03-25 02:13:56,PatrickBic,*mir
+2013-03-25 02:14:00,Splitty,Apache ist ein schlimmer Dienst..
+2013-03-25 02:14:16,Splitty,"Haste mal gesehen, was Apache so frisst?"
+2013-03-25 02:14:22,PatrickBic,genuegend ;-)
+2013-03-25 02:14:29,PatrickBic,aber ram ist nicht das problem
+2013-03-25 02:14:32,PatrickBic,auch nicht cpu
+2013-03-25 02:14:36,PatrickBic,selbst dann wanns haengt ists nur 1 core
+2013-03-25 02:14:50,Splitty,Ist es immer der selbe Core?
+2013-03-25 02:15:02,PatrickBic,nein
+2013-03-25 02:15:16,PatrickBic,im eclipse ist es meist wenn ich die tabs (zwischen den dokumenten) wechsle
+2013-03-25 02:15:22,PatrickBic,glaub ich hab mir das system zugemuellt :-/
+2013-03-25 02:15:24,Splitty,komisch.
+2013-03-25 02:15:27,Splitty,Kann sein ^^
+2013-03-25 02:15:34,Splitty,Mach ich auch mal öfters ^^
+2013-03-25 02:15:40,PatrickBic,nuja.. auf dem hier laeuft alles
+2013-03-25 02:15:50,Splitty,Was haste denn für ne CPU?
+2013-03-25 02:15:50,PatrickBic,"von arbeit, studium ueber studienprojekte mit krankenhaeusern usw "
+2013-03-25 02:16:11,PatrickBic,"i5, 2 ""hardware-cores"" und 4 insgesamt (jeweils HT) mit ~ 2.25ghz"
+2013-03-25 02:16:24,Splitty,Nur 2.25 GHz!?
+2013-03-25 02:16:28,Splitty,Hat i5 nicht normal mehr?
+2013-03-25 02:16:33,PatrickBic,nö
+2013-03-25 02:16:38,Splitty,lol
+2013-03-25 02:16:39,PatrickBic,2.26 ghz bis 2.9 oder so
+2013-03-25 02:16:48,PatrickBic,das isn laptop ;-)
+2013-03-25 02:16:54,Splitty,Achso ^^
+2013-03-25 02:16:57,Splitty,Hab gedacht PC
+2013-03-25 02:17:02,PatrickBic,nö 
+2013-03-25 02:17:08,PatrickBic,hab seit ich 14/15 bin keinen pc mehr gehabt
+2013-03-25 02:17:11,PatrickBic,und habs auch nicht vor
+2013-03-25 02:17:14,Splitty,LOL
+2013-03-25 02:17:23,Splitty,Wie alt biste denn jetzt? ^^
+2013-03-25 02:17:31,PatrickBic,10 jahre aelter
+2013-03-25 02:17:35,Splitty,k
+2013-03-25 02:17:51,Splitty,"Ich brauch unbedingt nen PC, sonst rendert der zu langsam"
+2013-03-25 02:17:53,PatrickBic,ich tipp auf normalen tastaturen viel langsamer *auch ned mag*
+2013-03-25 02:18:17,PatrickBic,ich brauch zumindest fuer die studienzeit noch nen laptop .. 
+2013-03-25 02:18:21,PatrickBic,und danach mal sehen.
+2013-03-25 02:18:43,Splitty,"Ich tippe auf normalen Tastaturen auch viel langsamer. Aber wenn ich komplexe 3D-Berechnungen mache, dann gehts mit meiner CPU im Laptop nicht mehr weiter"
+2013-03-25 02:18:58,PatrickBic,die sollten aber eh auf die gpu ausgelagert werden
+2013-03-25 02:19:00,PatrickBic,cuda/stream usw
+2013-03-25 02:19:03,Splitty,"Hab im PC jetze nen AMD FX ""Bulldozer"" Hexacore 6x 3.3GHz"
+2013-03-25 02:19:22,Splitty,Und ne ATI Radeon HD 6570
+2013-03-25 02:19:24,PatrickBic,gut.. bei preis/leistung sind desktop-pc's natuerlich nicht zu schlagen
+2013-03-25 02:19:35,PatrickBic,ich mach mir nichts aus grafikkarten ;-) 
+2013-03-25 02:19:41,PatrickBic,sie soll laufen und 3d koennen.. das wars ^^
+2013-03-25 02:19:54,Splitty,Der hat auch 8GB RAM und ne 1TB Platte drin. Und hat nur 400€ gekostet. Sowas lass ich mir nicht entgehen =P
+2013-03-25 02:20:14,PatrickBic,die ich nedmal zur haelfte voll bringe
+2013-03-25 02:20:33,PatrickBic,und ich loesche so gut wie nie etwas
+2013-03-25 02:20:33,Splitty,:O
+2013-03-25 02:20:33,Splitty,Ich lösche öfter mal was und hab meine 1TB Platte fast voll
+2013-03-25 02:20:35,PatrickBic,hab meinen papierkorb (vom windows) nie geleert seit ich das system installiert hab
+2013-03-25 02:20:37,Splitty,Nach 1 Monat benutzung*
+2013-03-25 02:20:40,Splitty,LOL
+2013-03-25 02:20:56,PatrickBic,"naja.. keine musik, keine filme, backups extern"
+2013-03-25 02:21:01,PatrickBic,fuer was sollt ich soviel brauchen dann?
+2013-03-25 02:21:06,Splitty,Stürmt es bei euch auch gerade draußen?
+2013-03-25 02:21:10,PatrickBic,nein. 
+2013-03-25 02:21:17,PatrickBic,aber ich bin wohl auch einige hundert km weg von dirt
+2013-03-25 02:21:18,PatrickBic,*dir
+2013-03-25 02:21:37,Splitty,"Wenn ich in Cinema4D ein Projekt rendere, das 10 minuten lang ist, hab ich ca. 100GB weg =P"
+2013-03-25 02:22:24,Splitty,"1920.1080, Bestes Antialiasing, Transparenz, AVI Container, QMC Lightprocessing. Die Dateien werden riesig"
+2013-03-25 02:22:43,Splitty,1920x1080*
+2013-03-25 02:23:11,PatrickBic,"ja gut, sowas mache ich nicht"
+2013-03-25 02:23:18,PatrickBic,bei mir brauchen die VMs den meisten platz
+2013-03-25 02:23:40,PatrickBic,aktuell 230 von 470 (wegen FS) frei
+2013-03-25 02:27:25,PatrickBic,also 240 belegt. davon 32gb VMs. papierkorb: ~ 11gb
+2013-03-25 02:27:34,PatrickBic,75.000 dateien dort ^^
+2013-03-25 02:28:20,PatrickBic,"Splitty, http://www10.pic-upload.de/25.03.13/ap45kzu2yg6.png so sieht das aus"
+2013-03-25 02:29:49,Splitty,Komisch..
+2013-03-25 02:30:00,Splitty,"Nee sorry ich habe echt keine Ahnung, warum das so ist."
+2013-03-25 12:15:27,Guest3244,"http://adf.ly/JjPkq Könnte sich ein JS Freak den Code mal anschauen, ich sehe nicht, wo hash und z definiert werden, trotz deobfuscator. Kann es sein, dass der Code in der swf Datei liegt?"
+2013-03-25 14:03:35,Guest3244,http://pastebin.com/qNY7Wupb für mich Widerholt sich der Code irgendwie? Ich bekomme nicht raus was sendBuffer.hash ist und was SendBuffer.z sein sollen?
+2013-03-25 14:04:42,Guest3244,ok z scheint ne Zufallsvariable zu sein
+2013-03-25 14:07:34,Guest3244,Ok weiß jetzt mehr. Zeile 246 bis 255. Action ist hier 9
+2013-03-25 14:13:32,iksnagreb,guten tag
+2013-03-25 14:16:08,alexander,Ich würde mal behaupten ECHAN
+2013-03-25 14:32:35,kevin,Moin iksnagreb
+2013-03-25 14:51:35,martinFTW,Hallo
+2013-03-25 15:25:16,iksnagreb,"ich versteh das alles mit dem vfs nicht, kennt jemand noch nen gutes tutorial?"
+2013-03-25 15:37:31,kevin,"Welches Problem willst du lösen, iksnagreb?"
+2013-03-25 15:37:34,kevin,Und was hält dich davon ab?
+2013-03-25 15:37:54,iksnagreb,"ich versteh nicht, wie das funktionieren soll"
+2013-03-25 15:38:06,kevin,"Wenn du ein OS schreiben willst, solltest du dich langsam von der Idee verabschieden, dass dir jeder Schritt vorgekaut wird"
+2013-03-25 15:38:21,kevin,"Was ist ""das""?"
+2013-03-25 15:38:30,iksnagreb,das vfs ist im kernel und wie kommen die tasks jetzt an die daten kommen sollen
+2013-03-25 15:38:41,kevin,Das kommt auf dein OS an
+2013-03-25 15:38:56,kevin,Irgendwie musst du die Daten für die Tasks sichtbar machen
+2013-03-25 15:39:11,kevin,Das heißt sie müssen auf irgendeine Weise im Adressraum des Tasks landen
+2013-03-25 15:39:26,kevin,Ob als Kopie oder durch Ummappen oder sonst irgendwie ist völlig dir überlassen
+2013-03-25 15:39:36,mgottschlag,"iksnagreb: weißt do überhaupt, was ein syscall ist?"
+2013-03-25 15:40:03,iksnagreb,"ja, die funktionieren bei mir auch schon ganz gut"
+2013-03-25 15:40:30,mgottschlag,"dann schau dir doch erstmal an, wie die vfs-syscalls von linux aussehen"
+2013-03-25 15:40:35,kevin,"Traditionell gibt der Task im read()-Syscall einen Pointer zu einem Buffer mit, den der Kernel dann befüllt"
+2013-03-25 15:41:04,mgottschlag,"im 2. schritt kannst du dann gucken, ob dus anders machen willst"
+2013-03-25 15:42:07,mgottschlag,"ich meine die linux-fs-api, nicht die implementierung :)"
+2013-03-25 16:57:53,martinFTW,Ich hab ne idee vllt nehme ich mal andere paging flags
+2013-03-25 18:55:43,PatrickBic,moin
+2013-03-25 19:15:14,Jidder,moin
+2013-03-25 20:36:12,martinFTW,https://docs.google.com/file/d/0B-x3QNiQfEeCelhYU19CNVBlRDA/edit <- eine stark vereinfachte version die nur den kernel mappen sollte ohne vmm_malloc etc.
+2013-03-25 20:37:22,martinFTW,es ist unglaublich die Pagetables werden pefekt aufgesetzt und ich nehme tausendfach getesteten ASM code
+2013-03-25 20:37:41,martinFTW,aber auf der HW gez nich
+2013-03-25 20:38:32,Guest1683,sehr lustige Fehler auf realer hw sind speicher allozierungen in der BDA doer so :P
+2013-03-25 20:38:41,Guest1683,oder n stack der drüberrutscht
+2013-03-25 20:39:26,martinFTW,livinskull: betrifft mich das?
+2013-03-25 20:39:32,livinskull,vielleicht
+2013-03-25 20:39:51,livinskull,keine Lust den Code durchzukucken
+2013-03-25 20:39:52,livinskull,:P
+2013-03-25 20:39:55,martinFTW,Bios Data area
+2013-03-25 20:40:27,martinFTW,aber das kann schon sein meine Pagedir ist an 0x4000
+2013-03-25 20:40:40,martinFTW,ist das nich auch reserviert?
+2013-03-25 20:40:56,livinskull,wo reserviert? :P
+2013-03-25 20:41:09,PatrickBic,grub gibt dir doch ne mem-map mit benutzbarem speicher oder?
+2013-03-25 20:41:13,livinskull,nimm die grub memmap und initialisier damit den speicher
+2013-03-25 20:41:19,livinskull,bzw die speicherverwaltung
+2013-03-25 20:41:28,PatrickBic,ninja'd!
+2013-03-25 20:41:28,PatrickBic,:D
+2013-03-25 20:41:51,martinFTW,livinskull: quatsch eig benutz ich ja schon die Bios Memory map
+2013-03-25 20:42:10,martinFTW,aber woran liegts dann?!
+2013-03-25 20:42:36,martinFTW,der code ist übrigens um die hälfte gekürzt
+2013-03-25 20:42:39,PatrickBic,"martinFTW, grub nicht bios"
+2013-03-25 20:43:05,PatrickBic,grub gibt dir ne multiboot signatur/struktur. und die nimmst her.. da steht ne memory-map drin
+2013-03-25 20:43:26,livinskull,lol
+2013-03-25 20:43:48,livinskull,TODO: 2. selfmade (and working)memcpy
+2013-03-25 20:43:49,martinFTW,ja gut mach ich ja auch dieses multiboot zeug
+2013-03-25 20:43:51,livinskull,der is gut
+2013-03-25 20:43:52,livinskull,:D
+2013-03-25 20:44:09,kevin,PatrickBic: Und wo nimmt GRUB die her? ;-)
+2013-03-25 20:44:30,PatrickBic,"kevin, kA .. grub is ne black-box fuer mich."
+2013-03-25 20:44:38,PatrickBic,"kevin, ich weiß nur das es  damit bei mir problemlos ging ^^"
+2013-03-25 20:44:54,kevin,"Jo, aber das ist die Memory Map vom BIOS. ;-)"
+2013-03-25 20:45:03,livinskull,kevin: tyndur tcpip schaffts anschienend meinen router abzuschiessen btw :)
+2013-03-25 20:45:05,PatrickBic,unveraendert?
+2013-03-25 20:45:08,kevin,Ja
+2013-03-25 20:45:19,PatrickBic,"martinFTW, dann ists hinfaellig :P"
+2013-03-25 20:45:21,kevin,Deswegen sind da Multibootstrukturen und so auch nicht rausgeschnitten
+2013-03-25 20:45:37,martinFTW,livinskull: das war ganz im ernst ein problem von mit das ich länger nicht gesehen hab
+2013-03-25 20:45:48,kevin,livinskull: Yay! :-)
+2013-03-25 20:45:53,livinskull,martinFTW: memcpy?
+2013-03-25 20:45:54,livinskull,:D
+2013-03-25 20:45:55,PatrickBic,ziel erfuellt :D
+2013-03-25 20:45:58,PatrickBic,@ tcpip 
+2013-03-25 20:45:58,kevin,livinskull: Wieder einer mehr in meiner Sammlung!
+2013-03-25 20:46:04,livinskull,lol
+2013-03-25 20:46:44,kevin,"Ämh, ja, irgendeine Ahnung warum? ;-)"
+2013-03-25 20:46:55,livinskull,nich wirklich
+2013-03-25 20:47:01,livinskull,ich glaub evt bin ich selber dranschuld
+2013-03-25 20:47:07,martinFTW,das war nur memcpy und auch nicht aus Lowlevel sondern vonnem andern OS
+2013-03-25 20:47:25,livinskull,weil die ersten paar ma als es passiert is hab ich im betrieb staticip/dhcp geändert
+2013-03-25 20:47:52,PatrickBic,"livinskull, native tyndur oder?"
+2013-03-25 20:48:04,livinskull,was nativ?
+2013-03-25 20:48:09,livinskull,native tcpp treiber
+2013-03-25 20:48:11,livinskull,:P
+2013-03-25 20:48:14,livinskull,+i
+2013-03-25 20:48:17,PatrickBic,du hast es native laufen .. 
+2013-03-25 20:48:28,livinskull,joa so in rl und so
+2013-03-25 20:48:32,livinskull,xD
+2013-03-25 20:48:37,PatrickBic,das war eine frage. und ja 
+2013-03-25 20:48:38,PatrickBic,depp du ^^
+2013-03-25 20:48:42,livinskull,auf qemu läuzfts ja problemlos das is ja langweilig
+2013-03-25 20:49:05,Jidder,wir sagen hier real nicht nativ
+2013-03-25 20:49:05,Jidder,rewe
+2013-03-25 20:49:08,Jidder,und lidl
+2013-03-25 20:49:08,Jidder,aldi
+2013-03-25 20:50:20,livinskull,"martinFTW: void memcpy(void *src, void *dst, int size) {for(;size;size--)*(char)(dst+size)=*(char)(src+size);}"
+2013-03-25 20:50:21,livinskull,:D
+2013-03-25 20:50:31,livinskull,keine Gewähr oder Garantie lol
+2013-03-25 20:50:38,Jidder,falsche signatur ^^
+2013-03-25 20:50:41,livinskull,damn
+2013-03-25 20:50:44,livinskull,stimmt
+2013-03-25 20:50:47,livinskull,erst dst dann src
+2013-03-25 20:51:06,livinskull,außerdem size_t
+2013-03-25 20:51:08,Jidder,jo und rückgabewert fehlt
+2013-03-25 20:51:15,livinskull,memcpy hatn rückgabewert? o.O
+2013-03-25 20:51:25,Jidder,jo das dst das reingekommen ist
+2013-03-25 20:51:26,livinskull,pointer auf dst?
+2013-03-25 20:51:29,livinskull,ahja
+2013-03-25 20:51:49,kevin,Und mit void* rechnet man nicht
+2013-03-25 20:52:20,Jidder,"int memcpy(unsigned int dest, unsigned int src, long long size)"
+2013-03-25 20:52:49,kevin,"Wenn man chars dereferenzieren darf, geht das sicher auch"
+2013-03-25 20:53:09,livinskull,das machst du doch in tyndur auch
+2013-03-25 20:53:10,livinskull,pff
+2013-03-25 20:53:26,kevin,chars dereferenzieren? Das will ich sehen ;-)
+2013-03-25 20:53:30,livinskull,ne
+2013-03-25 20:53:33,livinskull,mit void rechnen
+2013-03-25 20:53:34,livinskull,:P
+2013-03-25 20:53:37,martinFTW,also  gut ich baus jez mal ein aber das ist nicht der grund für den HW #TF
+2013-03-25 20:53:37,kevin,Ach so
+2013-03-25 20:53:37,livinskull,*void*
+2013-03-25 20:53:48,livinskull,martinFTW: neins topp bloss nicht
+2013-03-25 20:53:55,livinskull,das warn witz
+2013-03-25 20:54:05,livinskull,da gehört schon was tolles geprüftes hin
+2013-03-25 20:54:08,kevin,"Ich benutze in tyndur sogar void ohne *, glaube ich"
+2013-03-25 20:54:17,livinskull,what the
+2013-03-25 20:54:21,livinskull,wasn das dann?
+2013-03-25 20:54:22,livinskull,:D
+2013-03-25 20:54:26,kevin,extern const void
+2013-03-25 20:54:34,livinskull,..
+2013-03-25 20:55:08,kevin,Und frag nicht wieso. Because I can. ;-)
+2013-03-25 20:55:35,livinskull,xD
+2013-03-25 20:56:08,kevin,extern const void kernelstack_bottom;
+2013-03-25 20:56:10,kevin,extern const void kernelstack;
+2013-03-25 20:56:13,kevin,Aus src/kernel2/src/init.c
+2013-03-25 21:34:43,martinFTW,ahaa jetzt hab ich zumindest mal ein Teilerfolg wenn ich die ersten 4 MB sturidentity  mappe dann gez..
+2013-03-25 21:35:09,martinFTW,ich will jez aber nur das was auch physisch belegt ist
+2013-03-25 21:39:15,martinFTW,Umweltfreundlich ist das nicht gerade bei dem CD -RW verschleiß
+2013-03-25 21:39:22,martinFTW,:D
+2013-03-25 21:39:33,martinFTW,die gehen aber dauernd kabutt
+2013-03-25 22:22:02,kevin,livinskull: Das entscheidende an deinem kbc-Fix ist das msleep?
+2013-03-25 22:22:41,livinskull,jap
+2013-03-25 22:22:56,livinskull,wobei das init_done wohl auch besser so is
+2013-03-25 22:23:10,livinskull,nich das n interrupt losfeuert wenn noch das ack kommt
+2013-03-25 22:23:14,kevin,Jo
+2013-03-25 22:23:24,kevin,Ich finde eine halbe Sekunde warten für jeden Befehl allerdings ziemlich heftig
+2013-03-25 22:23:30,kevin,Reicht da nicht ein bisschen weniger?
+2013-03-25 22:23:35,livinskull,gute Frage
+2013-03-25 22:23:38,livinskull,vermutlich
+2013-03-25 22:23:42,livinskull,das war mein erster versuch
+2013-03-25 22:23:50,livinskull,yield() hat nicht gereicht
+2013-03-25 22:23:52,kevin,"Hm, sagt die Spec dazu was? Ich glaube nicht, oder?"
+2013-03-25 22:23:57,livinskull,nee
+2013-03-25 22:24:05,livinskull,sind ja auch nur die alten tastas
+2013-03-25 22:24:09,kevin,Das könnte ja jeder...
+2013-03-25 22:24:13,livinskull,hab ins ibm manual geschaut da steht nix dazu drin
+2013-03-25 22:24:51,livinskull,das Problem war das ich ein unknown scancode 0x7e bekommen hab. eigentlich hat die tasta aber n 0xfe (resend) geschickt
+2013-03-25 22:25:08,livinskull,also erstens: der int handler zerstört das resend
+2013-03-25 22:25:22,livinskull,und zweitens: das resend wird nich geprüft weil zu schnell für tasta
+2013-03-25 22:25:47,kevin,"Moment, dann ist er aber aus irgendeinem Grund durch das if (!init_done) durchgekommen?"
+2013-03-25 22:26:12,kevin,Sonst würdest du ja keinen unbekannten Scancode angezeigt bekommen
+2013-03-25 22:26:14,livinskull,ich glaubd as war ebvor ich das geändert hab
+2013-03-25 22:26:15,livinskull,^^
+2013-03-25 22:26:39,kevin,"Kann es sein, dass das die wichtigere Änderung als das msleep ist?"
+2013-03-25 22:26:50,livinskull,ne
+2013-03-25 22:27:22,livinskull,weil wenn ich das sleep wegmach holt der sich das ack so schenll das das keyboard noch gar nciht die chance hatte das 0xfe reinzuschreiben
+2013-03-25 22:27:48,kevin,Kann man das nicht irgendwie über ein Statusregister pollen oder so?
+2013-03-25 22:27:51,livinskull,deswegen kommt das resend überhaupt durch bis zum irq
+2013-03-25 22:27:58,livinskull,"jap, angeblich"
+2013-03-25 22:28:03,livinskull,hab ich versucht
+2013-03-25 22:28:06,kevin,Eventuell inb(0x64) & 0x1?
+2013-03-25 22:28:09,livinskull,hat nur zu ner endlosschleife geführt
+2013-03-25 22:28:17,livinskull,genau
+2013-03-25 22:28:18,livinskull,^^
+2013-03-25 22:28:40,livinskull,also hat in qemu schon zu ner endlosschleife geführt
+2013-03-25 22:28:50,livinskull,auf hw hab ichs dann gar nimemr ausprobiert
+2013-03-25 22:29:29,kevin,Hm...
+2013-03-25 22:37:14,livinskull,also das eigentliche problem war wohl das das keyboard auf enable scanning mit 0xfe geantwortet hat und das nicht abgefangen wurde
+2013-03-25 22:37:23,livinskull,deswegen wurds nie aktiviert
+2013-03-25 22:37:58,livinskull,wobei der linux treiber ja auch sagt das sie 0xfe nicht handlen weil dann die tasta eh kaputt ist lol
+2013-03-25 22:40:36,kevin,Linuxcode hab ich nicht angeschaut
+2013-03-25 22:41:47,livinskull,"ich meine mal irgendwo gelesen haben das ein reset so einiges an zeit braucht das man extra timeouts einbaut, aber von normalen commands  wusst ich ja eh nich das manchmal was zu langsam is -.-"
+2013-03-25 22:49:33,kevin,Die qemu-Log ist komisch
+2013-03-25 22:50:02,livinskull,mit & 0x1 ?
+2013-03-25 22:50:11,kevin,Jo
+2013-03-25 22:50:12,kevin,http://pastebin.com/2AhLCuxh
+2013-03-25 22:50:17,livinskull,ich bin da einfach ma davon ausgegangen das ich inner schleife stecken gebliben bin xD
+2013-03-25 22:50:23,kevin,Sende Befehl
+2013-03-25 22:50:23,kevin,KBD: kbd: write data=0xed
+2013-03-25 22:50:25,kevin,KBD: kbd: read data=0xfa
+2013-03-25 22:50:27,kevin,Warte auf Status
+2013-03-25 22:50:30,kevin,Wo kommt das read data her?
+2013-03-25 22:50:57,kevin,"Dass er danach ewig wartet, ist irgendwie klar"
+2013-03-25 22:51:02,livinskull,lol
+2013-03-25 22:51:04,livinskull,jo
+2013-03-25 22:51:11,livinskull,wasn da passiert
+2013-03-25 22:51:17,kevin,"Ah, ich hab noch den alten IRQ-Handler, der könnt's sein"
+2013-03-25 22:52:09,kevin,"Okay, bootet durch, dafür ist jetzt die Tastatur tot *g*"
+2013-03-25 22:52:20,livinskull,"du meinst, du hast noch den ""IRQ-Hander"""
+2013-03-25 22:52:22,livinskull,:P
+2013-03-25 22:52:32,kevin,Genau *g*
+2013-03-25 22:52:43,kevin,"Hm, das ist alles Mist. Ich stashe jetzt mal und packe erstmal deinen Patch drunter."
+2013-03-25 22:52:53,kevin,Sonst muss ich den bis aufs msleep() komplett nachimplementieren.
+2013-03-25 22:53:23,livinskull,wenn du zum testen n printf() reinmachst is das sleep() übrigens auch schon wieder hinfällig
+2013-03-25 22:53:35,kevin,hehe
+2013-03-25 22:53:44,kevin,"Kann ich mir vorstellen, seriell ist ziemlich langsam"
+2013-03-25 22:53:48,livinskull,jap
+2013-03-25 22:54:21,kevin,"Ui, du hast aber viel Trailing Whitespace in deinem Patch"
+2013-03-25 22:54:29,livinskull,o.O
+2013-03-25 22:55:22,kevin,Ein Hoch auf --whitespace=fix *g*
+2013-03-25 22:57:57,kevin,livinskull: Funktioniert in meinem qemu
+2013-03-25 22:58:23,livinskull,grad sagtest och es geht nicht?
+2013-03-25 22:58:38,livinskull,oder meinste jetzt den patch?
+2013-03-25 22:58:43,kevin,Das war ja ohne deine restlichen Änderungebn
+2013-03-25 22:59:03,livinskull,den patch hab ich in qemu und auf dem p2 mit 2 DIN tastas getestet
+2013-03-25 22:59:31,kevin,Deins und das da oben drauf: http://pastebin.com/T3UcnGjK
+2013-03-25 22:59:35,kevin,Das tut dann in meinem qemu
+2013-03-25 22:59:43,livinskull,und übrigens: lpt wget geht nicht :P
+2013-03-25 22:59:45,kevin,"Ob deine echte Tastatur mitspielt, wäre noch zu testen"
+2013-03-25 23:00:15,livinskull,hm komisch
+2013-03-25 23:00:23,livinskull,ich dachte so ging das nicht bei mir im qemu
+2013-03-25 23:00:30,livinskull,hu ich teste einfach ma
+2013-03-25 23:00:41,kevin,Hattest du da die IRQ-Handler-Änderungen schon?
+2013-03-25 23:00:50,kevin,Weil die braucht man dafür
+2013-03-25 23:01:04,livinskull,"gute Frage, bin ich mir nicht sicher"
+2013-03-25 23:01:10,livinskull,vermutlich nicht dann^^
+2013-03-25 23:01:10,livinskull,xD
+2013-03-25 23:02:56,livinskull,mh also qemu tut
+2013-03-25 23:04:44,livinskull,aber qemu frisst ja eh alles
+2013-03-25 23:04:44,livinskull,xD
+2013-03-25 23:04:55,kevin,Wenn man ihn genug zwingt
+2013-03-25 23:07:38,livinskull,yay und die alte kiste tut auch
+2013-03-25 23:07:49,kevin,Cool :-)
+2013-03-25 23:08:17,livinskull,also nächste baustelle dhcp :S
+2013-03-25 23:08:18,kevin,Ich mach da mal ein Tested-by draus
+2013-03-25 23:08:24,livinskull,:D
+2013-03-25 23:08:31,livinskull,tu das
+2013-03-25 23:08:55,livinskull,das is heir btw ne rtl8139C aber die müsste ja abwärtskompatibel sein 
+2013-03-25 23:09:57,kevin,"Jo, die sollte tun"
+2013-03-25 23:10:14,Guest755,>> Commit in tyndur.git:refs/heads/master
+2013-03-25 23:10:15,Guest755,Autor: Kevin Wolf
+2013-03-25 23:10:15,Guest755,kbc: Statusregister pollen statt hartkodierte Zeit warten
+2013-03-25 23:10:15,Guest755,! kbc: Nach jedem Befehl eine halbe Sekunde warten gibt zwar auch der
+2013-03-25 23:10:15,Guest755,"  ältesten Tastatur genug Zeit, aber wenn man stattdessen im"
+2013-03-25 23:10:15,Guest755,"  Statusregister nachschaut, ist das viel eleganter und der Treiber"
+2013-03-25 23:10:15,Guest755,  startet wesentlich schneller.
+2013-03-25 23:10:15,Guest755,>> Commit in tyndur.git:refs/heads/master
+2013-03-25 23:10:15,Guest755,Autor: Stefan Linke
+2013-03-25 23:10:15,Guest755,kbc: Für langsame Tastaturen angepasst
+2013-03-25 23:10:15,Guest755,! kbc: Der Tastaturtreiber tut hier nun auch mit meinen
+2013-03-25 23:10:15,Guest755,  Steinzeit-DIN Tastaturen :)
+2013-03-25 23:10:52,livinskull,uh da steht so viel :D
+2013-03-25 23:11:50,kevin,Gerade noch rechtzeitig zwei Commits für den März ;-)
+2013-03-25 23:11:56,livinskull,:D
+2013-03-25 23:12:09,kevin,Im Februar hatten wir auch welche. Das ist ja richtige Aktivität zur Zeit *g*
+2013-03-25 23:12:16,XanClic,"Zum Glück ist týndur nicht auf github, wo nach Tagen gemessen wird"
+2013-03-25 23:13:00,kevin,Hat MNemo nicht einen tyndur-Tree auf github?
+2013-03-25 23:13:28,XanClic,There is nothing to see here yet.
+2013-03-25 23:13:30,XanClic,Move along now.
+2013-03-25 23:19:56,livinskull,kevin: wennd jetzt das sleep.h wieder rausnimmst haste sogar noch einen commit ;)
+2013-03-25 23:24:02,livinskull,hätte hier auch noch ne wunderschöne tabelle/matrix rumliegen mit nem vergleich versch. kbc's 
+2013-03-25 23:24:45,livinskull,die aber im Grunde auch nicht mehr aussagt als das man nur die grunlegendsten Befehle verwenedn sollte :P
+2013-03-25 23:25:16,Jidder,man könnte mal die determinate der matrix bestimmen
+2013-03-25 23:25:47,livinskull,ich hätte auch 0-2 reinschreiben können und ne nutzwertanalyse machen können
+2013-03-25 23:25:47,livinskull,xD
+2013-03-25 23:29:53,livinskull,"""""The commands described below may be sent to the keyboard at any time. The keyboard will respond within 20 milliseconds."""
+2013-03-25 23:30:02,livinskull,da steht doch was im IBM manual
+2013-03-25 23:30:29,kevin,"Für den Moment gehe ich einfach mal davon aus, dass das jetzt so tut wie es ist"
+2013-03-25 23:30:44,livinskull,jo
+2013-03-25 23:30:46,livinskull,tut ja auch
+2013-03-25 23:30:47,livinskull,:)
+2013-03-25 23:30:59,kevin,Ich hab's auf meiner Hardware noch nicht getestet
+2013-03-25 23:30:59,livinskull,man könnts natürlich noch auf was neuerem testen
+2013-03-25 23:31:10,kevin,Da hab ich sowieso schon ewig nicht mehr probiert
+2013-03-25 23:31:19,kevin,0.2.1 oder so
+2013-03-25 23:31:31,livinskull,is nicht mehr so einfach ohne floppy
+2013-03-25 23:31:35,kevin,tyndur auf Platte zu installieren ist immer so umständlich
+2013-03-25 23:31:44,livinskull,^^
+2013-03-25 23:31:45,livinskull,genau
+2013-03-25 23:31:53,kevin,"Vor allem, wenn man nie weiß, ob die Netzwerkkarte grad tut oder nicht"
+2013-03-25 23:31:53,livinskull,naja
+2013-03-25 23:31:55,livinskull,dd
+2013-03-25 23:31:55,livinskull,xD
+2013-03-25 23:32:12,kevin,"Nein, das Linux da drauf sollte eigentlich überleben ;-)"
+2013-03-25 23:32:27,kevin,"Reicht, dass ich eine Linuxinstallation damit kaputtgemacht habe"
+2013-03-25 23:32:48,kevin,"Aber GRUB und tyndur waren sich einig, dass das ext2 lesbar ist. Nur Linux wollte nicht mehr. *g*"
+2013-03-25 23:32:48,livinskull,hehe
+2013-03-25 23:32:57,livinskull,dafür wäre meine steinalte 200MB platte perfekt
+2013-03-25 23:33:06,livinskull,leider is die kaputt gegangen
+2013-03-25 23:33:18,kevin,Wo meine 200-MB-Platte hin ist würde ich auch mal gern wissen
+2013-03-25 23:33:37,kevin,So hat mein 486er nur noch Floppy mit entweder kaputtem Laufwerk oder kaputtem Controller
+2013-03-25 23:33:38,livinskull,jetz hab ich ne 12 gig zum testen .. seeehr viel größer
+2013-03-25 23:33:40,kevin,Ich glaube eher letzteres
+2013-03-25 23:33:58,livinskull,bei mir gehen die floppys immer kaputt :S
+2013-03-25 23:34:02,kevin,Alle paar Bootversuche kriege ich mal ein DOS von Floppy gestartet
+2013-03-25 23:35:09,livinskull,dabei hätte ich sogar n usb floppy 
+2013-03-25 23:35:31,kevin,"Naja, Floppies sind eh zu klein"
+2013-03-25 23:39:41,livinskull,nix
+2013-03-25 23:39:44,livinskull,tyndur is zu groß
+2013-03-25 23:39:51,livinskull,:)
+2013-03-25 23:39:57,livinskull,siehe menuetos
+2013-03-25 23:39:58,livinskull,xD
+2013-03-25 23:42:27,kevin,"Du kriegst tyndur schon auf eine Floppy, wenn es sein muss"
+2013-03-25 23:42:34,kevin,Aber halt keinen gcc oder so dazu ;-)
+2013-03-25 23:42:59,livinskull,gcc will man auf tyndur eh nich
+2013-03-25 23:43:00,livinskull,viel zu langsam
+2013-03-25 23:43:01,livinskull,xD
+2013-03-25 23:43:26,kevin,Fix es ;-)
+2013-03-25 23:43:57,livinskull,mikrokernel auf monolith umstellen? :D
+2013-03-25 23:44:28,Jidder,eher von isdn auf dsl
+2013-03-25 23:44:32,livinskull,"bzw was ist denn eigentlich das langsame, hat das schon wer getestet ma?"
+2013-03-25 23:45:00,livinskull,Jidder: hatte noch nie isdn ;)
+2013-03-25 23:45:03,kevin,"Ich schätze I/O, aber so ganz genau hat das wohl lang keiner mehr angeschaut"
+2013-03-25 23:45:37,livinskull,und wirds das alles größer und besser mit liov2? :D
+2013-03-25 23:45:52,livinskull,oder lieber shcneller
+2013-03-25 23:46:41,Jidder,das v2 ist nur marketing
+2013-03-25 23:47:30,kevin,livinskull: Einfachtollerer
+2013-03-25 23:47:33,kevin,"+"" """
+2013-03-25 23:47:46,Jidder,ein fachtollerer
+2013-03-25 23:51:56,livinskull,xD
+2013-03-25 23:52:08,livinskull,oern macht das hab ich gehört
+2013-03-25 23:52:11,livinskull,erinner tihn dran
+2013-03-25 23:52:15,livinskull,xD

@@ -1,0 +1,249 @@
+date/time,nick,message
+2017-04-17 11:48:14,Paddy,Moin
+2017-04-17 13:55:53,Svenska,moin
+2017-04-17 13:55:58,MasterQ32,huhu
+2017-04-17 13:56:05,Svenska,hat wer ahnung von usb? ;)
+2017-04-17 13:56:52,MasterQ32,"ehenkes glaube ich, bin mir aber nüsch sicher"
+2017-04-17 14:00:06,Paddy,"Bei USB verfranze ich mich immer in den Specs, ohne es je richtig verstanden zu haben..."
+2017-04-17 14:00:32,Svenska,"ich hab einfachen (...naja) code gefunden, der ne cdc-acm auf dem avr implementiert"
+2017-04-17 14:05:28,Svenska,"aber da ist das cdc auf device-ebene, und dementsprechend muss der ep0 (endpoint 0) auch die ganzen cdc-anfragen können"
+2017-04-17 14:06:12,Svenska,"ich bau aber ein composite (cdc für debug, msc für funktion), und da möchte ich die treiber möglichst weit voneinander trennen..."
+2017-04-17 14:06:58,Svenska,"also ist das device vom klassentyp ""guckst du interface"", und ich werde aus der spec nicht schlau, ob die ganzen cdc-anfragen jetzt trotzdem beim ep0 ankommen, oder beim cdc-management-endpoint"
+2017-04-17 14:07:07,Svenska,...ich trau denen alles zu.
+2017-04-17 14:16:16,Svenska,"und da ich grad ein debug-interface baue, ist das debugging schwierig ^^"
+2017-04-17 14:21:29,XanClic,"Ich weiß zumindest, dass auch bei Mass-Storage ein paar Sachen beim ep0 ankommen"
+2017-04-17 14:21:48,Svenska,"okay, das hilft mir weiter"
+2017-04-17 14:21:52,XanClic,mit CREQ_CLASS | CREQ_INTERFACE
+2017-04-17 14:22:04,Svenska,du meinst bmRequestType?
+2017-04-17 14:22:10,XanClic,ja
+2017-04-17 14:22:18,XanClic,"Oder wie auch immer das normalerweise heißt. Aber beim CDI-Treiber heißt das so (oder CDI_USB_CREQ_CLASS | CDI_USB_CREQ_INTERFACE, um genauer zu sein)"
+2017-04-17 14:22:41,Svenska,"gilt das auch dann, wenn das msc selbst nicht auf device-ebene deklariert ist?"
+2017-04-17 14:23:37,XanClic,"Wenn nicht, dann ist unser Code falsch"
+2017-04-17 14:23:54,Svenska,mh
+2017-04-17 14:24:38,Svenska,das ist irgendwie doof
+2017-04-17 14:24:56,XanClic,"Irgendwo sollte ich theoretisch auch Code für CBI-Mass-Storage haben… Ich glaube, der hat auch ep0 für die Control-Requests benutzt"
+2017-04-17 14:25:44,Svenska,"der avr hat zwei interrupts für usb, einmal einen device-spezifisch (Start-Of-Frame, End-Of-Reset und so), und einen für alle endpoints"
+2017-04-17 14:26:06,Svenska,"und ich hab im augenblick einfach zwei große tabellen, einmal mit den descriptoren und einmal mit den endpoints, und pro endpoint dann einen handler"
+2017-04-17 14:26:23,ehenkes,usb könnt ihr euch in prettyOS anschauen
+2017-04-17 14:27:11,Svenska,"was natürlich total toll ist, wenn die Default Pipe (also ep0) ständig treiberabhängige requests abkriegt, weil ich dann den parsercode duplizieren muss und das wollte ich vermeiden"
+2017-04-17 14:27:12,ehenkes,"ich könnte jemand brauchen, der sich mit usb-video gut auskennt"
+2017-04-17 14:28:52,Svenska,"...oder das wird bei mir eine große suppe, was ich vermeiden wollte"
+2017-04-17 14:28:55,Svenska,seufz.
+2017-04-17 14:29:45,Svenska,ehenkes: weißt du darüber mehr?
+2017-04-17 14:29:56,Svenska,"ich bau ja ein device, keinen host-treiber"
+2017-04-17 14:31:42,XanClic,"Sagt die CDC-Spec nicht ganz klar, dass CDC nur Bulk-In/Bulk-Out definiert und ansonsten ep0 benutzt?"
+2017-04-17 14:32:22,Svenska,"nein, für cdc brauchst du nur ein control out, und wenn du daten willst, ein bulk-in/out paar"
+2017-04-17 14:32:56,Paddy,XanClic: Apropos CDI-Treiber... *g*
+2017-04-17 14:32:57,XanClic,https://xanclic.moe/_/Screenshot_20170417_143241.png
+2017-04-17 14:33:04,XanClic,Fand ich jetzt relativ eindeutig
+2017-04-17 14:33:29,Svenska,"oh, ich mach cdc-acm"
+2017-04-17 14:33:35,XanClic,Hmk
+2017-04-17 14:33:57,Svenska,"da brauchst du ein acm-out (""communications class"") und dann das bulk-pair (""data class"")"
+2017-04-17 14:34:34,Svenska,"aber das steht in der cdc-spec auch so drin für alle, warum eem das jetzt wegdefiniert, versteh ich nicht"
+2017-04-17 14:40:30,XanClic,"Das wird wegdefiniert, weil Communications Class einen Endpunkt braucht, das Management Element"
+2017-04-17 14:40:36,XanClic,Und das Management Element wiederum besteht aus ep0
+2017-04-17 14:41:10,XanClic,"(“It optionally can have an additional endpoint, the notification element. […] The notification element normally uses an interrupt endpoint.”)"
+2017-04-17 14:41:34,Svenska,"okay, also für acm braucht man ep0 (management), acm (???), bulk-pair (daten)"
+2017-04-17 14:42:01,XanClic,"Und vorher steht “management element” eigentlich nie allein, sondern immer als “management element (endpoint 0)”"
+2017-04-17 14:42:04,ehenkes,über welche usb class reden wir hier?
+2017-04-17 14:42:11,Svenska,"ehenkes: cdc, konkret cdc-acm"
+2017-04-17 14:42:12,XanClic,"Zumindest hier in dieser Spec, die ich jetzt mal als generische CDC-Spec interpretiere…"
+2017-04-17 14:42:27,Svenska,hmm ok
+2017-04-17 14:45:10,Svenska,"also muss der ep0-kram auch treiber-aware sein. nun gut, danke, hat mir sehr geholfen. ;)"
+2017-04-17 14:45:27,XanClic,"Ob das geholfen oder in die Irre geführt hat, erfahren wir später :-P"
+2017-04-17 14:45:42,Svenska,"naja, im schlimmsten fall triggert es nie"
+2017-04-17 14:45:53,ehenkes,CDC haben wir nicht in PrettyOS
+2017-04-17 14:46:14,ehenkes,kenne nur das: https://www.keil.com/pack/doc/mw/USB/html/_c_d_c.html
+2017-04-17 14:47:53,ehenkes,"da ist aufgelistet, welche descriptoren man für ACM/NCM benötigt"
+2017-04-17 14:48:54,ehenkes,dANN. https://www.keil.com/pack/doc/mw/USB/html/group__usbd__cdc_functions__acm.html
+2017-04-17 14:48:56,ehenkes,USW:
+2017-04-17 14:49:43,ehenkes,da findet sich sogar ein code gerüst
+2017-04-17 14:52:53,ehenkes,"vlt. hilft dir das, falls du es noch nicht kennst"
+2017-04-17 14:53:35,Svenska,"naja, das ist für den keil-compiler und deren bibliotheken. ich schreib den treiber ja selbst, insofern..."
+2017-04-17 14:53:55,Svenska,"einmal selbst schreiben, dann darf man auch libs benutzen ^^"
+2017-04-17 14:54:45,ehenkes,"klar, ich finde die auflistungen/übersichten dort gut"
+2017-04-17 14:55:47,Svenska,"jo, hatte ich vorhin mal reingeschaut"
+2017-04-17 14:55:57,ehenkes,ok
+2017-04-17 14:56:01,Svenska,danke
+2017-04-17 14:56:26,ehenkes,ansonsten haben wir ohci/uhci/ehci/xhci bei uns
+2017-04-17 14:56:57,Svenska,"joa, ich hab USB auf nem Atmega32U4 ;)"
+2017-04-17 14:57:18,ehenkes,klingt gut
+2017-04-17 14:57:31,ehenkes,nimmt man da ehci oder xhci?
+2017-04-17 14:57:33,Svenska,...einen maussensor und das teil in ein uvcvideo verwandeln wäre bestimmt auch ein nettes projekt
+2017-04-17 14:57:47,Svenska,"öh, das teil ist nur device-seitig (kein usb-host) und macht auch nur full speed"
+2017-04-17 14:57:59,ehenkes,ah verstehe
+2017-04-17 14:58:12,Svenska,"ob der pc ohci oder uhci spricht, ist relativ egal ^^"
+2017-04-17 14:58:58,ehenkes,wir kennen uns nur von der host seite aus
+2017-04-17 14:59:28,Svenska,darauf bezog sich ja meine frage auch in gewissem sinn :)
+2017-04-17 14:59:53,ehenkes,ich passe
+2017-04-17 15:10:36,Svenska,"nuja, muss ich den code jedenfalls umstrukturieren"
+2017-04-17 15:14:46,MasterQ32,kann ich die konstruktion eines globalen objektes in C++ verzögern?
+2017-04-17 15:15:17,Svenska,"nein, der konstruktor globaler objekte wird vom startup-code aufgerufen"
+2017-04-17 15:15:21,Svenska,der läuft vor main()
+2017-04-17 15:15:34,MasterQ32,okay
+2017-04-17 15:15:53,MasterQ32,"dann muss ich den kram wohl irgendwie in ein globales objekt wrappen, welches ich mit new konstruiere"
+2017-04-17 15:16:03,Svenska,was denn?
+2017-04-17 15:16:15,MasterQ32,OpenGL-Texturen
+2017-04-17 15:16:20,MasterQ32,für Menü-Icons und sowas
+2017-04-17 15:17:24,Svenska,warum willst du die verzögern? weil es langsam ist?
+2017-04-17 15:18:47,MasterQ32,du meinst das laden?
+2017-04-17 15:18:51,Svenska,ja
+2017-04-17 15:19:02,MasterQ32,ganz einfach: weil ich ohne OpenGL-Context keine Texturen erstellen kann
+2017-04-17 15:19:35,Svenska,und warum erzeugst du die instanzen dann nicht manuell?
+2017-04-17 15:19:52,Svenska,(bzw. hast eine init-methode)
+2017-04-17 15:20:03,XanClic,neineineinein das macht man anders
+2017-04-17 15:20:27,XanClic,objects.cpp: char some_texture[sizeof(Texture)];
+2017-04-17 15:20:41,XanClic,Irgendeine andere Datei extern Texture some_texture;
+2017-04-17 15:20:53,XanClic,"Und dann, nachdem der Context erstellt wurde, new (&some_texture) Texture(...);"
+2017-04-17 15:20:57,XanClic,hach bin ich wieder clever heute
+2017-04-17 15:21:00,MasterQ32,aua :D
+2017-04-17 15:21:13,XanClic,"Du bist Aua, dass du überhaupt globale Objekte willst"
+2017-04-17 15:21:24,MasterQ32,hast du ne bessere idee? ;)
+2017-04-17 15:21:27,XanClic,Klar
+2017-04-17 15:21:30,XanClic,Keine globalen Objekte
+2017-04-17 15:21:34,Svenska,lokale objekte.
+2017-04-17 15:21:43,MasterQ32,lokal zu was?
+2017-04-17 15:21:46,XanClic,Schreibs am besten gleich in Haskell
+2017-04-17 15:21:48,XanClic,Das ist eh viel besser.
+2017-04-17 15:22:00,Svenska,menütexturen lokal zum menü?
+2017-04-17 15:22:10,MasterQ32,menü = immediate-gui
+2017-04-17 15:22:15,MasterQ32,existiert nur als function calls
+2017-04-17 15:22:17,Svenska,ui-symbole lokal zur ui?
+2017-04-17 15:22:49,Svenska,wat muss denn die spiellogik von den menü-icons wissen?
+2017-04-17 15:22:49,MasterQ32,ich hab halt für die UI nur einen strauß funktionen
+2017-04-17 15:23:19,XanClic,Das ist aber ganz schlecht designt.
+2017-04-17 15:23:21,Svenska,"globale variablen sind scheiße (exception apply), und objekte sind nur variablen mit aufwand"
+2017-04-17 15:23:36,Svenska,d.h. globale objekte sind aufwändige scheiße ^^
+2017-04-17 15:24:16,XanClic,"Ah, du willst lieber tausend lokale Variablen haben, als die hierarchisch in Strukturen zu wrappen? :-P"
+2017-04-17 15:24:43,Svenska,üblicherweise hab ich ein lokales root-objekt für sowas.
+2017-04-17 15:24:48,MasterQ32,ich werd in der UI ziemlich genau die Icons als Variablen haben
+2017-04-17 15:24:57,Svenska,in perl heißt das sinnvollerweise $data und ist ein hashref
+2017-04-17 15:24:59,Svenska,:D
+2017-04-17 15:25:14,XanClic,"MasterQ32, man kann auch leere Objekte haben, die dann die Funktionen anbieten, die du haben willst"
+2017-04-17 15:25:25,XanClic,"Und dann könntest du die Objekte nicht mehr leer machen, indem du die Texturen reintust…"
+2017-04-17 15:25:37,XanClic,Und plötzlich ergibt alles Sinn und du bist erleuchtet
+2017-04-17 15:25:52,MasterQ32,dann sind die texturen aber auch wieder statisch
+2017-04-17 15:26:00,XanClic,Wieso das denn?
+2017-04-17 15:26:10,MasterQ32,warum soll ich 10 mal das EXAKT gleiche objekt halten?
+2017-04-17 15:26:16,MasterQ32,also logisch gleich
+2017-04-17 15:26:30,XanClic,Hm? Du sollst ein Menu-Objekt haben
+2017-04-17 15:26:38,Svenska,weil du bei objektorientierung mit instanzen arbeitest?
+2017-04-17 15:26:52,XanClic,"Meinetwegen mit Unterobjekten, und das sind dann deine Menüeinträge, wenn du unbedingt willst"
+2017-04-17 15:26:56,Svenska,"wenn du 10 verschiedene symbole hast, dann hast du sinnvollerweise 10 instanzen eines symbol-objekts.."
+2017-04-17 15:27:14,Svenska,"..und die sind natürlich nicht gleich, weil du ja unterschiedliche texturen da reintust,"
+2017-04-17 15:27:16,Svenska,oder?
+2017-04-17 15:27:19,MasterQ32,ja
+2017-04-17 15:27:23,MasterQ32,und wo pack ich die hin?
+2017-04-17 15:27:31,MasterQ32,in das rootobjekt der UI
+2017-04-17 15:27:36,MasterQ32,das gibt es exakt ein mal
+2017-04-17 15:27:46,MasterQ32,also semantisch global
+2017-04-17 15:27:46,Svenska,"wenn du globale variablen willst, dann kannst du das uach global machen"
+2017-04-17 15:27:50,Svenska,"ist halt doof, aber gut ^^"
+2017-04-17 15:28:00,XanClic,class UI { Menu *menu; }; class Menu { std::vector<MenuEntry> entries; }; class MenuEntry { Texture tex; };
+2017-04-17 15:28:11,XanClic,Ich versteh irgendwie dein Problem so ganz überhaupt nicht
+2017-04-17 15:28:42,MasterQ32,"XanClic: jetzt hab ich ne toolbar, nutzt die selben icons"
+2017-04-17 15:28:49,MasterQ32,"gleiches gilt für tooltips, buttons, foobar, ..."
+2017-04-17 15:29:04,XanClic,Ja dann brauchst du halt ein Texturverwaltungssystem
+2017-04-17 15:29:16,XanClic,"Und das wird plötzlich entweder Texture &tex oder Texture *tex, wenn du &tex nicht hinbekommst"
+2017-04-17 15:29:34,XanClic,Und hast eine Texture &fetch_named_texture(const char *name);-Funktion oder was weiß ich
+2017-04-17 15:29:43,XanClic,(Die im Konstruktur vom MenuEntry aufgerufen wird)
+2017-04-17 15:30:09,MasterQ32,ich hab aber gar keine klasse MenuEntry ;)
+2017-04-17 15:30:17,MasterQ32,widerspricht meinem UI-Konzept
+2017-04-17 15:30:29,MasterQ32,(Immediate GUI != Instanced GUI)
+2017-04-17 15:30:32,XanClic,"Meinetwegen kannst du auch ein doofes UI-Konzept haben, wie soll ich dich daran hindern"
+2017-04-17 15:30:53,MasterQ32,immediate gui ist besser weil stateless (um mal auf dein haskell zurückzukommen)
+2017-04-17 15:31:06,XanClic,"Stateless, aber überall globale Variablen?"
+2017-04-17 15:31:21,MasterQ32,wieso überall?
+2017-04-17 15:31:25,XanClic,Weiß ich ja nicht
+2017-04-17 15:31:33,MasterQ32,"ich hab eine globale Variable, die ist const"
+2017-04-17 15:31:39,MasterQ32,die hält mir die Icon-Texturen
+2017-04-17 15:31:56,MasterQ32,"const != state, jedenfalls meiner meinung nach"
+2017-04-17 15:32:02,XanClic,Meinetwegen kannst du jedenfalls oben auch alles const machen und es ist suddenly stateless
+2017-04-17 15:33:13,Svenska,https://gamedev.stackexchange.com/questions/24103/immediate-gui-yae-or-nay
+2017-04-17 15:33:15,XanClic,"Vielleicht ist jedenfalls der zentrale Punkt für dich, dass du einfach eine Liste von Texturen haben solltest, die erst zur Laufzeit gebaut wird"
+2017-04-17 15:33:26,XanClic,Ob das nun eine Hashmap oder ein Vektor mit enum-Indizes ist…
+2017-04-17 15:33:39,Svenska,die erste antwort ist ganz erleuchtend
+2017-04-17 15:34:40,MasterQ32,Svenska: immediate gui != immediate rendering
+2017-04-17 15:36:43,MasterQ32,es kommt eben immer auf die anforderungen an
+2017-04-17 15:37:06,MasterQ32,"ich code nen editor, ich will mich nicht stunden mit der entkopplung von UI und Model beschäftigen, sondern effizient nen verwendbares ergebnis bekommen"
+2017-04-17 15:37:45,Svenska,schrieb er ja: für nen kleinen hack vollkommen okay ;)
+2017-04-17 15:37:57,Svenska,ich hab im früheren zeiten mal einen editor in vb6 angefangen
+2017-04-17 15:38:19,Svenska,"da klickt man sich die gui zusammen, fummelt die ereignisse in ein konsistentes modell und das thema ""gui"" ist durch."
+2017-04-17 15:38:51,Svenska,"geht natürlich mit den heutigen mobil-anforderungen (bunt, blinkend, wenig inhalt, viel werbung, touch) nicht zusammen ^^"
+2017-04-17 15:40:04,MasterQ32,"joar, das stimmt"
+2017-04-17 15:40:14,MasterQ32,"für ""fancy UI"" tuts nicht, aber für ""functional UI"" auf alle fälle"
+2017-04-17 15:40:35,Svenska,"bzw allgemein für ""statische, konsistente ui"""
+2017-04-17 15:40:44,Svenska,"also das, was microsofts ribbons zB nicht sind"
+2017-04-17 15:41:17,Svenska,"modernes ui-design richtet sich halt an iq < 80, da darf man nicht mit möglichkeiten überfordern..."
+2017-04-17 15:42:05,MasterQ32,joar
+2017-04-17 21:04:32,dietzi,Moin XanClic und Svenska :)
+2017-04-17 21:06:13,dietzi,Ich bin mit meinem Treiber ein ganzes Stück weiter gekommen. Durch das Lesen verschiedener Treiber habe ich es endlich hin bekommen Daten erfolgreich zu empfangen
+2017-04-17 21:07:21,dietzi,"Im Moment arbeite ich aber daran, dass der Interrupt richtig ausgelöst wird. Es wird bei aktiviertem NIC einmalig IRQ1 ausgelöst. Ändere ich den IRQ in der NIC-Config, dann passiert gar nichts..... Habt ihr da eine Idee? Scheinbar hängt der NIC an einem APIC"
+2017-04-17 21:09:58,dietzi,Interessant sind hierzu die Seiten 49 und 50 (http://www.yuiop.co.uk/epia/stuff/South%20%20Bridge/VT8235.pdf)
+2017-04-17 21:14:40,Svenska,"wenn ich mich recht entsinne, gibt es vier pci-interrupts A-D, und die musst jemand auf echte irqs umrouten"
+2017-04-17 21:14:48,Svenska,entweder das system-bios oder das betriebssystem
+2017-04-17 21:15:08,Svenska,"hast du auf dem system mal linux gebootet, mit ""debug"" oder so, und das log mitgeschnitten?"
+2017-04-17 21:15:14,dietzi,Wie mache ich das? Das BIOS scheint es ja nicht zu tun
+2017-04-17 21:15:22,dietzi,Habe ich noch nicht
+2017-04-17 21:15:44,Svenska,"das bios muss nur die geräte initialisieren, die es zum booten braucht, es darf aber auch alle anderen geräte initialisieren"
+2017-04-17 21:15:48,Svenska,...dann tu das doch einfach mal
+2017-04-17 21:15:57,dietzi,Moment. Schalte eben mein PXE um
+2017-04-17 21:15:58,Svenska,da dürftest du ziemlich sicher einige interessante dinge finden
+2017-04-17 21:16:15,Svenska,"und mit ein bisschen glück kriegst du sogar ein paar quirks geliefert, die der kernel so hat"
+2017-04-17 21:18:08,dietzi,ich starte jetzt mal DSL mit debug
+2017-04-17 21:25:14,Paddy,"Interrupt Routing ist nichts, worum du dich im Moment kümmern willst. Mit dem PIC gibt es da eh nichts zu machen. Das BIOS konfiguriert einen IRQ für die Karte und gut."
+2017-04-17 21:26:36,dietzi,IRQ1 ist aber sehr unpassen denke ich.... Zumal der Interrupt aktuell nur einmalig ausgelöst wird. Aus Sicht der Performance ist es glaube ich nicht sinnvoll in einer Schleife städnig zu schauen ob Daten angekommen sind oder?
+2017-04-17 21:52:14,Svenska,irq1 sollte nicht dein nic sein
+2017-04-17 21:52:20,Svenska,der sollte eher irq15 oder so sein
+2017-04-17 21:52:26,Svenska,"wie auch immer, ich bin dann mal weg - cya"
+2017-04-17 21:53:55,dietzi,Ich versuche ja das Routing zu ändern.... Nur will das nicht so wie ich will
+2017-04-17 21:54:10,Svenska,du sollst es ja nicht ändern
+2017-04-17 21:54:21,Svenska,"du sollst nur rauskriegen, wie es vom bios aufgesetzt wurde"
+2017-04-17 21:55:02,dietzi,"Laut der NIC-Config ""disabled"" und sobald das erste Paket empfangen wurde wird IRQ1 ausgelöst"
+2017-04-17 21:55:08,dietzi,Aber halt nut einmalig
+2017-04-17 21:55:14,dietzi,EOI wird gesetzt
+2017-04-17 21:55:26,Svenska,irq1 für den nic ist komisch
+2017-04-17 21:55:32,dietzi,Finde ich auch....
+2017-04-17 21:55:42,Svenska,umkehrschluss: verifiziere
+2017-04-17 21:56:05,Svenska,"denn wenn du durch am-nic-rumspielen auch den kbc beeinflussen kannst, dann ist das vllt ein seiteneffekt"
+2017-04-17 21:56:14,Svenska,und dein irq hat genau garnix mit dem nic zu tun
+2017-04-17 21:56:54,dietzi,"Wenn ich den NIC im Power Management deaktiviere, dann hält auch IRQ1 Ruhe bis ich die Tastatur betätige"
+2017-04-17 21:59:52,Svenska,"nach deinem letzten bug kann es auch sein, dass du glaubst, dass du den nic abschaltest, aber in wahrheit irgendwas anderes auch tust ^^"
+2017-04-17 22:00:00,Svenska,aber ich bin trotzdem weg - cya :D
+2017-04-17 22:00:05,dietzi,Bye
+2017-04-17 22:52:37,dietzi,Paddy: hast du eine Idee wieso der IRQ1 ausgelöst wird? Ich habe mittel etherwake getestet ob IRQ1 im Zusammenhang mit einem empfangenen Paket steht: es ist so
+2017-04-17 22:53:10,Paddy,Was sagt denn dein BIOS beim Booten zu der Karte?
+2017-04-17 22:53:19,dietzi,IRQ15
+2017-04-17 22:54:00,Paddy,Hast du  deinen Code irgendwo online?
+2017-04-17 22:54:18,dietzi,Moment. Ich synce kurz mit guthub
+2017-04-17 23:03:50,Paddy,"Hm... Wenn ich den aktuellen lbuilds-Compiler benutze, dann baut ja die Hälfte gar nicht mehr :-/"
+2017-04-17 23:04:10,Paddy,Wie soll man denn so ein Release machen?
+2017-04-17 23:04:47,dietzi,Github ist gleich fertig. Hier kannst du auch schon lesen: https://www.dj-dietz.de/docu/html/
+2017-04-17 23:05:07,dietzi,Entscheidend sind via.c und pci.c
+2017-04-17 23:07:30,Paddy,Nein
+2017-04-17 23:07:33,Paddy,Entscheidend ist intr.c
+2017-04-17 23:07:42,Paddy,Schau dir mal deine  idt_set_entry()-Aufrufe an
+2017-04-17 23:07:46,dietzi,Hatte ich auch schon im Visir....
+2017-04-17 23:08:05,Paddy,Dann sollte dir das Problem aufgefallen sein
+2017-04-17 23:08:16,dietzi,Die sind aus dem Tutorial vom tyndur-git
+2017-04-17 23:08:50,Paddy,Nur die richtigen
+2017-04-17 23:08:55,Paddy,Die falschen hast du selber gemacht
+2017-04-17 23:09:00,dietzi,Welche?
+2017-04-17 23:09:08,dietzi,Habe da gar nichts geändert.....
+2017-04-17 23:09:10,Paddy,Doch
+2017-04-17 23:09:21,Paddy,tutorial.git hat nur IRQ 0 und 1
+2017-04-17 23:09:46,dietzi,Stimmt
+2017-04-17 23:09:52,Paddy,"Wenn man schon den eigentlichen Code kopiert, dann sollte man wenigstens das Anpassen richtig machen ;-)"
+2017-04-17 23:10:25,dietzi,"Du meinst vermutlich intr_stub_error_code bei 8, 10, 11, 12, 13, 14 und 7"
+2017-04-17 23:10:26,dietzi,17
+2017-04-17 23:10:43,Paddy,Nein
+2017-04-17 23:10:47,Paddy,[23:07] <Paddy> Schau dir mal deine  idt_set_entry()-Aufrufe an
+2017-04-17 23:10:57,dietzi,LOL......
+2017-04-17 23:10:59,dietzi,Sehe es grad
+2017-04-17 23:11:03,dietzi,Zum heulen
+2017-04-17 23:11:11,Paddy,Wenn du für IRQ 15 den Handler von IRQ 1 aufrufst...
+2017-04-17 23:11:56,dietzi,Da hast du wohl nicht ganz unrecht..... So genau hab ich da nie hin geschaut....
+2017-04-17 23:12:15,dietzi,Und schon kommt IRQ15
+2017-04-17 23:12:17,dietzi,Daaaaaaaaaaanke
+2017-04-17 23:14:01,dietzi,Jetzt kommt der IRQ auch bei jedem Paket und bei LinkChanged
+2017-04-17 23:14:14,dietzi,Da hab ich wohl den Wald vor lauter Bäumen nicht gesehen.....

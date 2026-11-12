@@ -1,0 +1,50 @@
+date/time,nick,message
+2015-04-05 00:11:03,Paddy,Eigentlich wird der Fall schon abgefangen. Nur tut das irgendwie nicht... :-/
+2015-04-05 00:11:14,Paddy,Jetzt liegt bestimmt der Stack im ROM oder sowas
+2015-04-05 00:11:29,XanClic,"Ja, das war ja der Fehler von wegen „Pagetableeintrag doppelt belegt“"
+2015-04-05 00:11:36,XanClic,Da lag der Speicher im Video-RAM
+2015-04-05 00:11:41,XanClic,Also die Pagetable
+2015-04-05 00:11:43,Paddy,Ah?
+2015-04-05 00:12:03,XanClic,http://git.tyndur.org/?p=tyndur/max.git;a=commit;h=265ae16533e66e40832d18d04731d92dcd4657b9
+2015-04-05 00:12:05,Paddy,Ach ist das das mit > 4 GB?
+2015-04-05 00:12:11,XanClic,jo
+2015-04-05 00:13:20,Paddy,"Kommt davon, wenn tyndur mal die Fixes aus Paddygree nicht kopiert ;-)"
+2015-04-05 00:14:34,Paddy,"In resolve_symlink() gibt es ja so einen schönen Parameter depth, der mitzählen soll, damit man bei Endlosrekursion abbrechen kann"
+2015-04-05 00:14:39,Paddy,Nur bleibt der bei mir irgendwie immer 0
+2015-04-05 00:14:57,XanClic,Gibts denn eine Endlosrekursion?
+2015-04-05 00:15:06,Paddy,Jo
+2015-04-05 00:15:10,XanClic,Schade *g*
+2015-04-05 00:15:34,Paddy,Wegen diesem Bindestrich erkennt der Kernel usb-storage:/ nicht als absoluten Pfad
+2015-04-05 00:15:44,Paddy,Und damit wird file:/ halt zu file:/usb-storage:/ aufgelöst
+2015-04-05 00:16:16,XanClic,Und das lässt sich nicht fixen?
+2015-04-05 00:16:31,Paddy,"Doch, ich kann den Bindestrich erkennen ;-)"
+2015-04-05 00:16:37,Paddy,Aber das löst das Grundsatzproblem ja nicht
+2015-04-05 00:16:50,XanClic,So mit x[0] != ':' || x[1] != '/' statt !isalpha(x[0]) oder was das aktuell ist?
+2015-04-05 00:17:07,Paddy,Beides zusammen ist das
+2015-04-05 00:17:16,Paddy,"Erst isalnum(), dann :/"
+2015-04-05 00:17:21,XanClic,Das ist ja :-/
+2015-04-05 00:17:35,XanClic,Dann würd ich das isalnum() wegwerfen ;-)
+2015-04-05 00:17:42,XanClic,"Und durch ein !isspace() ersetzen, wenn es sein muss"
+2015-04-05 00:18:04,Paddy,"Naja, aber eine falsche Eingabe sollte keine Endlosrekursion auslösen"
+2015-04-05 00:18:14,Paddy,"Vor allem nicht, wenn schon Code da ist, der das eigentlich behandeln müsste"
+2015-04-05 00:18:14,XanClic,Das ist doch ein ganz anderes Problem jetzt *g*
+2015-04-05 00:18:48,Paddy,"Ich würde jetzt gern verstehen, warum depth bei 0 bleibt statt zu zählen"
+2015-04-05 00:18:54,Paddy,Das macht irgendwie keinen Sinn
+2015-04-05 01:06:28,Paddy,"Ah. Ich glaube, ich verstehe, was da passiert. Klingt nach einer guten Zeit, um ins Bett zu gehen, bevor ich noch rausfinde, warum es doch komplizierter ist."
+2015-04-05 01:06:37,XanClic,*g*
+2015-04-05 01:06:40,XanClic,gn8
+2015-04-05 12:26:49,tyndur,>> Commit in tyndur.git:refs/heads/master 'kernel2: Fast alle Zeichen in Servicenamen erlauben' (Kevin Wolf)
+2015-04-05 12:26:49,tyndur,"* kernel2: Bei der Prüfung, ob ein Pfad absolut ist, wird jetzt nur noch die absolut nötige Bedingung geprüft: Wenn im Pfad '/' oder '|' vor ':/' kommen, dann ist der Pfad relativ oder servicerelativ. Alles andere ist jetzt ein absoluter Pfad. Damit darf man auch Zeichen wie Bindestriche in Servicenamen verwenden (z.b. 'usb-storage')."
+2015-04-05 12:26:50,tyndur,>> Commit in tyndur.git:refs/heads/master 'kernel2: Symlink-Loops mit Service-Wurzel erkennen' (Kevin Wolf)
+2015-04-05 12:26:50,tyndur,"! kernel2: Commit 3c4bc904c hat versucht, den Kernel Symlink-Schleifen überleben zu lassen, indem er SYMLOOP_MAX implementiert. Falls der Symlink allerdings an einer Service-Wurzel ist (wie bei file:/) geht der Codepfad ein bisschen anders und die aktuelle Verschachtelungs- tiefe muss durch mount() durchgeschleift werden, damit korrekt gezählt wird und es keinen Stack Overflow gibt."
+2015-04-05 14:59:04,Paddy,"Na endlich! Ganz schönes Gebastel, bis man unter tyndur einen Treiber durchgebaut bekommt."
+2015-04-05 14:59:33,Paddy,Aber wenigstens tut er
+2015-04-05 21:09:47,XanClic,"Paddy, gute Nachricht: IRQs per PCI pro Gerät deaktivieren tut"
+2015-04-05 21:09:55,XanClic,Schlechte Nachricht: Der IRQ kam vom HC selbst
+2015-04-05 21:10:04,XanClic,Gute Nachricht: Ich hab das Problem gefunden
+2015-04-05 21:10:18,XanClic,Der Treiber hat zwei HCs auf IRQ 11 verwaltet
+2015-04-05 21:10:41,XanClic,"Beide haben also versucht, den IRQ zu registrieren, was die CDI-Bibliothek von týndur nicht so toll fand"
+2015-04-05 21:10:49,XanClic,Aber stderr landet ja leider im Nirvana und deshalb hab ich das nie mitbekommen
+2015-04-05 21:11:20,XanClic,"Und dann sollte der zweite HC arbeiten, hat also IRQs generiert, die dann für den ersten behandelt wurden… Wo dann nicht viel passiert ist"
+2015-04-05 23:10:56,Paddy,XanClic: Klingt gut. Mein anderer Rechner war nämlich auch irgendwie langsam.
+2015-04-05 23:12:59,Paddy,"Dafür hab ich neue VM86-Probleme gefunden. Dein alter Hack hat auf dem Laptop wunderbar funktioniert, der neue langweilige Code tut nicht mehr (aber dafür in KVM)"

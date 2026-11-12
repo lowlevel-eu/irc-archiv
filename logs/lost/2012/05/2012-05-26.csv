@@ -1,0 +1,74 @@
+date/time,nick,message
+2012-05-26 11:07:04,mep,moin
+2012-05-26 11:07:52,taljeth,Moin
+2012-05-26 11:10:11,mep,ich habe ein Problem. Jeder Prozess hat bei meinem Kernel einen eigenen Kernel Stack für Aufrufe der Kernel API über Sysenter
+2012-05-26 11:11:26,mep,"wenn der Laufende Aufruf vom Taskswitscher unterbrochen wird, wird ja der Privileg-Ring nicht gewechselt dh. auch ESP nicht gespeichert"
+2012-05-26 11:11:53,mep,Anstatt ESP wird ja nun der ESP0 wert aus dem TSS geholt
+2012-05-26 11:12:56,mep,damit zerstört der Taskwechsel den Kernel Stack des Prozesses. Kann man das irgendwie verhindern?
+2012-05-26 11:22:14,taljeth,"Versteh ich nicht ganz, wieso das irgendwas zerstört"
+2012-05-26 11:23:19,mep,beim taskwechsel von einem Ring 0 auf einen Ring 0 Prozess geht ESP verloren
+2012-05-26 11:23:21,taljeth,"Du meinst, während du gerade im Kernelcode bist, um einen Syscall auszuführen, bekommst du einen Timer-IRQ. Richtig?"
+2012-05-26 11:23:37,mep,ja
+2012-05-26 11:23:41,taljeth,"Nein, esp bleibt wie es ist"
+2012-05-26 11:23:45,taljeth,Es geht nicht verloren
+2012-05-26 11:24:12,mep,doch klar. Es wird Ja ESP0 aus dem TSS in ESP geschrieben
+2012-05-26 11:24:17,taljeth,Aus dem TSS kommt es nur bei einem Ringwechsel
+2012-05-26 11:25:19,mep,"ok. dh, beim wiederherstellen stellt es dann auch Automatisch ESP wieder her, auch wenn es nicht vom int aus auf den Stack liegt#"
+2012-05-26 11:26:43,taljeth,Genau
+2012-05-26 11:30:23,PatrickBic,"ich hab auch ne frage und ich find keinen ansatzpunkt (vllt mag mir wer nen ""stupser"" inne richtige richtung geben):   wenn ich paging einschalt kommen keine interrupts mehr (sei es via __asm__ volatile(""int $0x3"") oder via bsp keyboard/pic)... wenn paging aus bleibt dann gehen die interrupts"
+2012-05-26 11:31:47,taljeth,"Hm, als Schuss ins Blaue würde ich mal sagen, dass dein Interrupthandler nicht richtig gemappt ist"
+2012-05-26 11:32:43,taljeth,"Obwohl, dann würden Softwareinterrupts auch nicht gehen"
+2012-05-26 11:33:42,taljeth,"Halt, ich glaube, ich habe dich falsch verstanden - es gehen gar keine mehr, weder Software-Ints noch IRQs, richtig?"
+2012-05-26 11:34:58,PatrickBic,exakt
+2012-05-26 11:34:58,bluecode,moinsen
+2012-05-26 11:35:09,taljeth,Moin bluecode
+2012-05-26 11:35:19,taljeth,PatrickBic: Dann würde ich wie gesagt auf nicht/falsch gemappte Handler tippen
+2012-05-26 11:36:21,PatrickBic,aber sollte ich dann nicht nen page-fault (durch falschen/keinen handler dann double fault/triple fault) undn reboot kriegen?
+2012-05-26 11:37:36,taljeth,Kommt drauf an
+2012-05-26 11:37:52,taljeth,"Mit etwas ""Glück"" zeigt dein Mapping halt nur auf einen freien Speicherbereich"
+2012-05-26 11:38:28,taljeth,"Da stehen dann ganz viele Nullen, das ist irgendein add-Opcode. Das gibt aus Prozessorsich auch einen tollen Interrupthandler, aber es bewegt sich halt nichts mehr."
+2012-05-26 11:40:38,PatrickBic,aber inwiefern ist dann falsch gemeint.. setup technisch oder irendwas (was mir nicht einfaellt wie) paging technisches?
+2012-05-26 11:43:09,taljeth,Ich hätte eher letzteres gedacht
+2012-05-26 11:43:25,taljeth,Dass halt die Page woanders hin gemappt ist als du denkst
+2012-05-26 11:46:11,PatrickBic,"http://i45.tinypic.com/14v0nip.png   ohne paging    |   http://i49.tinypic.com/2ihnybr.png   mit                                isr3 is software, irq33 halt eh normal keypress/release"
+2012-05-26 11:58:37,PatrickBic,"taljeth, ich hab zu deinem ansatzpunkt mal google befragt und nen paar osdev foreneintraege gefunden.. wenngleich scheinbar das forum im moment down/sehr-langsam ist"
+2012-05-26 11:58:42,PatrickBic,danke mal fuer den tipp =)
+2012-05-26 12:13:02,taljeth,"PatrickBic: Ansonsten, wenn du gar nichts findest, kannst du dir auch einfach mal anschauen, was die VM grad macht."
+2012-05-26 12:13:16,taljeth,"Bei bochs weiß ich nicht auswendig, wie das geht, aber da gibt es ja auch einen Debugger"
+2012-05-26 12:16:50,PatrickBic,"taljeth, reihenfolge is schon gdt, idt (isr, irq), pic, pmm_init, paging ?"
+2012-05-26 12:17:20,taljeth,"Wenn man es richtig macht, geht fast jede Reihenfolge"
+2012-05-26 12:17:31,taljeth,Deine sieht ziemlich normal aus
+2012-05-26 12:50:28,PatrickBic,"taljeth, mein paging init hatte schonmal nen fehler"
+2012-05-26 12:51:00,PatrickBic,"nun laeuft das schonmal durch (also wie vorher nur das interrupts gehen) aber ""haut sich dann sofort weg"" :P"
+2012-05-26 12:51:03,taljeth,"Das gehört dazu. Wenn es nur einer wäre, wärst du schon eine Ausnahme. ;-)"
+2012-05-26 12:51:35,taljeth,Haut sich weg heißt Triple Fault?
+2012-05-26 12:51:40,PatrickBic,nö
+2012-05-26 12:52:07,PatrickBic,"bei page-fault is bei mir: (a) output aller register (b) ausgeben welche page, welche eigenschaften usw (c) cli (d) endless-loop "
+2012-05-26 12:52:13,PatrickBic,so hab nun das gefixt jetzt laeufts =)
+2012-05-26 12:53:16,taljeth,"So, ist auch sinnvoll. Aber wenn das Paging kaputt ist, ist es oft so kaputt, dass dieser Handler auch nicht mehr weit kommt ;-)"
+2012-05-26 12:53:27,PatrickBic,http://pastebin.com/i9uCVvGm  
+2012-05-26 12:53:34,PatrickBic,alt + neu
+2012-05-26 12:54:13,PatrickBic,ich seh nur r/b (bei page_directory den unterschied) .. der rest ist zwar nicht gleich sollte aber dasselbe tun
+2012-05-26 12:55:20,taljeth,Unten ist Blödsinn
+2012-05-26 12:55:34,taljeth,Der Compiler muss die Register zwischen zwei asm-Befehlen nicht in Ruhe lassen
+2012-05-26 12:55:53,taljeth,"Dein %eax ist also höchstwahrscheinlich längst kaputt, bevor du was dazuoderst und es wieder zurückschreibst"
+2012-05-26 12:56:12,PatrickBic,ich dacht ich spar mir die variable und or'e das so 
+2012-05-26 12:56:18,PatrickBic,falsch gedacht offensichtlich :P
+2012-05-26 12:56:23,taljeth,"Kannst du auch, aber dann musst du alles in einem asm machen"
+2012-05-26 12:57:15,taljeth,"asm(""mov %cr0, %eax\n or $0x80000000, %eax\n mov %eax, %cro0"" ::: ""eax"");"
+2012-05-26 12:57:22,PatrickBic,also __asm__ volatile { hier alles rein} anstatt alle einzeln?
+2012-05-26 12:57:22,PatrickBic,ah ja
+2012-05-26 12:57:39,PatrickBic,*falsche klammer 
+2012-05-26 12:57:51,taljeth,"Unten hast du übrigens auch die Operandenreihenfolge vertauscht, wie wenn es Intel-Syntax wäre"
+2012-05-26 12:58:04,taljeth,Und das $ vor der Konstante vergessen
+2012-05-26 12:59:02,PatrickBic,also kurz gesagt: total falsch :P
+2012-05-26 13:00:22,taljeth,"So wollte ich es nicht ausdrücken, aber... schon. *g*"
+2012-05-26 13:14:42,PatrickBic,super wlan wieder hier :P
+2012-05-26 14:22:02,JanDing,moin moin
+2012-05-26 18:08:29,taljeth,"Hm, Flash ist multithreaded?"
+2012-05-26 18:08:55,taljeth,200% CPU schaffen sonst nicht viele Programme...
+2012-05-26 21:15:08,JanDing,welcher email client versendet die nachricht automatisch bei einem alt-f4?
+2012-05-26 21:15:10,JanDing,meiner
+2012-05-26 21:15:12,JanDing,scheisse
+2012-05-26 21:41:31,bluecode,j0
+2012-05-26 21:49:35,JanDing,ya

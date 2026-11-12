@@ -1,0 +1,62 @@
+date/time,nick,message
+2010-04-17 19:39:41,eddyb,aaah
+2010-04-17 19:39:51,eddyb,I was just wondering where did i9 go...
+2010-04-17 19:40:10,eddyb,it's Gulftown/Core i7-980X :P
+2010-04-17 19:42:17,eddyb,"dammit, it's $1000"
+2010-04-17 19:47:58,eddyb,taljieth: ping
+2010-04-17 20:14:14,taljeth,eddyb: pong
+2010-04-17 20:15:26,eddyb,so
+2010-04-17 20:15:36,eddyb,matt wants to write a CDI sata driver
+2010-04-17 20:16:11,eddyb,and there is no scsi interface for CDI right now
+2010-04-17 20:16:14,eddyb,am I right?
+2010-04-17 20:16:41,taljeth,"There is something which is used for ATAPI, but it's most likely very incomplete"
+2010-04-17 20:17:19,eddyb,actually
+2010-04-17 20:17:23,taljeth,"Hm, should I read yesterday's IRC logs for #pedigree?"
+2010-04-17 20:17:28,eddyb,why?
+2010-04-17 20:17:32,eddyb,nothing there
+2010-04-17 20:17:34,eddyb,afaik
+2010-04-17 20:17:37,taljeth,"Ah, ok"
+2010-04-17 20:17:45,taljeth,Was just assuming that you discussed it with Matt there
+2010-04-17 20:17:51,eddyb,nope
+2010-04-17 20:18:09,eddyb,the SCSI layer in pedigree was discussed long ago
+2010-04-17 20:18:26,eddyb,yet only a couple a days ago i managed to write it
+2010-04-17 20:19:04,taljeth,Pushed already?
+2010-04-17 20:19:18,eddyb,nope
+2010-04-17 20:19:23,taljeth,Ok
+2010-04-17 20:20:21,eddyb,"what a SCSI controller driver has to implement is a method, in my code being void sendCommand(size_t nUnit, uintptr_t pCommand, uint8_t nCommandSize, uintptr_t pRespBuffer, uint16_t nRespBytes, bool bWrite);"
+2010-04-17 20:20:52,eddyb,also a method to retrieve the number of units on the controller
+2010-04-17 20:21:32,eddyb,"considering the other part of the SCSI layer is implemented within the OS, that's all :D"
+2010-04-17 20:22:52,taljeth,http://git.tyndur.org/?p=cdi.git;a=blob;f=include/cdi/scsi.h;h=8edccbf6707c29ce5289b4f499e01a0d728e6e19;hb=HEAD
+2010-04-17 20:22:56,taljeth,This is how it's defined in CDI
+2010-04-17 20:23:35,taljeth,"However, I'm absolutely open for improving that interface"
+2010-04-17 20:24:14,taljeth,I think it was just hacked together then to be able to handle CD-ROM in some way
+2010-04-17 20:24:26,eddyb,hmm
+2010-04-17 20:24:49,eddyb,"if you really want to use a structure(for the command), I'm ok with that"
+2010-04-17 20:25:29,taljeth,I think it's nicer than a function with lots of arguments
+2010-04-17 20:25:43,taljeth,But probably a matter of taste
+2010-04-17 20:25:45,eddyb,"you'd only need to add a 8bit ""lun"" field to the structure"
+2010-04-17 20:26:17,eddyb,and that method to retrieve the number of units
+2010-04-17 20:26:19,eddyb,or
+2010-04-17 20:26:32,taljeth,That's handled via the cdi_device* pointer passed to request()
+2010-04-17 20:26:46,taljeth,A SCSI device surely should know its LUN
+2010-04-17 20:27:17,eddyb,"a 8bit ""max_lun"" field in cdi_scsi_driver"
+2010-04-17 20:27:27,eddyb,hmm
+2010-04-17 20:27:35,taljeth,cdi_scsi_device I think.
+2010-04-17 20:27:48,eddyb,max lun as in number of units
+2010-04-17 20:27:49,taljeth,"Ah, max_lun. Yes, that may be suited in the driver"
+2010-04-17 20:27:54,eddyb,"""considering the other part of the SCSI layer is implemented within the OS"""
+2010-04-17 20:28:45,eddyb,"matt asked for a SCSI layer *inside* pedigree, so cdi should only provide the minimal stuff"
+2010-04-17 20:30:04,taljeth,"We should enable OSes to do whatever they want to do, i.e. we can do more in CDI, but allow Pedigree to ignore that part"
+2010-04-17 20:30:16,eddyb,"ah, ok"
+2010-04-17 20:37:47,eddyb,"some while ago, while looking at some linux driver, I noticed the resemblance between linux drivers and CDI ones, and an idea came..."
+2010-04-17 20:38:23,eddyb,how hard could it be to hack together some macros and functions and make them work under CDI?
+2010-04-17 20:38:46,XanClic,"I got that idea, too, and I know another one who wonderend about that *g*"
+2010-04-17 20:38:47,taljeth,"You could have a try, but I'd say very hard"
+2010-04-17 20:39:28,taljeth,"The problem is that while the drivers' structure looks similar (they are drivers implementing the same, after all), Linux drivers use all kinds of Linux functions"
+2010-04-17 20:39:46,eddyb,*macros*
+2010-04-17 20:40:21,taljeth,That starts with their interface to upper layers and doesn't end with memory management and VFS access
+2010-04-17 20:40:43,taljeth,"If there isn't a clear 1:1 mapping, writing macros to do that will prove hard"
+2010-04-17 20:41:00,taljeth,And I honestly doubt that there is a 1:1 mapping
+2010-04-17 20:42:25,eddyb,you underestimate me >:)
+2010-04-17 20:42:30,taljeth,"But hey, I don't want to discourage you if you want to have a try. Might be an interesting project."
+2010-04-17 20:42:54,taljeth,Just not something for one Saturday evening ;-)

@@ -1,0 +1,124 @@
+date/time,nick,message
+2016-04-18 11:52:00,Jonathan,Moin
+2016-04-18 11:53:22,kevin,Moin
+2016-04-18 11:54:11,masterq32,huhu
+2016-04-18 12:51:06,Jonathan,"kevin, du kennst dich doch sicherlich mit Dateisystemen aus? ;)"
+2016-04-18 12:55:34,kevin,Jonathan: Geht so
+2016-04-18 12:56:46,Jonathan,Hmmm :D
+2016-04-18 13:00:01,Jonathan,"Also, was ich mir gedacht habe: Das VFS selbst hat nur ein Handle auf den Root-FS-Treiber (der ein einfaches RAM-FS wird, mit Unterstützung für Dateien, Verzeichnisse, und Symlinks)"
+2016-04-18 13:00:20,Jonathan,Jedes Dateisystem muss diese drei Typen von Objekten speichern können
+2016-04-18 13:01:02,Jonathan,Das Root-FS enthält dann Symlinks auf die anderen Dateisysteme
+2016-04-18 13:01:42,Jonathan,"Und wenn ein Pfad aufgelöst werden soll, wird eine Linked List aus Dateisystemobjekten erzeugt"
+2016-04-18 13:02:22,Jonathan,Jedes Objekt im Pfad wird geöffnet und bekommt automatisch ein Handle auf seinen Parent mitgegeben
+2016-04-18 13:02:50,Jonathan,(Bereits geöffnete Objekte bekommen den Refcount erhöht)
+2016-04-18 13:03:04,Jonathan,"Solange ein Objekt geöffnet ist, darf ein Treiber es nicht löschen"
+2016-04-18 13:03:19,Jonathan,"Und wenn ein Objekt geschlossen wird, wird auch der Refcount vom Parent erniedrigt"
+2016-04-18 13:09:35,kevin,Kann man machen
+2016-04-18 14:13:49,masterq32,find . -is-common-with cmake
+2016-04-18 14:30:14,kevin,Parse error
+2016-04-18 14:35:16,Jonathan,"""Kann man machen"" klingt gut, kevin ;)"
+2016-04-18 14:35:42,kevin,Jonathan: Aber was hatte das jetzt mit Dateisystemen zu tun? ;-)
+2016-04-18 14:35:47,Jonathan,Hmmm *g*
+2016-04-18 14:35:50,Jonathan,VFS halt? ;)
+2016-04-18 14:36:06,kevin,"VFS != Dateisystem, also bei mir jedenfalls"
+2016-04-18 14:36:35,Jonathan,"Gut, gut"
+2016-04-18 14:36:41,Jonathan,Immer diese blöden Fachausdrücke ;)
+2016-04-18 14:36:54,Jonathan,"Also, es ging um das VFS :P"
+2016-04-18 14:37:51,kevin,"Wie machst du das, wann ein Objekt wieder freigegeben wird?"
+2016-04-18 14:39:13,Jonathan,Jedes Objekt hat ja ein Handle zum Parent
+2016-04-18 14:39:29,Jonathan,"(Also zum übergeordneten Verzeichnis, dann wieder zum übergeordneten Verzeichnis, etc)"
+2016-04-18 14:40:06,Jonathan,"Wenn ein Objekt geschlossen wird, das von einem Prozess verwendet wird, schließt der Destruktor des Objekts automatisch das Handle zum Parent"
+2016-04-18 14:40:39,kevin,"Hm, anders"
+2016-04-18 14:40:42,Jonathan,"Und wenn das geschlossene Handle die letzte Referenz auf den Parent war, wird der Kernel auch den Parent aufräumen (und entsprechend den Destruktor aufrufen)"
+2016-04-18 14:40:51,kevin,"Dein VFS hält ja irgendwie Verzeichnisbäume im Speicher, oder?"
+2016-04-18 14:41:06,kevin,Aber vermutlich nicht das komplette FS auf einmal?
+2016-04-18 14:41:45,Jonathan,Jo
+2016-04-18 14:42:00,Jonathan,"Für jedes Objekt werden eben alle Parents geladen, bis Root"
+2016-04-18 14:42:23,kevin,"Und wenn der Refcount 0 ist (also keine Datei mehr geladen), wird es sofort aus dem Speicher gelöscht?"
+2016-04-18 14:42:32,Jonathan,Ja
+2016-04-18 14:42:33,kevin,s/geladen/geöffnet/
+2016-04-18 14:42:53,Jonathan,"Bzw. nur die Verzeichnisse, in denen nichts mehr geöffnet ist"
+2016-04-18 14:43:02,Jonathan,(Eben Refcount = 0)
+2016-04-18 14:43:03,kevin,Und beim nächsten open() musst du dann wieder jedes Verzeichnis im Pfad einzeln wieder reinladen
+2016-04-18 14:43:20,kevin,Also n Aufrufe in den FS-Treiber
+2016-04-18 14:43:23,Jonathan,"Ja, allerdings ist das nur die Kernelrepräsentation der offenen Objekte"
+2016-04-18 14:43:33,Jonathan,"(Ich bin hier auf nem 8088, Caches sind teuer *g*)"
+2016-04-18 14:43:59,kevin,Hm...
+2016-04-18 14:44:26,kevin,"Massig Plattenzugriffe sind doof, aber wenn du keinen Speicher hast, ist das natürlich ein Argument"
+2016-04-18 14:48:45,Jonathan,Joa ;)
+2016-04-18 14:49:14,Jonathan,Caching würde ich eventuell später dazubasteln
+2016-04-18 14:49:37,Jonathan,Mit dem System kann ich ja recht einfach zusätzliche Handles auf die Objekte erzeugen und sie so geladen halten
+2016-04-18 14:50:04,Jonathan,"Womöglich auch mit Regeln: Nur für langsame Medien cachen, bei sowas wie nem ROM-FS ist ein Cache überflüssig"
+2016-04-18 14:58:34,Svenska,moin
+2016-04-18 14:58:37,Jonathan,Moin Svenska :D
+2016-04-18 14:58:49,Jonathan,Ich hab mich jetzt doch für 64k fixed ROM + 32k banked ROM entschieden ;)
+2016-04-18 14:58:55,Svenska,:)
+2016-04-18 14:59:43,Svenska,ich hab ein lemmings-letsplay gefunden :)
+2016-04-18 14:59:51,Svenska,...und ich mag die musik immernoch ^^
+2016-04-18 15:02:05,Svenska,gibt's nen grund fuer die 32 KB?
+2016-04-18 15:02:37,Jonathan,"Svenska: Ja, den gibt's... Ein viertes Latch + Datenbit + Multiplexer hätte nicht in ein GAL gepasst *g*"
+2016-04-18 15:02:58,Svenska,hmm. ansonsten hätte ich noch 32 KB fixed und 64 KB banked ROM vorgeschlagen
+2016-04-18 15:03:07,Svenska,"das ist dann nämlich immer exakt ein maximalgroßes segment, was du bankst"
+2016-04-18 15:03:22,Jonathan,Ich hab jetzt die gesamte Dekoderlogik (für RAM+ROM) plus Register für das Banking in ein 22V10 bekommen
+2016-04-18 15:03:28,Jonathan,:D
+2016-04-18 15:18:39,Svenska,https://www.youtube.com/watch?v=PvgncwgPA20 << ich mag MIDI ^^
+2016-04-18 15:37:41,Jonathan,:)
+2016-04-18 15:37:46,Jonathan,Ich hab jetzt gleich noch Uni... :(
+2016-04-18 15:37:54,Svenska,hatte schon
+2016-04-18 15:38:00,kevin,"""hut-plug a disk"" - seit wann kann man denn Hütten an eine Platte stöpseln? *g*"
+2016-04-18 15:38:00,Jonathan,Joa
+2016-04-18 15:38:07,Jonathan,... *g*
+2016-04-18 15:38:16,Svenska,"...jemand, der ne vorlesung auf montags um 8:30 legt, glaubt echt an das gute im studenten"
+2016-04-18 15:38:22,Jonathan,"Hehe, jap"
+2016-04-18 15:38:28,kevin,Oder mag nicht vor so vielen Leuten sprechen ;-)
+2016-04-18 15:38:35,Jonathan,"Bei uns ist's immer um 8, nicht um 8:30"
+2016-04-18 15:38:39,Jonathan,Jeden Mittwoch-Freitag
+2016-04-18 15:38:40,Jonathan,(Yay)
+2016-04-18 15:38:40,Svenska,also offiziell wäre es ja 8:15 gewesen
+2016-04-18 15:38:48,Svenska,aber ich war erst 8:20 da (und ich spiel dozent...)
+2016-04-18 15:38:53,Jonathan,*g*
+2016-04-18 15:39:03,Svenska,selbstverfreilich fehlte 1/3
+2016-04-18 15:39:06,Jonathan,Unser Info-Prof kommt ja immer um 7:50
+2016-04-18 15:39:25,kevin,Du kriegst das mit? Du machst was falsch.
+2016-04-18 15:40:12,Svenska,"(der straßenbahnfahrplan war ja der grund, dass ich zum gym immer mit rad gefahren bin... viertelstunde länger schlafen.)"
+2016-04-18 15:40:15,kevin,Der letzte Bus des Tages um 7:50? Klingt unwahrscheinlich ;-)
+2016-04-18 15:40:28,Svenska,"nein, wenn der letzte puenktliche bus um 7:45 da ist ;)"
+2016-04-18 15:40:53,kevin,Wer sagte was von pünktlich? ;-)
+2016-04-18 15:41:06,Svenska,hmm
+2016-04-18 15:41:12,Svenska,du kommst aus ner stadt? ^^
+2016-04-18 15:41:48,Svenska,bei uns fielen so 2/3 der klasse immer gemeinsam aus einem dorf ein.
+2016-04-18 15:42:00,Svenska,"wenn die den bus verpasst hatten, dann kam da erstmal drei stunden lang keiner"
+2016-04-18 15:42:10,kevin,Ups
+2016-04-18 15:42:14,Jonathan,*g*
+2016-04-18 15:42:21,Svenska,unsere lateinlehrerin war mal ganz toll
+2016-04-18 15:42:23,Jonathan,"kevin: Ja, nur so komm ich pünktlich :P"
+2016-04-18 15:42:26,kevin,"Ich wollte ja schon entschieden widersprechen, aber dann ist es im Vergleich wohl doch Stadt *g*"
+2016-04-18 15:42:48,Svenska,"""wenn ihr nachweislich vier stunden warten muesstet, duerft ihr 10min vorher gehen um den bus zu kriegen"" - sie mussten nachweislich 3:45h warten ;)"
+2016-04-18 15:42:59,kevin,Bei uns kommt man im schlechtesten Fall jede Stunde weg
+2016-04-18 15:43:16,Svenska,"ja, dann ist es stadt. ist bei mir hier (in SE) auch stuendlich"
+2016-04-18 15:43:39,Svenska,"in der heimat war es alle viertelstunde, später dann alle 20min (und inzwischen wohl alle halbe stunde). die kuerzen die pläne immer weiter zusammen"
+2016-04-18 15:43:58,kevin,"Na dann. Für schwedische Verhältnisse wäre es vielleicht tatsächlich eine Stadt, wer weiß. *g*"
+2016-04-18 15:44:11,Svenska,die städte sind ca. gleich groß *g*
+2016-04-18 15:44:26,kevin,Also vierstellige Einwohnerzahl schaffen wir ;-)
+2016-04-18 15:44:27,Svenska,allerdings ist es hier der hauptort des läns
+2016-04-18 15:44:38,Svenska,mittig fuenfstellig ^^
+2016-04-18 15:44:57,Svenska,"vierstellig und stuendliche busse, das ist gut"
+2016-04-18 15:45:04,Svenska,...klingt nach infrastruktur ^^
+2016-04-18 15:45:22,kevin,Zu normalen Zeiten halbstündlich
+2016-04-18 15:45:45,Svenska,"meine oma wohnt am stadtrand, da haben sie sonntags die busse ganz eingestellt, dafuer hält dann der ueberlandbus alle 2 stunden an jeder kreuzung. sonst stuendlich, und das ist der stadtverkehr..."
+2016-04-18 15:46:06,kevin,"Mal zwei Linien, wobei das nicht wirklich viel bringt, weil die fast gleichzeitig fahren, nur halt in unterschieldiche Richtungen"
+2016-04-18 15:46:27,Svenska,"...und von frueh oder spät red' ich mal nicht. da gibt's zwei schulbusse, feddich"
+2016-04-18 15:46:33,kevin,"Die dritte Linie gibt es nur theoretisch auf dem Fahrplan, da kriegst du die vier Stunden warten hin *g*"
+2016-04-18 15:46:42,Svenska,hrhr
+2016-04-18 15:47:09,Svenska,"ich hab, als ich mal wieder in der heimat war, auf den fahrplan geschaut und freudig gestaunt, da war eine schöne linie von quasi-vor-der-tuer bis ins zentrum"
+2016-04-18 15:47:14,Svenska,die fährt EINMAL TÄGLICH.
+2016-04-18 15:47:28,kevin,Immerhin
+2016-04-18 15:47:40,Svenska,morgens um 7. fuer die fabrikarbeiter. *g*
+2016-04-18 15:47:41,kevin,Könnte ja auch nur donnerstags fahren
+2016-04-18 15:48:03,Svenska,"ne, sowas kriegt man in unseren fahrplänen nicht ordentlich abgebildet ^^"
+2016-04-18 16:06:28,Jonathan,"So, bin jetzt mal in der Uni... Bis später :P"
+2016-04-18 16:06:40,Svenska,bis spæter
+2016-04-18 20:31:23,darklink_,wäre es nicht gut gewesen würde die CPU bei einem Pagefault nicht temponär oaging abschalten?
+2016-04-18 21:49:41,Svenska,darklink_: ganz schlechte idee
+2016-04-18 22:10:30,Svenska,"hmm, kann das sein, dass ein KVM die Machine UUID auf ""alles nullen"" setzt?"
+2016-04-18 22:10:41,Svenska,"wenn ja, wie kriege ich Virtual PC dazu, das auch zu tun -.-"

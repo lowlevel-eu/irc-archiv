@@ -1,0 +1,211 @@
+date/time,nick,message
+2010-06-10 01:01:28,DesL,gn8
+2010-06-10 09:12:13,DerHartmut_Tesla,Moin zusammen
+2010-06-10 09:17:23,DickHuuhn,lol nu musste der wohl arbeiten :D
+2010-06-10 09:25:23,kwolf,Moin
+2010-06-10 09:25:49,DickHuuhn,moin
+2010-06-10 09:30:57,Homix,morgen
+2010-06-10 09:47:10,Homix,ich bin jetzt doch wieder gegen einen Mikrokernel ;)
+2010-06-10 09:48:09,kwolf,*g*
+2010-06-10 09:48:16,kwolf,Alles andere hätte mich überrascht
+2010-06-10 09:48:19,Homix,kwolf: was würdest du von mehreren Adressräumen innerhalb des Kernel-spaces halten?
+2010-06-10 09:48:21,kwolf,Und morgen bist du für einen Exokernel
+2010-06-10 09:52:49,Homix,"wenn man mehrere treiber im kernel space trennen will muss man bei jedem aufruf des treibers ummappen (das würde auch bei einem taskswitch in einem Mikrokernel geschehen), aber es wäre wohl schneller, weil man sich das ganze taskswitching zeug spart und immernoch in Ring0 ist"
+2010-06-10 09:54:04,Homix,"mit der variante würde man immerhin die ganzen speicher-bugs bzgl. buffer-overflows ect blockieren, nicht aber zB kernel-privileged befehle wie cli ;) aber das ist eig auch gar nicht so wichtig"
+2010-06-10 09:54:53,kwolf,"Hm, was ist denn der große Vorteil an Ring 0 für die Treiber?"
+2010-06-10 09:55:10,kwolf,"Ehrlichgesagt sehe ich nicht, wie das einen Unterschied machen sollte"
+2010-06-10 09:55:40,Homix,dass die treiber nicht mehr speicherbereiche anderer treiber überschreiben können
+2010-06-10 09:55:45,kwolf,"Das entscheidende Kriterium ist der Adressraum, insofern wärst du damit schon recht mikrokernelig"
+2010-06-10 09:56:08,kwolf,Homix: Von Ring 0 gegenüber Ring 3 meine ich. Die Vorteil von unterschiedlichen Adressräumen ist mir klar.
+2010-06-10 09:56:43,Homix,"der vorteil wäre, dass ich nur eine pagetable ummappen müsste für einen treiberaufruf"
+2010-06-10 09:57:07,Homix,"wenns im ring3 wäre, müsste ich das wie in einem mikrokernel über das multitasking laufen lassen"
+2010-06-10 09:57:43,Homix,und es wäre natürlich langsamer wegen den ganzen aufrufen die über die ring grenze hinausgehen
+2010-06-10 09:58:44,kwolf,"Soweit ich weiß, sind die Kontextwechsel teuer, nicht die Ringwechsel"
+2010-06-10 09:59:34,Homix,"aber wenn man sich die ganzen scheduler-aufrufe und generell das sichern aller sachen spart, kann das nicht verkehrt sein ;)"
+2010-06-10 10:00:10,kwolf,"Hm, du würdest also im Prinzip innerhalb vom Kernel kooperativ multitasken?"
+2010-06-10 10:00:49,Homix,bzw kooperativ kontextwechseln ;)
+2010-06-10 10:01:25,Homix,"also der kernel will einen sektor lesen .. dann wird einfach die pagetable für den hdd-treiber geladen, und dort zu der ReadSector funktion gesprungen"
+2010-06-10 10:01:47,kwolf,Hast du Kernelthreads?
+2010-06-10 10:01:58,kwolf,"Wenn ja, musst du multitasken und das dabei berücksichtigen"
+2010-06-10 10:02:02,kwolf,"Wenn nicht, ist dein Kernel Mist ;-)"
+2010-06-10 10:02:12,kwolf,Ein Monolith braucht das eigentlich
+2010-06-10 10:02:16,Homix,ja hab ich ;)
+2010-06-10 10:02:24,kwolf,Dann bist du bei vollem Multitasking
+2010-06-10 10:03:10,Homix,hm evtl. kriegt dann auch jeder Thread seine eigene CR3 ;)
+2010-06-10 10:03:52,Homix,"bzw zumindest die threads, die im kernel laufen und davon betroffen sind"
+2010-06-10 10:11:50,kwolf,"Hm, wie sieht deine IKTC aus? ;-)"
+2010-06-10 10:12:10,kwolf,(IKTC = Interkernelthreadkommunikation)
+2010-06-10 10:12:34,Homix,"*g* ja ich hab mir auch grad alles genau überlegt und ich denk, dass das recht kompliziert werden würde"
+2010-06-10 10:13:14,kwolf,"Das ist halt ein halber Mikrokernel, mit allen Umständen die er macht"
+2010-06-10 10:14:55,Homix,"hm du sagtest, euer RPC ruft auch einfach nur eine Funktion in einem anderen Prozess auf .. wird das über Multitasking gemacht oder? oder einfach CR3 ummappen und ausführen? :)="
+2010-06-10 10:16:01,Homix,"also mit letzteres mein ich, dass es laut CurrentProcessId dann immernoch der alte (Quell) prozess ist, nur mit den pagetables des neuen (ziel) prozesses ;)"
+2010-06-10 10:23:49,Homix,mir gefällt nämlich letzteres gerade ziemlich gut :)
+2010-06-10 10:30:05,kwolf,"Damit müssen alle Prozesse threadsicher sein. Wenn dir das bewusst ist, dürfte es in etwa auf dasselbe wie Popup-Threads rauslaufen."
+2010-06-10 10:30:39,kwolf,Stack kriegen sie einen temporären oder wie ist das gedacht?
+2010-06-10 10:30:58,Homix,"abgesehen von der threadsicherheit, das in meinem kernel eh auch sein muss, hat die direkte ummapp-variante eig keinen richtigen nachteil"
+2010-06-10 10:31:19,Homix,daten müssten dann per SharedMemory ausgetauscht werden
+2010-06-10 10:31:34,Homix,und stack .. joa temporär
+2010-06-10 10:32:34,Homix,"ich glaube das wär sogar schneller als das was ich mir erst unter einem Mikrokernel vorgestellt hab, weil immerhin keine schedulerarbeit anfällt und nichts großartiges mit messages gemacht werden muss"
+2010-06-10 10:34:01,Homix,"hm man könnte es sich wie eine Art ""Remote Library Call"" vorstellen ;)"
+2010-06-10 10:34:54,kwolf,Das kannst du aber alles genausogut in Ring 3 machen ;-)
+2010-06-10 10:35:13,Homix,ja genau das meine ich ja ;) bzw hab es vor ;)
+2010-06-10 10:35:31,Homix,(hab ich wohl vergessen zu schreiben *g*)
+2010-06-10 10:35:32,kwolf,"Und die Messages hast du eigentlich schon, die liegen dann halt im SHM"
+2010-06-10 10:36:37,Homix,"ok das ist dann aber App-spezifisch ;) ich dachte an eine Kommunikation ala SendMessage(AtaProcess,COMMAND_READ_SECTOR,5); und im zielprozess GetMessages();"
+2010-06-10 10:36:49,Homix,und die würde dann immerhin entfallen
+2010-06-10 10:37:22,Homix,"und ja, es wäre sowas wie ein Pop-Up Thread, bloß dass dann kein neuer Thread erstellt wird sondern der Caller-Thread/Prozess einfach dort ausführt"
+2010-06-10 10:37:26,kwolf,"Das GetMessages() wird entfallen weil du automagisch in den Handler springst (wie beim tyndur-RPC), das SendMessage() bleibt"
+2010-06-10 10:38:10,Homix,"ok ja, das heißt dann aber zB ""CallRemoteFunction"" ;)="
+2010-06-10 10:38:23,kwolf,"Homix: Hm, was passiert mit lustigen Sachen wie getpid() im fremden Kontext ausgeführt? ;-)"
+2010-06-10 10:38:58,Homix,hm ehrlich gesagt muss man da halt aufpassen *g*
+2010-06-10 10:39:28,Homix,"nunja ist halt so wie wenn man eine DLL proggt, da weiß man auch ned in welchem prozess die dann geladen wird ;)"
+2010-06-10 10:42:37,Homix,"bzw man könnte es sogar noch mehr in richtung library ziehen, dass es wirklich wie eine library bloß in einem anderen adressraum ist .. damit könnte ich sogut wie alle Kernelbibliotheken bequem in ring3 runterziehen"
+2010-06-10 12:01:46,bluecode,moin
+2010-06-10 12:03:43,kwolf,Moin bluecode
+2010-06-10 12:19:29,Papierkorb,moin
+2010-06-10 12:21:14,bluecode,moin Papierkorb
+2010-06-10 13:18:56,DerHartmut_Tesla,Puha
+2010-06-10 13:19:02,DerHartmut_Tesla,War das eben ein Stress >.<
+2010-06-10 13:19:07,DerHartmut_Tesla,Aber erstmal wieder Hallo und Moin zusammen
+2010-06-10 13:24:15,stultus,moin
+2010-06-10 13:26:42,JanDing,moin
+2010-06-10 13:28:21,DerHartmut_Tesla,Moin Homix  und JanDing 
+2010-06-10 13:28:24,DerHartmut_Tesla,Und stultus 
+2010-06-10 13:55:18,kwolf,MOIN (SELECT nick FROM nicklist WHERE NOT MOINED (nick))
+2010-06-10 13:55:59,stultus,Auch ne Option. *g*
+2010-06-10 13:57:11,kwolf,"Wobei die Hälfte schon wieder weg ist, das wäre auch fast explizit noch gegangen ;-)"
+2010-06-10 13:58:56,Tobiking,Hat jemand ne Ahnung wie man bei Google das Hintergrundbild weg bekommt?
+2010-06-10 13:59:35,kwolf,w3m
+2010-06-10 14:00:18,kwolf,"Wobei ich es im Konqueror auch nicht kriege. Ich wage aber nicht, ein Reload zu machen. ;-)"
+2010-06-10 14:00:19,Tobiking,Der kommt mit meinen Browsergames nicht klar ^^
+2010-06-10 14:00:43,Tobiking,"Das Problem ist ja nichtmals nur das Bild selber, aber es läd einfach ewig"
+2010-06-10 14:56:01,JanDing,nimm halt die firefox startseite
+2010-06-10 14:56:01,JanDing,http://www.google.de/firefox?client=firefox-a&rls=org.mozilla:de:official
+2010-06-10 14:58:13,JanDing,ich bin jetzt allerdings auch auf bing umgestiegen^^
+2010-06-10 14:59:46,JanDing,und jetzt auf jidder.de
+2010-06-10 14:59:58,JanDing,ratzfatz geht das ja heutzutage
+2010-06-10 15:04:23,Tobiking,"Ich bin auf die https Seite von Google umgestiegen, da ist kein Hintergrundbild ^^"
+2010-06-10 15:11:34,DerHartmut_Tesla,Rehe
+2010-06-10 15:13:05,kwolf,Hirsche
+2010-06-10 15:18:04,DerHartmut_Tesla,Und die ganzen TIere
+2010-06-10 15:54:41,chris12,heyho
+2010-06-10 15:55:43,JanDing,moin
+2010-06-10 15:55:52,DerHartmut_Tesla,Huhu
+2010-06-10 16:58:42,SHyx0rmZ,Moin
+2010-06-10 16:59:23,kwolf,Moin SHyx0rmZ
+2010-06-10 17:23:20,DesL,moin
+2010-06-10 17:24:04,kwolf,Moin DesL
+2010-06-10 18:14:50,DickHuuhn,http://pics.nase-bohren.de/browsers.jpg
+2010-06-10 18:14:51,DickHuuhn,lol
+2010-06-10 18:16:24,DickHuuhn,http://sphotos.ak.fbcdn.net/hphotos-ak-snc3/hs658.snc3/32488_429881386201_61700466201_5485444_7077666_n.jpg
+2010-06-10 18:16:32,DickHuuhn,Huch das war aber nu falscher channel :D
+2010-06-10 20:13:01,DesL,re
+2010-06-10 20:13:56,JanDing,wb
+2010-06-10 20:32:22,bluecode,hm
+2010-06-10 20:32:29,bluecode,"schade, schramm ist wirklich gegangen"
+2010-06-10 21:28:11,JanDing,ich wüsste jetzt gerne wie warm es bei mir ist
+2010-06-10 21:28:17,JanDing,aber ich habe kein thermometer
+2010-06-10 21:28:37,JanDing,"wenn man die cpu einer definierten last aussetzt, müsste man doch aus der cpu temperatur die umgebungstemperatur ableiten können, oder?"
+2010-06-10 21:28:52,XanClic,Vielleicht kannst du ja aus dem Thermischen Rauschen im RAM die Temperatur ableiten
+2010-06-10 21:29:06,XanClic,"Du musst nur herausfinden, wie du analoge statt digitalen Werten auslesen kannst"
+2010-06-10 21:29:41,JanDing,hehe
+2010-06-10 21:30:04,JanDing,"hm bestimmt kann man das auch verfeinern, indem man die geschwindigkeit betrachtet, mit der sich die temperatur verändert, wenn man von 100% auf 0% last geht, oder umgekehrt"
+2010-06-10 21:30:42,JanDing,"ein bisschen doof ist, dass ich ja da eher die gehäusetemperatur messe"
+2010-06-10 21:30:54,JanDing,dafür hab ich auch displays auf an meinem pc
+2010-06-10 21:31:10,JanDing,hab ein richtigen schickimicki pc
+2010-06-10 21:31:14,JanDing,mit blauen lichtern
+2010-06-10 21:31:22,JanDing,wisst ihr was die machen?
+2010-06-10 21:31:33,JanDing,sie leuchten blau
+2010-06-10 21:31:46,XanClic,"Du könntest ihn auch in Standby (Suspend-to-RAM, whatever) versetzen, zwei Stunden warten und dann wieder einschalten und dann ganz schnell die Temperatur messen"
+2010-06-10 21:31:58,XanClic,"Problem ist nur, dass es in zwei Stunden nicht mehr so schön warm ist"
+2010-06-10 21:31:58,JanDing,yay das ist eine gute idee
+2010-06-10 21:32:59,JanDing,nach dem einschalten kann ich ja auch direkt die temperatur messen
+2010-06-10 21:34:05,JanDing,ich glaub ich schreib mal einen multibootfähiges Thermometer-OS
+2010-06-10 21:34:29,JanDing,"hm wobei is vermutlich nicht so leicht an CPU temperaturen zu kommen, oder? mal linux abgras0rn"
+2010-06-10 21:35:06,XanClic,cat /proc/acpi/thermal_zone/THRM/temperature
+2010-06-10 21:35:07,XanClic,Zumindest bei mir
+2010-06-10 21:35:26,JanDing,hm ja auf linux könnte man das auch basieren lassen ...
+2010-06-10 21:35:42,JanDing,also direkt einfach den kernel dafür booten
+2010-06-10 21:36:35,JanDing,oder auf android^^
+2010-06-10 21:37:05,JanDing,"das problem ist, dass ich möglichst schnell an die daten kommen will. wenn das zu lange dauert, ist die cpu zu warm, und man kann die temperatur nicht mehr extrapolieren"
+2010-06-10 21:37:30,XanClic,"Wenn man ein Linux hat, dass nur einen ACPI-Treiber hat, bootet das bestimmt in ein paar Sekunden"
+2010-06-10 21:37:35,JanDing,vermutlich heizt ein linux kernel boot die temperatur eh zu stark auf
+2010-06-10 21:38:38,Papierkorb,mh? hat linux mehrere ACPI treiber?
+2010-06-10 21:38:49,XanClic,"Ich meine, ohne Festplattentreiber und so"
+2010-06-10 21:39:05,Papierkorb,"aso ... ja, das macht natürlich extrem sinn das ganze Oo"
+2010-06-10 21:39:23,XanClic,"Muss es ja nicht, Hauptsache, es ergibt welchen"
+2010-06-10 21:39:41,JanDing,natürlich macht es sinn
+2010-06-10 21:39:45,JanDing,ich will die temperatur wissen
+2010-06-10 21:39:47,Papierkorb,"es muss keinen sinn ergeben, aber hauptsache, das ergibt sinn?"
+2010-06-10 21:39:57,XanClic,Du hast „machen“ gesagt
+2010-06-10 21:40:23,Papierkorb,ich geh ja schon wieder nach #niwohlos
+2010-06-10 21:40:31,XanClic,Da bin ich doch auch
+2010-06-10 21:50:05,Paddy,Moin
+2010-06-10 21:50:09,FreakyPenguin,Moin Paddy 
+2010-06-10 21:50:45,FreakyPenguin,Paddy: Hm bringt aio in kvm performance-mässig was? ;-)
+2010-06-10 21:51:17,Paddy,Was für ein AIO?
+2010-06-10 21:51:41,FreakyPenguin,Öhm halt das wo man da im configure-Skript aktivieren kann... ;-)
+2010-06-10 21:52:12,FreakyPenguin,linux-aio meine ich
+2010-06-10 21:52:20,Paddy,"Ah, du meinst das native Linux-AIO? Jo, das bringt angeblich schon was. Aber hast du denn so IO-lastige Sachen, dass du das merken würdest?"
+2010-06-10 21:52:51,Paddy,"Ich glaube, 10 bis 20 Prozent oder so sind gegenüber dem normalen Threadpool gemessen worden"
+2010-06-10 21:53:20,Paddy,Allerdings auf ordentlicher Hardware und ohne Dateisystem oder sowas dazwischen
+2010-06-10 21:53:21,FreakyPenguin,Ah das andere wäre --enable-io-thread?
+2010-06-10 21:53:36,Paddy,"Nein, das andere ist, was du normal kriegst"
+2010-06-10 21:53:41,FreakyPenguin,Ah ;-)
+2010-06-10 21:54:42,FreakyPenguin,"Ich hatte da nur grad eine Win 7 Installation gemacht, und die dauert irgendwie elend lang, da dachte ich, ich hätte da vielleicht was total doof konfiguriert"
+2010-06-10 21:54:48,Paddy,Wobei der IO-Thread in qemu-kvm eigentlich auch immer aktiviert ist
+2010-06-10 21:55:09,FreakyPenguin,Und das scheint so gefühlt nur IO zu sein. ;-)
+2010-06-10 21:55:22,Paddy,"Hm, cache=unsafe könnte ein bisschen schneller gehen, dann macht er kein fsync mehr ;-)"
+2010-06-10 21:55:54,FreakyPenguin,Ah das klingt gut ;-)
+2010-06-10 21:56:12,Paddy,Für Installationen ist das eigentlich perfekt
+2010-06-10 21:56:21,Paddy,"Danach kommt's drauf an, ob einem die VM was wert ist ;-)"
+2010-06-10 21:56:49,FreakyPenguin,"Wenn sie was wert wäre, würde ich doch kein Win reininstallieren ;-)"
+2010-06-10 21:56:58,Paddy,*g*
+2010-06-10 21:57:04,Paddy,Auch wieder wahr
+2010-06-10 22:02:59,Papierkorb,gn8
+2010-06-10 22:03:05,Paddy,gn8
+2010-06-10 22:03:06,XanClic,gn8
+2010-06-10 22:07:31,Paddy,NickServ ist schon schwer :-)
+2010-06-10 22:17:17,FreakyPenguin,Man müsste halt einen vernünftigen client benutzen ;-)
+2010-06-10 22:24:47,JanDing,yay celebrity deathmatch läuft wieder auf mtv
+2010-06-10 22:28:01,DickHuuhn,Kann mir mal einer erklären was LLVM sein soll?
+2010-06-10 22:28:13,DickHuuhn,Soll das GCC ersetzen können oder wie wird das
+2010-06-10 22:28:33,JanDing,ein compiler halt
+2010-06-10 22:51:11,JanDing,der kuchen ist halb voll
+2010-06-10 22:51:24,DesL,Oo
+2010-06-10 22:51:32,JanDing,ich bin optimist bezüglich backwaren
+2010-06-10 22:52:26,bluecode,wer hat denn den Kuchen so abgefüllt?
+2010-06-10 22:52:54,DesL,^^
+2010-06-10 22:54:53,JanDing,jemand mit einer füllmaschine
+2010-06-10 22:55:32,bluecode,die schweine haben den Kuchen abgefüllt!
+2010-06-10 22:56:24,JanDing,"aber der schuldige ist derjenige, der ihnen den kuchen, die füllung und die abfüllmaschine gegeben hat"
+2010-06-10 22:56:38,bluecode,war das wieder dieser Jidder?
+2010-06-10 22:56:56,JanDing,der verdacht liegt nahe
+2010-06-10 22:57:59,bluecode,willst du nicht die village people verständigen?
+2010-06-10 22:58:07,bluecode,ich habe gehört die haben einen guten Polizist
+2010-06-10 22:58:56,JanDing,ich werde mich gleich mal an die plattenfirma wenden
+2010-06-10 23:04:24,JanDing,http://www.youtube.com/watch?v=HBjDZMJUduo
+2010-06-10 23:06:07,bluecode,"komm schon alter, das ist doch..."
+2010-06-10 23:06:27,JanDing,nein mann
+2010-06-10 23:07:18,bluecode,"tz, mir platzt gleich das Hemd"
+2010-06-10 23:08:58,bluecode,im Gegenzug musst du dir jetzt http://www.youtube.com/watch?v=8Lz_qPvKCsg anhören
+2010-06-10 23:09:16,DickHuuhn_,http://video.google.com/videoplay?docid=-869183917758574879 nehmt das :D
+2010-06-10 23:10:57,JanDing,kurs aufs riff!
+2010-06-10 23:17:18,JanDing,is hier der fefe repeater channel?
+2010-06-10 23:17:47,DickHuuhn_,"Ja, so ziemlich"
+2010-06-10 23:17:54,DickHuuhn_,"Hier, #niwohlos und Facebook"
+2010-06-10 23:18:45,JanDing,ich glaub das hab ich auch schon mal gesehen 
+2010-06-10 23:19:03,JanDing,"aber ich will nicht wieder mit der alten leier anfangen, dass ich das internet schon komplett besucht habe"
+2010-06-10 23:19:04,DesL,gn8
+2010-06-10 23:19:09,JanDing,gn8
+2010-06-10 23:19:11,XanClic,gn8
+2010-06-10 23:48:10,ehenkes,hi
+2010-06-10 23:48:18,bluecode,tach ehenkes
+2010-06-10 23:48:21,DickHuuhn_,yay an ehenkes
+2010-06-10 23:48:41,ehenkes,anke für die lieben grüße
+2010-06-10 23:48:45,ehenkes,*danke
+2010-06-10 23:56:15,Paddy,Hi
+2010-06-10 23:56:27,JanDing,hi
+2010-06-10 23:57:43,ehenkes,"wir könnten noch ein bis zwei gastentwickler brauchen, wie wärs?"
+2010-06-10 23:58:04,bluecode,an wen geht denn die Frage?
+2010-06-10 23:58:39,Paddy,"Die meisten hier haben schon ein Projekt und die anderen haben kein Interesse an einem, soweit ich das beurteilen kann"

@@ -1,0 +1,172 @@
+date/time,nick,message
+2011-07-24 10:30:44,bluecode,moin
+2011-07-24 11:26:00,SHyx0rmZ,Moin
+2011-07-24 12:36:16,taljeth,Moin
+2011-07-24 12:41:41,SHyx0rmZ,Moin
+2011-07-24 12:48:10,SHyx0rmZ,"ah, man sollte hlt wohl nicht im Userspace ausführen :D"
+2011-07-24 12:49:22,taljeth,"Och, warum nicht? Man könnte so zum Beispiel Syscalls über #GP implementieren."
+2011-07-24 12:50:01,SHyx0rmZ,hehe
+2011-07-24 12:50:14,SHyx0rmZ,aber um das Multitasking zu testen eignet es sich nicht unbedingt ;-)
+2011-07-24 12:51:00,taljeth,Man kann halt nicht immer alles haben
+2011-07-24 12:51:35,SHyx0rmZ,"hm, erstaunlich wie ich jetzt schon Probleme mit den Locks habe :D"
+2011-07-24 12:52:06,SHyx0rmZ,"ich vermute mal, ich wechsel den Task, während der alte was gelockt hat"
+2011-07-24 13:08:04,ramkill,hi
+2011-07-24 13:09:25,taljeth,Moin ramkill
+2011-07-24 13:10:00,ramkill,Wie ist das mit externen trieibern? Ich schreibe gerade die treiber meines OSes und überlege wie ich in zukunft externe treiber integrieren will. Sie auf Prioritet 0 zu verlegen ist doch ein mega sicherheits Leck. Die Frage ist wie denn sonnst?
+2011-07-24 13:10:51,taljeth,Ring 0 meinst du?
+2011-07-24 13:11:10,ramkill,ja
+2011-07-24 13:11:14,taljeth,"Also du musst dir bewusst sein, dass Treiber immer Möglichkeiten haben, dein System zu übernehmen (außer du hast eine IOMMU)"
+2011-07-24 13:11:34,taljeth,"Aber in Ring 3 kannst du sie trotzdem laufen lassen, das bietet zumindest mal einen Schutz gegen die einfachen Probleme"
+2011-07-24 13:11:52,ramkill,ok
+2011-07-24 13:12:02,taljeth,Das geht das in Richtung Mikrokernel
+2011-07-24 13:12:06,taljeth,*dann
+2011-07-24 13:12:49,ramkill,ich verwende ein Hybrind kernel ist dem micro kernel aber sehr ähnlich
+2011-07-24 13:12:55,taljeth,Ok
+2011-07-24 13:13:16,taljeth,Treiber brauchen natürlich trotzdem noch mehr Rechte als normale Programme
+2011-07-24 13:13:28,ramkill,mal angenommen jemand installiert einen Grafik treibern
+2011-07-24 13:14:01,ramkill,Dann packe ich den Treiber in das CS des vorheringen treibers (ring 3)
+2011-07-24 13:14:34,ramkill,und hoffe darauf das er mit meinem Fenster manager kompartibel ist :)
+2011-07-24 13:14:59,ramkill,ansonsten sitzt der user vor nem schwarzen Bildschirm
+2011-07-24 13:15:43,ramkill,oder?
+2011-07-24 13:16:31,taljeth,"Naja, gut, dass ein Treiber funktionieren muss, ist irgendwie immer Grundvoraussetzung ;-)"
+2011-07-24 13:17:23,ramkill,Dann lasse ich die Pixel Funktionen per call gate laufen
+2011-07-24 13:17:30,ramkill,oder per interrupt gate
+2011-07-24 13:18:13,ramkill,per inerrupt gate ist besser
+2011-07-24 13:19:33,ramkill,Da gibts ein Problem: Ich habe das Paging so eingerichtet das normale programme kein zugriff auf den Grafik ram haben
+2011-07-24 13:20:30,ramkill,dh das der treiber doch dann eigentlich nicht funktionieren dürfte oder?
+2011-07-24 13:20:34,taljeth,"Du willst nicht für jeden einzelnen Pixel einen Aufruf machen, das wird zu langsam"
+2011-07-24 13:20:52,taljeth,"Ja, der Treiber muss den Grafikspeicher mappen können"
+2011-07-24 13:21:24,ramkill,ok. DH ich muss ihn doch auf ring 0 setzten oder?
+2011-07-24 13:23:21,taljeth,Wieso?
+2011-07-24 13:23:27,taljeth,Du musst ihm einfach nur den Speicher mappen
+2011-07-24 13:23:53,ramkill,ok. Wie macht das windows eignetlich?
+2011-07-24 13:23:59,ramkill,oder Linux?
+2011-07-24 13:26:18,taljeth,Das sind Monolithen
+2011-07-24 13:27:53,ramkill,ich weiß
+2011-07-24 13:29:15,taljeth,Also laufen die Treiber in Ring 0
+2011-07-24 13:30:31,ramkill,ok
+2011-07-24 13:31:54,ramkill,Wie unterscheidet mein OS ob es sich um einen X86 (32 oder 64 bit prozessor) oder einen X64er handelt?
+2011-07-24 13:32:26,SHyx0rmZ,"du guckst einfach per cpuid, ob lm und pae unterstützt werden"
+2011-07-24 13:33:08,ramkill,ich dachte cpuid gibts bei x64ern nicht mehr
+2011-07-24 13:33:23,SHyx0rmZ,oO
+2011-07-24 13:34:24,SHyx0rmZ,"80000001, edx[29] und edx[6] müssen gesetzt sein, wenn ich mich nicht irre"
+2011-07-24 13:35:28,ramkill,Zumal ich keine ahnung habe wie das mit den Grub und den x64ern ist. Mein os nutzt den Grub und ich habe dann keine ahnung ob ich dann bei einem X64er im Real- Protected- oder Longmode befinde. Bei X86ern ist es Pmode
+2011-07-24 13:35:52,ramkill,bei cpuid 0?
+2011-07-24 13:39:23,SHyx0rmZ,cpuid 0x80000001
+2011-07-24 13:39:31,SHyx0rmZ,"ja, bei x64ern bist du auch im PM"
+2011-07-24 13:39:35,SHyx0rmZ,GRUB kann kein LM
+2011-07-24 13:41:20,ramkill,ok
+2011-07-24 13:41:43,ramkill,Dh eax=0 Dann cpuid 
+2011-07-24 13:42:38,ramkill,und dann dann überprüfen ob bit 29 und 6 gesetzt sin
+2011-07-24 13:43:02,ramkill,richtig?
+2011-07-24 13:46:30,SHyx0rmZ,nein
+2011-07-24 13:47:30,ramkill,hast du mir ne referenz für cpuid?
+2011-07-24 13:48:21,taljeth,http://www.intel.com/products/processor/manuals/
+2011-07-24 13:48:25,taljeth,Müsste in 2a drin sein
+2011-07-24 13:53:07,ramkill,gibts das auch auf deutsch?
+2011-07-24 13:53:18,taljeth,Nein
+2011-07-24 13:53:43,ramkill,welche der zig downloads ist es denn ? 
+2011-07-24 13:56:09,SHyx0rmZ,wie gesagt: 2A
+2011-07-24 13:58:29,taljeth,Am besten mal alle runterladen
+2011-07-24 13:58:34,taljeth,Die enthalten alle wichtiges Zeug
+2011-07-24 13:58:47,ramkill,über 1600 seiten? meine güte...
+2011-07-24 13:59:16,taljeth,wtf? Warum hab ich plötzlich eine andere IP? :-/
+2011-07-24 13:59:22,taljeth,Kein Wunder schlagen meine Tests ständig fehl...
+2011-07-24 14:00:35,ramkill,cpuid eax=0x80000001 hast du gemeint oder?
+2011-07-24 14:00:51,SHyx0rmZ,ja
+2011-07-24 14:01:15,SHyx0rmZ,"wobei es klug wäre, vorher mit 0x80000000 zu überprüfen, ob es 0x80000001 überhaupt gibt"
+2011-07-24 14:01:19,ramkill,ich lade mal alle manual runter
+2011-07-24 14:01:26,SHyx0rmZ,"und davor sollte man gucken, ob es cpuid überhaupt gibt"
+2011-07-24 14:01:39,ramkill,und wie?
+2011-07-24 14:01:42,SHyx0rmZ,man weiß ja nie auf was für Steinzeithardware die Leute Software ausführen wollen
+2011-07-24 14:02:03,ramkill,sprich das bit in de Eflags oder?
+2011-07-24 14:02:16,SHyx0rmZ,jo
+2011-07-24 14:02:30,ramkill,welches wars nochmal
+2011-07-24 14:02:33,SHyx0rmZ,"eigentlich müsste man vorher noch prüfen, ob der Prozessor neu genug dafür ist :D"
+2011-07-24 14:02:52,ramkill,co Prozessor check habe ich schon
+2011-07-24 14:02:59,SHyx0rmZ,21
+2011-07-24 14:03:09,ramkill,Der ist voraussetztung
+2011-07-24 14:03:36,SHyx0rmZ,du brauchst auch mindestens nen 286 oder so
+2011-07-24 14:03:51,ramkill,Ab intel Pentium Dürfte das Os erst gut laufen
+2011-07-24 14:04:08,ramkill,386er minimum
+2011-07-24 14:06:18,ramkill,wenn es CPU id nicht gibt dann ist es Kein Intel Pentium oder höher dh das os Läuft nicht... Sprich kann ich bit 21 in den EFlags setzten  dann läuft dan OS wen nich dann nicht...
+2011-07-24 14:07:25,taljeth,"SHyx0rmZ: Weniger als 286er wird schwierig, wenn dich GRUB im 32-Bit-PM absetzt ;-)"
+2011-07-24 14:07:39,ramkill,:)
+2011-07-24 14:08:58,ramkill,weniger als 286er macht der grum nicht mit weniger als Intel pentium oder neuere generation vom 386 dann macht das OS nicht mit. 
+2011-07-24 14:09:17,taljeth,GRUB braucht mindestens einen 386er
+2011-07-24 14:09:26,ramkill,(bei den neueren 386ern wurde CPUID nachträglich hinzu gefügt)
+2011-07-24 14:10:53,ramkill,"Ich kann im Pmode nur 3,XX GB nutzten. Warum? Wie weit kann ich den Ram benutzten?"
+2011-07-24 14:11:17,ramkill,4GB ist mit dem 32bit Adressbus maximal möglich oder?
+2011-07-24 14:13:42,taljeth,Es gibt auch noch PAE
+2011-07-24 14:14:13,ramkill,was isn das?
+2011-07-24 14:16:03,taljeth,Erweitert den physischen Adressraum auf 36 Bit
+2011-07-24 14:16:29,SHyx0rmZ,"taljeth, stimmt *g*"
+2011-07-24 14:17:02,ramkill,Dh A20Gate?
+2011-07-24 14:17:08,SHyx0rmZ,nein
+2011-07-24 14:17:27,SHyx0rmZ,aber kann man sich so ähnlich vorstellen
+2011-07-24 14:17:59,ramkill,ok. 
+2011-07-24 14:18:19,taljeth,Mit dem A20 kann man es auf 35 Bit beschränken *g*
+2011-07-24 14:18:51,ramkill,Die frage Auf was muss ich bei meiner Ram verteilung achten? Was muss ich frei lassen und wo ligt die Obergrenze?
+2011-07-24 14:18:54,taljeth,SHyx0rmZ: Außer dass PAE halt auf einer ganz anderen Ebene abläuft..
+2011-07-24 14:19:08,taljeth,"Du darfst alles benutzen, was da ist"
+2011-07-24 14:19:32,taljeth,"Die Memory Map sagt dir, was das ist"
+2011-07-24 14:19:53,SHyx0rmZ,"taljeth, mir war klar, dass das ein sehr oberflächlicher Vergleich ist ;-)"
+2011-07-24 14:20:20,ramkill,ok. Die frage ist ob ich den Grafik ram rutsche und den bildschim zu pinsle
+2011-07-24 14:20:39,taljeth,"Man könnte auch s/oberflächlich/falsch/ sagen, wenn man es etwas genauer nimmt ;-)"
+2011-07-24 14:21:05,taljeth,ramkill: Der Grafikspeicher ist in der Memory Map nicht als frei markiert
+2011-07-24 14:21:26,ramkill,stimmt. Habe ich vergessen
+2011-07-24 14:24:56,ramkill,ok. ciao
+2011-07-24 14:31:57,Creative,moin
+2011-07-24 16:33:09,Creative,"bei der initialisierung eines tasks, an welche adressen muss ich da uint8_t *stack und uint8_t *user_stack mappen?"
+2011-07-24 16:33:42,taljeth,"Idealerweise an die Adresse, auf die du esp später setzt"
+2011-07-24 16:34:01,Creative,also beide an die selbe?
+2011-07-24 16:34:11,taljeth,"Öhm, nein, natürlich nicht"
+2011-07-24 16:34:34,taljeth,Der Kernelstack sollte logischerweise Kernelspeicher sein
+2011-07-24 16:34:47,taljeth,Da tut vermutlich einfach irgendwas
+2011-07-24 16:35:03,Creative,ok
+2011-07-24 16:35:05,Creative,und der user_stack=
+2011-07-24 16:35:09,taljeth,"Und der user_stack muss halt mit dem zusammenpassen, was der Userspace als esp kriegt"
+2011-07-24 16:35:39,Creative,kann das sein: (uint32_t) user_stack + 4096 ?
+2011-07-24 16:35:51,Creative,so wird der cpu-zustand angelegt
+2011-07-24 16:36:06,taljeth,"Jo, sollte so passen"
+2011-07-24 16:36:19,taljeth,"Also auch einfach irgendwo, wo Platz ist"
+2011-07-24 16:36:31,Creative,ok
+2011-07-24 16:49:24,Creative,"kann es sein, dass gcc kein bool kennt, aber wenn ich es mit einen typedef erstelle es dann einen redefinition error gibt?"
+2011-07-24 16:50:39,taljeth,Dann machst du was falsch
+2011-07-24 16:50:46,SHyx0rmZ,typedef _Bool bool;
+2011-07-24 16:50:59,Creative,argh ok
+2011-07-24 16:51:07,Creative,jo da war was falsch :D
+2011-07-24 16:51:52,Creative,es kommt wieder der selbe fehler
+2011-07-24 16:52:09,Creative,ich glaub ich habs
+2011-07-24 16:58:29,taljeth,"FreakyPenguin: Ich komm mir ja langsam blöd vor, aber du wolltest übrigens mal pushen ;-)"
+2011-07-24 17:28:36,DoBi,Hallo
+2011-07-24 17:31:18,DoBi,ich hab mal wieder eine frage:
+2011-07-24 17:31:18,DoBi,ich habe einen industriecomputer. mit einem arm9. darauf wollte ich nun ein clfs installieren. und nun bin ich bei der eglibc und bekomme diesen fehler:
+2011-07-24 17:31:18,DoBi,http://pastebin.com/QM9p7MgF
+2011-07-24 17:31:42,DoBi,ich weiß nicht was ich damit anfangen soll. und google kann mir auch nicht helfen -.-
+2011-07-24 17:32:53,DoBi,ach und hier noch die ensprechende datei:
+2011-07-24 17:32:53,DoBi,http://pastebin.com/fJKWqwpM
+2011-07-24 17:33:36,DoBi,nein. 
+2011-07-24 17:34:37,taljeth,"Ich fürchte, du bist damit knapp an unserem Spezialgebiet vorbei ;-)"
+2011-07-24 17:34:40,DoBi,hab was flasch gemacht. das ist richtig:
+2011-07-24 17:34:40,DoBi,http://pastebin.com/Kfdw7HXm
+2011-07-24 17:35:02,DoBi,mhm schade.
+2011-07-24 17:35:34,DoBi,ich hab so überhaupt keinen plan wie ich das hinbekomme. -.-
+2011-07-24 17:36:00,taljeth,"Also ich würde ja mal vermuten, dass da irgendwo ein .cdi_startproc fehlt, aber ob man das essen kann, weiß ich nicht ;-)"
+2011-07-24 17:36:11,taljeth,"cfi, nicht cdi *g*"
+2011-07-24 17:37:48,DoBi,mhm ok. hat vor euch vllt. schonmal ein lfs auf einen arm gebaut ?
+2011-07-24 17:38:45,taljeth,"Also eigentlich fällt mir nur einer ein, dem ich das zutrauen würde..."
+2011-07-24 17:39:01,taljeth,Aber Clici ist ja grad nicht hier ;-)
+2011-07-24 17:40:15,DoBi,naja gut. dann bin ich wieder weg. <-- essen :D
+2011-07-24 17:40:20,DoBi,bis dann
+2011-07-24 18:10:20,geburtstags-billy,moin
+2011-07-24 18:57:42,DesL,moin
+2011-07-24 18:59:02,taljeth,Moin
+2011-07-24 20:23:07,Jidder,moin moin
+2011-07-24 21:42:50,tyndur,>> Commit in tyndur.git:refs/heads/master
+2011-07-24 21:42:50,tyndur,Autor: Kevin Wolf
+2011-07-24 21:42:50,tyndur,setup: Auf Netzwerkkartentreiber warten
+2011-07-24 21:42:50,tyndur,! setup: Bevor die IP-Adresse und die Routentabelle geändert werdern
+2011-07-24 21:42:50,tyndur,"  können, muss gewartet werden, bis der Treiber wirklich da ist."
+2011-07-24 21:42:50,tyndur,  Ansonsten geht das Schreiben schief und wir kriegen Standardwerte.
+2011-07-24 23:04:15,Jidder,eine guten tag cloud wär mal was

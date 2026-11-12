@@ -1,0 +1,87 @@
+date/time,nick,message
+2015-09-04 10:51:49,Jonathan,Moin
+2015-09-04 15:58:57,Svenska,in nem linkerscript weist man ja den speicherbereichen ihre sections zu
+2015-09-04 15:59:19,Svenska,"ist es möglich, eine section automagisch auf zwei speicherbereiche zu verteilen?"
+2015-09-04 16:00:23,Svenska,"anders gefragt: wenn ich 64K RAM @ 0x10000000 und 64K RAM @ 0x20000000 habe ... kann ich dem linker sagen, dass er .text auf beide verteilen kann?"
+2015-09-04 16:00:47,Jonathan,"Ein (klassischer) Linker nimmt ja nur Objektcode entgegen und klebt die einzelnen Stücke zusammen... Was darin steht, weiß der Linker nicht"
+2015-09-04 16:00:54,Jonathan,Also kann er nicht sonderlich intelligent sein
+2015-09-04 16:01:05,Svenska,"dann frage ich anders: kann ich ""ld"" das sagen? ;)"
+2015-09-04 16:01:27,Jonathan,"Also, ich hatte mich bisher nur mit sdldz80 rumgeprügelt *g*"
+2015-09-04 16:02:15,Svenska,"der hintergrund ist, dass ich hier einen ARM habe, der 2 SRAM-bänke besitzt, die an verschiedenen stellen des adressraums sitzen und sich nicht ueberlappen"
+2015-09-04 16:03:06,Jonathan,"-split-by-reloc, -split-by-file"
+2015-09-04 16:03:13,Jonathan,Vielleicht hilft das?
+2015-09-04 16:03:21,Svenska,ich kann zwar (durch spiegeladressen und unvollständige dekodierung) einen zusammenhängenden RAM-bereich definieren - ist im datenblatt so beschrieben - aber dann sind die adressen dann fuer jeden chip anders und sehen hässlich aus
+2015-09-04 16:04:03,Jonathan,http://elinux.org/Function_sections
+2015-09-04 16:04:25,Jonathan,^das ist vermutlich am nützlichsten :D
+2015-09-04 16:04:48,Jonathan,"Dann musst du dem Linker nur sagen, dass er die Sections auf die zwei Bänke verteilen kann"
+2015-09-04 16:04:49,Svenska,"ja, das weiß ich... nur wie klebe ich die wieder zusammen? :D"
+2015-09-04 16:05:03,Jonathan,Ist das nicht der einzige Zweck des Linkers? *g*
+2015-09-04 16:05:12,Svenska,"ich kann ld sagen ""so, und alle .text.* tust du jetzt in .text"", aber dann verteilt der das nicht auf die bänke"
+2015-09-04 16:05:49,Jonathan,Und wenn du das *nicht* sagst?
+2015-09-04 16:06:09,Svenska,dann muss ich jede funktion meines programms im linkerscript auffuehren ^^
+2015-09-04 16:06:18,Jonathan,Hmmm *g*
+2015-09-04 16:07:43,Jonathan,"""If you do not use a SECTIONS command, the linker places each input section into an identically named output section in the order that the sections are first encountered in the input files."""
+2015-09-04 16:08:02,Svenska,jo
+2015-09-04 16:08:54,Jonathan,Würde das denn nicht tun?
+2015-09-04 16:09:59,Svenska,"ne, weil der linker dann immernoch nicht weiß, wo er die hinpacken soll ;)"
+2015-09-04 16:10:19,Svenska,er wuerde halt aus .text.main im input ein .text.main im output machen (und kein .text)
+2015-09-04 16:10:30,Jonathan,Wäre das denn schlimm?
+2015-09-04 16:10:37,Svenska,aber das muss ich irgendwie auf SRAM_BANK0 und SRAM_BANK1 verteilen ;)
+2015-09-04 16:10:44,Jonathan,Hmm ;)
+2015-09-04 16:11:11,kevin,"Code so klein machen, dass er in 64k passt? ;-)"
+2015-09-04 16:11:30,Svenska,https://www.lpcware.com/content/forum/automatic-splitting-section
+2015-09-04 16:11:35,Svenska,"hmm, scheint als ob der das nicht kann"
+2015-09-04 16:11:59,Svenska,"kevin: real hab ich 64K (SRAM0) + 32K (SRAM1) + knapp 4K (der NAND-cache, wenn kein NAND da ist)"
+2015-09-04 16:12:27,kevin,"Und von Hand grob aufteilen geht nicht? .text ins erste, .data ins zweite oder so"
+2015-09-04 16:12:33,Svenska,das geht
+2015-09-04 16:12:53,kevin,"Ich meine ist nicht praktiabel? Dass es geht, ist klar ;-)"
+2015-09-04 16:13:08,Svenska,"oder einfach alles in SRAM0 stecken und entweder den heap in SRAM1 tun, oder große tabellen per hand einer anderen section zuweisen"
+2015-09-04 16:13:19,Svenska,"naja, scheint keine bessere möglichkeit zu geben. ;)"
+2015-09-04 16:14:03,Svenska,"der lpcxpresso scheint noch fieser zu sein, weil da zwischen den ram-bänken noch eine rom-bank sitzt"
+2015-09-04 16:14:15,kevin,"Wenn du genug Heap brauchst, dass das SRAM1 voll ausnutzt, dann wäre das natürlich die offensichtliche Variante"
+2015-09-04 16:14:38,Svenska,"wie gesagt, dann muss ich hässliche adressen in kauf nehmen und mit spiegeln arbeiten"
+2015-09-04 16:15:11,Svenska,"ist dann halt nicht mehr offensichtlich, wie es funktioniert (wegen ""studententauglich"")"
+2015-09-04 16:15:54,kevin,"Spieglein, Spieglein an der Wand, wer ist die hässlichste Adresse im ganzen Land? *g*"
+2015-09-04 16:16:01,Svenska,genau *g*
+2015-09-04 16:16:35,Jonathan,*g*
+2015-09-04 16:17:57,Jonathan,"Svenska: Ich würd mir einfach ein Lua-Skript zusammenkloppen, das die Input-Sections ""ausmisst"" und dann ein Linkerscript schreibt *g*"
+2015-09-04 16:18:14,Svenska,"Jonathan: nee, so hart bin ich nicht *g*"
+2015-09-04 16:18:18,Jonathan,*g*
+2015-09-04 16:18:43,Jonathan,Du kennst ja noch mein Build-Script vom OS? ;)
+2015-09-04 16:19:02,Svenska,"(zumal es streng genommen ja nichtmal so wirklich notwendig ist, weil .text im flash liegt, und das gibt's nur einmal)"
+2015-09-04 16:19:13,Jonathan,Stimmt :D
+2015-09-04 16:19:14,Svenska,"also es geht um .data, .bss und den heap"
+2015-09-04 16:19:24,Jonathan,Naja...
+2015-09-04 16:19:35,Jonathan,Einfachste Variante wäre wohl wirklich SRAM1 für Heap
+2015-09-04 16:19:52,Jonathan,"""32k heap shall be enough for everyone"""
+2015-09-04 16:20:14,Jonathan,"(Hey, das ist mehr Heap, als Treiber in meinem OS für Code+Daten haben)"
+2015-09-04 16:20:14,Svenska,"hm, jo"
+2015-09-04 16:20:27,Svenska,ist aber ein cortex-m3
+2015-09-04 16:20:42,Jonathan,"Ach was, von der Leistung her sicher vergleichbar *g*"
+2015-09-04 16:20:46,Svenska,"außerdem nutze ich auf solchen system ja nichtmal den heap (die libc braucht aber einen, fuer printf)"
+2015-09-04 16:20:55,Jonathan,Naja
+2015-09-04 16:21:08,Svenska,du hast auf sd-karten heutzutage schon einen 8051 der 100 mhz klasse drauf ;)
+2015-09-04 16:21:18,Jonathan,"Mehr Heap ist aber flexibler, als mehr RAM für statische Variablen :D"
+2015-09-04 16:21:38,Svenska,"interessiert nicht wirklich, weil ich den code ja nicht aus dem ram ausfuehre (ist ein statisches uC-programm)"
+2015-09-04 16:21:40,Svenska,*g*
+2015-09-04 16:22:02,Jonathan,Hmmm ;)
+2015-09-04 16:22:21,Svenska,ein cm3 ist halt kein prozessor
+2015-09-04 16:22:37,Jonathan,Aber zur Not kann man ja immer noch globals einfach mit malloc() machen
+2015-09-04 16:22:44,Svenska,jo
+2015-09-04 16:22:56,Jonathan,"Insofern schadet zu viel Heap ja nicht, zu wenig schon :D"
+2015-09-04 16:23:07,kevin,*argh* Falschen Branch gerebast. Nochmal von vorne...
+2015-09-04 16:23:15,Jonathan,Aua *g*
+2015-09-04 16:23:38,kevin,"Und nein, es war kein trivialer Rebase ;-)"
+2015-09-04 16:23:51,Jonathan,"""Das übt"" ;)"
+2015-09-04 16:24:08,Svenska,chaosradio #23 ist ... interessant ;)
+2015-09-04 18:15:17,Svenska,wo kriegt man eigentlich n halbwegs sauberes CMSIS von atmel her?
+2015-09-04 18:15:39,Svenska,ich find entweder zeugs in irgendwelchen google-android-source-trees oder das knapp 400 MB starke ASF von atmel
+2015-09-04 18:15:45,Svenska,...ich will doch nur den header :-(
+2015-09-04 18:16:02,masterq32,cmsis?
+2015-09-04 18:17:21,Svenska,so ne standard-abstraktion fuer arm-controller
+2015-09-04 18:17:40,masterq32,ah!
+2015-09-04 18:18:00,Svenska,"da sind die funktionen drin, die so ein arm cortex-m3 immer hat (also interrupt-controller, ein paar spezialbefehle, usw)"
+2015-09-04 18:18:17,Svenska,"und dann gibt's das immer noch vom hersteller, wo dann riesige headerfiles mit den registerbeschreibungen drin sind"
+2015-09-04 23:58:01,Svenska,"hmm... wie kriege ich eine variable so in einen header(!), dass das keine probleme macht? ;)"
+2015-09-04 23:58:16,Svenska,konkret: die interrupt-vektortabelle. :-D
+2015-09-04 23:58:28,Svenska,(und den dummy-handler.)

@@ -1,0 +1,273 @@
+date/time,nick,message
+2011-05-24 00:03:58,livinskull,quak
+2011-05-24 00:04:02,livinskull,jmd wach?
+2011-05-24 00:04:21,CounterPillow_,nein
+2011-05-24 00:04:38,livinskull,wollte mal wieder mein kernel bauen.. das letzte mal is gut n jahr her.... neues System heir aufm Rechner und sonstwas...
+2011-05-24 00:05:02,livinskull,jetz bekomm ich von GRUb derror 13 invalid executable format
+2011-05-24 00:05:18,DesL,unschön
+2011-05-24 00:05:32,livinskull,mbchk findet keinen multibootheader
+2011-05-24 00:05:53,livinskull,"das einzige was jetzt anders ist, ist das ich jetzt cross-compile"
+2011-05-24 00:06:04,livinskull,mit -m32 und -felf32
+2011-05-24 00:06:58,PNoob,benutzt du beim linken -melf_i386 oder so ähnlich?
+2011-05-24 00:07:04,livinskull,jo
+2011-05-24 00:07:08,livinskull,livinskull@livinbox ~/coding/LivinOS/kernel $ file LivinOS_kernel 
+2011-05-24 00:07:08,livinskull,"LivinOS_kernel: ELF 32-bit LSB executable, Intel 80386, version 1 (SYSV), statically linked, not stripped"
+2011-05-24 00:07:33,livinskull,macht er auch korrekt
+2011-05-24 00:08:01,PNoob,zeig mal dein linkerscript
+2011-05-24 00:08:34,PNoob,ich vermute nämlich das jetzt einfach der neue Compiler/Linker den kram anders zusammenpackt und deshalb der MBHeader wohanders liegt
+2011-05-24 00:08:38,livinskull,https://github.com/livinskull/LivinOS/blob/master/kernel/link.ld
+2011-05-24 00:09:28,PNoob,pack mal den MBHEader in eine eigene secktion und link die ganz an den anfang
+2011-05-24 00:21:35,livinskull,hm
+2011-05-24 00:21:40,livinskull,ich hasse linkerscripts
+2011-05-24 00:23:09,livinskull,das mag mich nicht.. baut keine neue section ein aber linken tuts o.o
+2011-05-24 00:23:23,livinskull,linker script: http://pastebin.com/SYy65DHF boot.s: http://pastebin.com/u6vSnKCR
+2011-05-24 00:24:58,PNoob,livinskull: was hast du denn da für ein konstrukt verbrochen
+2011-05-24 00:25:15,livinskull,heisst ich brauch den AT schmarren evt doch nicht? :P
+2011-05-24 00:25:28,PNoob,livinskull: guck dir am besten mal das Linkerscript des Tutorialkernels an. das ist schön einfach aufgebaut
+2011-05-24 00:25:46,PNoob,den AT Kram hab ich bisher noch nicht benötigt
+2011-05-24 00:26:48,livinskull,ui
+2011-05-24 00:26:49,PNoob,und deine boot.s verwundert mich auch ein wenig
+2011-05-24 00:26:54,livinskull,das sieht tatsächlich einfacher aus
+2011-05-24 00:27:04,livinskull,wo hatte ich dann damals mein linekr script her o.O
+2011-05-24 00:27:25,PNoob,da wird doch der mb Header garnicht erzeugt. du definierst da doch nur ein paar werte
+2011-05-24 00:27:40,livinskull,oh
+2011-05-24 00:27:41,livinskull,shit
+2011-05-24 00:27:43,livinskull,das is weiter unten
+2011-05-24 00:27:49,livinskull,verdammt
+2011-05-24 00:28:06,PNoob,das gehört natürlich mit oben in die section mit rein
+2011-05-24 00:28:12,livinskull,jo
+2011-05-24 00:28:36,PNoob,"und dann sollte eigentlich der mb header gefunden werden, sofern das linkerscript alles richtig macht"
+2011-05-24 00:29:06,PNoob,das Dateiformat sieht nämlich ok aus
+2011-05-24 00:29:26,livinskull,hah
+2011-05-24 00:29:28,livinskull,super
+2011-05-24 00:29:29,livinskull,danke
+2011-05-24 00:29:31,livinskull,=)
+2011-05-24 00:30:01,PNoob,wird der mb header jetzt gefunden?
+2011-05-24 00:30:19,livinskull,jo..
+2011-05-24 00:30:24,livinskull,allerdings an offset 1024
+2011-05-24 00:30:28,livinskull,soltle das nicht 0 sein?
+2011-05-24 00:30:45,PNoob,nö
+2011-05-24 00:30:57,PNoob,der ELF Header ist doch noch davor
+2011-05-24 00:31:13,livinskull,stimmt
+2011-05-24 00:31:22,PNoob,frag mal GRUB was er dazu jetzt sagt
+2011-05-24 00:31:25,livinskull,rofl
+2011-05-24 00:31:33,livinskull,error 28: selected item does not fit into memory
+2011-05-24 00:32:10,PNoob,zeig jetzt nochmal dein linkerscript
+2011-05-24 00:32:30,PNoob,"ich glaube du lädst die Datei unter 1MB, und das geht nicht mit GRUB"
+2011-05-24 00:33:32,livinskull,http://pastebin.com/D6AgEr3Y
+2011-05-24 00:33:53,livinskull,heisst das 0x100000 muss jetz zur ersten section?
+2011-05-24 00:34:44,PNoob,jo
+2011-05-24 00:35:07,PNoob,http://pastebin.com/Q1ZbG2WX
+2011-05-24 00:35:34,PNoob,so sollte das eigentlich gehen
+2011-05-24 00:36:00,livinskull,jup so hab ichs grad gemacht
+2011-05-24 00:36:01,livinskull,funzt !
+2011-05-24 00:36:11,livinskull,danke =)
+2011-05-24 00:36:31,PNoob,dein Kernel bootet wieder?
+2011-05-24 00:36:35,livinskull,jo
+2011-05-24 00:36:50,livinskull,wunderhübsches ABBABABABA xD
+2011-05-24 00:37:09,PNoob,dann kann ich ja jetzt pennen gehen
+2011-05-24 00:37:12,PNoob,gn8
+2011-05-24 00:37:17,livinskull,gn8
+2011-05-24 00:41:27,DesL,"""Jesus has come, few were saved, even less noticed his presence, but May 21st was still Judgement Day.  If you are reading this blog, then you were not saved by Jesus in the Second Coming, and have been left behind during the End of Days.  There are just five months remaining until the End of The World on October 21 2011.  Prepare yourself for the End Times now by stocking up on water, canned "
+2011-05-24 00:41:27,DesL,"goods, and appropriate clothing before the End of The World."" Ok....."
+2011-05-24 00:41:56,livinskull,xD
+2011-05-24 00:42:06,livinskull,apokalypse wurde verschoben
+2011-05-24 00:42:24,DesL,"ne, apokalypse ist erst für den october geplant :D"
+2011-05-24 00:42:44,DesL,"Aber ich frage mich, ob die da oben wohl DSL erwarten :D"
+2011-05-24 00:42:53,livinskull,xD
+2011-05-24 00:44:20,DesL,gn8
+2011-05-24 00:44:29,livinskull,gn8^^
+2011-05-24 01:53:57,XanClic,gn8
+2011-05-24 09:14:06,kevin,Moin
+2011-05-24 09:17:38,DickHuuhn,seconded
+2011-05-24 11:20:06,AGGROStar1991,guten morgen 
+2011-05-24 11:39:15,DesL,moin
+2011-05-24 11:58:09,PNoob,Moin
+2011-05-24 12:00:27,DesL,"arg, foo, hier geht ignore ja nicht -.-"
+2011-05-24 12:18:43,DesL,"lol, windows XP forkbomb mit ""taskkill /F /IM taskkill.exe"" :D"
+2011-05-24 12:55:57,DesL,b
+2011-05-24 13:14:41,billy,moin
+2011-05-24 14:34:17,Cody,moin
+2011-05-24 14:36:51,kevin,Moin Cody
+2011-05-24 14:50:25,Svenska,hi
+2011-05-24 14:55:36,PNoob,Moin Cody
+2011-05-24 14:55:36,PNoob,Moin Svenska
+2011-05-24 15:00:09,PNoob,mein vserver ist immer noch nicht freigeschaltet. :(
+2011-05-24 15:00:31,Cody,vserver?
+2011-05-24 15:00:48,PNoob,ja vserver
+2011-05-24 15:00:59,Svenska,tja
+2011-05-24 15:01:02,Svenska,wann hast du bestellt?
+2011-05-24 15:01:05,Cody,und damit meinst du..?
+2011-05-24 15:01:22,Svenska,virtuelle server
+2011-05-24 15:01:27,PNoob,Cody: du weiß nicht was ein vserver ist?
+2011-05-24 15:01:36,Svenska,"du hast root, aber keinen kernel-zugriff und teilst dir die reale maschine mit anderen kunden"
+2011-05-24 15:01:39,PNoob,Svenska: heute morgen
+2011-05-24 15:01:43,Cody,n virtueller server wofür hast doch nen echten^^
+2011-05-24 15:01:43,Svenska,dann ist das klar
+2011-05-24 15:01:49,Svenska,er hat keinen echten
+2011-05-24 15:01:53,Svenska,das ist sein heimpc :D
+2011-05-24 15:02:04,PNoob,Svenska: nein ich habe Zuhause nen echtenm Server stehen
+2011-05-24 15:02:10,Cody,der als server aufgestellt is richtig?
+2011-05-24 15:02:13,Svenska,ja - zuhause = nicht im internet
+2011-05-24 15:02:25,Cody,das muss sich nicht ausschließen^^
+2011-05-24 15:02:31,Svenska,okay
+2011-05-24 15:02:34,Svenska,nicht im schnellen internet
+2011-05-24 15:02:40,Svenska,und schon garnicht mit vernünftig upload
+2011-05-24 15:02:42,Cody,einmal ubuntu server mit nem ftp proggi druff un fertig is der server
+2011-05-24 15:02:50,PNoob,"Svenska: der Server ersetzt zuhause den Router, und hängt somit direkt im Internet"
+2011-05-24 15:02:53,Cody,naja
+2011-05-24 15:03:02,PNoob,Cody: Debian. Ubuntu ist zu instabil
+2011-05-24 15:03:14,Cody,pffff
+2011-05-24 15:03:17,PNoob,Svenska: den den ich gestern abend bestellt habe haben die auch noch nicht freigschaltet.
+2011-05-24 15:03:22,Cody,wenn du schon mit fedora ned zurechtkommst^^
+2011-05-24 15:03:32,PNoob,liegt wohl daran das ich nicht gut genug Tschechisch kann
+2011-05-24 15:03:53,Svenska,?
+2011-05-24 15:03:58,PNoob,"Mein Server Zuhause reicht für den meisten Kram, nur der TS Server dadrauf ist nicht so ideal."
+2011-05-24 15:04:12,kevin,"Tak musiš učit se česky, PNoobe"
+2011-05-24 15:04:12,PNoob,wenn da nen paar mehr leute drauf connecten wars das mit dem uplaod
+2011-05-24 15:04:33,PNoob,ach der kevin kann ja Tschechisch
+2011-05-24 15:04:36,Cody,jo kevin^^
+2011-05-24 15:05:11,Cody,ich kann auch arabisch
+2011-05-24 15:05:11,Svenska,wieso kann der tschechisch? ;)
+2011-05-24 15:05:33,kevin,Warum nicht? ;-)
+2011-05-24 15:05:34,Cody,ني أنا جيدة مثل مترجم عربي الانجاز
+2011-05-24 15:05:36,PNoob,kevin: möchtest du dann mal ne Mail für mich schreiben?
+2011-05-24 15:05:48,Svenska,hm wieder falsche frage
+2011-05-24 15:05:53,Svenska,woher kann der tschechisch? ;-)
+2011-05-24 15:06:11,Cody,Budu psát dopis PNoob
+2011-05-24 15:06:21,kevin,"Außerdem kann ich grad genug Tschechisch, dass es schade drum wäre, es zu vergessen, aber zu wenig, um wirklich kommunizieren zu können ;-)"
+2011-05-24 15:06:33,Svenska,hmm
+2011-05-24 15:06:35,Cody,xD
+2011-05-24 15:06:35,kevin,"Cody: Du? Mit Google, oder wie?"
+2011-05-24 15:06:40,Cody,Nooo
+2011-05-24 15:06:52,Cody,Mohu tak učinit ^ ^
+2011-05-24 15:06:57,PNoob,"Svenska: damit du dich nicht wunderst, warum ich Tschechisch brauche um nen Vserver zu bekommen. es geht darum das ich nichts bezahlen will und Pipni kostenlose vserver verteilt"
+2011-05-24 15:07:07,Cody,ja mit übersetzer :(
+2011-05-24 15:07:09,PNoob,aber nur für leute aus Tschechien
+2011-05-24 15:07:19,Svenska,"ich finds irgendwie lustig, dass wir hier eine wunderbare sprachensammlung haben"
+2011-05-24 15:07:30,kevin,"PNoob: Ah, und auf Bremen trifft das zu, wenn man ein bisschen Rundungsfehler drin hat, oder wie?"
+2011-05-24 15:08:00,PNoob,kevin: nö Tschechischen Proxy
+2011-05-24 15:08:01,kevin,"Hm, wieso, Svenska?"
+2011-05-24 15:08:07,Cody,ich vertrau nur meinem deutsch und meinem englisch^^
+2011-05-24 15:08:16,kevin,Kann doch kaum einer hier was richtig außer deutsch und englisch
+2011-05-24 15:08:18,PNoob,Cody: ich vertraue auch nur dem
+2011-05-24 15:08:19,kevin,Und du halt noch schwedisch
+2011-05-24 15:08:24,Svenska,naja
+2011-05-24 15:08:29,Svenska,aber jeder so ein bisschen ^^
+2011-05-24 15:08:31,Cody,tschechisch braucht doshc keine sau so viele schs und chs in einem wort sind doch dumm
+2011-05-24 15:08:46,Svenska,"ich mein, finnisch mit den ganzen ä's ist jetzt auch nicht soo hübsch"
+2011-05-24 15:08:47,PNoob,Mein Spanisch reicht um mich unbeliebt zu machen und um zu fragen ob jemand englisch kann
+2011-05-24 15:09:03,kevin,Cody: Strč prst skrz krk *g*
+2011-05-24 15:09:03,Svenska,aber tschechisch ist schon ungewöhnlich ;)
+2011-05-24 15:09:04,PNoob,bei meinem Französisch siehts ganz ehrlich gesagt in keinster Weise besser aus
+2011-05-24 15:09:09,Cody,^^
+2011-05-24 15:09:26,kevin,"(Ja, das ist ein richtiger tschechischer Satz)"
+2011-05-24 15:09:37,Cody,jaja wir können es ja mit latein versuchen (wieso habe ich das nur gewählt?!)
+2011-05-24 15:09:47,Svenska,non lingua latina bonum sum.
+2011-05-24 15:09:51,PNoob,Cody: das fragen sich viele
+2011-05-24 15:10:01,Svenska,"halt, s/sum/possum/"
+2011-05-24 15:10:08,Cody,blah
+2011-05-24 15:10:30,kevin,"Svenska: Ich war ja bei SUSE in Nürnberg, und das zweite große Büro von denen ist in Prag. Das ist der Grund, warum sie einen Tschechischkurs angeboten haben."
+2011-05-24 15:10:33,Cody,lingua latina malus est
+2011-05-24 15:10:38,kevin,Und bei nutzlosen Sprachen bin ich eh immer gleich dabei *g*
+2011-05-24 15:10:49,Svenska,achso
+2011-05-24 15:11:04,Cody,muss zu chemie cu
+2011-05-24 15:11:07,Cody,^^
+2011-05-24 15:11:12,Svenska,kevin: das ist ein guter grund
+2011-05-24 15:11:24,Svenska,"ich will mir ja noch irgendwann russisch eintun, aber komme iwie nicht dazu"
+2011-05-24 15:11:31,Svenska,bleibt wohl nur die BRalpha-variante
+2011-05-24 15:11:57,kevin,"Ich glaube, ich muss erstmal die germanischen Sprachen ausschöpfen - ich bin zu faul, genug richtig fremdes Vokabular zu lernen ;-)"
+2011-05-24 15:12:37,Svenska,naja
+2011-05-24 15:12:43,kevin,Und Französisch wär vielliecht auch mal nicht ganz verkehrt...
+2011-05-24 15:13:02,Svenska,"selbst schwedisch hat schon ""genug"" eigenes vokabular, und die große masse kommt aus mittelhochdeutsch und englisch"
+2011-05-24 15:13:22,Svenska,"naja, von frz halte ich abstand. wobei es wohl am ehesten was bringen könnte"
+2011-05-24 15:14:05,kevin,"Schwedisch hat natürlich schon eigenes Vokabular. Aber ohne es gelernt zu haben, kommt man beim Lesen als Deutscher trotzdem mit Raten erstaunlich weit."
+2011-05-24 15:14:27,Svenska,eben
+2011-05-24 15:14:34,kevin,Und Holländisch ist eh mehr oder weniger problemlos
+2011-05-24 15:14:35,Svenska,nur zum sprechen reicht es dann halt doch nicht
+2011-05-24 15:14:49,Svenska,"ja, wobei ich interessanterweise kein holländisch verstehe (mal ein wort, aber das wars auch)"
+2011-05-24 15:14:55,Svenska,auch nicht mit raten oder schriftlich :(
+2011-05-24 15:15:18,PNoob,"ich hab mich mal mit nem Holländer unterhalten, wenn die langsam reden, versteht man es als Deustcher ziemlich problemlos"
+2011-05-24 15:15:21,kevin,"Hm? Also Lesen kann ich es ohne weiteres. Beim Hören wird es schwer, wenn es normal schnell ist."
+2011-05-24 15:15:30,kevin,"Aber wenn sie ein bisschen langsamer machen, geht es eigentlich"
+2011-05-24 15:15:41,Svenska,da versag ich komplett
+2011-05-24 15:15:51,PNoob,und verstehen tun die Deustch nahezu perfekt
+2011-05-24 15:16:03,PNoob,liegt wohl daran das die da hinten viel Deutsches Fernsehen haben
+2011-05-24 15:16:04,kevin,Ist ja letztendlich auch nur ein komischer Dialekt
+2011-05-24 15:17:39,PNoob,"ganz im ernst, im tiefsten Bayern kann ich die Leute nicht verstehen, auch wenn die Langsam sprechen"
+2011-05-24 15:17:47,kevin,hehe
+2011-05-24 15:18:18,PNoob,"aber Bayern gehört ja zum Glück nicht zu Deustchland, in sofern ist das nicht so schlimm"
+2011-05-24 15:19:45,kevin,Svenska: Aber eigentlich ist das ja nur gerecht. Bei gesprochenem Schwedisch versage ich komplett. ;-)
+2011-05-24 15:21:25,Homix,"PNoob: hm und ich dachte, bayern liegt doch direkt im zentrum von deutschland ..."
+2011-05-24 15:21:51,kevin,Aber nicht von Deustchland
+2011-05-24 15:23:09,Homix,vlt nicht unbedingt geographisch ;)
+2011-05-24 15:24:03,PNoob,Homix: ne ganz eindeutig nicht. Hast inner Schule wohl nicht aufgepasst 
+2011-05-24 15:32:42,Homix,;)
+2011-05-24 15:33:28,Homix,im norden und im süden von uns sprechen sie deutsch ;) was folgern wir daraus?
+2011-05-24 15:34:25,kevin,Im Süden?
+2011-05-24 15:39:38,Homix,zumindest versteh ich was ;)
+2011-05-24 15:42:27,XanClic,Moin
+2011-05-24 15:42:36,kevin,Moin
+2011-05-24 16:02:56,PNoob,Homix: kommst du etwa aus Bayern?
+2011-05-24 16:03:06,PNoob,Moin XanClic
+2011-05-24 16:06:21,Homix,PNoob: denke ja
+2011-05-24 16:06:25,sfan,moin
+2011-05-24 16:10:08,PNoob,Moin sfan
+2011-05-24 16:10:14,DesL,moin
+2011-05-24 16:10:25,PNoob,Moin DesL
+2011-05-24 16:11:33,sfan,moin DesL
+2011-05-24 16:11:48,SHyx0rmZ,Moin
+2011-05-24 16:11:58,sfan,moin SHyx0rmZ
+2011-05-24 16:12:18,PNoob,Moin SHyx0rmZ
+2011-05-24 16:19:51,kevin,Moin
+2011-05-24 16:19:55,DesL,"NOEEEEES, schon wieder sony :D"
+2011-05-24 16:20:08,SHyx0rmZ,das schon wieder von gestern oder wieder ein neues?
+2011-05-24 16:20:39,DesL,"gestern afaik, ich habs aber nicht mitbekommen, gestern^^"
+2011-05-24 16:24:45,PNoob1,irgendwie spinnt heute die Technik
+2011-05-24 16:25:24,PNoob1,"jetzt hat 2 mal irgendwer bei uns angerufen, und im Display des Teleons stand nur ""T-System"". beide male bin ich rangegangen und es war nur ein gepiepe im Abstand von 3 Sec zu hören"
+2011-05-24 16:25:32,PNoob1,weiß von euch wer was das zu bedeuten hat?
+2011-05-24 16:28:20,DesL,bb
+2011-05-24 17:32:21,billy,moin
+2011-05-24 17:39:32,Jidder,"hm wenn der mensch andere sonnensysteme bereist, wie kommen die leute dann zeitig an software updates?"
+2011-05-24 17:40:02,Jidder,ich denke die raumfahrt öffnet den hackern tür und tor
+2011-05-24 17:40:08,Svenska,"definiere ""zeitig"""
+2011-05-24 17:40:26,Svenska,"adobes zeitig = mehrere monate, kein problem :-)"
+2011-05-24 17:40:29,Jidder,schneller als das licht
+2011-05-24 17:40:57,Jidder,"jeder software entwickler müsste einen klon von sich in der nächsten galaxie haben, der dann genau die selben patches schreiben kann"
+2011-05-24 17:41:10,Jidder,damit die galaxien die updates gleichzeitig bekommen
+2011-05-24 17:44:21,billy,Jidder: komm erst mal in eine andere galaxie. dann kann man auch über solche probleme reden.
+2011-05-24 17:44:53,XanClic,Jidder ist doch schon längst in einer anderen Galaxie
+2011-05-24 17:45:45,kevin,In _einer_?
+2011-05-24 17:46:03,XanClic,Point well taken
+2011-05-24 17:46:21,Svenska,:D
+2011-05-24 17:46:36,SHyx0rmZ,*g*
+2011-05-24 17:48:26,DesL,re
+2011-05-24 18:26:03,bluecode,moin
+2011-05-24 18:26:33,DesL,moin bluecode
+2011-05-24 18:48:30,billy,moin bluecode
+2011-05-24 21:25:43,Paddy,Hi
+2011-05-24 21:35:24,PNoob,Moin Paddy
+2011-05-24 22:20:11,Jidder,"ich weiß nicht, ob ich glauben soll, was ihr hier so erzählt"
+2011-05-24 22:25:24,Svenska,www.heatball.de ?
+2011-05-24 22:32:03,Jidder,hm ich weiß ein lustiges spiel das man über irc spielen kann
+2011-05-24 22:32:23,Jidder,"ihr kennt doch das spiel wo jeder im reihum ein wort sagen muss, und das ganze muss dann einen satz ergeben"
+2011-05-24 22:32:28,Jidder,wir machen das mit assembler instruktionen
+2011-05-24 22:32:34,Paddy,nop
+2011-05-24 22:32:36,Jidder,die werden dann direkt ausgeführt
+2011-05-24 22:32:44,Jidder,"und wer den pc zum absturz bringt, verliert"
+2011-05-24 22:33:09,Jidder,"mov eax, 0"
+2011-05-24 22:33:11,Svenska,nop
+2011-05-24 22:33:18,Paddy,"Und wer erfolgreich in den Usermode switcht, gewinnt?"
+2011-05-24 22:33:30,Jidder,hehe genau
+2011-05-24 22:33:39,stultus,gn8
+2011-05-24 22:33:41,Jidder,ich wollte schon mal anfangen die gdt zu laden
+2011-05-24 22:33:43,Svenska,"ok, ich kenn meine instruktrion :-)"
+2011-05-24 23:38:19,Svenska,tschø
+2011-05-24 23:38:23,DesL,b
+2011-05-24 23:38:48,Paddy,"Wo branchst du denn hin, DesL?"
+2011-05-24 23:40:31,DesL,"im moment mal wieder zu MAgick++, diese lib kriege ich seit WOCHEN nciht kompiliert"
+2011-05-24 23:44:57,Paddy,Hat dir jemand gesagt PLEASE DO ABSTAIN FROM GIVING UP oder wieso machst du dann immer noch daran rum? ;-)
+2011-05-24 23:45:08,DesL,weil ich das teil nutzen will
+2011-05-24 23:49:35,CounterPillow,use the force luke
+2011-05-24 23:50:19,DesL,wenn das wenigstens helfen würd
+2011-05-24 23:53:17,DesL,"Wenn jemand von euch einen Gcc mit Windows als target hat, und mir den gefallen tun würde das mal auszuprobieren, bei mir funtzt es nciht -.- auch wenn ich die meisten hier sicherlich schon gefragt habe..."

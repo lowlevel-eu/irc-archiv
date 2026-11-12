@@ -1,0 +1,90 @@
+date/time,nick,message
+2017-02-15 18:44:53,kevin,"XanClic: Ist das eigentlich Absicht, dass du mich knapp neben die Bugs lenkst und ich mir selber die Löcher in die Patches schießen muss? *g*"
+2017-02-15 18:46:02,kevin,"Ich glaube, der nächste Schritt wäre dann wohl eine Assertion in bdrv_truncate..."
+2017-02-15 19:53:58,XanClic,"kevin, natürlich!"
+2017-02-15 20:00:24,kevin,"XanClic: Verstehst du übrigens zufällig, was vvfat da mit seiner Backing File macht?"
+2017-02-15 20:00:47,XanClic,"Du hast doch heute erst alles geschrieben, was es zu vvfat zu sagen gibt"
+2017-02-15 20:01:02,XanClic,"Vielleicht hab ichs irgendwann mal verstanden, aber auf jeden Fall wieder verdrängt ;-)"
+2017-02-15 20:01:14,kevin,"Ich glaube, ich habe nicht explizit geschrieben, dass es keine Teilbereiche gibt, die jemand versteht ;-)"
+2017-02-15 20:01:48,kevin,"Das sieht halt irgendwie schon arg kriminell aus, was es da macht"
+2017-02-15 20:02:32,kevin,"Und wo die Backing File dann benutzt wird, habe ich keine Ahnung. Auf den ersten Blick sieht das so aus als ob er die nur mal anlegt."
+2017-02-15 20:03:23,XanClic,Es muss wohl einfach mal jemand vvfat neu schreiben
+2017-02-15 20:03:28,XanClic,Das wär doch was für GSoc!
+2017-02-15 20:03:36,kevin,hehe
+2017-02-15 20:03:49,kevin,Ah!
+2017-02-15 20:04:32,kevin,"Autsch. Ich glaube, das ist nur dafür da, damit ein HMP-commit-Befehl erkannt wird."
+2017-02-15 20:04:56,kevin,Das ist doch kaputt
+2017-02-15 20:04:59,XanClic,"Soweit ich das sehe und mich erinnere, war die Backingdatei einfach nur für sich selbst da"
+2017-02-15 20:05:02,XanClic,äh
+2017-02-15 20:05:10,XanClic,Trägt der sich einfach selbst als Backingdatei ein und das wars
+2017-02-15 20:05:24,XanClic,Wäre also einfach ein -snapshot in NIH
+2017-02-15 20:06:16,kevin,"Nö, das ist nicht er selber"
+2017-02-15 20:06:30,kevin,Einfach ein neues BDS von bdrv_new()
+2017-02-15 20:06:34,XanClic,Ist er nicht? Ist ja witzig.
+2017-02-15 20:07:22,kevin,"Ist halt schade, dass das jetzt so schiefgeht"
+2017-02-15 20:07:24,kevin,qemu-system-x86_64: -hda fat:rw:/tmp/foo/: Block node is not opened
+2017-02-15 20:07:30,XanClic,"Ich wüsste dann halt gerne, was das qemu_opt_set(opts, BLOCK_OPT_BACKING_FILE, ""fat:"", &error_abort); da soll"
+2017-02-15 20:07:43,XanClic,"Na ja, dann wohl null-co? :-P"
+2017-02-15 20:08:07,kevin,"Ja, das ist ja die Backing File von der qcow-Node, nicht von vvfat selbst *g*"
+2017-02-15 20:08:29,XanClic,"Ach, aber die Backingdatei da ist von vvfat…"
+2017-02-15 20:08:32,XanClic,Das ist ja kaputt.
+2017-02-15 20:08:49,kevin,Muss ja von vvfat sein
+2017-02-15 20:08:58,kevin,Damit commit ide0-hd0 erkannt wird
+2017-02-15 20:09:21,kevin,"Und mehr tut es ja nicht, es triggert einfach nur das Zurückschreiben (oder so?) bei einem Commit"
+2017-02-15 20:09:32,XanClic,"Na ja, das s->bs->backing->bs->drv = &vvfat_write_target; sieht so aus, als sollte man vielleicht man bdrv_file_open für vvfat_write_target implementieren"
+2017-02-15 20:10:07,kevin,"Jo, oder genauergesagt das Dings, was ich für den Commit-Filter gebastelt habe, wie auch immer es hieß"
+2017-02-15 20:10:10,kevin,"Aber soweit bist du noch nicht, oder?"
+2017-02-15 20:10:18,XanClic,"Noch nicht, nein"
+2017-02-15 20:10:53,kevin,bdrv_new_open_driver()
+2017-02-15 20:11:41,kevin,Was vor allem halt einen BlockDriver* nimmt statt den Treibernamen aus den Optionen zu nehmen (weil diese internen Treiber ja gar keinen extern sichtbaren Namen haben)
+2017-02-15 20:12:02,XanClic,"Dass sie keinen Namen haben, könnte man ja ändern, aber ich verstehe gut, warum man das nicht ändern will"
+2017-02-15 20:12:23,kevin,"Oder sichtbar ist der Name schon (info block -n und so), aber nicht zum Erzeugen von Nodes benutzbar, aus offensichtlichen Gründen"
+2017-02-15 20:12:59,XanClic,"Wär aber eigentlich witzig, wenn man einen mirror-Job mit blockdev-add starten könnte."
+2017-02-15 20:13:32,kevin,Für manche Werte von witzig. Also wenn man mal nicht an die resultierenden Bugzillas denkt und so. ;-)
+2017-02-15 20:14:16,XanClic,“[RFE] Cannot create mirror block job through HMP's drive_add”
+2017-02-15 20:14:28,kevin,*g*
+2017-02-15 20:15:06,kevin,"Wäre halt vor allem auch ein Job ohne Job, oder zumindest ohne ID"
+2017-02-15 20:15:20,XanClic,Da kann man ja einfach den node-name nehmen
+2017-02-15 20:15:48,kevin,Ist blockdev-del dann ein cancel-sync oder ein complete-sync?
+2017-02-15 20:15:53,XanClic,Oder job-id ist einfach eine Option für das mirror-BDS
+2017-02-15 20:16:01,XanClic,Das hab ich mich auch gefragt
+2017-02-15 20:16:06,XanClic,Ich hab an complete gedacht
+2017-02-15 20:16:19,XanClic,"Aber cancel wär vermutlich besser, so gefragt"
+2017-02-15 20:16:21,kevin,"Eigentlich egal, weil *-sync, ist es eh kaputt"
+2017-02-15 20:17:12,XanClic,"Die viel wichtigere Frage ist ja: Wenn man Blockjobs im BDS-Graphen abbilden kann, kann man dann nicht alle long-running operations in QEMU mit BDS abbilden?"
+2017-02-15 20:17:16,kevin,"Bei Cancel hätte man aber immerhin gute Chancen, dass es ""bald"" is"
+2017-02-15 20:17:28,kevin,"Hm, ein Migration-Filter? Klingt gut."
+2017-02-15 20:17:29,XanClic,"Und schaffen wir es bis 3.0, dass 90 % von qemu in block/ ist?"
+2017-02-15 20:17:58,kevin,"Das kommt stark darauf an, wann 3.0 ist *g*"
+2017-02-15 20:18:07,XanClic,Ich nehm das mal als ein „ja“
+2017-02-15 20:18:24,kevin,"Als ersten Ansatz würde ich vorschlagen, du konvertierst das Audio-Subsystem nach Block, damit hast du ja schon Erfahrung"
+2017-02-15 20:18:34,XanClic,Das ist ja trivial.
+2017-02-15 20:18:43,kevin,"Da fällt mir übrigens ein, in Brünn hatte irgendjemand eine tolle 1.-April-Idee"
+2017-02-15 20:18:49,kevin,"Mir fällt nur nicht mehr ein, was es war *g*"
+2017-02-15 20:18:49,XanClic,"Wobei, da brauchen wir erst durchgängig Bytes statt Sektoren im Blocklayer"
+2017-02-15 20:19:01,XanClic,"Stefan hatte auch eine, und ich hab ihm gesagt, er soll mich nicht spoilern"
+2017-02-15 20:19:07,kevin,hehe
+2017-02-15 20:19:56,XanClic,"John meinte, meine Idee, Reviews als Schneeballsystem umzusetzen, sei auch gut geeignet"
+2017-02-15 20:20:37,XanClic,"Also, dass man Patches im Posteingang nur dann als gelesen markieren darf, wenn man sie reviewt oder an mindestens zwei weitere Personen weitergeleitet hat"
+2017-02-15 20:21:02,XanClic,"Aber das ist auch wieder eine von diesen gefährlichen Ideen, die manche vielleicht gut finden könnten ;-)"
+2017-02-15 20:21:59,Tufel,huhu
+2017-02-15 20:22:12,XanClic,hoho
+2017-02-15 20:23:31,kevin,"XanClic: Kein Problem, ich habe genug Mails als ungelesen markiert, die trotzdem keine Hoffnung auf ein Review haben ;-)"
+2017-02-15 20:23:42,XanClic,Auch wieder wahr
+2017-02-15 20:30:35,kevin,"XanClic: Du brauchst nicht zu denken, dass alle FIXMEs auch gefixt werden, hat ja einen Grund, dass das ein RFC ist ;-)"
+2017-02-15 20:33:14,XanClic,Bah ;-)
+2017-02-15 20:33:38,kevin,"Hm, und was ist ein ""user"" im Sinn von ""aufrufende Funktion"", wenn nicht ""it""? Ich finde, ""they"" klingt da auch komisch."
+2017-02-15 20:34:32,XanClic,"Ach so, ich dachte halt an richtige User"
+2017-02-15 20:34:56,kevin,"Mal warten, was Eric sagt ;-)"
+2017-02-15 20:35:18,XanClic,"Ich trau Amerikanern nicht, was Englisch angeht."
+2017-02-15 20:35:45,kevin,Hm. Und Engländern?
+2017-02-15 20:36:05,XanClic,"Da hab ich nicht so viel Erfahrung, aber wenn Daniel ein Maßstab ist, dann vermutlich auch nicht so sehr ;-)"
+2017-02-15 20:36:12,kevin,"Aber ich freue mich ja jedesmal, wenn Eric wieder einen Konjunktiv in einer Commitmessage unterbringt"
+2017-02-15 20:40:26,Tufel,Hätte mal ne Frage zu der maximalen Anzahl an Prefix-Bytes in einem x86-Befehl.  In einigen Quellen ist von maximal 4 Prefix-Bytes die Rede.  Andere sprechen von 5 verschiedene Prefix-Gruppen wobei maximal 1 Prefix aus einer Gruppe in einem Befehl vorkommen darf. Und dann gibts noch die Meinung das nur die maximale Befehlslänge von 15Bytes die Anzahl an Prefix begrenzt (Also maximal 14Prefix).  
+2017-02-15 20:40:42,Tufel,"Ihrgendwie blick ich da nicht durch, weißt jemand was jetzt davon stimmt?"
+2017-02-15 20:41:37,XanClic,"Spontan nicht, aber es gibt nur eine begrenzte Zahl von Prefixen und in deren Beschreibung steht bestimmt, wie man die kombinieren kann"
+2017-02-15 20:42:00,XanClic,Und vermutlich ist keiner mit sich selbst zu kombineren
+2017-02-15 20:44:02,XanClic,"Und kommt ja auch auf den Befehl an, welche Präfixe überhaupt erlaubt sind; mir fällt gerade zum Beispiel kein Befehl ein, für den sowohl rep als auch Segment Override Prefix Sinn ergeben würden"
+2017-02-15 20:50:27,Tufel,"In einige Optimierungs-Guides von AMD-Prozessoren wird das künstliche aufblasen der Befehlslänge mit Hilfe mehrerer 0x66 Bytes beschrieben. Im AMD64-Manual steht aber das das kombinieren mehrerer gleicher Prefixes undefiniert ist. Mhh vielleicht hat jede prozessor-architektur seine eigenen Feinheiten, was die Anzahl an Prefix-Bytes angeht...."
+2017-02-15 21:09:50,kevin,"XanClic: Hm, ich glaube, das mit commit und vvfat kann nicht so wichtig sein. Das ist kaputt, seit wir automatisch ein raw draufpacken. ;-)"
+2017-02-15 21:12:48,XanClic,"Das nimmt uns doch keiner ab, dass das ein Versehen war ;-)"

@@ -1,0 +1,61 @@
+date/time,nick,message
+2009-12-10 00:17:07,pcmattman,taljeth: did you end up getting a chance to review my patch?
+2009-12-10 00:21:31,taljeth,"I've had a look, yes, and we started a short discussion but quok had to leave"
+2009-12-10 00:22:25,pcmattman,"Ah. I unfortunately lost my backlog from last night, so I wasn't sure what was discussed"
+2009-12-10 00:22:42,taljeth,I'm not exactly happy with having CDI_DRIVER_CONST additionally because it's pure code duplication
+2009-12-10 00:23:03,taljeth,So if anything I'd give up the current CDI_DRIVER completely
+2009-12-10 00:23:29,taljeth,"XanClic and quok didn't even understand what your problem is, so no opinion from them yet ;-)"
+2009-12-10 00:25:01,pcmattman,"You mean, instead of the struct method, just use the explicit definition?"
+2009-12-10 00:25:31,taljeth,"Right, although I really like doing it with the struct"
+2009-12-10 00:25:52,taljeth,But having two declarations doing the same in each driver is just silly
+2009-12-10 00:26:04,pcmattman,"Well, the struct is cleaner"
+2009-12-10 00:26:37,pcmattman,"But it's also a level of indirection, which the compiler errors on in Pedigree modules"
+2009-12-10 00:27:40,taljeth,Maybe you can really have a try with the ugly macro? It should work and it's not code that you need to read each day
+2009-12-10 00:28:34,pcmattman,I'll see what I can do
+2009-12-10 00:30:40,taljeth,"It's not like I haven't thought about Pedigree. I would have liked to have also the name and the dependencies in the struct only, but this really wouldn't work for you, so I took something in between"
+2009-12-10 00:30:40,pcmattman,"Hmm, seems to work better than my original attempt ;)"
+2009-12-10 00:31:29,taljeth,Which one?
+2009-12-10 00:32:01,pcmattman,Using the preprocessor to generate two functions for Pedigree's module code
+2009-12-10 00:32:13,pcmattman,"It's also fairly neat, considering it's a preprocessor macro"
+2009-12-10 00:32:26,taljeth,"Right, it must work good. It's my suggestion. ;-)"
+2009-12-10 00:32:40,pcmattman,:)
+2009-12-10 00:33:46,taljeth,I think it gets a bit uglier if you wanted to compile ata some day because that one defines two drivers in one file
+2009-12-10 00:33:57,taljeth,But you probably don't need it anyway
+2009-12-10 00:33:58,pcmattman,"Yes, I noticed"
+2009-12-10 00:34:13,pcmattman,We have our own ATA code that hooks deeply into the depths of Pedigree ;)
+2009-12-10 00:34:36,FreakyPenguin,Sounds dangerous ;-)
+2009-12-10 00:34:41,taljeth,"pcmattman: Yes, we also have our legacy floppy driver ;-)"
+2009-12-10 00:35:01,pcmattman,"That said, if there is any situation where there ends up being more than one CDI_DRIVER call, I'll need to work some real magic into our CDI_DRIVER definition ;)"
+2009-12-10 00:35:57,taljeth,Preprocessor can be real fun if you don't need to do it every day ;-)
+2009-12-10 00:36:07,taljeth,*Preprocessor magic
+2009-12-10 00:37:13,taljeth,I think basically you would register a module only once and have a second list of all drivers that you need to initialise in your wrapper
+2009-12-10 00:37:25,taljeth,"A bit more cumbersome, but still doable"
+2009-12-10 00:38:25,pcmattman,"Okay, patch v2 is sent"
+2009-12-10 00:40:05,taljeth,"Have you added the extern ""C"" to all header files now? I think we should it do right at once"
+2009-12-10 00:40:34,pcmattman,I'll add the remainder now and send as a separate patch
+2009-12-10 00:40:58,pcmattman,Then I have to figure out how to call init_device for each driver's devices ;)
+2009-12-10 00:41:21,taljeth,"Maybe split your patch and have one patch with all the extern ""C"""
+2009-12-10 00:41:34,taljeth,And another one with cdi-osdep.h
+2009-12-10 00:41:52,pcmattman,Good plan
+2009-12-10 00:42:52,taljeth,"The typedefs should at least get a cdi_ prefix. Also, I think in other place we don't have typedefs at all, but use the struct keyword. I won't insist on that, but for consistency it might be worth consideration"
+2009-12-10 00:44:08,taljeth,"Is it even metadata? I think I'd call it something like cdi_pci_device_osdep when cdi_pci_device is the type that is ""extended"" by the struct"
+2009-12-10 00:44:34,pcmattman,"Well, it could be information about the PCI device"
+2009-12-10 00:44:58,pcmattman,"osdep works though, I'll change it"
+2009-12-10 00:45:46,taljeth,"Ok, thanks"
+2009-12-10 00:46:06,taljeth,I'll leave the rest of the comments to FreakyPenguin. It's getting late. ;-)
+2009-12-10 00:50:35,taljeth,Talk to you tomorrow
+2009-12-10 00:50:40,taljeth,Or rather this evening for you
+2009-12-10 00:50:42,taljeth,Good night
+2009-12-10 00:50:43,pcmattman,"Okay, cya"
+2009-12-10 00:50:57,FreakyPenguin,gn8 taljeth ;-)
+2009-12-10 00:53:10,pcmattman,The patches are now on the list :)
+2009-12-10 09:18:29,kwolf,Moin
+2009-12-10 09:18:58,DerHartmut,Moin moin
+2009-12-10 09:30:49,pcmattman,Hi kwolf
+2009-12-10 09:37:32,DerHartmut,Good morning pcmattman 
+2009-12-10 09:38:47,DerHartmut,-Good morning +Good evening
+2009-12-10 09:43:04,pcmattman,More patches on the list to review :)
+2009-12-10 09:52:47,kwolf,Looks like some work for the weekend :-)
+2009-12-10 09:53:49,kwolf,"If anyone wants to help me, you could review some of the patches and either comment on them or send your Acked-by"
+2009-12-10 09:59:27,DerHartmut,"I would do it, but I do not have any clue about CDI ^^"
+2009-12-10 18:12:26,quok,"Hmm, anyone here want a google wave invite? "
